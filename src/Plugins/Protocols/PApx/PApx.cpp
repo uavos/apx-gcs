@@ -69,8 +69,6 @@ void PApx::process_downlink(QByteArray packet)
     }
 
     findParent<PApx>()->trace_pid(pid);
-    if (pid.pri == xbus::pri_request)
-        return;
 
     // non requests only
 
@@ -177,6 +175,9 @@ void PApx::process_downlink(QByteArray packet)
     }
 
     case mandala::cmd::env::vehicle::downlink::uid: {
+        if (pid.pri == xbus::pri_request)
+            return;
+
         if (stream.available() <= sizeof(xbus::vehicle::squawk_t))
             return;
 
@@ -196,13 +197,9 @@ void PApx::process_downlink(QByteArray packet)
 
         auto *v = _squawk_map.value(squawk);
         if (v) {
-            if (!v->check_vuid(vuid_n, pid.seq)) {
-                qWarning() << "VUID check failed";
-                _squawk_map.remove(squawk);
-                _squawk_map.remove(_squawk_map.key(v));
-                assign_squawk(v->vuid());
+            if (!check_vuid(v, vuid_n, pid.seq))
                 return;
-            }
+
             // vuid still ok
             v->packetReceived(pid.uid);
             trace()->block(v->title().append(':'));
@@ -225,8 +222,42 @@ void PApx::process_downlink(QByteArray packet)
         request_ident_schedule(squawk);
         return;
     }
+    case mandala::cmd::env::vehicle::uplink::uid: {
+        // uplink from another GCS instance
+        if (pid.pri != xbus::pri_request)
+            return;
+        if (stream.available() <= sizeof(xbus::vehicle::squawk_t))
+            return;
+
+        const xbus::vehicle::squawk_t squawk = stream.read<xbus::vehicle::squawk_t>();
+        trace()->block(PApx::squawkText(squawk));
+
+        if (stream.available() <= xbus::pid_s::psize())
+            return;
+
+        auto *v = _squawk_map.value(squawk);
+        if (!v)
+            return;
+
+        v->packetReceived(pid.uid);
+        trace()->block(v->title().append(':'));
+        trace()->tree();
+        v->process_downlink(stream);
+        return;
+    }
     }
     qDebug() << "orphan vehicle packet";
+}
+bool PApx::check_vuid(PApxVehicle *v, uint8_t n, uint8_t seq)
+{
+    if (v->check_vuid(n, seq))
+        return true;
+
+    qWarning() << "VUID check failed";
+    _squawk_map.remove(v->squawk());
+    _squawk_map.remove(_squawk_map.key(v));
+    assign_squawk(v->vuid());
+    return false;
 }
 
 void PApx::request_ident_schedule(xbus::vehicle::squawk_t squawk)

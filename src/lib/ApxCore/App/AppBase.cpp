@@ -196,6 +196,11 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     if (!m_installed) {
         apxConsoleW() << tr("Application is not installed");
     }
+
+    if (!_guard.tryToRun()) {
+        m_multipleInstances = true;
+        apxConsoleW() << tr("Another application instance is running");
+    }
 }
 
 QString AppBase::aboutString()

@@ -57,7 +57,7 @@ public:
     QString getConfigTitle();
 
     //Fact override
-    QVariant toVariant() const override;
+    QVariant toVariant() override;
     void fromVariant(const QVariant &var) override;
 
 private:

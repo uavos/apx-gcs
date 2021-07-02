@@ -96,7 +96,7 @@ public:
     QVariantMap get_info() const;
 
     //Fact override
-    QVariant toVariant() const override;
+    QVariant toVariant() override;
     void fromVariant(const QVariant &var) override;
 
 private:
@@ -127,8 +127,9 @@ private slots:
     void updateFlightState();
     void updateGeoPath();
 
-private slots:
     void updateActive();
+
+    void packetReceived(mandala::uid_t uid);
 
 signals:
     void selected();

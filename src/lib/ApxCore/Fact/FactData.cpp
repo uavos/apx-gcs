@@ -172,12 +172,13 @@ bool FactData::updateValue(const QVariant &v)
         QString s = vx.toString();
         QString u = units();
         if (!u.isEmpty() && s.endsWith(u)) {
-            vx = s.left(s.size() - u.size()).trimmed();
+            s = s.left(s.size() - u.size()).trimmed();
+            vx = s;
         }
 
         int enumIndex = enumValue(vx);
         if (enumIndex >= 0) {
-            m_value = enumIndex; //enumText(enumIndex);
+            m_value = enumIndex;
             break;
         }
         if (m_enumStrings.size() > 1)
@@ -190,21 +191,18 @@ bool FactData::updateValue(const QVariant &v)
             vi = s.toLongLong(&ok, 16);
             if (!ok)
                 return false;
+        } else if (u == "s") {
+            vi = static_cast<long long>(AppRoot::timeFromString(s, true));
+            ok = true;
+        } else if (u == "min") {
+            vi = static_cast<long long>(AppRoot::timeFromString(s, false));
+            ok = true;
         } else if (!_check_int(vx)) {
-            if (u == "time" && s.contains(':')) {
-                vi = static_cast<long long>(AppRoot::timeFromString(s));
-                ok = true;
-            }
-            if (!ok && u == "hex") {
+            vi = s.toLongLong(&ok);
+            if (!ok)
+                vi = static_cast<long long>(round(s.toDouble(&ok)));
+            if (!ok)
                 vi = s.toLongLong(&ok, 16);
-            }
-            if (!ok) {
-                vi = s.toLongLong(&ok);
-                if (!ok)
-                    vi = static_cast<long long>(round(s.toDouble(&ok)));
-                if (!ok)
-                    vi = s.toLongLong(&ok, 16);
-            }
             if (!ok)
                 return false;
         } else {
@@ -326,8 +324,14 @@ QString FactData::_string_with_units(const QString &v) const
         return v;
     if (v.trimmed().isEmpty())
         return v;
+    switch (dataType()) {
+    default:
+        return v;
+    case Float:
+    case Int:
+        break;
+    }
     static const QStringList flt(QStringList() << "hex"
-                                               << "time"
                                                << "lat"
                                                << "lon"
                                                << "mandala");
@@ -379,10 +383,6 @@ QString FactData::toText(const QVariant &v) const
             return v.toString();
     }
     if (t == Int) {
-        if (units() == "hex")
-            return QString::number(v.toUInt(), 16).toUpper();
-        if (units() == "time")
-            return AppRoot::timeToString(v.toUInt(), true);
         if (units() == "mandala")
             return mandalaToString(static_cast<quint32>(v.toUInt()));
         return QString::number(v.toString().toLongLong());
@@ -444,7 +444,7 @@ bool FactData::isZero() const
         return v.toString().isEmpty();
     if (t == Float)
         return v.toDouble() == 0.0;
-    const QString &s = valueText().trimmed();
+    const QString &s = v.toString().trimmed();
     if (s.isEmpty())
         return true;
     if (s == "0")
@@ -502,7 +502,7 @@ int FactData::precision(void) const
 {
     return m_precision;
 }
-void FactData::setPrecision(const int &v)
+void FactData::setPrecision(int v)
 {
     if (m_precision == v)
         return;
@@ -539,6 +539,18 @@ void FactData::setMax(const QVariant &v)
     if (value().toDouble() > m_max.toDouble())
         setValue(m_max);
 }
+qreal FactData::increment(void) const
+{
+    return m_increment;
+}
+void FactData::setIncrement(qreal v)
+{
+    if (m_increment == v)
+        return;
+    m_increment = v;
+    emit incrementChanged();
+}
+
 QString FactData::title(void) const
 {
     return m_title.isEmpty() ? name() : m_title;
@@ -563,12 +575,17 @@ void FactData::setDescr(const QString &v)
     m_descr = s;
     emit descrChanged();
 }
-QString FactData::valueText() const
+QString FactData::valueText()
 {
+    if (!m_valueTextUpdated) {
+        m_valueTextUpdated = true;
+        m_valueText = toText(value());
+    }
     return m_valueText;
 }
 void FactData::setValueText(const QString &v)
 {
+    m_valueTextUpdated = true;
     if (m_valueText == v)
         return;
     m_valueText = v;
@@ -576,14 +593,51 @@ void FactData::setValueText(const QString &v)
 }
 void FactData::updateValueText()
 {
-    setValueText(toText(value()));
+    m_valueTextUpdated = false;
+    emit valueTextChanged();
 }
-QString FactData::text() const
+QString FactData::text()
 {
+    if (!m_textUpdated) {
+        m_textUpdated = true;
+        m_text = _string_with_units(editorText());
+    }
     return m_text;
+}
+QString FactData::editorText()
+{
+    QString v = valueText();
+    switch (dataType()) {
+    default:
+        break;
+    case Int:
+        if (units() == "hex")
+            v = QString::number(v.toUInt(), 16).toUpper();
+        else if (units() == "s")
+            v = AppRoot::timeToString(v.toUInt(), true);
+        else if (units() == "min")
+            v = AppRoot::timeToString(v.toUInt() * 60, false);
+        else {
+            bool ok;
+            v.toFloat(&ok);
+            if (!ok)
+                break;
+        }
+        break;
+
+    case Float: {
+        bool ok;
+        v.toFloat(&ok);
+        if (!ok)
+            break;
+        break;
+    }
+    }
+    return v;
 }
 void FactData::setText(const QString &v)
 {
+    m_textUpdated = true;
     if (m_text == v)
         return;
     m_text = v;
@@ -591,21 +645,8 @@ void FactData::setText(const QString &v)
 }
 void FactData::updateText()
 {
-    QString v = valueText();
-    switch (dataType()) {
-    default:
-        break;
-    case Int:
-    case Float: {
-        bool ok;
-        v.toFloat(&ok);
-        if (!ok)
-            break;
-        setText(_string_with_units(v));
-        return;
-    }
-    }
-    setText(v);
+    m_textUpdated = false;
+    emit textChanged();
 }
 const QStringList &FactData::enumStrings() const
 {

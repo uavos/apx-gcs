@@ -149,8 +149,6 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
 
     m_engine->jsSyncObject(this);
 
-    loadFonts();
-
     // main window
 
     QString title = QString("%1 (%2)").arg(App::applicationName()).arg(App::applicationVersion());
@@ -172,6 +170,8 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
         emit windowChanged();
     }
     registerUiComponent(view, "window");
+
+    loadFonts();
 
     view->setSource(url);
 }
@@ -477,8 +477,8 @@ QFont App::getMonospaceFont()
 void App::updateAppFont()
 {
     auto f = font();
-    qreal sz = 12 * scale();
-    f.setPixelSize(sz < 5 ? 5 : sz);
+    qreal sz = 12. * scale();
+    f.setPointSize(sz < 5 ? 5 : sz);
     setFont(f);
 }
 

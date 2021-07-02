@@ -31,8 +31,12 @@ class Sites : public Fact
 {
     Q_OBJECT
 
+    Q_PROPERTY(Fact *editor READ editor CONSTANT)
+
 public:
     explicit Sites(Fact *parent = nullptr);
+
+    auto editor() const { return f_edit; }
 
     Q_INVOKABLE void createEditor(QVariantMap item);
     Q_INVOKABLE void destroyEditor(QVariantMap item);

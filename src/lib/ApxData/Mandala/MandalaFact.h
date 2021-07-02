@@ -37,9 +37,6 @@ public:
     // send value to uplink when set
     bool setValue(const QVariant &v) override;
 
-    // set value locally and do not send uplink
-    bool setValueLocal(const QVariant &v);
-
     Q_INVOKABLE mandala::uid_t uid() const;
     Q_INVOKABLE void request();
     Q_INVOKABLE void send();
@@ -72,9 +69,11 @@ private:
 
     size_t _rx_cnt{};
 
+    bool setRawValueLocal(QVariant v);
+
 protected:
     //Fact override
-    virtual QVariant data(int col, int role) const override;
+    virtual QVariant data(int col, int role) override;
     virtual bool showThis(QRegExp re) const override; //filter helper
 
     //---------------------------------------

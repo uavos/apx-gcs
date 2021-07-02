@@ -33,8 +33,8 @@ public:
     explicit FactDelegateScript(Fact *fact, QWidget *parent = 0);
 
 protected:
-    bool aboutToUpload(void);
-    bool aboutToClose(void);
+    bool aboutToUpload(void) override;
+    bool aboutToClose(void) override;
 
 private:
     NodeScript *nodeScript;
@@ -47,6 +47,8 @@ private:
     QListWidget *logList;
 
     QLineEdit *eTitle;
+
+    void launch_vscode();
 
     //data
 private slots:

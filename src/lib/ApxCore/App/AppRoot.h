@@ -62,13 +62,13 @@ public:
     Q_INVOKABLE static double lonFromString(QString s);
     Q_INVOKABLE static QString distanceToString(uint v, bool units = true);
 
-    Q_INVOKABLE static QString timeToString(quint64 v, bool seconds = false);
-    Q_INVOKABLE static QString timeString(bool seconds = false);
-    Q_INVOKABLE static QString dateToString(quint64 v);
-    Q_INVOKABLE static QString timemsToString(quint64 v);
-    Q_INVOKABLE static quint64 timeFromString(QString s);
+    Q_INVOKABLE static QString timeToString(quint64 v, bool seconds = false); // value in [sec]
+    Q_INVOKABLE static QString timeString(bool seconds = false);              // current time
+    Q_INVOKABLE static QString dateToString(quint64 v);                       // seconds since epoch
+    Q_INVOKABLE static QString timemsToString(quint64 v);                     // value in [ms]
+    Q_INVOKABLE static quint64 timeFromString(QString s, bool seconds);       // returns [sec]
 
-    Q_INVOKABLE static QString capacityToString(quint64 v, int prec = 0);
+    Q_INVOKABLE static QString capacityToString(quint64 v, int prec = 0); // value in [bytes]
 
     Q_INVOKABLE static double limit(double v, double min, double max);
     Q_INVOKABLE static double angle360(double v);

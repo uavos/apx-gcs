@@ -239,10 +239,11 @@ QString AppRoot::timemsToString(quint64 v)
     s += QString(".%1").arg(v % 1000, 3, 10, QLatin1Char('0'));
     return s;
 }
-quint64 AppRoot::timeFromString(QString s)
+quint64 AppRoot::timeFromString(QString s, bool seconds)
 {
     quint64 t = 0;
     s = s.trimmed().toLower();
+
     if (s.contains('d')) {
         QString ds = s.left(s.indexOf('d')).trimmed();
         s = s.remove(0, s.indexOf('d') + 1).trimmed();
@@ -277,33 +278,45 @@ quint64 AppRoot::timeFromString(QString s)
         s.clear();
     }
     if (s.contains(':')) {
-        QString ds = s.left(s.indexOf(':')).trimmed();
-        s = s.remove(0, s.indexOf(':') + 1).trimmed();
-        bool ok = false;
-        double dv = ds.toDouble(&ok);
-        if (ok && dv > 0)
-            t += static_cast<quint64>(std::floor(dv * (60.0 * 60.0)));
-        if (s.contains(':')) {
-            QString ds = s.left(s.indexOf(':')).trimmed();
-            s = s.remove(0, s.indexOf(':') + 1).trimmed();
+        int cap = seconds ? 0 : 1;
+        for (auto st = s.split(':'); st.size(); cap++) {
+            auto s = st.takeLast();
             bool ok = false;
-            double dv = ds.toDouble(&ok);
-            if (ok && dv > 0)
-                t += static_cast<quint64>(std::floor(dv * (60.0)));
-        } else {
-            bool ok = false;
-            double dv = s.toDouble(&ok);
-            if (ok && dv > 0)
-                t += static_cast<quint64>(std::floor(dv * (60.0)));
-            s.clear();
+            double v = s.toDouble(&ok);
+            if (!ok || v <= 0)
+                v = 0;
+            double mult{};
+            switch (cap) {
+            default:
+                t = 0;
+                break;
+            case 0: //seconds
+                mult = 1.;
+                break;
+            case 1: //minutes
+                mult = 60.;
+                break;
+            case 2: //hours
+                mult = 60. * 60.;
+                break;
+            case 3: //days
+                mult = 24. * 60. * 60.;
+                break;
+            }
+            t += static_cast<quint64>(std::floor(v * mult));
         }
+        s.clear();
     }
     if (!s.isEmpty()) {
         bool ok = false;
-        double dv = s.toDouble(&ok);
-        if (ok && dv > 0)
-            t += static_cast<quint64>(std::floor(dv));
+        double v = s.toDouble(&ok);
+        if (ok && v > 0)
+            t += static_cast<quint64>(std::floor(v));
+        return t;
     }
+    if (!seconds)
+        return t / 60;
+
     return t;
 }
 

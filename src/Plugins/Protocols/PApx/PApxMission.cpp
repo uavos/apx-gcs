@@ -36,27 +36,37 @@ PApxMission::PApxMission(PApxVehicle *parent)
 {
     // notify mission available on ident update if files found
     connect(parent->nodes(), &PNodes::node_available, this, [this](PNode *node) {
-        connect(node, &PNode::identReceived, this, [this, node]() {
-            if (static_cast<PApxNode *>(node)->file(file_name))
-                emit missionAvailable();
-        });
+        connect(node, &PNode::identReceived, this, &PApxMission::updateFiles);
     });
 }
 
-void PApxMission::requestMission()
+void PApxMission::updateFiles()
 {
     auto f = _file();
     if (!f)
         return;
     connect(f, &PApxNodeFile::downloaded, this, &PApxMission::parseMissionData, Qt::UniqueConnection);
+    connect(f, &PApxNodeFile::uploaded, this, &PApxMission::parseMissionData, Qt::UniqueConnection);
+    emit missionAvailable();
+}
+
+void PApxMission::requestMission()
+{
+    auto f = _file();
+    if (!f) {
+        apxMsgW() << tr("Mission source unavailable");
+        return;
+    }
     new PApxNodeRequestFileRead(f->node(), file_name);
 }
 
 void PApxMission::updateMission(QVariant var)
 {
     auto f = _file();
-    if (!f)
+    if (!f) {
+        apxMsgW() << tr("Mission storage unavailable");
         return;
+    }
     auto req = new PApxNodeRequestFileWrite(f->node(), file_name, _pack(var.value<QVariantMap>()));
     connect(req, &PApxNodeRequestFile::uploaded, this, &PMission::missionUpdated);
 }
@@ -81,7 +91,6 @@ PApxNodeFile *PApxMission::_file() const
         if (f)
             return f;
     }
-    apxMsgW() << tr("Mission source unavailable");
     return nullptr;
 }
 QVariantMap PApxMission::_unpack(PStreamReader &stream)
@@ -293,13 +302,12 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     fhdr.off.wp = stream.pos() - pos_s;
     for (auto i : m.value("wp").value<QVariantList>()) {
         auto wp = i.value<QVariantMap>();
-        xbus::mission::hdr_s hdr;
+        xbus::mission::hdr_s hdr{};
         hdr.type = xbus::mission::WP;
-        hdr.option = 0;
         if (wp.value("type").toString().toLower() == "track")
             hdr.option = 1;
         hdr.write(&stream);
-        xbus::mission::wp_s e;
+        xbus::mission::wp_s e{};
         e.lat = wp.value("lat").toFloat();
         e.lon = wp.value("lon").toFloat();
         e.alt = wp.value("altitude").toUInt();
@@ -311,29 +319,29 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             continue;
 
         if (actions.contains("speed")) {
-            xbus::mission::hdr_s ahdr;
+            xbus::mission::hdr_s ahdr{};
             ahdr.type = xbus::mission::ACT;
             ahdr.option = xbus::mission::ACT_SPEED;
             ahdr.write(&stream);
-            xbus::mission::act_speed_s a;
+            xbus::mission::act_speed_s a{};
             a.speed = actions.value("speed").toUInt();
             a.write(&stream);
         }
         if (actions.contains("poi")) {
-            xbus::mission::hdr_s ahdr;
+            xbus::mission::hdr_s ahdr{};
             ahdr.type = xbus::mission::ACT;
             ahdr.option = xbus::mission::ACT_PI;
             ahdr.write(&stream);
-            xbus::mission::act_pi_s a;
+            xbus::mission::act_pi_s a{};
             a.index = actions.value("poi").toUInt() - 1;
             a.write(&stream);
         }
         if (actions.contains("script")) {
-            xbus::mission::hdr_s ahdr;
+            xbus::mission::hdr_s ahdr{};
             ahdr.type = xbus::mission::ACT;
             ahdr.option = xbus::mission::ACT_SCR;
             ahdr.write(&stream);
-            xbus::mission::act_scr_s a;
+            xbus::mission::act_scr_s a{};
             QByteArray src(actions.value("script").toString().toUtf8());
             memset(a.scr, 0, sizeof(a.scr));
             memcpy(a.scr, src.data(), static_cast<size_t>(src.size()));
@@ -341,11 +349,11 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             a.write(&stream);
         }
         if (actions.contains("shot")) {
-            xbus::mission::hdr_s ahdr;
+            xbus::mission::hdr_s ahdr{};
             ahdr.type = xbus::mission::ACT;
             ahdr.option = xbus::mission::ACT_SHOT;
             ahdr.write(&stream);
-            xbus::mission::act_shot_s a;
+            xbus::mission::act_shot_s a{};
             uint dshot = actions.value("dshot").toUInt();
             const QString shot = actions.value("shot").toString();
             a.opt = 0;
@@ -372,12 +380,12 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     fhdr.off.rw = stream.pos() - pos_s;
     for (auto i : m.value("rw").value<QVariantList>()) {
         auto rw = i.value<QVariantMap>();
-        xbus::mission::hdr_s hdr;
+        xbus::mission::hdr_s hdr{};
         hdr.type = xbus::mission::RW;
         if (rw["type"].toString().toLower() == "right")
             hdr.option = 1;
         hdr.write(&stream);
-        xbus::mission::rw_s e;
+        xbus::mission::rw_s e{};
         e.lat = rw.value("lat").toFloat();
         e.lon = rw.value("lon").toFloat();
         e.hmsl = rw.value("hmsl").toInt();
@@ -396,7 +404,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         hdr.type = xbus::mission::TW;
         hdr.option = 0;
         hdr.write(&stream);
-        xbus::mission::tw_s e;
+        xbus::mission::tw_s e{};
         e.lat = tw.value("lat").toFloat();
         e.lon = tw.value("lon").toFloat();
         e.write(&stream);
@@ -410,13 +418,13 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         hdr.type = xbus::mission::PI;
         hdr.option = 0;
         hdr.write(&stream);
-        xbus::mission::pi_s e;
+        xbus::mission::pi_s e{};
         e.lat = pi.value("lat").toFloat();
         e.lon = pi.value("lon").toFloat();
         e.hmsl = pi.value("hmsl").toInt();
         e.radius = pi.value("radius").toInt();
         e.loops = pi.value("loops").toUInt();
-        e.timeout = AppRoot::timeFromString(pi.value("timeout").toString());
+        e.timeout = AppRoot::timeFromString(pi.value("timeout").toString(), false);
         e.write(&stream);
         fhdr.cnt.pi++;
     }
@@ -425,7 +433,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         qDebug() << "Upload empty mission";
     }
 
-    xbus::mission::hdr_s hdr;
+    xbus::mission::hdr_s hdr{};
     hdr.type = xbus::mission::STOP;
     hdr.option = 0;
     hdr.write(&stream);

@@ -46,7 +46,7 @@ public:
     inline auto array() const { return _array; }
 
     //Fact override
-    QVariant toVariant() const override;
+    QVariant toVariant() override;
     void fromVariant(const QVariant &var) override;
 
 private:

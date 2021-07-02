@@ -150,13 +150,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         _storage->saveVehicleInfo();
 
         // counters
-        connect(protocol, &PVehicle::packetReceived, this, [this](mandala::uid_t uid) {
-            if (mandala::cmd::env::match(uid)) {
-                MandalaFact *f = f_mandala->fact(uid);
-                if (f)
-                    f->count_rx();
-            }
-        });
+        connect(protocol, &PVehicle::packetReceived, this, &Vehicle::packetReceived);
 
         // forward telemetry stamp to notify plugins
         connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
@@ -197,6 +191,15 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     App::jsync(this);
 }
 
+void Vehicle::packetReceived(mandala::uid_t uid)
+{
+    if (mandala::cmd::env::match(uid)) {
+        MandalaFact *f = f_mandala->fact(uid);
+        if (f)
+            f->count_rx();
+    }
+}
+
 void Vehicle::updateActive()
 {
     bool sel = active();
@@ -224,7 +227,7 @@ QVariantMap Vehicle::get_info() const
         vehicle.insert("time", _lastSeenTime);
     return vehicle;
 }
-QVariant Vehicle::toVariant() const
+QVariant Vehicle::toVariant()
 {
     if (isReplay())
         return {};
@@ -373,12 +376,10 @@ void Vehicle::setHomePoint(QGeoCoordinate c)
         return;
     if (!c.isValid())
         return;
-    apxMsgW() << "Not implemented";
-    //    MandalaFact::BundleValues values;
-    //    values.insert(mandala::est::nav::ref::lat::meta.uid, c.latitude());
-    //    values.insert(mandala::est::nav::ref::lon::meta.uid, c.longitude());
-    //    values.insert(mandala::est::nav::ref::hmsl::meta.uid, f_ref_hmsl->value());
-    //    f_ref->sendBundle(values);
+    QVariantList value;
+    value << c.latitude();
+    value << c.longitude();
+    emit sendValue(mandala::est::nav::ref::uid, value);
 }
 void Vehicle::sendPositionFix(QGeoCoordinate c)
 {

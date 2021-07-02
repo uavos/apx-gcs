@@ -739,7 +739,7 @@ namespace sns
         };
         namespace fuel
         {
-            enum { capacity = 0x141 };
+            enum { level = 0x141 };
             enum { rate = 0x142 };
             enum { temp = 0x143 };
             enum { ps = 0x144 };
@@ -989,6 +989,7 @@ namespace est
             enum { ax = 0x425 };
             enum { ay = 0x426 };
             enum { az = 0x427 };
+            enum { turn = 0x428 };
         };
         namespace acc
         {
@@ -1006,9 +1007,9 @@ namespace est
             enum { vx = 0x445 };
             enum { vy = 0x446 };
             enum { vz = 0x447 };
-            enum { dx = 0x448 };
-            enum { dy = 0x449 };
-            enum { dz = 0x44a };
+            enum { n = 0x448 };
+            enum { e = 0x449 };
+            enum { d = 0x44a };
         };
         namespace ref
         {
@@ -1048,10 +1049,11 @@ namespace est
             enum { health = 0x502 };
             enum { time = 0x503 };
             enum { uptime = 0x504 };
-            enum { ttl = 0x505 };
-            enum { energy = 0x506 };
-            enum { weight = 0x507 };
-            enum { corr = 0x508 };
+            enum { fuel = 0x505 };
+            enum { weight = 0x506 };
+            enum { ttl = 0x507 };
+            enum { range = 0x508 };
+            enum { corr = 0x509 };
         };
         namespace wind
         {

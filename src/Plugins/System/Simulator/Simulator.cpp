@@ -83,13 +83,11 @@ Simulator::Simulator(Fact *parent)
             &Simulator::pShivaFinished);
     connect(&pShiva, &QProcess::errorOccurred, this, &Simulator::pShivaErrorOccurred);
 
-    pShivaKill();
     QTimer::singleShot(2000, this, &Simulator::detectXplane);
 }
 Simulator::~Simulator()
 {
     //qDebug() << "kill sim";
-    //QProcess::execute("killall", QStringList() << "shiva");
     disconnect(&pShiva, nullptr, nullptr, nullptr);
     pShiva.terminate();
     pShiva.waitForFinished(1000);
@@ -260,8 +258,8 @@ void Simulator::launchShiva()
     apxMsg() << tr("Launching SIL").append("...");
 
     //launch shiva
-    pShivaKill();
     pShiva.kill();
+    pShivaKill();
 
     if (!extract_apxfw()) {
         apxMsgW() << tr("Simulation firmware unavailable");

@@ -47,8 +47,6 @@ class Fact : public FactData
 
     Q_PROPERTY(QVariantMap opts READ opts WRITE setOpts NOTIFY optsChanged)
 
-    Q_PROPERTY(int scnt READ scnt WRITE setScnt NOTIFY scntChanged)
-
 public:
     explicit Fact(QObject *parent = nullptr,
                   const QString &name = QString(),
@@ -70,14 +68,12 @@ public:
     //Group fact values (settings)
     Q_INVOKABLE void setValues(const QVariantMap &values);
 
-    Q_INVOKABLE virtual QVariant toVariant() const;
+    Q_INVOKABLE virtual QVariant toVariant();
     Q_INVOKABLE virtual void fromVariant(const QVariant &var);
 
-    Q_INVOKABLE QJsonDocument toJsonDocument() const;
+    Q_INVOKABLE QJsonDocument toJsonDocument();
     Q_INVOKABLE bool fromJsonDocument(QByteArray data);
     Q_INVOKABLE static QVariant parseJsonDocument(QByteArray data);
-
-    virtual bool setValue(const QVariant &v) override; //collect stats
 
     virtual bool lessThan(Fact *other) const; //sorting helper
     virtual bool showThis(QRegExp re) const;  //filter helper
@@ -125,7 +121,7 @@ public:
         return list;
     }
 
-    virtual QVariant data(int col, int role) const;
+    virtual QVariant data(int col, int role);
 
     Q_INVOKABLE virtual QString toolTip() const;
 
@@ -206,9 +202,6 @@ public:
     QVariantMap opts() const;
     void setOpts(const QVariantMap &v);
     void setOpt(const QString &name, const QVariant &v);
-
-    int scnt() const;
-    void setScnt(const int v);
 
 protected:
     QAbstractListModel *m_model{nullptr};

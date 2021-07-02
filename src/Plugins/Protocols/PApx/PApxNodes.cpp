@@ -74,16 +74,9 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         return nodes->process_downlink(pid, stream);
     }
 
-    while (pid.pri != xbus::pri_response) {
-        if (pid.uid == mandala::cmd::env::nmt::msg::uid)
-            break;
-        if (pid.uid == mandala::cmd::env::nmt::search::uid)
-            break;
-        return true;
-    }
-
     if (stream.available() < sizeof(xbus::node::guid_t)) {
-        qDebug() << "missing guid" << stream.available();
+        if (pid.pri != xbus::pri_request)
+            qDebug() << "missing guid" << stream.available();
         return true;
     }
 
@@ -106,7 +99,9 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
     node->process_downlink(pid, stream);
 
-    emit node_response(node);
+    if (pid.pri == xbus::pri_response)
+        emit node_response(node);
+
     return true;
 }
 

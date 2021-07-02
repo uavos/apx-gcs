@@ -323,7 +323,6 @@ bool PApxNodeRequestUpdate::response(PStreamReader &stream)
     if (_index >= _values.size()) {
         if (_fid == 0xFFFFFFFF) {
             // qDebug() << "saved";
-            _node->confSaved();
             return true;
         }
     }

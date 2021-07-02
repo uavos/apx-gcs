@@ -632,14 +632,24 @@ bool DBReqSaveNodeMeta::run(QSqlQuery &query)
         auto m = _meta.value(name).value<QVariantMap>();
         auto version = m.value("version").toString();
         auto descr = m.value("descr").toString();
-        auto def = m.value("def").toString();
+        auto def = m.value("def");
+        auto min = m.value("min");
+        auto max = m.value("max");
+        auto increment = m.value("increment");
+        auto decimal = m.value("decimal");
 
         if (!query.next()) {
-            query.prepare("INSERT INTO NodeDictMeta(name,version,descr,def) VALUES(?,?,?,?)");
+            query.prepare(
+                "INSERT INTO NodeDictMeta(name,version,descr,def,min,max,increment,decimal) "
+                "VALUES(?,?,?,?,?,?,?,?)");
             query.addBindValue(name);
             query.addBindValue(version);
             query.addBindValue(descr);
             query.addBindValue(def);
+            query.addBindValue(min);
+            query.addBindValue(max);
+            query.addBindValue(increment);
+            query.addBindValue(decimal);
             if (!query.exec())
                 return false;
             ncnt++;
@@ -649,7 +659,11 @@ bool DBReqSaveNodeMeta::run(QSqlQuery &query)
         // update existing
         auto qversion = query.value("version").toString();
         auto qdescr = query.value("descr").toString();
-        auto qdef = query.value("def").toString();
+        auto qdef = query.value("def");
+        auto qmin = query.value("min");
+        auto qmax = query.value("max");
+        auto qincrement = query.value("increment");
+        auto qdecimal = query.value("decimal");
 
         if (version.isEmpty())
             version = qversion;
@@ -661,21 +675,39 @@ bool DBReqSaveNodeMeta::run(QSqlQuery &query)
 
         if (descr.isEmpty() || older)
             descr = qdescr;
-        if (def.isEmpty() || older)
+
+        if (older) {
             def = qdef;
+            min = qmin;
+            max = qmax;
+            increment = qincrement;
+            decimal = qdecimal;
+        }
+
+        if (name == "shiva.roll.tc")
+            qDebug() << older << min << version;
 
         // update record
-        if (qversion == version && qdescr == descr && qdef == def)
+        if (qversion == version && qdescr == descr && qdef == def && qmin == min && qmax == max
+            && qincrement == increment && qdecimal == decimal) {
             continue; // not changed
+        }
 
         auto key = query.value(0).toULongLong();
-        query.prepare("UPDATE NodeDictMeta SET version=?, descr=?, def=? WHERE key=?");
+        query.prepare("UPDATE NodeDictMeta SET version=?, descr=?, def=?, min=?, max=?, "
+                      "increment=?, decimal=? WHERE key=?");
         query.addBindValue(version);
         query.addBindValue(descr);
         query.addBindValue(def);
+        query.addBindValue(min);
+        query.addBindValue(max);
+        query.addBindValue(increment);
+        query.addBindValue(decimal);
         query.addBindValue(key);
         if (!query.exec())
             return false;
+        if (name == "shiva.roll.tc")
+            qDebug() << "upd" << name << version;
         ucnt++;
     }
 
@@ -699,6 +731,11 @@ bool DBReqLoadNodeMeta::run(QSqlQuery &query)
         QVariantMap m;
         m.insert("descr", query.value("descr"));
         m.insert("def", query.value("def"));
+        m.insert("min", query.value("min"));
+        m.insert("max", query.value("max"));
+        m.insert("increment", query.value("increment"));
+        m.insert("decimal", query.value("decimal"));
+
         _meta.insert(name, m);
     }
 

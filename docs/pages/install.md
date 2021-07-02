@@ -52,21 +52,12 @@ Visit the repository [apx-releases](https://github.com/uavos/apx-releases/releas
 
 ### Linux v9.x
 
-Add UAVOS debian repository to your system (execute the following commands in console):
-
-```bash
-echo "deb http://apt.uavos.com/ all main experimental"| sudo tee /etc/apt/sources.list.d/uavos.list; gpg --keyserver keyserver.ubuntu.com --recv B5517CF1; gpg --export --armor B5517CF1 | sudo apt-key add -; sudo apt-get update
-```
-
-Repository contains two components:
-
-* **main** - rare updates (once in 3-6 months), more bugs, but ensures it was tested on several UAVs for stable operation.
-* **experimental** - most recent bugfixes and features, builds for most recent linux versions. Updates almost every week, tested on at least one UAV.
+Download all debian package files from [here](https://drive.google.com/drive/folders/1V_2b9UXeTBPWj0aAzdIPjoFLYsnMdqbV).
 
 Install application and tools:
 
 ```bash
-sudo apt-get install uavos
+sudo apt install <path to downloaded files>/*.deb
 ```
 
 Run the application through KDE's menu or `gcu` executable.

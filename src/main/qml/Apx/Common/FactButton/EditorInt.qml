@@ -27,11 +27,17 @@ import Apx.Common 1.0
 
 SpinBox {
     id: editor
+    
     from: (typeof fact.min!=='undefined')?fact.min*div:-1000000000
     to: (typeof fact.max!=='undefined')?fact.max*div:1000000000
-    value: fact.value*div
+    
+    property real div: 1
+
+    value: fact.value * div
 
     readonly property real precision: fact.precision
+
+    font: apx.font_narrow(factButton.valueSize)
 
     property int wgrow: implicitWidth
     onImplicitWidthChanged: {
@@ -39,16 +45,35 @@ SpinBox {
         else wgrow=implicitWidth
     }
 
-    stepSize: (fact.units==="m" && div==1 && (value>=10))
+    readonly property int defaultStepSize: fact.increment>0?fact.increment*div:1 //precision>1 ? precision : 1
+    
+    stepSize: defaultStepSize * stepMult
+
+    up.onPressedChanged: start()
+    down.onPressedChanged: start()
+
+    property int elapsed: 0
+    property real startTime: 0
+    function start(inc)
+    {
+        if(activeFocus)
+            factButton.forceActiveFocus()
+
+        if(up.pressed || down.pressed)
+            startTime = new Date().getTime()
+        else{
+            startTime = 0
+            elapsed = 0
+        }
+    }
+    property int stepMult: 
+        elapsed>6
+            ? 100
+            : elapsed>2
                 ? 10
-                : precision>1
-                    ? precision
-                    : 1
+                : 1
 
-    font: apx.font_narrow(control.valueSize)
 
-    up.onPressedChanged: if(activeFocus)editor.parent.forceActiveFocus()
-    down.onPressedChanged: if(activeFocus)editor.parent.forceActiveFocus()
     contentItem: Item{
         implicitWidth: textInput.width
         TextInput {
@@ -66,12 +91,11 @@ SpinBox {
             selectByMouse: true
             onEditingFinished: {
                 fact.setValue(text);
-                control.focusFree();
+                factButton.forceActiveFocus();
             }
             onActiveFocusChanged: {
                 if(activeFocus){
-                    if(fact.units === "hex") text=fact.value.toString(16).toUpperCase()
-                    else text=fact.value
+                    text=fact.editorText()
                     selectAll();
                 }else{
                     text=Qt.binding(function(){return fact.text})
@@ -114,14 +138,19 @@ SpinBox {
                             height * 2 + Style.spacing*4)
 
 
-    property real div: 1
 
     onValueModified: {
-        var s=value/div
-        if(fact.units === "hex") s=s.toString(16)
+        var v=value
+        v -= v % stepSize
+        v /= div
 
-        fact.setValue(s)
+        fact.setValue(v)
+
         value=Qt.binding(function(){return Math.round(fact.value*div)})
+
+        // accelerate
+        elapsed = startTime>0?(new Date().getTime()-startTime)/1000:0
+        //console.log(elapsed, stepSize, precision, div)
     }
 
 }

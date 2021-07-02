@@ -96,7 +96,11 @@ VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
                                      << "name TEXT NOT NULL"
                                      << "version TEXT"
                                      << "descr TEXT"
-                                     << "def TEXT");
+                                     << "def TEXT"
+                                     << "decimal INTEGER"
+                                     << "min REAL"
+                                     << "max REAL"
+                                     << "increment REAL");
     new DBReqMakeIndex(this, "NodeDictMeta", "name", true);
 
     //Node configs

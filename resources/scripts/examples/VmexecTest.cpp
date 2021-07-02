@@ -4,7 +4,7 @@
  * Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
  * All rights reserved
  *
- * This file is part of APX Ground Control.
+ * This file is part of APX Shared Libraries.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,30 +19,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <apx.h>
 
-#pragma once
-
-#include <QObject>
-#include <QSharedMemory>
-#include <QSystemSemaphore>
-
-class RunGuard
+int main()
 {
-public:
-    RunGuard(const QString &key);
-    ~RunGuard();
+    // register task to be called by mandala vmexec packet
+    task("test");
 
-    bool isAnotherRunning();
-    bool tryToRun();
-    void release();
+    return 0;
+}
 
-private:
-    const QString key;
-    const QString memLockKey;
-    const QString sharedmemKey;
-
-    QSharedMemory sharedMem;
-    QSystemSemaphore memLock;
-
-    Q_DISABLE_COPY(RunGuard)
-};
+EXPORT void test()
+{
+    // can be called by:
+    // - GCS with terminal command `vmexec("test")`
+    // - Mission waypoint action Script `test`
+    printf("called test");
+}

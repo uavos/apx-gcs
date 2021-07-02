@@ -47,7 +47,7 @@ Rectangle {
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter
 
-        font: apx.font_narrow(control.valueSize)
+        font: apx.font_narrow(factButton.valueSize)
 
         color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         text: fact.text
@@ -57,25 +57,10 @@ Rectangle {
 
         onEditingFinished: {
             fact.setValue(text);
-            control.focusFree();
+            factButton.forceActiveFocus();
         }
         onActiveFocusChanged: {
             if(activeFocus)selectAll();
         }
-    }
-
-    Connections {
-        target: control
-        function onFocusRequested()
-        {
-            checkFocusRequest()
-        }
-    }
-    Component.onCompleted: checkFocusRequest()
-    function checkFocusRequest()
-    {
-        if(!control.bFocusRequest)return
-        control.bFocusRequest=false
-        textInput.forceActiveFocus()
     }
 }

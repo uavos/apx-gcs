@@ -118,19 +118,32 @@ void NodeStorage::metaDataLoaded(QVariantMap meta)
 
         auto m = meta.value(name).value<QVariantMap>();
         auto descr = m.value("descr").toString();
-        auto def = m.value("def");
 
         descr = descr.left(descr.indexOf('\n'));
         descr = descr.left(descr.indexOf('.'));
 
         f->setDescr(descr.simplified());
 
-        if (!def.isNull()) {
-            NodeField *nf = qobject_cast<NodeField *>(f);
-            if (nf) {
-                nf->setDefaultValue(def);
-            }
-        }
+        NodeField *nf = qobject_cast<NodeField *>(f);
+        if (!nf)
+            continue;
+
+        auto def = m.value("def");
+        auto min = m.value("min");
+        auto max = m.value("max");
+        auto increment = m.value("increment");
+        auto decimal = m.value("decimal");
+
+        if (!def.isNull())
+            nf->setDefaultValue(def);
+        if (!min.isNull())
+            nf->setMin(min);
+        if (!max.isNull())
+            nf->setMax(max);
+        if (!increment.isNull())
+            nf->setIncrement(increment.toDouble());
+        // if (!decimal.isNull())
+        //     nf->setPrecision(decimal.toInt());
     }
     if (cnt > 0)
         qDebug() << "meta data loaded:" << cnt;

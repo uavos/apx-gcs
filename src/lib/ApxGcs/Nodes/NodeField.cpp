@@ -76,8 +76,6 @@ NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, Nod
     setOption(ModifiedTrack);
     setUnits(funits);
 
-    // TODO increment property
-
     if (_type == "real") {
         setDataType(Float);
         setPrecision(6);
@@ -146,7 +144,7 @@ QString NodeField::toText(const QVariant &v) const
     return Fact::toText(v);
 }
 
-QVariant NodeField::toVariant() const
+QVariant NodeField::toVariant()
 {
     if (size() > 0) {
         //expanded field

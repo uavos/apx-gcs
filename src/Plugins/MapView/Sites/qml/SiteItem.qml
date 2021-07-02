@@ -41,7 +41,7 @@ MapObject {
     opacity: ui.effects?((hover||selected)?1:0.7):1
 
     onTriggered: {
-        sites.edit.trigger() //({"pos":Qt.point(0,ui.window.height)})
+        sites.editor.trigger() //({"pos":Qt.point(0,ui.window.height)})
     }
 
     //dragging support

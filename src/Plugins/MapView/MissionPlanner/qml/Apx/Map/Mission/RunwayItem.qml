@@ -159,8 +159,8 @@ MissionObject {
         c.border.width=Qt.binding(function(){return appCircleLineWidth})
         c.opacity=Qt.binding(function(){return appCircleOpacity})
         c.visible=Qt.binding(function(){return appCircleVisible})
-        c.center=appCircleCoordinateDefault //Qt.binding(function(){return appCircleCoordinate})
-        c.radius=appCircleRadiusDefault //Qt.binding(function(){return appCircleRadius})
+        c.center=Qt.binding(function(){return appCircleCoordinateDefault})
+        c.radius=Qt.binding(function(){return appCircleRadiusDefault})
 
         //delta rect
         c=createMapComponent(deltaC)

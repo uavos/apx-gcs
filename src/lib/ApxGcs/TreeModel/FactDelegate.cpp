@@ -73,12 +73,12 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
             e = cb;
         } break;
         case Fact::Int: {
-            /*if (units == "time") {
-                QTimeEdit *te = new QTimeEdit(parent);
-                te->setDisplayFormat("HH:mm:ss");
-                e = te;
+            if (units == "s" || units == "min") {
+                QLineEdit *le = new QLineEdit(parent);
+                le->setFrame(false);
+                e = le;
                 break;
-            }*/
+            }
             if (units == "mandala") {
                 QPushButton *btn = createButton(parent);
                 connect(btn, &QPushButton::clicked, this, [f, btn]() {
@@ -163,6 +163,7 @@ QWidget *FactDelegate::createEditor(QWidget *parent,
 
     return e;
 }
+
 QPushButton *FactDelegate::createButton(QWidget *parent) const
 {
     QPushButton *btn = new QPushButton(parent);
@@ -178,19 +179,8 @@ void FactDelegate::setEditorData(QWidget *editor, const QModelIndex &index) cons
 {
     if (qobject_cast<QPushButton *>(editor))
         return;
-    if (qobject_cast<QTimeEdit *>(editor)) {
-        QTimeEdit *te = static_cast<QTimeEdit *>(editor);
-        QTime t = QTime(0, 0).addSecs(index.data(Qt::EditRole).toUInt());
-        //qDebug()<<t<<index.data(Qt::EditRole).toUInt()<<index.data(Qt::EditRole);
-        te->setTime(t);
+    if (editor->hasFocus())
         return;
-    }
-    /*if (qobject_cast<FactDelegateMandala *>(editor)) {
-        FactDelegateMandala *e = static_cast<FactDelegateMandala *>(editor);
-        e->setCurrentText(index.data(Qt::EditRole).toString());
-        return;
-    }
-    qDebug() << index.data(Qt::EditRole);*/
     QItemDelegate::setEditorData(editor, index);
 }
 void FactDelegate::setModelData(QWidget *editor,
@@ -202,11 +192,6 @@ void FactDelegate::setModelData(QWidget *editor,
     Fact *f = index.data(Fact::ModelDataRole).value<Fact *>();
     if (!f->dataType())
         return;
-    if (qobject_cast<QTimeEdit *>(editor)) {
-        QTimeEdit *te = static_cast<QTimeEdit *>(editor);
-        model->setData(index, -te->time().secsTo(QTime(0, 0)), Qt::EditRole);
-        return;
-    }
     QItemDelegate::setModelData(editor, model, index);
 }
 

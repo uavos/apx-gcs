@@ -103,9 +103,6 @@ ColumnLayout {
                     }
                 }
             }
-            onLoaded: {
-                if(index==0 && !filterModel) item.focusRequested()
-            }
         }
 
         readonly property int sectionSize: MenuStyle.itemSize*0.5

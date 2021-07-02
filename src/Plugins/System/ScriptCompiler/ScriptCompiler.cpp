@@ -24,8 +24,15 @@
 #include <App/AppRoot.h>
 
 ScriptCompiler::ScriptCompiler(QObject *parent)
-    : Fact(parent, "script", tr("Script compiler"), "", NoFlags, "cog-sync")
+    : Fact(parent, "script", tr("Script compiler"), "", Group, "cog-sync")
 {
+    f_vscode = new Fact(this,
+                        "vscode",
+                        tr("Use VS Code"),
+                        tr("Visual Studio Code IDE for scripts"),
+                        Bool | PersistentValue);
+    f_vscode->setDefaultValue(true);
+
     m_version = "12.0";
 
 #if defined(Q_OS_MAC)

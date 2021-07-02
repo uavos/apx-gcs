@@ -161,6 +161,7 @@ void NodeScript::setSource(QString title, QString source)
 {
     //qDebug() << "set src:" << title;
     _title = title.simplified().trimmed();
+    _title.remove(',');
     _value_s.clear();
     QStringList st;
     st << _title;

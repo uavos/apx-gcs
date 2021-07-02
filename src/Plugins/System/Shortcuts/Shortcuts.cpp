@@ -142,7 +142,7 @@ QString Shortcuts::keyToPortableString(int key, int modifier) const
     return s;
 }
 
-QVariant Shortcuts::toVariant() const
+QVariant Shortcuts::toVariant()
 {
     QVariantList asys;
     for (auto i : f_sys->facts()) {
