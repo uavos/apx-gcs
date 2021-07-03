@@ -54,3 +54,5 @@ build*
 .history
 
 compile_commands.json
+
+*.fileloc
