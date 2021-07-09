@@ -37,6 +37,13 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
             flags)
     , _telemetry(telemetry)
 {
+    QSettings st;
+    st.beginGroup("plots");
+    if (st.contains("DefaultPath")) {
+        _defaultDir.setPath(st.value("DefaultPath").toString());
+    }
+    st.endGroup();
+
     _exportFormats << "csv";
 
     QString sect = tr("Queue");
