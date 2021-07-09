@@ -134,6 +134,7 @@ QwtPlotCurve *TelemetryPlot::addCurve(const QString &name,
         s += "<div style='background-color: black;'>" + descr + "</div>";
     if (!units.isEmpty())
         s += "<div style='background-color: black;'>[" + units + "]</div>";
+
     QWidget *w = legend->legendWidget(itemToInfo(curve));
     if (w)
         w->setToolTip(s);
@@ -183,6 +184,11 @@ void TelemetryPlot::resetData()
         showCurve(itemToInfo(calc), false);
     resetZoom();
     setTimeCursor(0);
+}
+
+void TelemetryPlot::resetLegend()
+{
+    static_cast<PlotLegend*>(legend)->clearLegenedLabes();
 }
 
 void TelemetryPlot::restoreSettings()
@@ -662,7 +668,13 @@ void PlotMagnifier::rescale(double factor)
 
 PlotLegend::PlotLegend(QWidget *parent)
     : QwtLegend(parent)
-{}
+{
+    filter_le = new QLineEdit();
+    filter_le->setPlaceholderText(tr("Filter..."));
+    connect(filter_le, SIGNAL(textChanged(QString)), this, SLOT(onFilter(QString)));
+
+    static_cast<QVBoxLayout*>(layout())->insertWidget(0, filter_le);
+}
 
 QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
 {
@@ -671,7 +683,38 @@ QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
     w->setItemMode(defaultItemMode());
     w->setSpacing(3);
     w->setMargin(0);
+    const_cast<PlotLegend*>(this)->legendLabes.append(w);
+
     connect(w, SIGNAL(clicked()), this, SLOT(itemClicked()));
     connect(w, SIGNAL(checked(bool)), this, SLOT(itemChecked(bool)));
     return w;
+}
+
+void PlotLegend::clearLegenedLabes()
+{
+    legendLabes.clear();
+}
+
+void PlotLegend::onFilter(QString text)
+{
+    QLayout *contentsLayout = contentsWidget()->layout();
+    auto it = legendLabes.begin();
+    for (; it != legendLabes.constEnd(); ++it) {
+        QwtLegendLabel* label = *it;
+        if (label) {
+            contentsLayout->removeWidget(label);
+            label->setVisible(false);
+        }
+    }
+
+    it = legendLabes.begin();
+    for (; it != legendLabes.constEnd(); ++it) {
+        QwtLegendLabel* label = *it;
+        if (label && label->text().text().contains(text.replace(" ", ""))) {
+            if (contentsLayout->indexOf(label) == -1) {
+                contentsLayout->addWidget(label);
+                label->setVisible(true);
+            }
+        }
+    }
 }
