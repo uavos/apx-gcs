@@ -23,6 +23,7 @@ import QtQuick 2.2
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 import Qt.labs.settings 1.0
+import QtQuick.Controls.Material 2.12
 
 import Apx.Common 1.0
 
@@ -40,6 +41,7 @@ Rectangle {
         id: layout
         anchors.fill: parent
         spacing: 0
+
         SignalsView {
             id: signals
             facts: []
@@ -48,6 +50,62 @@ Rectangle {
             Layout.minimumHeight: 20
             Layout.preferredHeight: 130*ui.scale
         }
+
+        TextInput {
+            id: textInput
+
+            Layout.fillWidth: true
+            Layout.minimumHeight: Style.fontSize
+
+            // clip: true
+            // focus: true
+            visible: false
+
+            horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
+
+            font: apx.font_narrow(Style.fontSize)
+
+            color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
+            text: "est.air.airspeed"
+
+            activeFocusOnTab: true
+            selectByMouse: true
+
+            onEditingFinished: {
+                updateFacts()
+            }
+            onActiveFocusChanged: {
+                if(activeFocus)selectAll();
+            }
+            onVisibleChanged: if(visible)forceActiveFocus()
+            Component.onCompleted: updateFacts()
+
+            property var facts: []
+            function updateFacts()
+            {
+                var flist=[]
+                var list=textInput.text.split(',')
+                for(var i=0;i<list.length;++i){
+                    var f=list[i]
+                    var fact={}
+                    if(eval(f)==undefined) continue
+                    fact.title=f
+                    fact.name=f
+                    fact.descr=f
+                    fact.opts={}
+                    fact.opts.color=Material.color(Material.Blue+i*2)
+                    flist.push(fact)
+                }
+                if(JSON.stringify(textInput.facts)==JSON.stringify(flist))
+                    return
+                textInput.facts=flist
+
+                if(plusButton.checked)
+                    signals.facts=flist
+            }
+        }
+
         ButtonGroup {
             id: buttonGroup
             //buttons: bottomArea.buttons
@@ -104,6 +162,20 @@ Rectangle {
                 values: [ mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6 ]
             }
 
+            SignalButton {
+                id: plusButton
+                text: "+"
+                values: textInput.facts
+                onCheckedChanged: {
+                    if(!checked)
+                        textInput.visible=false
+                }
+                onPressed: {
+                    if(checked)
+                        textInput.visible=!textInput.visible
+                }
+            }
+
             TextButton {
                 text: signals.speedFactorValue+"x"
                 onClicked: signals.changeSpeed()
@@ -118,6 +190,7 @@ Rectangle {
     Settings {
         category: "signals"
         property alias page: control.currentPage
+        property alias custom: textInput.text
     }
     Component.onCompleted: {
         for(var i=0;i<buttonGroup.buttons.length;++i){

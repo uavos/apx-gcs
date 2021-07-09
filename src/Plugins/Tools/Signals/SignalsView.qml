@@ -123,23 +123,10 @@ Item {
         function appendData()
         {
             var t=time+1;
+            var v=0
+            var fact={}
             for(var i=0;i<facts.length;++i){
-                if(i>=chartView.count)addFactSeries(facts[i])
-                var s=chartView.series(i)
-                var v=facts[i].value
-                if(!isFinite(v))v=0
-                s.append(t,v);
-                sdata.push(v)
-                //instant rescale - grow
-                if(axisY.max<v){
-                    axisY.max=v+dataPadding;
-                }
-                if(axisY.min>v){
-                    axisY.min=v-dataPadding;
-                }
-                //remove old
-                var cnt=samples
-                if(s.count>cnt) s.removePoints(0,s.count-cnt)
+                appendDataValue(facts[i],t,i)
             }
             //calc scale - reduce
             if((t-timeRescale)>21){
@@ -169,6 +156,27 @@ Item {
             }
             time=t
             dataExist=true
+        }
+
+        function appendDataValue(fact, t, i){
+            if(i>=chartView.count)addFactSeries(fact)
+            var s=chartView.series(i)
+
+            var value=fact.value!=undefined?fact.value:eval(fact.name)
+
+            if(!isFinite(value))value=0
+            s.append(t,value);
+            sdata.push(value)
+            //instant rescale - grow
+            if(axisY.max<value){
+                axisY.max=value+dataPadding;
+            }
+            if(axisY.min>value){
+                axisY.min=value-dataPadding;
+            }
+            //remove old
+            var cnt=samples
+            if(s.count>cnt) s.removePoints(0,s.count-cnt)
         }
 
         function addFactSeries(fact)
