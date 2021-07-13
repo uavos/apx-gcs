@@ -163,10 +163,10 @@ class PlotLegend : public QwtLegend
 public:
     PlotLegend(QWidget *parent = 0);
     QWidget *createWidget(const QwtLegendData &data) const;
-    void clearLegenedLabes();
+    void clearLegenedLabels();
 
 private:
-    QList<QwtLegendLabel*> legendLabes;
+    QList<QwtLegendLabel*> legendLabels;
     QLineEdit* filter_le = nullptr;
 
 private slots:

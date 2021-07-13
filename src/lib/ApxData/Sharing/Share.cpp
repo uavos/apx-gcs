@@ -94,10 +94,7 @@ void Share::exportTriggered()
 
     QFileInfo fi(dlg.selectedFiles().first());
 
-    QSettings st;
-    st.beginGroup("plots");
-    st.setValue(QString("DefaultPath"), dlg.directory().absolutePath());
-    st.endGroup();
+    QSettings().setValue(QString("DefaultExportPath"), dlg.directory().absolutePath());
     _defaultDir.setPath(dlg.directory().absolutePath());
 
     fmt.clear();

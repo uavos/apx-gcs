@@ -188,7 +188,7 @@ void TelemetryPlot::resetData()
 
 void TelemetryPlot::resetLegend()
 {
-    static_cast<PlotLegend*>(legend)->clearLegenedLabes();
+    static_cast<PlotLegend*>(legend)->clearLegenedLabels();
 }
 
 void TelemetryPlot::restoreSettings()
@@ -683,23 +683,23 @@ QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
     w->setItemMode(defaultItemMode());
     w->setSpacing(3);
     w->setMargin(0);
-    const_cast<PlotLegend*>(this)->legendLabes.append(w);
+    const_cast<PlotLegend*>(this)->legendLabels.append(w);
 
     connect(w, SIGNAL(clicked()), this, SLOT(itemClicked()));
     connect(w, SIGNAL(checked(bool)), this, SLOT(itemChecked(bool)));
     return w;
 }
 
-void PlotLegend::clearLegenedLabes()
+void PlotLegend::clearLegenedLabels()
 {
-    legendLabes.clear();
+    legendLabels.clear();
 }
 
 void PlotLegend::onFilter(QString text)
 {
     QLayout *contentsLayout = contentsWidget()->layout();
-    auto it = legendLabes.begin();
-    for (; it != legendLabes.constEnd(); ++it) {
+    auto it = legendLabels.begin();
+    for (; it != legendLabels.constEnd(); ++it) {
         QwtLegendLabel* label = *it;
         if (label) {
             contentsLayout->removeWidget(label);
@@ -707,8 +707,8 @@ void PlotLegend::onFilter(QString text)
         }
     }
 
-    it = legendLabes.begin();
-    for (; it != legendLabes.constEnd(); ++it) {
+    it = legendLabels.begin();
+    for (; it != legendLabels.constEnd(); ++it) {
         QwtLegendLabel* label = *it;
         if (label && label->text().text().contains(text.replace(" ", ""))) {
             if (contentsLayout->indexOf(label) == -1) {

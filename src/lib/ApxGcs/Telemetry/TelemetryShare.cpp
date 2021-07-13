@@ -38,11 +38,9 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     , _telemetry(telemetry)
 {
     QSettings st;
-    st.beginGroup("plots");
-    if (st.contains("DefaultPath")) {
-        _defaultDir.setPath(st.value("DefaultPath").toString());
+    if (st.contains("DefaultExportPath")) {
+        _defaultDir.setPath(st.value("DefaultExportPath").toString());
     }
-    st.endGroup();
 
     _exportFormats << "csv";
 
