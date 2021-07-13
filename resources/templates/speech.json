@@ -46,6 +46,10 @@
             "say": "taxiway changed"
         },
         {
+            "msg": "position control hover",
+            "say": "hold position"
+        },
+        {
             "_comment": "# ------ status flags -----------------"
         },
         {

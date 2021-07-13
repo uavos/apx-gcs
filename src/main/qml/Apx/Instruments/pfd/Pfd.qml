@@ -463,11 +463,11 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_reg_pos
                 show: ui.test || (status != reg_pos_direct && isValid)
-                blinking: false
+                blinking: status===reg_pos_hover && m_reg_spd
                 text: fact.text
                 type: status===reg_pos_off
                       ? CleanText.White
-                      : (status===reg_pos_hdg || status===reg_pos_hover)
+                      : (status===reg_pos_hdg || blinking)
                         ? CleanText.Yellow
                         : CleanText.Green
             }
