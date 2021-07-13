@@ -151,7 +151,7 @@ Rectangle {
             }
             SignalButton {
                 text: "Ctr"
-                values: [ mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.eng.thr, mandala.ctr.att.rud, mandala.ctr.att.col, mandala.ctr.str.rud ]
+                values: [ mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.att.rud, mandala.ctr.eng.thr, mandala.ctr.eng.prop, mandala.ctr.str.rud ]
             }
             SignalButton {
                 text: "RC"
