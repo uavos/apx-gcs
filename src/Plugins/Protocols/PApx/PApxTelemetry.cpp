@@ -26,6 +26,8 @@
 
 #include <xbus/telemetry/TelemetryValuePack.h>
 
+// TODO cache datasets in DB
+
 PApxTelemetry::PApxTelemetry(PApxVehicle *parent)
     : PTelemetry(parent)
     , _req(parent)
