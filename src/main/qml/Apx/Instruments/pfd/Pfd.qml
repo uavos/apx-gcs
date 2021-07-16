@@ -65,7 +65,7 @@ Item {
     readonly property var f_air_temp: mandala.sns.air.temp
     readonly property var f_rt: mandala.sns.aux.rt
 
-    readonly property var f_rpm: mandala.sns.eng.rpm
+    readonly property var f_rpm: mandala.est.eng.rpm
     readonly property var f_airbrk: mandala.ctr.wing.airbrk
     readonly property var f_tecs: mandala.cmd.pos.tecs
 
@@ -76,7 +76,8 @@ Item {
 
     readonly property var f_bat_status: mandala.sns.bat.status
 
-    readonly property var f_eng_status: mandala.sns.eng.status
+    readonly property var f_eng_status: mandala.est.eng.status
+    readonly property var f_eng_mode: mandala.cmd.eng.mode
     readonly property var f_eng_tc: mandala.sns.eng.tc
     readonly property var f_eng_starter: mandala.ctr.eng.starter
 
@@ -660,7 +661,7 @@ Item {
             NumberText {
                 id: rpm_number
                 readonly property int status: f_eng_status.value
-                readonly property bool ok: status > eng_status_unknown
+                readonly property bool ok: status > eng_status_idle
                 readonly property bool warn: status == eng_status_warning
                 readonly property bool err: status > eng_status_warning
                 visible: ui.test || ok || err || value>0
@@ -690,16 +691,23 @@ Item {
                           : CleanText.Clean
                     blinking: v > eng_tc_warning
                 }
-                BlinkingText { // engine status
-                    property int v: fact.value
-                    property bool ctr: f_eng_starter.value>0
-                    visible: ui.test || ctr || (v > eng_status_unknown && v < eng_status_running)
+                BlinkingText { // engine cmd mode
+                    property int mode: fact.value
                     height: pfdScene.txtHeight*0.7
-                    fact: f_eng_status
-                    type: ctr
-                          ? (v == eng_status_start ? CleanText.Green : CleanText.Red )
-                          : CleanText.Clean
-                    blinking: ctr
+                    fact: f_eng_mode
+                    readonly property bool starter: f_eng_starter.value>0
+                    readonly property int status: f_eng_status.value
+                    blinking: starter
+                    visible: ui.test 
+                        || starter 
+                        || mode >= eng_mode_start 
+                        || (status!=eng_status_ok && mode>eng_mode_auto)
+
+                    type: starter
+                          ? (mode == eng_mode_start ? CleanText.Green : CleanText.Red )
+                          : status >= eng_status_warning || (status!=eng_status_ok && mode>eng_mode_auto)
+                            ? CleanText.Red
+                            : CleanText.Clean
                 }
             }
 

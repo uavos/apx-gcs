@@ -54,12 +54,12 @@ Fact {
             active: mandala.ctr.eng.starter.value;
             onValueChanged: {
                 if(value){
-                    mandala.sns.eng.status.value = eng_status_start
+                    mandala.cmd.eng.mode.value = eng_mode_start
                 }else{
                     mandala.ctr.eng.starter.value = false;
                 }
             }
-            property bool v: mandala.sns.eng.status.value === eng_status_start
+            property bool v: mandala.cmd.eng.mode.value === eng_mode_start
             onVChanged: value=v
         }
     }
