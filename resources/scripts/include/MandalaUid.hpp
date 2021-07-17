@@ -103,14 +103,12 @@ typedef enum {
     las_status_holdon = 1,
     las_status_cancel = 2,
 
-    // sns.env.eng.status
-    eng_status_unknown = 0,
-    eng_status_ready = 1,
-    eng_status_start = 2,
-    eng_status_stop = 3,
-    eng_status_running = 4,
-    eng_status_warning = 5,
-    eng_status_failure = 6,
+    // sns.env.eng.health
+    eng_health_unknown = 0,
+    eng_health_idle = 1,
+    eng_health_running = 2,
+    eng_health_warning = 3,
+    eng_health_failure = 4,
 
     // sns.env.eng.tc
     eng_tc_unknown = 0,
@@ -119,10 +117,6 @@ typedef enum {
     eng_tc_warning = 3,
     eng_tc_critical = 4,
     eng_tc_failure = 5,
-
-    // sns.env.eng.block
-    eng_block_off = 0,
-    eng_block_on = 1,
 
     // sns.env.gbox.status
     gbox_status_unknown = 0,
@@ -171,6 +165,10 @@ typedef enum {
     com_status_busy = 3,
     com_status_warning = 4,
     com_status_failure = 5,
+
+    // sns.env.aux.srv
+    aux_srv_off = 0,
+    aux_srv_on = 1,
 
     // sns.env.aux.gear
     aux_gear_down = 0,
@@ -409,6 +407,12 @@ typedef enum {
     wind_status_unknown = 0,
     wind_status_available = 1,
 
+    // est.env.eng.status
+    eng_status_idle = 0,
+    eng_status_ok = 1,
+    eng_status_warning = 2,
+    eng_status_failure = 3,
+
 
     // cmd.nav.proc.mode
     proc_mode_EMG = 0,
@@ -499,6 +503,11 @@ typedef enum {
     // cmd.nav.ahrs.hagl
     ahrs_hagl_no = 0,
     ahrs_hagl_yes = 1,
+
+    // cmd.nav.eng.mode
+    eng_mode_auto = 0,
+    eng_mode_start = 1,
+    eng_mode_spin = 2,
 
     // cmd.nav.eng.cut
     eng_cut_off = 0,
@@ -700,20 +709,19 @@ namespace sns
     {
         namespace eng
         {
-            enum { status = 0x101 };
-            enum { rpm = 0x102 };
-            enum { torque = 0x103 };
-            enum { temp = 0x104 };
-            enum { voltage = 0x105 };
-            enum { current = 0x106 };
-            enum { ot = 0x107 };
-            enum { egt = 0x108 };
-            enum { egtd = 0x109 };
-            enum { op = 0x10a };
-            enum { map = 0x10b };
-            enum { iap = 0x10c };
+            enum { rpm = 0x101 };
+            enum { torque = 0x102 };
+            enum { temp = 0x103 };
+            enum { ot = 0x104 };
+            enum { egt = 0x105 };
+            enum { egtd = 0x106 };
+            enum { op = 0x107 };
+            enum { map = 0x108 };
+            enum { iap = 0x109 };
+            enum { voltage = 0x10a };
+            enum { current = 0x10b };
+            enum { health = 0x10c };
             enum { tc = 0x10d };
-            enum { block = 0x10e };
         };
         namespace gbox
         {
@@ -778,9 +786,10 @@ namespace sns
         };
         namespace aux
         {
-            enum { rt = 0x181 };
-            enum { gear = 0x182 };
-            enum { fgear = 0x183 };
+            enum { srv = 0x181 };
+            enum { rt = 0x182 };
+            enum { gear = 0x183 };
+            enum { fgear = 0x184 };
         };
         namespace ers
         {
@@ -823,7 +832,6 @@ namespace ctr
             enum { ail = 0x201 };
             enum { elv = 0x202 };
             enum { rud = 0x203 };
-            enum { col = 0x204 };
         };
         namespace eng
         {
@@ -1061,22 +1069,19 @@ namespace est
             enum { speed = 0x512 };
             enum { heading = 0x513 };
         };
-        namespace ats
+        namespace eng
         {
-            enum { roll = 0x521 };
-            enum { pitch = 0x522 };
-            enum { yaw = 0x523 };
+            enum { status = 0x521 };
+            enum { rpm = 0x522 };
+            enum { drpm = 0x523 };
         };
-        namespace cam
+        namespace ats
         {
             enum { roll = 0x531 };
             enum { pitch = 0x532 };
             enum { yaw = 0x533 };
-            enum { lat = 0x534 };
-            enum { lon = 0x535 };
-            enum { hmsl = 0x536 };
         };
-        namespace turret
+        namespace cam
         {
             enum { roll = 0x541 };
             enum { pitch = 0x542 };
@@ -1085,39 +1090,48 @@ namespace est
             enum { lon = 0x545 };
             enum { hmsl = 0x546 };
         };
+        namespace turret
+        {
+            enum { roll = 0x551 };
+            enum { pitch = 0x552 };
+            enum { yaw = 0x553 };
+            enum { lat = 0x554 };
+            enum { lon = 0x555 };
+            enum { hmsl = 0x556 };
+        };
         namespace usr
         {
-            enum { u1 = 0x551 };
-            enum { u2 = 0x552 };
-            enum { u3 = 0x553 };
-            enum { u4 = 0x554 };
-            enum { u5 = 0x555 };
-            enum { u6 = 0x556 };
-            enum { u7 = 0x557 };
-            enum { u8 = 0x558 };
-            enum { ub1 = 0x559 };
-            enum { ub2 = 0x55a };
-            enum { ub3 = 0x55b };
-            enum { ub4 = 0x55c };
-            enum { ub5 = 0x55d };
-            enum { ub6 = 0x55e };
-            enum { ub7 = 0x55f };
+            enum { u1 = 0x561 };
+            enum { u2 = 0x562 };
+            enum { u3 = 0x563 };
+            enum { u4 = 0x564 };
+            enum { u5 = 0x565 };
+            enum { u6 = 0x566 };
+            enum { u7 = 0x567 };
+            enum { u8 = 0x568 };
+            enum { ub1 = 0x569 };
+            enum { ub2 = 0x56a };
+            enum { ub3 = 0x56b };
+            enum { ub4 = 0x56c };
+            enum { ub5 = 0x56d };
+            enum { ub6 = 0x56e };
+            enum { ub7 = 0x56f };
         };
         namespace haps
         {
-            enum { shape = 0x561 };
-            enum { cshape = 0x562 };
-            enum { roll = 0x563 };
-            enum { roll1 = 0x564 };
-            enum { roll2 = 0x565 };
-            enum { pitch1 = 0x566 };
-            enum { pitch2 = 0x567 };
-            enum { cpitch1 = 0x568 };
-            enum { cpitch2 = 0x569 };
-            enum { spd1 = 0x56a };
-            enum { spd2 = 0x56b };
-            enum { ail1 = 0x56c };
-            enum { ail2 = 0x56d };
+            enum { shape = 0x571 };
+            enum { cshape = 0x572 };
+            enum { roll = 0x573 };
+            enum { roll1 = 0x574 };
+            enum { roll2 = 0x575 };
+            enum { pitch1 = 0x576 };
+            enum { pitch2 = 0x577 };
+            enum { cpitch1 = 0x578 };
+            enum { cpitch2 = 0x579 };
+            enum { spd1 = 0x57a };
+            enum { spd2 = 0x57b };
+            enum { ail1 = 0x57c };
+            enum { ail2 = 0x57d };
         };
     };
 };
@@ -1180,9 +1194,10 @@ namespace cmd
         };
         namespace eng
         {
-            enum { rpm = 0x651 };
-            enum { cut = 0x652 };
-            enum { ovr = 0x653 };
+            enum { mode = 0x651 };
+            enum { rpm = 0x652 };
+            enum { cut = 0x653 };
+            enum { ovr = 0x654 };
         };
         namespace rc
         {
