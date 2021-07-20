@@ -277,6 +277,7 @@ void TelemetryFrame::updateData()
     });
 
     ctr_fields.clear();
+    plot->resetLegend();
     QHash<quint64, QwtPlotCurve *> cmap;
     for (auto fid : fidlist) {
         //map a fact

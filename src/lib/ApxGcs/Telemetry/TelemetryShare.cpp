@@ -37,6 +37,11 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
             flags)
     , _telemetry(telemetry)
 {
+    QSettings st;
+    if (st.contains("DefaultExportPath")) {
+        _defaultDir.setPath(st.value("DefaultExportPath").toString());
+    }
+
     _exportFormats << "csv";
 
     QString sect = tr("Queue");

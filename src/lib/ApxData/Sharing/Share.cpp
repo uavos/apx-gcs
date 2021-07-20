@@ -94,6 +94,9 @@ void Share::exportTriggered()
 
     QFileInfo fi(dlg.selectedFiles().first());
 
+    QSettings().setValue(QString("DefaultExportPath"), dlg.directory().absolutePath());
+    _defaultDir.setPath(dlg.directory().absolutePath());
+
     fmt.clear();
     for (auto i : _exportFormats) {
         if (i != fi.suffix())

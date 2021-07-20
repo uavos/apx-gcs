@@ -54,6 +54,7 @@ public:
                            const QPen &pen);
 
     void resetData();
+    void resetLegend();
 
     void showCurves(bool on = true, const QStringList &names = QStringList(), bool toggle = false);
 
@@ -158,7 +159,16 @@ protected:
 
 class PlotLegend : public QwtLegend
 {
+    Q_OBJECT
 public:
     PlotLegend(QWidget *parent = 0);
     QWidget *createWidget(const QwtLegendData &data) const;
+    void clearLegenedLabels();
+
+private:
+    QList<QwtLegendLabel*> legendLabels;
+    QLineEdit* filter_le = nullptr;
+
+private slots:
+    void onFilter(QString);
 };
