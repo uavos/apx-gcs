@@ -37,9 +37,10 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
             flags)
     , _telemetry(telemetry)
 {
-    QSettings st;
-    if (st.contains("DefaultExportPath")) {
-        _defaultDir.setPath(st.value("DefaultExportPath").toString());
+    QSettings sx;
+    if (sx.contains("DefaultExportPath")) {
+        _defaultDir.setPath(
+            sx.value(QString("ShareExportPath_%1").arg(_exportFormats.first())).toString());
     }
 
     _exportFormats << "csv";
@@ -97,8 +98,13 @@ bool TelemetryShare::exportRequest(QString format, QString fileName)
         apxMsgW() << tr("Missing data in database");
         return false;
     }
-    auto title = QFileInfo(fileName).completeBaseName();
+    auto fi = QFileInfo(fileName);
+
+    QSettings().setValue(QString("ShareExportPath_%1").arg(_exportFormats.first()),
+                         fi.dir().absolutePath());
+
     //add to queue
+    auto title = fi.completeBaseName();
     Fact *f = new Fact(nullptr, title, title, fileName);
     f->setValue(key);
     f->setParentFact(qexp);
