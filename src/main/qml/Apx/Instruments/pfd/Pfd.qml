@@ -92,6 +92,7 @@ Item {
     readonly property var f_ref_hmsl: mandala.est.ref.hmsl
 
     readonly property var f_reg_pos: mandala.cmd.reg.pos
+    readonly property bool m_wpt_status: mandala.est.wpt.status.value
 
     readonly property bool m_reg_spd: mandala.cmd.reg.spd.value
     readonly property bool m_reg_alt: mandala.cmd.reg.alt.value
@@ -463,10 +464,10 @@ Item {
             StatusFlag { // pos control mode
                 height: pfdScene.flagHeight
                 fact: f_reg_pos
-                show: ui.test || (status != reg_pos_direct && isValid)
+                show: ui.test || ((status != reg_pos_direct || !m_wpt_status) && isValid)
                 blinking: status===reg_pos_hover && m_reg_spd
                 text: fact.text
-                type: status===reg_pos_off
+                type: status===reg_pos_off || !m_wpt_status
                       ? CleanText.White
                       : (status===reg_pos_hdg || blinking)
                         ? CleanText.Yellow

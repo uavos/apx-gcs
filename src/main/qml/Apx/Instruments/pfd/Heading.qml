@@ -31,7 +31,7 @@ Item {
     readonly property var f_yaw: mandala.est.att.yaw
     readonly property var f_bearing: mandala.est.pos.bearing
     readonly property var f_cmd_bearing: mandala.cmd.pos.bearing
-    readonly property var f_thdg: mandala.est.wpt.thdg
+    //readonly property var f_thdg: mandala.est.wpt.thdg
     readonly property var f_adj: mandala.cmd.proc.adj
 
     readonly property var f_nomag: mandala.cmd.ahrs.nomag
@@ -157,7 +157,7 @@ Item {
             ToolTipArea { text: f_cmd_bearing.descr }
         }
         //rw hdg bug arrow
-        PfdImage {
+        /*PfdImage {
             id: hdg_rw_bug
             visible: isTrack
             elementName: "hdg-rw-bug"
@@ -172,7 +172,7 @@ Item {
             height: bottomHeight
             width: elementBounds.width*height/elementBounds.height
             ToolTipArea { text: f_thdg.descr }
-        }
+        }*/
         //center number box
         PfdImage {
             id: hdg_box
