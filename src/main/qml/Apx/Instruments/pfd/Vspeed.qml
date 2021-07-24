@@ -38,6 +38,8 @@ ControlArea {
 
     readonly property real textSize: vsi_scale.height*0.1
 
+    readonly property bool m_reg_alt: mandala.cmd.reg.alt.value
+
 
     mvar: mandala.cmd.rc.thr   //ControlArea
     //speed: 0.8
@@ -122,10 +124,11 @@ ControlArea {
         ToolTipArea {text: f_vse.descr}
     }
 
-    PfdImage {
+    PfdImage { 
         id: vsi_waypoint
         elementName: "vsi-waypoint"
         //smooth: ui.antialiasing
+        visible: m_reg_alt
         border: 1
         width: elementBounds.width*vsi_window.scaleFactor+2
         height: elementBounds.height*vsi_window.scaleFactor+2

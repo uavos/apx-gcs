@@ -95,7 +95,7 @@ Item {
     readonly property bool m_wpt_status: mandala.est.wpt.status.value
 
     readonly property bool m_reg_spd: mandala.cmd.reg.spd.value
-    readonly property bool m_reg_alt: mandala.cmd.reg.alt.value
+    readonly property int m_reg_alt: mandala.cmd.reg.alt.value
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
@@ -425,7 +425,7 @@ Item {
                 anchors.top: parent.top
                 anchors.bottom: altitude_window.top
                 anchors.topMargin: 3
-                enabled: m_reg_alt
+                enabled: m_reg_alt==reg_alt_on
             }
             Row {
                 spacing: pfdScene.txtHeight/10
