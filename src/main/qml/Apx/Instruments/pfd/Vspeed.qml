@@ -39,7 +39,11 @@ ControlArea {
     readonly property real textSize: vsi_scale.height*0.1
 
     readonly property bool m_reg_alt: mandala.cmd.reg.alt.value
+    readonly property bool m_reg_spd: mandala.cmd.reg.spd.value
+    readonly property real m_tecs: mandala.cmd.pos.tecs.value
 
+
+    readonly property bool show_vsi: m_reg_alt||(m_reg_spd && m_tecs<1)
 
     mvar: mandala.cmd.rc.thr   //ControlArea
     //speed: 0.8
@@ -128,7 +132,7 @@ ControlArea {
         id: vsi_waypoint
         elementName: "vsi-waypoint"
         //smooth: ui.antialiasing
-        visible: m_reg_alt
+        visible: show_vsi
         border: 1
         width: elementBounds.width*vsi_window.scaleFactor+2
         height: elementBounds.height*vsi_window.scaleFactor+2

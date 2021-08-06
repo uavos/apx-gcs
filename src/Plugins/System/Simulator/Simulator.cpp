@@ -71,9 +71,8 @@ Simulator::Simulator(Fact *parent)
                      tr("Command"),
                      tr("Command line arguments"),
                      Text | PersistentValue);
-    f_cmd->setDefaultValue(
-        "--window=200x200 --no_sound --no_fshaders --no_vshaders --no_glsl --no_sprites "
-        "--no_aniso_filtering --no_pixel_counters --no_pbos --no_fbos --no_vbos");
+    f_cmd->setDefaultValue("--window=200x200 --no_sound --no_joysticks --disable_networking "
+                           "--no_aniso_filtering --limited_glsl --no_threaded_ogl");
 
     //shiva
     pShiva.setProgram(AppDirs::firmware().absoluteFilePath("sim/" + sim_executable));
