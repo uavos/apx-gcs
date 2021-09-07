@@ -24,6 +24,8 @@ import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.3
 
+import Apx.Common 1.0
+
 RowLayout {
     id: editor
     //Layout.fillWidth: true
@@ -36,7 +38,7 @@ RowLayout {
     Text {
         Layout.fillHeight: true
         verticalAlignment: Qt.AlignVCenter
-        font.pixelSize: control.valueSize
+        font: apx.font(factButton.valueSize)
         color: Material.color(Material.Green)
         text: scText.nativeText
     }
@@ -50,7 +52,7 @@ RowLayout {
         topPadding: 0
         bottomPadding: 0
         //height: MenuStyle.itemSize
-        font.pixelSize: control.valueSize
+        font: apx.font_narrow(factButton.valueSize)
         color: _textInput.activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
         placeholderText: qsTr("Key Sequence")
         text: fact.text
