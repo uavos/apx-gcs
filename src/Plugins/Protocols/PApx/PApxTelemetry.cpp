@@ -32,17 +32,20 @@ PApxTelemetry::PApxTelemetry(PApxVehicle *parent)
     : PTelemetry(parent)
     , _req(parent)
 {
-    connect(this, &Fact::enabledChanged, this, &PApxTelemetry::updateStatus);
     connect(this, &Fact::triggered, this, [this]() { decoder.reset(); });
 }
 
 void PApxTelemetry::updateStatus()
 {
+    QString s;
     if (!enabled()) {
-        setValue(QString("RESYNC %1").arg(decoder.fmt_cnt()));
-        return;
+        s = QString("RESYNC %1...").arg(_request_format_part);
+    } else {
+        s = QString("%1 slots, %2 Hz")
+                .arg(decoder.slots_cnt())
+                .arg(1000.0 / decoder.dt_ms(), 0, 'f', 1);
     }
-    setValue(QString("%1 slots, %2 Hz").arg(decoder.slots_cnt()).arg(1000.0 / _dt_ms, 0, 'f', 1));
+    setValue(s);
 }
 
 void PApxTelemetry::report()
@@ -89,50 +92,49 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
     case mandala::cmd::env::telemetry::format::uid:
         trace()->data(stream.payload());
         if (pid.pri == xbus::pri_response) {
-            if (stream.available() < (sizeof(uint8_t) * 2))
-                break;
-            uint8_t part, parts;
-            stream >> part;
-            stream >> parts;
             _request_format_part = 0;
-            //qDebug() << "format:" << part << parts << stream.available();
-            if (!decoder.decode_format(part, parts, stream)) {
-                qWarning() << decoder.valid() << decoder.slots_cnt();
+
+            xbus::telemetry::format_resp_hdr_s h{};
+            if (!decoder.decode_format(stream, &h)) {
+                qWarning() << decoder.valid() << decoder.slots_cnt() << h.part << h.pcnt
+                           << stream.available();
                 break;
             }
+            //qDebug() << "format:" << h.part << h.total << stream.available();
 
             if (decoder.valid()) {
                 // decoder not yet valid
                 return true;
             }
-            if (parts <= 1) {
+            if (h.pcnt <= 1) {
                 // some already available parts are downloaded
                 return true;
             }
 
-            if (++part >= parts) {
+            if (++h.part >= h.pcnt) {
                 // extra parts error?
-                qWarning() << "format done";
+                qWarning() << "format done" << h.part << h.pcnt;
                 _request_format_part = 0;
                 break;
             }
-            _request_format_part = part;
-            request_format(part);
+            _request_format_part = h.part;
+            request_format(h.part);
         }
         return true; // anyway accept the packet
 
     case mandala::cmd::env::telemetry::data::uid: // telemetry data stream
-        if (stream.available() < xbus::telemetry::stream_s::psize()) {
+        if (stream.available() < xbus::telemetry::hdr_s::psize()) {
             qWarning() << stream.available();
             break;
         }
-        trace()->data(stream.toByteArray(stream.pos(), 4));     // ts
-        trace()->data(stream.toByteArray(stream.pos() + 4, 1)); // hash
-        trace()->data(stream.toByteArray(stream.pos() + 5, 1)); // fmt
-        trace()->data(stream.toByteArray(stream.pos() + 6, stream.available() - 6));
+        trace()->data(stream.toByteArray(stream.pos(), 2));     // ts
+        trace()->data(stream.toByteArray(stream.pos() + 2, 1)); // hash
+        trace()->data(stream.toByteArray(stream.pos() + 3, stream.available() - 3));
 
-        if (!unpack(pid.seq, stream))
+        if (!unpack(pid.seq, stream)) {
+            _vehicle->setStreamType(PVehicle::DATA);
             break;
+        }
         return true;
     }
     //error
@@ -151,47 +153,49 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
     bool valid = decoder.valid();
 
     // manage timestamp wraps
-    uint32_t seq = decoder.seq();
-    uint32_t dt_ms = decoder.dt_ms();
-    uint32_t dseq = (seq - _seq_s) & 0x7FFFFFFF;
 
-    bool dt_ok = _dt_ms == dt_ms;
-    _dt_ms = dt_ms;
+    if (!_timer.isValid()) {
+        decoder.reset_timestamp();
+    } else if (decoder.timestamp_ms() > 0) {
+        qint64 elapsed = _timer.elapsed() / 1000;
+        qint64 dt = decoder.dt_ms() / 1000;
+        qint64 latency_sec = elapsed > dt ? elapsed - dt : dt - elapsed;
 
-    bool seq_ok = seq > _seq_s;
-    _seq_s = seq;
-
-    qint64 elapsed = _ts_time.isValid() ? _ts_time.elapsed() : 0;
-    _ts_time.start();
-
-    if (!dt_ok || !seq_ok || abs(elapsed - dseq * dt_ms) > (10 * 1000)) {
-        _seq = 0;
-        _timestamp_ms = 0;
-    } else {
-        _seq += dseq;
-        _timestamp_ms = _seq * dt_ms;
+        if (latency_sec > 10 * 60) {
+            // Max 10 minutes latency.
+            // Could be due to datalink queue delay.
+            apxMsgW() << tr("Telemetry stream latency %1 sec for %2")
+                             .arg(latency_sec)
+                             .arg(parent()->title());
+            decoder.reset_timestamp();
+        }
     }
+    _timer.start();
 
-    //qDebug() << decoder.seq();
+    auto timestamp = decoder.timestamp_ms();
 
     // report and validate
     if (enabled() && !valid) {
         apxMsgW() << tr("Telemetry stream reset for %1").arg(parent()->title());
+        qDebug() << "ts" << timestamp;
     }
 
     if (!enabled() && valid) {
         apxMsg() << tr("Telemetry stream valid from %1").arg(parent()->title());
-        // TelemetryFormat format;
-        // for (size_t i = 0; i < decoder.slots_cnt(); ++i) {
-        //     format.append(decoder.dec_slots().fields[i].pid);
-        // }
-        // emit formatUpdated(format);
+        qDebug() << "ts" << timestamp;
     }
 
-    setEnabled(valid);
+    bool update_status = enabled() != valid || !valid || !timestamp || _dt_ms != decoder.dt_ms();
 
-    if (!valid || !dt_ok) {
+    setEnabled(valid);
+    _dt_ms = decoder.dt_ms();
+
+    if (update_status) {
         updateStatus();
+    }
+
+    if (valid && !timestamp) {
+        apxMsg() << tr("Telemetry stream timestamp reset from %1").arg(parent()->title());
     }
 
     //qDebug() << valid << upd;
@@ -218,7 +222,7 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
         values.insert(f.pid.uid, raw_value(&value, flags.type));
     }
 
-    emit telemetryData(values, _timestamp_ms);
+    emit telemetryData(values, timestamp);
     return true;
 }
 
@@ -242,11 +246,14 @@ QVariant PApxTelemetry::raw_value(const void *src, mandala::type_id_e type)
 
 void PApxTelemetry::request_format(uint8_t part)
 {
-    //return;
+    // return;
+    // when requests are disabled - the format is received silently through COBS stream
+
     //qDebug() << part;
     _request_format_time.start();
     _req.request(mandala::cmd::env::telemetry::format::uid);
-    _req << part;
+    xbus::telemetry::format_req_s r{xbus::telemetry::fmt_version, part};
+    r.write(&_req);
     trace()->block(QString::number(part));
     _req.send();
 }

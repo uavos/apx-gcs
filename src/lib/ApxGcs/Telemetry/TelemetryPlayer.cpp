@@ -407,10 +407,6 @@ void TelemetryPlayer::next()
         }
 
         //update states
-        if (updCnt) {
-            vehicle->telemetryData();
-            //qDebug()<<updCnt<<tNext;
-        }
         if (_time != t) {
             _time = t;
             blockTimeChange = true;

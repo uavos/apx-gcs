@@ -156,24 +156,18 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
             break;
 
         TelemetryDB *db = Database::instance()->telemetry;
-        TelemetryDB::TelemetryFieldsMap fieldsMap = db->fieldsMap();
-        TelemetryDB::TelemetryFieldsAliases fieldsAliases = db->fieldsAliases();
 
-        //construct fieldID map
+        //construct fields sequence map for stream decoder, used for 'D' tag
         QList<quint64> recFieldsMap;
         for (int i = 0; i < fields.size(); ++i)
             recFieldsMap.append(0);
         for (int i = 0; i < fields.size(); ++i) {
-            const QString &s = fields.at(i);
-            if (fieldsMap.values().contains(s)) {
-                recFieldsMap[i] = fieldsMap.key(s);
+            auto field_key = db->field_key(fields.at(i));
+            if (!field_key) {
+                qWarning() << "ignored field" << fields.at(i) << i;
                 continue;
             }
-            if (fieldsAliases.contains(s)) {
-                recFieldsMap[i] = fieldsMap.key(fieldsAliases.value(s));
-                continue;
-            }
-            qWarning() << "ignored field" << s;
+            recFieldsMap[i] = field_key;
         }
 
         //read <data>
@@ -207,11 +201,11 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
             }
             if (tag == "U") {
                 QString name = xml.attributes().value("name").toString();
-                quint64 fieldID = fieldsMap.key(name);
-                if (!fieldID && fieldsAliases.contains(name))
-                    fieldID = fieldsMap.key(fieldsAliases.value(name));
-                if (fieldID) {
-                    dbSaveData(t, fieldID, xml.readElementText().toDouble(), true);
+                auto uid = db->mandala_uid(name);
+                if (uid) {
+                    PBase::Values values;
+                    values.insert(uid, xml.readElementText().toDouble());
+                    dbSaveData(t, values, true);
                 } else {
                     qWarning() << "ignored field" << name;
                 }
@@ -327,13 +321,9 @@ quint64 TelemetryImport::dbSaveID(
     req.execSynchronous();
     return req.telemetryID;
 }
-void TelemetryImport::dbSaveData(quint64 time_ms, quint64 fieldID, double value, bool uplink)
+void TelemetryImport::dbSaveData(quint64 time_ms, PBase::Values values, bool uplink)
 {
-    DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(telemetryID,
-                                                               time_ms,
-                                                               fieldID,
-                                                               value,
-                                                               uplink);
+    DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(telemetryID, time_ms, values, uplink);
     req->exec();
 }
 void TelemetryImport::dbSaveEvent(

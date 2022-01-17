@@ -22,6 +22,8 @@
 #include "TelemetryReqWrite.h"
 #include "Database.h"
 
+#include <Mandala/Mandala.h>
+
 bool DBReqTelemetryNewRecord::run(QSqlQuery &query)
 {
     query.prepare(
@@ -46,26 +48,34 @@ bool DBReqTelemetryWriteData::run(QSqlQuery &query)
         qWarning() << "missing telemetryID";
         return false;
     }
-    if (!fieldID) {
-        qWarning() << "missing fieldID";
-        return false;
-    }
-    if (uplink) {
-        query.prepare("INSERT INTO TelemetryUplink"
-                      "(telemetryID, fieldID, time, value) "
-                      "VALUES(?, ?, ?, ?)");
-    } else {
-        query.prepare("INSERT INTO TelemetryDownlink"
-                      "(telemetryID, fieldID, time, value) "
-                      "VALUES(?, ?, ?, ?)");
-    }
-    query.addBindValue(telemetryID);
-    query.addBindValue(fieldID);
-    query.addBindValue(t);
-    query.addBindValue(value);
-    if (!query.exec()) {
-        qWarning() << telemetryID << fieldID;
-        return false;
+
+    auto d = static_cast<TelemetryDB *>(db);
+
+    for (auto uid : _values.keys()) {
+        auto fkey = d->field_key(uid);
+        if (!fkey) {
+            qWarning() << "missing mandala uid" << uid;
+            continue;
+        }
+        auto value = _values.value(uid);
+
+        if (uplink) {
+            query.prepare("INSERT INTO TelemetryUplink"
+                          "(telemetryID, fieldID, time, value) "
+                          "VALUES(?, ?, ?, ?)");
+        } else {
+            query.prepare("INSERT INTO TelemetryDownlink"
+                          "(telemetryID, fieldID, time, value) "
+                          "VALUES(?, ?, ?, ?)");
+        }
+        query.addBindValue(telemetryID);
+        query.addBindValue(fkey);
+        query.addBindValue(t);
+        query.addBindValue(value);
+        if (!query.exec()) {
+            qWarning() << telemetryID << fkey;
+            return false;
+        }
     }
     return true;
 }

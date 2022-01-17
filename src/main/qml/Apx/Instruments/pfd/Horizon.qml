@@ -70,7 +70,6 @@ Item {
         horizon_scale.height/horizon_scale.elementBounds.height
     property double rollDeg2img: width*0.4/45
 
-    opacity: ui.effects?((apx.datalink.valid && !(vehicle.streamType===APX.PVehicle.XPDR||vehicle.streamType===APX.PVehicle.TELEMETRY))?0.7:1):1
 
     Item{
         id: horizon_bg

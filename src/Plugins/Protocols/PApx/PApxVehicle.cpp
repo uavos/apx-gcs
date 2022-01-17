@@ -19,6 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include <App/AppGcs.h>
+
 #include "PApxVehicle.h"
 
 #include "PApxData.h"
@@ -43,6 +46,8 @@ PApxVehicle::PApxVehicle(PApx *parent,
     m_telemetry = new PApxTelemetry(this);
     m_nodes = new PApxNodes(this);
     m_mission = new PApxMission(this);
+
+    AppGcs::jsync(this);
 }
 
 QString PApxVehicle::uidText(const xbus::vehicle::uid_t *uid_raw)

@@ -26,6 +26,8 @@
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
 
+// TODO implement file names format without subfolders to include version number
+
 DatabaseSession::DatabaseSession(QObject *parent,
                                  const QString &name,
                                  const QString &sessionName,

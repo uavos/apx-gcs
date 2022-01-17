@@ -22,7 +22,7 @@
 #pragma once
 
 #include <Database/DatabaseSession.h>
-#include <QtCore>
+#include <Mandala/Mandala.h>
 
 class TelemetryDB : public DatabaseSession
 {
@@ -30,18 +30,19 @@ class TelemetryDB : public DatabaseSession
 public:
     explicit TelemetryDB(QObject *parent, QString sessionName);
 
-    typedef QMap<quint64, QString> TelemetryFieldsMap;
-    typedef QMap<QString, QString> TelemetryFieldsAliases;
-
-    TelemetryFieldsMap fieldsMap();
-    void setFieldsMap(const TelemetryFieldsMap &v);
-
-    TelemetryFieldsAliases fieldsAliases();
-    void setFieldsAliases(const TelemetryFieldsAliases &v);
-
     void markCacheInvalid(quint64 telemetryID);
     QList<quint64> invalidCacheList();
     void clearInvalidCacheList();
+
+    // fields UID mapping
+    quint64 field_key(mandala::uid_t uid) const;
+    quint64 field_key(QString name) const;
+    mandala::uid_t mandala_uid(QString name) const;
+
+    typedef QMap<mandala::uid_t, quint64> FieldsByUID;
+    typedef QMap<QString, quint64> FieldsByName;
+    typedef QMap<QString, mandala::uid_t> UidByName;
+    void updateFieldsMap(FieldsByUID byUID, FieldsByName byName);
 
     Fact *f_trash;
     Fact *f_stop;
@@ -51,8 +52,9 @@ public:
 private:
     QMutex pMutex; //property access mutex
 
-    TelemetryFieldsMap m_fieldsMap;
-    TelemetryFieldsAliases m_fieldsAliases;
+    FieldsByUID _fieldsByUID;
+    FieldsByName _fieldsByName;
+    UidByName _uidByName;
 
     QList<quint64> m_invalidCacheList;
     quint64 latestInvalidCacheID;

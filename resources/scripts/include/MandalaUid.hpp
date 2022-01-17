@@ -389,6 +389,10 @@ typedef enum {
     air_stall_warning = 2,
     air_stall_critical = 3,
 
+    // est.nav.wpt.status
+    wpt_status_ongoing = 0,
+    wpt_status_ok = 1,
+
     // est.env.sys.mode
     sys_mode_busy = 0,
     sys_mode_ground = 1,
@@ -450,6 +454,7 @@ typedef enum {
     // cmd.nav.reg.alt
     reg_alt_off = 0,
     reg_alt_on = 1,
+    reg_alt_rate = 2,
 
     // cmd.nav.reg.eng
     reg_eng_off = 0,
@@ -1041,12 +1046,13 @@ namespace est
         };
         namespace wpt
         {
-            enum { eta = 0x471 };
-            enum { dist = 0x472 };
-            enum { hdg = 0x473 };
-            enum { xtrack = 0x474 };
-            enum { delta = 0x475 };
-            enum { thdg = 0x476 };
+            enum { status = 0x471 };
+            enum { eta = 0x472 };
+            enum { dist = 0x473 };
+            enum { hdg = 0x474 };
+            enum { xtrack = 0x475 };
+            enum { delta = 0x476 };
+            enum { thdg = 0x477 };
         };
     };
     namespace env
@@ -1265,6 +1271,7 @@ namespace cmd
             enum { ident = 0x701 };
             enum { downlink = 0x702 };
             enum { uplink = 0x703 };
+            enum { telemetry = 0x704 };
         };
         namespace telemetry
         {

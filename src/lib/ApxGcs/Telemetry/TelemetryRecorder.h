@@ -37,8 +37,6 @@ class TelemetryRecorder : public Fact
 public:
     explicit TelemetryRecorder(Vehicle *vehicle, Fact *parent);
 
-    quint64 currentTimstamp() const;
-
 private:
     Vehicle *_vehicle;
 
@@ -48,10 +46,6 @@ private:
     bool dbCheckRecord();
 
     quint64 recTelemetryID{};
-    QList<double> recValues;
-    QHash<quint64, Fact *> factsMap;
-
-    void updateFactsMap();
 
     //auto recorder
     bool checkAutoRecord(void);
@@ -59,11 +53,13 @@ private:
     QTimer timeUpdateTimer, recStopTimer;
 
     //timestamp
-    quint64 dl_timestamp_t0{0};
+    bool _reset_timestamp{true};
+    quint64 _timestamp0{};
+    QElapsedTimer _timestampElapsed;
 
     quint64 getDataTimestamp();
 
-    DatabaseRequest *reqNewRecord;
+    DatabaseRequest *reqNewRecord{};
     QList<DBReqTelemetryWriteBase *> reqPendingList;
 
     QString confTitle;
@@ -73,8 +69,6 @@ private:
     QString missionHash;
 
     void invalidateCache();
-
-    quint64 m_currentTimestamp{0};
 
 private slots:
     void updateStatus();
@@ -93,7 +87,9 @@ private slots:
 
 public slots:
     //exported slots for recording
-    void recordDownlink();
+    void recordTelemetry(PBase::Values values, quint64 timestamp_ms);
+    void recordData(PBase::Values values);
+
     void recordUplink(mandala::uid_t uid, QVariant value);
     //events
     void recordConfigUpdate(NodeItem *node, QString name, QString value);

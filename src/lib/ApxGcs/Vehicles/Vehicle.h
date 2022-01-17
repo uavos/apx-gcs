@@ -136,7 +136,6 @@ signals:
 
 signals:
     //forward from protocols
-    void telemetryData();
     void sendSerial(quint8 portID, QByteArray data);
     void sendValue(mandala::uid_t uid, QVariant value);
     void requestScript(QString func);

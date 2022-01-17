@@ -152,9 +152,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         // counters
         connect(protocol, &PVehicle::packetReceived, this, &Vehicle::packetReceived);
 
-        // forward telemetry stamp to notify plugins
-        connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
-        connect(protocol->telemetry(), &PTelemetry::xpdrData, this, &Vehicle::telemetryData);
         // forward serial TX for plugins
         connect(this, &Vehicle::sendSerial, protocol->data(), &PData::sendSerial);
         connect(this, &Vehicle::sendValue, protocol->data(), &PData::sendValue);

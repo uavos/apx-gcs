@@ -37,7 +37,6 @@ Mandala::Mandala(Fact *parent)
            tr("Vehicle data tree"),
            Group | FilterModel | ModifiedGroup,
            "hexagon-multiple")
-    , m_timestamp(0)
 {
     setMandala(this);
     qmlRegisterUncreatableType<MandalaFact>("APX.Facts", 1, 0, "MandalaFact", "Reference only");
@@ -75,11 +74,6 @@ Mandala::Mandala(Fact *parent)
     }
 }
 
-quint64 Mandala::timestamp() const
-{
-    return m_timestamp;
-}
-
 MandalaFact *Mandala::fact(mandala::uid_t uid) const
 {
     if (uid == 0xFFFF || mandala::is_bundle(uid))
@@ -103,6 +97,15 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
         apxMsgW() << "Mandala fact not found:" << mpath;
     }
     return f;
+}
+
+mandala::uid_t Mandala::uid(const QString &mpath)
+{
+    for (auto const &d : mandala::meta) {
+        if (d.path == mpath)
+            return d.uid;
+    }
+    return {};
 }
 
 QString Mandala::mandalaToString(xbus::pid_raw_t pid_raw) const
@@ -135,10 +138,6 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
 
 void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 {
-    m_timestamp = timestamp_ms;
-    if (m_timestamp == 0)
-        _timestamp_time.start();
-
     for (auto const &uid : values.keys()) {
         MandalaFact *f = fact(uid);
         if (!f)
@@ -149,18 +148,10 @@ void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 
 void Mandala::valuesData(PBase::Values values)
 {
-    if (!_timestamp_time.isValid()) {
-        m_timestamp = 0;
-        _timestamp_time.start();
-    } else {
-        qint64 elapsed = _timestamp_time.elapsed();
-        quint64 uelapsed = elapsed > 0 ? elapsed : 0;
-        if (m_timestamp < uelapsed)
-            m_timestamp = uelapsed;
-    }
-
     //qDebug() << values.size();
     for (auto const &uid : values.keys()) {
+        //qDebug() << meta(uid).path;
+
         MandalaFact *f = fact(uid);
         if (!f)
             continue;
