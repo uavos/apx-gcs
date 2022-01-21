@@ -30,6 +30,7 @@ class Mandala;
 class MandalaFact : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(uint uid READ uid CONSTANT)
 
 public:
     explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta);

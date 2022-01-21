@@ -247,9 +247,21 @@ QVariant NodeItem::data(int col, int role)
 QString NodeItem::toolTip() const
 {
     QStringList st;
-    st << "ident:";
-    st.append(QJsonDocument::fromVariant(_ident).toJson());
-    return Fact::toolTip().append("\n").append(st.join('\n'));
+    st.append(Fact::toolTip());
+    if (!_ident.isEmpty()) {
+        st << "";
+        st << "[ident]";
+        for (auto k : _ident.keys()) {
+            auto v = _ident.value(k);
+            QString s(v.toString().trimmed());
+            if (s.isEmpty())
+                s = QJsonDocument::fromVariant(v).toJson();
+            if (s.isEmpty())
+                continue;
+            st.append(QString("%1: %2").arg(k).arg(s));
+        }
+    }
+    return st.join('\n');
 }
 
 void NodeItem::groupArrays()
@@ -556,6 +568,8 @@ void NodeItem::identReceived(QVariantMap ident)
 
     _ident = ident;
     clear();
+
+    setOpt("UID", uid());
 
     if (_protocol && !_protocol->upgrading()) {
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();

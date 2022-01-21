@@ -651,7 +651,7 @@ Item {
                 color: "#70000000"
                 anchors.top: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: vehicle.protocol.telemetry.text
+                text: vehicle.protocol?vehicle.protocol.telemetry.text:""
                 font: apx.font_narrow(parent.font.pixelSize*0.5,true)
             }
         }

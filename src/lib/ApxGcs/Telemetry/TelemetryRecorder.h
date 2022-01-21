@@ -54,13 +54,17 @@ private:
 
     //timestamp
     bool _reset_timestamp{true};
-    quint64 _timestamp0{};
-    QElapsedTimer _timestampElapsed;
+    quint64 _ts_t0{}; // telemetry record start time
+    quint64 _ts_t1{}; // telemetry shift time (data in beginning)
+    quint64 _ts_t2{}; // current telemetry corrected timestamp
+    QElapsedTimer _tsElapsed;
 
-    quint64 getDataTimestamp();
+    quint64 getEventTimestamp();
 
     DatabaseRequest *reqNewRecord{};
     QList<DBReqTelemetryWriteBase *> reqPendingList;
+
+    PBase::Values _values;
 
     QString confTitle;
 
@@ -68,7 +72,9 @@ private:
     QString configHash;
     QString missionHash;
 
+    void cleanupValues(PBase::Values *values);
     void invalidateCache();
+    void dbWriteRequest(DBReqTelemetryWriteBase *req);
 
 private slots:
     void updateStatus();
@@ -76,7 +82,7 @@ private slots:
     void restartRecording();
 
     //database
-    void updateCurrentID(quint64 telemetryID);
+    void dbRecordCreated(quint64 telemetryID);
     void writeEvent(const QString &name, const QString &value, const QString &uid, bool uplink);
 
     //internal flow

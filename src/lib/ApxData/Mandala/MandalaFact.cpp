@@ -116,6 +116,8 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
         }
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
     }
+
+    setOpt("PID", QString("%1 (0x%2)").arg(uid()).arg(uid(), 4, 16, QLatin1Char('0')));
 }
 
 bool MandalaFact::setValue(const QVariant &v)
@@ -244,6 +246,10 @@ bool MandalaFact::showThis(QRegExp re) const
 {
     if (Fact::showThis(re))
         return true;
+
+    if (QString("%1 0x%2").arg(uid()).arg(uid(), 4, 16, QLatin1Char('0')).contains(re))
+        return true;
+
     if (options() & FilterExclude)
         return false;
     if (!(options() & FilterSearchAll))
@@ -310,6 +316,8 @@ int MandalaFact::getPrecision()
         if (u == "c")
             return 1;
         if (u == "rpm")
+            return 0;
+        if (u == "rpm/s")
             return 0;
         if (u == "kg/m^3")
             return 2;

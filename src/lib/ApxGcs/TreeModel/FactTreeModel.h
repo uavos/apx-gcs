@@ -40,8 +40,11 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
 
+    auto root() const { return _root; }
+    void setRoot(Fact *f);
+
 protected:
-    Fact *root;
+    Fact *_root{};
 
     //override
     virtual QVariant data(const QModelIndex &index, int role) const override;

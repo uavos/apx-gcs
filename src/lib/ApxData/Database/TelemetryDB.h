@@ -35,9 +35,10 @@ public:
     void clearInvalidCacheList();
 
     // fields UID mapping
-    quint64 field_key(mandala::uid_t uid) const;
-    quint64 field_key(QString name) const;
-    mandala::uid_t mandala_uid(QString name) const;
+    quint64 field_key(mandala::uid_t uid);
+    quint64 field_key(QString name);
+    mandala::uid_t mandala_uid(QString name);
+    mandala::uid_t mandala_uid(quint64 field_key);
 
     typedef QMap<mandala::uid_t, quint64> FieldsByUID;
     typedef QMap<QString, quint64> FieldsByName;

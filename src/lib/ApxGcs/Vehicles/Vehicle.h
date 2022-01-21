@@ -46,7 +46,7 @@ class Vehicle : public Fact
     Q_OBJECT
     Q_ENUMS(FlightState)
 
-    Q_PROPERTY(QString info READ toolTip NOTIFY infoChanged)
+    Q_PROPERTY(QString info READ info NOTIFY infoChanged)
 
     Q_PROPERTY(bool follow READ follow WRITE setFollow NOTIFY followChanged)
 
@@ -160,7 +160,9 @@ public slots:
     //---------------------------------------
     // PROPERTIES
 public:
-    QString toolTip(void) const override;
+    QString toolTip() const override;
+
+    auto info() const { return m_info; }
 
     bool follow(void) const;
     void setFollow(const bool &v);

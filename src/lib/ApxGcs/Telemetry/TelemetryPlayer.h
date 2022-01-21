@@ -60,7 +60,7 @@ private:
 
     bool blockTimeChange;
 
-    QHash<quint64, Fact *> factsMap;
+    QHash<quint64, Fact *> factByDBID;
     DatabaseRequest::Records events;
     int iEventRec;
 

@@ -183,6 +183,8 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     connect(this, &Vehicle::geoPathChanged, f, [this, f]() { f->setEnabled(!geoPath().isEmpty()); });
     f->setEnabled(false);
 
+    setOpt("VID", uid());
+
     updateInfo();
 
     App::jsync(this);
@@ -496,9 +498,16 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
     }
 }
 
-QString Vehicle::toolTip(void) const
+QString Vehicle::toolTip() const
 {
-    return m_info;
+    QStringList st;
+    st.append(Fact::toolTip());
+    if (!m_info.isEmpty()) {
+        st << "";
+        st << "[info]";
+        st.append(m_info);
+    }
+    return st.join('\n');
 }
 bool Vehicle::follow(void) const
 {

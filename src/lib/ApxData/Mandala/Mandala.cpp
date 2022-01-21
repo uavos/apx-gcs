@@ -29,6 +29,7 @@
 // See: https://www.youtube.com/watch?v=NjUuAuBcoqs&ab_channel=Gource
 // See: https://doc.qt.io/qt-5/qtwidgets-graphicsview-elasticnodes-example.html
 // Intended to monitor by human mind the current state of the vehicle and its behavior in real-time.
+// Inspiration could be taken from shaders workbench here http://regis.toile-libre.org/fractals/MYOS/
 
 Mandala::Mandala(Fact *parent)
     : Fact(parent,
@@ -106,6 +107,22 @@ mandala::uid_t Mandala::uid(const QString &mpath)
             return d.uid;
     }
     return {};
+}
+
+QList<MandalaFact *> Mandala::facts() const
+{
+    return uid_map.values();
+}
+
+PBase::Values Mandala::getValuesForStream() const
+{
+    PBase::Values values;
+    for (auto f : facts()) {
+        if (f->isSystem())
+            continue;
+        values.insert(f->uid(), f->getValueForStream());
+    }
+    return values;
 }
 
 QString Mandala::mandalaToString(xbus::pid_raw_t pid_raw) const

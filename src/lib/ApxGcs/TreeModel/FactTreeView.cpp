@@ -54,19 +54,16 @@ FactTreeView::FactTreeView(QWidget *parent)
 
 FactProxyModel::FactProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
-    , m_rootFact(nullptr)
 {
     setDynamicSortFilter(false);
 }
 
-void FactProxyModel::setRootFact(Fact *fact)
+void FactProxyModel::setRoot(Fact *f)
 {
-    m_rootFact = fact;
+    beginResetModel();
+    _root = f;
+    endResetModel();
     invalidate();
-}
-Fact *FactProxyModel::rootFact() const
-{
-    return m_rootFact;
 }
 
 bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
@@ -77,11 +74,11 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
         return false;
     if (!fact->visible())
         return false;
-    if (fact == m_rootFact)
+    if (fact == _root)
         return true;
     //accept all parents of rootFact
     bool ok = false;
-    for (Fact *f = m_rootFact; f; f = f->parentFact()) {
+    for (Fact *f = _root; f; f = f->parentFact()) {
         if (fact == f) {
             ok = true;
             break;
@@ -90,7 +87,7 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     //check if index has parent as rootindex
     if (!ok) {
         for (Fact *f = fact; f; f = f->parentFact()) {
-            if (f == m_rootFact) {
+            if (f == _root) {
                 //qDebug()<<"acc"<<fact->path();
                 ok = true;
                 break;
@@ -199,15 +196,22 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     toolBar->setVisible(backNavigation || filterEdit);
 
     //model
-    proxy = new FactProxyModel(this);
-    tree->setModel(proxy);
     model = new FactTreeModel(fact, this);
-    proxy->setRootFact(fact);
+
+    proxy = new FactProxyModel(this);
+    proxy->setRoot(fact);
     proxy->setSourceModel(model);
+
+    tree->setModel(proxy);
 
     updateActions();
 
-    connect(eFilter, &QLineEdit::textChanged, this, &FactTreeWidget::filterChanged);
+    connect(eFilter,
+            &QLineEdit::textChanged,
+            this,
+            &FactTreeWidget::filterChanged,
+            Qt::QueuedConnection);
+
     connect(tree, &FactTreeView::collapsed, this, &FactTreeWidget::collapsed);
     connect(tree, &FactTreeView::expanded, this, &FactTreeWidget::expanded);
 }
@@ -216,10 +220,17 @@ void FactTreeWidget::filterChanged()
 {
     QString s = eFilter->text();
     QRegExp regExp(s, Qt::CaseSensitive, QRegExp::WildcardUnix);
-    //QModelIndex rootIndex=tree->rootIndex();
+
+    auto rootIndex = tree->rootIndex();
+    //qDebug() << rootIndex;
+    // tree->reset();
+
     proxy->setFilterRegExp(regExp);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    tree->setRootIndex(proxy->mapFromSource(model->factIndex(proxy->rootFact())));
+    // tree->setRootIndex(proxy->mapFromSource(model->factIndex(proxy->rootFact())));
+    tree->setRootIndex(rootIndex);
+    tree->reset();
+
     updateActions();
     if (s.size()) {
         tree->expandAll();
@@ -237,7 +248,7 @@ void FactTreeWidget::doubleClicked(const QModelIndex &index)
         return;
     if (!f->size())
         return;
-    Fact *fPrev = proxy->rootFact();
+    Fact *fPrev = proxy->root();
     setRoot(f);
     rootList.append(QPointer<Fact>(fPrev));
     updateActions();
@@ -278,10 +289,16 @@ void FactTreeWidget::setRoot(Fact *fact)
 {
     if (!model->expandedFacts.contains(fact))
         model->expandedFacts.append(fact);
+
     resetFilter();
+
     //if(proxy->rootFact()) disconnect(proxy->rootFact(),&Fact::removed,this,&FactTreeWidget::factRemoved);
-    proxy->setRootFact(fact);
-    tree->setRootIndex(proxy->mapFromSource(model->factIndex(fact)));
+
+    proxy->setRoot(fact);
+    model->setRoot(fact);
+
+    // tree->setRootIndex(proxy->mapFromSource(model->factIndex(fact)));
+
     connect(fact, &Fact::removed, this, &FactTreeWidget::factRemoved);
     //qDebug()<<"root"<<fact->path();
     //cut current path
@@ -322,6 +339,6 @@ void FactTreeWidget::factRemoved()
         }
         rootFact = f;
     }
-    if (fact == proxy->rootFact())
+    if (fact == proxy->root())
         back();
 }

@@ -163,19 +163,18 @@ void TelemetryPlayer::play()
     playTime.start();
 
     //fill facts map
-    if (factsMap.isEmpty()) {
-        TelemetryDB::TelemetryFieldsMap map = Database::instance()->telemetry->fieldsMap();
-        for (auto key : map.keys()) {
-            Fact *f = vehicle->f_mandala->findChild(map.value(key));
-            if (f)
-                factsMap.insert(key, f);
+    if (factByDBID.isEmpty()) {
+        for (auto f : vehicle->f_mandala->facts()) {
+            if (f->isSystem())
+                continue;
+            factByDBID.insert(Database::instance()->telemetry->field_key(f->uid()), f);
         }
     }
 
     //collect data samples for t0
     double t = _time / 1000.0;
     for (auto fieldID : telemetry->f_reader->fieldData.keys()) {
-        Fact *f = factsMap.value(fieldID);
+        Fact *f = factByDBID.value(fieldID);
         if (!f)
             continue;
         f->setValue(sampleValue(fieldID, t));
@@ -312,7 +311,7 @@ void TelemetryPlayer::next()
     if (tNext <= t) {
         quint64 tNextMin = tNext;
         //mandala data
-        foreach (quint64 fieldID, telemetry->f_reader->fieldData.keys()) {
+        for (const auto fieldID : telemetry->f_reader->fieldData.keys()) {
             QVector<QPointF> *pts = telemetry->f_reader->fieldData.value(fieldID);
             if (!pts)
                 continue;
@@ -325,7 +324,7 @@ void TelemetryPlayer::next()
                     break;
                 }
                 dataPosMap[fieldID] = i;
-                Fact *f = factsMap.value(fieldID);
+                Fact *f = factByDBID.value(fieldID);
                 if (f) {
                     if (f->setValue(p.y()))
                         updCnt++;
@@ -350,7 +349,7 @@ void TelemetryPlayer::next()
                 quint64 fieldID = r.at(n.indexOf("name")).toULongLong();
                 if (!fieldID)
                     continue;
-                MandalaFact *f = static_cast<MandalaFact *>(factsMap.value(fieldID));
+                MandalaFact *f = static_cast<MandalaFact *>(factByDBID.value(fieldID));
                 if (!f)
                     continue;
                 if (f->setValue(sv))

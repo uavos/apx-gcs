@@ -40,9 +40,10 @@ class FactProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    FactProxyModel(QObject *parent = nullptr);
-    void setRootFact(Fact *fact);
-    Fact *rootFact() const;
+    explicit FactProxyModel(QObject *parent = nullptr);
+
+    void setRoot(Fact *f);
+    auto root() const { return _root; }
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
@@ -52,7 +53,7 @@ protected:
     virtual bool lessThan(Fact *left, Fact *right) const;
 
 private:
-    QPointer<Fact> m_rootFact;
+    QPointer<Fact> _root{};
     bool showThis(const QModelIndex index) const;
     bool showThisItem(const QModelIndex index) const;
 };
@@ -71,10 +72,11 @@ public:
     QToolBar *toolBar;
     QVBoxLayout *vlayout;
 
-    Fact *rootFact() const { return proxy->rootFact(); }
+    auto root() const { return proxy->root(); }
 
 private:
     QList<QPointer<Fact>> rootList;
+
 private slots:
     void filterChanged();
     void doubleClicked(const QModelIndex &index);

@@ -172,32 +172,42 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
 
 void TelemetryDB::updateFieldsMap(FieldsByUID byUID, FieldsByName byName)
 {
+    QMutexLocker lock(&pMutex);
     _fieldsByUID = byUID;
     _fieldsByName = byName;
 
     for (auto s : byName.keys())
         _uidByName.insert(s, byUID.key(byName.value(s)));
 }
-quint64 TelemetryDB::field_key(mandala::uid_t uid) const
+quint64 TelemetryDB::field_key(mandala::uid_t uid)
 {
+    QMutexLocker lock(&pMutex);
     auto key = _fieldsByUID.value(uid);
     if (!key) {
         qWarning() << "missing field uid" << uid;
     }
     return key;
 }
-quint64 TelemetryDB::field_key(QString name) const
+quint64 TelemetryDB::field_key(QString name)
 {
+    QMutexLocker lock(&pMutex);
     auto key = _fieldsByName.value(name);
     if (!key) {
         qWarning() << "missing field name" << name;
     }
     return key;
 }
-mandala::uid_t TelemetryDB::mandala_uid(QString name) const
+mandala::uid_t TelemetryDB::mandala_uid(QString name)
 {
     // used by file import
+    QMutexLocker lock(&pMutex);
     return _uidByName.value(name);
+}
+mandala::uid_t TelemetryDB::mandala_uid(quint64 field_key)
+{
+    // used by telemetry reader
+    QMutexLocker lock(&pMutex);
+    return _fieldsByUID.key(field_key);
 }
 
 void TelemetryDB::markCacheInvalid(quint64 telemetryID)
@@ -284,6 +294,7 @@ bool DBReqTelemetry::run(QSqlQuery &query)
 
 bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 {
+    // called by LOCAL vehicle with 'records' initialized to current mandala fields
     connect(
         this,
         &DBReqTelemetryUpdateMandala::progress,

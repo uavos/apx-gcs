@@ -35,7 +35,7 @@ class ScriptCompiler : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QString cc MEMBER m_cc);
-    Q_PROPERTY(Fact *vscode MEMBER f_vscode);
+    Q_PROPERTY(Fact *use_vscode MEMBER f_vscode);
 
 public:
     explicit ScriptCompiler(QObject *parent = nullptr);

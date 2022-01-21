@@ -158,16 +158,16 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
         TelemetryDB *db = Database::instance()->telemetry;
 
         //construct fields sequence map for stream decoder, used for 'D' tag
-        QList<quint64> recFieldsMap;
+        QList<mandala::uid_t> xml_uid_map;
         for (int i = 0; i < fields.size(); ++i)
-            recFieldsMap.append(0);
+            xml_uid_map.append(0);
         for (int i = 0; i < fields.size(); ++i) {
-            auto field_key = db->field_key(fields.at(i));
-            if (!field_key) {
+            auto uid = db->mandala_uid(fields.at(i));
+            if (!uid) {
                 qWarning() << "ignored field" << fields.at(i) << i;
                 continue;
             }
-            recFieldsMap[i] = field_key;
+            xml_uid_map[i] = uid;
         }
 
         //read <data>
@@ -211,8 +211,9 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
                 }
                 continue;
             }
-            if (tag == "D") {
+            if (tag == "D") { // TODO check import/export
                 QStringList st = xml.readElementText().split(',', Qt::KeepEmptyParts);
+                PBase::Values values;
                 uint i = 0;
                 for (auto const &s : st) {
                     if (s.isEmpty()) {
@@ -223,12 +224,13 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
                         i += s.mid(1).toUInt();
                         continue;
                     }
-                    quint64 fieldID = recFieldsMap.at(i++);
-                    if (fieldID) {
-                        dbSaveData(t, fieldID, s.toDouble(), false);
+                    auto uid = xml_uid_map.at(i++);
+                    if (uid) {
+                        values.insert(uid, s.toDouble());
                     }
                 }
-
+                if (!values.isEmpty())
+                    dbSaveData(t, values, false);
                 continue;
             }
             qWarning() << "unknown tag" << tag;

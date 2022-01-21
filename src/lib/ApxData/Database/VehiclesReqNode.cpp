@@ -622,8 +622,9 @@ bool DBReqLoadNodeConfig::run(QSqlQuery &query)
 
 bool DBReqSaveNodeMeta::run(QSqlQuery &query)
 {
-    uint ncnt = 0, ucnt = 0;
+    uint tcnt = 0, ncnt = 0, ucnt = 0;
     for (auto name : _meta.keys()) {
+        tcnt++;
         query.prepare("SELECT * FROM NodeDictMeta WHERE name=?");
         query.addBindValue(name);
         if (!query.exec())
@@ -632,11 +633,11 @@ bool DBReqSaveNodeMeta::run(QSqlQuery &query)
         auto m = _meta.value(name).value<QVariantMap>();
         auto version = m.value("version").toString();
         auto descr = m.value("descr").toString();
-        auto def = m.value("def");
-        auto min = m.value("min");
-        auto max = m.value("max");
-        auto increment = m.value("increment");
-        auto decimal = m.value("decimal");
+        auto def = m.value("def").toString();
+        auto min = m.value("min").toString();
+        auto max = m.value("max").toString();
+        auto increment = m.value("increment").toString();
+        auto decimal = m.value("decimal").toString();
 
         if (!query.next()) {
             query.prepare(
@@ -659,11 +660,11 @@ bool DBReqSaveNodeMeta::run(QSqlQuery &query)
         // update existing
         auto qversion = query.value("version").toString();
         auto qdescr = query.value("descr").toString();
-        auto qdef = query.value("def");
-        auto qmin = query.value("min");
-        auto qmax = query.value("max");
-        auto qincrement = query.value("increment");
-        auto qdecimal = query.value("decimal");
+        auto qdef = query.value("def").toString();
+        auto qmin = query.value("min").toString();
+        auto qmax = query.value("max").toString();
+        auto qincrement = query.value("increment").toString();
+        auto qdecimal = query.value("decimal").toString();
 
         if (version.isEmpty())
             version = qversion;
@@ -684,9 +685,6 @@ bool DBReqSaveNodeMeta::run(QSqlQuery &query)
             decimal = qdecimal;
         }
 
-        if (name == "shiva.roll.tc")
-            qDebug() << older << min << version;
-
         // update record
         if (qversion == version && qdescr == descr && qdef == def && qmin == min && qmax == max
             && qincrement == increment && qdecimal == decimal) {
@@ -706,15 +704,13 @@ bool DBReqSaveNodeMeta::run(QSqlQuery &query)
         query.addBindValue(key);
         if (!query.exec())
             return false;
-        if (name == "shiva.roll.tc")
-            qDebug() << "upd" << name << version;
         ucnt++;
     }
 
     if (ncnt)
-        qDebug() << "new meta:" << ncnt;
+        qDebug() << "new meta:" << ncnt << "of" << tcnt;
     if (ucnt)
-        qDebug() << "updated meta:" << ucnt;
+        qDebug() << "updated meta:" << ucnt << "of" << tcnt;
 
     return true;
 }

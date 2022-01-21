@@ -44,6 +44,9 @@ public:
     static const mandala::meta_s &meta(mandala::uid_t uid);
     static mandala::uid_t uid(const QString &mpath);
 
+    QList<MandalaFact *> facts() const;
+    PBase::Values getValuesForStream() const;
+
 protected:
     // Fact override
     virtual QString mandalaToString(xbus::pid_raw_t pid_raw) const override;
