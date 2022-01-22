@@ -164,9 +164,7 @@ void TelemetryPlayer::play()
 
     //fill facts map
     if (factByDBID.isEmpty()) {
-        for (auto f : vehicle->f_mandala->facts()) {
-            if (f->isSystem())
-                continue;
+        for (auto f : vehicle->f_mandala->valueFacts()) {
             factByDBID.insert(Database::instance()->telemetry->field_key(f->uid()), f);
         }
     }

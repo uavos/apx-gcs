@@ -36,8 +36,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     : Fact(vehicles, protocol ? protocol->name() : "replay", protocol ? protocol->title() : "REPLAY")
     , _protocol(protocol)
 {
-    setSection(vehicles->title());
-
     _storage = new VehicleStorage(this);
 
     if (protocol) {
@@ -502,6 +500,14 @@ QString Vehicle::toolTip() const
 {
     QStringList st;
     st.append(Fact::toolTip());
+    if (protocol()) {
+        auto p = protocol();
+        if (!isLocal()) {
+            st.append(QString("UID: %1").arg(p->uid()));
+            st.append(QString("Type: %1").arg(p->vehicleTypeText()));
+        }
+        st.append(QString("ErrCnt: %1").arg(p->errcnt()));
+    }
     if (!m_info.isEmpty()) {
         st << "";
         st << "[info]";

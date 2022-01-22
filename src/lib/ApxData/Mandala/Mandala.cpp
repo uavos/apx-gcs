@@ -61,7 +61,7 @@ Mandala::Mandala(Fact *parent)
                 apxMsgW() << "dup group:" << group->child(d.name)->path(1);
             }
             MandalaFact *f = new MandalaFact(this, group, d);
-            uid_map.insert(f->uid(), f);
+            _uid_map.insert(f->uid(), f);
             group = f;
             if (d.level == 2)
                 group->setSection(sect);
@@ -71,7 +71,7 @@ Mandala::Mandala(Fact *parent)
             apxMsgW() << "dup fact:" << group->child(d.name)->path(2);
         }
         MandalaFact *f = new MandalaFact(this, group, d);
-        uid_map.insert(f->uid(), f);
+        _uid_map.insert(f->uid(), f);
     }
 }
 
@@ -79,7 +79,7 @@ MandalaFact *Mandala::fact(mandala::uid_t uid) const
 {
     if (uid == 0xFFFF || mandala::is_bundle(uid))
         return nullptr;
-    MandalaFact *f = uid_map.value(uid);
+    MandalaFact *f = _uid_map.value(uid);
     if (f)
         return f;
     apxMsgW() << "Mandala uid not found:" << uid;
@@ -100,7 +100,7 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
     return f;
 }
 
-mandala::uid_t Mandala::uid(const QString &mpath)
+mandala::uid_t Mandala::uid(const QString &mpath) // static
 {
     for (auto const &d : mandala::meta) {
         if (d.path == mpath)
@@ -109,17 +109,20 @@ mandala::uid_t Mandala::uid(const QString &mpath)
     return {};
 }
 
-QList<MandalaFact *> Mandala::facts() const
+QList<MandalaFact *> Mandala::valueFacts() const
 {
-    return uid_map.values();
+    QList<MandalaFact *> list;
+    for (auto f : _uid_map.values()) {
+        if (!f->isSystem())
+            list.append(f);
+    }
+    return list;
 }
 
 PBase::Values Mandala::getValuesForStream() const
 {
     PBase::Values values;
-    for (auto f : facts()) {
-        if (f->isSystem())
-            continue;
+    for (auto f : valueFacts()) {
         values.insert(f->uid(), f->getValueForStream());
     }
     return values;
@@ -130,7 +133,7 @@ QString Mandala::mandalaToString(xbus::pid_raw_t pid_raw) const
     xbus::pid_s pid(pid_raw);
     if (!pid.seq)
         return QString();
-    MandalaFact *f = uid_map.value(pid.uid);
+    MandalaFact *f = _uid_map.value(pid.uid);
     return f ? f->mpath() : QString();
 }
 xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
@@ -144,7 +147,7 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
     return pid.raw();
 }
 
-const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
+const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
 {
     for (auto const &d : mandala::meta) {
         if (d.uid == uid)

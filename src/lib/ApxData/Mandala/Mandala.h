@@ -38,14 +38,14 @@ public:
     Q_INVOKABLE MandalaFact *fact(mandala::uid_t uid) const;
     Q_INVOKABLE MandalaFact *fact(const QString &mpath, bool silent = false) const;
 
-    QHash<QString, QVariant> constants; // <name,value> constants
-    QMap<mandala::uid_t, MandalaFact *> uid_map;
-
     static const mandala::meta_s &meta(mandala::uid_t uid);
     static mandala::uid_t uid(const QString &mpath);
 
-    QList<MandalaFact *> facts() const;
+    QList<MandalaFact *> valueFacts() const;
     PBase::Values getValuesForStream() const;
+
+private:
+    QMap<mandala::uid_t, MandalaFact *> _uid_map;
 
 protected:
     // Fact override

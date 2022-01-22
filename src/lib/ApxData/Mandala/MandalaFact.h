@@ -51,6 +51,9 @@ public:
     void setValueFromStream(const QVariant &v);
     QVariant getValueForStream() const;
 
+    QVariant convertFromStream(const QVariant &v) const;
+    QVariant convertForStream(const QVariant &v) const;
+
     void count_rx();
 
     inline const mandala::meta_s &meta() const { return m_meta; }

@@ -569,8 +569,6 @@ void NodeItem::identReceived(QVariantMap ident)
     _ident = ident;
     clear();
 
-    setOpt("UID", uid());
-
     if (_protocol && !_protocol->upgrading()) {
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
         storage->saveNodeInfo();
