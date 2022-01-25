@@ -54,7 +54,9 @@ public:
     QVariant convertForStream(const QVariant &v) const;
     auto isConverted() const { return _convert_value; }
 
-    void count_rx();
+    void increment_rx_cnt();
+    auto rx_cnt() const { return _rx_cnt; }
+    auto everReceived() const { return _everReceived; }
 
     inline const mandala::meta_s &meta() const { return m_meta; }
 
@@ -72,6 +74,7 @@ private:
     QColor getColor();
 
     size_t _rx_cnt{};
+    bool _everReceived{};
 
     bool setRawValueLocal(QVariant v);
 

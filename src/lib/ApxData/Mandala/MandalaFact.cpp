@@ -131,7 +131,7 @@ void MandalaFact::setValueFromStream(const QVariant &v)
 {
     //qDebug() << v;
     setRawValueLocal(convertFromStream(v));
-    count_rx();
+    increment_rx_cnt();
 }
 QVariant MandalaFact::getValueForStream() const
 {
@@ -159,9 +159,10 @@ bool MandalaFact::setRawValueLocal(QVariant v)
     return true;
 }
 
-void MandalaFact::count_rx()
+void MandalaFact::increment_rx_cnt()
 {
     _rx_cnt++;
+    _everReceived = true;
     if (isSystem()) {
         Fact::setValue(QVariant::fromValue(_rx_cnt));
     }

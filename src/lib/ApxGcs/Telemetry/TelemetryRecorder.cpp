@@ -159,7 +159,13 @@ bool TelemetryRecorder::dbCheckRecord()
         reqPendingList.clear();
 
         // write initial mandala state
-        _values = _vehicle->f_mandala->getValuesForStream();
+        PBase::Values values;
+        for (auto f : _vehicle->f_mandala->valueFacts()) {
+            if (!f->everReceived())
+                continue;
+            values.insert(f->uid(), f->getValueForStream());
+        }
+        _values = values;
         reqPendingList.append(new DBReqTelemetryWriteData(0, 0, _values, false));
 
         apxConsole() << tr("Telemetry record request");

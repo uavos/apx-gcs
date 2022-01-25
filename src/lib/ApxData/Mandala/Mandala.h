@@ -42,7 +42,6 @@ public:
     static mandala::uid_t uid(const QString &mpath);
 
     QList<MandalaFact *> valueFacts() const;
-    PBase::Values getValuesForStream() const;
 
 private:
     QMap<mandala::uid_t, MandalaFact *> _uid_map;

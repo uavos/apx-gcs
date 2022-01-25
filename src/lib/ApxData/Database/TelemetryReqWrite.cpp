@@ -26,6 +26,8 @@
 
 bool DBReqTelemetryNewRecord::run(QSqlQuery &query)
 {
+    // qDebug() << vehicleUID << callsign << t;
+
     query.prepare(
         "INSERT INTO Telemetry(vehicleUID, callsign, comment, trash, time) VALUES(?, ?, ?, ?, ?)");
     query.addBindValue(vehicleUID);
@@ -44,6 +46,8 @@ bool DBReqTelemetryNewRecord::run(QSqlQuery &query)
 
 bool DBReqTelemetryWriteData::run(QSqlQuery &query)
 {
+    // qDebug() << telemetryID << t << _values;
+
     if (!telemetryID) {
         qWarning() << "missing telemetryID";
         return false;
@@ -82,7 +86,7 @@ bool DBReqTelemetryWriteData::run(QSqlQuery &query)
 
 bool DBReqTelemetryWriteEvent::run(QSqlQuery &query)
 {
-    //qDebug() << telemetryID;
+    // qDebug() << telemetryID << t << name << value;
     query.prepare("INSERT INTO TelemetryEvents"
                   "(telemetryID, time, name, value, uid, uplink) "
                   "VALUES(?, ?, ?, ?, ?, ?)");

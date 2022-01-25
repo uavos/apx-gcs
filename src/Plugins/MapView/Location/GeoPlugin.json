@@ -1,6 +1,8 @@
 {
-    "Keys": ["uavos-maps"],
-    "Provider": "uavos",
+    "Keys": [
+        "uavos-maps"
+    ],
+    "Provider": "default",
     "Version": 101,
     "Experimental": false,
     "Features": [

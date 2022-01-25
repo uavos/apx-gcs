@@ -64,7 +64,7 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap &pa
     setTileSize(QSize(256, 256));
     setCacheHint(QAbstractGeoTileCache::MemoryCache);
 
-    const QByteArray pname("uavos");
+    const QByteArray pname("default");
     //QGeoCameraCapabilities ccaps;
     QList<QGeoMapType> mapTypes;
 #if QT_VERSION >= 0x050A00

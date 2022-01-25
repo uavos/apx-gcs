@@ -122,15 +122,6 @@ QList<MandalaFact *> Mandala::valueFacts() const
     return list;
 }
 
-PBase::Values Mandala::getValuesForStream() const
-{
-    PBase::Values values;
-    for (auto f : valueFacts()) {
-        values.insert(f->uid(), f->getValueForStream());
-    }
-    return values;
-}
-
 QString Mandala::mandalaToString(xbus::pid_raw_t pid_raw) const
 {
     xbus::pid_s pid(pid_raw);

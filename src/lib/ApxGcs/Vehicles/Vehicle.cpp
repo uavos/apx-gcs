@@ -193,7 +193,7 @@ void Vehicle::packetReceived(mandala::uid_t uid)
     if (mandala::cmd::env::match(uid)) {
         MandalaFact *f = f_mandala->fact(uid);
         if (f)
-            f->count_rx();
+            f->increment_rx_cnt();
     }
 }
 

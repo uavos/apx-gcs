@@ -174,6 +174,8 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
 
     auto timestamp = decoder.timestamp_ms();
 
+    // qDebug() << timestamp;
+
     // report and validate
     if (enabled() && !valid) {
         apxMsgW() << tr("Telemetry stream reset for %1").arg(parent()->title());
@@ -182,7 +184,8 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
 
     if (!enabled() && valid) {
         apxMsg() << tr("Telemetry stream valid from %1").arg(parent()->title());
-        qDebug() << "ts" << timestamp;
+        qDebug() << "valid"
+                 << "ts" << timestamp;
     }
 
     bool update_status = enabled() != valid || !valid || !timestamp || _dt_ms != decoder.dt_ms();
