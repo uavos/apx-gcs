@@ -213,6 +213,15 @@ void TelemetryRecorder::cleanupValues(PBase::Values *values)
         }
     }
 }
+void TelemetryRecorder::convertValues(PBase::Values *values)
+{
+    auto m = _vehicle->f_mandala;
+    for (auto uid : values->keys()) {
+        auto f = m->fact(uid);
+        if (f->isConverted())
+            (*values)[uid] = f->convertFromStream(values->value(uid));
+    }
+}
 void TelemetryRecorder::dbWriteRequest(DBReqTelemetryWriteBase *req)
 {
     if (recTelemetryID) {
@@ -265,6 +274,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     cleanupValues(&values);
     if (values.isEmpty())
         return;
+    convertValues(&values);
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, t, values, false));
 }
@@ -273,6 +283,7 @@ void TelemetryRecorder::recordData(PBase::Values values)
     cleanupValues(&values);
     if (values.isEmpty())
         return;
+    convertValues(&values);
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, false));
 }
@@ -297,7 +308,7 @@ void TelemetryRecorder::recordUplink(mandala::uid_t uid, QVariant value)
 {
     dbCheckRecord();
 
-    Fact *f = _vehicle->f_mandala->fact(uid);
+    auto f = _vehicle->f_mandala->fact(uid);
     if (!f) {
         auto name = _vehicle->f_mandala->meta(uid).path;
         auto vtext = value.toStringList().join(',');
@@ -306,7 +317,7 @@ void TelemetryRecorder::recordUplink(mandala::uid_t uid, QVariant value)
     }
 
     PBase::Values values;
-    values.insert(uid, value);
+    values.insert(uid, f->convertFromStream(value));
     auto req = new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, true);
     dbWriteRequest(req);
 }

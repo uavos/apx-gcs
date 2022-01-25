@@ -73,6 +73,8 @@ private:
     QString missionHash;
 
     void cleanupValues(PBase::Values *values);
+    void convertValues(PBase::Values *values);
+
     void invalidateCache();
     void dbWriteRequest(DBReqTelemetryWriteBase *req);
 

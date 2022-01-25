@@ -47,12 +47,12 @@ public:
 
     Q_INVOKABLE mandala::uid_t offset() const;
 
-    //stream
+    // units conversions
     void setValueFromStream(const QVariant &v);
     QVariant getValueForStream() const;
-
     QVariant convertFromStream(const QVariant &v) const;
     QVariant convertForStream(const QVariant &v) const;
+    auto isConverted() const { return _convert_value; }
 
     void count_rx();
 

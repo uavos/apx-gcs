@@ -111,7 +111,10 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
         v << f->meta().uid;
         v << f->mpath();
         v << f->meta().title;
-        v << f->meta().units;
+        if (f->dataType() == Enum)
+            v << f->enumStrings();
+        else
+            v << f->units();
         recMandala.values.append(v);
     }
 
