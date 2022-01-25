@@ -40,17 +40,14 @@ public:
 private:
     PApxRequest _req;
 
-    uint32_t _seq_s{0};
-    uint32_t _seq{0};
-    uint32_t _dt_ms{0};
-    quint64 _timestamp_ms{0};
-    QElapsedTimer _ts_time;
-
     TelemetryDecoder decoder;
 
     void request_format(uint8_t part);
-    uint8_t _request_format_part{0};
+    uint8_t _request_format_part{};
     QElapsedTimer _request_format_time;
+
+    QElapsedTimer _timer;
+    uint32_t _dt_ms{};
 
     bool unpack(uint8_t pseq, PStreamReader &stream);
     QVariant raw_value(const void *src, mandala::type_id_e type);

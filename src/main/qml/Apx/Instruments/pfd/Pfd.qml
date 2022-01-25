@@ -113,6 +113,8 @@ Item {
 
     readonly property bool isValid: f_att_status.value > 0
 
+    opacity: ui.effects?((apx.datalink.valid && !(vehicle.streamType===APX.PVehicle.XPDR||vehicle.streamType===APX.PVehicle.TELEMETRY))?0.7:1):1
+
     clip: true
 
     implicitWidth: 600
@@ -628,28 +630,30 @@ Item {
         }
 
         Text {
-            id: offline
             color: "#80000000"
             anchors.bottom: parent.verticalCenter
-            anchors.top: parent.top
-            anchors.left: left_window.right
-            anchors.right: right_window.left
-            text: qsTr("OFFLINE")
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenterOffset: horizon.center_shift
+            text: qsTr("DISCONNECTED")
             visible: !vehicle.isReplay && !apx.datalink.online
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
             font: apx.font_narrow(apx.datalink.valid?(parent.height*0.5*0.35):10,true)
         }
         Text {
-            id: xpdrData
             color: "#60000000"
-            anchors.bottom: parent.verticalCenter
-            anchors.left: left_window.right
-            anchors.right: right_window.left
+            anchors.top: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenterOffset: horizon.center_shift
             text: vehicle.text
             visible: !vehicle.isReplay && apx.datalink.valid && (vehicle.streamType!==APX.PVehicle.TELEMETRY)
             horizontalAlignment: Text.AlignHCenter
             font: apx.font_narrow(parent.height*0.5*0.25,true)
+            Text {
+                color: "#70000000"
+                anchors.top: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: vehicle.protocol?vehicle.protocol.telemetry.text:""
+                font: apx.font_narrow(parent.font.pixelSize*0.5,true)
+            }
         }
 
         Item{

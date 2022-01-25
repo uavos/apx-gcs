@@ -38,24 +38,21 @@ public:
     Q_INVOKABLE MandalaFact *fact(mandala::uid_t uid) const;
     Q_INVOKABLE MandalaFact *fact(const QString &mpath, bool silent = false) const;
 
-    QHash<QString, QVariant> constants; // <name,value> constants
-    QMap<mandala::uid_t, MandalaFact *> uid_map;
-
-    quint64 timestamp() const;
-
     static const mandala::meta_s &meta(mandala::uid_t uid);
+    static mandala::uid_t uid(const QString &mpath);
+
+    QList<MandalaFact *> valueFacts() const;
+
+private:
+    QMap<mandala::uid_t, MandalaFact *> _uid_map;
 
 protected:
     // Fact override
     virtual QString mandalaToString(xbus::pid_raw_t pid_raw) const override;
     virtual xbus::pid_raw_t stringToMandala(const QString &s) const override;
 
-private:
-    quint64 m_timestamp;
-    QElapsedTimer _timestamp_time;
-
 public slots:
-    void telemetryData(PBase::Values, quint64 timestamp_ms);
+    void telemetryData(PBase::Values values, quint64 timestamp_ms);
     void valuesData(PBase::Values values);
 
 signals:

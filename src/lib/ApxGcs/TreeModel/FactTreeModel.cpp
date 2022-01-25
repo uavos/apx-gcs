@@ -25,16 +25,24 @@
 
 FactTreeModel::FactTreeModel(Fact *root, QObject *parent)
     : QAbstractItemModel(parent)
-    , root(root)
 {
     updateTimer.setSingleShot(true);
     updateTimer.setInterval(500);
     connect(&updateTimer, &QTimer::timeout, this, &FactTreeModel::updateTimerTimeout);
+
+    setRoot(root);
+}
+void FactTreeModel::setRoot(Fact *f)
+{
+    beginResetModel();
+    _root = f;
+    checkConnections(f);
+    endResetModel();
 }
 
 QHash<int, QByteArray> FactTreeModel::roleNames() const
 {
-    return root->model()->roleNames();
+    return _root->model()->roleNames();
 }
 
 QVariant FactTreeModel::data(const QModelIndex &index, int role) const
@@ -69,7 +77,7 @@ QModelIndex FactTreeModel::index(int row, int column, const QModelIndex &parent)
         return QModelIndex();
     Fact *parentFact;
     if (!parent.isValid())
-        parentFact = root;
+        parentFact = _root;
     else
         parentFact = fact(parent);
     if (!parentFact)
@@ -91,7 +99,7 @@ QModelIndex FactTreeModel::parent(const QModelIndex &index) const
     if (!i->parentFact())
         return QModelIndex();
     Fact *p = i->parentFact();
-    if (!p || p == root)
+    if (!p || p == _root)
         return QModelIndex();
     checkConnections(p);
     return factIndex(p);
@@ -103,7 +111,7 @@ int FactTreeModel::rowCount(const QModelIndex &parent) const
     if (parent.column() > 0)
         return 0;
     if (!parent.isValid())
-        parentFact = root;
+        parentFact = _root;
     else
         parentFact = fact(parent);
     return parentFact->size();
@@ -161,7 +169,7 @@ Fact *FactTreeModel::fact(const QModelIndex &index) const
 }
 QModelIndex FactTreeModel::factIndex(FactBase *item, int column) const
 {
-    if (!item || item == root)
+    if (!item || item == _root)
         return QModelIndex();
     return createIndex(item->num(), column, item);
 }

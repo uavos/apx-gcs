@@ -37,8 +37,6 @@ class TelemetryRecorder : public Fact
 public:
     explicit TelemetryRecorder(Vehicle *vehicle, Fact *parent);
 
-    quint64 currentTimstamp() const;
-
 private:
     Vehicle *_vehicle;
 
@@ -48,10 +46,6 @@ private:
     bool dbCheckRecord();
 
     quint64 recTelemetryID{};
-    QList<double> recValues;
-    QHash<quint64, Fact *> factsMap;
-
-    void updateFactsMap();
 
     //auto recorder
     bool checkAutoRecord(void);
@@ -59,12 +53,18 @@ private:
     QTimer timeUpdateTimer, recStopTimer;
 
     //timestamp
-    quint64 dl_timestamp_t0{0};
+    bool _reset_timestamp{true};
+    quint64 _ts_t0{}; // telemetry record start time
+    quint64 _ts_t1{}; // telemetry shift time (data in beginning)
+    quint64 _ts_t2{}; // current telemetry corrected timestamp
+    QElapsedTimer _tsElapsed;
 
-    quint64 getDataTimestamp();
+    quint64 getEventTimestamp();
 
-    DatabaseRequest *reqNewRecord;
+    DatabaseRequest *reqNewRecord{};
     QList<DBReqTelemetryWriteBase *> reqPendingList;
+
+    PBase::Values _values;
 
     QString confTitle;
 
@@ -72,9 +72,11 @@ private:
     QString configHash;
     QString missionHash;
 
-    void invalidateCache();
+    void cleanupValues(PBase::Values *values);
+    void convertValues(PBase::Values *values);
 
-    quint64 m_currentTimestamp{0};
+    void invalidateCache();
+    void dbWriteRequest(DBReqTelemetryWriteBase *req);
 
 private slots:
     void updateStatus();
@@ -82,7 +84,7 @@ private slots:
     void restartRecording();
 
     //database
-    void updateCurrentID(quint64 telemetryID);
+    void dbRecordCreated(quint64 telemetryID);
     void writeEvent(const QString &name, const QString &value, const QString &uid, bool uplink);
 
     //internal flow
@@ -93,7 +95,9 @@ private slots:
 
 public slots:
     //exported slots for recording
-    void recordDownlink();
+    void recordTelemetry(PBase::Values values, quint64 timestamp_ms);
+    void recordData(PBase::Values values);
+
     void recordUplink(mandala::uid_t uid, QVariant value);
     //events
     void recordConfigUpdate(NodeItem *node, QString name, QString value);

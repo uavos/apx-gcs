@@ -51,23 +51,12 @@ ActionButton {
     bShowDisabled: true
 
     toolTip: {
+        if(fact)
+            return fact.toolTip().trim()
+
         var list = []
-        if(!fact){
-            list.push(text)
-            list.push(descr)
-            return list.join("\n")
-        }
-
-        var s=fact.toolTip().trim()
-        if(s) list.push(s)
-
-
-        if(fact.section)
-            list.push("section: "+fact.section)
-
-        for(var i in fact.opts)
-            list.push(i+": "+fact.opts[i])
-
+        list.push(text)
+        list.push(descr)
         return list.join("\n")
     }
 

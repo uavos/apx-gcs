@@ -51,7 +51,7 @@ FactDelegateMandala::FactDelegateMandala(Fact *fact, QWidget *parent)
     proxy = new FactProxyModel(this);
     tree->setModel(proxy);
     FactDelegateMandalaModel *model = new FactDelegateMandalaModel(fact, this);
-    proxy->setRootFact(fact->mandala());
+    proxy->setRoot(fact->mandala());
     proxy->setSourceModel(model);
 
     connect(eFilter, &QLineEdit::textChanged, this, &FactDelegateMandala::updateFilter);

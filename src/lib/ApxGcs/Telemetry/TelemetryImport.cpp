@@ -156,24 +156,18 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
             break;
 
         TelemetryDB *db = Database::instance()->telemetry;
-        TelemetryDB::TelemetryFieldsMap fieldsMap = db->fieldsMap();
-        TelemetryDB::TelemetryFieldsAliases fieldsAliases = db->fieldsAliases();
 
-        //construct fieldID map
-        QList<quint64> recFieldsMap;
+        //construct fields sequence map for stream decoder, used for 'D' tag
+        QList<mandala::uid_t> xml_uid_map;
         for (int i = 0; i < fields.size(); ++i)
-            recFieldsMap.append(0);
+            xml_uid_map.append(0);
         for (int i = 0; i < fields.size(); ++i) {
-            const QString &s = fields.at(i);
-            if (fieldsMap.values().contains(s)) {
-                recFieldsMap[i] = fieldsMap.key(s);
+            auto uid = db->mandala_uid(fields.at(i));
+            if (!uid) {
+                qWarning() << "ignored field" << fields.at(i) << i;
                 continue;
             }
-            if (fieldsAliases.contains(s)) {
-                recFieldsMap[i] = fieldsMap.key(fieldsAliases.value(s));
-                continue;
-            }
-            qWarning() << "ignored field" << s;
+            xml_uid_map[i] = uid;
         }
 
         //read <data>
@@ -207,18 +201,19 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
             }
             if (tag == "U") {
                 QString name = xml.attributes().value("name").toString();
-                quint64 fieldID = fieldsMap.key(name);
-                if (!fieldID && fieldsAliases.contains(name))
-                    fieldID = fieldsMap.key(fieldsAliases.value(name));
-                if (fieldID) {
-                    dbSaveData(t, fieldID, xml.readElementText().toDouble(), true);
+                auto uid = db->mandala_uid(name);
+                if (uid) {
+                    PBase::Values values;
+                    values.insert(uid, xml.readElementText().toDouble());
+                    dbSaveData(t, values, true);
                 } else {
                     qWarning() << "ignored field" << name;
                 }
                 continue;
             }
-            if (tag == "D") {
+            if (tag == "D") { // TODO check import/export
                 QStringList st = xml.readElementText().split(',', Qt::KeepEmptyParts);
+                PBase::Values values;
                 uint i = 0;
                 for (auto const &s : st) {
                     if (s.isEmpty()) {
@@ -229,12 +224,13 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
                         i += s.mid(1).toUInt();
                         continue;
                     }
-                    quint64 fieldID = recFieldsMap.at(i++);
-                    if (fieldID) {
-                        dbSaveData(t, fieldID, s.toDouble(), false);
+                    auto uid = xml_uid_map.at(i++);
+                    if (uid) {
+                        values.insert(uid, s.toDouble());
                     }
                 }
-
+                if (!values.isEmpty())
+                    dbSaveData(t, values, false);
                 continue;
             }
             qWarning() << "unknown tag" << tag;
@@ -327,13 +323,9 @@ quint64 TelemetryImport::dbSaveID(
     req.execSynchronous();
     return req.telemetryID;
 }
-void TelemetryImport::dbSaveData(quint64 time_ms, quint64 fieldID, double value, bool uplink)
+void TelemetryImport::dbSaveData(quint64 time_ms, PBase::Values values, bool uplink)
 {
-    DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(telemetryID,
-                                                               time_ms,
-                                                               fieldID,
-                                                               value,
-                                                               uplink);
+    DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(telemetryID, time_ms, values, uplink);
     req->exec();
 }
 void TelemetryImport::dbSaveEvent(

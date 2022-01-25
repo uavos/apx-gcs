@@ -22,7 +22,7 @@
 #pragma once
 
 #include "TelemetryDB.h"
-#include <QtCore>
+#include <Protocols/PBase.h>
 
 class DBReqTelemetryNewRecord : public DBReqTelemetry
 {
@@ -75,16 +75,16 @@ class DBReqTelemetryWriteData : public DBReqTelemetryWriteBase
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryWriteData(
-        quint64 telemetryID, quint64 t, quint64 fieldID, double value, bool uplink)
+    explicit DBReqTelemetryWriteData(quint64 telemetryID,
+                                     quint64 t,
+                                     PBase::Values values,
+                                     bool uplink)
         : DBReqTelemetryWriteBase(telemetryID, t, uplink)
-        , fieldID(fieldID)
-        , value(value)
+        , _values(values)
     {}
 
 private:
-    quint64 fieldID;
-    double value;
+    PBase::Values _values;
 
 protected:
     bool run(QSqlQuery &query);

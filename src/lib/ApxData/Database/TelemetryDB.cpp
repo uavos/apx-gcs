@@ -24,6 +24,8 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 
+// TODO move cache tables to external file
+
 TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     : DatabaseSession(parent, "telemetry", sessionName, "v2")
     , latestInvalidCacheID(0)
@@ -168,25 +170,44 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "TelemetryCacheData", "type", false);
 }
 
-TelemetryDB::TelemetryFieldsMap TelemetryDB::fieldsMap()
+void TelemetryDB::updateFieldsMap(FieldsByUID byUID, FieldsByName byName)
 {
     QMutexLocker lock(&pMutex);
-    return m_fieldsMap;
+    _fieldsByUID = byUID;
+    _fieldsByName = byName;
+
+    for (auto s : byName.keys())
+        _uidByName.insert(s, byUID.key(byName.value(s)));
 }
-void TelemetryDB::setFieldsMap(const TelemetryFieldsMap &v)
+quint64 TelemetryDB::field_key(mandala::uid_t uid)
 {
     QMutexLocker lock(&pMutex);
-    m_fieldsMap = v;
+    auto key = _fieldsByUID.value(uid);
+    if (!key) {
+        qWarning() << "missing field uid" << uid;
+    }
+    return key;
 }
-TelemetryDB::TelemetryFieldsAliases TelemetryDB::fieldsAliases()
+quint64 TelemetryDB::field_key(QString name)
 {
     QMutexLocker lock(&pMutex);
-    return m_fieldsAliases;
+    auto key = _fieldsByName.value(name);
+    if (!key) {
+        qWarning() << "missing field name" << name;
+    }
+    return key;
 }
-void TelemetryDB::setFieldsAliases(const TelemetryFieldsAliases &v)
+mandala::uid_t TelemetryDB::mandala_uid(QString name)
 {
+    // used by file import
     QMutexLocker lock(&pMutex);
-    m_fieldsAliases = v;
+    return _uidByName.value(name);
+}
+mandala::uid_t TelemetryDB::mandala_uid(quint64 field_key)
+{
+    // used by telemetry reader
+    QMutexLocker lock(&pMutex);
+    return _fieldsByUID.key(field_key);
 }
 
 void TelemetryDB::markCacheInvalid(quint64 telemetryID)
@@ -202,7 +223,9 @@ void TelemetryDB::markCacheInvalid(quint64 telemetryID)
 QList<quint64> TelemetryDB::invalidCacheList()
 {
     QMutexLocker lock(&pMutex);
-    return m_invalidCacheList;
+    auto m = m_invalidCacheList;
+    m.detach();
+    return m;
 }
 void TelemetryDB::clearInvalidCacheList()
 {
@@ -271,6 +294,7 @@ bool DBReqTelemetry::run(QSqlQuery &query)
 
 bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 {
+    // called by LOCAL vehicle with 'records' initialized to current mandala fields
     connect(
         this,
         &DBReqTelemetryUpdateMandala::progress,
@@ -279,10 +303,12 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
         Qt::QueuedConnection);
 
     const QStringList &n = records.names;
+    int i_id = n.indexOf("id");
     int i_name = n.indexOf("name");
 
-    TelemetryDB::TelemetryFieldsMap fmap;
-    TelemetryDB::TelemetryFieldsAliases faliases;
+    TelemetryDB::FieldsByUID byUID;
+    TelemetryDB::FieldsByName byName;
+    QList<quint64> all_keys;
 
     //load existing fields
     query.prepare("SELECT * FROM TelemetryFields");
@@ -295,6 +321,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
     bool mod = false;
     for (auto const &f : records.values) {
         QString f_name = f.at(i_name).toString();
+        mandala::uid_t uid = f.at(i_id).toUInt();
 
         quint64 key = 0;
         bool upd = false;
@@ -302,7 +329,9 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
             const QString &name = r.at(i_r_name).toString();
             if (name == f_name) {
                 key = r.at(0).toULongLong();
-                fmap.insert(key, f_name);
+                byUID.insert(uid, key);
+                byName.insert(f_name, key);
+                all_keys.append(key);
                 //check entire row match
                 for (int i = 1; i < r.size(); ++i) {
                     if (r.at(i).toString() == f.value(n.indexOf(rn.at(i))).toString()) {
@@ -329,7 +358,9 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
             if (!query.exec())
                 return false;
             key = query.lastInsertId().toULongLong();
-            fmap.insert(key, f_name);
+            byUID.insert(uid, key);
+            byName.insert(f_name, key);
+            all_keys.append(key);
         } else {
             apxConsole() << "update telemetry field:" << f_name;
         }
@@ -361,7 +392,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
     QList<quint64> rmlist;
     for (auto const &r : db_records.values) {
         quint64 key = r.at(0).toULongLong();
-        if (fmap.contains(key))
+        if (all_keys.contains(key))
             continue;
         apxConsole() << "remove telemetry field:" << r.at(i_r_name).toString();
         rmlist.append(key);
@@ -393,8 +424,7 @@ bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
         db->enable();
     }
 
-    static_cast<TelemetryDB *>(db)->setFieldsMap(fmap);
-    static_cast<TelemetryDB *>(db)->setFieldsAliases(faliases);
+    static_cast<TelemetryDB *>(db)->updateFieldsMap(byUID, byName);
 
     return true;
 }

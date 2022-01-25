@@ -30,8 +30,8 @@ MapPrefs::MapPrefs(Fact *parent)
                           tr("Name of map plugin"),
                           Text | PersistentValue,
                           "earth-box");
-    f_provider->setDefaultValue("uavos");
-    f_provider->setEnumStrings(QStringList() << "uavos"
+    f_provider->setDefaultValue("default");
+    f_provider->setEnumStrings(QStringList() << "default"
                                              << "osm");
 
     f_type = new Fact(this,

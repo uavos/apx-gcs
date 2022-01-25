@@ -220,7 +220,7 @@ bool PApxNodeFile::check_info(PStreamReader &stream)
     if (!chg)
         return true;
     {
-        qDebug() << "info update";
+        // qDebug() << "info update";
         QStringList st;
         st << AppRoot::capacityToString(info.size, 2);
         st << QString("T:%1").arg(info.time);

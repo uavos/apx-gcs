@@ -47,8 +47,13 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     // recorder
     auto protocol = vehicle->protocol();
 
-    connect(vehicle, &Vehicle::telemetryData, this, &TelemetryRecorder::recordDownlink);
-    connect(protocol->data(), &PData::valuesData, this, &TelemetryRecorder::recordDownlink);
+    connect(protocol->telemetry(),
+            &PTelemetry::telemetryData,
+            this,
+            &TelemetryRecorder::recordTelemetry);
+    connect(protocol->telemetry(), &PTelemetry::xpdrData, this, &TelemetryRecorder::recordData);
+    connect(protocol->data(), &PData::valuesData, this, &TelemetryRecorder::recordData);
+
     connect(vehicle, &Vehicle::sendValue, this, &TelemetryRecorder::recordUplink);
 
     // record serial port data
@@ -92,9 +97,6 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
 
     // display
     connect(this, &TelemetryRecorder::timeChanged, this, &TelemetryRecorder::updateStatus);
-
-    recTelemetryID = 0;
-    reqNewRecord = nullptr;
 
     timeUpdateTimer.setSingleShot(true);
     timeUpdateTimer.setInterval(500);
@@ -151,38 +153,53 @@ bool TelemetryRecorder::dbCheckRecord()
         connect(req,
                 &DBReqTelemetryNewRecord::idUpdated,
                 this,
-                &TelemetryRecorder::updateCurrentID,
+                &TelemetryRecorder::dbRecordCreated,
                 Qt::QueuedConnection);
-        req->exec();
         reqNewRecord = req;
         reqPendingList.clear();
+
+        // write initial mandala state
+        PBase::Values values;
+        for (auto f : _vehicle->f_mandala->valueFacts()) {
+            if (!f->everReceived())
+                continue;
+            values.insert(f->uid(), f->getValueForStream());
+        }
+        _values = values;
+        reqPendingList.append(new DBReqTelemetryWriteData(0, 0, _values, false));
+
         apxConsole() << tr("Telemetry record request");
+        reqNewRecord->exec();
     }
+
     if (reqPendingList.size() > 50000)
         reqPendingList.takeFirst();
+
     return false;
 }
-void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
+void TelemetryRecorder::dbRecordCreated(quint64 telemetryID)
 {
     if (!reqNewRecord)
         return;
     if (!telemetryID)
         return;
+
     //qDebug() << telemetryID << reqPendingList.size();
     auto chash = configHash;
     recTelemetryID = telemetryID;
     reqNewRecord = nullptr;
     configHash.clear();  //force write
     missionHash.clear(); //force write
-    recValues.clear();
+
     recordMission(false);
     recordConfig(chash, "init");
-    recordDownlink();
+
     for (auto req : reqPendingList) {
         req->telemetryID = recTelemetryID;
         req->exec();
     }
     reqPendingList.clear();
+
     //record shared info
     QVariantMap info;
     info["machineUID"] = App::machineUID();
@@ -191,35 +208,90 @@ void TelemetryRecorder::updateCurrentID(quint64 telemetryID)
     DBReqTelemetryWriteSharedInfo *req = new DBReqTelemetryWriteSharedInfo(telemetryID, info);
     req->exec();
 }
-
-quint64 TelemetryRecorder::getDataTimestamp()
+void TelemetryRecorder::cleanupValues(PBase::Values *values)
 {
-    quint64 vts = _vehicle->f_mandala->timestamp();
-    //if (vts == 0)
-    //    reset();
-    if (!dl_timestamp_t0 || vts < dl_timestamp_t0)
-        dl_timestamp_t0 = vts;
-    quint64 t = vts - dl_timestamp_t0;
+    for (auto uid : values->keys()) {
+        auto v = values->value(uid);
+        if (_values.value(uid) == v) {
+            values->remove(uid);
+        } else {
+            _values.insert(uid, v);
+        }
+    }
+}
+void TelemetryRecorder::convertValues(PBase::Values *values)
+{
+    auto m = _vehicle->f_mandala;
+    for (auto uid : values->keys()) {
+        auto f = m->fact(uid);
+        if (f->isConverted())
+            (*values)[uid] = f->convertFromStream(values->value(uid));
+    }
+}
+void TelemetryRecorder::dbWriteRequest(DBReqTelemetryWriteBase *req)
+{
+    if (recTelemetryID) {
+        req->exec();
+        invalidateCache();
+    } else {
+        reqPendingList.append(req);
+    }
+}
+quint64 TelemetryRecorder::getEventTimestamp()
+{
+    if (!_tsElapsed.isValid()) {
+        _tsElapsed.start();
+        return 0;
+    }
 
-    if (m_currentTimestamp > t)
-        reset();
-
-    setTime(t / 1000);
-    m_currentTimestamp = t;
+    quint64 t = _tsElapsed.elapsed();
+    t += _ts_t2;
     return t;
 }
 
-void TelemetryRecorder::updateFactsMap()
+void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_ms)
 {
-    //fill facts map
-    if (!factsMap.isEmpty())
-        return;
-    const TelemetryDB::TelemetryFieldsMap &map = Database::instance()->telemetry->fieldsMap();
-    for (auto i : map.keys()) {
-        Fact *f = _vehicle->f_mandala->fact(map.value(i));
-        if (f)
-            factsMap.insert(i, f);
+    // always start DB recorder time counter from zero
+    auto t = timestamp_ms;
+
+    if (t < _ts_t0)
+        reset();
+
+    dbCheckRecord();
+
+    if (_reset_timestamp) {
+        _reset_timestamp = false;
+        _ts_t0 = t;
+        if (_tsElapsed.isValid()) {
+            _ts_t1 = _tsElapsed.elapsed();
+            _ts_t1 = (_ts_t1 / 100 + 1) * 100;
+        }
     }
+    t -= _ts_t0;
+    t += _ts_t1;
+    _ts_t2 = t;
+    _tsElapsed.start();
+
+    // qDebug() << _vehicle->title() << "ts" << t << _ts_t0;
+
+    setTime(t / 1000);
+
+    // record changed values only
+    cleanupValues(&values);
+    if (values.isEmpty())
+        return;
+    convertValues(&values);
+
+    dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, t, values, false));
+}
+void TelemetryRecorder::recordData(PBase::Values values)
+{
+    cleanupValues(&values);
+    if (values.isEmpty())
+        return;
+    convertValues(&values);
+
+    dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, false));
 }
 
 void TelemetryRecorder::writeEvent(const QString &name,
@@ -229,88 +301,31 @@ void TelemetryRecorder::writeEvent(const QString &name,
 {
     dbCheckRecord();
 
-    DBReqTelemetryWriteEvent *req = new DBReqTelemetryWriteEvent(recTelemetryID,
-                                                                 getDataTimestamp(),
-                                                                 name,
-                                                                 value,
-                                                                 uid,
-                                                                 uplink);
-    if (recTelemetryID) {
-        req->exec();
-        invalidateCache();
-    } else
-        reqPendingList.append(req);
-}
-
-void TelemetryRecorder::recordDownlink()
-{
-    //write all updated facts
-    dbCheckRecord();
-    quint64 t = getDataTimestamp();
-
-    //collect changed facts
-    QList<QPair<quint64, double>> values;
-    int iv = -1;
-    updateFactsMap();
-    for (auto fieldID : factsMap.keys()) {
-        Fact *f = factsMap.value(fieldID);
-        iv++;
-        QVariant vv = f->value();
-        double v = vv.toDouble();
-        if (iv < recValues.size()) {
-            if (recValues.at(iv) == v) {
-                continue;
-            } else {
-                recValues[iv] = v;
-            }
-        } else {
-            recValues.append(v);
-            if (v == 0)
-                continue;
-        }
-        values.append(QPair<quint64, double>(fieldID, v));
-    }
-    //qDebug() << values.size();
-    if (values.isEmpty())
-        return;
-    for (int i = 0; i < values.size(); ++i) {
-        quint64 fieldID = values.at(i).first;
-        double v = values.at(i).second;
-        DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(recTelemetryID,
-                                                                   t,
-                                                                   fieldID,
-                                                                   v,
-                                                                   false);
-        if (recTelemetryID) {
-            req->exec();
-            invalidateCache();
-        } else
-            reqPendingList.append(req);
-    }
+    auto req = new DBReqTelemetryWriteEvent(recTelemetryID,
+                                            getEventTimestamp(),
+                                            name,
+                                            value,
+                                            uid,
+                                            uplink);
+    dbWriteRequest(req);
 }
 
 void TelemetryRecorder::recordUplink(mandala::uid_t uid, QVariant value)
 {
     dbCheckRecord();
-    updateFactsMap();
 
-    Fact *f = _vehicle->f_mandala->fact(uid);
+    auto f = _vehicle->f_mandala->fact(uid);
     if (!f) {
         auto name = _vehicle->f_mandala->meta(uid).path;
         auto vtext = value.toStringList().join(',');
         writeEvent("cmd", QString("%1/%2").arg(_vehicle->title()).arg(name), vtext, true);
         return;
     }
-    DBReqTelemetryWriteData *req = new DBReqTelemetryWriteData(recTelemetryID,
-                                                               getDataTimestamp(),
-                                                               factsMap.key(f),
-                                                               value.toDouble(),
-                                                               true);
-    if (recTelemetryID) {
-        req->exec();
-        invalidateCache();
-    } else
-        reqPendingList.append(req);
+
+    PBase::Values values;
+    values.insert(uid, f->convertFromStream(value));
+    auto req = new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, true);
+    dbWriteRequest(req);
 }
 
 // write data slots
@@ -423,14 +438,13 @@ void TelemetryRecorder::setRecording(bool v)
 void TelemetryRecorder::reset(void)
 {
     recTelemetryID = 0;
-    dl_timestamp_t0 = 0;
-    recValues.clear();
-    setTime(0, true);
-}
 
-quint64 TelemetryRecorder::currentTimstamp() const
-{
-    return m_currentTimestamp;
+    _reset_timestamp = true;
+    _ts_t0 = _ts_t1 = _ts_t2 = 0;
+    _tsElapsed.invalidate();
+    qDebug() << "record reset";
+
+    setTime(0, true);
 }
 
 quint64 TelemetryRecorder::time() const

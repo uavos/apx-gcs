@@ -25,10 +25,14 @@
 #include <App/AppRoot.h>
 #include <mandala/MandalaMetaBase.h>
 
-// TODO PLUGIN: gource-like real-time visualization of Mandala:
-// See: https://www.youtube.com/watch?v=NjUuAuBcoqs&ab_channel=Gource
+// TODO PLUGIN: real-time visualization of Mandala state:
+// See: https://youtu.be/NjUuAuBcoqs
 // See: https://doc.qt.io/qt-5/qtwidgets-graphicsview-elasticnodes-example.html
 // Intended to monitor by human mind the current state of the vehicle and its behavior in real-time.
+// Inspiration could be found on shaders workbench here:
+//   http://regis.toile-libre.org/fractals/MYOS/
+//   or here https://youtu.be/qMIS2BaDilY
+//   or even here: https://youtu.be/Sb5aq5HcS1A
 
 Mandala::Mandala(Fact *parent)
     : Fact(parent,
@@ -37,7 +41,6 @@ Mandala::Mandala(Fact *parent)
            tr("Vehicle data tree"),
            Group | FilterModel | ModifiedGroup,
            "hexagon-multiple")
-    , m_timestamp(0)
 {
     setMandala(this);
     qmlRegisterUncreatableType<MandalaFact>("APX.Facts", 1, 0, "MandalaFact", "Reference only");
@@ -61,7 +64,7 @@ Mandala::Mandala(Fact *parent)
                 apxMsgW() << "dup group:" << group->child(d.name)->path(1);
             }
             MandalaFact *f = new MandalaFact(this, group, d);
-            uid_map.insert(f->uid(), f);
+            _uid_map.insert(f->uid(), f);
             group = f;
             if (d.level == 2)
                 group->setSection(sect);
@@ -71,20 +74,15 @@ Mandala::Mandala(Fact *parent)
             apxMsgW() << "dup fact:" << group->child(d.name)->path(2);
         }
         MandalaFact *f = new MandalaFact(this, group, d);
-        uid_map.insert(f->uid(), f);
+        _uid_map.insert(f->uid(), f);
     }
-}
-
-quint64 Mandala::timestamp() const
-{
-    return m_timestamp;
 }
 
 MandalaFact *Mandala::fact(mandala::uid_t uid) const
 {
     if (uid == 0xFFFF || mandala::is_bundle(uid))
         return nullptr;
-    MandalaFact *f = uid_map.value(uid);
+    MandalaFact *f = _uid_map.value(uid);
     if (f)
         return f;
     apxMsgW() << "Mandala uid not found:" << uid;
@@ -105,12 +103,31 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
     return f;
 }
 
+mandala::uid_t Mandala::uid(const QString &mpath) // static
+{
+    for (auto const &d : mandala::meta) {
+        if (d.path == mpath)
+            return d.uid;
+    }
+    return {};
+}
+
+QList<MandalaFact *> Mandala::valueFacts() const
+{
+    QList<MandalaFact *> list;
+    for (auto f : _uid_map.values()) {
+        if (!f->isSystem())
+            list.append(f);
+    }
+    return list;
+}
+
 QString Mandala::mandalaToString(xbus::pid_raw_t pid_raw) const
 {
     xbus::pid_s pid(pid_raw);
     if (!pid.seq)
         return QString();
-    MandalaFact *f = uid_map.value(pid.uid);
+    MandalaFact *f = _uid_map.value(pid.uid);
     return f ? f->mpath() : QString();
 }
 xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
@@ -124,7 +141,7 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
     return pid.raw();
 }
 
-const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
+const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
 {
     for (auto const &d : mandala::meta) {
         if (d.uid == uid)
@@ -135,10 +152,6 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid)
 
 void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 {
-    m_timestamp = timestamp_ms;
-    if (m_timestamp == 0)
-        _timestamp_time.start();
-
     for (auto const &uid : values.keys()) {
         MandalaFact *f = fact(uid);
         if (!f)
@@ -149,18 +162,10 @@ void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 
 void Mandala::valuesData(PBase::Values values)
 {
-    if (!_timestamp_time.isValid()) {
-        m_timestamp = 0;
-        _timestamp_time.start();
-    } else {
-        qint64 elapsed = _timestamp_time.elapsed();
-        quint64 uelapsed = elapsed > 0 ? elapsed : 0;
-        if (m_timestamp < uelapsed)
-            m_timestamp = uelapsed;
-    }
-
     //qDebug() << values.size();
     for (auto const &uid : values.keys()) {
+        //qDebug() << meta(uid).path;
+
         MandalaFact *f = fact(uid);
         if (!f)
             continue;

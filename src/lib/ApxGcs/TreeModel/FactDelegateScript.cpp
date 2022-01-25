@@ -92,7 +92,7 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     auto cc_plugin = App::plugin("ScriptCompiler");
     if (cc_plugin) {
         auto c = cc_plugin->control;
-        auto use_vscode = c->property("vscode").value<Fact *>()->value().toBool();
+        auto use_vscode = c->property("use_vscode").value<Fact *>()->value().toBool();
         if (use_vscode) {
             launch_vscode();
         }

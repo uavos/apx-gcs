@@ -205,18 +205,23 @@ QString Fact::toolTip() const
         sDataType = QMetaEnum::fromType<FactBase::Flag>().valueToKey(static_cast<int>(dataType()));
     if (!units().isEmpty())
         sDataType += (sDataType.isEmpty() ? "" : ", ") + units();
-    if (sDataType.isEmpty())
-        st << QString("%1").arg(name());
-    else
-        st << QString("%1 [%2]").arg(name()).arg(sDataType);
+    QString s = name();
+    if (s != title())
+        s = QString("%1 (%2)").arg(s).arg(title());
+
+    if (!sDataType.isEmpty())
+        s = QString("%1 [%2]").arg(s).arg(sDataType);
+
+    st << s;
+
     if (!descr().isEmpty())
-        st << descr();
-    st << path();
+        st << QString("Descr: %1").arg(descr());
+    st << QString("Path: %1").arg(path());
     if (!m_enumStrings.isEmpty()) {
         if (m_enumStrings.size() > 25)
-            st << QString("{%1}").arg(m_enumStrings.size());
+            st << QString("Values: [%1]").arg(m_enumStrings.size());
         else
-            st << QString("{%1}").arg(m_enumStrings.join(','));
+            st << QString("Values: {%1}").arg(m_enumStrings.join(','));
     }
     if (!defaultValue().isNull())
         st << QString("Default: %1").arg(defaultValue().toString());
@@ -228,6 +233,17 @@ QString Fact::toolTip() const
         st << QString("Increment: %1").arg(increment());
     if (precision() >= 0)
         st << QString("Precision: %1").arg(precision());
+
+    if (!section().isEmpty())
+        st << QString("Section: %1").arg(section());
+
+    if (!opts().isEmpty()) {
+        st << "";
+        st << "[opts]";
+        for (auto k : opts().keys())
+            st << QString("%1: %2").arg(k).arg(opts().value(k).toString());
+    }
+
     return st.join('\n');
 }
 

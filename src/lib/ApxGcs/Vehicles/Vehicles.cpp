@@ -68,12 +68,27 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
     AppRoot::instance()->setMandala(f_replay->mandala());
 
     //JS register mandala
-    //if (App::instance()->engine()) {
-
     Mandala *m = f_replay->f_mandala;
     //register mandala constants for QML and JS
-    for (auto s : m->constants.keys()) {
-        const QVariant &v = m->constants.value(s);
+    QHash<QString, QVariant> constants;
+    for (auto f : m->valueFacts()) {
+        if (f->dataType() != Enum)
+            continue;
+        auto st = f->enumStrings();
+        for (int i = 0; i < st.size(); ++i) {
+            auto s = st.at(i);
+            s = QString("%1_%2_%3").arg(f->parentFact()->name()).arg(f->name()).arg(s);
+
+            if (!constants.contains(s)) {
+                constants.insert(s, i);
+                continue;
+            }
+            if (constants.value(s) != i)
+                apxMsgW() << "enum:" << s << f->mpath();
+        }
+    }
+    for (auto s : constants.keys()) {
+        const QVariant &v = constants.value(s);
         //JSEngine layer
         App::setGlobalProperty(s, v);
         //QmlEngine layer
@@ -84,7 +99,6 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
     for (auto f : m->facts()) {
         App::instance()->engine()->jsProtectObjects(static_cast<MandalaFact *>(f)->mpath());
     }
-    //}
 
     //Database register fields
     DatabaseRequest::Records recMandala;
@@ -92,14 +106,15 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
                      << "name"
                      << "title"
                      << "units";
-    for (auto f : m->uid_map.values()) {
-        if (f->isSystem())
-            continue;
+    for (auto f : m->valueFacts()) {
         QVariantList v;
         v << f->meta().uid;
         v << f->mpath();
         v << f->meta().title;
-        v << f->meta().units;
+        if (f->dataType() == Enum)
+            v << f->enumStrings();
+        else
+            v << f->units();
         recMandala.values.append(v);
     }
 

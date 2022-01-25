@@ -259,10 +259,6 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
     events.swap(this->events);
     this->geoPath = path;
 
-    /*for (int i = 0; i < this->events.size(); ++i) {
-        const event_t &e = this->events.at(i);
-        addEventFact(e.time, e.name, e.value, e.uid);
-    }*/
     changeThread(f_events, thread());
     f_events->setParentFact(this);
     for (int i = 0; i < f_events->size(); ++i) {
@@ -272,7 +268,6 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
             connect(f, &Fact::triggered, this, [this, f]() { emit recordFactTriggered(f); });
         }
     }
-    //App::jsync(this);
 
     quint64 tMax = 0;
     if (!this->times.isEmpty())

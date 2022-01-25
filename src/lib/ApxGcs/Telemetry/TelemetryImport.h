@@ -23,6 +23,7 @@
 
 #include <ApxMisc/QueueWorker.h>
 #include <Database/DatabaseRequest.h>
+#include <Protocols/PBase.h>
 
 class TelemetryImport : public QueueWorker
 {
@@ -58,7 +59,7 @@ private:
     quint64 dbReadSharedHashId(QString hash);
     quint64 dbSaveID(
         QString vehicleUID, QString callsign, QString comment, bool rec, quint64 timestamp);
-    void dbSaveData(quint64 time_ms, quint64 fieldID, double value, bool uplink);
+    void dbSaveData(quint64 time_ms, PBase::Values values, bool uplink);
     void dbSaveEvent(quint64 time_ms,
                      const QString &name,
                      const QString &value,

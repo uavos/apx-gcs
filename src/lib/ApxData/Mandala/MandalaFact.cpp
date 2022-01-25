@@ -65,6 +65,8 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                     _convert_value = true;
                     _conversion_factor = qRadiansToDegrees(1.);
                     setUnits(units().replace("rad", "deg"));
+
+                    //TODO make universal conversion vs telemetry DB, widgets and charts
                 }
                 break;
             case mandala::type_dword:
@@ -90,18 +92,6 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                 QStringList st = units().split(',');
                 setUnits(QString());
                 setEnumStrings(st);
-                for (int i = 0; i < st.size(); ++i) {
-                    const QString &s
-                        = QString("%1_%2_%3").arg(parentFact()->name()).arg(name()).arg(st.at(i));
-                    //const QString &s = QString("%1_%2").arg(name()).arg(st.at(i));
-                    if (!tree->constants.contains(s)) {
-                        tree->constants.insert(s, i);
-                        continue;
-                    }
-                    if (tree->constants.value(s) == i)
-                        continue;
-                    apxMsgW() << "enum:" << s << mpath();
-                }
             } break;
             }
 
@@ -116,6 +106,8 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
         }
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
     }
+
+    setOpt("PID", QString("%1 (0x%2)").arg(uid()).arg(uid(), 4, 16, QLatin1Char('0')));
 }
 
 bool MandalaFact::setValue(const QVariant &v)
@@ -138,18 +130,24 @@ bool MandalaFact::setValue(const QVariant &v)
 void MandalaFact::setValueFromStream(const QVariant &v)
 {
     //qDebug() << v;
-    if (_convert_value)
-        setRawValueLocal(QVariant::fromValue(v.toDouble() * _conversion_factor));
-    else
-        setRawValueLocal(v);
-    count_rx();
+    setRawValueLocal(convertFromStream(v));
+    increment_rx_cnt();
 }
 QVariant MandalaFact::getValueForStream() const
 {
-    if (_convert_value)
-        return value().toDouble() / _conversion_factor;
-    else
-        return value();
+    return convertForStream(value());
+}
+QVariant MandalaFact::convertFromStream(const QVariant &v) const
+{
+    if (!_convert_value)
+        return v;
+    return QVariant::fromValue(v.toDouble() * _conversion_factor);
+}
+QVariant MandalaFact::convertForStream(const QVariant &v) const
+{
+    if (!_convert_value)
+        return v;
+    return v.toDouble() / _conversion_factor;
 }
 
 bool MandalaFact::setRawValueLocal(QVariant v)
@@ -161,9 +159,10 @@ bool MandalaFact::setRawValueLocal(QVariant v)
     return true;
 }
 
-void MandalaFact::count_rx()
+void MandalaFact::increment_rx_cnt()
 {
     _rx_cnt++;
+    _everReceived = true;
     if (isSystem()) {
         Fact::setValue(QVariant::fromValue(_rx_cnt));
     }
@@ -244,6 +243,10 @@ bool MandalaFact::showThis(QRegExp re) const
 {
     if (Fact::showThis(re))
         return true;
+
+    if (QString("%1 0x%2").arg(uid()).arg(uid(), 4, 16, QLatin1Char('0')).contains(re))
+        return true;
+
     if (options() & FilterExclude)
         return false;
     if (!(options() & FilterSearchAll))
@@ -310,6 +313,8 @@ int MandalaFact::getPrecision()
         if (u == "c")
             return 1;
         if (u == "rpm")
+            return 0;
+        if (u == "rpm/s")
             return 0;
         if (u == "kg/m^3")
             return 2;

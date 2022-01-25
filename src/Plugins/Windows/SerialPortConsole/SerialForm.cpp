@@ -166,9 +166,7 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
 
     QString sTimestamp;
     if (dumpFile.isOpen()) {
-        TelemetryRecorder *rec = Vehicles::instance()->current()->f_telemetry->f_recorder;
-        if (rec)
-            sTimestamp.append(QString("%1").arg(rec->currentTimstamp()));
+        sTimestamp.append(QString("%1").arg(QDateTime::currentDateTime().toMSecsSinceEpoch()));
     }
 
     if (!ui->cbRead->isChecked())

@@ -2,3 +2,4 @@ module Apx.Instruments
 
 Pfd     1.0 pfd/Pfd.qml
 
+# TODO implement AirGlide concept based displays https://www.air-avionics.com/support/AIRGlide_DisplayS_User_EN.pdf

@@ -36,8 +36,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     : Fact(vehicles, protocol ? protocol->name() : "replay", protocol ? protocol->title() : "REPLAY")
     , _protocol(protocol)
 {
-    setSection(vehicles->title());
-
     _storage = new VehicleStorage(this);
 
     if (protocol) {
@@ -152,9 +150,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         // counters
         connect(protocol, &PVehicle::packetReceived, this, &Vehicle::packetReceived);
 
-        // forward telemetry stamp to notify plugins
-        connect(protocol->telemetry(), &PTelemetry::telemetryData, this, &Vehicle::telemetryData);
-        connect(protocol->telemetry(), &PTelemetry::xpdrData, this, &Vehicle::telemetryData);
         // forward serial TX for plugins
         connect(this, &Vehicle::sendSerial, protocol->data(), &PData::sendSerial);
         connect(this, &Vehicle::sendValue, protocol->data(), &PData::sendValue);
@@ -186,6 +181,8 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     connect(this, &Vehicle::geoPathChanged, f, [this, f]() { f->setEnabled(!geoPath().isEmpty()); });
     f->setEnabled(false);
 
+    setOpt("VID", uid());
+
     updateInfo();
 
     App::jsync(this);
@@ -196,7 +193,7 @@ void Vehicle::packetReceived(mandala::uid_t uid)
     if (mandala::cmd::env::match(uid)) {
         MandalaFact *f = f_mandala->fact(uid);
         if (f)
-            f->count_rx();
+            f->increment_rx_cnt();
     }
 }
 
@@ -499,9 +496,24 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
     }
 }
 
-QString Vehicle::toolTip(void) const
+QString Vehicle::toolTip() const
 {
-    return m_info;
+    QStringList st;
+    st.append(Fact::toolTip());
+    if (protocol()) {
+        auto p = protocol();
+        if (!isLocal()) {
+            st.append(QString("UID: %1").arg(p->uid()));
+            st.append(QString("Type: %1").arg(p->vehicleTypeText()));
+        }
+        st.append(QString("ErrCnt: %1").arg(p->errcnt()));
+    }
+    if (!m_info.isEmpty()) {
+        st << "";
+        st << "[info]";
+        st.append(m_info);
+    }
+    return st.join('\n');
 }
 bool Vehicle::follow(void) const
 {

@@ -134,7 +134,7 @@ QString HttpService::reply_mandala(const QString &req)
             facts.append(f);
     }
     if (facts.isEmpty())
-        facts = mandala->uid_map.values();
+        facts = mandala->valueFacts();
     //mandala->currents
     for (auto f : facts) {
         if (doDescr) {
