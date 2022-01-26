@@ -33,7 +33,6 @@ DatabaseSession::DatabaseSession(QObject *parent,
                                  const QString &sessionName,
                                  QString version)
     : Fact(Database::instance(), name, "", "", Group)
-    , fileName(AppDirs::db().absoluteFilePath(version + QDir::separator() + name + ".db"))
     , sessionName(sessionName)
     , inTransaction(false)
     , sql(QSqlDatabase::addDatabase("QSQLITE", sessionName))
@@ -45,6 +44,13 @@ DatabaseSession::DatabaseSession(QObject *parent,
     connect(App::instance(), &App::aboutToQuit, this, &Fact::deleteFact);
 
     setIcon("database");
+
+    // file name
+    // fileName = AppDirs::db().absoluteFilePath(version + QDir::separator() + name + ".db");
+    fileName = AppDirs::db().absoluteFilePath(name);
+    if (!version.isEmpty())
+        fileName.append('.').append(version);
+    fileName.append(".db");
 
     QDir dir(QFileInfo(fileName).absoluteDir());
     if (!dir.exists())

@@ -24,7 +24,7 @@
 #include <App/AppDirs.h>
 
 MissionsDB::MissionsDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, "missions", sessionName, "v2")
+    : DatabaseSession(parent, "missions", sessionName, "1")
 {
     new DBReqMakeTable(this,
                        "Missions",

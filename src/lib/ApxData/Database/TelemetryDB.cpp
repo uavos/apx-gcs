@@ -27,7 +27,7 @@
 // TODO move cache tables to external file
 
 TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, "telemetry", sessionName, "v2")
+    : DatabaseSession(parent, "telemetry", sessionName, "1")
     , latestInvalidCacheID(0)
 {
     qRegisterMetaType<QMap<quint64, QString>>("QMap<quint64,QString>");

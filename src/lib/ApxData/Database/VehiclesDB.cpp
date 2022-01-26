@@ -24,7 +24,7 @@
 #include <App/AppDirs.h>
 
 VehiclesDB::VehiclesDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, "vehicles", sessionName, "v2")
+    : DatabaseSession(parent, "vehicles", sessionName, "1")
 {
     new DBReqMakeTable(this,
                        "Nodes",

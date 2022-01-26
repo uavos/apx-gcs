@@ -25,7 +25,7 @@
 #include <App/AppLog.h>
 
 MapsDB::MapsDB(QObject *parent, QString sessionName)
-    : DatabaseSession(parent, "maps", sessionName, "v2")
+    : DatabaseSession(parent, "maps", sessionName, "")
 {
     new DBReqMakeTable(this,
                        "TileProviders",
