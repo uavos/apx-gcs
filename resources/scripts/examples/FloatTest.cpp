@@ -21,11 +21,13 @@
  */
 #include <apx.h>
 
-
 int main()
 {
-    printf_f("%f",1.234);
+    printf_f("%f", 1.234); // the argument is always float
+
+    printf("%f", 2.34567f); // the argument type must be explicitly specified
+
+    printf("%u", 345u);
 
     return 0;
 }
-

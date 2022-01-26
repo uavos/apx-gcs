@@ -64,7 +64,7 @@ void NodeScript::_update_cc_args()
     if (cc.isEmpty())
         return;
 
-    // parse compiler args
+    // parse compiler args - fill from json file
     cc_args.clear();
     QFile ftasks(AppDirs::res().filePath("scripts/.vscode/tasks.json"));
     if (ftasks.open(QFile::ReadOnly | QFile::Text)) {

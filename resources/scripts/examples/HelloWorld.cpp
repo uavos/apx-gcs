@@ -21,11 +21,9 @@
  */
 #include <apx.h>
 
-
 int main()
 {
-    puts("Hello world!");
+    puts("Hello world!"); // faster than printf
 
     return 0;
 }
-

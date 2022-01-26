@@ -1,6 +1,5 @@
 {
     "wasm": {
-        "cc": "${env:HOME}/Documents/UAVOS/Scripts/compiler/wasi-sdk-11.0/bin/clang",
         "sysroot": "${workspaceFolder}/sysroot",
         "flags": "-I${workspaceFolder}/include"
     },
@@ -18,5 +17,5 @@
     "C_Cpp.autocomplete": "Default",
     "C_Cpp.formatting": "Default",
     "C_Cpp.errorSquiggles": "Enabled",
-    "C_Cpp.intelliSenseEngine": "Default",
+    "C_Cpp.intelliSenseEngine": "Default"
 }

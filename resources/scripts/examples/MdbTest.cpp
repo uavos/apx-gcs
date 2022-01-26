@@ -25,7 +25,8 @@ using alt = Mandala<mandala::cmd::nav::pos::altitude>;
 
 int main()
 {
-    alt::publish(123); // set value and publish
+    alt::publish(123u); // set value and publish
+    // literal type must be explicitly specified i.e. 123.f
 
     alt("on_alt"); // subscribe `on changed` event
 

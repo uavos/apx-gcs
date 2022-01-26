@@ -33,7 +33,7 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
                         Bool | PersistentValue);
     f_vscode->setDefaultValue(true);
 
-    m_version = "12.0";
+    m_version = "14.0";
 
 #if defined(Q_OS_MAC)
     m_platform = "macos";
@@ -56,7 +56,7 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
         m_dir.mkpath(".");
 
     if (!lookup())
-        QTimer::singleShot(5000, this, &ScriptCompiler::download);
+        QTimer::singleShot(500, this, &ScriptCompiler::download);
 }
 
 bool ScriptCompiler::lookup()
@@ -74,26 +74,59 @@ bool ScriptCompiler::lookup()
         m_cc = cc.absoluteFilePath();
         qDebug() << "found:" << m_cc;
 
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.vscode"),
-                          AppDirs::scripts().absoluteFilePath(".vscode"));
+        if (App::dryRun() || !App::installed()) {
+            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.vscode"),
+                              AppDirs::scripts().absoluteFilePath(".vscode"));
 
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/sysroot"),
-                          AppDirs::scripts().absoluteFilePath("sysroot"));
+            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/sysroot"),
+                              AppDirs::scripts().absoluteFilePath("sysroot"));
 
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
-                          AppDirs::scripts().absoluteFilePath("include"));
+            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
+                              AppDirs::scripts().absoluteFilePath("include"));
 
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
-                          AppDirs::scripts().absoluteFilePath("examples"));
+            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
+                              AppDirs::scripts().absoluteFilePath("examples"));
+
+            update_vscode();
+        }
 
         setEnabled(true);
         emit available();
         return true;
     } while (0);
 
-    qDebug() << "compilers not found";
+    qWarning() << "compilers not found";
     setEnabled(false);
     return false;
+}
+
+void ScriptCompiler::update_vscode()
+{
+    // update cc vscode settings
+    do {
+        QFile fsettings(AppDirs::scripts().absoluteFilePath(".vscode/settings.json"));
+
+        if (!fsettings.open(QFile::ReadOnly | QFile::Text))
+            break;
+
+        QJsonDocument json = QJsonDocument::fromJson(fsettings.readAll());
+        fsettings.close();
+        QJsonObject root = json.object();
+        QJsonValueRef ref = root.find("wasm").value();
+        if (ref.isUndefined())
+            break;
+
+        QJsonObject o = ref.toObject();
+        o.insert("cc", m_cc);
+        ref = o;
+        json.setObject(root);
+        fsettings.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
+        fsettings.write(json.toJson());
+        fsettings.close();
+
+        return;
+    } while (0);
+    qWarning() << "vscode settings error";
 }
 
 void ScriptCompiler::download()
@@ -202,6 +235,7 @@ void ScriptCompiler::extractFinished(int exitCode, QProcess::ExitStatus exitStat
     QProcess *p = qobject_cast<QProcess *>(sender());
     if (p)
         p->deleteLater();
+    _justExtracted = true;
     if (exitStatus != QProcess::NormalExit || !lookup()) {
         if (p) {
             qWarning() << exitCode << p->errorString();

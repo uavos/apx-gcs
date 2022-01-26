@@ -55,7 +55,11 @@ private:
 
     QDir m_dir;
 
+    bool _justExtracted{};
+
     void extract(QString fileName);
+
+    void update_vscode();
 
 private slots:
     void download();
