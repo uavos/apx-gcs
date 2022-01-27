@@ -96,46 +96,61 @@ void NodeScript::_update_cc_args()
 
 void NodeScript::factValueChanged()
 {
+    QString value = _fact->value().toString();
+    if (_value_s == value)
+        return;
+
+    _code.clear();
+    _source.clear();
+    _title.clear();
+    _log.clear();
+    _error = false;
+
     if (cc.isEmpty()) {
         _updateFactText();
         apxMsgW() << tr("Script compiler is missing");
         return;
     }
 
-    QString value = _fact->value().toString();
-    if (_value_s == value)
-        return;
-
     //qDebug() << value;
 
     QStringList st = value.split(',', Qt::KeepEmptyParts);
     QString title = st.value(0);
     QString src = st.value(1);
+    QString src_code = st.value(2);
+
     _title = title;
 
     if (!src.isEmpty()) {
         QByteArray src_ba = QByteArray::fromHex(src.toLocal8Bit());
         _source = qUncompress(src_ba);
-        _compile(_source);
+        if (src_code.isEmpty())
+            _compile(_source);
+    }
+
+    // compile if necessary
+
+    if (src_code.isEmpty()) {
+        QString code_string;
+        if (!code().isEmpty())
+            code_string = qCompress(code(), 9).toHex().toUpper();
+
+        st.clear();
+        st << _title;
+        if (!code_string.isEmpty()) {
+            st << src;
+            st << code_string;
+        }
+        _value_s = st.join(',');
+
+        //qDebug() << _value_s;
+
+        _fact->setValue(_value_s);
     } else {
-        _code.clear();
+        QByteArray src_ba = QByteArray::fromHex(src_code.toLocal8Bit());
+        _code = qUncompress(src_ba);
     }
 
-    QString code_string;
-    if (!code().isEmpty())
-        code_string = qCompress(code(), 9).toHex().toUpper();
-
-    st.clear();
-    st << _title;
-    if (!code_string.isEmpty()) {
-        st << src;
-        st << code_string;
-    }
-    _value_s = st.join(',');
-
-    //qDebug() << _value_s;
-
-    _fact->setValue(_value_s);
     _updateFactText();
 }
 
