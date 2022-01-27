@@ -224,7 +224,7 @@ bool FactData::updateValue(const QVariant &v)
     } break;
     case Float: {
         qreal vf;
-        if (!_check_type(v, QMetaType::Double)) {
+        if (!(_check_type(v, QMetaType::Double) || _check_type(v, QMetaType::Float))) {
             QString s = v.toString();
             QString u = units();
             if (!u.isEmpty() && s.endsWith(u)) {
@@ -400,7 +400,7 @@ QString FactData::toText(const QVariant &v) const
     }
     if (_check_type(v, QMetaType::QByteArray))
         return v.toByteArray().toHex().toUpper();
-    if (_check_type(v, QMetaType::Double)) {
+    if (_check_type(v, QMetaType::Double) || _check_type(v, QMetaType::Float)) {
         double vf = v.toDouble();
         if (m_precision > 0) {
             double p = std::pow(10.0, m_precision);

@@ -59,8 +59,6 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                 break;
             case mandala::type_real:
                 setDataType(Float);
-                setPrecision(getPrecision());
-                setDefaultValue(0.f);
                 if (units().startsWith("rad")) {
                     _convert_value = true;
                     _conversion_factor = qRadiansToDegrees(1.);
@@ -68,6 +66,8 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                     //TODO make universal conversion vs telemetry DB, widgets and charts
                     setOpt("meta_units", meta.units);
                 }
+                setPrecision(getPrecision());
+                setDefaultValue(0.f);
                 break;
             case mandala::type_dword:
                 setDataType(Int);
