@@ -51,11 +51,19 @@ protected:
     virtual QString mandalaToString(xbus::pid_raw_t pid_raw) const override;
     virtual xbus::pid_raw_t stringToMandala(const QString &s) const override;
 
+private slots:
+    void recordSendValue(mandala::uid_t uid, QVariant value);
+
 public slots:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
     void valuesData(PBase::Values values);
+    void xpdrData(PBase::Values values);
 
 signals:
-    //forwarded to vehicle
+    // forwarded to vehicle
     void sendValue(mandala::uid_t uid, QVariant value);
+
+    // data recorders (converted values)
+    void recordTelemetry(PBase::Values values, quint64 timestamp_ms);
+    void recordData(PBase::Values values, bool uplink);
 };

@@ -130,7 +130,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 Qt::QueuedConnection);
 
         // mandala update
-        connect(f_mandala, &Mandala::sendValue, this, &Vehicle::sendValue);
+        connect(f_mandala, &Mandala::sendValue, protocol->data(), &PData::sendValue);
         connect(protocol->data(), &PData::valuesData, f_mandala, &Mandala::valuesData);
 
         connect(protocol->telemetry(),
@@ -138,7 +138,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 f_mandala,
                 &Mandala::telemetryData);
 
-        connect(protocol->telemetry(), &PTelemetry::xpdrData, f_mandala, &Mandala::valuesData);
+        connect(protocol->telemetry(), &PTelemetry::xpdrData, f_mandala, &Mandala::xpdrData);
 
         connect(protocol->data(), &PData::jsexecData, App::instance(), &App::jsexec);
 
@@ -151,8 +151,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
         connect(protocol, &PVehicle::packetReceived, this, &Vehicle::packetReceived);
 
         // forward serial TX for plugins
-        connect(this, &Vehicle::sendSerial, protocol->data(), &PData::sendSerial);
-        connect(this, &Vehicle::sendValue, protocol->data(), &PData::sendValue);
         connect(this, &Vehicle::requestScript, protocol->data(), &PData::requestScript);
     }
 
@@ -354,7 +352,7 @@ void Vehicle::flyHere(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    emit sendValue(mandala::cmd::nav::pos::uid, value);
+    f_mandala->sendValue(mandala::cmd::nav::pos::uid, value);
 }
 void Vehicle::lookHere(QGeoCoordinate c)
 {
@@ -365,7 +363,7 @@ void Vehicle::lookHere(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    emit sendValue(mandala::cmd::nav::gimbal::uid, value);
+    f_mandala->sendValue(mandala::cmd::nav::gimbal::uid, value);
 }
 void Vehicle::setHomePoint(QGeoCoordinate c)
 {
@@ -376,7 +374,7 @@ void Vehicle::setHomePoint(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    emit sendValue(mandala::est::nav::ref::uid, value);
+    f_mandala->sendValue(mandala::est::nav::ref::uid, value);
 }
 void Vehicle::sendPositionFix(QGeoCoordinate c)
 {

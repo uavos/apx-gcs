@@ -135,9 +135,6 @@ signals:
     void selected();
 
 signals:
-    //forward from protocols
-    void sendSerial(quint8 portID, QByteArray data);
-    void sendValue(mandala::uid_t uid, QVariant value);
     void requestScript(QString func);
 
     void geoPathAppend(QGeoCoordinate p);

@@ -55,7 +55,7 @@ function send(n) {
 send.info = "send var n to UAV";
 
 function serial(p, v) {
-    apx.vehicles.current.sendSerial(p, v);
+    apx.vehicles.current.protocol.data.sendSerial(p, v);
 }
 serial.info = "send data v to serial port ID p";
 

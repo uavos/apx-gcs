@@ -50,9 +50,8 @@ public:
     // units conversions
     void setValueFromStream(const QVariant &v);
     QVariant getValueForStream() const;
-    QVariant convertFromStream(const QVariant &v) const;
-    QVariant convertForStream(const QVariant &v) const;
-    auto isConverted() const { return _convert_value; }
+
+    bool setRawValueLocal(QVariant v);
 
     void increment_rx_cnt();
     auto rx_cnt() const { return _rx_cnt; }
@@ -76,7 +75,8 @@ private:
     size_t _rx_cnt{};
     bool _everReceived{};
 
-    bool setRawValueLocal(QVariant v);
+    QVariant convertFromStream(const QVariant &v) const;
+    QVariant convertForStream(const QVariant &v) const;
 
 protected:
     //Fact override

@@ -73,7 +73,6 @@ private:
     QString missionHash;
 
     void cleanupValues(PBase::Values *values);
-    void convertValues(PBase::Values *values);
 
     void invalidateCache();
     void dbWriteRequest(DBReqTelemetryWriteBase *req);
@@ -96,9 +95,8 @@ private slots:
 public slots:
     //exported slots for recording
     void recordTelemetry(PBase::Values values, quint64 timestamp_ms);
-    void recordData(PBase::Values values);
+    void recordData(PBase::Values values, bool uplink);
 
-    void recordUplink(mandala::uid_t uid, QVariant value);
     //events
     void recordConfigUpdate(NodeItem *node, QString name, QString value);
     void recordSerialData(quint16 portNo, QByteArray data, bool uplink);

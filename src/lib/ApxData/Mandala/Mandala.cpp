@@ -45,6 +45,8 @@ Mandala::Mandala(Fact *parent)
     setMandala(this);
     qmlRegisterUncreatableType<MandalaFact>("APX.Facts", 1, 0, "MandalaFact", "Reference only");
 
+    connect(this, &Mandala::sendValue, this, &Mandala::recordSendValue);
+
     Fact *group = this;
     uint8_t level = 0;
     QString sect;
@@ -152,23 +154,60 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
 
 void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 {
+    PBase::Values rec_values;
     for (auto const &uid : values.keys()) {
         MandalaFact *f = fact(uid);
         if (!f)
             continue;
         f->setValueFromStream(values.value(uid));
+        rec_values.insert(uid, f->value());
     }
+    emit recordTelemetry(rec_values, timestamp_ms);
 }
 
 void Mandala::valuesData(PBase::Values values)
 {
-    //qDebug() << values.size();
+    PBase::Values rec_values;
     for (auto const &uid : values.keys()) {
-        //qDebug() << meta(uid).path;
-
         MandalaFact *f = fact(uid);
         if (!f)
             continue;
         f->setValueFromStream(values.value(uid));
+        rec_values.insert(uid, f->value());
     }
+    emit recordData(rec_values, false);
+}
+
+void Mandala::recordSendValue(mandala::uid_t uid, QVariant value)
+{
+    if (!value.isNull()) {
+        auto f = fact(uid);
+        if (!f)
+            return;
+        value = f->value();
+    }
+    PBase::Values rec_values;
+    rec_values.insert(uid, value);
+    emit recordData(rec_values, true);
+}
+
+void Mandala::xpdrData(PBase::Values values)
+{
+    valuesData(values);
+
+    // guess some values
+    PBase::Values rec_values;
+
+    auto ref_hmsl = fact(mandala::est::nav::ref::hmsl::meta.uid)->value().toFloat();
+    auto hmsl = fact(mandala::est::nav::pos::hmsl::meta.uid)->value().toFloat();
+    auto altitude = fact(mandala::est::nav::pos::altitude::meta.uid);
+    altitude->setRawValueLocal(hmsl - ref_hmsl);
+    rec_values.insert(altitude->uid(), altitude->value());
+
+    auto bearing = fact(mandala::est::nav::pos::bearing::meta.uid)->value().toFloat();
+    auto yaw = fact(mandala::est::nav::att::yaw::meta.uid);
+    yaw->setRawValueLocal(bearing);
+    rec_values.insert(yaw->uid(), yaw->value());
+
+    emit recordData(rec_values, false);
 }

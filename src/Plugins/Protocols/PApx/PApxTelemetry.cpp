@@ -263,19 +263,25 @@ void PApxTelemetry::request_format(uint8_t part)
 
 bool PApxTelemetry::unpack_xpdr(PStreamReader &stream)
 {
-    if (stream.available() != xbus::vehicle::xpdr_s::psize())
+    if (stream.available() != xbus::telemetry::xpdr_s::psize())
         return false;
 
-    xbus::vehicle::xpdr_s xpdr;
+    xbus::telemetry::xpdr_s xpdr;
     xpdr.read(&stream);
+
+    if (xpdr.version != xbus::telemetry::xpdr_s::current_version) {
+        qDebug() << "XPDR format error" << xpdr.version;
+        return true;
+    }
 
     PBase::Values values;
 
     values.insert(mandala::est::nav::pos::lat::uid, xpdr.lat);
     values.insert(mandala::est::nav::pos::lon::uid, xpdr.lon);
-    values.insert(mandala::est::nav::pos::altitude::uid, xpdr.alt);
+    values.insert(mandala::est::nav::pos::hmsl::uid, xpdr.hmsl);
 
     values.insert(mandala::est::nav::pos::speed::uid, xpdr.speed);
+    values.insert(mandala::est::nav::pos::vspeed::uid, xpdr.vspeed);
     values.insert(mandala::est::nav::pos::bearing::uid, xpdr.bearing);
     values.insert(mandala::cmd::nav::proc::mode::uid, xpdr.mode);
 

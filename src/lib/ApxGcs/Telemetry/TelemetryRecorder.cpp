@@ -44,25 +44,22 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::recordingChanged);
     connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::restartRecording);
 
-    // recorder
-    auto protocol = vehicle->protocol();
-
-    connect(protocol->telemetry(),
-            &PTelemetry::telemetryData,
+    // record doenlink/uplink
+    connect(vehicle->f_mandala,
+            &Mandala::recordTelemetry,
             this,
             &TelemetryRecorder::recordTelemetry);
-    connect(protocol->telemetry(), &PTelemetry::xpdrData, this, &TelemetryRecorder::recordData);
-    connect(protocol->data(), &PData::valuesData, this, &TelemetryRecorder::recordData);
-
-    connect(vehicle, &Vehicle::sendValue, this, &TelemetryRecorder::recordUplink);
+    connect(vehicle->f_mandala, &Mandala::recordData, this, &TelemetryRecorder::recordData);
 
     // record serial port data
-    connect(protocol->data(), &PData::serialData, this, [this](quint8 portID, QByteArray data) {
-        recordSerialData(portID, data, false);
-    });
-    connect(vehicle, &Vehicle::sendSerial, this, [this](quint8 portID, QByteArray data) {
-        recordSerialData(portID, data, true);
-    });
+    connect(vehicle->protocol()->data(),
+            &PData::serialData,
+            this,
+            [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, false); });
+    connect(vehicle->protocol()->data(),
+            &PData::sendSerial,
+            this,
+            [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, true); });
 
     // record config on each upload or save
     connect(vehicle->storage(),
@@ -219,15 +216,6 @@ void TelemetryRecorder::cleanupValues(PBase::Values *values)
         }
     }
 }
-void TelemetryRecorder::convertValues(PBase::Values *values)
-{
-    auto m = _vehicle->f_mandala;
-    for (auto uid : values->keys()) {
-        auto f = m->fact(uid);
-        if (f->isConverted())
-            (*values)[uid] = f->convertFromStream(values->value(uid));
-    }
-}
 void TelemetryRecorder::dbWriteRequest(DBReqTelemetryWriteBase *req)
 {
     if (recTelemetryID) {
@@ -280,18 +268,19 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     cleanupValues(&values);
     if (values.isEmpty())
         return;
-    convertValues(&values);
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, t, values, false));
 }
-void TelemetryRecorder::recordData(PBase::Values values)
+void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 {
-    cleanupValues(&values);
+    if (!uplink)
+        cleanupValues(&values);
     if (values.isEmpty())
         return;
-    convertValues(&values);
 
-    dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, false));
+    dbCheckRecord();
+
+    dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, uplink));
 }
 
 void TelemetryRecorder::writeEvent(const QString &name,
@@ -307,24 +296,6 @@ void TelemetryRecorder::writeEvent(const QString &name,
                                             value,
                                             uid,
                                             uplink);
-    dbWriteRequest(req);
-}
-
-void TelemetryRecorder::recordUplink(mandala::uid_t uid, QVariant value)
-{
-    dbCheckRecord();
-
-    auto f = _vehicle->f_mandala->fact(uid);
-    if (!f) {
-        auto name = _vehicle->f_mandala->meta(uid).path;
-        auto vtext = value.toStringList().join(',');
-        writeEvent("cmd", QString("%1/%2").arg(_vehicle->title()).arg(name), vtext, true);
-        return;
-    }
-
-    PBase::Values values;
-    values.insert(uid, f->convertFromStream(value));
-    auto req = new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, true);
     dbWriteRequest(req);
 }
 

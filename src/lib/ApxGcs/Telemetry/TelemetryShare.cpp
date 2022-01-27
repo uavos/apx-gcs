@@ -26,6 +26,7 @@
 #include "TelemetryExport.h"
 #include "TelemetryImport.h"
 
+#include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 
@@ -153,6 +154,10 @@ void TelemetryShare::updateDescr()
 
 void TelemetryShare::syncTemplates()
 {
+    if (!App::bundle())
+        return;
+
+    // TODO parse xml file and cache hash in config
     for (auto fi : _templatesDir.entryInfoList()) {
         auto hash = fi.completeBaseName();
         auto req = new DBReqTelemetryRecover(hash);
