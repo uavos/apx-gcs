@@ -25,7 +25,7 @@ import QtQuick.Controls 2.2
 EditorInt {
     id: editor
 
-    property int decimals: Math.min(2,precision>0?precision:2)
+    property int decimals: Math.min(2,precision>=0?precision:2)
 
     div: Math.pow(10,decimals)
 

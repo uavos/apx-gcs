@@ -288,18 +288,27 @@ int MandalaFact::getPrecision()
             return 2;
         if (u == "su")
             return 2;
+
         if (u == "deg")
-            return 2;
+            return 1;
+        if (u == "deg/s")
+            return 1;
+        if (u == "deg^2")
+            return 1;
+        if (u == "deg/s^2")
+            return 1;
+
         if (u == "rad")
             return 1;
         if (u == "rad/s")
             return 1;
-        if (u == "rad/s^2")
-            return 2;
         if (u == "rad^2")
             return 2;
-        if (u == "m")
+        if (u == "rad/s^2")
             return 2;
+
+        if (u == "m")
+            return 1;
         if (u == "mbar")
             return 1;
         if (u == "m/s")
@@ -325,9 +334,9 @@ int MandalaFact::getPrecision()
         if (u == "l/d")
             return 2;
         if (u == "l/h")
-            return 2;
+            return 3;
         if (u == "u/h")
-            return 2;
+            return 3;
         if (u == "l")
             return 2;
         if (u == "a/h")
@@ -344,7 +353,7 @@ int MandalaFact::getPrecision()
             return 1;
         qWarning() << "default units precision:" << u << path();
     }
-    return 6;
+    return 5;
 }
 
 QColor MandalaFact::getColor()

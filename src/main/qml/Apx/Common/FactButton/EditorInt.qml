@@ -45,7 +45,7 @@ SpinBox {
         else wgrow=implicitWidth
     }
 
-    readonly property int defaultStepSize: fact.increment>0?fact.increment*div:1 //precision>1 ? precision : 1
+    readonly property int defaultStepSize: fact.increment>0?fact.increment*div:1 
     
     stepSize: defaultStepSize * stepMult
 
@@ -150,7 +150,6 @@ SpinBox {
 
         // accelerate
         elapsed = startTime>0?(new Date().getTime()-startTime)/1000:0
-        //console.log(elapsed, stepSize, precision, div)
     }
 
 }

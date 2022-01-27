@@ -405,14 +405,18 @@ QString FactData::toText(const QVariant &v) const
         if (m_precision > 0) {
             double p = std::pow(10.0, m_precision);
             vf = cint(vf * p) / p;
+        } else if (m_precision == 0) {
+            vf = cint(vf);
         }
         QString s;
         if (vf == 0.0)
             s = "0";
-        else {
-            s = QString("%1").arg(vf, 0, 'f', m_precision > 0 ? m_precision : 8);
+        else if (m_precision == 0) {
+            s = QString::number((qint64) vf);
+        } else {
+            s = QString("%1").arg(vf, 0, 'f', m_precision >= 0 ? m_precision : 8);
             if (s.contains('.')) {
-                if (m_precision > 0)
+                if (m_precision >= 0)
                     s = s.left(s.indexOf('.') + 1 + m_precision);
                 while (s.endsWith('0'))
                     s.chop(1);
