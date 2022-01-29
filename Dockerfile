@@ -58,6 +58,7 @@ RUN curl -L ${APPIMAGETOOL_SRC} --output /usr/local/bin/appimagetool && \
 # RUN curl -L ${LINUXDEPLOY_PLUGIN_GSTREAMER_SRC} --output /usr/local/bin/linuxdeploy-plugin-gstreamer.sh && \
 # 	chmod +x /usr/local/bin/linuxdeploy-plugin-gstreamer.sh
 
+
 # libs: appimageupdate
 RUN apt-get install -y --no-install-recommends \
     xxd wget automake desktop-file-utils librsvg2-dev libfuse-dev patchelf \
