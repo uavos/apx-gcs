@@ -6,7 +6,7 @@ CMAKE := cmake
 
 APX_PROJECT_TITLE := "APX Ground Control"
 
-all: package
+all: configure build
 
 configure:
 	@$(CMAKE) -DCMAKE_BUILD_TYPE=Release -H. -B$(BUILD_DIR)

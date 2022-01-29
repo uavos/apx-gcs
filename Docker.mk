@@ -3,7 +3,7 @@ DOCKER_PROJECT_DIR := /gcs
 
 docker-image:
 	@docker stop $(DOCKER_IMAGE); docker rm -f $(DOCKER_IMAGE); echo ""
-	@docker build -t uavos/$(DOCKER_IMAGE) -f Dockerfile $(CURDIR)
+	docker build -t uavos/$(DOCKER_IMAGE) - < Dockerfile
 
 docker-run:
 	@docker run -it -v $(realpath $(CURDIR))/:$(DOCKER_PROJECT_DIR) -w $(DOCKER_PROJECT_DIR) --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw uavos/$(DOCKER_IMAGE) bash
