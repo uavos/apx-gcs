@@ -22,7 +22,7 @@
 #include "SparkleAutoUpdater.h"
 
 #include <Cocoa/Cocoa.h>
-#include <Sparkle.h>
+#include <Sparkle/Sparkle.h>
 
 class SparkleAutoUpdater::Private
 {

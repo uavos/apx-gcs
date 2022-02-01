@@ -38,11 +38,15 @@ RUN curl -L ${INSTALL_QT_SRC} --output /tmp/install-qt.sh && \
 # Qt deploy tools
 RUN apt-get install -qq -y --no-install-recommends fuse && rm -Rf /var/cache/apt
 
-ARG LINUXDEPLOYQT_SRC=https://github.com/probonopd/linuxdeployqt/releases/download/6/linuxdeployqt-6-x86_64.AppImage
+# other versions <=8 are segfaulting by some reason
+# TODO consider https://github.com/linuxdeploy
+ARG VERSION_LINUXDEPLOYQT=6/linuxdeployqt-6
+ARG LINUXDEPLOYQT_SRC=https://github.com/probonopd/linuxdeployqt/releases/download/${VERSION_LINUXDEPLOYQT}-x86_64.AppImage
 RUN curl -L ${LINUXDEPLOYQT_SRC} --output /usr/local/bin/linuxdeployqt && \
     chmod +x /usr/local/bin/linuxdeployqt
 
-ARG APPIMAGETOOL_SRC=https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage
+ARG VERSION_APPIMAGETOOL=13
+ARG APPIMAGETOOL_SRC=https://github.com/AppImage/AppImageKit/releases/download/${VERSION_APPIMAGETOOL}/appimagetool-x86_64.AppImage
 RUN curl -L ${APPIMAGETOOL_SRC} --output /usr/local/bin/appimagetool && \
     chmod +x /usr/local/bin/appimagetool
 
@@ -66,7 +70,8 @@ RUN apt-get install -y --no-install-recommends \
     argagg-dev libgcrypt-dev \
     && rm -Rf /var/cache/apt
 
-RUN git clone --depth=1 --recurse-submodules https://github.com/AppImage/AppImageUpdate.git && \
+ARG VERSION_APPIMAGEUPDATE=2.0.0-alpha-1-20220124
+RUN git clone --depth=1 --recurse-submodules -b ${VERSION_APPIMAGEUPDATE} --single-branch https://github.com/AppImage/AppImageUpdate.git && \
     cd AppImageUpdate && \
         sed -i 's/\"HTTP\/1\", 6/\"HTTP\/1\", 4/' lib/zsync2/src/legacy_http.c && \
         cmake -H. -Bbuild && \
