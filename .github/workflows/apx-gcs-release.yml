@@ -8,9 +8,9 @@ on:
 env:
   BUILD_DIR: build-release
   VERSION_QT: 5.15.2
-  VERSION_GST: 1.18.3
-  VERSION_SPARKLE: 1.25.0-rc2
-  VERSION_SDL: 2.0.14
+  VERSION_GST: 1.18.5
+  VERSION_SPARKLE: 1.27.1
+  VERSION_SDL: 2.0.20
 
 jobs:
   build-linux:
@@ -96,8 +96,10 @@ jobs:
           KEYCHAIN: default.keychain
           KEYCHAIN_PASSWORD: uavos
           SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
+          # base64 build_certificate.p12 | pbcopy
           SIGNING_CERTIFICATE_P12_DATA: ${{ secrets.SIGNING_CERTIFICATE_P12_DATA }}
           SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+          CODE_IDENTITY: ${{ secrets.CODE_IDENTITY }}
         run: |
           security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN
           security default-keychain -s $KEYCHAIN
@@ -109,6 +111,7 @@ jobs:
           security add-generic-password -U -a 'ed25519' -D 'private key' -s 'https://sparkle-project.org' -w $SPARKLE_KEY -A $KEYCHAIN
           security set-generic-password-partition-list -s 'https://sparkle-project.org' -S apple-tool:,apple:,security:,unsigned: -k $KEYCHAIN_PASSWORD $KEYCHAIN
           security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN
+          security -v find-identity -s $CODE_IDENTITY
 
       - name: Build package
         env:

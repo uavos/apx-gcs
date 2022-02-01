@@ -1272,6 +1272,7 @@ namespace cmd
             enum { downlink = 0x702 };
             enum { uplink = 0x703 };
             enum { telemetry = 0x704 };
+            enum { xpdr = 0x705 };
         };
         namespace telemetry
         {
