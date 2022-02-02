@@ -19,6 +19,7 @@ elseif(UNIX AND NOT APPLE)
 
     # AppImageUpdate libs
 
+    target_link_libraries(${MODULE} PRIVATE "-Wl,--whole-archive")
     target_link_libraries(${MODULE} PRIVATE /usr/local/lib/libappimage_shared.a)
     target_link_libraries(${MODULE} PRIVATE /usr/local/lib/libappimage_hashlib.a)
 
@@ -30,6 +31,7 @@ elseif(UNIX AND NOT APPLE)
     target_link_libraries(${MODULE} PRIVATE /usr/local/lib/libappimageupdate.a)
 
     target_link_libraries(${MODULE} PRIVATE /usr/local/lib/libutil.a)
+    target_link_libraries(${MODULE} PRIVATE "-Wl,--no-whole-archive")
 
     target_link_libraries(${MODULE} PRIVATE -lcurl)
 
