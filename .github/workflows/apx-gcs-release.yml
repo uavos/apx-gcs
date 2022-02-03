@@ -158,9 +158,6 @@ jobs:
               }
             }
 
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
-
       - name: Generate Sparkle appcast
         run: |
           mkdir -p $BUILD_DIR/sparkle
@@ -241,11 +238,11 @@ jobs:
               });            
             }
 
-            github.repos.updateRelease({
-              owner, repo,
-              release_id: "${{ steps.create_release.outputs.id }}",
-              draft: true
-            });
+          # github.repos.updateRelease({
+          #   owner, repo,
+          #   release_id: "${{ steps.create_release.outputs.id }}",
+          #   draft: false
+          # });
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
