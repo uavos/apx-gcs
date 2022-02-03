@@ -315,7 +315,7 @@ void ApxFw::responseLatestTag()
         return;
     }
     if (_versionPrefix < v) {
-        qDebug() << "old gcs:" << v_current << ">=" << v << _versionPrefix;
+        qDebug() << "old gcs:" << v_current << ">=" << v << "prefix:" << _versionPrefix;
         return;
     }
     apxMsg() << title().append(':') << v.toString() << tr("available");
