@@ -163,6 +163,7 @@ void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
         rec_values.insert(uid, f->value());
     }
     emit recordTelemetry(rec_values, timestamp_ms);
+    emit telemetryDecoded();
 }
 
 void Mandala::valuesData(PBase::Values values)
