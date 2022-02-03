@@ -1,3 +1,20 @@
+# [APX Ground Control v11.1.17](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.17) (02/03/22)
+
+> Branch: `main`\
+> Date: `02/03/22 15:17:29`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/313891275d9366b21a8506d4e191643c351a9909...7cb76c492517ff26998cc32ff3d520cf1c8d0690)
+
+## New Features
+* Signals with custom expressions
+* speech and PFD signs for helicopters
+* maneuver status display
+
+## Bug Fixes
+* signals for engine prop
+
+## Performance Enhancements
+* Xplane11 simulation
+
 # [APX Ground Control v11.1.15](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.15) (02/03/22)
 
 > Branch: `main`\
