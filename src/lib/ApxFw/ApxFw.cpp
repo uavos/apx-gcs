@@ -309,9 +309,13 @@ void ApxFw::responseLatestTag()
         qWarning() << "apxfw:" << s;
         return;
     }
-    if (QVersionNumber::fromString(value().toString()) >= v) {
-        qDebug() << "apxfw:"
-                 << "latest";
+    auto v_current = QVersionNumber::fromString(value().toString());
+    if (v_current >= v) {
+        qDebug() << "no updates:" << v_current << ">=" << v;
+        return;
+    }
+    if (_versionPrefix < v) {
+        qDebug() << "old gcs:" << v_current << ">=" << v << _versionPrefix;
         return;
     }
     apxMsg() << title().append(':') << v.toString() << tr("available");
