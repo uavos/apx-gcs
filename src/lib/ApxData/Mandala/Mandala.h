@@ -66,4 +66,7 @@ signals:
     // data recorders (converted values)
     void recordTelemetry(PBase::Values values, quint64 timestamp_ms);
     void recordData(PBase::Values values, bool uplink);
+
+    // signals for UI
+    void telemetryDecoded();
 };

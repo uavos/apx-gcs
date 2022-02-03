@@ -411,6 +411,10 @@ void TelemetryPlayer::next()
             blockTimeChange = false;
         }
 
+        if (updCnt) {
+            vehicle->f_mandala->telemetryDecoded();
+        }
+
         //continue next time event
         if (tNextMin == tNext) {
             apxMsg() << tr("Replay finished");
