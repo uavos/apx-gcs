@@ -238,11 +238,11 @@ jobs:
               });            
             }
 
-          # github.repos.updateRelease({
-          #   owner, repo,
-          #   release_id: "${{ steps.create_release.outputs.id }}",
-          #   draft: false
-          # });
+            github.repos.updateRelease({
+              owner, repo,
+              release_id: "${{ steps.create_release.outputs.id }}",
+              draft: false
+            });
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3

@@ -314,7 +314,8 @@ void ApxFw::responseLatestTag()
         qDebug() << "no updates:" << v_current << ">=" << v;
         return;
     }
-    if (_versionPrefix < v) {
+    if (_versionPrefix.majorVersion() < v.majorVersion()
+        && _versionPrefix.minorVersion() < v.minorVersion()) {
         qDebug() << "old gcs:" << v_current << ">=" << v << "prefix:" << _versionPrefix;
         return;
     }
