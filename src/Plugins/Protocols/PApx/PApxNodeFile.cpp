@@ -145,6 +145,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
         return;
 
     case xbus::node::file::extend:
+        qWarning() << "extend response";
         return;
     case xbus::node::file::abort:
         qWarning() << "abort response";
