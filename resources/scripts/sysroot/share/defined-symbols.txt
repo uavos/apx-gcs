@@ -52,3 +52,20 @@ mnotify
 receive
 send
 
+abs
+acos
+asin
+atan
+atan2
+ceil
+cos
+exp
+fabs
+floor
+fmod
+log
+log10
+pow
+sin
+sqrt
+tan

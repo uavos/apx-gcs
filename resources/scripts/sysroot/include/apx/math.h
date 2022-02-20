@@ -21,11 +21,33 @@
  */
 #pragma once
 
-#include "apx/console.h"
-#include "apx/libc.h"
-#include "apx/mandala.h"
-#include "apx/serial.h"
-#include "apx/sys.h"
-#include "apx/types.h"
-#include "apx/visibility.h"
-#include "apx/math.h"
+#include "visibility.h"
+#include "types.h"
+
+__BEGIN_DECLS
+
+#define R2D  57.29577951308232          // radians to degrees conversion factor
+#define D2R   0.01745329251994          // degrees to radians conversion factor
+#define PI    3.14159265358979          // PI
+#define PI_2  1.57079632679489          // PI/2
+#define PI_4  0.78539816339744          // PI/4
+
+int abs(int x);
+float acos(float x);
+float asin(float x);
+float atan(float x);
+float atan2(float y, float x);
+float ceil(float x);
+float cos(float x);
+float exp(float x);
+float fabs(float x);
+float floor(float x);
+float fmod(float x, float y);
+float log(float x);
+float log10(float x);
+float pow(float x, float y);
+float sin(float x);
+float sqrt(float x);
+float tan(float x);
+
+__END_DECLS
