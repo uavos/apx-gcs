@@ -35,6 +35,7 @@ class Vehicles : public Fact
     Q_OBJECT
 
     Q_PROPERTY(Vehicle *current READ current NOTIFY currentChanged)
+    Q_PROPERTY(Vehicle *gcs READ gcs NOTIFY gcsChanged)
 
 public:
     explicit Vehicles(Fact *parent, Protocols *protocols);
@@ -50,6 +51,8 @@ private:
     static Vehicles *_instance;
 
     void _jsSyncMandalaAccess(Fact *fact, QJSValue parent);
+
+    void _update_gcs(Vehicle *vehicle);
 
 public slots:
     void selectVehicle(Vehicle *v);
@@ -71,11 +74,14 @@ private slots:
     //---------------------------------------
     // PROPERTIES
 public:
-    Vehicle *current(void) const;
+    Vehicle *current(void) const { return m_current; }
+    Vehicle *gcs(void) const { return m_gcs; }
 
 protected:
     QPointer<Vehicle> m_current;
+    QPointer<Vehicle> m_gcs;
 
 signals:
     void currentChanged();
+    void gcsChanged();
 };

@@ -143,6 +143,9 @@ void Vehicles::vehicle_available(PVehicle *protocol)
 
     emit vehicleRegistered(v);
 
+    if (!m_gcs || v->isLocal() || (!m_gcs->isGroundControl() && v->isGroundControl()))
+        _update_gcs(v);
+
     if (v->isIdentified()) {
         QString msg = QString("%1: %2").arg(tr("Vehicle identified")).arg(v->title());
         v->message(msg, AppNotify::Important);
@@ -187,11 +190,9 @@ void Vehicles::selectVehicle(Vehicle *v)
 
     emit currentChanged();
     emit vehicleSelected(v);
-}
 
-Vehicle *Vehicles::current(void) const
-{
-    return m_current;
+    if (v->isGroundControl())
+        _update_gcs(v);
 }
 
 void Vehicles::selectPrev()
@@ -309,4 +310,12 @@ void Vehicles::_jsSyncMandalaAccess(Fact *fact, QJSValue parent)
                     .arg(fact->name());
 
     App::jsexec(s);
+}
+
+void Vehicles::_update_gcs(Vehicle *vehicle)
+{
+    if (m_gcs == vehicle)
+        return;
+    m_gcs = vehicle;
+    emit gcsChanged();
 }
