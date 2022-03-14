@@ -209,6 +209,13 @@ void FactDelegateScript::logView_itemClicked(QListWidgetItem *item)
 void FactDelegateScript::launch_vscode()
 {
     auto exec = QStandardPaths::findExecutable("code");
+
+    if (exec.isEmpty()) {
+        // try to find other paths
+        const QStringList paths{"/usr/local/bin", "/usr/bin"};
+        exec = QStandardPaths::findExecutable("code", paths);
+    }
+
     if (exec.isEmpty()) {
         qWarning() << "vscode not found";
         return;
