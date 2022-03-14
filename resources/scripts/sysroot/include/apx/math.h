@@ -21,16 +21,16 @@
  */
 #pragma once
 
-#include "visibility.h"
 #include "types.h"
+#include "visibility.h"
 
 __BEGIN_DECLS
 
-#define R2D  57.29577951308232          // radians to degrees conversion factor
-#define D2R   0.01745329251994          // degrees to radians conversion factor
-#define PI    3.14159265358979          // PI
-#define PI_2  1.57079632679489          // PI/2
-#define PI_4  0.78539816339744          // PI/4
+#define R2D 57.29577951308232f // radians to degrees conversion factor
+#define D2R 0.01745329251994f  // degrees to radians conversion factor
+#define PI 3.14159265358979f   // PI
+#define PI_2 1.57079632679489f // PI/2
+#define PI_4 0.78539816339744f // PI/4
 
 int abs(int x);
 float acos(float x);
