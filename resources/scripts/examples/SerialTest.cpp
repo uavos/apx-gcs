@@ -21,19 +21,17 @@
  */
 #include <apx.h>
 
-
 static constexpr const port_id_t port_id{1};
 static uint32_t count{0};
 
 int main()
 {
-    receive(port_id, "on_serial");
+  receive(port_id, "on_serial");
 
-    return 0;
+  return 0;
 }
-
 
 EXPORT void on_serial(const uint8_t *data, size_t size)
 {
-    printf("rx:%u",count++);
+  printf("rx:%u", count++);
 }

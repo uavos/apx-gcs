@@ -87,6 +87,9 @@ bool ScriptCompiler::lookup()
             AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
                               AppDirs::scripts().absoluteFilePath("examples"));
 
+            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.clang-format"),
+                              AppDirs::scripts().absoluteFilePath(".clang-format"));
+
             update_vscode();
         }
 

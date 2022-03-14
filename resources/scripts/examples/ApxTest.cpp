@@ -26,7 +26,7 @@ struct test_s
   float v;
 };
 
-template <typename T>
+template<typename T>
 struct tmpl_s
 {
   T value;
@@ -34,7 +34,7 @@ struct tmpl_s
 
 class Test
 {
-public:
+  public:
   explicit Test() { f = 5.4321f; }
   double d{1.234567};
   float f;
@@ -68,8 +68,7 @@ int main()
 
   float vf = 1.234f;
   printf("vf: %.2f", vf);
-  for (uint i = 1; i < 1110; ++i)
-  {
+  for (uint i = 1; i < 1110; ++i) {
     t_f.v += 0.1f;
     vf += 1.0002;
   }
@@ -79,7 +78,7 @@ int main()
 
   vf += 1.23;
   printf("f: %.2f", vf);
-  printf("d: %f", (float)test.d);
+  printf("d: %f", (float) test.d);
   printf("f: %f", test.f);
 
   int32_t si = -1234;
@@ -93,8 +92,7 @@ int main()
   snprintf(tbuf, sizeof(tbuf), "(%.3f)", vf + 44);
   printf("s2: %s", tbuf);
 
-  for (auto i = 0; i < 2; ++i)
-  {
+  for (auto i = 0; i < 2; ++i) {
     sleep(200);
     printf("sleep time:%u", time_ms());
   }
@@ -103,8 +101,7 @@ int main()
   mandala::set(mandala::cmd::nav::pos::airspeed, vf);
   alt::publish(t_u.value);
 
-  for (auto i = 0; i < 3; ++i)
-  {
+  for (auto i = 0; i < 3; ++i) {
     sleep(100);
     printf("%.2f", alt::value());
   }
@@ -143,4 +140,7 @@ EXPORT void on_serial(const uint8_t *data, size_t size)
   printf("rx: %u", size);
 }
 
-EXPORT void on_roll_task() { u1::publish(roll::value() * (180.f / 3.14f)); }
+EXPORT void on_roll_task()
+{
+  u1::publish(roll::value() * (180.f / 3.14f));
+}

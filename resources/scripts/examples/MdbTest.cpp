@@ -25,15 +25,15 @@ using alt = Mandala<mandala::cmd::nav::pos::altitude>;
 
 int main()
 {
-    alt::publish(123u); // set value and publish
-    // literal type must be explicitly specified i.e. 123.f
+  alt::publish(123u); // set value and publish
+  // literal type must be explicitly specified i.e. 123.f
 
-    alt("on_alt"); // subscribe `on changed` event
+  alt("on_alt"); // subscribe `on changed` event
 
-    return 0;
+  return 0;
 }
 
 EXPORT void on_alt()
 {
-    printf("on_alt: %.2f", alt::value());
+  printf("on_alt: %.2f", alt::value());
 }

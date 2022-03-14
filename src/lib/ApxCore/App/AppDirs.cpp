@@ -136,7 +136,28 @@ QDir AppDirs::images()
 
 bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
 {
+    QFileInfo srcInfo(sourceDir);
+    QFileInfo destInfo(destinationDir);
+
+    if (srcInfo.isFile()) {
+        if (destInfo.isDir()) {
+            destInfo = QFileInfo(destInfo.dir().filePath(srcInfo.fileName()));
+        }
+        if (destInfo.exists()) {
+            if (destInfo.lastModified() == srcInfo.lastModified())
+                return false;
+            QFile::remove(destInfo.absoluteFilePath());
+        } else {
+            if (!destInfo.dir().exists()) {
+                destInfo.dir().mkpath(".");
+            }
+        }
+        QFile::copy(srcInfo.absoluteFilePath(), destInfo.absoluteFilePath());
+        return true;
+    }
+
     bool rv = false;
+
     QDir originDirectory(sourceDir);
 
     if (!originDirectory.exists()) {

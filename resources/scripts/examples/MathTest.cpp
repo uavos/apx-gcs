@@ -22,7 +22,7 @@
 
 #include <apx.h>
 
-#define E 2.718281828
+#define E 2.718281828f
 
 using roll = Mandala<mandala::est::nav::att::roll>;
 
@@ -62,8 +62,7 @@ void testTrigonometric(float x)
   float a_cos_val = acos(cos_val);
   float a_tan_val = atan(tan_val);
 
-  if (fabs(sin(a_sin_val) - sin_val) > 0.0001)
-  {
+  if (fabs(sin(a_sin_val) - sin_val) > 0.0001f) {
     puts("Fail sin()...\n");
     printf("val deg=%.2f\n", deg_val);
     printf("sin=%.4f\n", sin_val);
@@ -71,8 +70,7 @@ void testTrigonometric(float x)
     puts("----------\n");
   }
 
-  if (fabs(cos(a_cos_val) - cos_val) > 0.0001)
-  {
+  if (fabs(cos(a_cos_val) - cos_val) > 0.0001f) {
     puts("Fail cos()...\n");
     printf("val deg=%.2f\n", deg_val);
     printf("cos=%.4f\n", cos_val);
@@ -80,8 +78,7 @@ void testTrigonometric(float x)
     puts("----------\n");
   }
 
-  if (fabs(tan(a_tan_val) - tan_val) > 0.001)
-  {
+  if (fabs(tan(a_tan_val) - tan_val) > 0.001f) {
     puts("Fail tan()...\n");
     printf("val deg=%.2f\n", deg_val);
     printf("tan=%.4f\n", tan_val);
@@ -92,7 +89,6 @@ void testTrigonometric(float x)
 
 void testMath()
 {
-
   print("-----test exp-----\n");
   printf("exp(-1)=%.5f\n", exp(-1.0)); // 0.367879441171442
   printf("exp(0)=%.1f\n", exp(0));     // 1
@@ -101,42 +97,38 @@ void testMath()
   print("-----test atat2-----\n");
   float y = -1.0;
   bool ok = true;
-  do
-  {
+  do {
     if (!testAtan2(y, 1.0))
       ok = false;
-    y += 0.01;
-  } while (y <= 1.0);
+    y += 0.01f;
+  } while (y <= 1.f);
   printf("Test atat2: %s\n", ok ? "Ok" : "Fail");
 
   print("-----test log-----\n");
   y = 1.0;
   ok = true;
-  do
-  {
+  do {
     if (!testLog(y))
       ok = false;
-    y += 1.0;
-  } while (y <= 1000.0);
+    y += 1.f;
+  } while (y <= 1000.f);
   printf("Test log: %s\n", ok ? "Ok" : "Fail");
 
   print("-----test sqrt-----\n");
   y = 0.0;
   ok = true;
-  do
-  {
+  do {
     if (!testSqrt(y))
       ok = false;
-    y += 1.0;
-  } while (y <= 10000.0);
+    y += 1.f;
+  } while (y <= 10000.f);
   printf("Test sqrt: %s\n", ok ? "Ok" : "Fail");
 }
 
 bool testAtan2(float y, float x)
 {
-  bool ok = fabs(atan2(y, x) - atan(y / x)) > 0.0001;
-  if (ok)
-  {
+  bool ok = fabs(atan2(y, x) - atan(y / x)) > 0.0001f;
+  if (ok) {
     printf("Fail atan2 %f\n", atan2(y, x));
   }
   return !ok;
@@ -145,9 +137,8 @@ bool testAtan2(float y, float x)
 bool testLog(float y)
 {
   float val = log(y);
-  bool ok = fabs(y - pow(E, val)) > 0.001;
-  if (ok)
-  {
+  bool ok = fabs(y - pow(E, val)) > 0.001f;
+  if (ok) {
     print("Fail log()...\n");
     printf("y=%.3f\n", y);
     printf("ln(y)=%.3f\n", val);
@@ -159,9 +150,8 @@ bool testLog(float y)
 bool testSqrt(float y)
 {
   float val = sqrt(y);
-  bool ok = fabs(y - pow(val, 2)) > 0.001;
-  if (ok)
-  {
+  bool ok = fabs(y - pow(val, 2)) > 0.001f;
+  if (ok) {
     print("Fail sqrt()...\n");
     printf("x=%.3f\n", y);
     printf("sqrt(y)=%.3f\n", val);
@@ -175,7 +165,7 @@ EXPORT void on_task()
   float val = roll::value();
   testTrigonometric(val);
 
-  val = time_ms() / start_time - val * 1000.f;
+  val = (float) (time_ms() / start_time) - val * 1000.f;
 
   testAtan2(val, 1.0);
   testLog(val);
