@@ -1,0 +1,33 @@
+{
+    // See http://go.microsoft.com/fwlink/?LinkId=827846
+    // for the documentation about the extensions.json format
+    "recommendations": [
+        "bbenoist.QML",
+        "bierner.markdown-preview-github-styles",
+        "cheshirekow.cmake-format",
+        "cquery-project.cquery",
+        "DavidAnson.vscode-markdownlint",
+        "deerawan.vscode-dash",
+        "donjayamanne.githistory",
+        "dtsvet.vscode-wasm",
+        "eamodio.gitlens",
+        "Gruntfuggly.todo-tree",
+        "IBM.output-colorizer",
+        "me-dutour-mathieu.vscode-github-actions",
+        "mhutchie.git-graph",
+        "moshfeu.compare-folders",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools",
+        "natqe.reload",
+        "nick-rudenko.back-n-forth",
+        "redhat.vscode-commons",
+        "redhat.vscode-yaml",
+        "RedVanWorkshop.explorer-exclude-vscode-extension",
+        "streetsidesoftware.code-spell-checker",
+        "twxs.cmake",
+        "wholroyd.jinja",
+        "ZainChen.json"
+    ]
+}
