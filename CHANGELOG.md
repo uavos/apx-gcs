@@ -1,3 +1,17 @@
+# [APX Ground Control v11.1.36](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.36) (03/15/22)
+
+> Branch: `main`\
+> Date: `03/15/22 21:44:33`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/70866a4664de3a1aaa86e3e9151749a1aa920582...bdd4f85743acdae74f9b9dbf5fb14938154318bf)
+
+## New Features
+* WASM console `dump` function
+
+## Bug Fixes
+* RSS ground and onboard display
+* vscode search paths
+* WASM math lib warnings
+
 # [APX Ground Control v11.1.25](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.25) (02/04/22)
 
 > Branch: `main`\

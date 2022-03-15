@@ -1,10 +1,7 @@
 # New Features
-* Signals with custom expressions
-* speech and PFD signs for helicopters
-* maneuver status display
+* WASM console `dump` function
 
 # Bug Fixes
-* signals for engine prop
-
-# Performance Enhancements
-* Xplane11 simulation
+* RSS ground and onboard display
+* vscode search paths
+* WASM math lib warnings
