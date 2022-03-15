@@ -2,6 +2,7 @@ puts
 printf_s
 printf_f
 printf_i
+dump
 
 memcmp
 memcpy
