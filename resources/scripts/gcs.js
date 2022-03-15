@@ -194,7 +194,7 @@ function set_STRT(v) { ctr.eng.starter = v; }
 
 function btn_OVR() { cmd.eng.ovr = !cmd.eng.ovr; }
 function btn_CUT() { cmd.eng.cut = !cmd.eng.cut; }
-function btn_IGN() { ctr.pwr.ignition = !ctr.pwr.ignition; }
+function btn_ENG() { ctr.pwr.eng = !ctr.pwr.eng; }
 
 function btn_BRAKE() { ctr.str.brake = trigger(ctr.str.brake, 0, 1); }
 function set_BRAKE(v) { ctr.str.brake = limit(v, 0, 1); }

@@ -29,7 +29,7 @@ Column {
     readonly property var f_ers: mandala.ctr.ers.launch
     readonly property var f_rel: mandala.ctr.ers.rel
 
-    readonly property var f_ign: mandala.ctr.pwr.ignition
+    readonly property var f_eng: mandala.ctr.pwr.eng
     readonly property var f_pld: mandala.ctr.pwr.payload
 
     //readonly property var f_lights: mandala.ctr.light.taxi
@@ -98,10 +98,10 @@ Column {
     StatusFlag {
         height: txtHeight
         visible: true
-        fact: f_ign
+        fact: f_eng
         show: fact.value <= 0 && apx.datalink.valid
         type: CleanText.Red
-        text: qsTr("IGN")
+        text: qsTr("ENG")
     }
     StatusFlag {
         height: txtHeight

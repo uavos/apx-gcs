@@ -66,11 +66,9 @@
         },
         {
             "msg": "engine off",
-            "say": "ignition off"
         },
         {
             "msg": "engine on",
-            "say": "ignition on"
         },
         {
             "msg": "ers on",

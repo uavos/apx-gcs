@@ -46,7 +46,7 @@ Fact {
         Fact { binding: mandala.cmd.eng.cut; flags: Fact.Bool; }
         Fact { binding: mandala.cmd.eng.ovr; flags: Fact.Bool; }
         Fact { enabled: false }
-        Fact { binding: mandala.ctr.pwr.ignition; flags: Fact.Bool; }
+        Fact { binding: mandala.ctr.pwr.eng; flags: Fact.Bool; }
         Fact {
             title: mandala.ctr.eng.starter.title;
             descr: mandala.ctr.eng.starter.descr;
