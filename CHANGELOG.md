@@ -1,3 +1,19 @@
+# [APX Ground Control v11.1.42](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.42) (03/16/22)
+
+> Branch: `main`\
+> Date: `03/16/22 19:46:03`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b429ff081305964329c1cf2a222459a210db4db4...f00fb1ad67a7fb91f383b1598a7afd297e760eee)
+
+## New Features
+* WASM scripting helpers
+
+## Bug Fixes
+* TTS config
+* mandala report menu URL
+
+## Performance Enhancements
+* remove group mandala facts from data streams
+
 # [APX Ground Control v11.1.36](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.36) (03/15/22)
 
 > Branch: `main`\
