@@ -28,6 +28,7 @@
 #include <Fact/FactListModel.h>
 
 #include <Nodes/Nodes.h>
+#include <tcp_ports.h>
 
 #include <Datalink/Datalink.h>
 #include <Telemetry/Telemetry.h>
@@ -106,7 +107,8 @@ AppMenu::AppMenu(Fact *parent)
     help = new Fact(this, "help", tr("Help"), "", Group, "help");
     f = new Fact(help, "mrep", tr("Mandala Report"), "", NoFlags, "format-list-bulleted");
     connect(f, &Fact::triggered, this, []() {
-        QDesktopServices::openUrl(QUrl("http://127.0.0.1:9080/mandala?descr"));
+        QDesktopServices::openUrl(
+            QUrl(QString("http://127.0.0.1:%1/mandala?descr").arg(TCP_PORT_SERVER)));
     });
     f = new Fact(help, "docs", tr("Documentation"), "", NoFlags, "help-circle-outline");
     f->setOpt("shortcut", QKeySequence::HelpContents);
