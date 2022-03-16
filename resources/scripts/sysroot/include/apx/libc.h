@@ -21,8 +21,8 @@
  */
 #pragma once
 
-#include "visibility.h"
 #include "types.h"
+#include "visibility.h"
 
 __BEGIN_DECLS
 
@@ -55,8 +55,8 @@ int toupper(int c);
 int isalnum(int c);
 
 int atoi(const char *s);
-long strtol(const char *nptr, char **endptr, register int base);
-unsigned long strtoul(const char *nptr, char **endptr, register int base);
+long strtol(const char *nptr, char **endptr, int base);
+unsigned long strtoul(const char *nptr, char **endptr, int base);
 
 int snprintf_f(char *s, size_t n, const char *fmt, float v);
 int snprintf_i(char *s, size_t n, const char *fmt, int32_t v);

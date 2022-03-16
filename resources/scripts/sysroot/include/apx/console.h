@@ -38,27 +38,27 @@ __END_DECLS
 
 void print(const char *v)
 {
-  puts(v);
+    puts(v);
 }
 void printf(const char *v)
 {
-  print(v);
+    print(v);
 }
 void printf(const char *fmt, const char *v)
 {
-  printf_s(fmt, v);
+    printf_s(fmt, v);
 }
 void printf(const char *fmt, float v)
 {
-  printf_f(fmt, v);
+    printf_f(fmt, v);
 }
 void printf(const char *fmt, int32_t v)
 {
-  printf_i(fmt, v);
+    printf_i(fmt, v);
 }
 void printf(const char *fmt, uint32_t v)
 {
-  printf_i(fmt, v);
+    printf_i(fmt, v);
 }
 
 #endif

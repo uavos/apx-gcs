@@ -26,12 +26,16 @@
 
 __BEGIN_DECLS
 
-void sleep(uint32_t ms);
-
+// return system time in milliseconds
 uint32_t time_ms();
 
+// pause VM for number of milliseconds, also stops any events
+void sleep(uint32_t ms);
+
+// call task periodically, or once if period is zero
 void task(const char *callback, uint32_t period_ms = 0);
 
+// exit and stop VM
 void exit(const char *exception = 0);
 
 __END_DECLS

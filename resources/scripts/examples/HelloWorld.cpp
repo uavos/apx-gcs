@@ -23,7 +23,7 @@
 
 int main()
 {
-  puts("Hello world!"); // faster than printf
+    puts("Hello world!"); // faster than printf
 
-  return 0;
+    return 0;
 }

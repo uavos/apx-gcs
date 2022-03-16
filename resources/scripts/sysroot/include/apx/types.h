@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#define NULL ((void *)0)
+#define NULL ((void *) 0)
 
 #define CHAR_BIT 8
 #define SCHAR_MIN -128

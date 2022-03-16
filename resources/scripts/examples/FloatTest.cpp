@@ -23,11 +23,11 @@
 
 int main()
 {
-  printf_f("%f", 1.234); // the argument is always float
+    printf_f("%f", 1.234); // the argument is always float
 
-  printf("%f", 2.34567f); // the argument type must be explicitly specified
+    printf("%f", 2.34567f); // the argument type must be explicitly specified
 
-  printf("%u", 345u);
+    printf("%u", 345u);
 
-  return 0;
+    return 0;
 }

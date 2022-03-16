@@ -23,16 +23,16 @@
 
 int main()
 {
-  // register task to be called by mandala vmexec packet
-  task("test");
+    // register task to be called by mandala vmexec packet
+    task("test");
 
-  return 0;
+    return 0;
 }
 
 EXPORT void test()
 {
-  // can be called by:
-  // - GCS with terminal command `vmexec("test")`
-  // - Mission waypoint action Script `test`
-  printf("called test");
+    // can be called by:
+    // - GCS with terminal command `vmexec("test")`
+    // - Mission waypoint action Script `test`
+    printf("called test");
 }

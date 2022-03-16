@@ -29,6 +29,8 @@ __BEGIN_DECLS
 typedef uint8_t port_id_t;
 
 // register receive callback for Virtual Comm Port
+// The callback must be defined as:
+// EXPORT void on_serial_data(const uint8_t *data, size_t size) {}
 void receive(port_id_t port_id, const char *rx_callback);
 
 // send data to Virtual Comm Port

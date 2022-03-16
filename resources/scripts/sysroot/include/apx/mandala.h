@@ -41,20 +41,7 @@ __END_DECLS
 
 #ifdef __cplusplus
 
-namespace mandala
-{
-
-    inline void set(mandala_uid_t uid, float v)
-    {
-        mset_f(uid, v);
-    }
-    inline void set(mandala_uid_t uid, uint32_t v)
-    {
-        mset_i(uid, v);
-    }
-} // namespace mandala
-
-template <mandala_uid_t UID>
+template<mandala_uid_t UID>
 class Mandala
 {
 public:
@@ -65,13 +52,14 @@ public:
 
     static inline float value() { return mget(_handle); }
 
-    template <typename T>
-    static inline void publish(T v) { mandala::set(UID, v); }
+    static inline void publish(float v) { mset_f(UID, v); }
+    static inline void publish(uint32_t v) { mset_i(UID, v); }
+    static inline void publish(bool v) { mset_i(UID, v); }
 
 private:
     static mandala_handle_t _handle;
 };
-template <mandala_uid_t UID>
+template<mandala_uid_t UID>
 mandala_handle_t Mandala<UID>::_handle{255};
 
 #endif

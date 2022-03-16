@@ -28,19 +28,19 @@ using u1 = Mandala<mandala::est::env::usr::u1>;
 
 int main()
 {
-  alt(); // subscribe
-  u1();
+    alt(); // subscribe
+    u1();
 
-  task("on_task", 1000);
+    task("on_task", 1000);
 
-  return 0;
+    return 0;
 }
 
 EXPORT void on_task()
 {
-  alt::publish(alt::value() + 1.f);
-  u1::publish(u1::value() + 0.1f);
+    alt::publish(alt::value() + 1.f);
+    u1::publish(u1::value() + 0.1f);
 
-  const uint8_t tbuf[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
-  send(1, tbuf, sizeof(tbuf), true);
+    const uint8_t tbuf[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    send(1, tbuf, sizeof(tbuf), true);
 }

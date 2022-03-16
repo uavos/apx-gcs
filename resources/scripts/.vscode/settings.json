@@ -1,4 +1,7 @@
 {
+    "editor.formatOnType": true,
+    "editor.formatOnSave": true,
+    "files.insertFinalNewline": true,
     "wasm": {
         "sysroot": "${workspaceFolder}/sysroot",
         "flags": "-I${workspaceFolder}/include"
