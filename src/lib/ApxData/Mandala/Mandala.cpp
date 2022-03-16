@@ -118,8 +118,9 @@ QList<MandalaFact *> Mandala::valueFacts() const
 {
     QList<MandalaFact *> list;
     for (auto f : _uid_map.values()) {
-        if (!f->isSystem())
-            list.append(f);
+        if (f->isSystem() || f->isGroup())
+            continue;
+        list.append(f);
     }
     return list;
 }

@@ -87,4 +87,5 @@ protected:
     // PROPERTIES
 public:
     bool isSystem() const;
+    bool isGroup() const;
 };

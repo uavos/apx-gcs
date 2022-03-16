@@ -466,3 +466,7 @@ bool MandalaFact::isSystem() const
 {
     return mandala::cmd::env::match(uid());
 }
+bool MandalaFact::isGroup() const
+{
+    return meta().group;
+}

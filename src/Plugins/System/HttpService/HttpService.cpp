@@ -114,7 +114,11 @@ QString HttpService::reply_mandala(const QString &req)
     //------------------------------
     bool doDescr = false;
     QStringList rlist = req.trimmed().split('&', Qt::SkipEmptyParts);
+
+    // select mandala
     Mandala *mandala = Vehicles::instance()->current()->f_mandala;
+
+    // collect requested facts
     QList<MandalaFact *> facts;
     for (auto const &s : rlist) {
         MandalaFact *f = nullptr;
@@ -133,8 +137,12 @@ QString HttpService::reply_mandala(const QString &req)
         if (f)
             facts.append(f);
     }
-    if (facts.isEmpty())
+    bool bAllFacts = false;
+    if (facts.isEmpty()) {
         facts = mandala->valueFacts();
+        bAllFacts = true;
+    }
+
     //mandala->currents
     for (auto f : facts) {
         if (doDescr) {
@@ -144,9 +152,13 @@ QString HttpService::reply_mandala(const QString &req)
             xml.writeAttribute("uid_hex", QString::number(f->uid(), 16).toUpper());
             xml.writeCharacters(f->valueText());
             xml.writeEndElement();
-        } else {
-            xml.writeTextElement(f->mpath(), f->valueText());
+            continue;
         }
+
+        if (bAllFacts && !f->everReceived())
+            continue;
+
+        xml.writeTextElement(f->mpath(), f->valueText());
     }
     //------------------------------
     xml.writeEndElement(); //mandala
