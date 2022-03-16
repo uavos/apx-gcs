@@ -5,8 +5,8 @@
     },
     "phrases": [
         {
-            "msg": "configuration updated",
-            "say": "configuration accepted"
+            "msg": "parameters saved",
+            "say": "confirm"
         },
         {
             "msg": "mission updated"
@@ -71,11 +71,11 @@
             "msg": "engine on"
         },
         {
-            "msg": "ers on",
+            "msg": "ers launch on",
             "say": "parachute launched"
         },
         {
-            "msg": "ers off",
+            "msg": "ers launch off",
             "say": "parachute locked"
         },
         {
