@@ -226,7 +226,7 @@ bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
         return false;
 
     // get list of nodes IDs
-    QList<std::array<quint64, 3>> list;
+    QList<QList<quint64>> list;
     while (query.next()) {
         auto nodeID = query.value("nodeID").toULongLong();
         auto dictID = query.value("dictID").toULongLong();
@@ -240,10 +240,10 @@ bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
 
     //qDebug()<<list.size();
     QVariantList nodes;
-    for (auto p : list) {
+    for (auto r : list) {
         QVariantMap node;
         {
-            auto req = new DBReqLoadNodeInfo(p[0]);
+            auto req = new DBReqLoadNodeInfo(r.value(0));
             bool ok = req->run(query);
             if (ok) {
                 node.insert("info", req->info());
@@ -253,7 +253,7 @@ bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
                 return false;
         }
         {
-            auto req = new DBReqLoadNodeDict(p[1]);
+            auto req = new DBReqLoadNodeDict(r.value(1));
             bool ok = req->run(query);
             if (ok) {
                 node.insert("dict", req->dict());
@@ -263,7 +263,7 @@ bool DBReqLoadVehicleConfig::run(QSqlQuery &query)
                 return false;
         }
         {
-            auto req = new DBReqLoadNodeConfig(p[2]);
+            auto req = new DBReqLoadNodeConfig(r.value(2));
             bool ok = req->run(query);
             if (ok) {
                 node.insert("values", req->values());

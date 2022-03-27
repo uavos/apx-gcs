@@ -6,7 +6,7 @@
 namespace mandala {
 
 // constants
-typedef enum {
+typedef enum : option_t {
     // sns.nav.gyro.src
     gyro_src_unknown = 0,
     gyro_src_local = 1,
@@ -219,9 +219,9 @@ typedef enum {
     pwr_servo_off = 0,
     pwr_servo_on = 1,
 
-    // ctr.env.pwr.ignition
-    pwr_ignition_off = 0,
-    pwr_ignition_on = 1,
+    // ctr.env.pwr.eng
+    pwr_eng_off = 0,
+    pwr_eng_on = 1,
 
     // ctr.env.pwr.payload
     pwr_payload_off = 0,
@@ -871,7 +871,7 @@ namespace ctr
         {
             enum { ap = 0x301 };
             enum { servo = 0x302 };
-            enum { ignition = 0x303 };
+            enum { eng = 0x303 };
             enum { payload = 0x304 };
             enum { agl = 0x305 };
             enum { xpdr = 0x306 };

@@ -76,7 +76,7 @@
                         "name": "telemetry.rate",
                         "title": "rate",
                         "type": "option",
-                        "units": "10Hz,1Hz,5Hz,20Hz,50Hz,100Hz"
+                        "units": "10Hz,1Hz,5Hz,20Hz,50Hz"
                     },
                     {
                         "name": "telemetry.broadcast",
@@ -264,6 +264,12 @@
                         "title": "mtow",
                         "type": "word",
                         "units": "kg"
+                    },
+                    {
+                        "name": "vehicle.ktas",
+                        "title": "ktas",
+                        "type": "option",
+                        "units": "off,on"
                     },
                     {
                         "name": "vehicle.heli",
@@ -574,12 +580,6 @@
                         "name": "ahrs.air.lpf",
                         "title": "lpf",
                         "type": "real"
-                    },
-                    {
-                        "name": "ahrs.air.vse",
-                        "title": "vse",
-                        "type": "option",
-                        "units": "tas,vel"
                     },
                     {
                         "name": "ahrs.air.slip",
@@ -1483,6 +1483,12 @@
                         "type": "group"
                     },
                     {
+                        "name": "shiva.takeoff.check.pwr",
+                        "title": "pwr",
+                        "type": "option",
+                        "units": "off,on"
+                    },
+                    {
                         "name": "shiva.takeoff.check.hdg",
                         "title": "hdg",
                         "type": "byte",
@@ -1768,6 +1774,12 @@
                         "type": "bind"
                     },
                     {
+                        "name": "sim.air.aerr",
+                        "title": "aerr",
+                        "type": "real",
+                        "units": "%"
+                    },
+                    {
                         "name": "sim.agl",
                         "title": "AGL",
                         "type": "group"
@@ -1852,29 +1864,29 @@
                     },
                     {
                         "array": 24,
-                        "name": "ports.xpl",
-                        "title": "xpl",
+                        "name": "ports.controls.ch_xpl",
+                        "title": "ch_xpl",
                         "type": "text"
                     }
                 ],
-                "hash": "D1A62C44",
-                "time": 1628169110963
+                "hash": "F257DBD7",
+                "time": 1648026042716
             },
             "info": {
                 "hardware": "APX",
                 "name": "sim",
-                "time": 1628664380921,
+                "time": 1648026093930,
                 "uid": "73696D2E4150580000000000",
                 "user": {
-                    "hostname": "shiva-mbp",
-                    "machineUID": "2BBE19C42E1113CC08D39C9A7E110320B1CA299C",
+                    "hostname": "shiva-mbp.local",
+                    "machineUID": "E665E0EF6A4322065CA0AB17F9458CC0F7CFAC96",
                     "username": "uavinda"
                 },
-                "version": "11.0.171"
+                "version": "11.1.5"
             },
-            "time": 1628665876321,
+            "time": 1648027064351,
             "values": {
-                "ahrs.acc.lpf": "30",
+                "ahrs.acc.lpf": "10",
                 "ahrs.agl.aid": "0",
                 "ahrs.agl.gnd": "0.05",
                 "ahrs.agl.max": "1000",
@@ -1887,15 +1899,14 @@
                 "ahrs.air.proc": "0.001",
                 "ahrs.air.slip": "sensor",
                 "ahrs.air.stab": "0",
-                "ahrs.air.vse": "tas",
                 "ahrs.align.pitch": "0",
                 "ahrs.align.roll": "0",
                 "ahrs.align.yaw": "0",
                 "ahrs.bearing": "vel",
-                "ahrs.gyro.dlpf": "30",
-                "ahrs.gyro.lpf": "30",
+                "ahrs.gyro.dlpf": "20",
+                "ahrs.gyro.lpf": "10",
                 "ahrs.gyro.nf": "0",
-                "ahrs.gyro.nfbw": "20",
+                "ahrs.gyro.nfbw": "0",
                 "ahrs.hsrc": "baro",
                 "ahrs.mag": "auto",
                 "ahrs.mode": "local",
@@ -2044,6 +2055,32 @@
                     "0",
                     "0"
                 ],
+                "ports.controls.ch_xpl": [
+                    "sim/joystick/yoke_roll_ratio",
+                    "sim/joystick/yoke_pitch_ratio",
+                    "sim/flightmodel/engine/ENGN_thro_use[0]",
+                    "sim/flightmodel/controls/rud_trim",
+                    "sim/flightmodel/controls/flaprqst",
+                    "sim/flightmodel/controls/parkbrake",
+                    "sim/flightmodel/controls/sbrkrqst",
+                    "sim/joystick/yoke_heading_ratio",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
                 "ports.controls.ch_zero": [
                     "0",
                     "0",
@@ -2172,33 +2209,7 @@
                     "0",
                     "0"
                 ],
-                "ports.xpl": [
-                    "sim/joystick/yoke_roll_ratio",
-                    "sim/joystick/yoke_pitch_ratio",
-                    "sim/flightmodel/engine/ENGN_thro_use[0]",
-                    "sim/flightmodel/controls/rud_trim",
-                    "sim/flightmodel/controls/flaprqst",
-                    "sim/flightmodel/controls/parkbrake",
-                    "sim/flightmodel/controls/sbrkrqst",
-                    "sim/joystick/yoke_heading_ratio",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    ""
-                ],
-                "script.code": "wpt,0000048D78DA8D534D6FDA4014BCFB578CD20B5404A3E49644515D04091201848D126E59EC67BCCDE2B576D71054E5BFF7AD81921EAAD6176B77DFCC9B791FE1D7005F11CD5E10D54E57526987CAE81F943ADC15CE55376198E9D4766BB1D5B69BEACD3D033CA6AFABBD91EBC2A195B671D5EB5D5F5EF5AE7A1D444A8A374B12B133C259A9841335EEACF8F60707C729340416862C992D6547EAA49016B95404FE57C238E8BCD11817C25086B15C196124D9EE6700CB5E1BB1F198DC10C1EADCED38FE067B5D231525A7C9A47546AE6AC7D40EA2CC426DB0D199CCF79E87EFEA32230357101C998DF599FDE161B2C0982CCBC403956484C2AC5E2999B298944A4B10ACC0DFD88215AE1A3A0F1C7A29F1510A869AF98593BAEC8024BF1B6CC9583EE3FA94EA48D881369EA4259C3760A02B8F6BB3EA3DB8A667E8DFAA70369B41960D77A12B365630255BDD49EEC08A505BCA6BD5F1141C8CE751F2385D2488264B3C47F379344996B71CEC0ACDAFB4A50395DC544A3233FB32A2747B96EF199E06F3FE2343A2EFA3F12859B2090C47C96410C7184EE788308BE6C9A8BF184773CC16F3D9341E748198BC2CF204FFAE74DEF48CAB99911352FD9E8225B7D9B24895A1105BE276A72479AA2090F2B0FE772B3D9750BA5C37A619732E6B17A31CA5761D58567C5A90DD6ED75D9775579B75A80E1C36BCF7B2C2E08B2C5355671C2CAAF76E711F04B274D80859B6DAC1CF00FC85214B5D73B3FCE009FB06A77D5B52A154334A1CCD43A304B61B7AA79437227D23D7407D78EBC2917517EDDBA0B932E46A53A2771B7C04C1E065369D27D86A99C1477DCEE937E2739A9BD3C3251EFAF1D13BEF802CB942BCB45E055E0F1A4E395FCF9827699B39DE897DA5BD4791FA79459C1A5939BC7AC021BC32FC9CB72E8E994FEA3F825F17A47931,000000F078DA1DCD518AC2301006E07F32692DE661AB208A4F5E600F9193A4591B50B4B59828EC53A2B0B0AFDEC0E3ECB1B6E9CBCC37FF0C0CACEF08006D8A8622C546C4880623806C8A622DD8F57739DC82072606EB4F20962C58CA8206222A9840E58A23E9F71F54847E55B9E661A6CBB273DDE5FA2D2083F3012C3B7BEC21953119E67E39B61073635A1BAC717DCB34AE0ECE0EE6CB7AC762FEC94BE8F49B1234EA479ABAFA80FEC9519D72B05515EA6796521B1AAF2BB598BEEDEDF9ECDADDE47F6E6B3A3D",
+                "script.code": "MathTest,00000F5B78DAA5566D6FDB3610FEAE5F71F35040EE1C5976DCA5755E36AF4BDA006912D80EDA00030CDAA26C2EB2E891941D63E87FDF1DF5EA9724ED1AA035C5BB7BF83CC7E391CDD70EBC86DEED17E825462E44240D2C94FC9B4F0C9CCC8C59749BCD404EB497B0A5D4DE44CECF308062DECBC55A89E9CC803BA943DBF70F0FDA7EDB6F402F12EC41730103A398D12262862570A2D9EF1B18E8178105D0A0B8E66AC9830C7A38131A421171C0DF0553066468390E664CF100AEC4583125B8F6AA01487BAAD89C6242C53968199A15FA77612D1398B018970984364A8C1383D006581C34A582B90C44B8261C9C4BE2802B30330E86ABB9A695E9E3C3F51D5C718D34E1038FB96211DC26E3484C90CC84C79A03430634A367C8706CE128F082A80C322A7021119F1921E306708176054BAE347EC361BE5406D800A908C465860428900B8AAB23EB35604ECBD0A7B2508A0D40C4167B2617286C86902875257007C61C12CDC3246A10043AC3E7CBE1C79BBB21F4AEEFE173AFDFEF5D0FEF8FD1D9CC245AF992A75062BE880422A32EC562B346FA84F0E9BCFFFE2386F4FEB8BCBA1CDEA308B8B81C5E9F0F067071D3871EDCF6FAC3CBF77757BD3EDCDEF56F6F06E71EC080132D4E002F673AB47B86D90CB861222AAAE01EB75923C92880195B72DCEE09175855C06082C5FACD5B49582C92F1D48AC69832AD1E5C86104BD3008D8CF303B25AADBC699C78524D9B518AA19B6744ABE9383F8B781225017AB3C5A3373BC399808722E6700E6DEFA8F5B6FD96FE858E9368816B2A89BB720A9FB03859C44EE6E96FB7CBB5E97663B6EC7699C111B99D1D3BCEF997DB9BFE1096520458B1DA7C6266E6D64BC358CAC81A7A86C56D378C24D55303D2C1237A6E3B5EC969EEB6C73AF847998AD949446C0EDB2303DAE0411D1931E7388B9330672276EBCEBF0EE0C130DAAD0DC803860802C4D2F3BCBFE21A618015EDA6C30D115081C5A4D0CF68AE734FA61FDC9A8C4734A835A0E5FB191A37898AC13F76BE3A4E919921361B19CB39C743317173FD965FFAB16494F8C7E36222E0D3513A49FFBF867EFB4F8B9F5A71B7322B8E5C1CD5CBC889D4990D475B36DC87CC86A3CC5618D9A88465849B7D56E2D9A84467049F7D6EB8948B305A25FB4C571221B8211B6BC2768B05EB7000C5F00C7CCFF7FD5658477FCA50BE871778E0ACDE7AB17DD6A870C743B7464B62D64E5F79ED10AD8D3C855B6E08802E9DD4A5AAB07461DB3E15A6B9AB657450FCE574BE6E88A40C15292391C5F0799114F7432211A01450DDA38AC86D9F0AD3EF12497B5C6C3A892C86A9C8273452D80F694480927F59641B1AB77D2A445FD4583DBF6953C0F3EA64E05908D9803F2E3642F3D571DE3D68D591C09B94403AE1F9B836349B989CC35F8FDE1EBDEB745AADA356A7D3DE8AF529B45586DA38FAC3D8D696EFF632D92AD6B7D2E93B6FDEF99D377B5560AE4C7B4347D669F11C13699AB19D583E50FB5009A79940167B4B05F153D9EDB1CF5B12D6066954C822CDD3BCAFE197532A8F5668B30DAB19BDB9DC359C9C625CB891C861C1AF0BAFB4D58870BF41EDE6A1065DB0F59435F31D59919C6E882239999A1785D06DB47E5E0152DDC31F4FF63E09C8E5FB0568BCF47614F8DFA8C0DE98FF57C25E0D44E77911786E5EBAF8EDC55716936D232CAF9A47EA21F6E6584313BF2ACDF238EB3BF2A1D2523276B6A9581078959E830A6276A48BEBF927F9B049B4FAF0D8B996235B07C7BB9CD7C8742157EE79036C4B293ADE9344339E84B8BFF9ADF11C1FA6FCD75BA60833522FCDBBED8EA8F08675ABF85509BE94868D17D64E1E745A4DCF2402FD1AD0FE8E4458C8FD99787C3A131991977291B935DA5BD9C8593E918DEAB3367BE1B9BBC9A06763B78BE384BB1669F79D57BC7AD28834B175B778496279974F4CAAFAF4A997B68FE2419A9E21CB991A6ABE14556C2EBBD8BA74E2ABF31F5F757E5A,000009D778DAAD564D685C55143EF7DE373F99D7C06BB156747367249040136CFC4142D57906144171D1AE74F1F26A5ED2B1999FE43D63230C3335566792569B3422AE5CB8E9C64D0DB448A582C54D407021DA65B1080AEA4AD08D7ACEBDF74DEE98A48A3830F79DEF9C73CFF9CE99F3EE1D08E32A03007674DF146BB1D6146FB50097262D848174CD266B4E31B5B4700140004ADD22758BDF60FB45545B741AAF24310089F9C642A596CC0431301BCE002798A99EA8D4A641909C4B2AD528A8C6E0A81049189FD27B326112D6C621A3D42443964431579F3552A3FEAA31C7F30B8951C695D4F1A57A6CA4DE6627EC999DB06777AAB3510239319077F20305D7CD0B27C31A8CB18C60C0B207458BF99F6D81DB02FF9A4B2B815CA390AD46D5FAC212877C12C5C9736172120E0C90E82BE677E5487E16E91E540EC788E4DDB97A2D50451E72AA2192B9C70D021282C57A651AF61782601A8B0DA2DAB460683A19858DE044184782176EEDCB3F03FEAFDD761BBC367EE05E1FFCE5BC0FDE32A109D85C25D33A0154BE41CF47F85552FA673BB4DE06EFACB6BAD79D2CFD9AE9D7FF71C50AFB29794F5E7EE1DAE3DEEBCAFF26259D04683F61145BCAE3F86FA365A3585FB5F6B3A272BE5E64A2CCCB92E99D6F925132EF2D7A5E5C9D3C74E5AB4783121F04FFFBAEB2586E3AAA2BB984F922990ADFDC7F74BDA45D824170FD8F5445E7D5DAA655C27DDE19C5E58F957E2EF8E5A22CE172912936441B7974C8A124BCAEE1533FB03C11941CE4F3851DE0F78EA6ADEB7C4F5115065DEDA66D90264E4ADC917CBE88EC7DF67209FC1F724F13E70F7670E629E7AFED949072E6C4BA24D64A4CB2170729EF0A7914998B162151BB51CAF451EFDA71CEF491ED76ED423E5428B33BDFB52F4111BEB02761F727CEB24D0993B7C6A227378A4C82B7AAA8610CEF9C92044AE79584DBBCB795E4209B77949441AB9A8462166B71F46EC9D3B9C0522ED9A56CF591BFADB918F49D422684D15DB2E6919A95D1A4A4B012BCBF77829B1DBB73DF7674AFCEDD214156D72A7B938409AEEC9DE0173DB206FDAC9009B15B02B7CCF0A0C569C000FA3D42E9DD3D5FA59E5BEF3D721B5C9DD51842CF2B98F9677F9B7FBEFBFC43DFFCB39DF3CFFAE79FBB35CE4DC2DEF8823DBEA0C797F7328BDDC717EE30BE3C4D27DC4F38134D1F46CD2978411507DE457AF2B23E0D7D18D6E761ED634927D46B3736D64B609F4ED0DFD2ED86EE3C9BFEB195FF4B23FF7DFFFE7BF7DC3C786B5AFA5C707CD3F3EEA6782AACCC417A593D7F0A8EE31526E9A29D9043714143BC8B2D84F75632AE7174BA313C7A64E4B1A1B1876734EA01BA77517C8844BC8D5311AF4C232EE1F3417C9E364FCA39BC3462D05C6D5BC63F00C3C67A78DC564687955BAA5A0CE7E474348B68DCB079804C4710509552FDD39043088F25E142225535749F8F8D8D19179566641B631136C4426C88F16C886D3270943E49DA49856C2552DBA1C3CD3B74AAD3B6D6C8E06FBA2EFBF32FAA28C961",
                 "script.mode": "manual",
                 "shiva.alt.Ki": "0.05",
                 "shiva.alt.Kp": "0.1",
@@ -2315,6 +2326,7 @@
                 "shiva.spd.tc": "6",
                 "shiva.spd.weight": "1",
                 "shiva.takeoff.check.hdg": "20",
+                "shiva.takeoff.check.pwr": "off",
                 "shiva.takeoff.check.xtrack": "4",
                 "shiva.takeoff.climb.altitude": "25",
                 "shiva.takeoff.climb.pitch": "10",
@@ -2358,12 +2370,13 @@
                 "sim.agl.err": "0",
                 "sim.agl.herr": "",
                 "sim.agl.pwr": "auto",
+                "sim.air.aerr": "0",
                 "sim.air.baro": "0.01",
                 "sim.air.herr": "",
                 "sim.air.pitot": "0.01",
                 "sim.gps.herr": "",
-                "sim.gps.vel": "0.01",
-                "sim.imu.acc": "1",
+                "sim.gps.vel": "0.1",
+                "sim.imu.acc": "0.2",
                 "sim.imu.gyro": "1",
                 "sim.imu.mag": "0.01",
                 "telemetry.broadcast": "off",
@@ -2387,28 +2400,28 @@
                     ""
                 ],
                 "telemetry.data.aux.format": [
-                    "word",
-                    "word",
-                    "dword",
                     "real",
                     "real",
-                    "word",
                     "real",
-                    "byte",
-                    "byte",
-                    "byte",
-                    "byte",
-                    "byte",
-                    "byte",
-                    "byte",
-                    "byte",
-                    "byte"
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real"
                 ],
                 "telemetry.data.cam": "off",
                 "telemetry.data.haps": "off",
-                "telemetry.data.redundancy": "on",
+                "telemetry.data.redundancy": "off",
                 "telemetry.data.turret": "off",
-                "telemetry.data.usr": "on",
+                "telemetry.data.usr": "off",
                 "telemetry.mode": "auto",
                 "telemetry.rate": "10Hz",
                 "vehicle.acc": "7",
@@ -2421,7 +2434,7 @@
                 "vehicle.heli.hsink": "0",
                 "vehicle.init.bind": [
                     "ctr.str.brake",
-                    "ctr.pwr.ignition",
+                    "",
                     "",
                     "",
                     "",
@@ -2455,6 +2468,7 @@
                     "0",
                     "0"
                 ],
+                "vehicle.ktas": "on",
                 "vehicle.ld": "12",
                 "vehicle.mtow": "1000",
                 "vehicle.radius": "300",
@@ -2471,12 +2485,12 @@
             }
         }
     ],
-    "time": 1628665876321,
+    "time": 1648027064352,
     "title": "MALE-B",
     "vehicle": {
         "callsign": "SIM",
         "class": "UAV",
-        "time": 1628665875973,
-        "uid": "73696D2E4150580000000000"
+        "time": 1648024751204,
+        "uid": "73696D2E415058000053494D"
     }
 }
