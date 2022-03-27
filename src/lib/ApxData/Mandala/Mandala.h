@@ -41,10 +41,16 @@ public:
     static const mandala::meta_s &meta(mandala::uid_t uid);
     static mandala::uid_t uid(const QString &mpath);
 
-    QList<MandalaFact *> valueFacts() const;
+    QList<MandalaFact *> valueFacts() const { return _valueFacts; }
+
+    void updateUsed(int adj);
 
 private:
     QMap<mandala::uid_t, MandalaFact *> _uid_map;
+    QList<MandalaFact *> _valueFacts;
+
+    uint _total{};
+    uint _used{};
 
 protected:
     // Fact override
@@ -53,6 +59,8 @@ protected:
 
 private slots:
     void recordSendValue(mandala::uid_t uid, QVariant value);
+
+    void updateStatus();
 
 public slots:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);

@@ -30,7 +30,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
            meta.name,
            meta.title,
            "",
-           meta.group ? Group | FilterModel | ModifiedGroup : ModifiedTrack)
+           meta.group ? Group | FilterModel | ModifiedGroup : ModifiedGroup)
     , m_tree(tree)
     , m_meta(meta)
 {
@@ -104,7 +104,14 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
         } else {
             setDataType(Int);
         }
+
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
+
+        if (!isSystem()) {
+            connect(this, &Fact::modifiedChanged, this, [this]() {
+                m_tree->updateUsed(modified() ? 1 : -1);
+            });
+        }
     }
 
     setOpt("PID", QString("%1 (0x%2)").arg(uid()).arg(uid(), 4, 16, QLatin1Char('0')));
@@ -114,8 +121,6 @@ bool MandalaFact::setValue(const QVariant &v)
 {
     //always send uplink
     bool rv = Fact::setValue(v);
-    //    if (!rv)
-    //        return false;
 
     //qDebug() << name() << text() << rv;
     if (sendTimer.isActive())

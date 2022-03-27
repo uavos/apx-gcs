@@ -154,6 +154,7 @@ bool FactProxyModel::lessThan(Fact *left, Fact *right) const
 
 FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation, QWidget *parent)
     : QWidget(parent)
+    , _backNavigation(backNavigation)
 {
     setWindowTitle(fact->title());
     vlayout = new QVBoxLayout(this);
@@ -177,9 +178,8 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     aBack->setVisible(backNavigation);
     connect(aBack, &QAction::triggered, this, &FactTreeWidget::back);
     toolBar->addAction(aBack);
-    if (backNavigation) {
-        connect(tree, &FactTreeView::doubleClicked, this, &FactTreeWidget::doubleClicked);
-    }
+
+    connect(tree, &FactTreeView::doubleClicked, this, &FactTreeWidget::doubleClicked);
 
     vlayout->addWidget(toolBar);
     vlayout->addWidget(tree);
@@ -246,12 +246,19 @@ void FactTreeWidget::doubleClicked(const QModelIndex &index)
     Fact *f = idx.data(Fact::ModelDataRole).value<Fact *>();
     if (!f)
         return;
-    if (!f->size())
+
+    if (f->size() > 0 || f->treeType() == Fact::Group) {
+        if (!_backNavigation)
+            return;
+        Fact *fPrev = proxy->root();
+        setRoot(f);
+        rootList.append(QPointer<Fact>(fPrev));
+        updateActions();
         return;
-    Fact *fPrev = proxy->root();
-    setRoot(f);
-    rootList.append(QPointer<Fact>(fPrev));
-    updateActions();
+    }
+
+    // value fact
+    f->trigger();
 }
 
 void FactTreeWidget::collapsed(const QModelIndex &index)

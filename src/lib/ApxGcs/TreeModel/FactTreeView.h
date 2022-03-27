@@ -76,6 +76,7 @@ public:
 
 private:
     QList<QPointer<Fact>> rootList;
+    bool _backNavigation{};
 
 private slots:
     void filterChanged();

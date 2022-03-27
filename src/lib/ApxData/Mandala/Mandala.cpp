@@ -78,6 +78,26 @@ Mandala::Mandala(Fact *parent)
         MandalaFact *f = new MandalaFact(this, group, d);
         _uid_map.insert(f->uid(), f);
     }
+
+    // fill value facts list
+    for (auto f : _uid_map.values()) {
+        if (f->isSystem() || f->isGroup())
+            continue;
+        _valueFacts.append(f);
+    }
+
+    _total = _valueFacts.size();
+}
+
+void Mandala::updateUsed(int adj)
+{
+    _used += adj;
+    updateStatus();
+}
+
+void Mandala::updateStatus()
+{
+    setValue(QString("%1/%2").arg(_used).arg(_total));
 }
 
 MandalaFact *Mandala::fact(mandala::uid_t uid) const
@@ -112,17 +132,6 @@ mandala::uid_t Mandala::uid(const QString &mpath) // static
             return d.uid;
     }
     return {};
-}
-
-QList<MandalaFact *> Mandala::valueFacts() const
-{
-    QList<MandalaFact *> list;
-    for (auto f : _uid_map.values()) {
-        if (f->isSystem() || f->isGroup())
-            continue;
-        list.append(f);
-    }
-    return list;
 }
 
 QString Mandala::mandalaToString(xbus::pid_raw_t pid_raw) const
