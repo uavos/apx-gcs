@@ -100,6 +100,12 @@ void Mandala::updateStatus()
     setValue(QString("%1/%2").arg(_used).arg(_total));
 }
 
+void Mandala::resetCounters()
+{
+    for (auto f : _valueFacts)
+        f->setModified(false);
+}
+
 MandalaFact *Mandala::fact(mandala::uid_t uid) const
 {
     if (uid == 0xFFFF || mandala::is_bundle(uid))

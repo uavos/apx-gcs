@@ -67,6 +67,8 @@ public slots:
     void valuesData(PBase::Values values);
     void xpdrData(PBase::Values values);
 
+    void resetCounters();
+
 signals:
     // forwarded to vehicle
     void sendValue(mandala::uid_t uid, QVariant value);

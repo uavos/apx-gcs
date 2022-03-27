@@ -180,6 +180,7 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
     if (enabled() && !valid) {
         apxMsgW() << tr("Telemetry stream reset for %1").arg(parent()->title());
         qDebug() << "ts" << timestamp;
+        emit telemetryReset();
     }
 
     if (!enabled() && valid) {

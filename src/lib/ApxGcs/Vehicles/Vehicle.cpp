@@ -137,6 +137,10 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 &PTelemetry::telemetryData,
                 f_mandala,
                 &Mandala::telemetryData);
+        connect(protocol->telemetry(),
+                &PTelemetry::telemetryReset,
+                f_mandala,
+                &Mandala::resetCounters);
 
         connect(protocol->telemetry(), &PTelemetry::xpdrData, f_mandala, &Mandala::xpdrData);
 

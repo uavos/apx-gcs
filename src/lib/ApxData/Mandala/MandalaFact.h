@@ -74,6 +74,7 @@ private:
 
     size_t _rx_cnt{};
     bool _everReceived{};
+    void updateCounters();
 
     QVariant convertFromStream(const QVariant &v) const;
     QVariant convertForStream(const QVariant &v) const;

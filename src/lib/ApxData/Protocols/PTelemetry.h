@@ -37,7 +37,10 @@ protected:
 
 public slots:
     virtual void requestTelemetry() { _nimp(__FUNCTION__); }
+
 signals:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
+    void telemetryReset();
+
     void xpdrData(PBase::Values values);
 };

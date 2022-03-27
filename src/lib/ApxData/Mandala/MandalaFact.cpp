@@ -108,9 +108,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
 
         if (!isSystem()) {
-            connect(this, &Fact::modifiedChanged, this, [this]() {
-                m_tree->updateUsed(modified() ? 1 : -1);
-            });
+            connect(this, &Fact::modifiedChanged, this, &MandalaFact::updateCounters);
         }
     }
 
@@ -172,6 +170,15 @@ void MandalaFact::increment_rx_cnt()
         Fact::setValue(QVariant::fromValue(_rx_cnt));
     }
     setModified(true);
+}
+void MandalaFact::updateCounters()
+{
+    bool mod = modified();
+    m_tree->updateUsed(mod ? 1 : -1);
+    if (!mod) {
+        _rx_cnt = 0;
+        _everReceived = false;
+    }
 }
 
 mandala::uid_t MandalaFact::uid() const
