@@ -87,7 +87,7 @@ Item {
     readonly property var f_ers_status: mandala.sns.ers.status
     readonly property var f_ers_block: mandala.sns.ers.block
 
-    readonly property var f_rc_ovr: mandala.cmd.rc.ovr
+    readonly property var f_rc_mode: mandala.cmd.rc.mode
 
     readonly property var f_ref_hmsl: mandala.est.ref.hmsl
 
@@ -621,9 +621,9 @@ Item {
             }
             StatusFlag {
                 height: pfdScene.flagHeight
-                fact: f_rc_ovr
+                fact: f_rc_mode
                 text: qsTr("RC")
-                status_show: rc_ovr_on
+                status_show: rc_mode_manual
                 blinking: true
                 type: CleanText.Yellow
             }
