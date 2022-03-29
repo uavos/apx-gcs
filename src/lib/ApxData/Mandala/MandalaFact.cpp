@@ -25,6 +25,8 @@
 #include <mandala/MandalaMeta.h>
 #include <QColor>
 
+#include <xbus/telemetry/TelemetryFormat.h>
+
 MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta)
     : Fact(parent,
            meta.name,
@@ -81,18 +83,19 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                 setDefaultValue(0);
                 break;
             case mandala::type_byte:
-                setDataType(Int);
-                setMin(0);
-                setMax(255);
-                setDefaultValue(0);
+                if (meta.units_id == mandala::units_opt || meta.units_id == mandala::units_bit) {
+                    setDataType(Enum);
+                    setDefaultValue(0);
+                    auto st = units().split(',');
+                    setUnits(QString());
+                    setEnumStrings(st);
+                } else {
+                    setDataType(Int);
+                    setMin(0);
+                    setMax(255);
+                    setDefaultValue(0);
+                }
                 break;
-            case mandala::type_option: {
-                setDataType(Enum);
-                setDefaultValue(0);
-                QStringList st = units().split(',');
-                setUnits(QString());
-                setEnumStrings(st);
-            } break;
             }
 
             setOpt("color", getColor());
@@ -108,6 +111,9 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
         connect(this, &Fact::triggered, this, [this]() { setModified(false); });
 
         if (!isSystem()) {
+            setOpt("type", mandala::type_string(meta.type_id));
+            setOpt("fmt", mandala::fmt_string((mandala::fmt_e) meta.fmt));
+
             connect(this, &Fact::modifiedChanged, this, &MandalaFact::updateCounters);
         }
     }
@@ -208,6 +214,14 @@ QVariant MandalaFact::data(int col, int role)
             QString s = title();
             if (!m_meta.descr[0])
                 s += QString(" %1").arg(m_meta.descr);
+
+            if (!m_meta.group) {
+                s = QString("[%1/%2] %3")
+                        .arg(opts().value("type").toString())
+                        .arg(opts().value("fmt").toString())
+                        .arg(s);
+            }
+
             return s;
         }
         if (col == FACT_MODEL_COLUMN_VALUE) {
@@ -288,6 +302,15 @@ QString MandalaFact::mpath() const
     if (level >= 1)
         level--;
     return path(level);
+}
+
+bool MandalaFact::isSystem() const
+{
+    return mandala::cmd::env::match(uid());
+}
+bool MandalaFact::isGroup() const
+{
+    return meta().group;
 }
 
 int MandalaFact::getPrecision()
@@ -472,13 +495,4 @@ QColor MandalaFact::getColor()
             c = c.lighter();
     }
     return c;
-}
-
-bool MandalaFact::isSystem() const
-{
-    return mandala::cmd::env::match(uid());
-}
-bool MandalaFact::isGroup() const
-{
-    return meta().group;
 }

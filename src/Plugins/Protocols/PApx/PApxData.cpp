@@ -138,22 +138,17 @@ void PApxData::sendSerial(quint8 portID, QByteArray data)
 void PApxData::pack(const QVariant &v, mandala::type_id_e type, PStreamWriter &stream)
 {
     switch (type) {
-    default:
-        return;
-    case mandala::type_real:
-        stream.write<mandala::real_t>(v.value<mandala::real_t>());
-        return;
-    case mandala::type_dword:
-        stream.write<mandala::dword_t>(v.value<mandala::dword_t>());
+    case mandala::type_byte:
+        stream.write<mandala::byte_t>(v.value<mandala::byte_t>());
         return;
     case mandala::type_word:
         stream.write<mandala::word_t>(v.value<mandala::word_t>());
         return;
-    case mandala::type_byte:
-        stream.write<mandala::byte_t>(v.value<mandala::byte_t>());
+    case mandala::type_dword:
+        stream.write<mandala::dword_t>(v.value<mandala::dword_t>());
         return;
-    case mandala::type_option:
-        stream.write<mandala::option_t>(v.value<mandala::option_t>());
+    case mandala::type_real:
+        stream.write<mandala::real_t>(v.value<mandala::real_t>());
         return;
     }
 }
@@ -189,7 +184,7 @@ PBase::Values PApxData::unpack(const xbus::pid_s &pid,
         qWarning() << "pri:" << pid.pri << Mandala::meta(pid.uid).path;
     }
 
-    if (spec.type >= mandala::type_bundle) {
+    /*if (spec.type >= mandala::type_bundle) {
         int vcnt = 0;
         switch (spec.type) {
         default:
@@ -214,27 +209,22 @@ PBase::Values PApxData::unpack(const xbus::pid_s &pid,
         if (values.size() != vcnt)
             values.clear();
         return values;
-    }
+    }*/
 
     //qDebug() << Mandala::meta(pid.uid).name << stream->dump_payload();
     QVariant v;
     switch (spec.type) {
-    default:
-        break;
-    case mandala::type_real:
-        v = unpack<mandala::real_t>(stream);
-        break;
-    case mandala::type_dword:
-        v = unpack<mandala::dword_t>(stream);
+    case mandala::type_byte:
+        v = unpack<mandala::byte_t>(stream);
         break;
     case mandala::type_word:
         v = unpack<mandala::word_t>(stream);
         break;
-    case mandala::type_byte:
-        v = unpack<mandala::byte_t>(stream);
+    case mandala::type_dword:
+        v = unpack<mandala::dword_t>(stream);
         break;
-    case mandala::type_option:
-        v = unpack<mandala::option_t>(stream);
+    case mandala::type_real:
+        v = unpack<mandala::real_t>(stream);
         break;
     }
     values.insert(pid.uid, v);

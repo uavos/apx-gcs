@@ -60,7 +60,7 @@ get_target_property(gensrc_dir mandala_headers INCLUDE_DIRECTORIES)
 set(mandala_uid_src ${gensrc_dir}/mandala/MandalaUid.hpp)
 add_custom_command(
     OUTPUT ${mandala_uid}
-    DEPENDS shared.mandala
+    DEPENDS shared.mandala ${mandala_uid_src}
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${mandala_uid_src} ${mandala_uid}
 )
 add_custom_target(${MODULE}.mandala_uid ALL DEPENDS ${mandala_uid})

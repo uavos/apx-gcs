@@ -6,7 +6,7 @@
 namespace mandala {
 
 // constants
-typedef enum : option_t {
+typedef enum : byte_t {
     // sns.nav.gyro.src
     gyro_src_unknown = 0,
     gyro_src_local = 1,
@@ -14,6 +14,10 @@ typedef enum : option_t {
     gyro_src_secondary = 3,
     gyro_src_failsafe = 4,
     gyro_src_auxillary = 5,
+
+    // sns.nav.gyro.cnt
+
+    // sns.nav.gyro.clip
 
     // sns.nav.acc.src
     acc_src_unknown = 0,
@@ -23,6 +27,10 @@ typedef enum : option_t {
     acc_src_failsafe = 4,
     acc_src_auxillary = 5,
 
+    // sns.nav.acc.cnt
+
+    // sns.nav.acc.clip
+
     // sns.nav.mag.src
     mag_src_unknown = 0,
     mag_src_local = 1,
@@ -31,6 +39,8 @@ typedef enum : option_t {
     mag_src_failsafe = 4,
     mag_src_auxillary = 5,
 
+    // sns.nav.mag.cnt
+
     // sns.nav.gps.src
     gps_src_unknown = 0,
     gps_src_local = 1,
@@ -38,6 +48,8 @@ typedef enum : option_t {
     gps_src_secondary = 3,
     gps_src_failsafe = 4,
     gps_src_auxillary = 5,
+
+    // sns.nav.gps.cnt
 
     // sns.nav.gps.fix
     gps_fix_none = 0,
@@ -53,6 +65,12 @@ typedef enum : option_t {
     gps_emi_critical = 3,
     gps_emi_spoofing = 4,
 
+    // sns.nav.gps.pdop
+
+    // sns.nav.gps.sv
+
+    // sns.nav.gps.su
+
     // sns.nav.baro.src
     baro_src_unknown = 0,
     baro_src_local = 1,
@@ -60,6 +78,8 @@ typedef enum : option_t {
     baro_src_secondary = 3,
     baro_src_failsafe = 4,
     baro_src_auxillary = 5,
+
+    // sns.nav.baro.cnt
 
     // sns.nav.baro.status
     baro_status_unknown = 0,
@@ -75,6 +95,10 @@ typedef enum : option_t {
     pitot_src_secondary = 3,
     pitot_src_failsafe = 4,
     pitot_src_auxillary = 5,
+
+    // sns.nav.pitot.cnt
+
+    // sns.nav.pitot.valid
 
     // sns.nav.pitot.status
     pitot_status_unknown = 0,
@@ -189,6 +213,8 @@ typedef enum : option_t {
     turret_status_ready = 0,
     turret_status_shooting = 1,
     turret_status_reloading = 2,
+
+    // sns.env.turret.capacity
 
 
     // ctr.nav.eng.starter
@@ -312,12 +338,74 @@ typedef enum : option_t {
     cam_zout_off = 0,
     cam_zout_on = 1,
 
+    // ctr.env.cam.aux
+
     // ctr.env.turret.op
     turret_op_off = 0,
     turret_op_arm = 1,
     turret_op_shoot = 2,
     turret_op_shooting = 3,
     turret_op_reload = 4,
+
+    // ctr.env.usr.u1
+
+    // ctr.env.usr.u2
+
+    // ctr.env.usr.u3
+
+    // ctr.env.usr.u4
+
+    // ctr.env.usr.u5
+
+    // ctr.env.usr.u6
+
+    // ctr.env.usr.u7
+
+    // ctr.env.usr.u8
+
+    // ctr.env.usr.ub1
+
+    // ctr.env.usr.ub2
+
+    // ctr.env.usr.ub3
+
+    // ctr.env.usr.ub4
+
+    // ctr.env.usr.ub5
+
+    // ctr.env.usr.ub6
+
+    // ctr.env.usr.ub7
+
+    // ctr.env.scr.s1
+
+    // ctr.env.scr.s2
+
+    // ctr.env.scr.s3
+
+    // ctr.env.scr.s4
+
+    // ctr.env.scr.s5
+
+    // ctr.env.scr.s6
+
+    // ctr.env.scr.s7
+
+    // ctr.env.scr.s8
+
+    // ctr.env.scr.s9
+
+    // ctr.env.scr.s10
+
+    // ctr.env.scr.s11
+
+    // ctr.env.scr.s12
+
+    // ctr.env.scr.s13
+
+    // ctr.env.scr.s14
+
+    // ctr.env.scr.s15
 
 
     // est.nav.att.status
@@ -417,6 +505,36 @@ typedef enum : option_t {
     eng_status_warning = 2,
     eng_status_failure = 3,
 
+    // est.env.usr.u1
+
+    // est.env.usr.u2
+
+    // est.env.usr.u3
+
+    // est.env.usr.u4
+
+    // est.env.usr.u5
+
+    // est.env.usr.u6
+
+    // est.env.usr.u7
+
+    // est.env.usr.u8
+
+    // est.env.usr.ub1
+
+    // est.env.usr.ub2
+
+    // est.env.usr.ub3
+
+    // est.env.usr.ub4
+
+    // est.env.usr.ub5
+
+    // est.env.usr.ub6
+
+    // est.env.usr.ub7
+
 
     // cmd.nav.proc.mode
     proc_mode_EMG = 0,
@@ -428,12 +546,22 @@ typedef enum : option_t {
     proc_mode_TAKEOFF = 6,
     proc_mode_LANDING = 7,
 
+    // cmd.nav.proc.stage
+
+    // cmd.nav.proc.wp
+
+    // cmd.nav.proc.rw
+
+    // cmd.nav.proc.pi
+
     // cmd.nav.proc.action
     proc_action_idle = 0,
     proc_action_next = 1,
     proc_action_reset = 2,
     proc_action_inc = 3,
     proc_action_dec = 4,
+
+    // cmd.nav.proc.loops
 
     // cmd.nav.reg.att
     reg_att_off = 0,
@@ -522,9 +650,11 @@ typedef enum : option_t {
     eng_ovr_off = 0,
     eng_ovr_on = 1,
 
-    // cmd.nav.rc.ovr
-    rc_ovr_off = 0,
-    rc_ovr_on = 1,
+    // cmd.nav.rc.mode
+    rc_mode_auto = 0,
+    rc_mode_manual = 1,
+
+    // cmd.nav.cam.ch
 
     // cmd.nav.cam.range
     cam_range_off = 0,
@@ -573,6 +703,90 @@ typedef enum : option_t {
     turret_mode_stab = 2,
     turret_mode_position = 3,
     turret_mode_speed = 4,
+
+    // cmd.env.vehicle.ident
+
+    // cmd.env.vehicle.downlink
+
+    // cmd.env.vehicle.uplink
+
+    // cmd.env.vehicle.telemetry
+
+    // cmd.env.vehicle.xpdr
+
+    // cmd.env.telemetry.data
+
+    // cmd.env.telemetry.format
+
+    // cmd.env.telemetry.xpdr
+
+    // cmd.env.stream.vcp
+
+    // cmd.env.stream.calib
+
+    // cmd.env.stream.pld
+
+    // cmd.env.sim.sns
+
+    // cmd.env.sim.ctr
+
+    // cmd.env.sim.cfg
+
+    // cmd.env.sim.display
+
+    // cmd.env.script.vmexec
+
+    // cmd.env.script.jsexec
+
+    // cmd.env.aux.gcs
+
+    // cmd.env.aux.pld
+
+    // cmd.env.aux.hid
+
+    // cmd.env.redundancy.alive
+
+    // cmd.env.formation.haps
+
+    // cmd.env.formation.left
+
+    // cmd.env.formation.right
+
+    // cmd.env.formation.center
+
+    // cmd.env.
+
+    // cmd.env.
+
+    // cmd.env.
+
+    // cmd.env.
+
+    // cmd.env.
+
+    // cmd.env.
+
+    // cmd.env.
+
+    // cmd.env.nmt.search
+
+    // cmd.env.nmt.ident
+
+    // cmd.env.nmt.file
+
+    // cmd.env.nmt.reboot
+
+    // cmd.env.nmt.msg
+
+    // cmd.env.nmt.upd
+
+    // cmd.env.nmt.mod
+
+    // cmd.env.nmt.usr
+
+    // cmd.env.nmt.tree
+
+    // cmd.env.nmt.debug
 
 
 } constants_t;
@@ -1207,11 +1421,12 @@ namespace cmd
         };
         namespace rc
         {
-            enum { ovr = 0x661 };
+            enum { mode = 0x661 };
             enum { roll = 0x662 };
             enum { pitch = 0x663 };
-            enum { thr = 0x664 };
-            enum { yaw = 0x665 };
+            enum { yaw = 0x664 };
+            enum { thr = 0x665 };
+            enum { prop = 0x666 };
         };
         namespace cam
         {

@@ -64,11 +64,8 @@ void PApxTelemetry::report()
         case xbus::telemetry::fmt_bit:
             sfmt = "bit";
             break;
-        case xbus::telemetry::fmt_opt:
+        case xbus::telemetry::fmt_u4:
             sfmt = "opt";
-            break;
-        case xbus::telemetry::fmt_none:
-            sfmt = "none";
             break;
         }
         qDebug() << i << sfmt << path;
@@ -233,19 +230,16 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
 QVariant PApxTelemetry::raw_value(const void *src, mandala::type_id_e type)
 {
     switch (type) {
-    default:
-        return QVariant();
-    case mandala::type_real:
-        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::real_t>(src, type));
-    case mandala::type_dword:
-        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::dword_t>(src, type));
-    case mandala::type_word:
-        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::word_t>(src, type));
     case mandala::type_byte:
         return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::byte_t>(src, type));
-    case mandala::type_option:
-        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::option_t>(src, type));
+    case mandala::type_word:
+        return QVariant::fromValue((uint) xbus::telemetry::raw_value<mandala::word_t>(src, type));
+    case mandala::type_dword:
+        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::dword_t>(src, type));
+    case mandala::type_real:
+        return QVariant::fromValue(xbus::telemetry::raw_value<mandala::real_t>(src, type));
     }
+    return QVariant();
 }
 
 void PApxTelemetry::request_format(uint8_t part)
