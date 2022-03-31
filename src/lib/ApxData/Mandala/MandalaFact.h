@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <mandala/MandalaMetaBase.h>
+#include <mandala/MandalaMeta.h>
 
 #include <Fact/Fact.h>
 
@@ -62,9 +62,11 @@ public:
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;
+    const mandala::fmt_s &m_fmt;
 
     bool _convert_value{};
     qreal _conversion_factor{1.};
+    bool _convert_gps{};
 
     QElapsedTimer sendTime;
     QTimer sendTimer;

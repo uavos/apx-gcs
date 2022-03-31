@@ -141,10 +141,6 @@ Rectangle {
                 text: "G"
                 values: [ mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z ]
             }
-            /*SignalButton {
-                text: "M"
-                values: [ mandala.sns.mag.x, mandala.sns.mag.y, mandala.sns.mag.z, mandala.est.aux.mag ]
-            }*/
             SignalButton {
                 text: "Pt"
                 values: [ mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed ]

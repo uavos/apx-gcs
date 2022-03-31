@@ -35,6 +35,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
            meta.group ? Group | FilterModel | ModifiedGroup : ModifiedGroup)
     , m_tree(tree)
     , m_meta(meta)
+    , m_fmt(mandala::fmt(meta.uid))
 {
     if (name().toLower() != name()) {
         apxMsgW() << "uppercase:" << name();
@@ -72,6 +73,16 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                 setDefaultValue(0.f);
                 break;
             case mandala::type_dword:
+                if (units() == "gps") {
+                    setDataType(Float);
+                    _convert_value = true;
+                    _convert_gps = true;
+                    setUnits("deg");
+                    setOpt("meta_units", meta.units);
+                    setPrecision(getPrecision());
+                    setDefaultValue(0.f);
+                    break;
+                }
                 setDataType(Int);
                 setMin(0);
                 setDefaultValue(0);
@@ -83,7 +94,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                 setDefaultValue(0);
                 break;
             case mandala::type_byte:
-                if (meta.units_id == mandala::units_opt || meta.units_id == mandala::units_bit) {
+                if (meta.units_cnt > 1) {
                     setDataType(Enum);
                     setDefaultValue(0);
                     auto st = units().split(',');
@@ -112,7 +123,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
 
         if (!isSystem()) {
             setOpt("type", mandala::type_string(meta.type_id));
-            setOpt("fmt", mandala::fmt_string((mandala::fmt_e) meta.fmt));
+            setOpt("fmt", mandala::fmt_string((mandala::fmt_e) m_fmt.fmt));
 
             connect(this, &Fact::modifiedChanged, this, &MandalaFact::updateCounters);
         }
@@ -150,12 +161,20 @@ QVariant MandalaFact::convertFromStream(const QVariant &v) const
 {
     if (!_convert_value)
         return v;
+
+    if (_convert_gps)
+        return mandala::from_gps(v.toUInt());
+
     return QVariant::fromValue(v.toDouble() * _conversion_factor);
 }
 QVariant MandalaFact::convertForStream(const QVariant &v) const
 {
     if (!_convert_value)
         return v;
+
+    if (_convert_gps)
+        return mandala::to_gps(v.toDouble());
+
     return v.toDouble() / _conversion_factor;
 }
 
@@ -370,11 +389,11 @@ int MandalaFact::getPrecision()
             return 2;
         if (u == "l/h")
             return 3;
-        if (u == "u/h")
+        if (u == "%/h")
             return 3;
         if (u == "l")
             return 2;
-        if (u == "a/h")
+        if (u == "ah")
             return 2;
         if (u == "pa")
             return 1;
@@ -386,6 +405,7 @@ int MandalaFact::getPrecision()
             return 2;
         if (u == "kg")
             return 1;
+
         qWarning() << "default units precision:" << u << path();
     }
     return 5;
