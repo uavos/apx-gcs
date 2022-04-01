@@ -193,8 +193,9 @@ void MandalaFact::increment_rx_cnt()
     _everReceived = true;
     if (isSystem()) {
         Fact::setValue(QVariant::fromValue(_rx_cnt));
+    } else {
+        setModified(true);
     }
-    setModified(true);
 }
 void MandalaFact::updateCounters()
 {
@@ -202,7 +203,6 @@ void MandalaFact::updateCounters()
     m_tree->updateUsed(mod ? 1 : -1);
     if (!mod) {
         _rx_cnt = 0;
-        _everReceived = false;
     }
 }
 

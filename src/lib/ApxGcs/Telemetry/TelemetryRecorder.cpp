@@ -160,7 +160,8 @@ bool TelemetryRecorder::dbCheckRecord()
         for (auto f : _vehicle->f_mandala->valueFacts()) {
             if (!f->everReceived())
                 continue;
-            values.insert(f->uid(), f->getValueForStream());
+            values.insert(f->uid(), f->value());
+            // qDebug() << f->mpath() << f->value();
         }
         _values = values;
         reqPendingList.append(new DBReqTelemetryWriteData(0, 0, _values, false));
