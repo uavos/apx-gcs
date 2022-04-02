@@ -41,6 +41,7 @@ public:
     Q_INVOKABLE mandala::uid_t uid() const;
     Q_INVOKABLE void request();
     Q_INVOKABLE void send();
+    Q_INVOKABLE void sendValue(QVariant v);
 
     Q_INVOKABLE Fact *classFact() const;
     Q_INVOKABLE QString mpath() const;
@@ -49,7 +50,6 @@ public:
 
     // units conversions
     void setValueFromStream(const QVariant &v);
-    QVariant getValueForStream() const;
 
     bool setRawValueLocal(QVariant v);
 

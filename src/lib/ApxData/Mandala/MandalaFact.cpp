@@ -153,10 +153,6 @@ void MandalaFact::setValueFromStream(const QVariant &v)
     setRawValueLocal(convertFromStream(v));
     increment_rx_cnt();
 }
-QVariant MandalaFact::getValueForStream() const
-{
-    return convertForStream(value());
-}
 QVariant MandalaFact::convertFromStream(const QVariant &v) const
 {
     if (!_convert_value)
@@ -216,13 +212,18 @@ mandala::uid_t MandalaFact::offset() const
 }
 void MandalaFact::request()
 {
-    m_tree->sendValue(uid(), QVariant());
+    sendValue(QVariant());
 }
 void MandalaFact::send()
 {
-    sendTime.start();
-    m_tree->sendValue(uid(), getValueForStream());
+    sendValue(value());
 }
+void MandalaFact::sendValue(QVariant v)
+{
+    sendTime.start();
+    m_tree->sendValue(uid(), convertFromStream(v));
+}
+
 QVariant MandalaFact::data(int col, int role)
 {
     switch (role) {
