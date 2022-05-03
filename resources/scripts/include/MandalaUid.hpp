@@ -886,8 +886,8 @@ namespace ctr
         namespace str
         {
             enum { brake = 0x231 };
-            enum { gear = 0x232 };
-            enum { rud = 0x233 };
+            enum { rud = 0x232 };
+            enum { gear = 0x233 };
         };
     };
     namespace env
