@@ -52,6 +52,7 @@ Fact {
             descr: mandala.ctr.eng.starter.descr;
             flags: Fact.Bool;
             active: mandala.ctr.eng.starter.value;
+
             onValueChanged: {
                 if(value){
                     mandala.cmd.eng.mode.value = eng_mode_start
@@ -59,8 +60,12 @@ Fact {
                     mandala.ctr.eng.starter.value = false;
                 }
             }
-            property bool v: mandala.cmd.eng.mode.value === eng_mode_start
-            onVChanged: value=v
+
+            readonly property bool modeStart: mandala.cmd.eng.mode.value === eng_mode_start
+            onModeStartChanged: {
+                if(!modeStart)
+                    value=false
+            }
         }
     }
     Fact {

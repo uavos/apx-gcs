@@ -6,7 +6,7 @@
 namespace mandala {
 
 // constants
-enum constants_e : byte_t {
+enum constants_e : uint8_t {
     // sns.nav.gyro.src
     gyro_src_unknown = 0,
     gyro_src_local = 1,
