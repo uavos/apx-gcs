@@ -224,7 +224,7 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
     }
     if (fnames.isEmpty()) {
         qWarning() << "no files";
-        return false;
+        // return false;
     }
     trace()->blocks(fnames);
 
