@@ -165,24 +165,34 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         stream >> t;
         trace()->block(QString::number(t));
 
-        auto s = stream.read_string(stream.available());
-        QString msg(QString(s).trimmed());
-        trace()->block(msg);
+        bool msg_init = false;
 
-        if (msg.isEmpty())
-            return;
+        while (stream.available() > 0) {
+            auto s = stream.read_string(stream.available());
+            QString msg(QString(s).trimmed());
 
-        msg.replace(":", ": ");
-        msg = msg.simplified();
+            msg.replace("\r", "\n");
+            msg = msg.trimmed();
 
-        emit messageReceived((msg_type_e) t, msg);
+            auto msg_lines = msg.split('\n', Qt::SkipEmptyParts);
+            trace()->block(msg_lines.join(" | "));
 
-        if (_nodes->local() || _nodes->upgrading())
-            return;
-        if (!msg.contains(QString("node: %1: initialized").arg(title()), Qt::CaseInsensitive))
-            return;
+            for (auto line : msg_lines) {
+                line.replace(":", ": ");
+                line = line.simplified();
+                if (line.isEmpty())
+                    continue;
 
-        requestIdent();
+                emit messageReceived((msg_type_e) t, line);
+
+                if (line.contains(QString("%1: initialized").arg(title()), Qt::CaseInsensitive))
+                    msg_init = true;
+            }
+        }
+
+        if (msg_init && !(_nodes->local() || _nodes->upgrading()))
+            requestIdent();
+
         return;
     }
 
