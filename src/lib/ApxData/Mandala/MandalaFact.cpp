@@ -137,7 +137,7 @@ bool MandalaFact::setValue(const QVariant &v)
     //always send uplink
     bool rv = Fact::setValue(v);
 
-    //qDebug() << name() << text() << rv;
+    qDebug() << name() << text() << rv;
     if (sendTimer.isActive())
         return rv;
     if (sendTime.elapsed() >= sendTimer.interval())
@@ -221,7 +221,7 @@ void MandalaFact::send()
 void MandalaFact::sendValue(QVariant v)
 {
     sendTime.start();
-    m_tree->sendValue(uid(), convertFromStream(v));
+    m_tree->sendValue(uid(), convertForStream(v));
 }
 
 QVariant MandalaFact::data(int col, int role)
