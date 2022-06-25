@@ -25,8 +25,8 @@
 
 #include "MandalaFact.h"
 #include <Fact/Fact.h>
-#include <mandala/MandalaBundles.h>
-#include <mandala/MandalaMetaTree.h>
+#include <MandalaBundles.h>
+#include <MandalaMetaTree.h>
 
 class Mandala : public Fact
 {

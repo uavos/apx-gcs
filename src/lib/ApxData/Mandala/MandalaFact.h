@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <mandala/MandalaMeta.h>
+#include <MandalaMeta.h>
 
 #include <Fact/Fact.h>
 

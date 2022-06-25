@@ -24,7 +24,7 @@
 #include "PApxNode.h"
 
 #include <Mandala/Mandala.h>
-#include <xbus/XbusNode.h>
+#include <XbusNode.h>
 
 #include <App/AppLog.h>
 

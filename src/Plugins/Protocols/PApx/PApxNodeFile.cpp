@@ -29,7 +29,7 @@
 #include <App/AppRoot.h>
 #include <Mandala/Mandala.h>
 
-#include <xbus/XbusNode.h>
+#include <XbusNode.h>
 
 PApxNodeFile::PApxNodeFile(PApxNode *node, const QString &name)
     : PTreeBase(node, name, name)

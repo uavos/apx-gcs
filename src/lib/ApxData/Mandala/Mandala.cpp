@@ -23,7 +23,7 @@
 #include "MandalaFact.h"
 #include <App/App.h>
 #include <App/AppRoot.h>
-#include <mandala/MandalaMetaBase.h>
+#include <MandalaMetaBase.h>
 
 // TODO PLUGIN: real-time visualization of Mandala state:
 // See: https://youtu.be/NjUuAuBcoqs

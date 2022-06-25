@@ -23,7 +23,7 @@
 
 #include <Protocols/Protocols.h>
 
-#include <xbus/XbusVehicle.h>
+#include <XbusVehicle.h>
 
 #include "PApxRequest.h"
 #include "PApxVehicle.h"

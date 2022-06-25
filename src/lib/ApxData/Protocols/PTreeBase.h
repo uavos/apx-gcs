@@ -27,7 +27,7 @@
 
 #include <Fact/Fact.h>
 
-#include <mandala/MandalaMetaTree.h>
+#include <MandalaMetaTree.h>
 
 class PBase;
 

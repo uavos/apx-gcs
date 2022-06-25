@@ -5,7 +5,7 @@
         "bbenoist.QML",
         "bierner.markdown-preview-github-styles",
         "cheshirekow.cmake-format",
-        "cquery-project.cquery",
+        // "cquery-project.cquery",
         "DavidAnson.vscode-markdownlint",
         "deerawan.vscode-dash",
         "donjayamanne.githistory",

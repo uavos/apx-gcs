@@ -24,7 +24,7 @@
 #include <App/AppLog.h>
 #include <Mandala/Mandala.h>
 
-#include <xbus/telemetry/TelemetryValuePack.h>
+#include <telemetry/TelemetryValuePack.h>
 
 // TODO cache datasets in DB
 

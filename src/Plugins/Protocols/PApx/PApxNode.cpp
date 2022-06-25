@@ -25,8 +25,8 @@
 
 #include <Mandala/Mandala.h>
 
-#include <xbus/XbusNode.h>
-#include <xbus/XbusScript.h>
+#include <XbusNode.h>
+#include <XbusScript.h>
 
 #include <crc.h>
 

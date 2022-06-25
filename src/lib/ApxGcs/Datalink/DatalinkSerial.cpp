@@ -25,14 +25,14 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <xbus/uart/EscDecoder.h>
-#include <xbus/uart/EscEncoder.h>
+#include <uart/EscDecoder.h>
+#include <uart/EscEncoder.h>
 
-#include <xbus/uart/CobsDecoder.h>
-#include <xbus/uart/CobsEncoder.h>
+#include <uart/CobsDecoder.h>
+#include <uart/CobsEncoder.h>
 
-#include <xbus/uart/EscDecoder.h>
-#include <xbus/uart/EscEncoder.h>
+#include <uart/EscDecoder.h>
+#include <uart/EscEncoder.h>
 
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wdelete-abstract-non-virtual-dtor"

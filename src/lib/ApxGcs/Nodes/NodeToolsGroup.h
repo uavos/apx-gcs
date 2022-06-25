@@ -22,7 +22,7 @@
 #pragma once
 
 #include <Fact/Fact.h>
-#include <xbus/XbusNode.h>
+#include <XbusNode.h>
 
 class NodeItem;
 

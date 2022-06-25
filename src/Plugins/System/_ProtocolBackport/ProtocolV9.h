@@ -23,8 +23,8 @@
 
 #include <Protocols/ProtocolConverter.h>
 
-#include <xbus/XbusStreamReader.h>
-#include <xbus/XbusStreamWriter.h>
+#include <XbusStreamReader.h>
+#include <XbusStreamWriter.h>
 
 class ProtocolV9 : public ProtocolConverter
 {

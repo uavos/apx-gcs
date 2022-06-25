@@ -25,8 +25,8 @@
 
 #include <Mandala/Mandala.h>
 
-#include <xbus/XbusPacket.h>
-#include <xbus/XbusVehicle.h>
+#include <XbusPacket.h>
+#include <XbusVehicle.h>
 
 #include <Protocols/PStream.h>
 

@@ -24,7 +24,7 @@
 #include "PApxNodeFile.h"
 #include "PApxVehicle.h"
 
-#include <xbus/XbusNode.h>
+#include <XbusNode.h>
 
 class PApxVehicle;
 

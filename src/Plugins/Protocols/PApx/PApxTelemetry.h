@@ -23,8 +23,8 @@
 
 #include "PApxVehicle.h"
 
-#include <xbus/telemetry/TelemetryDecoder.h>
-#include <xbus/uart/CobsDecoder.h>
+#include <telemetry/TelemetryDecoder.h>
+#include <uart/CobsDecoder.h>
 
 class PApxVehicle;
 

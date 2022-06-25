@@ -28,7 +28,7 @@
 
 #include <App/App.h>
 
-#include <xbus/XbusMission.h>
+#include <XbusMission.h>
 
 PApxMission::PApxMission(PApxVehicle *parent)
     : PMission(parent)

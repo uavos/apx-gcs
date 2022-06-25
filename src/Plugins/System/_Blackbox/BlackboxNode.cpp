@@ -31,7 +31,7 @@
 #include <Nodes/NodeItem.h>
 #include <Nodes/Nodes.h>
 
-#include <xbus/XbusNodeBlackbox.h>
+#include <XbusNodeBlackbox.h>
 
 BlackboxNode::BlackboxNode(Fact *parent, NodeItem *node)
     : BlackboxItem(parent, node->name(), "", "", Group, node->sn())

@@ -23,8 +23,8 @@
 
 #include <QtCore>
 
-#include <xbus/XbusStreamReader.h>
-#include <xbus/XbusStreamWriter.h>
+#include <XbusStreamReader.h>
+#include <XbusStreamWriter.h>
 
 class PStreamReader : public XbusStreamReader
 {

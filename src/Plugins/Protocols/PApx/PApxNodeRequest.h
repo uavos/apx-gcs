@@ -25,7 +25,7 @@
 
 #include <Mandala/Mandala.h>
 #include <Protocols/PNode.h>
-#include <xbus/XbusNode.h>
+#include <XbusNode.h>
 
 class PApxNode;
 class PApxNodes;

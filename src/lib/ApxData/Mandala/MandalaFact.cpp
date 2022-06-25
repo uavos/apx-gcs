@@ -22,10 +22,10 @@
 #include "MandalaFact.h"
 #include "Mandala.h"
 #include <App/AppLog.h>
-#include <mandala/MandalaMeta.h>
+#include <MandalaMeta.h>
 #include <QColor>
 
-#include <xbus/telemetry/TelemetryFormat.h>
+#include <telemetry/TelemetryFormat.h>
 
 MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta)
     : Fact(parent,

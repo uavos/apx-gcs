@@ -62,4 +62,4 @@ for rule in css:
 with open(args.dest, 'w') as f:
     f.write(simplejson.dumps(icons, indent=2))
 
-print 'Found {} icons.'.format(len(icons))
+print('Found {} icons.'.format(len(icons)))

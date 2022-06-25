@@ -30,14 +30,14 @@
 #include <stdlib.h>
 //---------------
 
-#include <mandala/MandalaBundles.h>
-#include <mandala/MandalaMetaTree.h>
+#include <MandalaBundles.h>
+#include <MandalaMetaTree.h>
 
-#include <xbus/XbusNode.h>
-#include <xbus/XbusPacket.h>
+#include <XbusNode.h>
+#include <XbusPacket.h>
 
 #include <tcp_ports.h>
-#include <xbus/tcp/tcp_server.h>
+#include <tcp_server.h>
 
 static xbus::tcp::Server *tcp = {};
 
