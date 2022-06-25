@@ -57,7 +57,7 @@ apx_qrc(
 # update mandala UID resources
 set(mandala_uid ${APX_RESOURCES_DIR}/scripts/include/MandalaUid.hpp)
 get_target_property(gensrc_dir mandala_headers INCLUDE_DIRECTORIES)
-set(mandala_uid_src ${gensrc_dir}/mandala/MandalaUid.hpp)
+set(mandala_uid_src ${gensrc_dir}/MandalaUid.hpp)
 add_custom_command(
     OUTPUT ${mandala_uid}
     DEPENDS shared.mandala ${mandala_uid_src}
