@@ -39,7 +39,7 @@ class DatalinkSerial : public DatalinkConnection
 public:
     explicit DatalinkSerial(Fact *parent, QString devName, uint baud);
 
-    enum CodecType { COBS, ESC, RAW };
+    enum CodecType { COBS, RAW };
     Q_ENUM(CodecType)
 
     void setDevName(QString v);

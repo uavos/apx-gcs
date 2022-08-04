@@ -25,14 +25,8 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <uart/EscDecoder.h>
-#include <uart/EscEncoder.h>
-
 #include <uart/CobsDecoder.h>
 #include <uart/CobsEncoder.h>
-
-#include <uart/EscDecoder.h>
-#include <uart/EscEncoder.h>
 
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wdelete-abstract-non-virtual-dtor"
@@ -112,10 +106,6 @@ void DatalinkSerial::setCodec(CodecType v)
     case COBS:
         encoder = new CobsEncoder<buf_size>();
         decoder = new CobsDecoder<buf_size>();
-        break;
-    case ESC:
-        encoder = new EscEncoder<buf_size>();
-        decoder = new EscDecoder<buf_size>();
         break;
     }
 }
@@ -265,28 +255,22 @@ void DatalinkSerial::close()
 
 void DatalinkSerial::write(const QByteArray &packet)
 {
-    if (!dev->isOpen()) {
-        if (encoder)
-            encoder->reset();
+    if (!dev->isOpen())
         return;
-    }
+
     if (!encoder) {
         qWarning() << "not supported";
         return;
     }
-    if (!encoder->encode(packet.data(), static_cast<size_t>(packet.size()))) {
-        apxConsoleW() << "esc tx overflow:" << packet.size() << encoder->size();
+
+    auto cnt = encoder->encode(packet.data(), static_cast<size_t>(packet.size()));
+    if (cnt <= 0) {
+        apxConsoleW() << "tx encode:" << packet.size() << cnt;
+        return;
     }
-    while (1) {
-        size_t cnt = encoder->read_encoded(txdata.data(), static_cast<size_t>(txdata.size()));
-        if (!cnt)
-            break;
-        //qDebug() << txdata.left(static_cast<int>(cnt)).toHex().toUpper();
-        if (dev->write(txdata.left(static_cast<int>(cnt))) <= 0) {
-            serialPortError(QSerialPort::WriteError);
-            encoder->reset();
-            break;
-        }
+
+    if (dev->write(txdata.left(static_cast<int>(cnt))) <= 0) {
+        serialPortError(QSerialPort::WriteError);
     }
 }
 
@@ -297,34 +281,44 @@ QByteArray DatalinkSerial::read()
             decoder->reset();
         return QByteArray();
     }
-    qint64 cnt = dev->read(reinterpret_cast<char *>(rxdata.data()), rxdata.size());
-    if (cnt < 0) {
+    auto rcnt = dev->read(reinterpret_cast<char *>(rxdata.data()), rxdata.size());
+    if (rcnt < 0) {
         serialPortError(QSerialPort::ReadError);
     }
     if (!decoder) {
-        qWarning() << "not supported";
+        qWarning() << "data stream not supported";
         return QByteArray();
     }
-    if (cnt > 0) {
-        //qDebug() << cnt << rxdata.toHex().toUpper();
-        SerialDecoder::ErrorType rv = decoder->decode(rxdata.data(), static_cast<size_t>(cnt));
-        switch (rv) {
-        case SerialDecoder::DataAccepted:
-        case SerialDecoder::DataDropped:
-            break;
-        default:
-            apxConsoleW() << "SerialDecoder rx ovf:" << cnt << decoder->size();
-        }
+    if (rcnt <= 0)
+        return {};
+
+    // read bytes count might be more than one packet
+    // TODO decode all packets in a fifo/queue
+
+    //qDebug() << rcnt << rxdata.toHex().toUpper();
+    auto decoded_cnt = decoder->decode(rxdata.data(), static_cast<size_t>(rcnt));
+    switch (decoder->status()) {
+    case SerialDecoder::PacketAvailable:
+    case SerialDecoder::DataAccepted:
+    case SerialDecoder::DataDropped:
+        break;
+    default:
+        apxConsoleW() << "SerialDecoder rx err:" << decoder->status() << rcnt << decoded_cnt;
+        return {};
     }
+
+    if (decoded_cnt <= 0) // dropped data
+        return {};
+
     QByteArray packet;
-    if (decoder->size() > 0) {
-        packet.resize(static_cast<int>(decoder->size()));
-        size_t cnt = decoder->read_decoded(packet.data(), decoder->size());
-        packet.resize(static_cast<int>(cnt));
-        //test(packet);
-    }
+    /*
+    packet.resize(pcnt);
+    size_t cnt = decoder->read_decoded(packet.data(), decoder->size());
+    packet.resize(static_cast<int>(cnt));
+    //test(packet);
+
     if (decoder->size() > 0 || (dev->isOpen() && dev->bytesAvailable() > 0)) {
         QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
-    }
+    }*/
     return packet;
 }

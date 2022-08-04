@@ -1111,6 +1111,9 @@ namespace est
             enum { roll = 0x531 };
             enum { pitch = 0x532 };
             enum { yaw = 0x533 };
+            enum { lat = 0x534 };
+            enum { lon = 0x535 };
+            enum { hmsl = 0x536 };
         };
         namespace cam
         {
