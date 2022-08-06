@@ -25,6 +25,7 @@
 
 #include <XbusPacket.h>
 
+#include <fifo.hpp>
 #include <uart/SerialCodec.h>
 
 #include <QSerialPort>
@@ -55,7 +56,7 @@ private:
     QSerialPort *dev;
     QSerialPortInfo info;
 
-    QLockFile *lock;
+    QLockFile *lock{};
     static QStringList openPorts;
     bool isAvailable(const QSerialPortInfo &spi);
     bool openPort(const QSerialPortInfo &spi, uint baud);
@@ -64,11 +65,14 @@ private:
     QTimer openTimer;
     int scanIdx;
 
-    SerialEncoder *encoder;
-    SerialDecoder *decoder;
+    SerialEncoder *encoder{};
+    SerialDecoder *decoder{};
 
-    QByteArray txdata;
-    QByteArray rxdata;
+    // receiver fifo and packets queue
+    static constexpr size_t rxbuf_size{xbus::size_packet_max * 8};
+    quint8 _rxbuf_raw[rxbuf_size / 2];
+    apx::fifo_packet_static<rxbuf_size> _rx_fifo;
+    QByteArray _rx_pkt{xbus::size_packet_max, '\0'};
 
 protected:
     //DatalinkConnection overrided

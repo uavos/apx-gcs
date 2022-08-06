@@ -43,11 +43,6 @@ DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
                          Datalink::CLIENTS | Datalink::LOCAL)
     , m_devName(devName)
     , m_baud(baud)
-    , lock(nullptr)
-    , encoder(nullptr)
-    , decoder(nullptr)
-    , txdata(xbus::size_packet_max * 2, '\0')
-    , rxdata(xbus::size_packet_max, '\0')
 {
     setUrl(m_devName);
 
@@ -99,13 +94,12 @@ void DatalinkSerial::setCodec(CodecType v)
         delete decoder;
         decoder = nullptr;
     }
-    constexpr const size_t buf_size = xbus::size_packet_max * 8;
     switch (v) {
     default:
         break;
     case COBS:
-        encoder = new CobsEncoder<buf_size>();
-        decoder = new CobsDecoder<buf_size>();
+        encoder = new CobsEncoder();
+        decoder = new CobsDecoder();
         break;
     }
 }
@@ -269,9 +263,14 @@ void DatalinkSerial::write(const QByteArray &packet)
         return;
     }
 
-    if (dev->write(txdata.left(static_cast<int>(cnt))) <= 0) {
+    auto wcnt = dev->write((const char *) encoder->data(), cnt);
+
+    if (wcnt <= 0) {
+        qWarning() << "tx" << wcnt;
         serialPortError(QSerialPort::WriteError);
     }
+
+    // qDebug() << wcnt;
 }
 
 QByteArray DatalinkSerial::read()
@@ -279,46 +278,74 @@ QByteArray DatalinkSerial::read()
     if (!dev->isOpen()) {
         if (decoder)
             decoder->reset();
-        return QByteArray();
+        _rx_fifo.reset();
+        return {};
     }
-    auto rcnt = dev->read(reinterpret_cast<char *>(rxdata.data()), rxdata.size());
+
+    // first return already decoded packets
+    if (!_rx_fifo.empty()) {
+        auto cnt = _rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size());
+        if (cnt > 0) {
+            QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
+            return _rx_pkt.left(cnt);
+        }
+    }
+
+    if (dev->bytesAvailable() <= 0)
+        return {};
+
+    // qDebug() << "rx" << dev->bytesAvailable();
+
+    // read PHY and continue decoding
+    auto rcnt = dev->read(reinterpret_cast<char *>(_rxbuf_raw), sizeof(_rxbuf_raw));
     if (rcnt < 0) {
         serialPortError(QSerialPort::ReadError);
     }
     if (!decoder) {
         qWarning() << "data stream not supported";
-        return QByteArray();
-    }
-    if (rcnt <= 0)
         return {};
-
-    // read bytes count might be more than one packet
-    // TODO decode all packets in a fifo/queue
-
-    //qDebug() << rcnt << rxdata.toHex().toUpper();
-    auto decoded_cnt = decoder->decode(rxdata.data(), static_cast<size_t>(rcnt));
-    switch (decoder->status()) {
-    case SerialDecoder::PacketAvailable:
-    case SerialDecoder::DataAccepted:
-    case SerialDecoder::DataDropped:
-        break;
-    default:
-        apxConsoleW() << "SerialDecoder rx err:" << decoder->status() << rcnt << decoded_cnt;
+    }
+    if (rcnt <= 0) {
+        qWarning() << "rx empty" << rcnt;
         return {};
     }
 
-    if (decoded_cnt <= 0) // dropped data
+    // schedule reads for next packet
+    QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
+
+    // read bytes count (rcnt) might be more than one packet
+    // decode all packets from raw data into fifo
+    auto src = _rxbuf_raw;
+    size_t cnt = rcnt;
+    bool pkt = false;
+    while (cnt > 0) {
+        // feed the decoder
+        auto decoded_cnt = decoder->decode(src, cnt);
+        if (decoded_cnt <= 0)
+            qWarning() << "rx decode:" << cnt << decoded_cnt;
+
+        src += decoded_cnt;
+        cnt -= decoded_cnt;
+
+        // check if some pkt is available
+        switch (decoder->status()) {
+        case SerialDecoder::PacketAvailable:
+            pkt = true;
+            if (!_rx_fifo.write_packet(decoder->data(), decoder->size())) {
+                qWarning() << "rx fifo full";
+            }
+            break;
+        case SerialDecoder::DataAccepted:
+        case SerialDecoder::DataDropped:
+            break;
+        default:
+            apxConsoleW() << "SerialDecoder rx err:" << decoder->status() << rcnt << decoded_cnt;
+            break;
+        }
+    }
+
+    if (!pkt)
         return {};
 
-    QByteArray packet;
-    /*
-    packet.resize(pcnt);
-    size_t cnt = decoder->read_decoded(packet.data(), decoder->size());
-    packet.resize(static_cast<int>(cnt));
-    //test(packet);
-
-    if (decoder->size() > 0 || (dev->isOpen() && dev->bytesAvailable() > 0)) {
-        QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
-    }*/
-    return packet;
+    return _rx_pkt.left(_rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size()));
 }
