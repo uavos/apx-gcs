@@ -1,3 +1,25 @@
+# [APX Ground Control v11.1.68](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.68) (08/06/22)
+
+> Branch: `main`\
+> Date: `08/06/22 09:45:48`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/816720c4ffe97c179591269224aa70fff4ea5248...d9968455f8930468b8f2bb5b01cf33c17ce49e9e)
+
+## New Features
+* Mandala status display
+* telemetry auto sync dataset option
+* mandala silent send value method
+* multiline node messages
+
+## Bug Fixes
+* empty telemetry stream support
+* telemetry initial values recording
+* engine start switch on multi GCS bug
+* node download with no files
+* mandala send value units conversion
+
+## Performance Enhancements
+* telemetry datasets selection
+
 # [APX Ground Control v11.1.42](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.42) (03/16/22)
 
 > Branch: `main`\
