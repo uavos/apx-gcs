@@ -337,8 +337,19 @@ void VideoThread::openWriter(StreamContext *context)
     //tune
     g_object_set(G_OBJECT(context->recSink), "location", filename.toStdString().c_str(), nullptr);
     if (context->reencoding) {
-        g_object_set(G_OBJECT(context->recEncoder), "speed-preset", 1, nullptr);
-        g_object_set(G_OBJECT(context->recEncoder), "tune", 4, nullptr);
+        // g_object_set(G_OBJECT(context->recEncoder), "speed-preset", 1, nullptr);
+        // g_object_set(G_OBJECT(context->recEncoder), "tune", 4, nullptr);
+
+        g_object_set(G_OBJECT(context->recEncoder),
+                     "quantizer",
+                     18,
+                     "pass",
+                     5,
+                     "speed-preset",
+                     1,
+                     "tune",
+                     4,
+                     nullptr);
     }
 
     //add
