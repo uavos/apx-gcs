@@ -270,7 +270,8 @@ void DatalinkSerial::write(const QByteArray &packet)
         serialPortError(QSerialPort::WriteError);
     }
 
-    // qDebug() << wcnt;
+    // qDebug() << "TX" << wcnt << cnt << packet.size()
+    //          << QString::number(apx::crc32(packet.data(), packet.size()), 16);
 }
 
 QByteArray DatalinkSerial::read()
@@ -284,6 +285,7 @@ QByteArray DatalinkSerial::read()
 
     // first return already decoded packets
     if (!_rx_fifo.empty()) {
+        // qDebug() << "RX FIFO" << _rx_fifo.used();
         auto cnt = _rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size());
         if (cnt > 0) {
             QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
@@ -294,12 +296,13 @@ QByteArray DatalinkSerial::read()
     if (dev->bytesAvailable() <= 0)
         return {};
 
-    // qDebug() << "rx" << dev->bytesAvailable();
+    // qDebug() << "RX" << dev->bytesAvailable();
 
     // read PHY and continue decoding
     auto rcnt = dev->read(reinterpret_cast<char *>(_rxbuf_raw), sizeof(_rxbuf_raw));
     if (rcnt < 0) {
         serialPortError(QSerialPort::ReadError);
+        return {};
     }
     if (!decoder) {
         qWarning() << "data stream not supported";
@@ -321,6 +324,8 @@ QByteArray DatalinkSerial::read()
     while (cnt > 0) {
         // feed the decoder
         auto decoded_cnt = decoder->decode(src, cnt);
+        // qDebug() << "RX" << decoded_cnt << cnt;
+
         if (decoded_cnt <= 0)
             qWarning() << "rx decode:" << cnt << decoded_cnt;
 
@@ -331,6 +336,8 @@ QByteArray DatalinkSerial::read()
         switch (decoder->status()) {
         case SerialDecoder::PacketAvailable:
             pkt = true;
+            // qDebug() << "RX PKT" << decoder->size();
+
             if (!_rx_fifo.write_packet(decoder->data(), decoder->size())) {
                 qWarning() << "rx fifo full";
             }
