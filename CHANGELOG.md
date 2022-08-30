@@ -1,3 +1,12 @@
+# [APX Ground Control v11.1.71](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.71) (08/30/22)
+
+> Branch: `main`\
+> Date: `08/30/22 18:19:04`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/80acc12a5296b4e314c2862b62707a9240ef9830...e22c1bffd2cf0c7188035245512a100e6308c2aa)
+
+## Bug Fixes
+* COBS encoder
+
 # [APX Ground Control v11.1.68](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.68) (08/06/22)
 
 > Branch: `main`\

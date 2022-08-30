@@ -1,0 +1,2 @@
+# Bug Fixes
+* COBS encoder
