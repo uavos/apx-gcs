@@ -687,7 +687,7 @@ void PApxNode::parseConfData(PApxNode *node,
     if (err) {
         qWarning() << "conf error" << fidx << stream.available() << data.toHex().toUpper();
         _skip_cache = true;
-        requestDict();
+        // requestDict();
         return;
     }
 
