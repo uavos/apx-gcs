@@ -11,16 +11,13 @@ The complete changelog is available here: [CHANGELOG](https://uavos.github.io/ap
 
 ## MacOS
 
-* Download the [DMG image](https://github.com/uavos/apx-gcs/releases/latest).
-* Load the image and move application to the `Applications` folder.
-* Launch the application as usual.
-* Install serial port drivers if necessary:
-  * [Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers);
-  * [FTDI USB to Serial port converters](https://www.ftdichip.com/Drivers/VCP.htm);
+* Download the [DMG image](https://github.com/uavos/apx-gcs/releases/latest);
+* Open the image and move application to the `Applications` folder;
+* Launch the application as usual;
 
 ## Linux
 
-* Download the [AppImage](https://github.com/uavos/apx-gcs/releases/latest);
+* Download the [AppImage](https://github.com/uavos/apx-gcs/releases/latest) of the GCS application;
 * Make the file executable;
 * Launch the application by executing the downloaded file;
 * Install the app through menu to have automatic updates;
@@ -32,29 +29,27 @@ sudo usermod -aG dialout $USER
 sudo apt remove modemmanager -y
 ```
 
-In order to support video streaming, install GStreamer:
+In order to support video streaming, install *GStreamer*:
 
 ```bash
 sudo apt install gstreamer1.0-plugins-bad gstreamer1.0-libav -y
 ```
 
-More information about AppImage standard can be found here: [appimage.org](https://appimage.org)
+More information about *AppImage* can be found here: [appimage.org](https://appimage.org)
 
 ## Android
 
-The app can be installed through [Play Market](https://play.google.com/store/apps/details?id=com.uavos.qgc). Although, it requires PC Ground Control app to communicate with UAV and is used mainly for maintenance purposes.
+The app can be installed through [Play Market](https://play.google.com/store/apps/details?id=com.uavos.qgc). Although, it requires PC Ground Control app to communicate with UAV, and is used mainly for maintenance purposes. This app now supports v9 firmware only.
 
 ## Deprecated Versions
 
 ### APX Ground Control v10.x
 
-Visit the repository [apx-releases](https://github.com/uavos/apx-releases/releases/latest) for downloads. The GCS v10.x is compatible with APX Autopilot firmware of version v10.x, v9.x and below.
+GCS v10 software is available [here](https://drive.google.com/drive/folders/1GEVWtF4XueCrVSYZj6rxiJNdCmD3dZPv). The GCS v10.x is compatible with firmware of version v10.x, v9.x and below.
 
-### Linux v9.x
+### Linux Packages v9.x
 
-Download all debian package files from [here](https://drive.google.com/drive/folders/1V_2b9UXeTBPWj0aAzdIPjoFLYsnMdqbV).
-
-Install application and tools:
+Debian packages are available [here](https://drive.google.com/drive/folders/1V_2b9UXeTBPWj0aAzdIPjoFLYsnMdqbV).
 
 ```bash
 sudo apt install <path to downloaded files>/*.deb
