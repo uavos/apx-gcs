@@ -25,7 +25,6 @@
 
 TelemetryPlot::TelemetryPlot(QWidget *parent)
     : QwtPlot(parent)
-    , calc(nullptr)
     , m_progress(0)
     , m_eventsVisible(false)
 {
@@ -173,22 +172,30 @@ void TelemetryPlot::resetData()
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
     for (int i = 0; i < items.size(); ++i) {
         QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(items.at(i));
-        if (curve == calc) {
+
+        if (calc_curves.contains(curve)) {
             curve->setSamples(QVector<QPointF>());
             continue;
         }
+
         curve->detach();
         delete curve;
     }
-    if (calc)
-        showCurve(itemToInfo(calc), false);
+
+    for (auto it = calc_curves.begin(); it != calc_curves.constEnd(); ++it) {
+        QwtPlotCurve *curve = it.key();
+        if (curve) {
+            showCurve(itemToInfo(curve), false);
+        }
+    }
+
     resetZoom();
     setTimeCursor(0);
 }
 
 void TelemetryPlot::resetLegend()
 {
-    static_cast<PlotLegend*>(legend)->clearLegenedLabels();
+    static_cast<PlotLegend *>(legend)->clearLegenedLabels();
 }
 
 void TelemetryPlot::restoreSettings()
@@ -211,7 +218,12 @@ void TelemetryPlot::restoreSettings()
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
     for (int i = 0; i < items.size(); ++i) {
         QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(items.at(i));
-        showCurve(itemToInfo(curve), (curve == calc) ? false : st.contains(curve->title().text()));
+
+        bool show = st.contains(curve->title().text());
+        if(calc_curves.contains(curve)) {
+            show = false;
+        }
+        showCurve(itemToInfo(curve), show);
     }
 }
 
@@ -293,8 +305,12 @@ void TelemetryPlot::showCurve(const QVariant &itemInfo, bool on, int index)
     }
     //show or hide item
     item->setVisible(on);
-    if (item == calc && on)
-        refreshCalculated();
+
+    QwtPlotCurve *clc_curve = static_cast<QwtPlotCurve *>(item);
+    if (clc_curve && calc_curves.contains(clc_curve) && on) {
+        refreshCalculated(clc_curve);
+    }
+
     emit itemVisibleChanged(item);
     //update legend
     QwtLegendLabel *w = qobject_cast<QwtLegendLabel *>(legend->legendWidget(itemInfo));
@@ -307,22 +323,23 @@ void TelemetryPlot::showCurve(const QVariant &itemInfo, bool on, int index)
         replot();
 }
 
-void TelemetryPlot::refreshCalculated()
+void TelemetryPlot::refreshCalculated(QwtPlotCurve* curve_calc)
 {
     bool ok;
-    if (expCalc.isEmpty())
-        expCalc = "est.att.yaw-est.calc.bearing";
+    QString exp_calc = calc_curves.value(curve_calc);
+    if (exp_calc.isEmpty())
+        exp_calc = "est.att.yaw-est.calc.bearing";
     QString exp = QInputDialog::getText(nullptr,
                                         tr("Calculated field"),
                                         tr("JavaScript expression:"),
                                         QLineEdit::Normal,
-                                        expCalc,
+                                        exp_calc,
                                         &ok);
     if (ok == false) {
-        calc->setVisible(false);
+        curve_calc->setVisible(false);
         return;
     }
-    expCalc = exp;
+    calc_curves[curve_calc] = exp;
 
     //fill internal data
     QVector<QPointF> points;
@@ -395,7 +412,7 @@ void TelemetryPlot::refreshCalculated()
             fpidx[i] = didx + 1;
             cnt++;
         }
-        double v = engine.evaluate(expCalc).toNumber();
+        double v = engine.evaluate(exp).toNumber();
         if (v == vcalc)
             continue;
         vcalc = v;
@@ -412,8 +429,9 @@ void TelemetryPlot::refreshCalculated()
 
     setProgress(0);
     //install data
-    calc->setData(new QwtPointSeriesData(points));
-    calc->setVisible(true);
+    curve_calc->setData(new QwtPointSeriesData(points));
+    curve_calc->setVisible(true);
+
     //resetZoom();
     replot();
 }
@@ -476,8 +494,10 @@ void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)
         //curve->setData(c->data());
         curve->attach(this);
         showCurve(itemToInfo(curve), c->isVisible());
-        if (c == plot->calc)
-            calc = curve;
+
+        if (plot->calc_curves.contains(c)) {
+            push_calc_curve(curve);
+        }
     }
     //events
     for (int i = 0; i < plot->events.size(); ++i) {
@@ -673,7 +693,7 @@ PlotLegend::PlotLegend(QWidget *parent)
     filter_le->setPlaceholderText(tr("Filter..."));
     connect(filter_le, SIGNAL(textChanged(QString)), this, SLOT(onFilter(QString)));
 
-    static_cast<QVBoxLayout*>(layout())->insertWidget(0, filter_le);
+    static_cast<QVBoxLayout *>(layout())->insertWidget(0, filter_le);
 }
 
 QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
@@ -683,7 +703,7 @@ QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
     w->setItemMode(defaultItemMode());
     w->setSpacing(3);
     w->setMargin(0);
-    const_cast<PlotLegend*>(this)->legendLabels.append(w);
+    const_cast<PlotLegend *>(this)->legendLabels.append(w);
 
     connect(w, SIGNAL(clicked()), this, SLOT(itemClicked()));
     connect(w, SIGNAL(checked(bool)), this, SLOT(itemChecked(bool)));
@@ -700,7 +720,7 @@ void PlotLegend::onFilter(QString text)
     QLayout *contentsLayout = contentsWidget()->layout();
     auto it = legendLabels.begin();
     for (; it != legendLabels.constEnd(); ++it) {
-        QwtLegendLabel* label = *it;
+        QwtLegendLabel *label = *it;
         if (label) {
             contentsLayout->removeWidget(label);
             label->setVisible(false);
@@ -709,7 +729,7 @@ void PlotLegend::onFilter(QString text)
 
     it = legendLabels.begin();
     for (; it != legendLabels.constEnd(); ++it) {
-        QwtLegendLabel* label = *it;
+        QwtLegendLabel *label = *it;
         if (label && label->text().text().contains(text.replace(" ", ""))) {
             if (contentsLayout->indexOf(label) == -1) {
                 contentsLayout->addWidget(label);
