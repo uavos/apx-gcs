@@ -63,7 +63,11 @@ public:
 
     quint64 timeCursorValue();
 
-    QwtPlotCurve *calc;
+    void push_calc_curve(QwtPlotCurve *calc_curve) { 
+        calc_curves.insert(calc_curve, "");
+    };
+    
+    QMap<QwtPlotCurve*, QString> &get_calc_curves() { return calc_curves; };
 
     void addEvent(double time, const QString &text, QColor color = QColor());
 
@@ -80,8 +84,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event);
 
 private:
-    void refreshCalculated();
-    QString expCalc;
+    QMap<QwtPlotCurve*, QString> calc_curves;
+    void refreshCalculated(QwtPlotCurve* curve_calc);
+
     int m_progress;
     void setProgress(int v);
 
@@ -166,8 +171,8 @@ public:
     void clearLegenedLabels();
 
 private:
-    QList<QwtLegendLabel*> legendLabels;
-    QLineEdit* filter_le = nullptr;
+    QList<QwtLegendLabel *> legendLabels;
+    QLineEdit *filter_le = nullptr;
 
 private slots:
     void onFilter(QString);

@@ -173,14 +173,19 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
 
     connect(player->f_time, &Fact::valueChanged, this, &TelemetryFrame::playerTimeChanged);
 
-    plot->calc = plot->addCurve("calculated",
-                                tr("Calculated JS script value"),
-                                "",
-                                QColor(Qt::yellow).lighter());
+    const uint8_t calc_count = 4;
+    for (int i = 0; i < calc_count; i++) {
+        QwtPlotCurve *calc_curve = plot->addCurve(QString("calculated_%0").arg(i + 1),
+                                                  QString("Calculated_%0 JS script value").arg(i + 1),
+                                                  "",
+                                                  QColor(Qt::yellow).lighter());
+        plot->push_calc_curve(calc_curve);
+    }
 
     connect(plot, &TelemetryPlot::itemVisibleChanged, this, [this](QwtPlotItem *item) {
-        if (item != plot->calc)
+        if (!plot->get_calc_curves().contains(static_cast<QwtPlotCurve *>(item))) {
             plot->saveSettings();
+        }
     });
 
     //update css styles
