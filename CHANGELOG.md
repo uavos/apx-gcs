@@ -1,3 +1,11 @@
+# [APX Ground Control v11.1.78](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.78) (11/08/22)
+
+> Branch: `main`\
+> Date: `11/08/22 18:46:45`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/eb8d0043e2cfedc5165c22a3ec9ba4d7546355cc...ab76296e1fa8dd0bebd567aa4747a33a8b88f1a7)
+
+Security updates
+
 # [APX Ground Control v11.1.71](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.71) (08/30/22)
 
 > Branch: `main`\
