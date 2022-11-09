@@ -440,13 +440,18 @@ QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
     //find fw
     QString fname = QString("%1-%2").arg(nodeName).arg(hw);
     int ccnt = fname.split('-').size() + 1;
+
     QMap<QVersionNumber, QString> vmap;
+
     QString target_os("any");
 #if defined(Q_OS_MAC)
     target_os = "darwin";
 #elif defined(Q_OS_LINUX)
     target_os = "linux";
 #endif
+
+    auto app_ver = QVersionNumber::fromString(App::version());
+
     //search fw package
     QDir dir(releaseDir().absolutePath(), QString("%1-*.apxfw").arg(fname));
     foreach (QFileInfo fi, dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
@@ -455,8 +460,11 @@ QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
             continue;
         if (st.size() > ccnt && st.at(ccnt) != target_os)
             continue;
-        vmap[QVersionNumber::fromString(st.at(ccnt - 1))] = fi.absoluteFilePath();
+
+        auto ver = QVersionNumber::fromString(st.at(ccnt - 1));
+        vmap[ver] = fi.absoluteFilePath();
     }
+
     //search dev files
     dir = QDir(devDir().absolutePath(), QString("%1-*.apxfw").arg(fname));
     foreach (QFileInfo fi, dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
@@ -465,13 +473,20 @@ QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
             continue;
         if (st.size() > ccnt && st.at(ccnt) != target_os)
             continue;
-        vmap[QVersionNumber::fromString(st.at(ccnt - 1))] = fi.absoluteFilePath();
+
+        auto ver = QVersionNumber::fromString(st.at(ccnt - 1));
+        vmap[ver] = fi.absoluteFilePath(); // dev same version always overrides
+    }
+
+    // match only major.minor
+    for (auto k : vmap.keys()) {
+        if (k.majorVersion() == app_ver.majorVersion() && k.minorVersion() == app_ver.minorVersion())
+            continue;
+        vmap.remove(k);
     }
 
     QString fileName;
-    if (vmap.contains(QVersionNumber::fromString(App::version()))) {
-        fileName = vmap.value(QVersionNumber::fromString(App::version()));
-    } else if (!vmap.isEmpty()) {
+    if (!vmap.isEmpty()) {
         fileName = vmap.last();
     } else {
         apxMsgW() << tr("Firmware file not found").append(':') << fname;
