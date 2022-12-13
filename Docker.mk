@@ -6,7 +6,7 @@ docker-image:
 	docker build -t uavos/$(DOCKER_IMAGE) - < Dockerfile
 
 docker-run:
-	@docker run -it -v $(realpath $(CURDIR))/:$(DOCKER_PROJECT_DIR) -w $(DOCKER_PROJECT_DIR) --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw uavos/$(DOCKER_IMAGE) bash
+	@docker run -it -v $(realpath $(CURDIR))/:$(DOCKER_PROJECT_DIR) -w $(DOCKER_PROJECT_DIR) --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw --privileged uavos/$(DOCKER_IMAGE) bash
 
 docker-push:
 	@docker push uavos/$(DOCKER_IMAGE)
