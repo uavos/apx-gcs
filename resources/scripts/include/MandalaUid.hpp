@@ -546,6 +546,10 @@ enum constants_e : uint8_t {
     eng_ovr_off = 0,
     eng_ovr_on = 1,
 
+    // cmd.nav.eng.hgl
+    eng_hgl_off = 0,
+    eng_hgl_on = 1,
+
     // cmd.nav.rc.mode
     rc_mode_auto = 0,
     rc_mode_manual = 1,
@@ -1250,6 +1254,7 @@ namespace cmd
             enum { rpm = 0x652 };
             enum { cut = 0x653 };
             enum { ovr = 0x654 };
+            enum { hgl = 0x655 };
         };
         namespace rc
         {
