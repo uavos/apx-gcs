@@ -90,7 +90,7 @@ GstPlayer::GstPlayer(Fact *parent)
                           tr("URI"),
                           tr("rtsp://<..>, file://<..>, etc."),
                           Text | PersistentValue);
-    f_uriInput->setDefaultValue("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
+    f_uriInput->setDefaultValue("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4");
 
     f_active = new Fact(f_tune,
                         "running",

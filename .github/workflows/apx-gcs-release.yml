@@ -7,10 +7,11 @@ on:
 
 env:
   BUILD_DIR: build-release
-  VERSION_QT: 5.15.2
-  VERSION_GST: 1.18.5
+  VERSION_QT: 5.15.7
+  VERSION_GST: 1.20.5
+  VERSION_SDL: 2.26.1
+  
   VERSION_SPARKLE: 1.27.1
-  VERSION_SDL: 2.0.20
 
 jobs:
   build-linux:
@@ -77,8 +78,8 @@ jobs:
       - name: Install GST
         working-directory: /tmp
         run: |
-          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-$VERSION_GST-x86_64.pkg --output gst.pkg
-          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-devel-$VERSION_GST-x86_64.pkg --output gst-devel.pkg
+          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-$VERSION_GST-universal.pkg --output gst.pkg
+          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-devel-$VERSION_GST-universal.pkg --output gst-devel.pkg
           sudo installer -package gst.pkg -target /
           sudo installer -package gst-devel.pkg -target /
           rm -f gst*.pkg

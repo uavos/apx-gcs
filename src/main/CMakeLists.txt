@@ -20,8 +20,6 @@ endforeach()
 # install
 apx_install(${target})
 
-apx_install_res(${APX_RESOURCES_DIR} vpn)
-
 if(APPLE)
     set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_DESCRIPTION})
     set(MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION})
