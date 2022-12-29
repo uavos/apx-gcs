@@ -35,37 +35,37 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}
     cmake --version
 
 # Qt packages
-# ARG VERSION_QT=5.15.2
+ARG VERSION_QT=5.15.7
 
-# ARG INSTALL_QT_SRC=https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh
-# RUN apt-get install -y --no-install-recommends p7zip-full && rm -Rf /var/cache/apt
-# RUN curl -L ${INSTALL_QT_SRC} --output /tmp/install-qt.sh && \
-#     chmod +x /tmp/install-qt.sh && \
-#     /tmp/install-qt.sh --version ${VERSION_QT} --directory /tmp/qt \
-#         qtbase qtdeclarative qttools \
-#         quickcontrols2 serialport multimedia speech svg location \
-#         graphicaleffects qtcharts icu \
-#         && \
-#     rsync -av /tmp/qt/${VERSION_QT}/*/ /usr/local/ && rm -Rf /tmp/*
-RUN apt-get install -q -y --no-install-recommends \
-    qt5*-dev \
-    qtquickcontrols2-5-dev \
-    libqt5svg5-dev \
+ARG INSTALL_QT_SRC=https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh
+RUN apt-get install -y --no-install-recommends p7zip-full && rm -Rf /var/cache/apt
+RUN curl -L ${INSTALL_QT_SRC} --output /tmp/install-qt.sh && \
+    chmod +x /tmp/install-qt.sh && \
+    /tmp/install-qt.sh --version ${VERSION_QT} --directory /tmp/qt \
+        qtbase qtdeclarative qttools \
+        quickcontrols2 serialport multimedia speech svg location \
+        graphicaleffects qtcharts icu \
+        && \
+    rsync -av /tmp/qt/${VERSION_QT}/*/ /usr/local/ && rm -Rf /tmp/*
+# RUN apt-get install -q -y --no-install-recommends \
+#     qt5*-dev \
+#     qtquickcontrols2-5-dev \
+#     libqt5svg5-dev \
 
 # Qt deploy tools
 RUN apt-get install -q -y --no-install-recommends fuse && rm -Rf /var/cache/apt
 
 # other versions <=8 are segfaulting by some reason
 # TODO consider https://github.com/linuxdeploy
-# ARG VERSION_LINUXDEPLOYQT=6/linuxdeployqt-6
-# ARG LINUXDEPLOYQT_SRC=https://github.com/probonopd/linuxdeployqt/releases/download/${VERSION_LINUXDEPLOYQT}-x86_64.AppImage
-# RUN curl -L ${LINUXDEPLOYQT_SRC} --output /usr/local/bin/linuxdeployqt && \
-#     chmod +x /usr/local/bin/linuxdeployqt
+ARG VERSION_LINUXDEPLOYQT=6/linuxdeployqt-6
+ARG LINUXDEPLOYQT_SRC=https://github.com/probonopd/linuxdeployqt/releases/download/${VERSION_LINUXDEPLOYQT}-x86_64.AppImage
+RUN curl -L ${LINUXDEPLOYQT_SRC} --output /usr/local/bin/linuxdeployqt && \
+    chmod +x /usr/local/bin/linuxdeployqt
 
-# ARG VERSION_APPIMAGETOOL=13
-# ARG APPIMAGETOOL_SRC=https://github.com/AppImage/AppImageKit/releases/download/${VERSION_APPIMAGETOOL}/appimagetool-x86_64.AppImage
-# RUN curl -L ${APPIMAGETOOL_SRC} --output /usr/local/bin/appimagetool && \
-#     chmod +x /usr/local/bin/appimagetool
+ARG VERSION_APPIMAGETOOL=13
+ARG APPIMAGETOOL_SRC=https://github.com/AppImage/AppImageKit/releases/download/${VERSION_APPIMAGETOOL}/appimagetool-x86_64.AppImage
+RUN curl -L ${APPIMAGETOOL_SRC} --output /usr/local/bin/appimagetool && \
+    chmod +x /usr/local/bin/appimagetool
 
 # ARG LINUXDEPLOY_SRC=https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 # RUN curl -L ${LINUXDEPLOY_SRC} --output /usr/local/bin/linuxdeploy && \
