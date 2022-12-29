@@ -58,6 +58,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="cbInfo">
+       <property name="text">
+        <string>Info</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="btnReset">
        <property name="toolTip">
         <string>Clear received data</string>

@@ -190,8 +190,13 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
         //s = s.trimmed();
         break;
     case 1: //HEX
-        for (int i = 0; i < ba.size(); i++)
-            s += QString("%1 ").arg(static_cast<uint>(ba.at(i)), 2, 16, QChar('0'));
+        if(ui->cbInfo->isChecked()) {
+            s = QString("size:%1 data:%2")
+                .arg(ba.size(), -3, 10)
+                .arg((QString) ba.toHex(' '));
+        } else {
+            s = (QString) ba.toHex(' ');
+        }
         s = s.trimmed().append('\n');
 
         if (dumpFile.isOpen()) {

@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:20.04
 LABEL description="Linux development environment for APX Ground Control"
 LABEL maintainer="sa@uavos.com"
 
@@ -10,6 +10,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates bc \
     build-essential rsync curl git make ninja-build pkg-config python3-pip \
+    bc \
     && \
     rm -Rf /var/cache/apt
 
