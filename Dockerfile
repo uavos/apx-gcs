@@ -35,7 +35,7 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}
     cmake --version
 
 # Qt packages
-ARG VERSION_QT=5.15.7
+ARG VERSION_QT=5.15.2
 
 ARG INSTALL_QT_SRC=https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh
 RUN apt-get install -y --no-install-recommends p7zip-full && rm -Rf /var/cache/apt
