@@ -2,12 +2,14 @@ name: APX GCS CI
 
 on:
   push:
-    tags:
-      - "release-*"
+    branches:
+      - test-rel
+    # tags:
+    #   - "release-*"
 
 env:
   BUILD_DIR: build-release
-  VERSION_QT: 5.15.7
+  # VERSION_QT: 5.15.2
   VERSION_GST: 1.20.5
   VERSION_SDL: 2.26.1
   
@@ -57,21 +59,24 @@ jobs:
       - name: Install Tools
         run: |
           pip3 install networkx simplejson jinja2 pyyaml dmgbuild
+          brew update
+          brew install qt@5
+          echo "/opt/homebrew/opt/qt@5/bin" >> $GITHUB_PATH
 
-      - name: Install Qt
-        run: |
-          curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
-          chmod +x install-qt.sh
-          ./install-qt.sh --version $VERSION_QT --directory Qt \
-              qtbase qtdeclarative qttools \
-              quickcontrols2 serialport multimedia speech svg location \
-              graphicaleffects qtcharts
-          echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
+      # - name: Install Qt
+      #   run: |
+      #     curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
+      #     chmod +x install-qt.sh
+      #     ./install-qt.sh --version $VERSION_QT --directory Qt \
+      #         qtbase qtdeclarative qttools \
+      #         quickcontrols2 serialport multimedia speech svg location \
+      #         graphicaleffects qtcharts
+      #     echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
 
       - name: Install SDL
         working-directory: /tmp
         run: |
-          curl -L https://www.libsdl.org/release/SDL2-$VERSION_SDL.dmg --output sdl.dmg
+          curl -L https://github.com/libsdl-org/SDL/releases/download/release-$VERSION_SDL/SDL2-$VERSION_SDL.dmg --output sdl.dmg
           hdiutil attach -noverify sdl.dmg
           sudo cp -a /Volumes/SDL2/SDL2.framework /Library/Frameworks/
 
@@ -242,7 +247,7 @@ jobs:
             github.repos.updateRelease({
               owner, repo,
               release_id: "${{ steps.create_release.outputs.id }}",
-              draft: false
+              draft: true
             });
 
       # - name: Setup tmate session
