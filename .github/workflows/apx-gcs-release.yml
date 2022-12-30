@@ -9,16 +9,12 @@ on:
 
 env:
   BUILD_DIR: build-release
-  # VERSION_QT: 5.15.2
-  VERSION_GST: 1.20.5
-  VERSION_SDL: 2.26.1
-  
-  VERSION_SPARKLE: 1.27.1
 
 jobs:
   build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
+    if: "false"
     container:
       image: uavos/apx-gcs-linux:latest
       options: --privileged
@@ -53,6 +49,15 @@ jobs:
   build-macos:
     name: Build MacOS
     runs-on: macos-latest
+    env:
+      # VERSION_QT: 5.15.2
+      VERSION_GST: 1.20.5
+      VERSION_SDL: 2.26.1
+      
+      VERSION_SPARKLE: 1.27.1
+
+      PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -202,6 +207,7 @@ jobs:
     name: Publish Release
     needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
+    if: "false"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
