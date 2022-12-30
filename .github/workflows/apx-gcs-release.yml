@@ -14,7 +14,7 @@ jobs:
   build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
-    if: "false"
+    # if: "false"
     container:
       image: uavos/apx-gcs-linux:latest
       options: --privileged
@@ -114,8 +114,8 @@ jobs:
           sudo mv Sparkle.framework /Library/Frameworks/
           echo "$(pwd)/bin" >> $GITHUB_PATH
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
 
       - name: Install KEYS
         env:
@@ -207,7 +207,7 @@ jobs:
     name: Publish Release
     needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
-    if: "false"
+    # if: "false"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
