@@ -27,21 +27,24 @@ endif()
 
 option(CMAKE_VERBOSE_MAKEFILE "" OFF)
 
-set(CMAKE_PREFIX_PATH
-    "$ENV{HOME}/QtOS/5.15.2/clang_64"
-    CACHE PATH "Qt installation path"
-)
-
 set(CMAKE_INSTALL_PREFIX
     "${CMAKE_CURRENT_BINARY_DIR}/install"
     CACHE PATH ""
 )
 
+# OSX specific options
 set(CMAKE_OSX_DEPLOYMENT_TARGET
-    "10.13"
+    "11"
     CACHE STRING "Minimum OS X deployment version"
 )
+# Uncomment below to allow universal binary build for MacOS
+# Currently not supported due to Qt5.x issues
+# set(CMAKE_OSX_ARCHITECTURES
+#     "arm64;x86_64"
+#     CACHE STRING "MacOS universal binary" FORCE
+# )
 
+# Project creation and versioning
 include(git)
 
 set(APX_COPYRIGHT "(C) ${APX_GIT_YEAR} Aliaksei Stratsilatau (sa@uavos.com)")
@@ -62,6 +65,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Qt should be found in PATH
 find_package(
     Qt5
     COMPONENTS Core QuickCompiler
