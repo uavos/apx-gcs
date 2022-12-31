@@ -67,20 +67,12 @@ jobs:
           git config --global --add safe.directory `pwd`
           git fetch --prune --unshallow --tags
 
-      - name: Install Tools (brew)
-        run: |
-          export HOMEBREW_NO_AUTO_UPDATE=1
-          export HOMEBREW_NO_INSTALL_CLEANUP=1
-          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew update
-          brew install qt@5
-          echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
-
       - name: Install Tools (python)
         run: |
           pip3 install networkx simplejson jinja2 pyyaml dmgbuild
 
-      # - name: Install Qt
+      - name: Install Qt
+      # TODO migrate to Qt6 and use python https://github.com/miurahr/aqtinstall
       #   run: |
       #     curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
       #     chmod +x install-qt.sh
@@ -89,6 +81,13 @@ jobs:
       #         quickcontrols2 serialport multimedia speech svg location \
       #         graphicaleffects qtcharts
       #     echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
+        run: |
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          brew update
+          brew install qt@5
+          echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
 
       - name: Install SDL
         working-directory: /tmp

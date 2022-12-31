@@ -25,6 +25,7 @@ endif()
 add_custom_target(
     deploy_qt
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_qt.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+    COMMENT "Deploying Qt..."
     DEPENDS deploy_bundle ${PROJECT_NAME}.meta
     WORKING_DIRECTORY ${APX_DEPLOY_DIR}
     VERBATIM USES_TERMINAL
@@ -33,6 +34,7 @@ add_custom_target(
 add_custom_target(
     deploy_libs
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_libs.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json --dist=$ENV{LIBS_DIST_DIR}
+    COMMENT "Deploying libs..."
     DEPENDS deploy_qt
     WORKING_DIRECTORY ${APX_DEPLOY_DIR}
     VERBATIM USES_TERMINAL
@@ -44,6 +46,7 @@ if(APPLE)
     add_custom_target(
         deploy_sign
         COMMAND codesign --deep --force -s $ENV{CODE_IDENTITY} ${APX_INSTALL_APP_DIR}
+        COMMENT "Signing app with $ENV{CODE_IDENTITY}"
         DEPENDS deploy_libs
         WORKING_DIRECTORY ${APX_DEPLOY_DIR}
         VERBATIM USES_TERMINAL
@@ -52,6 +55,7 @@ if(APPLE)
     add_custom_target(
         deploy_package
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_dmg.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+        COMMENT "Creating DMG..."
         DEPENDS deploy_sign
         WORKING_DIRECTORY ${APX_DEPLOY_DIR}
         VERBATIM USES_TERMINAL
@@ -62,6 +66,7 @@ elseif(UNIX AND NOT APPLE)
         deploy_package
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_appimage.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
                 --apprun=${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/AppRun.sh
+        COMMENT "Creating AppImage..."
         DEPENDS deploy_libs
         WORKING_DIRECTORY ${APX_DEPLOY_DIR}
         VERBATIM USES_TERMINAL
