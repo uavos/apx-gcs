@@ -2,10 +2,10 @@ name: APX GCS CI
 
 on:
   push:
-    branches:
-      - test-rel
-    # tags:
-    #   - "release-*"
+    # branches:
+    #   - test-rel
+    tags:
+      - "release-*"
 
 env:
   BUILD_DIR: build-release
@@ -267,7 +267,7 @@ jobs:
             github.repos.updateRelease({
               owner, repo,
               release_id: "${{ steps.create_release.outputs.id }}",
-              draft: true
+              draft: false
             });
 
       # - name: Setup tmate session
