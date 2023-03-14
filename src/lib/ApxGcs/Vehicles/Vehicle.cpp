@@ -218,6 +218,9 @@ void Vehicle::updateActive()
 
 QVariantMap Vehicle::get_info() const
 {
+    if (!_protocol)
+        return {};
+
     QVariantMap vehicle;
     vehicle.insert("uid", _protocol->uid());
     vehicle.insert("callsign", title());
@@ -228,12 +231,11 @@ QVariantMap Vehicle::get_info() const
 }
 QVariant Vehicle::toVariant()
 {
-    if (isReplay())
-        return {};
-
     QVariantMap m;
 
-    m.insert("vehicle", get_info());
+    if (_protocol)
+        m.insert("vehicle", get_info());
+
     m.insert("nodes", f_nodes->toVariant());
     m.insert("title", f_nodes->getConfigTitle());
     m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());

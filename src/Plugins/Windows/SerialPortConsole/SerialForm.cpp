@@ -25,7 +25,6 @@
 #include <App/AppLog.h>
 
 #include <Telemetry/Telemetry.h>
-#include <Telemetry/TelemetryRecorder.h>
 #include <Vehicles/Vehicles.h>
 
 #include "ui_SerialForm.h"
@@ -190,10 +189,8 @@ void SerialForm::serialData(uint portNo, QByteArray ba)
         //s = s.trimmed();
         break;
     case 1: //HEX
-        if(ui->cbInfo->isChecked()) {
-            s = QString("size:%1 data:%2")
-                .arg(ba.size(), -3, 10)
-                .arg((QString) ba.toHex(' '));
+        if (ui->cbInfo->isChecked()) {
+            s = QString("size:%1 data:%2").arg(ba.size(), -3, 10).arg((QString) ba.toHex(' '));
         } else {
             s = (QString) ba.toHex(' ');
         }
