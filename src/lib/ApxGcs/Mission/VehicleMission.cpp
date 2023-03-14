@@ -289,7 +289,6 @@ QVariant VehicleMission::toVariant()
     m.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
     m.insert("version", App::version());
 
-    m.insert("title", m.value(f_title->name()));
     m.remove(f_title->name());
 
     if (!site().isEmpty())
@@ -313,6 +312,8 @@ QVariant VehicleMission::toVariant()
     title.replace('-', ' ');
     title.replace('_', ' ');
     title = title.simplified();
+    if (!title.isEmpty())
+        m.insert("title", title);
 
     //details
     QGeoRectangle rect = boundingGeoRectangle();
