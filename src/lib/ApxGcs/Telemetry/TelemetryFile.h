@@ -30,7 +30,8 @@ class TelemetryFile : private QFile
 public:
     explicit TelemetryFile();
 
-    void create(Vehicle *vehicle);
+    bool create(Vehicle *vehicle);
 
 private:
+    static constexpr auto suffix = "telemetry";
 };

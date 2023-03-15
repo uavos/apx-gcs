@@ -18,17 +18,20 @@ struct fhdr_s
         char magic[16];   // i.e. APXTLM11
         uint16_t version; // version number (11)
 
-        uint8_t _pad[14]; // set to zero when not used
+        uint8_t _pad[14];
     } magic;
     static_assert(sizeof(magic_s) == 32, "size error");
 
     // current version implementation
-    uint64_t ts_file; // file timestamp [ms since epoch] 1970-01-01, Coordinated Universal Time
 
-    uint32_t data_offset; // offset of data binary stream in bytes
-    uint32_t aux_offset;  // offset of tail data in bytes
+    struct info_s
+    {
+        uint64_t time; // file timestamp [ms since epoch] 1970-01-01, Coordinated Universal Time
 
-    char tags[256 - 32 - 16]; // tags list
+        uint8_t _pad[32 - 8];
+    } info;
+
+    char tags[256 - 32 - 32]; // tags list
 };
 static_assert(sizeof(fhdr_s) == 256, "size error");
 

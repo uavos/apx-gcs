@@ -37,10 +37,13 @@ public:
     static QDir firmware();
 
     static QDir prefs();
+
+    static QDir telemetry();
     static QDir missions();
     static QDir configs();
     static QDir scripts();
     static QDir db();
+
     static QDir logs();
     static QDir video();
     static QDir images();
