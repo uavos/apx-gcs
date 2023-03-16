@@ -41,15 +41,15 @@ bool TelemetryFile::create(Vehicle *vehicle)
 
     auto t = QDateTime::currentDateTime();
 
-    QString stime = t.toString("yyyy_MM_dd_HH_mm");
+    QString stime = t.toString("yyyyMMdd_HHmm");
 
     QString callsign = vehicle->title();
     if (callsign.isEmpty())
         callsign = vehicle->confTitle();
 
     QString fname;
-    for (int i = 0; i < 1000; ++i) {
-        QString s = QString("%1_%2").arg(stime).arg(i, 3, 10, QChar('0'));
+    for (int i = 0; i < 100; ++i) {
+        QString s = QString("%1%2").arg(stime).arg(i, 2, 10, QChar('0'));
 
         if (!callsign.isEmpty())
             s.append('_').append(callsign);
@@ -69,6 +69,7 @@ bool TelemetryFile::create(Vehicle *vehicle)
 
     setFileName(dir.absoluteFilePath(fname));
 
+    // open file for writing
     if (!open(QIODevice::WriteOnly)) {
         qWarning() << "failed to open file" << fileName();
         return false;
@@ -78,10 +79,16 @@ bool TelemetryFile::create(Vehicle *vehicle)
     fhdr_s fhdr{};
 
     strcpy(fhdr.magic.magic, "APXTLM");
-    fhdr.magic.version = 1;
+    fhdr.magic.version = version;
     fhdr.info.time = t.toMSecsSinceEpoch();
 
+    XbusStreamWriter s(fhdr.tags, sizeof(fhdr.tags));
+    s.write_string(vehicle->title().toUtf8());
+    s.write_string(vehicle->uid().toUtf8());
+    s.write_string(vehicle->confTitle().toUtf8());
+
     write((const char *) &fhdr, sizeof(fhdr));
+    flush();
 
     return true;
 }

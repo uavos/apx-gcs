@@ -13,27 +13,37 @@ namespace telemetry {
 struct fhdr_s
 {
     // 32 bytes of file header format UID
-    struct magic_s
-    {
-        char magic[16];   // i.e. APXTLM11
-        uint16_t version; // version number (11)
-
-        uint8_t _pad[14];
+    union magic_s {
+        uint8_t _raw[32];
+        struct
+        {
+            char magic[16];   // i.e. APXTLM11
+            uint16_t version; // version number (11)
+        };
     } magic;
     static_assert(sizeof(magic_s) == 32, "size error");
 
     // current version implementation
 
-    struct info_s
-    {
-        uint64_t time; // file timestamp [ms since epoch] 1970-01-01, Coordinated Universal Time
+    union info_s {
+        uint8_t _raw[64];
+        struct
+        {
+            uint64_t time; // file timestamp [ms since epoch] 1970-01-01, Coordinated Universal Time
 
-        uint8_t _pad[32 - 8];
+            uint32_t data_offset;
+            uint32_t data_size;
+            uint32_t data_crc;
+        };
     } info;
+    static_assert(sizeof(info_s) == 64, "size error");
 
-    char tags[256 - 32 - 32]; // tags list
+    // tags: callsign,vehicle_uid,[anything else to help identify the case]
+    char tags[256];
+
+    char comment[1024 - sizeof(magic_s) - sizeof(info_s) - sizeof(tags)];
 };
-static_assert(sizeof(fhdr_s) == 256, "size error");
+static_assert(sizeof(fhdr_s) == 1024, "size error");
 
 // data format identifiers
 enum class dspec_e { // 4 bits

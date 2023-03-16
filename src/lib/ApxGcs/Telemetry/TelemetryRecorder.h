@@ -26,6 +26,8 @@
 #include <Vehicles/Vehicles.h>
 #include <QtCore>
 
+#include "TelemetryFile.h"
+
 class Recorder;
 class NodeItem;
 
@@ -41,6 +43,8 @@ private:
     Vehicle *_vehicle;
 
     Fact *f_enable;
+
+    TelemetryFile _file;
 
     //database
     bool dbCheckRecord();
@@ -100,10 +104,6 @@ public slots:
     //events
     void recordConfigUpdate(NodeItem *node, QString name, QString value);
     void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
-    void recordNotification(QString msg,
-                            QString subsystem,
-                            AppNotify::NotifyFlags flags,
-                            Fact *fact);
 
     //PROPERTIES
 public:

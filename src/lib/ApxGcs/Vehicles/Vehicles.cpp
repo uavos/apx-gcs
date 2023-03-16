@@ -181,12 +181,14 @@ void Vehicles::selectVehicle(Vehicle *v)
         return;
     m_current = v;
 
-    QString msg = QString("%1: %2").arg(tr("Vehicle selected")).arg(v->title());
-    v->message(msg, AppNotify::Important);
-
     //update JSengine
     App::setGlobalProperty("mandala", v->f_mandala);
     App::setContextProperty("mandala", v->f_mandala);
+
+    if (size() > list_padding) {
+        QString msg = QString("%1: %2").arg(tr("Vehicle selected")).arg(v->title());
+        v->message(msg, AppNotify::Important);
+    }
 
     emit currentChanged();
     emit vehicleSelected(v);

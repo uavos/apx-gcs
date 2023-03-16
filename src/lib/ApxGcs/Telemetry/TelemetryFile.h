@@ -34,4 +34,5 @@ public:
 
 private:
     static constexpr auto suffix = "telemetry";
+    static constexpr auto version = 1;
 };
