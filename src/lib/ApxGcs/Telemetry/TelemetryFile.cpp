@@ -87,6 +87,7 @@ bool TelemetryFile::create(Vehicle *vehicle)
     write_tag(&s, "call", vehicle->title().toUtf8());
     write_tag(&s, "vuid", vehicle->uid().toUtf8());
     write_tag(&s, "conf", vehicle->confTitle().toUtf8());
+    write_tag(&s, "class", vehicle->vehicleTypeText().toUtf8());
 
     // write header to file
     write((const char *) &fhdr, sizeof(fhdr));

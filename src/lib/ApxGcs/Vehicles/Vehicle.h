@@ -92,6 +92,8 @@ public:
     auto protocol() const { return _protocol; }
     auto storage() const { return _storage; }
 
+    QString vehicleTypeText() const { return _protocol ? _protocol->vehicleTypeText() : ""; }
+
     // variant conversions
     QVariantMap get_info() const;
 
