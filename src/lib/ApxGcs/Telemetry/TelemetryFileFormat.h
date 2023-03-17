@@ -31,17 +31,18 @@ struct fhdr_s
         {
             uint64_t time; // file timestamp [ms since epoch] 1970-01-01, Coordinated Universal Time
 
-            uint32_t data_offset;
-            uint32_t data_size;
-            uint32_t data_crc;
+            // the following data can be rewritten after file is recorded
+            uint32_t size; // payload size
+            uint32_t crc;  // file payload crc32
+
+            uint32_t meta_offset; // offset to metadata record (when nonzero)
         };
     } info;
     static_assert(sizeof(info_s) == 64, "size error");
 
     // tags: callsign,vehicle_uid,[anything else to help identify the case]
-    char tags[256];
-
-    char comment[1024 - sizeof(magic_s) - sizeof(info_s) - sizeof(tags)];
+    // tags are always <name:value> pairs null terminated strings
+    char tags[1024 - sizeof(magic_s) - sizeof(info_s)];
 };
 static_assert(sizeof(fhdr_s) == 1024, "size error");
 

@@ -24,6 +24,7 @@
 #include <QtCore>
 
 class Vehicle;
+class XbusStreamWriter;
 
 class TelemetryFile : private QFile
 {
@@ -35,4 +36,7 @@ public:
 private:
     static constexpr auto suffix = "telemetry";
     static constexpr auto version = 1;
+
+    // helpers
+    bool write_tag(XbusStreamWriter *stream, const char *name, const char *value);
 };

@@ -82,13 +82,41 @@ bool TelemetryFile::create(Vehicle *vehicle)
     fhdr.magic.version = version;
     fhdr.info.time = t.toMSecsSinceEpoch();
 
+    // write tags
     XbusStreamWriter s(fhdr.tags, sizeof(fhdr.tags));
-    s.write_string(vehicle->title().toUtf8());
-    s.write_string(vehicle->uid().toUtf8());
-    s.write_string(vehicle->confTitle().toUtf8());
+    write_tag(&s, "call", vehicle->title().toUtf8());
+    write_tag(&s, "vuid", vehicle->uid().toUtf8());
+    write_tag(&s, "conf", vehicle->confTitle().toUtf8());
 
+    // write header to file
     write((const char *) &fhdr, sizeof(fhdr));
     flush();
 
     return true;
+}
+
+bool TelemetryFile::write_tag(XbusStreamWriter *stream, const char *name, const char *value)
+{
+    if (!value || !value[0]) // skip empty values
+        return true;
+
+    auto spos = stream->pos();
+
+    do {
+        if (!stream->write_string(name))
+            break;
+        stream->reset(stream->pos() - 1);
+
+        if (!stream->write_string(":"))
+            break;
+        stream->reset(stream->pos() - 1);
+
+        if (!stream->write_string(value))
+            break;
+
+        return true;
+    } while (0);
+
+    stream->reset(spos);
+    return false;
 }
