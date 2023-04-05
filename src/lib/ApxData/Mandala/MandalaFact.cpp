@@ -134,6 +134,8 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
 
 bool MandalaFact::setValue(const QVariant &v)
 {
+    increment_tx_cnt();
+
     //always send uplink
     bool rv = Fact::setValue(v);
 
@@ -192,6 +194,11 @@ void MandalaFact::increment_rx_cnt()
     } else {
         setModified(true);
     }
+}
+void MandalaFact::increment_tx_cnt()
+{
+    _tx_cnt++;
+    _everSent = true;
 }
 void MandalaFact::updateCounters()
 {

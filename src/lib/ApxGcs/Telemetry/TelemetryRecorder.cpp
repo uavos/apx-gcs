@@ -271,6 +271,8 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
 }
 void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 {
+    // qDebug() << values << uplink;
+
     if (!uplink)
         cleanupValues(&values);
     if (values.isEmpty())
@@ -279,6 +281,8 @@ void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
     dbCheckRecord();
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, uplink));
+
+    _file.write_values(values, uplink);
 }
 
 void TelemetryRecorder::writeEvent(const QString &name,

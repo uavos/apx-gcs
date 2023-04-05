@@ -23,6 +23,8 @@
 
 #include <QtCore>
 
+#include <Mandala/Mandala.h>
+
 class Vehicle;
 class XbusStreamWriter;
 
@@ -33,10 +35,21 @@ public:
 
     bool create(Vehicle *vehicle);
 
+    void write_values(const PBase::Values &values, bool uplink);
+
 private:
     static constexpr auto suffix = "telemetry";
     static constexpr auto version = 1;
 
+    Vehicle *_vehicle;
+
     // helpers
     bool write_tag(XbusStreamWriter *stream, const char *name, const char *value);
+    void write_string(const char *s);
+
+    void write_field(mandala::uid_t uid, QString name, QString title, QString units);
+    QHash<mandala::uid_t, uint16_t> _fields_map;
+    uint16_t _widx{};
+
+    void write_value(mandala::uid_t uid, const QVariant &value);
 };

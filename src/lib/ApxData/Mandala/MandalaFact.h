@@ -57,7 +57,13 @@ public:
     auto rx_cnt() const { return _rx_cnt; }
     auto everReceived() const { return _everReceived; }
 
+    void increment_tx_cnt();
+    auto tx_cnt() const { return _tx_cnt; }
+    auto everSent() const { return _everSent; }
+
     inline const mandala::meta_s &meta() const { return m_meta; }
+    inline mandala::fmt_e fmt() const { return m_fmt.fmt; }
+    inline bool is_gps_converted() const { return _convert_gps; }
 
 private:
     Mandala *m_tree;
@@ -76,6 +82,10 @@ private:
 
     size_t _rx_cnt{};
     bool _everReceived{};
+
+    size_t _tx_cnt{};
+    bool _everSent{};
+
     void updateCounters();
 
     QVariant convertFromStream(const QVariant &v) const;
