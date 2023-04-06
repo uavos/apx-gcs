@@ -268,6 +268,9 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
         return;
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, t, values, false));
+
+    _file.write_timestamp(t);
+    _file.write_values(values, false);
 }
 void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 {
@@ -282,6 +285,7 @@ void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, uplink));
 
+    _file.write_timestamp(getEventTimestamp());
     _file.write_values(values, uplink);
 }
 

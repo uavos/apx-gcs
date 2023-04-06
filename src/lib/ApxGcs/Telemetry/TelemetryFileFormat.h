@@ -88,12 +88,13 @@ enum class dspec_e { // 4 bits
 enum class extid_e { // 4 bits
     // core services
     ts = 0, // [ms] u32 timestamp update relative to file
+    uplink, // [dspec,data] uplink data
     field,  // [uid16,name,title,units] strings of used fields sequence
     crc,    // [crc32] counted so far for the data stream
 
-    // events
-    evt = 8, // [ts,uplink,name,value,uid,0] event data
-    msg,     // [ts,text,uid] message and source node uid
+    // special data types
+    evt = 8, // [uplink,name,value,uid,0] event data
+    msg,     // [text,uid] message and source node uid
     file,    // [name,json_base64_zip]
 };
 

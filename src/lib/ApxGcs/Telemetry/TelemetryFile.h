@@ -34,7 +34,7 @@ public:
     explicit TelemetryFile();
 
     bool create(Vehicle *vehicle);
-
+    void write_timestamp(quint32 timestamp_ms);
     void write_values(const PBase::Values &values, bool uplink);
 
 private:
@@ -44,12 +44,14 @@ private:
     Vehicle *_vehicle;
 
     // helpers
-    bool write_tag(XbusStreamWriter *stream, const char *name, const char *value);
-    void write_string(const char *s);
+    bool _write_tag(XbusStreamWriter *stream, const char *name, const char *value);
+    void _write_string(const char *s);
 
-    void write_field(mandala::uid_t uid, QString name, QString title, QString units);
+    void _write_field(mandala::uid_t uid, QString name, QString title, QString units);
     QHash<mandala::uid_t, uint16_t> _fields_map;
+    QHash<mandala::uid_t, QVariant> _values_s;
+    quint32 _ts_s{};
     uint16_t _widx{};
 
-    void write_value(mandala::uid_t uid, const QVariant &value);
+    void _write_value(mandala::uid_t uid, const QVariant &value, bool uplink);
 };
