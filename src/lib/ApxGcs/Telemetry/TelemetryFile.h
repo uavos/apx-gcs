@@ -47,7 +47,7 @@ private:
     bool _write_tag(XbusStreamWriter *stream, const char *name, const char *value);
     void _write_string(const char *s);
 
-    void _write_field(mandala::uid_t uid, QString name, QString title, QString units);
+    void _write_field(QString name, QString title, QString units);
     QHash<mandala::uid_t, uint16_t> _fields_map;
     QHash<mandala::uid_t, QVariant> _values_s;
     quint32 _ts_s{};

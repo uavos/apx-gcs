@@ -89,7 +89,7 @@ enum class extid_e { // 4 bits
     // core services
     ts = 0, // [ms] u32 timestamp update relative to file
     uplink, // [dspec,data] uplink data
-    field,  // [uid16,name,title,units] strings of used fields sequence
+    field,  // [name,title,units] strings of used fields sequence
     crc,    // [crc32] counted so far for the data stream
 
     // special data types

@@ -126,7 +126,7 @@ bool TelemetryFile::create(Vehicle *vehicle)
             continue;
 
         values.insert(f->uid(), f->value());
-        qDebug() << f->mpath() << f->value();
+        // qDebug() << f->mpath() << f->value();
     }
     write_values(values, false);
 
@@ -135,6 +135,8 @@ bool TelemetryFile::create(Vehicle *vehicle)
 
 void TelemetryFile::write_timestamp(quint32 timestamp_ms)
 {
+    // qDebug() << timestamp_ms << _ts_s;
+
     if (timestamp_ms <= _ts_s)
         return; // don't write repetitive timestamps
     _ts_s = timestamp_ms;
@@ -185,18 +187,15 @@ void TelemetryFile::_write_string(const char *s)
     QFile::write(s, qstrlen(s) + 1);
 }
 
-void TelemetryFile::_write_field(mandala::uid_t uid, QString name, QString title, QString units)
+void TelemetryFile::_write_field(QString name, QString title, QString units)
 {
-    qDebug() << uid << name << title << units;
+    // qDebug() << name << title << units;
 
     // write specifier
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::field};
     QFile::write((const char *) &dspec, 1);
 
     // write field data
-    uint16_t vuid = uid;
-    QFile::write((const char *) &vuid, 2);
-
     _write_string(name.toUtf8());
     _write_string(title.toUtf8());
     _write_string(units.toUtf8());
@@ -204,11 +203,39 @@ void TelemetryFile::_write_field(mandala::uid_t uid, QString name, QString title
 
 void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool uplink)
 {
+    // map mandala fact
+    auto f = _vehicle->f_mandala->fact(uid);
+    if (!f)
+        return;
+
+    // determine data type
+    bool is_uint = f->dataType() != Fact::Float;
+    is_uint |= value.type() == QVariant::Int;
+    is_uint |= value.type() == QVariant::UInt;
+    is_uint |= value.type() == QVariant::ULongLong;
+
+    if (!is_uint) {
+        float vf = value.toFloat();
+        is_uint = vf >= 0.f && std::ceil(vf) == vf;
+        is_uint |= std::isnan(vf);
+    }
+
     // uplink is always written
     if (!uplink) {
         // downlink is written only if value changed
-        if (_values_s.value(uid, QVariant()) == value)
-            return;
+        if (_values_s.contains(uid)) {
+            if (_values_s.value(uid) == value)
+                return;
+        } else {
+            if (is_uint) {
+                if (value.toULongLong() == 0)
+                    return;
+            } else {
+                if (value.toDouble() == 0.)
+                    return;
+            }
+        }
+
         _values_s.insert(uid, value);
     }
 
@@ -216,8 +243,7 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
     if (!_fields_map.contains(uid)) {
         _fields_map.insert(uid, _fields_map.size());
 
-        auto f = _vehicle->f_mandala->fact(uid);
-        _write_field(uid, f->mpath(), f->title(), f->units());
+        _write_field(f->mpath(), f->title(), f->units());
     }
     const uint16_t vidx = _fields_map.value(uid);
 
@@ -237,24 +263,10 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
     uint64_t v = 0;
     size_t wcnt = 0;
 
-    auto f = _vehicle->f_mandala->fact(uid);
-    if (!f)
-        return;
-
-    bool is_uint = f->dataType() != Fact::Float;
-    is_uint |= value.type() == QVariant::Int;
-    is_uint |= value.type() == QVariant::UInt;
-    is_uint |= value.type() == QVariant::ULongLong;
-
-    if (!is_uint) {
-        float vf = value.toFloat();
-        is_uint = vf >= 0.f && std::ceil(vf) == vf;
-        is_uint |= std::isnan(vf);
-    }
-
     if (is_uint) {
         v = value.toULongLong();
-        // qDebug() << "UInt" << v;
+        // qDebug() << "uint" << v;
+
         if (v > 0xFFFFFFFF) {
             spec.spec8.dspec = dspec_e::u64;
             wcnt = 8;
@@ -320,16 +332,16 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
     if (uplink) {
         const dspec_s spec_uplink{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::uplink};
         QFile::write((const char *) &spec_uplink, 1);
-        dump("up", &spec_uplink, 1);
+        // dump("up", &spec_uplink, 1);
     }
 
     // write specifier to file
     QFile::write((const char *) &spec, spec.spec8.opt8 ? 1 : 2);
-    dump("spec", &spec, spec.spec8.opt8 ? 1 : 2);
+    // dump("spec", &spec, spec.spec8.opt8 ? 1 : 2);
 
     // write payload (when not null)
     if (wcnt > 0) {
         QFile::write((const char *) &v, wcnt);
-        dump("data", &v, wcnt);
+        // dump("data", &v, wcnt);
     }
 }
