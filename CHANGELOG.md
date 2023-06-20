@@ -1,3 +1,20 @@
+# [APX Ground Control v11.1.108](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.108) (06/20/23)
+
+> Branch: `main`\
+> Date: `06/20/23 15:00:31`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/38dafc26ef8b929fe2fe87c89dab9b5784b3b31d...59e992c334b446f51f7535cdfc2243f204d72945)
+
+## New Features
+* VCP to SerialPort forwarding plugin
+
+## Bug Fixes
+* run docker image
+* local build by dockerfile
+* CI MacOS build
+* export vehicle config from `REPLAY`
+* mission export title
+* SerialPort forwarding plugin
+
 # [APX Ground Control v11.1.80](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.80) (11/09/22)
 
 > Branch: `main`\
