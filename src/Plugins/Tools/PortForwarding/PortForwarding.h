@@ -1,9 +1,9 @@
 #pragma once
 
-#include <QtCore>
-#include <QSerialPort>
 #include "Fact/Fact.h"
 #include "Vehicles/Vehicle.h"
+#include <QSerialPort>
+#include <QtCore>
 
 class PortForwarding : public Fact
 {
@@ -12,10 +12,10 @@ class PortForwarding : public Fact
 public:
     explicit PortForwarding(Fact *parent = nullptr);
 
+    Fact *f_enabled = nullptr;
     Fact *f_serialPort = nullptr;
     Fact *f_serialPortBaudrate = nullptr;
     Fact *f_virtualPort = nullptr;
-    Fact *f_status;
 
 private:
     QTimer m_updatePortsTimer;
@@ -30,4 +30,6 @@ private slots:
     void onCurrentVehicleChanged();
     void onPdataSerialData(quint8 portID, QByteArray data);
     void setStatus(bool ok);
+
+    void onEnabledChanged();
 };

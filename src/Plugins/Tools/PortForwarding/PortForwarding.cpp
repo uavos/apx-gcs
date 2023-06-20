@@ -16,6 +16,9 @@ PortForwarding::PortForwarding(Fact *parent)
            Group,
            "swap-vertical")
 {
+    f_enabled
+        = new Fact(this, "enable", tr("Enabled"), tr("Enable port forwarding"), Fact::Bool, "link");
+
     f_serialPort = new Fact(this,
                             "serial_port",
                             tr("Serial port"),
@@ -37,7 +40,6 @@ PortForwarding::PortForwarding(Fact *parent)
                              "numeric");
     f_virtualPort->setMin(0);
     f_virtualPort->setMax(255);
-    f_status = new Fact(this, "status", tr("Status"), tr("Current forwarding status"));
 
     m_updatePortsTimer.setSingleShot(false);
     m_updatePortsTimer.setInterval(3s);
@@ -45,8 +47,11 @@ PortForwarding::PortForwarding(Fact *parent)
     connect(&m_updatePortsTimer, &QTimer::timeout, this, &PortForwarding::onUpdatePortsTimerTimeout);
     connect(f_serialPort, &Fact::valueChanged, this, &PortForwarding::onSerialPortChanged);
     connect(f_serialPortBaudrate, &Fact::valueChanged, this, &PortForwarding::onSerialPortChanged);
+
     connect(&m_port, &QSerialPort::readyRead, this, &PortForwarding::onSerialPortReadyRead);
     connect(&m_port, &QSerialPort::errorOccurred, this, &PortForwarding::onSerialPortErrorOccured);
+
+    connect(f_enabled, &Fact::valueChanged, this, &PortForwarding::onEnabledChanged);
 
     onUpdatePortsTimerTimeout();
     onSerialPortChanged();
@@ -70,6 +75,12 @@ void PortForwarding::onSerialPortChanged()
     if (m_port.isOpen()) {
         m_port.close();
     }
+
+    if (!f_enabled->value().toBool()) {
+        setStatus(false);
+        return;
+    }
+
     m_port.setPortName(f_serialPort->text());
     m_port.setBaudRate(f_serialPortBaudrate->value().toInt());
     if (m_port.open(QIODevice::ReadWrite)) {
@@ -110,6 +121,9 @@ void PortForwarding::onCurrentVehicleChanged()
 
 void PortForwarding::onPdataSerialData(quint8 portID, QByteArray data)
 {
+    if (!f_enabled->value().toBool())
+        return;
+
     if (portID == f_virtualPort->value().toInt()) {
         while (!data.isEmpty()) {
             auto result = m_port.write(data);
@@ -127,11 +141,20 @@ void PortForwarding::onPdataSerialData(quint8 portID, QByteArray data)
 void PortForwarding::setStatus(bool ok)
 {
     if (ok) {
-        f_status->setIcon("check");
-        f_status->setText("Ok");
+        setText(QString("VCP#%1").arg(f_virtualPort->value().toInt()));
     } else {
-        f_status->setIcon("close");
-        f_status->setText("Error");
-        QTimer::singleShot(3s, this, &PortForwarding::onSerialPortChanged);
+        if (!f_enabled->value().toBool()) {
+            setText("");
+        } else {
+            setText("Error");
+            QTimer::singleShot(3s, this, &PortForwarding::onSerialPortChanged);
+        }
     }
+}
+
+void PortForwarding::onEnabledChanged()
+{
+    onSerialPortChanged();
+
+    f_virtualPort->setEnabled(!f_enabled->value().toBool());
 }
