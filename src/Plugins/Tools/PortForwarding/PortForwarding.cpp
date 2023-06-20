@@ -53,6 +53,8 @@ PortForwarding::PortForwarding(Fact *parent)
 
     connect(f_enabled, &Fact::valueChanged, this, &PortForwarding::onEnabledChanged);
 
+    connect(Vehicles::instance(), &Vehicles::currentChanged, this, &PortForwarding::onCurrentVehicleChanged);
+
     onUpdatePortsTimerTimeout();
     onSerialPortChanged();
     onCurrentVehicleChanged();
