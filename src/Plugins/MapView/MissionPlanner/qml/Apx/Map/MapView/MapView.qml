@@ -56,98 +56,57 @@ Control {
             fragmentShader: Qt.resolvedUrl("/shaders/vignette.fsh")
         }
 
-        function connectOverlay(mapBase)
-        {
-            mapBase.z=map.z - 100000
-            map.minimumFieldOfView=mapBase.minimumFieldOfView
-            map.maximumFieldOfView=mapBase.maximumFieldOfView
-            map.minimumTilt=mapBase.minimumTilt
-            map.maximumTilt=mapBase.maximumTilt
-            map.minimumZoomLevel=mapBase.minimumZoomLevel
-            map.maximumZoomLevel=mapBase.maximumZoomLevel
-
-            mapBase.center=Qt.binding(function(){return map.center})
-            mapBase.zoomLevel=Qt.binding(function(){return map.zoomLevel})
-            mapBase.tilt=Qt.binding(function(){return map.tilt})
-            mapBase.bearing=Qt.binding(function(){return map.bearing})
-        }
-
-        Loader {
-            id: mapLoader
-            anchors.fill: parent
-            asynchronous: false
-            sourceComponent: mapBaseC
-            onLoaded: {
-                mapTilesItem.connectOverlay(item)
-                control.mapBackgroundItemLoaded(item)
-            }
-            //reload map item on provider change
-            property string provider: mapPlugin.prefs.provider.text.trim()
-            onProviderChanged: {
-                mapLoader.active=false
-                mapLoader.active=true
-            }
-        }
-
-        Component {
-            id: mapBaseC
-            Map {
-                id: mapBase
-                gesture.enabled: false
-                focus: false
-
-                color: "#333"
-                copyrightsVisible: false
-
-                Component.onCompleted: {
-                    var vtypes=[]
-                    for(var i in mapBase.supportedMapTypes){
-                        var mt=mapBase.supportedMapTypes[i]
-                        vtypes.push(mt.description)
-                    }
-                    mapPlugin.prefs.maptype.enumStrings=vtypes
-                    //mapPlugin.prefs.maptype.value=activeMapType.description
-                }
-                property string mapTypeName: mapPlugin.prefs.maptype.text
-                activeMapType: {
-                    var v = mapTypeName
-                    for(var i in mapBase.supportedMapTypes){
-                        var mt=mapBase.supportedMapTypes[i]
-                        if(mt.description !== v) continue
-                        return mt
-                    }
-                    return mapBase.supportedMapTypes[0]
-                }
-
-                plugin: Plugin {
-                    allowExperimental: true
-                    preferred: [
-                        mapLoader.provider,
-                        "osm"
-                    ]
-                    Component.onCompleted: {
-                        mapPlugin.prefs.provider.enumStrings=availableServiceProviders
-                    }
-                }
-
-                layer.enabled: ui.effects
-                layer.effect: FastBlur {
-                    id: mapBlur
-                    anchors.fill: mapBase
-                    source: mapBase
-                    radius: ui.antialiasing?4:0
-                    //deviation: 1
-                    enabled: ui.antialiasing
-                }
-            }
-        }
-
         MapItemsOverlay {
             id: map
             anchors.fill: parent
 
-            color: "transparent"
-            plugin: Plugin { name: "itemsoverlay" }
+            gesture.enabled: false
+            focus: false
+
+            color: "#333"
+            copyrightsVisible: false
+
+            Component.onCompleted: {
+                // assign plugin after map is created
+
+                // collect available providers
+                var plugin = Qt.createQmlObject(`import QtLocation 5.12; Plugin {}`, map)
+                mapPlugin.prefs.provider.enumStrings=plugin.availableServiceProviders
+                plugin.destroy()
+
+                plugin = Qt.createQmlObject(`
+                    import QtLocation 5.12
+                    Plugin {
+                        preferred: [
+                            mapPlugin.prefs.provider.text.trim(),
+                            "osm"
+                        ]
+                    }
+                `, map)
+
+
+                map.plugin=plugin
+
+                // collect available map types
+                var vtypes=[]
+                for(var i in map.supportedMapTypes){
+                    var mt=map.supportedMapTypes[i]
+                    vtypes.push(mt.description)
+                }
+                mapPlugin.prefs.maptype.enumStrings=vtypes
+            }
+
+            activeMapType: {
+                var v = mapPlugin.prefs.maptype.text
+                for(var i in map.supportedMapTypes){
+                    var mt=map.supportedMapTypes[i]
+                    if(mt.description !== v) continue
+                    return mt
+                }
+                return map.supportedMapTypes[0]
+            }
+
+
 
             Loader {
                 active: showVehicles
@@ -171,5 +130,6 @@ Control {
                 function onTriggered(){ map.showRegion(apx.vehicles.current.mission.boundingGeoRectangle()) }
             }
         }
+
     }
 }
