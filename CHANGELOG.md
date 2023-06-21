@@ -1,3 +1,12 @@
+# [APX Ground Control v11.1.110](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.110) (06/21/23)
+
+> Branch: `main`\
+> Date: `06/21/23 12:24:34`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/d820dc2478d828ff426405e3a2361405ae27798e...2d517bee417001de75e9db10c72d8f8025743aa1)
+
+## Bug Fixes
+* Qt5.15.10 compatibility (remove itemsoverlay on map)
+
 # [APX Ground Control v11.1.108](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.108) (06/20/23)
 
 > Branch: `main`\
