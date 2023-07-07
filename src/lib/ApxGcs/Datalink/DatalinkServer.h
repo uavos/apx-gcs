@@ -32,7 +32,7 @@ class DatalinkServer : public Fact
 public:
     explicit DatalinkServer(Datalink *datalink);
 
-    Fact *f_listen;
+    Fact *f_http;
     Fact *f_extctr;
     Fact *f_extsrv;
 
@@ -43,7 +43,7 @@ public:
 private:
     Datalink *datalink;
 
-    QTcpServer *tcpServer;
+    QTcpServer *httpServer;
     uint retryBind;
 
     QUdpSocket *udpAnnounce;
@@ -55,12 +55,12 @@ private slots:
     void updateClientsNetworkMode();
 
     void serverActiveChanged();
-    void tryBindServer();
+    void tryBindHttpServer();
 
     void announce(void);
 
     //tcp server
-    void newConnection();
+    void newHttpConnection();
 
 signals:
     void bindError();

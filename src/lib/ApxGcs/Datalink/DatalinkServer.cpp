@@ -28,6 +28,8 @@
 
 #include <tcp_ports.h>
 
+#include <QDesktopServices>
+
 DatalinkServer::DatalinkServer(Datalink *datalink)
     : Fact(datalink,
            "server",
@@ -47,13 +49,16 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
 
     qDebug() << "service:gcs:" + url.toString();
 
-    f_listen = new Fact(this,
-                        "listen",
-                        tr("Listen"),
-                        tr("Accept incoming connections"),
-                        Bool | PersistentValue,
-                        "access-point-network");
-    f_listen->setDefaultValue(true);
+    f_http = new Fact(this,
+                      "http",
+                      tr("HTTP server"),
+                      tr("Port").append(": ").append(QString::number(TCP_PORT_SERVER)),
+                      Bool | PersistentValue,
+                      "access-point-network");
+    f_http->setDefaultValue(true);
+    connect(f_http, &Fact::triggered, this, []() {
+        QDesktopServices::openUrl(QUrl(QString("http://127.0.0.1:%1/").arg(TCP_PORT_SERVER)));
+    });
 
     f_extctr = new Fact(this,
                         "extctr",
@@ -83,8 +88,8 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
                         Action,
                         "lan-disconnect");
 
-    tcpServer = new QTcpServer(this);
-    connect(tcpServer, &QTcpServer::newConnection, this, &DatalinkServer::newConnection);
+    httpServer = new QTcpServer(this);
+    connect(httpServer, &QTcpServer::newConnection, this, &DatalinkServer::newHttpConnection);
 
     //discovery announce
     udpAnnounce = new QUdpSocket(this);
@@ -92,7 +97,7 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     announceTimer.setInterval(5333);
     connect(&announceTimer, &QTimer::timeout, this, &DatalinkServer::announce);
 
-    connect(f_listen, &Fact::valueChanged, this, &DatalinkServer::serverActiveChanged);
+    connect(f_http, &Fact::valueChanged, this, &DatalinkServer::serverActiveChanged);
 
     updateStatus();
     QTimer::singleShot(500, this, &DatalinkServer::serverActiveChanged);
@@ -107,10 +112,10 @@ void DatalinkServer::updateStatus()
 
 void DatalinkServer::serverActiveChanged()
 {
-    bool active = f_listen->value().toBool();
+    bool active = f_http->value().toBool();
     if (!active) {
         f_alloff->trigger();
-        tcpServer->close();
+        httpServer->close();
         setActive(false);
         announceTimer.stop();
         apxMsg() << tr("Datalink server disabled");
@@ -119,7 +124,7 @@ void DatalinkServer::serverActiveChanged()
     //activate server
     apxMsg() << tr("Datalink server enabled");
     retryBind = 0;
-    tryBindServer();
+    tryBindHttpServer();
 }
 
 void DatalinkServer::announce(void)
@@ -131,18 +136,18 @@ void DatalinkServer::announce(void)
     }
 }
 
-void DatalinkServer::tryBindServer()
+void DatalinkServer::tryBindHttpServer()
 {
-    if (!f_listen->value().toBool())
+    if (!f_http->value().toBool())
         return;
-    if (!tcpServer->listen(QHostAddress::Any, TCP_PORT_SERVER)) {
+    if (!httpServer->listen(QHostAddress::Any, TCP_PORT_SERVER)) {
         setActive(false);
         //server port is busy by another local GCU
         if (++retryBind <= 1) {
-            apxMsgW() << tr("Unable to start server").append(":") << tcpServer->errorString();
+            apxMsgW() << tr("Unable to start server").append(":") << httpServer->errorString();
         }
         int to = 1000 + (retryBind / 10) * 1000;
-        QTimer::singleShot(to > 10000 ? 10000 : to, this, SLOT(tryBindServer()));
+        QTimer::singleShot(to > 10000 ? 10000 : to, this, &DatalinkServer::tryBindHttpServer);
         emit bindError();
         return;
     }
@@ -154,11 +159,11 @@ void DatalinkServer::tryBindServer()
     announceTimer.start(1000);
 }
 
-void DatalinkServer::newConnection()
+void DatalinkServer::newHttpConnection()
 {
-    while (tcpServer->hasPendingConnections()) {
-        QTcpSocket *socket = tcpServer->nextPendingConnection();
-        if (!(active() && f_listen->value().toBool())) {
+    while (httpServer->hasPendingConnections()) {
+        QTcpSocket *socket = httpServer->nextPendingConnection();
+        if (!(active() && f_http->value().toBool())) {
             socket->disconnectFromHost();
             continue;
         }
@@ -170,6 +175,7 @@ void DatalinkServer::newConnection()
       continue;
     }*/
         //new DatalinkClient(this,socket);
+
         DatalinkTcpSocket *c = new DatalinkTcpSocket(f_clients, socket, 0, 0);
         updateClientsNetworkMode();
         c->setTitle(socket->peerAddress().toString());
