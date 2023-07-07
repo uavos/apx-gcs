@@ -46,11 +46,7 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
     f_discover->setDefaultValue(true);
     connect(f_discover, &Fact::valueChanged, this, &DatalinkRemotes::discover);
     udpDiscover = new QUdpSocket(this);
-    connect(udpDiscover,
-            &QUdpSocket::readyRead,
-            this,
-            &DatalinkRemotes::discoverRead,
-            Qt::QueuedConnection);
+    connect(udpDiscover, &QUdpSocket::readyRead, this, &DatalinkRemotes::discoverRead);
 
     //connect to specific host menu
     f_add = new Fact(this, "add", tr("Connect to host"), tr("Create new connection"), Group);
@@ -107,42 +103,50 @@ void DatalinkRemotes::discover(void)
     if (f_discover->value().toBool()) {
         if (udpDiscover->state() == QAbstractSocket::BoundState)
             return;
-        if (udpDiscover->bind(QHostAddress::Any, UDP_PORT_DISCOVER)) {
+        if (udpDiscover->bind(QHostAddress::AnyIPv4, UDP_PORT_DISCOVER)) {
             qDebug() << "binded";
             return;
         }
         QTimer::singleShot(5000, this, &DatalinkRemotes::discover);
+        // apxConsoleW() << "udp discover bind retry" << udpDiscover->errorString();
     } else {
         if (udpDiscover->state() != QAbstractSocket::UnconnectedState) {
             udpDiscover->close();
             qDebug() << "closed";
         }
     }
-    //apxConsoleW()<<"udp discover bind retry"<<udpReader->errorString();
 }
 void DatalinkRemotes::discoverRead(void)
 {
-    const QByteArray tail("@server.gcs.uavos.com");
+    // service:gcs:tcp://username@hostname:port/
+    const QByteArray hdr("service:gcs:");
     while (udpDiscover->hasPendingDatagrams()) {
         qint64 sz = udpDiscover->pendingDatagramSize();
-        if (sz < tail.size() || sz > (tail.size() * 2)) {
-            udpDiscover->receiveDatagram(0);
+        // qDebug() << sz;
+        if (sz < hdr.size() || sz > (hdr.size() * 10)) {
+            qDebug() << "discarded";
+            udpDiscover->receiveDatagram(0); // discard datagram
             continue;
         }
-        QNetworkDatagram datagram = udpDiscover->receiveDatagram(255);
+        QNetworkDatagram datagram = udpDiscover->receiveDatagram();
         if (!datagram.isValid())
             continue;
-        //apxConsole()<<datagram;
-        QByteArray data = datagram.data();
-        if (!data.endsWith(tail))
+
+        const auto data = datagram.data();
+
+        if (!data.startsWith(hdr))
             continue;
+
         if (datalink->f_server->active() && DatalinkTcpSocket::isLocalHost(datagram.senderAddress()))
             continue;
-        QString uname = QString(data.left(data.indexOf('@')));
+
+        // qDebug() << QString(data);
+
         //register or update host
-        QUrl url;
-        url.setScheme("tcp");
-        url.setUserName(uname);
+        QUrl url(data.mid(hdr.size()), QUrl::StrictMode);
+        if (!url.isValid())
+            continue;
+
         QString saddr = datagram.senderAddress().toString();
         url.setHost(saddr.mid(saddr.lastIndexOf(':') + 1));
         DatalinkRemote *c = registerHost(url);

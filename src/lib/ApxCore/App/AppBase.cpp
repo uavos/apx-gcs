@@ -90,15 +90,16 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     m_year = GIT_YEAR;
 
     // identity
-    m_hostname = QSysInfo::machineHostName();
+    m_hostname = QSysInfo::machineHostName().simplified();
+    if (m_hostname.endsWith(".local"))
+        m_hostname = m_hostname.left(m_hostname.length() - 6);
+    if (m_hostname.isEmpty())
+        m_hostname = "localhost";
 
     // machine ID
     QByteArray uid = QSysInfo::machineUniqueId();
-    if (uid.isEmpty()) {
-        uid = getCpuId();
-    }
-    uid.append(m_hostname.toUtf8());
-    //m_machineUID=uid.toHex().toUpper();
+    uid.append(getCpuId());
+    uid.append(QSysInfo::machineHostName().toUtf8());
     m_machineUID = QCryptographicHash::hash(uid, QCryptographicHash::Sha1).toHex().toUpper();
 
     // guess user name

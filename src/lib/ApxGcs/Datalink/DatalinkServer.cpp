@@ -36,8 +36,17 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
            Group | FlatModel,
            "lan-connect")
     , datalink(datalink)
-    , announceString(QString("%1@server.gcs.uavos.com").arg(App::username()).toUtf8())
 {
+    QUrl url;
+    url.setScheme("tcp");
+    url.setUserName(App::username());
+    url.setHost(App::hostname());
+    url.setPort(TCP_PORT_SERVER);
+    url.setPath("/");
+    announceString = QString("service:gcs:").append(url.toString()).toUtf8();
+
+    qDebug() << "service:gcs:" + url.toString();
+
     f_listen = new Fact(this,
                         "listen",
                         tr("Listen"),
@@ -79,7 +88,8 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
 
     //discovery announce
     udpAnnounce = new QUdpSocket(this);
-    announceTimer.setInterval(2000);
+    announceTimer.setSingleShot(true);
+    announceTimer.setInterval(5333);
     connect(&announceTimer, &QTimer::timeout, this, &DatalinkServer::announce);
 
     connect(f_listen, &Fact::valueChanged, this, &DatalinkServer::serverActiveChanged);
@@ -116,7 +126,8 @@ void DatalinkServer::announce(void)
 {
     if (active()) {
         udpAnnounce->writeDatagram(announceString, QHostAddress::Broadcast, UDP_PORT_DISCOVER);
-        //qDebug()<<"announce";
+        // qDebug() << "announce";
+        announceTimer.start();
     }
 }
 
@@ -140,7 +151,7 @@ void DatalinkServer::tryBindServer()
         apxMsg() << tr("Server binded");
     retryBind = 0;
     emit binded();
-    announceTimer.start();
+    announceTimer.start(1000);
 }
 
 void DatalinkServer::newConnection()
