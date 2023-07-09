@@ -39,7 +39,13 @@
 #include <tcp_ports.h>
 #include <tcp_server.h>
 
+#include <uart/CobsDecoder.h>
+#include <uart/CobsEncoder.h>
+
 static xbus::tcp::Server *tcp = {};
+
+static CobsDecoder<> _rx_decoder;
+static CobsEncoder<> _tx_encoder;
 
 static bool enabled;
 
@@ -86,6 +92,12 @@ static XPLMDataTypeID xpl_type[xpl_channels_max];
 
 static uint8_t packet_buf[xbus::size_packet_max];
 
+static void send_packet(XbusStreamWriter *stream)
+{
+    auto cnt = _tx_encoder.encode(stream->buffer(), stream->pos());
+    tcp->write(_tx_encoder.data(), cnt);
+}
+
 static void send_bundle()
 {
     if (!tcp)
@@ -95,7 +107,8 @@ static void send_bundle()
     sim_pid.write(&stream);
     stream.write(&sim_bundle, sizeof(sim_bundle));
 
-    tcp->write_packet(stream.buffer(), stream.pos());
+    send_packet(&stream);
+
     sim_pid.seq++;
 }
 
@@ -106,7 +119,7 @@ static void request_controls()
 
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     cfg_pid.write(&stream);
-    tcp->write_packet(stream.buffer(), stream.pos());
+    send_packet(&stream);
     cfg_pid.seq++;
 }
 
@@ -336,10 +349,34 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
 
     do {
         while (1) {
-            size_t cnt = tcp->read_packet(packet_buf, sizeof(packet_buf));
-            if (!cnt)
+            size_t rcnt = tcp->read(packet_buf, sizeof(packet_buf));
+            if (!rcnt)
                 break;
-            parse_rx(packet_buf, cnt);
+
+            const uint8_t *data = packet_buf;
+            while (rcnt > 0) {
+                auto dcnt = _rx_decoder.decode(data, rcnt);
+
+                switch (_rx_decoder.status()) {
+                case SerialDecoder::PacketAvailable: {
+                    data = static_cast<const uint8_t *>(data) + dcnt;
+                    parse_rx(_rx_decoder.data(), _rx_decoder.size());
+                    break;
+                }
+
+                case SerialDecoder::DataAccepted:
+                case SerialDecoder::DataDropped:
+                    rcnt = 0;
+                    break;
+                default:
+                    break;
+                }
+
+                if (rcnt > dcnt)
+                    rcnt -= dcnt;
+                else
+                    rcnt = 0;
+            }
         }
 
         if (!xpl_channels) {

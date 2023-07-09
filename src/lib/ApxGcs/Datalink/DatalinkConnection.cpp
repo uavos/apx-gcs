@@ -87,18 +87,49 @@ void DatalinkConnection::updateTitle()
     setTitle(s);
 }
 
+void DatalinkConnection::setEncoder(SerialEncoder *encoder)
+{
+    _encoder = encoder;
+}
+void DatalinkConnection::setDecoder(SerialDecoder *decoder)
+{
+    _decoder = decoder;
+    resetDataStream();
+}
+void DatalinkConnection::resetDataStream()
+{
+    if (_decoder)
+        _decoder->reset();
+    _rx_fifo.reset();
+}
+
 void DatalinkConnection::sendPacket(QByteArray packet, quint16 network)
 {
     if (!(activated() && active()))
         return;
     if (!(m_txNetwork & network))
         return;
-    write(packet);
+
+    if (!_encoder) {
+        qDebug() << "TX no encoder";
+        return;
+    }
+
+    auto cnt = _encoder->encode(packet.data(), static_cast<size_t>(packet.size()));
+    if (cnt <= 0) {
+        apxConsoleW() << "TX encode:" << packet.size() << cnt;
+        return;
+    }
+
+    write(QByteArray((const char *) _encoder->data(), cnt));
+
+    // qDebug() << "TX" << wcnt << cnt << packet.size()
+    //          << QString::number(apx::crc32(packet.data(), packet.size()), 16);
 }
 
 void DatalinkConnection::readDataAvailable()
 {
-    QByteArray packet = read();
+    QByteArray packet = _readPacket();
     if (packet.isEmpty())
         return;
     if (!(activated() && active()))
@@ -111,6 +142,70 @@ void DatalinkConnection::readDataAvailable()
 
     emit packetReceived(packet, m_rxNetwork);
 }
+QByteArray DatalinkConnection::_readPacket()
+{
+    // first return already decoded packets
+    if (!_rx_fifo.empty()) {
+        // qDebug() << "RX FIFO" << _rx_fifo.used();
+        QTimer::singleShot(0, this, &DatalinkConnection::readDataAvailable);
+        return _rx_pkt.left(_rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size()));
+    }
+
+    // read PHY and continue decoding
+    auto data = read();
+    if (data.size() <= 0) {
+        return {};
+    }
+
+    // schedule reads for next packet
+    QTimer::singleShot(0, this, &DatalinkConnection::readDataAvailable);
+
+    if (!_decoder) {
+        qDebug() << "RX no decoder";
+        return {};
+    }
+
+    // read bytes count (rcnt) might be more than one packet
+    // decode all packets from raw data into fifo
+    const uint8_t *src = reinterpret_cast<const uint8_t *>(data.constData());
+    size_t cnt = data.size();
+    bool pkt = false;
+    while (cnt > 0) {
+        // feed the decoder
+        auto decoded_cnt = _decoder->decode(src, cnt);
+        // qDebug() << "RX" << decoded_cnt << cnt;
+
+        if (decoded_cnt <= 0)
+            qWarning() << "RX decode:" << cnt << decoded_cnt;
+
+        src += decoded_cnt;
+        cnt -= decoded_cnt;
+
+        // check if some pkt is available
+        switch (_decoder->status()) {
+        case SerialDecoder::PacketAvailable:
+            pkt = true;
+            // qDebug() << "RX PKT" << decoder->size();
+
+            if (!_rx_fifo.write_packet(_decoder->data(), _decoder->size())) {
+                qWarning() << "RX fifo full";
+            }
+            break;
+        case SerialDecoder::DataAccepted:
+        case SerialDecoder::DataDropped:
+            break;
+        default:
+            apxConsoleW() << "RX err:" << _decoder->status() << data.size() << decoded_cnt;
+            break;
+        }
+    }
+
+    if (!pkt)
+        return {};
+
+    return _rx_pkt.left(_rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size()));
+}
+
 void DatalinkConnection::opened()
 {
     if (!activated()) {
@@ -121,6 +216,7 @@ void DatalinkConnection::opened()
 }
 void DatalinkConnection::closed()
 {
+    resetDataStream();
     setActive(false);
 }
 

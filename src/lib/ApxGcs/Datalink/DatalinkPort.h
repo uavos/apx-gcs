@@ -24,6 +24,7 @@
 #include "DatalinkConnection.h"
 #include <Fact/Fact.h>
 #include <QtCore>
+
 class DatalinkPorts;
 class Datalink;
 

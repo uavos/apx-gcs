@@ -24,6 +24,9 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
+#include <fifo.hpp>
+#include <uart/SerialCodec.h>
+
 class DatalinkConnection : public Fact
 {
     Q_OBJECT
@@ -48,12 +51,27 @@ public:
                                 quint16 rxNetwork,
                                 quint16 txNetwork);
 
+    void setEncoder(SerialEncoder *encoder);
+    void setDecoder(SerialDecoder *decoder);
+
 protected:
+    // helpers
+    bool isControlPacket(const QByteArray &packet) const;
+    virtual void resetDataStream();
+
+    // interface with codec implementation
     virtual QByteArray read();
     virtual void write(const QByteArray &packet);
 
+    SerialEncoder *_encoder{};
+    SerialDecoder *_decoder{};
+
 private:
-    bool isControlPacket(const QByteArray &packet) const;
+    // receiver fifo and packets queue
+    static constexpr size_t RXBUF_SIZE{xbus::size_packet_max * 8};
+    apx::fifo_packet_static<RXBUF_SIZE> _rx_fifo;
+    QByteArray _rx_pkt{xbus::size_packet_max, '\0'};
+    QByteArray _readPacket();
 
 protected slots:
     void updateDescr();

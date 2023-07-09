@@ -21,7 +21,8 @@
  */
 #include "DatalinkServer.h"
 #include "Datalink.h"
-#include "DatalinkTcpSocket.h"
+#include "DatalinkTcp.h"
+#include "DatalinkUdp.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
@@ -45,7 +46,7 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     url.setHost(App::hostname());
     url.setPort(TCP_PORT_SERVER);
     url.setPath("/");
-    announceString = QString("service:gcs:").append(url.toString()).toUtf8();
+    announceHttpString = QString("service:gcs:").append(url.toString()).toUtf8();
 
     qDebug() << "service:gcs:" + url.toString();
 
@@ -54,11 +55,19 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
                       tr("HTTP server"),
                       tr("Port").append(": ").append(QString::number(TCP_PORT_SERVER)),
                       Bool | PersistentValue,
-                      "access-point-network");
+                      "code-tags");
     f_http->setDefaultValue(true);
     connect(f_http, &Fact::triggered, this, []() {
         QDesktopServices::openUrl(QUrl(QString("http://127.0.0.1:%1/").arg(TCP_PORT_SERVER)));
     });
+
+    f_udp = new Fact(this,
+                     "udp",
+                     tr("UDP datalink"),
+                     tr("Port").append(": ").append(QString::number(UDP_PORT_GCS_TLM)),
+                     Bool | PersistentValue,
+                     "access-point-network");
+    f_udp->setDefaultValue(true);
 
     f_extctr = new Fact(this,
                         "extctr",
@@ -91,16 +100,21 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     httpServer = new QTcpServer(this);
     connect(httpServer, &QTcpServer::newConnection, this, &DatalinkServer::newHttpConnection);
 
+    udpServer = new QUdpSocket(this);
+    connect(udpServer, &QUdpSocket::readyRead, this, &DatalinkServer::udpReadyRead);
+
     //discovery announce
     udpAnnounce = new QUdpSocket(this);
     announceTimer.setSingleShot(true);
     announceTimer.setInterval(5333);
     connect(&announceTimer, &QTimer::timeout, this, &DatalinkServer::announce);
 
-    connect(f_http, &Fact::valueChanged, this, &DatalinkServer::serverActiveChanged);
+    connect(f_http, &Fact::valueChanged, this, &DatalinkServer::httpActiveChanged);
+    connect(f_udp, &Fact::valueChanged, this, &DatalinkServer::udpActiveChanged);
 
     updateStatus();
-    QTimer::singleShot(500, this, &DatalinkServer::serverActiveChanged);
+    QTimer::singleShot(500, this, &DatalinkServer::httpActiveChanged);
+    QTimer::singleShot(500, this, &DatalinkServer::udpActiveChanged);
 }
 
 void DatalinkServer::updateStatus()
@@ -110,27 +124,39 @@ void DatalinkServer::updateStatus()
     setValue(cnt > 0 ? QString::number(cnt) : "");
 }
 
-void DatalinkServer::serverActiveChanged()
+void DatalinkServer::httpActiveChanged()
 {
-    bool active = f_http->value().toBool();
-    if (!active) {
+    if (!f_http->value().toBool()) {
         f_alloff->trigger();
         httpServer->close();
-        setActive(false);
+        f_http->setActive(false);
         announceTimer.stop();
-        apxMsg() << tr("Datalink server disabled");
+        apxMsg() << tr("HTTP server disabled");
         return;
     }
     //activate server
-    apxMsg() << tr("Datalink server enabled");
-    retryBind = 0;
+    apxMsg() << tr("HTTP server enabled");
+    retryBindHttp = 0;
     tryBindHttpServer();
+}
+void DatalinkServer::udpActiveChanged()
+{
+    if (!f_udp->value().toBool()) {
+        udpServer->close();
+        f_udp->setActive(false);
+        apxMsg() << tr("UDP datalink disabled");
+        return;
+    }
+    //activate server
+    apxMsg() << tr("UDP datalink enabled");
+    retryBindUdp = 0;
+    tryBindUdpServer();
 }
 
 void DatalinkServer::announce(void)
 {
-    if (active()) {
-        udpAnnounce->writeDatagram(announceString, QHostAddress::Broadcast, UDP_PORT_DISCOVER);
+    if (f_http->active()) {
+        udpAnnounce->writeDatagram(announceHttpString, QHostAddress::Broadcast, UDP_PORT_DISCOVER);
         // qDebug() << "announce";
         announceTimer.start();
     }
@@ -141,48 +167,93 @@ void DatalinkServer::tryBindHttpServer()
     if (!f_http->value().toBool())
         return;
     if (!httpServer->listen(QHostAddress::Any, TCP_PORT_SERVER)) {
-        setActive(false);
+        f_http->setActive(false);
         //server port is busy by another local GCU
-        if (++retryBind <= 1) {
+        if (++retryBindHttp <= 1) {
             apxMsgW() << tr("Unable to start server").append(":") << httpServer->errorString();
         }
-        int to = 1000 + (retryBind / 10) * 1000;
+        int to = 1000 + (retryBindHttp / 10) * 1000;
         QTimer::singleShot(to > 10000 ? 10000 : to, this, &DatalinkServer::tryBindHttpServer);
         emit bindError();
         return;
     }
-    setActive(true);
-    if (retryBind)
-        apxMsg() << tr("Server binded");
-    retryBind = 0;
+    f_http->setActive(true);
+    if (retryBindHttp)
+        apxMsg() << tr("HTTP Server binded");
+    retryBindHttp = 0;
     emit binded();
     announceTimer.start(1000);
+}
+void DatalinkServer::tryBindUdpServer()
+{
+    if (!f_udp->value().toBool())
+        return;
+    if (!udpServer->bind(QHostAddress::AnyIPv4, UDP_PORT_GCS_TLM)) {
+        f_udp->setActive(false);
+        //server port is busy by another local GCU
+        if (++retryBindUdp <= 1) {
+            apxMsgW() << tr("Unable to start server").append(":") << udpServer->errorString();
+        }
+        int to = 1000 + (retryBindUdp / 10) * 1000;
+        QTimer::singleShot(to > 10000 ? 10000 : to, this, &DatalinkServer::tryBindUdpServer);
+        emit bindError();
+        return;
+    }
+    f_udp->setActive(true);
+    if (retryBindUdp)
+        apxMsg() << tr("UDP Server binded");
+    retryBindUdp = 0;
 }
 
 void DatalinkServer::newHttpConnection()
 {
     while (httpServer->hasPendingConnections()) {
         QTcpSocket *socket = httpServer->nextPendingConnection();
-        if (!(active() && f_http->value().toBool())) {
+        if (!(f_http->active() && f_http->value().toBool())) {
             socket->disconnectFromHost();
             continue;
         }
-        //check loops
-        /*DatalinkHost *host=f_datalink->f_hosts->hostByAddr(socket->peerAddress());
-    if(host && host->active()){
-      apxMsgW()<<tr("Client refused").append(":")<<socket->peerAddress().toString();
-      socket->disconnectFromHost();
-      continue;
-    }*/
-        //new DatalinkClient(this,socket);
-
-        DatalinkTcpSocket *c = new DatalinkTcpSocket(f_clients, socket, 0, 0);
+        DatalinkTcp *c = new DatalinkTcp(f_clients, socket, 0, 0);
         updateClientsNetworkMode();
         c->setTitle(socket->peerAddress().toString());
         connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
-        connect(c, &DatalinkTcpSocket::httpRequest, this, &DatalinkServer::httpRequest);
+        connect(c, &DatalinkTcp::httpRequest, this, &DatalinkServer::httpRequest);
         datalink->addConnection(c);
         c->setActivated(true);
+    }
+}
+void DatalinkServer::udpReadyRead()
+{
+    while (udpServer->hasPendingDatagrams()) {
+        if (!(f_udp->active() && f_udp->value().toBool())) {
+            udpServer->receiveDatagram(0);
+            continue;
+        }
+
+        QNetworkDatagram datagram = udpServer->receiveDatagram();
+        if (!datagram.isValid())
+            continue;
+
+        const auto data = datagram.data();
+
+        /*for (auto i : f_clients->facts()) {
+            auto c = static_cast<DatalinkUdp *>(i);
+            if (c->hostAddress == datagram.senderAddress()) {
+                c->updateTimeout();
+                c->write(data);
+                continue;
+            }
+        }*/
+
+        // //register or update host
+        // QUrl url(data.mid(hdr.size()), QUrl::StrictMode);
+        // if (!url.isValid())
+        //     continue;
+
+        // QString saddr = datagram.senderAddress().toString();
+        // url.setHost(saddr.mid(saddr.lastIndexOf(':') + 1));
+        // DatalinkRemote *c = registerHost(url);
+        // c->updateTimeout();
     }
 }
 
@@ -198,7 +269,7 @@ void DatalinkServer::updateClientsNetworkMode()
         rxNetwork = 0;
 
     for (int i = 0; i < f_clients->size(); ++i) {
-        DatalinkConnection *c = static_cast<DatalinkConnection *>(f_clients->child(i));
+        auto c = static_cast<DatalinkConnection *>(f_clients->child(i));
         c->setRxNetwork(rxNetwork);
         c->setTxNetwork(txNetwork);
         c->setBlockControls(rxNetwork && (!extctr));

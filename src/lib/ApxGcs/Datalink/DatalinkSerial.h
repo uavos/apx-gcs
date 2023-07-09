@@ -39,8 +39,9 @@ class DatalinkSerial : public DatalinkConnection
 
 public:
     explicit DatalinkSerial(Fact *parent, QString devName, uint baud);
+    ~DatalinkSerial() override;
 
-    enum CodecType { COBS, RAW };
+    enum CodecType { COBS };
     Q_ENUM(CodecType)
 
     void setDevName(QString v);
@@ -65,14 +66,7 @@ private:
     QTimer openTimer;
     int scanIdx;
 
-    SerialEncoder *encoder{};
-    SerialDecoder *decoder{};
-
-    // receiver fifo and packets queue
-    static constexpr size_t rxbuf_size{xbus::size_packet_max * 8};
-    quint8 _rxbuf_raw[rxbuf_size / 2];
-    apx::fifo_packet_static<rxbuf_size> _rx_fifo;
-    QByteArray _rx_pkt{xbus::size_packet_max, '\0'};
+    quint8 _rxbuf_raw[xbus::size_packet_max * 2];
 
 protected:
     //DatalinkConnection overrided

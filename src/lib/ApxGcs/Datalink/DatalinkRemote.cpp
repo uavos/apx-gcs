@@ -29,10 +29,10 @@
 #include <tcp_ports.h>
 
 DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
-    : DatalinkTcpSocket(parent,
-                        new QTcpSocket(),
-                        Datalink::SERVERS | Datalink::LOCAL,
-                        Datalink::SERVERS | Datalink::CLIENTS | Datalink::LOCAL)
+    : DatalinkTcp(parent,
+                  new QTcpSocket(),
+                  Datalink::SERVERS | Datalink::LOCAL,
+                  Datalink::SERVERS | Datalink::CLIENTS | Datalink::LOCAL)
     , datalink(datalink)
     , retry(0)
 {
@@ -50,8 +50,8 @@ DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
         }
     });
 
-    connect(this, &DatalinkTcpSocket::disconnected, this, &DatalinkRemote::reconnect);
-    connect(this, &DatalinkTcpSocket::error, this, &DatalinkRemote::reconnect);
+    connect(this, &DatalinkTcp::disconnected, this, &DatalinkRemote::reconnect);
+    connect(this, &DatalinkTcp::error, this, &DatalinkRemote::reconnect);
 
     reconnectTimer.setSingleShot(true);
     connect(&reconnectTimer, &QTimer::timeout, this, &DatalinkRemote::open);
@@ -64,10 +64,10 @@ void DatalinkRemote::setRemoteUrl(QUrl url)
     //qDebug()<<url<<url.isValid()<<url.toString();
     url = fixUrl(url);
     //qDebug()<<url.scheme()<<url.host()<<url.port()<<url.authority()<<url.isValid();
-    if (url.scheme() == "tcp" && url.port() == TCP_PORT_SERVER)
-        setUrl(QString("%1@%2").arg(url.userInfo()).arg(url.host()));
-    else
-        setUrl(url.toString());
+    // if (url.scheme() == "tcp" && url.port() == TCP_PORT_SERVER)
+    //     setUrl(QString("%1@%2").arg(url.userInfo()).arg(url.host()));
+    // else
+    setUrl(url.toString());
     hostAddress = QHostAddress(url.host());
     hostPort = static_cast<quint16>(url.port());
 }
@@ -120,7 +120,7 @@ void DatalinkRemote::open()
 {
     //check if already present in connections
     for (int i = 0; i < datalink->connections.size(); ++i) {
-        DatalinkTcpSocket *c = qobject_cast<DatalinkTcpSocket *>(datalink->connections.at(i));
+        DatalinkTcp *c = qobject_cast<DatalinkTcp *>(datalink->connections.at(i));
         if (!c)
             continue;
         if (!c->active())
