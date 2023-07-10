@@ -37,6 +37,12 @@ DatalinkUdp::DatalinkUdp(Fact *parent,
     , _udp(socket)
 {
     setActive(true);
+    setStatus("UDP");
+
+    connect(this, &Fact::activeChanged, this, [this]() {
+        if (!active())
+            socketDisconnected();
+    });
 }
 
 void DatalinkUdp::socketDisconnected()
@@ -44,7 +50,6 @@ void DatalinkUdp::socketDisconnected()
     DatalinkSocket::socketDisconnected();
 
     disconnect(_udp, nullptr, this, nullptr);
-    _udp->deleteLater();
     deleteFact();
 }
 

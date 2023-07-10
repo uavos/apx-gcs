@@ -47,8 +47,13 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     url.setPort(TCP_PORT_SERVER);
     url.setPath("/");
     announceHttpString = QString("service:gcs:").append(url.toString()).toUtf8();
+    qDebug() << announceHttpString;
 
-    qDebug() << "service:gcs:" + url.toString();
+    url.setScheme("udp");
+    url.setPort(UDP_PORT_GCS_TLM);
+    url.setPath("");
+    announceUdpString = QString("service:gcs:").append(url.toString()).toUtf8();
+    qDebug() << announceUdpString;
 
     f_http = new Fact(this,
                       "http",
@@ -127,10 +132,10 @@ void DatalinkServer::updateStatus()
 void DatalinkServer::httpActiveChanged()
 {
     if (!f_http->value().toBool()) {
-        f_alloff->trigger();
+        for (auto i : f_clients->findFacts<DatalinkTcp>())
+            i->close();
         httpServer->close();
         f_http->setActive(false);
-        announceTimer.stop();
         apxMsg() << tr("HTTP server disabled");
         return;
     }
@@ -157,17 +162,25 @@ void DatalinkServer::udpActiveChanged()
 
 void DatalinkServer::announce(void)
 {
-    if (f_http->active()) {
-        udpAnnounce->writeDatagram(announceHttpString, QHostAddress::Broadcast, UDP_PORT_DISCOVER);
-        // qDebug() << "announce";
-        announceTimer.start();
-    }
+    QStringList st;
+    if (f_http->active())
+        st << announceHttpString;
+    if (f_udp->active())
+        st << announceUdpString;
+
+    if (!st.size())
+        return;
+
+    // qDebug() << "announce" << st;
+    udpAnnounce->writeDatagram(st.join('\n').toUtf8(), QHostAddress::Broadcast, UDP_PORT_DISCOVER);
+    announceTimer.start(30000);
 }
 
 void DatalinkServer::tryBindHttpServer()
 {
     if (!f_http->value().toBool())
         return;
+
     if (!httpServer->listen(QHostAddress::Any, TCP_PORT_SERVER)) {
         f_http->setActive(false);
         //server port is busy by another local GCU
@@ -179,6 +192,7 @@ void DatalinkServer::tryBindHttpServer()
         emit bindError();
         return;
     }
+
     f_http->setActive(true);
     if (retryBindHttp)
         apxMsg() << tr("HTTP Server binded");
@@ -190,6 +204,7 @@ void DatalinkServer::tryBindUdpServer()
 {
     if (!f_udp->value().toBool())
         return;
+
     if (!udpServer->bind(QHostAddress::AnyIPv4, UDP_PORT_GCS_TLM)) {
         f_udp->setActive(false);
         //server port is busy by another local GCU
@@ -201,10 +216,12 @@ void DatalinkServer::tryBindUdpServer()
         emit bindError();
         return;
     }
+
     f_udp->setActive(true);
     if (retryBindUdp)
         apxMsg() << tr("UDP Server binded");
     retryBindUdp = 0;
+    announceTimer.start(1000);
 }
 
 void DatalinkServer::newHttpConnection()
@@ -258,7 +275,7 @@ void DatalinkServer::udpReadyRead()
 
         qDebug() << "new UDP connection" << c->title();
         updateClientsNetworkMode();
-        connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
+        connect(f_alloff, &Fact::triggered, c, [c]() { c->setActive(false); });
         datalink->addConnection(c);
         c->setActivated(true);
     }

@@ -57,6 +57,7 @@ private:
     QUdpSocket *udpAnnounce;
     QTimer announceTimer;
     QByteArray announceHttpString;
+    QByteArray announceUdpString;
 
 private slots:
     void updateStatus();

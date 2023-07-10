@@ -75,7 +75,7 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
 
 DatalinkRemote *DatalinkRemotes::registerHost(QUrl url)
 {
-    DatalinkRemote *c = remoteByAddr(QHostAddress(url.host()));
+    DatalinkRemote *c = findRemote(url);
     if (c)
         return c;
     c = new DatalinkRemote(f_servers, datalink, url);
@@ -85,15 +85,12 @@ DatalinkRemote *DatalinkRemotes::registerHost(QUrl url)
     datalink->addConnection(c);
     return c;
 }
-DatalinkRemote *DatalinkRemotes::remoteByAddr(QHostAddress addr)
+DatalinkRemote *DatalinkRemotes::findRemote(QUrl url)
 {
-    if (addr.isNull())
-        return nullptr;
-    for (int i = 0; i < f_servers->size(); ++i) {
-        DatalinkRemote *c = static_cast<DatalinkRemote *>(f_servers->child(i));
-        if (!c->isEqual(addr))
+    for (auto i : f_servers->findFacts<DatalinkRemote>()) {
+        if (!i->isEqual(QHostAddress(url.host())))
             continue;
-        return c;
+        return i;
     }
     return nullptr;
 }
@@ -104,12 +101,14 @@ void DatalinkRemotes::discover(void)
         if (udpDiscover->state() == QAbstractSocket::BoundState)
             return;
         if (udpDiscover->bind(QHostAddress::AnyIPv4, UDP_PORT_DISCOVER)) {
+            f_discover->setActive(true);
             qDebug() << "binded";
             return;
         }
         QTimer::singleShot(5000, this, &DatalinkRemotes::discover);
-        // apxConsoleW() << "udp discover bind retry" << udpDiscover->errorString();
+        apxConsoleW() << "udp discover bind retry" << udpDiscover->errorString();
     } else {
+        f_discover->setActive(false);
         if (udpDiscover->state() != QAbstractSocket::UnconnectedState) {
             udpDiscover->close();
             qDebug() << "closed";
@@ -118,12 +117,12 @@ void DatalinkRemotes::discover(void)
 }
 void DatalinkRemotes::discoverRead(void)
 {
-    // service:gcs:tcp://username@hostname:port/
+    // service:gcs:tcp://username@hostname:port/[\n<other service>]
     const QByteArray hdr("service:gcs:");
     while (udpDiscover->hasPendingDatagrams()) {
         qint64 sz = udpDiscover->pendingDatagramSize();
         // qDebug() << sz;
-        if (sz < hdr.size() || sz > (hdr.size() * 10)) {
+        if (sz < hdr.size()) {
             qDebug() << "discarded";
             udpDiscover->receiveDatagram(0); // discard datagram
             continue;
@@ -132,25 +131,27 @@ void DatalinkRemotes::discoverRead(void)
         if (!datagram.isValid())
             continue;
 
-        const auto data = datagram.data();
+        // qDebug() << QString(datagram.data());
 
-        if (!data.startsWith(hdr))
-            continue;
+        // if (datalink->f_server->active() && DatalinkTcp::isLocalHost(datagram.senderAddress()))
+        //     continue;
 
-        if (datalink->f_server->active() && DatalinkTcp::isLocalHost(datagram.senderAddress()))
-            continue;
+        for (auto data : datagram.data().split('\n')) {
+            // qDebug() << data;
 
-        // qDebug() << QString(data);
+            if (!data.startsWith(hdr))
+                continue;
 
-        //register or update host
-        QUrl url(data.mid(hdr.size()), QUrl::StrictMode);
-        if (!url.isValid())
-            continue;
+            //register or update host
+            QUrl url(data.mid(hdr.size()), QUrl::StrictMode);
+            if (!url.isValid())
+                continue;
 
-        QString saddr = datagram.senderAddress().toString();
-        url.setHost(saddr.mid(saddr.lastIndexOf(':') + 1));
-        DatalinkRemote *c = registerHost(url);
-        c->updateTimeout();
+            QString saddr = datagram.senderAddress().toString();
+            url.setHost(saddr.mid(saddr.lastIndexOf(':') + 1));
+            DatalinkRemote *c = registerHost(url);
+            c->updateTimeout();
+        }
     }
 }
 
