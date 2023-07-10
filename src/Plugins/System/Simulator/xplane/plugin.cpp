@@ -37,12 +37,13 @@
 #include <XbusPacket.h>
 
 #include <tcp_ports.h>
-#include <tcp_server.h>
+
+#include <udp_client.h>
 
 #include <serial/CobsDecoder.h>
 #include <serial/CobsEncoder.h>
 
-static xbus::tcp::tcp_server *tcp = {};
+static xbus::tcp::udp_client udp;
 
 static CobsDecoder<> _rx_decoder;
 static CobsEncoder<> _tx_encoder;
@@ -94,13 +95,11 @@ static uint8_t packet_buf[xbus::size_packet_max];
 
 static void send_packet(XbusStreamWriter *stream)
 {
-    if (!tcp)
-        return;
-    if (!tcp->is_connected())
+    if (!udp.is_connected())
         return;
 
     auto cnt = _tx_encoder.encode(stream->buffer(), stream->pos());
-    tcp->write(_tx_encoder.data(), cnt);
+    udp.write(_tx_encoder.data(), cnt);
 }
 
 static void send_bundle()
@@ -334,16 +333,23 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
                                 int inCounter,
                                 void *inRefcon)
 {
-    if (!(enabled && tcp && tcp->is_connected())) {
+    if (!(enabled && udp.is_connected())) {
         xpl_channels = 0;
         return 1.f;
     }
 
     do {
         for (;;) {
-            size_t rcnt = tcp->read(packet_buf, sizeof(packet_buf));
+            if (!udp.dataAvailable())
+                break;
+
+            // printf("udp.dataAvailable\n");
+
+            size_t rcnt = udp.read(packet_buf, sizeof(packet_buf));
             if (!rcnt)
                 break;
+
+            // printf("udp.read: %lu\n", rcnt);
 
             const uint8_t *data = packet_buf;
             while (rcnt > 0) {
@@ -387,9 +393,7 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
 
 PLUGIN_API void XPluginStop(void)
 {
-    if (tcp) {
-        tcp->close();
-    }
+    udp.close();
 
     enabled = false;
 }
@@ -397,9 +401,7 @@ PLUGIN_API void XPluginDisable(void)
 {
     printf("X-Plane plugin disabled\n");
 
-    if (tcp) {
-        tcp->close();
-    }
+    udp.close();
 
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 0);
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 0);
@@ -415,13 +417,9 @@ PLUGIN_API int XPluginEnable(void)
 {
     printf("X-Plane plugin enabled\n");
 
-    if (!tcp) {
-        tcp = new xbus::tcp::tcp_server();
-    }
-
-    if (!tcp->is_connected()) {
-        tcp->set_host("127.0.0.1", TCP_PORT_SIM, "/sim");
-        tcp->connect();
+    if (!udp.is_connected()) {
+        udp.set_dest("127.0.0.1", UDP_PORT_AP_SNS);
+        udp.bind(UDP_PORT_SIM_CTR);
     }
 
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 1);
