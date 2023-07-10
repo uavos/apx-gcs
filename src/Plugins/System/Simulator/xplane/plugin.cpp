@@ -39,10 +39,10 @@
 #include <tcp_ports.h>
 #include <tcp_server.h>
 
-#include <uart/CobsDecoder.h>
-#include <uart/CobsEncoder.h>
+#include <serial/CobsDecoder.h>
+#include <serial/CobsEncoder.h>
 
-static xbus::tcp::Server *tcp = {};
+static xbus::tcp::tcp_server *tcp = {};
 
 static CobsDecoder<> _rx_decoder;
 static CobsEncoder<> _tx_encoder;
@@ -94,15 +94,17 @@ static uint8_t packet_buf[xbus::size_packet_max];
 
 static void send_packet(XbusStreamWriter *stream)
 {
+    if (!tcp)
+        return;
+    if (!tcp->is_connected())
+        return;
+
     auto cnt = _tx_encoder.encode(stream->buffer(), stream->pos());
     tcp->write(_tx_encoder.data(), cnt);
 }
 
 static void send_bundle()
 {
-    if (!tcp)
-        return;
-
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     sim_pid.write(&stream);
     stream.write(&sim_bundle, sizeof(sim_bundle));
@@ -114,9 +116,6 @@ static void send_bundle()
 
 static void request_controls()
 {
-    if (!tcp)
-        return;
-
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     cfg_pid.write(&stream);
     send_packet(&stream);
@@ -271,13 +270,6 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     printf("--------------------------------------\n");
     fflush(stdout);
 
-    if (!tcp) {
-        tcp = new xbus::tcp::Server();
-    }
-
-    tcp->set_host("127.0.0.1", TCP_PORT_SIM, "/sim");
-    tcp->connect();
-
     strcpy(outName, "UAVOS Autopilot SIL plugin");
     strcpy(outSig, "www.uavos.com");
     strcpy(outDesc, "Exchange data with autopilot for SIL/HIL simulation (v" VERSION ").");
@@ -348,7 +340,7 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
     }
 
     do {
-        while (1) {
+        for (;;) {
             size_t rcnt = tcp->read(packet_buf, sizeof(packet_buf));
             if (!rcnt)
                 break;
@@ -396,17 +388,17 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
 PLUGIN_API void XPluginStop(void)
 {
     if (tcp) {
-        delete tcp;
-        tcp = {};
+        tcp->close();
     }
 
     enabled = false;
 }
 PLUGIN_API void XPluginDisable(void)
 {
+    printf("X-Plane plugin disabled\n");
+
     if (tcp) {
-        delete tcp;
-        tcp = {};
+        tcp->close();
     }
 
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 0);
@@ -417,12 +409,21 @@ PLUGIN_API void XPluginDisable(void)
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 0);
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 0);
 
-    //server.close();
-
     enabled = false;
 }
 PLUGIN_API int XPluginEnable(void)
 {
+    printf("X-Plane plugin enabled\n");
+
+    if (!tcp) {
+        tcp = new xbus::tcp::tcp_server();
+    }
+
+    if (!tcp->is_connected()) {
+        tcp->set_host("127.0.0.1", TCP_PORT_SIM, "/sim");
+        tcp->connect();
+    }
+
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 1);
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 1);
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 1);

@@ -25,7 +25,7 @@
 #include <QtCore>
 
 #include <fifo.hpp>
-#include <uart/SerialCodec.h>
+#include <serial/SerialCodec.h>
 
 class DatalinkConnection : public Fact
 {

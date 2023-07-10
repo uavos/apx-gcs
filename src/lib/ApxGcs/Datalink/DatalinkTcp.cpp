@@ -28,47 +28,20 @@
 #include <crc.h>
 
 DatalinkTcp::DatalinkTcp(Fact *parent, QTcpSocket *socket, quint16 rxNetwork, quint16 txNetwork)
-    : DatalinkConnection(parent, "tcp#", "", "", rxNetwork, txNetwork)
-    , socket(socket)
+    : DatalinkSocket(parent, socket, socket->peerAddress(), socket->peerPort(), rxNetwork, txNetwork)
+    , _tcp(socket)
     , serverName(App::username())
 {
-    setEncoder(&_encoder);
-    setDecoder(&_decoder);
+    _serverClient = _tcp->isOpen();
 
-    _serverClient = socket->isOpen();
-
-    hostAddress = socket->peerAddress();
-    hostPort = socket->peerPort();
-
-    resetDataStream();
-
-    socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-
-    connect(socket,
-            &QTcpSocket::disconnected,
-            this,
-            &DatalinkTcp::socketDisconnected,
-            Qt::QueuedConnection);
-    connect(socket,
-            static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(
-                &QAbstractSocket::errorOccurred),
-            this,
-            &DatalinkTcp::socketError);
-    connect(socket,
-            static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(
-                &QAbstractSocket::errorOccurred),
-            this,
-            &DatalinkTcp::close,
-            Qt::QueuedConnection);
-    connect(socket, &QTcpSocket::stateChanged, this, &DatalinkTcp::socketStateChanged);
+    _tcp->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
     if (_serverClient) {
-        setUrl(socket->peerAddress().toString());
+        setUrl(_tcp->peerAddress().toString());
         setStatus("Waiting request");
-        connect(socket, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
+        connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
     } else {
-        connect(socket, &QTcpSocket::connected, this, &DatalinkTcp::requestDatalinkHeader);
+        connect(_tcp, &QTcpSocket::connected, this, &DatalinkTcp::requestDatalinkHeader);
     }
 }
 
@@ -82,51 +55,29 @@ void DatalinkTcp::connectToHost(QHostAddress host, quint16 port)
 {
     if (_serverClient)
         return;
-    hostAddress = host;
-    hostPort = port;
-    if (socket->isOpen())
-        socket->abort();
-    connect(socket, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
-    socket->connectToHost(host, port);
-}
-
-void DatalinkTcp::close()
-{
-    //qDebug()<<active();
-    //if(active())socket->disconnectFromHost();
-    socket->abort();
-    resetDataStream();
+    _hostAddress = host;
+    _hostPort = port;
+    if (_tcp->isOpen())
+        _tcp->abort();
+    connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
+    _tcp->connectToHost(host, port);
 }
 
 void DatalinkTcp::socketDisconnected()
 {
+    DatalinkSocket::socketDisconnected();
+
     //qDebug()<<_serverClient;
-    resetDataStream();
-    disconnect(socket, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
-    disconnect(socket, &QTcpSocket::readyRead, this, &DatalinkTcp::readDataAvailable);
-    closed();
-    emit disconnected();
+    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
+    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readDataAvailable);
+
     if (_serverClient) {
-        disconnect(socket, nullptr, this, nullptr);
-        socket->deleteLater();
+        disconnect(_tcp, nullptr, this, nullptr);
+        _tcp->deleteLater();
         //parentItem()->removeItem(this,false);
         //deleteLater();
         deleteFact();
     }
-}
-
-void DatalinkTcp::socketError(QAbstractSocket::SocketError socketError)
-{
-    Q_UNUSED(socketError)
-    if (data.datalink) {
-        apxMsg() << QString("#%1 (%2:%3)")
-                        .arg(socket->errorString())
-                        .arg(socket->peerAddress().toString())
-                        .arg(socket->peerPort());
-    }
-    setStatus("Error");
-
-    emit error();
 }
 
 void DatalinkTcp::readyReadHeader()
@@ -139,8 +90,8 @@ void DatalinkTcp::readyReadHeader()
         return;
     setStatus("Datalink");
     opened();
-    disconnect(socket, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
-    connect(socket, &QTcpSocket::readyRead, this, &DatalinkTcp::readDataAvailable);
+    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
+    connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readDataAvailable);
     readDataAvailable();
 }
 
@@ -156,11 +107,11 @@ bool DatalinkTcp::readHeader()
 {
     if (data.datalink)
         return true;
-    if (!socket->canReadLine())
+    if (!_tcp->canReadLine())
         return false;
     bool reqDone = false;
-    while (socket->canReadLine()) {
-        QString line = socket->readLine();
+    while (_tcp->canReadLine()) {
+        QString line = _tcp->readLine();
         //qDebug()<<"line:"<<line.trimmed();
         //qDebug()<<"line:"<<QByteArray(line.toUtf8()).toHex().toUpper();
         if (!line.trimmed().isEmpty()) {
@@ -183,7 +134,7 @@ bool DatalinkTcp::readHeader()
     if (!data.hdr.isEmpty())
         return true;
     //error
-    socket->close();
+    _tcp->close();
     return false;
 }
 
@@ -191,18 +142,18 @@ QByteArray DatalinkTcp::read()
 {
     if (!data.datalink)
         return {};
-    if (!(socket && socket->isOpen()))
+    if (!(_tcp && _tcp->isOpen()))
         return {};
-    return socket->read(xbus::size_packet_max * 2);
+    return _tcp->read(xbus::size_packet_max * 2);
 }
 
 void DatalinkTcp::write(const QByteArray &packet)
 {
     if (!data.datalink)
         return;
-    if (!(socket && socket->isOpen()))
+    if (!(_tcp && _tcp->isOpen()))
         return;
-    socket->write(packet);
+    _tcp->write(packet);
 }
 
 void DatalinkTcp::requestDatalinkHeader()
@@ -210,7 +161,7 @@ void DatalinkTcp::requestDatalinkHeader()
     setStatus("Requesting");
     data.datalink = false;
     data.hdr.clear();
-    QTextStream stream(socket);
+    QTextStream stream(_tcp);
     stream << "GET /datalink HTTP/1.0\r\n";
     if (!requestHdrHostName.isEmpty())
         stream << QString("Host: %1\r\n").arg(requestHdrHostName);
@@ -232,7 +183,7 @@ bool DatalinkTcp::checkServerRequestHeader()
             break;
         if (rlist.at(0) == "GET") {
             QString req = QUrl::fromPercentEncoding(rlist.at(1).toUtf8());
-            QTextStream stream(socket);
+            QTextStream stream(_tcp);
             stream.setAutoDetectUnicode(true);
             if (req == "/datalink") {
                 stream << "HTTP/1.0 200 OK\r\n";
@@ -241,14 +192,14 @@ bool DatalinkTcp::checkServerRequestHeader()
                 stream << "\r\n";
                 stream.flush();
                 QString sname;
-                if (isLocalHost(socket->peerAddress()))
+                if (isLocalHost(_tcp->peerAddress()))
                     sname = "localhost";
                 else
-                    sname = socket->peerAddress().toString();
-                //sname+=":"+QString::number(socket->peerPort());
+                    sname = _tcp->peerAddress().toString();
+                //sname+=":"+QString::number(_tcp->peerPort());
                 if (data.hdr_hash.contains("from"))
                     sname.prepend(data.hdr_hash.value("from") + "@");
-                /*if(socket->peerAddress()==extSocket->peerAddress()){
+                /*if(_tcp->peerAddress()==extSocket->peerAddress()){
                 apxConsoleW()<<tr("Client connection refused");
                 break;
                 }*/
@@ -272,8 +223,8 @@ bool DatalinkTcp::checkServerRequestHeader()
                 stream << "Content-Type: text/html; charset=\"utf-8\"\r\n";
                 stream << "\r\n";
                 stream << QString("<b>GCS HTTP Server</b> (%1:%2)")
-                              .arg(socket->localAddress().toString())
-                              .arg(socket->localPort());
+                              .arg(_tcp->localAddress().toString())
+                              .arg(_tcp->localPort());
                 if (req != "/")
                     stream << QString("<br>No service for '%1'").arg(req);
                 stream << "<hr size=1>";
@@ -288,14 +239,14 @@ bool DatalinkTcp::checkServerRequestHeader()
                               .arg("https://docs.uavos.com/");
             }
             stream.flush();
-            socket->close();
+            _tcp->close();
             return false;
         }
         //unknown request type
         break;
     }
     //error
-    socket->close();
+    _tcp->close();
     return false;
 }
 
@@ -314,8 +265,7 @@ bool DatalinkTcp::checkDatalinkResponseHeader()
             apxConsoleW() << data.hdr_hash.value("content-type");
             break;
         }
-        QString sname = socket->peerAddress().toString() + ":"
-                        + QString::number(socket->peerPort());
+        QString sname = _tcp->peerAddress().toString() + ":" + QString::number(_tcp->peerPort());
         if (data.hdr_hash.contains("server"))
             sname.prepend(data.hdr_hash.value("server") + "@");
         data.datalink = true;
@@ -324,46 +274,6 @@ bool DatalinkTcp::checkDatalinkResponseHeader()
         return true;
     }
     //error
-    socket->close();
+    _tcp->close();
     return false;
-}
-
-bool DatalinkTcp::isLocalHost(const QHostAddress address)
-{
-    //qDebug()<<QNetworkInterface::allAddresses();
-    if (address.isLoopback())
-        return true;
-    foreach (const QHostAddress &a, QNetworkInterface::allAddresses())
-        if (address.isEqual(a))
-            return true;
-    return false;
-}
-
-void DatalinkTcp::socketStateChanged(QAbstractSocket::SocketState socketState)
-{
-    QString s;
-    switch (socketState) {
-    //default:
-    case QAbstractSocket::UnconnectedState:
-        break;
-    case QAbstractSocket::HostLookupState:
-        s = "Lookup";
-        break;
-    case QAbstractSocket::ConnectingState:
-        s = "Connecting";
-        break;
-    case QAbstractSocket::ConnectedState:
-        s = "Connected";
-        break;
-    case QAbstractSocket::BoundState:
-        s = "Bound";
-        break;
-    case QAbstractSocket::ClosingState:
-        s = "Closing";
-        break;
-    case QAbstractSocket::ListeningState:
-        s = "Listening";
-        break;
-    }
-    setStatus(s);
 }

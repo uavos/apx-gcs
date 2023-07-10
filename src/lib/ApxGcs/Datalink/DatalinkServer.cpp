@@ -145,6 +145,8 @@ void DatalinkServer::udpActiveChanged()
         udpServer->close();
         f_udp->setActive(false);
         apxMsg() << tr("UDP datalink disabled");
+        for (auto i : f_clients->findFacts<DatalinkUdp>())
+            i->close();
         return;
     }
     //activate server
@@ -215,7 +217,6 @@ void DatalinkServer::newHttpConnection()
         }
         DatalinkTcp *c = new DatalinkTcp(f_clients, socket, 0, 0);
         updateClientsNetworkMode();
-        c->setTitle(socket->peerAddress().toString());
         connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
         connect(c, &DatalinkTcp::httpRequest, this, &DatalinkServer::httpRequest);
         datalink->addConnection(c);
@@ -230,30 +231,36 @@ void DatalinkServer::udpReadyRead()
             continue;
         }
 
-        QNetworkDatagram datagram = udpServer->receiveDatagram();
+        QNetworkDatagram datagram = udpServer->receiveDatagram(xbus::size_packet_max * 2);
         if (!datagram.isValid())
             continue;
 
-        const auto data = datagram.data();
+        // qDebug() << datagram.senderAddress() << datagram.senderPort() << datagram.data().size()
+        //          << datagram.isValid();
 
-        /*for (auto i : f_clients->facts()) {
-            auto c = static_cast<DatalinkUdp *>(i);
-            if (c->hostAddress == datagram.senderAddress()) {
-                c->updateTimeout();
-                c->write(data);
+        bool found = false;
+        for (auto i : f_clients->findFacts<DatalinkUdp>()) {
+            if (i->isEqual(datagram.senderAddress())) {
+                i->readDatagram(datagram);
+                found = true;
                 continue;
             }
-        }*/
+        }
+        if (found)
+            continue;
 
-        // //register or update host
-        // QUrl url(data.mid(hdr.size()), QUrl::StrictMode);
-        // if (!url.isValid())
-        //     continue;
+        DatalinkUdp *c = new DatalinkUdp(f_clients,
+                                         udpServer,
+                                         datagram.senderAddress(),
+                                         datagram.senderPort(),
+                                         0,
+                                         0);
 
-        // QString saddr = datagram.senderAddress().toString();
-        // url.setHost(saddr.mid(saddr.lastIndexOf(':') + 1));
-        // DatalinkRemote *c = registerHost(url);
-        // c->updateTimeout();
+        qDebug() << "new UDP connection" << c->title();
+        updateClientsNetworkMode();
+        connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
+        datalink->addConnection(c);
+        c->setActivated(true);
     }
 }
 
@@ -268,11 +275,10 @@ void DatalinkServer::updateClientsNetworkMode()
     if (!(extctr || extsrv))
         rxNetwork = 0;
 
-    for (int i = 0; i < f_clients->size(); ++i) {
-        auto c = static_cast<DatalinkConnection *>(f_clients->child(i));
-        c->setRxNetwork(rxNetwork);
-        c->setTxNetwork(txNetwork);
-        c->setBlockControls(rxNetwork && (!extctr));
-        c->setBlockService(rxNetwork && (!extsrv));
+    for (auto i : f_clients->findFacts<DatalinkConnection>()) {
+        i->setRxNetwork(rxNetwork);
+        i->setTxNetwork(txNetwork);
+        i->setBlockControls(rxNetwork && (!extctr));
+        i->setBlockService(rxNetwork && (!extsrv));
     }
 }

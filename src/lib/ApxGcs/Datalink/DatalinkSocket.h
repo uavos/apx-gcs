@@ -21,49 +21,43 @@
  */
 #pragma once
 
-#include "DatalinkSocket.h"
+#include "DatalinkConnection.h"
+#include <QtCore>
+#include <QtNetwork>
 
-class DatalinkTcp : public DatalinkSocket
+#include <serial/CobsDecoder.h>
+#include <serial/CobsEncoder.h>
+
+class DatalinkSocket : public DatalinkConnection
 {
     Q_OBJECT
 public:
-    explicit DatalinkTcp(Fact *parent, QTcpSocket *socket, quint16 rxNetwork, quint16 txNetwork);
+    explicit DatalinkSocket(Fact *parent,
+                            QAbstractSocket *socket,
+                            QHostAddress hostAddress,
+                            quint16 hostPort,
+                            quint16 rxNetwork,
+                            quint16 txNetwork);
+
+    static bool isLocalHost(const QHostAddress address);
+    bool isEqual(const QHostAddress address);
+
+    virtual void close() override;
 
 private:
-    QTcpSocket *_tcp;
-    bool _serverClient;
+    QAbstractSocket *_socket;
 
-    typedef struct
-    {
-        bool datalink;   //datalink stream connected
-        QStringList hdr; //http header response
-        QHash<QString, QString> hdr_hash;
-    } SocketData;
-
-    SocketData data;
-
-    QString serverName;
-    QString requestHdrHostName;
-
-    bool readHeader();
-
-    bool checkHeader();
-    bool checkServerRequestHeader();
-    bool checkDatalinkResponseHeader();
+    CobsDecoder<> _dec;
+    CobsEncoder<> _enc;
 
 protected:
-    void connectToHost(QHostAddress host, quint16 port);
+    QHostAddress _hostAddress;
+    quint16 _hostPort;
 
-    //DatalinkConnection overrided
-    void resetDataStream() override;
-
-    QByteArray read() override;
-    void write(const QByteArray &packet) override;
-
-    void socketDisconnected() override;
-
-    void readyReadHeader();
-    void requestDatalinkHeader();
+protected slots:
+    virtual void socketDisconnected();
+    virtual void socketError(QAbstractSocket::SocketError socketError);
+    virtual void socketStateChanged(QAbstractSocket::SocketState socketState);
 
 signals:
     void httpRequest(QTextStream &stream, QString req, bool *ok);

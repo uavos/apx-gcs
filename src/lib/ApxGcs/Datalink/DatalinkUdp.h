@@ -21,44 +21,29 @@
  */
 #pragma once
 
-#include "DatalinkConnection.h"
-#include <QtCore>
-#include <QtNetwork>
+#include "DatalinkSocket.h"
 
-class DatalinkUdp : public DatalinkConnection
+class DatalinkUdp : public DatalinkSocket
 {
     Q_OBJECT
 public:
     explicit DatalinkUdp(Fact *parent,
-                         QAbstractSocket *socket,
+                         QUdpSocket *socket,
                          QHostAddress hostAddress,
                          quint16 hostPort,
                          quint16 rxNetwork,
                          quint16 txNetwork);
 
-    static bool isLocalHost(const QHostAddress address);
+    void readDatagram(QNetworkDatagram datagram);
 
 private:
-    QAbstractSocket *_socket;
-
-    QHostAddress _hostAddress;
-    quint16 _hostPort;
+    QUdpSocket *_udp;
+    QNetworkDatagram _read_datagram;
 
 protected:
     //DatalinkConnection overrided
-    virtual void close() override;
     virtual QByteArray read() override;
     virtual void write(const QByteArray &packet) override;
 
-    // interface
-
-private slots:
-    void socketDisconnected();
-    void socketError(QAbstractSocket::SocketError socketError);
-    void socketStateChanged(QAbstractSocket::SocketState socketState);
-
-signals:
-    void httpRequest(QTextStream &stream, QString req, bool *ok);
-    void disconnected();
-    void error();
+    void socketDisconnected() override;
 };

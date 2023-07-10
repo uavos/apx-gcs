@@ -26,7 +26,6 @@
 #include <XbusPacket.h>
 
 #include <fifo.hpp>
-#include <uart/SerialCodec.h>
 
 #include <QSerialPort>
 #include <QSerialPortInfo>

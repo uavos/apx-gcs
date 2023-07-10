@@ -91,7 +91,7 @@ DatalinkRemote *DatalinkRemotes::remoteByAddr(QHostAddress addr)
         return nullptr;
     for (int i = 0; i < f_servers->size(); ++i) {
         DatalinkRemote *c = static_cast<DatalinkRemote *>(f_servers->child(i));
-        if (!c->hostAddress.isEqual(addr))
+        if (!c->isEqual(addr))
             continue;
         return c;
     }

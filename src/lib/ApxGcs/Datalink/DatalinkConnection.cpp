@@ -129,18 +129,24 @@ void DatalinkConnection::sendPacket(QByteArray packet, quint16 network)
 
 void DatalinkConnection::readDataAvailable()
 {
-    QByteArray packet = _readPacket();
-    if (packet.isEmpty())
-        return;
-    if (!(activated() && active()))
-        return;
-    bool ctr = isControlPacket(packet);
-    if (m_blockControls && ctr)
-        return;
-    if (m_blockService && (!ctr))
-        return;
+    for (;;) {
+        QByteArray packet = _readPacket();
+        if (packet.isEmpty())
+            return;
 
-    emit packetReceived(packet, m_rxNetwork);
+        // qDebug() << "DPRX" << packet.size();
+
+        if (!(activated() && active()))
+            return;
+
+        bool ctr = isControlPacket(packet);
+        if (m_blockControls && ctr)
+            return;
+        if (m_blockService && (!ctr))
+            return;
+
+        emit packetReceived(packet, m_rxNetwork);
+    }
 }
 QByteArray DatalinkConnection::_readPacket()
 {
@@ -185,7 +191,7 @@ QByteArray DatalinkConnection::_readPacket()
         switch (_decoder->status()) {
         case SerialDecoder::PacketAvailable:
             pkt = true;
-            // qDebug() << "RX PKT" << decoder->size();
+            // qDebug() << "RX PKT" << _decoder->size();
 
             if (!_rx_fifo.write_packet(_decoder->data(), _decoder->size())) {
                 qWarning() << "RX fifo full";

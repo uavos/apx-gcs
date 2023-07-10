@@ -28,111 +28,48 @@
 #include <crc.h>
 
 DatalinkUdp::DatalinkUdp(Fact *parent,
-                         QAbstractSocket *_socket,
+                         QUdpSocket *socket,
                          QHostAddress hostAddress,
                          quint16 hostPort,
                          quint16 rxNetwork,
                          quint16 txNetwork)
-    : DatalinkConnection(parent,
-                         "_socket#",
-                         hostAddress.toString().append(":%1").arg(hostPort),
-                         "",
-                         rxNetwork,
-                         txNetwork)
-    , _socket(_socket)
-    , _hostAddress(hostAddress)
-    , _hostPort(hostPort)
+    : DatalinkSocket(parent, socket, hostAddress, hostPort, rxNetwork, txNetwork)
+    , _udp(socket)
 {
-    _socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-
-    connect(_socket,
-            &QAbstractSocket::disconnected,
-            this,
-            &DatalinkUdp::socketDisconnected,
-            Qt::QueuedConnection);
-
-    connect(_socket,
-            static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(
-                &QAbstractSocket::errorOccurred),
-            this,
-            &DatalinkUdp::socketError);
-
-    connect(_socket, &QAbstractSocket::stateChanged, this, &DatalinkUdp::socketStateChanged);
-}
-
-bool DatalinkUdp::isLocalHost(const QHostAddress address)
-{
-    if (address.isLoopback())
-        return true;
-    for (const auto &i : QNetworkInterface::allAddresses())
-        if (address.isEqual(i))
-            return true;
-    return false;
+    setActive(true);
 }
 
 void DatalinkUdp::socketDisconnected()
 {
-    resetDataStream();
+    DatalinkSocket::socketDisconnected();
 
-    closed();
-    emit disconnected();
+    disconnect(_udp, nullptr, this, nullptr);
+    _udp->deleteLater();
+    deleteFact();
 }
 
-void DatalinkUdp::socketError(QAbstractSocket::SocketError socketError)
+void DatalinkUdp::readDatagram(QNetworkDatagram datagram)
 {
-    Q_UNUSED(socketError)
-    apxMsg() << QString("#%1 (%2:%3)")
-                    .arg(_socket->errorString())
-                    .arg(_socket->peerAddress().toString())
-                    .arg(_socket->peerPort());
-    setStatus("Error");
-    emit error();
-
-    close();
-}
-
-void DatalinkUdp::socketStateChanged(QAbstractSocket::SocketState socketState)
-{
-    QString s;
-    switch (socketState) {
-    //default:
-    case QAbstractSocket::UnconnectedState:
-        break;
-    case QAbstractSocket::HostLookupState:
-        s = "Lookup";
-        break;
-    case QAbstractSocket::ConnectingState:
-        s = "Connecting";
-        break;
-    case QAbstractSocket::ConnectedState:
-        s = "Connected";
-        break;
-    case QAbstractSocket::BoundState:
-        s = "Bound";
-        break;
-    case QAbstractSocket::ClosingState:
-        s = "Closing";
-        break;
-    case QAbstractSocket::ListeningState:
-        s = "Listening";
-        break;
-    }
-    setStatus(s);
-}
-
-void DatalinkUdp::close()
-{
-    _socket->abort();
-    closed();
+    _read_datagram = datagram;
+    readDataAvailable();
 }
 
 QByteArray DatalinkUdp::read()
 {
-    // auto datagram
+    if (!_read_datagram.isValid()) {
+        // qDebug() << "invalid datagram";
+        return {};
+    }
+
+    auto data = _read_datagram.data();
+    _read_datagram = {};
+
+    // qDebug() << data.toHex();
+
+    return data;
 }
 
 void DatalinkUdp::write(const QByteArray &packet)
 {
-    // datagram
+    _udp->writeDatagram(packet, _hostAddress, _hostPort);
 }

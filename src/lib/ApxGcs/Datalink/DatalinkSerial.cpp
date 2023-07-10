@@ -25,8 +25,8 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <uart/CobsDecoder.h>
-#include <uart/CobsEncoder.h>
+#include <serial/CobsDecoder.h>
+#include <serial/CobsEncoder.h>
 
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wdelete-abstract-non-virtual-dtor"
