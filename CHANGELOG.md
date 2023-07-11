@@ -1,3 +1,17 @@
+# [APX Ground Control v11.1.10](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.10) (07/10/23)
+
+> Branch: `main`\
+> Date: `07/10/23 20:33:16`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/5e4a5e450873a691878a6187e946fdaddfc2a941...5f68765c2b6a39a4bb8551e08ecc63562fe2f8f2)
+
+## New Features
+* TCP datalink uses COBS codec
+* UDP datalink server
+* UDP for simulator link
+
+## Bug Fixes
+* server discovery via UDP
+
 # [APX Ground Control v11.1.9](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.9) (06/21/23)
 
 > Branch: `main`\
