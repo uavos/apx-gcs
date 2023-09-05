@@ -23,44 +23,34 @@
 
 #include <Fact/Fact.h>
 #include <QtCore>
-Q_DECLARE_LOGGING_CATEGORY(SimLog)
+#include <QtNetwork>
 
-class Simulator : public Fact
+#include <serial/CobsDecoder.h>
+#include <serial/CobsEncoder.h>
+
+class SimMods : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit Simulator(Fact *parent = nullptr);
-    ~Simulator();
-
-    Fact *f_launch;
-    Fact *f_stop;
-
-    Fact *f_type;
-
-    Fact *f_sxpl;
-
-    Fact *f_cmd;
+    explicit SimMods(Fact *parent = nullptr);
 
 private:
-    QStringList xplaneDirs;
-    QProcess pShiva;
+    Fact *f_enb;
+    Fact *f_ext_enb;
 
-    QString target_os;
-    QString sim_executable;
+    Fact *f_mod_period;
+    Fact *f_mod_amplitude;
 
-    bool extract_apxfw();
+    Fact *f_ap_port;
 
-    void pShivaKill();
+    // sim link
+    QUdpSocket _udp_sim;
 
-    void _launchXplane(QString xplaneDir);
+    CobsDecoder<> _dec;
+    CobsEncoder<> _enc;
 
 private slots:
-    void detectXplane();
-    void launch();
-    void launchXplane();
-    void launchShiva();
-
-    void pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    void pShivaErrorOccurred(QProcess::ProcessError error);
+    void simRead();
+    void parse_rx(const void *data, size_t size);
 };
