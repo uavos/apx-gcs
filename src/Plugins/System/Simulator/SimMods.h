@@ -39,18 +39,24 @@ private:
     Fact *f_enb;
     Fact *f_ext_enb;
 
-    Fact *f_mod_period;
-    Fact *f_mod_amplitude;
-
-    Fact *f_ap_port;
+    Fact *f_port_ap;
+    Fact *f_port_jtx;
+    Fact *f_port_jrx;
 
     // sim link
     QUdpSocket _udp_sim;
+    QUdpSocket _udp_json;
 
     CobsDecoder<> _dec;
     CobsEncoder<> _enc;
 
+    // tx to sim
+    xbus::pid_s _pid_sim_rx;
+    uint8_t _buf_sim_tx[xbus::size_packet_max];
+
 private slots:
     void simRead();
-    void parse_rx(const void *data, size_t size);
+    void parse_sim_rx(const void *data, size_t size);
+
+    void jsonRead();
 };
