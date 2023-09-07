@@ -333,8 +333,18 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
                                 int inCounter,
                                 void *inRefcon)
 {
+    static uint ap_link_timeout = 0;
+
+    ap_link_timeout++;
+
+    if (ap_link_timeout > 3) {
+        ap_link_timeout = 0;
+        xpl_channels = 0; // reset channels assignments
+    }
+
     if (!(enabled && udp.is_connected())) {
         xpl_channels = 0;
+        ap_link_timeout = 0;
         return 1.f;
     }
 
@@ -342,6 +352,8 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
         for (;;) {
             if (!udp.dataAvailable())
                 break;
+
+            ap_link_timeout = 0;
 
             // printf("udp.dataAvailable\n");
 
@@ -378,9 +390,10 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
         }
 
         if (!xpl_channels) {
+            printf("X-Plane controls request\n");
             //xpl_channels = 1;
             request_controls();
-            return 0.5f;
+            return 2.5f;
         }
 
     } while (0);
