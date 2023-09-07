@@ -46,8 +46,8 @@ SimMods::SimMods(Fact *parent)
     f_port_ap->setMax(65535);
     f_port_ap->setValue(UDP_PORT_AP_SNS + 2);
 
-    auto f = new Fact(this, "models", tr("Models"), tr("Jamming patterns"), Group);
-    f->setSection(sect);
+    f_mod = new SimMod(this);
+    f_mod->setSection(sect);
 
     sect = tr("External JSON mods");
     f_ext_enb = new Fact(this,
@@ -79,6 +79,17 @@ SimMods::SimMods(Fact *parent)
     f_port_jrx->setMax(65535);
     f_port_jrx->setValue(UDP_PORT_AP_SNS + 6);
 
+    f_timeout_jrx = new Fact(this,
+                             "jrx_timeout",
+                             tr("JSON RX timeout"),
+                             tr("Timeout to receive JSON data"),
+                             Int);
+    f_timeout_jrx->setSection(sect);
+    f_timeout_jrx->setUnits("s");
+    f_timeout_jrx->setMin(0);
+    f_timeout_jrx->setMax(60);
+    f_timeout_jrx->setValue(2);
+
     connect(f_enb, &Fact::valueChanged, this, [this]() {
         if (f_enb->value().toBool()) {
             _udp_sim.bind(UDP_PORT_AP_SNS);
@@ -91,6 +102,7 @@ SimMods::SimMods(Fact *parent)
     connect(f_ext_enb, &Fact::valueChanged, this, [this]() {
         if (f_ext_enb->value().toBool()) {
             _udp_json.bind(f_port_jrx->value().toInt());
+            _json_rx_time.start();
         } else {
             _udp_json.close();
         }
@@ -155,17 +167,22 @@ void SimMods::parse_sim_rx(const void *data, size_t size)
         qDebug() << "RX" << size << uid;
         break;
     case mandala::cmd::env::sim::sns::uid:
-        if (!f_ext_enb->value().toBool())
-            break;
-
         if (stream.available() < sizeof(mandala::bundle::sim_s)) {
             qWarning() << "RX" << size << uid << "too small";
             return;
         }
 
+        // read simulated sensors data structure
         _pid_sim_rx = pid; // save for tx
+        auto d = (mandala::bundle::sim_s *) stream.ptr();
 
-        auto d = (const mandala::bundle::sim_s *) stream.ptr();
+        // apply modifications
+        f_mod->modify(d);
+
+        // check if JSON mods enabled
+        if (!f_ext_enb->value().toBool())
+            break;
+
         // serialize bundle to variant map
         QVariantMap map;
 
@@ -192,19 +209,22 @@ void SimMods::parse_sim_rx(const void *data, size_t size)
 
         // qDebug() << json;
 
-        // forward to UDP_PORT_MOD_SNS
+        // forward JSON to UDP_PORT_MOD_SNS
         _udp_json.writeDatagram(json, QHostAddress::LocalHost, f_port_jtx->value().toInt());
+
+        // check for JSON RX timeout
+        auto to = f_timeout_jrx->value().toInt();
+        if (to > 0 && _json_rx_time.elapsed() > to * 1000) {
+            // no JSON data received for a while
+            // loopback to APX autopilot app as-is
+            break;
+        }
 
         return;
     }
 
     // forward to APX autopilot app as-is
-    auto cnt = _enc.encode(data, size);
-    if (cnt <= 0)
-        return;
-    _udp_sim.writeDatagram(QByteArray((const char *) _enc.data(), cnt),
-                           QHostAddress::LocalHost,
-                           f_port_ap->value().toInt());
+    forwardToAP(data, size);
 }
 
 void SimMods::jsonRead()
@@ -213,6 +233,8 @@ void SimMods::jsonRead()
         QNetworkDatagram datagram = _udp_json.receiveDatagram();
         if (!datagram.isValid())
             continue;
+
+        _json_rx_time.start();
 
         // qDebug() << datagram.data();
 
@@ -264,16 +286,21 @@ void SimMods::jsonRead()
 
         // qDebug() << d;
 
-        // forward to APX autopilot app as-is
+        // send modified structure to the autopilot
         XbusStreamWriter stream(_buf_sim_tx, sizeof(_buf_sim_tx));
         _pid_sim_rx.write(&stream); // saved from rx
         stream.write(&d, sizeof(d));
 
-        auto cnt = _enc.encode(stream.buffer(), stream.pos());
-        if (cnt <= 0)
-            return;
-        _udp_sim.writeDatagram(QByteArray((const char *) _enc.data(), cnt),
-                               QHostAddress::LocalHost,
-                               f_port_ap->value().toInt());
+        forwardToAP(stream.buffer(), stream.pos());
     }
+}
+
+void SimMods::forwardToAP(const void *data, size_t size)
+{
+    auto cnt = _enc.encode(data, size);
+    if (cnt <= 0)
+        return;
+    _udp_sim.writeDatagram(QByteArray((const char *) _enc.data(), cnt),
+                           QHostAddress::LocalHost,
+                           f_port_ap->value().toInt());
 }

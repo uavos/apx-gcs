@@ -23,50 +23,34 @@
 
 #include <Fact/Fact.h>
 #include <QtCore>
-#include <QtNetwork>
 
-#include <serial/CobsDecoder.h>
-#include <serial/CobsEncoder.h>
+#include <MandalaBundles.h>
 
-#include "SimMod.h"
-
-class SimMods : public Fact
+class SimMod : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit SimMods(Fact *parent = nullptr);
+    explicit SimMod(Fact *parent = nullptr);
+
+    void modify(mandala::bundle::sim_s *d);
 
 private:
-    Fact *f_enb;
-    Fact *f_ext_enb;
+    Fact *f_vel_enb;
+    Fact *f_vel_period;
+    Fact *f_vel_amplitude;
 
-    Fact *f_port_ap;
+    Fact *f_pos_enb;
+    Fact *f_pos_shift;
+    Fact *f_hmsl_shift;
 
-    Fact *f_port_jtx;
-    Fact *f_port_jrx;
-    Fact *f_timeout_jrx;
+    // model
+    double _vel_phase[3] = {};
+    QElapsedTimer _vel_time;
 
-    SimMod *f_mod;
-
-    // sim link
-    QUdpSocket _udp_sim;
-    QUdpSocket _udp_json;
-
-    CobsDecoder<> _dec;
-    CobsEncoder<> _enc;
-
-    // tx to sim
-    xbus::pid_s _pid_sim_rx;
-    uint8_t _buf_sim_tx[xbus::size_packet_max];
-
-    // JSON rx timeout
-    QElapsedTimer _json_rx_time;
+    double _pos_bearing = {};
 
 private slots:
-    void simRead();
-    void parse_sim_rx(const void *data, size_t size);
-
-    void jsonRead();
-    void forwardToAP(const void *data, size_t size);
+    void reset_vel();
+    void reset_pos();
 };
