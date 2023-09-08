@@ -45,10 +45,10 @@ private:
     Fact *f_hmsl_shift;
 
     // model
-    double _vel_phase[3] = {};
+    double _vel_phase[3] = {}; // phase shift [0..1]
     QElapsedTimer _vel_time;
 
-    double _pos_bearing = {};
+    double _pos_bearing = {}; // pos shift bearing [deg]
 
 private slots:
     void reset_vel();

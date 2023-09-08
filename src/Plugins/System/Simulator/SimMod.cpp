@@ -86,13 +86,13 @@ void SimMod::reset_vel()
 {
     _vel_time.start();
     for (auto &v : _vel_phase) {
-        v = QRandomGenerator::global()->bounded(2. * M_PI);
+        v = QRandomGenerator::global()->bounded(1.);
     }
 }
 
 void SimMod::reset_pos()
 {
-    _pos_bearing = QRandomGenerator::global()->bounded(2. * M_PI);
+    _pos_bearing = QRandomGenerator::global()->bounded(360.);
 }
 
 void SimMod::modify(mandala::bundle::sim_s *d)
@@ -102,7 +102,7 @@ void SimMod::modify(mandala::bundle::sim_s *d)
 
         for (uint i = 0; i < 3; ++i) {
             double t = 2. * M_PI * time_ms / (double) f_vel_period->value().toInt();
-            t += _vel_phase[i];
+            t += 2. * M_PI * _vel_phase[i];
             d->vel_ned[i] += f_vel_amplitude->value().toDouble() * std::sin(t);
         }
     }
