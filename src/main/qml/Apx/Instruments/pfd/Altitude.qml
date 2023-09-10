@@ -30,8 +30,7 @@ ControlArea {
     readonly property var f_altitude: mandala.est.pos.altitude
     readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
-    readonly property var f_hmsl: mandala.est.pos.hmsl
-    readonly property var f_ref_hmsl: mandala.est.ref.hmsl
+    readonly property var f_ahrs_herr: mandala.est.ahrs.herr
 
     readonly property var f_agl: mandala.est.pos.agl
     readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
@@ -198,6 +197,9 @@ ControlArea {
 
     PfdImage {
         id: altitude_triangle
+
+        readonly property real v: f_ahrs_herr.value
+
         elementName: "altitude-triangle"
         //smooth: ui.antialiasing
         visible: ui.test || apx.datalink.valid
@@ -205,11 +207,11 @@ ControlArea {
         height: elementBounds.height*altitude_window.strip_scale
         anchors.right: altitude_window.left
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: apx.limit(altitude_window.num2scaleHeight * (f_altitude.value - (f_hmsl.value-f_ref_hmsl.value))/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
+        anchors.verticalCenterOffset: apx.limit(altitude_window.num2scaleHeight * v/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
         Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         Text {
-            visible: Math.abs(f_altitude.value - (f_hmsl.value-f_ref_hmsl.value))>10
-            text: (f_hmsl.value-f_ref_hmsl.value).toFixed()
+            visible: Math.abs(altitude_triangle.herr)>10
+            text: altitude_triangle.v>0?("+"+altitude_triangle.v.toFixed()):altitude_triangle.v.toFixed()
             color: "white"
             anchors.right: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -218,7 +220,7 @@ ControlArea {
             verticalAlignment: Text.AlignVCenter
             font: apx.font_narrow(parent.height)
         }
-        ToolTipArea {text: f_hmsl.descr}
+        ToolTipArea {text: f_ahrs_herr.descr}
     }
 
     PfdImage {

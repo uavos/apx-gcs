@@ -700,6 +700,8 @@ namespace sns
             enum { vib = 0x24 };
             enum { norm = 0x25 };
             enum { decl = 0x26 };
+            enum { bias = 0x27 };
+            enum { bval = 0x28 };
         };
         namespace gps
         {
@@ -1119,9 +1121,6 @@ namespace est
             enum { lat = 0x452 };
             enum { lon = 0x453 };
             enum { hmsl = 0x454 };
-            enum { rlat = 0x455 };
-            enum { rlon = 0x456 };
-            enum { rhmsl = 0x457 };
         };
         namespace air
         {
@@ -1144,6 +1143,8 @@ namespace est
             enum { herr = 0x474 };
             enum { eph = 0x475 };
             enum { epv = 0x476 };
+            enum { dn = 0x477 };
+            enum { de = 0x478 };
         };
         namespace wind
         {
