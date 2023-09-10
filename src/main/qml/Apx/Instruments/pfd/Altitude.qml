@@ -30,7 +30,7 @@ ControlArea {
     readonly property var f_altitude: mandala.est.pos.altitude
     readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
-    readonly property var f_ahrs_herr: mandala.est.ahrs.herr
+    readonly property var f_ahrs_dh: mandala.est.ahrs.dh
 
     readonly property var f_agl: mandala.est.pos.agl
     readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
@@ -198,7 +198,7 @@ ControlArea {
     PfdImage {
         id: altitude_triangle
 
-        readonly property real v: f_ahrs_herr.value
+        readonly property real v: f_ahrs_dh.value
 
         elementName: "altitude-triangle"
         //smooth: ui.antialiasing
@@ -210,7 +210,7 @@ ControlArea {
         anchors.verticalCenterOffset: apx.limit(altitude_window.num2scaleHeight * v/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
         Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         Text {
-            visible: Math.abs(altitude_triangle.v)>10
+            visible: Math.abs(altitude_triangle.v)>5
             text: altitude_triangle.v>0?("+"+altitude_triangle.v.toFixed()):altitude_triangle.v.toFixed()
             color: "white"
             anchors.right: parent.left
@@ -220,7 +220,7 @@ ControlArea {
             verticalAlignment: Text.AlignVCenter
             font: apx.font_narrow(parent.height)
         }
-        ToolTipArea {text: f_ahrs_herr.descr}
+        ToolTipArea {text: f_ahrs_dh.descr}
     }
 
     PfdImage {

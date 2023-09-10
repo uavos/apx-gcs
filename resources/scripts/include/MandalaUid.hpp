@@ -1140,11 +1140,11 @@ namespace est
             enum { rest = 0x471 };
             enum { mag = 0x472 };
             enum { href = 0x473 };
-            enum { herr = 0x474 };
-            enum { eph = 0x475 };
-            enum { epv = 0x476 };
-            enum { dn = 0x477 };
-            enum { de = 0x478 };
+            enum { eph = 0x474 };
+            enum { epv = 0x475 };
+            enum { dn = 0x476 };
+            enum { de = 0x477 };
+            enum { dh = 0x478 };
         };
         namespace wind
         {
