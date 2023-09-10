@@ -20,26 +20,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick 2.12
-import QtLocation 5.13
+import QtLocation 5.12
+import QtPositioning 5.12
 
-MapItemGroup {
-    id: group
-    z: 150
+MapCircle {
+    id: circle
+    color: "#fbb"
+    border.color: "#f99"
+    border.width: 2
+    opacity: 0.2
 
-    Component.onCompleted: {
-        map.addMapItemGroup(group)
-    }
+    //Fact bindings
+    property real lat: mandala.est.pos.lat.value
+    property real lon: mandala.est.pos.lon.value
 
-    PosErrorCircle { }
+    property real eph: mandala.est.ahrs.eph.value
 
-
-    TravelPath { }
-    EnergyCircle { }
-    CmdPosCircle { }
-    CmdPosIcon { }
-    Home { }
-    LoiterCircle { }
-
-    CamTargetCircleCmd { }
-    CamTargetCircle { }
+    //calculate circle
+    visible: eph>5
+    center: QtPositioning.coordinate(lat,lon)
+    radius: eph
 }
