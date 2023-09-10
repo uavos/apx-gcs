@@ -210,7 +210,7 @@ ControlArea {
         anchors.verticalCenterOffset: apx.limit(altitude_window.num2scaleHeight * v/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
         Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
         Text {
-            visible: Math.abs(altitude_triangle.herr)>10
+            visible: Math.abs(altitude_triangle.v)>10
             text: altitude_triangle.v>0?("+"+altitude_triangle.v.toFixed()):altitude_triangle.v.toFixed()
             color: "white"
             anchors.right: parent.left
