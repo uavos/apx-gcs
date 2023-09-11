@@ -20,26 +20,33 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick 2.12
-import QtLocation 5.13
+import QtLocation 5.12
+import QtPositioning 5.12
 
-MapItemGroup {
-    id: group
-    z: 150
+import Apx.Map.Common 1.0
 
-    Component.onCompleted: {
-        map.addMapItemGroup(group)
-    }
+MapIcon {
 
-    PosErrorCircle { }
-    PosErrorMark { }
+    name: "fullscreen-exit"
+    color: Style.cYellow
 
-    TravelPath { }
-    EnergyCircle { }
-    CmdPosCircle { }
-    CmdPosIcon { }
-    Home { }
-    LoiterCircle { }
+    //Fact bindings
+    property real lat: mandala.est.pos.lat.value
+    property real lon: mandala.est.pos.lon.value
+    property real hmsl: mandala.est.pos.hmsl.value
 
-    CamTargetCircleCmd { }
-    CamTargetCircle { }
+    property real dn: mandala.est.ahrs.dn.value
+    property real de: mandala.est.ahrs.de.value
+    property real dh: mandala.est.ahrs.dh.value
+
+    property bool ahrs_nogps: mandala.cmd.ahrs.nogps.value
+
+
+    // calculated properties
+    property real azimuth: Math.atan2(-de,-dn)*180/Math.PI
+    property real distance: Math.sqrt(dn*dn+de*de)
+
+    coordinate: QtPositioning.coordinate(lat,lon,hmsl-dh).atDistanceAndAzimuth(distance,azimuth)
+
+    visible: distance > 10 || ahrs_nogps
 }
