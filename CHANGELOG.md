@@ -1,3 +1,17 @@
+# [APX Ground Control v11.1.11](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.11) (09/15/23)
+
+> Branch: `main`\
+> Date: `09/15/23 11:09:32`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/e2f755a458616e70a96277cb47e1963c7cf6aaeb...b0cd14a0758ca5427e7af77262d02abad06856ee)
+
+## New Features
+* GNSS Jamming/Spoofing Simulation
+* Estimated position error display on map view
+
+## Bug Fixes
+* CpuID for Linux
+* sim plugin AP link timeouts and UDP reconnect
+
 # [APX Ground Control v11.1.10](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.10) (07/10/23)
 
 > Branch: `main`\
