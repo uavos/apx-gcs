@@ -1,10 +1,14 @@
-# APX Simulation Flows
+---
+mermaid: true
+---
 
-This article describes the simulation flows of the APX system. The simulation is based on the [X-Plane](https://www.x-plane.com/) flight simulator. The simulator is launched on the same PC as the autopilot, but can also be launched on a separate machine when needed.
+# Simulation scenarios
 
-The simulator sends data to the autopilot (`sensors`) and receives data from the autopilot (`controls`). All communications between the simulator and the autopilot are performed via UDP sockets. The simulated autopilot also use UDP sockets for the data-link with the GCS (`telemetry` and `commands`).
+APX simulation scenarios are described in this article.  A flight simulator called X-Plane (http://www.x-plane.com/) is used for the simulation. Simulator launches on the same PC as the autopilot, but it can also be launched separately if necessary.
 
-The data is sent in binary format, which is defined in the corresponding source code files. Usually, the data is sent in the form of a structure, which is defined in the corresponding header file. The stream is also wrapped in [COBS](https://github.com/uavos/apx-lib/tree/main/xbus/serial) serial format for packetization and error detection.
+Simulation sends data to the autopilot (`sensors`) and receives data from the autopilot (`controls`). UDP sockets are used for all communications between the simulator and autopilot. Additionally, the simulated autopilot uses UDP sockets to communicate with the GCS (telemetry and commands).
+
+Data is sent in binary format, which is defined in the source code. Typically, data is sent in the form of a structure, which is defined in the header file. Additionally, the stream is packetized and error-detected using [COBS](https://github.com/uavos/apx-lib/tree/main/xbus/serial).
 
 The following scenarios are provided as examples and are not limited to them. The user can create other scenarios by modifying the source code of the GCS or developing custom plugins or stand-alone applications which interact with the autopilot, GCS or some other simulator via UDP sockets. The whole data structures and protocols used in the APX system are open and published in the [apx-lib](https://github.com/uavos/apx-lib) and [apx-gcs](https://github.com/uavos/apx-gcs) repositories.
 
@@ -92,8 +96,8 @@ flowchart TB
         end
 
         subgraph shiva["APX Autopilot App"]
-            shiva.vcp{{"VCP Port"}}
-            vm{{"Virtual Machine"}}
+            shiva.vcp[["VCP Port"]]
+            vm[["Virtual Machine"]]
         end
     end
 
@@ -106,10 +110,7 @@ flowchart TB
 
 
     subgraph lps["Vision Navigation System (VNS)"]
-        lps.video["`
-            Video Camera
-            (observing Xplane display)
-        `"]
+        lps.video["Video Camera"]
     end
     pc <== USB/RS232 ==> lps
 
