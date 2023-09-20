@@ -30,7 +30,7 @@ NodeScript::NodeScript(Fact *fact)
     : QObject(fact)
     , _fact(fact)
 {
-    srcFile.setFileTemplate(srcFile.fileTemplate() + ".cpp");
+    srcFile.setFileTemplate("script-XXXXXX.cpp");
     srcFile.open();
     outFileName = QFileInfo(srcFile.fileName())
                       .absoluteDir()
@@ -234,6 +234,7 @@ bool NodeScript::_compile(QString src)
 
     if (rv) {
         //read out data
+        qDebug() << "compiled:" << outFileName;
         QFile file(outFileName);
         if (file.open(QFile::ReadOnly)) {
             _code = file.readAll();

@@ -106,7 +106,7 @@ void DatalinkRemotes::discover(void)
             return;
         }
         QTimer::singleShot(5000, this, &DatalinkRemotes::discover);
-        apxConsoleW() << "udp discover bind retry" << udpDiscover->errorString();
+        // apxConsoleW() << "udp discover bind retry" << udpDiscover->errorString();
     } else {
         f_discover->setActive(false);
         if (udpDiscover->state() != QAbstractSocket::UnconnectedState) {

@@ -11,6 +11,9 @@ if(APPLE)
         # legacy includes
         target_include_directories(${target} PUBLIC "${FW_${fwname}}/Headers")
 
+        # ensure the system lib path is added to the rpath
+        target_link_options(${target} PUBLIC "-Wl,-rpath,/Library/Frameworks")
+
         # collect all frameworks for deployment
         message(STATUS "FRAMEWORK: ${fwname} (${dir})")
         set_property(GLOBAL APPEND PROPERTY APX_FRAMEWORKS "${FW_${fwname}}")
