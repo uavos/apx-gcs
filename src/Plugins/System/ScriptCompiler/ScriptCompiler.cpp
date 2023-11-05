@@ -33,7 +33,7 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
                         Bool | PersistentValue);
     f_vscode->setDefaultValue(true);
 
-    m_version = "14.0";
+    m_version = "20.0";
 
 #if defined(Q_OS_MAC)
     m_platform = "macos";
