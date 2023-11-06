@@ -1,3 +1,12 @@
+# [APX Ground Control v11.1.12](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.12) (11/05/23)
+
+> Branch: `main`\
+> Date: `11/05/23 19:00:38`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/fe39810c4d78805213a6e01c6baa931da7f8a5fc...890bfbe7d8a9a88c1597c7c1953090525b965b56)
+
+## Bug Fixes
+* datalink server TCP transport between apps
+
 # [APX Ground Control v11.1.11](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.11) (09/15/23)
 
 > Branch: `main`\
