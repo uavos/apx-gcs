@@ -244,8 +244,10 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
     switch (uid) {
     default:
         break;
-    case mandala::cmd::nav::pos::uid:
-    case mandala::est::nav::ref::uid: {
+    case mandala::cmd::nav::pos::uid: // fly to
+    case mandala::est::nav::pos::uid: // pos fix
+    case mandala::est::nav::ref::uid: // set home
+    {
         QVariantList v = value.value<QVariantList>();
         if (v.size() != 2)
             break;
