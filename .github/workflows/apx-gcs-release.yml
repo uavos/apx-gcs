@@ -56,7 +56,7 @@ jobs:
 
       VERSION_SPARKLE: 1.27.1
 
-      PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages
+      PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
 
     steps:
       - uses: actions/checkout@v2
