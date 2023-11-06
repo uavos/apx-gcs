@@ -40,7 +40,7 @@ private:
         QHash<QString, QString> hdr_hash;
     } SocketData;
 
-    SocketData data;
+    SocketData data{};
 
     QString serverName;
     QString requestHdrHostName;

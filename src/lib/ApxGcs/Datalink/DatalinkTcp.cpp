@@ -82,6 +82,8 @@ void DatalinkTcp::socketDisconnected()
 
 void DatalinkTcp::readyReadHeader()
 {
+    // qDebug() << _tcp->bytesAvailable() << _tcp->canReadLine();
+
     if (!readHeader())
         return;
     if (!checkHeader())
@@ -112,7 +114,7 @@ bool DatalinkTcp::readHeader()
     bool reqDone = false;
     while (_tcp->canReadLine()) {
         QString line = _tcp->readLine();
-        //qDebug()<<"line:"<<line.trimmed();
+        // qDebug() << "line:" << line.trimmed();
         //qDebug()<<"line:"<<QByteArray(line.toUtf8()).toHex().toUpper();
         if (!line.trimmed().isEmpty()) {
             data.hdr.append(line.trimmed());
@@ -130,7 +132,7 @@ bool DatalinkTcp::readHeader()
             data.hdr_hash.insert(s.left(s.indexOf(':')).trimmed().toLower(),
                                  s.mid(s.indexOf(':') + 1).trimmed());
     }
-    //qDebug()<<"hdr:"<<hdr;
+    // qDebug() << "hdr:" << hdr;
     if (!data.hdr.isEmpty())
         return true;
     //error
@@ -149,6 +151,7 @@ QByteArray DatalinkTcp::read()
 
 void DatalinkTcp::write(const QByteArray &packet)
 {
+    // qDebug() << "write:" << packet.size();
     if (!data.datalink)
         return;
     if (!(_tcp && _tcp->isOpen()))
@@ -268,8 +271,8 @@ bool DatalinkTcp::checkDatalinkResponseHeader()
         QString sname = _tcp->peerAddress().toString() + ":" + QString::number(_tcp->peerPort());
         if (data.hdr_hash.contains("server"))
             sname.prepend(data.hdr_hash.value("server") + "@");
-        data.datalink = true;
         resetDataStream();
+        data.datalink = true;
         apxMsg() << QString("#%1: %2").arg(tr("server connected")).arg(sname);
         return true;
     }
