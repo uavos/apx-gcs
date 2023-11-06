@@ -30,8 +30,11 @@ NodeScript::NodeScript(Fact *fact)
     : QObject(fact)
     , _fact(fact)
 {
-    srcFile.setFileTemplate("script-XXXXXX.cpp");
+    srcFile.setFileTemplate(
+        QFileInfo(srcFile.fileTemplate()).absoluteDir().absoluteFilePath("script-XXXXXX.cpp"));
     srcFile.open();
+    qDebug() << srcFile.fileName();
+
     outFileName = QFileInfo(srcFile.fileName())
                       .absoluteDir()
                       .absoluteFilePath(QFileInfo(srcFile.fileName()).baseName() + ".wasm");
