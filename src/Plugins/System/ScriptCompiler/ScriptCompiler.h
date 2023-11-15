@@ -41,16 +41,19 @@ public:
     explicit ScriptCompiler(QObject *parent = nullptr);
 
     Fact *f_vscode;
+    Fact *f_cc;
+    Fact *f_llvm_path;
 
 private:
     QNetworkAccessManager net;
 
     bool lookup();
+    bool lookup_llvm();
+    bool lookup_wasi();
 
     QString m_cc;
 
     QString m_version;
-    QString m_platform;
     QString m_sdk;
 
     QDir m_dir;
@@ -61,7 +64,11 @@ private:
 
     void update_vscode();
 
+    void setCompiler(QString cc);
+
 private slots:
+    void lookup_init();
+
     void download();
 
     void responseDownload();

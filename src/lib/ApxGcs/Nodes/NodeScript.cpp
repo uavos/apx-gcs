@@ -251,6 +251,7 @@ bool NodeScript::_compile(QString src)
 
 bool NodeScript::_compile_wasm()
 {
+    qDebug() << cc << cc_args;
     proc.start(cc, cc_args);
     return true;
 }

@@ -33,19 +33,33 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
                         Bool | PersistentValue);
     f_vscode->setDefaultValue(true);
 
+    f_cc = new Fact(this,
+                    "compiler",
+                    tr("Compiler"),
+                    tr("Compiler preference"),
+                    Enum | PersistentValue);
+    f_cc->setEnumStrings(QStringList() << "System LLVM"
+                                       << "WASI SDK");
+
+    f_llvm_path = new Fact(this,
+                           "llvm_path",
+                           tr("LLVM path"),
+                           tr("Path to system clang"),
+                           Text | PersistentValue);
+
+    // WASI SDK
     m_version = "20.0";
 
+    QString platform;
 #if defined(Q_OS_MAC)
-    m_platform = "macos";
+    platform = "macos";
 #elif defined(Q_OS_LINUX)
-    m_platform = "linux";
+    platform = "linux";
 #else
-    m_platform = "mingw";
+    platform = "mingw";
 #endif
 
-    m_sdk = QString("wasi-sdk-%1-%2").arg(m_version).arg(m_platform);
-
-    setDescr(m_sdk);
+    m_sdk = QString("wasi-sdk-%1-%2").arg(m_version).arg(platform);
 
     m_dir = QDir(AppDirs::scripts().absoluteFilePath("compiler"),
                  "wasi-sdk-*",
@@ -55,52 +69,124 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
     if (!m_dir.exists())
         m_dir.mkpath(".");
 
-    if (!lookup())
-        QTimer::singleShot(500, this, &ScriptCompiler::download);
+    QTimer::singleShot(0, this, &ScriptCompiler::lookup_init);
+}
+
+void ScriptCompiler::lookup_init()
+{
+    if (lookup())
+        return;
+
+    if (f_cc->value().toInt() == 0) {
+        apxMsgW() << f_cc->text() << tr("compiler not found");
+        return;
+    }
+
+    QTimer::singleShot(500, this, &ScriptCompiler::download);
 }
 
 bool ScriptCompiler::lookup()
 {
-    m_dir.refresh();
-    do {
-        if (m_dir.entryList().isEmpty())
-            break;
+    if (f_cc->value().toInt() == 0) {
+        if (lookup_llvm())
+            return true;
+    } else {
+        if (lookup_wasi() || lookup_llvm())
+            return true;
+    }
 
-        QFileInfo cc(
-            QDir(m_dir.entryInfoList().last().absoluteFilePath()).absoluteFilePath("bin/clang"));
-        if (!cc.exists())
-            break;
-
-        m_cc = cc.absoluteFilePath();
-        qDebug() << "found:" << m_cc;
-
-        if (App::dryRun() || !App::installed()) {
-            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.vscode"),
-                              AppDirs::scripts().absoluteFilePath(".vscode"));
-
-            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/sysroot"),
-                              AppDirs::scripts().absoluteFilePath("sysroot"));
-
-            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
-                              AppDirs::scripts().absoluteFilePath("include"));
-
-            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
-                              AppDirs::scripts().absoluteFilePath("examples"));
-
-            AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.clang-format"),
-                              AppDirs::scripts().absoluteFilePath(".clang-format"));
-
-            update_vscode();
-        }
-
-        setEnabled(true);
-        emit available();
-        return true;
-    } while (0);
-
+    // not found
     qWarning() << "compilers not found";
-    setEnabled(false);
     return false;
+}
+
+bool ScriptCompiler::lookup_llvm()
+{
+    QStringList st;
+
+    QString s = f_llvm_path->value().toString();
+    if (QFile::exists(s))
+        st << s;
+
+    st << "/opt/homebrew/opt/llvm/bin/clang"
+       << "/usr/local/bin/clang"
+       << "/usr/bin/clang";
+
+    for (auto &s : st) {
+        if (!QFile::exists(s))
+            continue;
+
+        // check for wasm32 target support
+        qDebug() << "checking" << s;
+        QProcess p;
+        p.start(s, QStringList() << "--print-targets");
+        p.waitForFinished();
+        if (p.exitCode())
+            continue;
+
+        auto out = p.readAllStandardOutput().simplified().split(' ');
+        // qDebug() << out;
+
+        if (!out.contains("wasm32"))
+            continue;
+
+        // cc found
+        setDescr(s);
+        setCompiler(s);
+        return true;
+    }
+
+    return false;
+}
+
+bool ScriptCompiler::lookup_wasi()
+{
+    // qDebug() << "checking" << m_dir;
+
+    m_dir.refresh();
+    if (m_dir.entryList().isEmpty())
+        return false;
+
+    QFileInfo fi(
+        QDir(m_dir.entryInfoList().last().absoluteFilePath()).absoluteFilePath("bin/clang"));
+
+    if (!fi.exists())
+        return false;
+
+    setDescr(m_sdk);
+    setCompiler(fi.absoluteFilePath());
+    return true;
+}
+
+void ScriptCompiler::setCompiler(QString cc)
+{
+    qDebug() << "found:" << cc;
+
+    if (m_cc == cc)
+        return;
+
+    m_cc = cc;
+
+    if (App::dryRun() || !App::installed()) {
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.vscode"),
+                          AppDirs::scripts().absoluteFilePath(".vscode"));
+
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/sysroot"),
+                          AppDirs::scripts().absoluteFilePath("sysroot"));
+
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
+                          AppDirs::scripts().absoluteFilePath("include"));
+
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
+                          AppDirs::scripts().absoluteFilePath("examples"));
+
+        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.clang-format"),
+                          AppDirs::scripts().absoluteFilePath(".clang-format"));
+
+        update_vscode();
+    }
+
+    emit available();
 }
 
 void ScriptCompiler::update_vscode()
