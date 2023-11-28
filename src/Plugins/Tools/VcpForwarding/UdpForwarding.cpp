@@ -7,13 +7,6 @@ UdpForwarding::UdpForwarding(Fact *parent)
                      tr("Forward system UDP RX-TX ports to APX virtual port"),
                      "ip-network")
 {
-    f_udp_tx = new Fact(this,
-                        "tx_port",
-                        tr("Destination"),
-                        tr("UDP to send VCP data to [IP:]<PORT>"),
-                        Text | PersistentValue);
-    f_udp_tx->setDefaultValue("127.0.0.1:9333");
-
     f_udp_rx = new Fact(this,
                         "rx_port",
                         tr("RX UDP port"),
@@ -23,10 +16,20 @@ UdpForwarding::UdpForwarding(Fact *parent)
     f_udp_rx->setMax(65535);
     f_udp_rx->setDefaultValue(9335);
 
+    f_udp_tx = new Fact(this,
+                        "tx_port",
+                        tr("Destination"),
+                        tr("UDP to send VCP data to [IP:]<PORT>"),
+                        Text | PersistentValue);
+    f_udp_tx->setDefaultValue("127.0.0.1:9333");
+    connect(f_udp_tx, &Fact::valueChanged, this, &UdpForwarding::updateDest);
+    updateDest();
+
     connect(this, &Fact::activeChanged, this, [this]() {
         if (!active()) {
             _udp.close();
-            apxMsg() << "UDP" << f_udp_rx->value().toUInt() << tr("closed");
+            apxMsg() << "UDP" << f_udp_rx->value().toUInt() << tr("closed for")
+                     << QString("VCP#%1").arg(f_vcpid->value().toInt());
         }
     });
 
@@ -37,7 +40,8 @@ UdpForwarding::UdpForwarding(Fact *parent)
                 QTimer::singleShot(0, this, [this]() { setActive(false); });
             } else {
                 setActive(true);
-                apxMsg() << "UDP" << f_udp_rx->value().toUInt() << tr("bound");
+                apxMsg() << "UDP" << f_udp_rx->value().toUInt() << tr("bound to")
+                         << QString("VCP#%1").arg(f_vcpid->value().toInt());
             }
         } else {
             qDebug() << "UDP" << f_udp_rx->value().toUInt() << tr("shutdown");
@@ -48,27 +52,35 @@ UdpForwarding::UdpForwarding(Fact *parent)
     connect(&_udp, &QUdpSocket::readyRead, this, &UdpForwarding::readyRead);
 }
 
-bool UdpForwarding::forwardToPHY(QByteArray data)
+void UdpForwarding::updateDest()
 {
-    QHostAddress dest = QHostAddress::LocalHost;
-    quint16 port = 0;
-
     auto s = f_udp_tx->value().toString();
     if (s.contains(':')) {
         auto p = s.split(':');
         if (p.size() != 2)
-            return false;
-        dest = QHostAddress(p.at(0));
-        port = p.at(1).toUInt();
+            return;
+        _dest_addr = QHostAddress(p.at(0));
+        _dest_port = p.at(1).toUInt();
+
+        if (_dest_addr.isNull())
+            _dest_addr = QHostAddress::LocalHost;
+    } else {
+        _dest_addr = QHostAddress::LocalHost;
+        _dest_port = s.toUInt();
     }
+}
 
-    if (!port)
+bool UdpForwarding::forwardToPHY(QByteArray data)
+{
+    if (!_dest_port)
         return false;
 
-    if (dest.isNull())
+    if (_dest_addr.isNull())
         return false;
 
-    return _udp.writeDatagram(data, dest, port) == data.size();
+    // qDebug() << _dest_addr.toString() << _dest_port << data.size();
+
+    return _udp.writeDatagram(data, _dest_addr, _dest_port) == data.size();
 }
 
 void UdpForwarding::readyRead()
@@ -84,9 +96,11 @@ void UdpForwarding::readyRead()
         if (!datagram.isValid())
             continue;
 
-        auto data = datagram.data();
-        if (_pdata) {
-            _pdata->sendSerial(f_vcpid->value().toInt(), data);
-        }
+        if (!_pdata)
+            continue;
+
+        // qDebug() << datagram.data().size();
+
+        _pdata->sendSerial(f_vcpid->value().toInt(), datagram.data());
     }
 }
