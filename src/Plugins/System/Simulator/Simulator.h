@@ -38,7 +38,7 @@ public:
 
     Fact *f_type;
 
-    Fact *f_oXplane;
+    Fact *f_sxpl;
 
     Fact *f_cmd;
 

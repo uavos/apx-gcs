@@ -32,7 +32,9 @@ class DatalinkServer : public Fact
 public:
     explicit DatalinkServer(Datalink *datalink);
 
-    Fact *f_listen;
+    Fact *f_http;
+    Fact *f_udp;
+
     Fact *f_extctr;
     Fact *f_extsrv;
 
@@ -43,24 +45,35 @@ public:
 private:
     Datalink *datalink;
 
-    QTcpServer *tcpServer;
-    uint retryBind;
+    // tcp server
+    QTcpServer *httpServer;
+    uint retryBindHttp;
 
+    // udp server
+    QUdpSocket *udpServer;
+    uint retryBindUdp;
+
+    // service discovery
     QUdpSocket *udpAnnounce;
     QTimer announceTimer;
-    QByteArray announceString;
+    QByteArray announceHttpString;
+    QByteArray announceUdpString;
 
 private slots:
     void updateStatus();
     void updateClientsNetworkMode();
 
-    void serverActiveChanged();
-    void tryBindServer();
+    void httpActiveChanged();
+    void tryBindHttpServer();
+
+    void udpActiveChanged();
+    void tryBindUdpServer();
+    void udpReadyRead();
 
     void announce(void);
 
     //tcp server
-    void newConnection();
+    void newHttpConnection();
 
 signals:
     void bindError();

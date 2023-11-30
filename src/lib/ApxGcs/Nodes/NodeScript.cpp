@@ -30,8 +30,11 @@ NodeScript::NodeScript(Fact *fact)
     : QObject(fact)
     , _fact(fact)
 {
-    srcFile.setFileTemplate(srcFile.fileTemplate() + ".cpp");
+    srcFile.setFileTemplate(
+        QFileInfo(srcFile.fileTemplate()).absoluteDir().absoluteFilePath("script-XXXXXX.cpp"));
     srcFile.open();
+    qDebug() << srcFile.fileName();
+
     outFileName = QFileInfo(srcFile.fileName())
                       .absoluteDir()
                       .absoluteFilePath(QFileInfo(srcFile.fileName()).baseName() + ".wasm");
@@ -234,6 +237,7 @@ bool NodeScript::_compile(QString src)
 
     if (rv) {
         //read out data
+        qDebug() << "compiled:" << outFileName;
         QFile file(outFileName);
         if (file.open(QFile::ReadOnly)) {
             _code = file.readAll();
@@ -247,6 +251,7 @@ bool NodeScript::_compile(QString src)
 
 bool NodeScript::_compile_wasm()
 {
+    qDebug() << cc << cc_args;
     proc.start(cc, cc_args);
     return true;
 }

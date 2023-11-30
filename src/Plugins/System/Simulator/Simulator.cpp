@@ -20,6 +20,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Simulator.h"
+#include "SimMods.h"
+
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
@@ -48,14 +50,14 @@ Simulator::Simulator(Fact *parent)
 
     AppLog::add(SimLog().categoryName(), "sim.txt", true);
 
-    f_launch = new Fact(this, "launch", tr("Launch"), tr("Start simulation"), Action | Apply, "play");
+    f_launch = new Fact(this, "launch", tr("Start"), tr("Start simulation"), Action | Apply, "play");
     connect(f_launch, &Fact::triggered, this, &Simulator::launch);
-    //connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ f_select->setEnabled(v!=this); });
 
-    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop simulation"), Action | Stop, "stop");
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop APX app"), Action | Stop, "stop");
     f_stop->setEnabled(false);
     connect(f_stop, &Fact::triggered, &pShiva, &QProcess::terminate);
 
+    // Xplane group
     f_type = new Fact(this,
                       "type",
                       tr("Type"),
@@ -63,8 +65,8 @@ Simulator::Simulator(Fact *parent)
                       Enum | PersistentValue | SystemSettings);
     f_type->setIcon("package-variant");
 
-    f_oXplane = new Fact(this, "oxplane", tr("X-Plane"), tr("Run X-Plane on start"), Bool);
-    connect(f_oXplane, &Fact::triggered, this, &Simulator::launchXplane);
+    f_sxpl = new Fact(this, "sxpl", tr("Start XPlane"), tr("Run X-Plane on start"), Bool);
+    connect(f_sxpl, &Fact::triggered, this, &Simulator::launchXplane);
 
     f_cmd = new Fact(this,
                      "cmd",
@@ -73,6 +75,9 @@ Simulator::Simulator(Fact *parent)
                      Text | PersistentValue);
     f_cmd->setDefaultValue("--window=200x200 --no_sound --no_joysticks --disable_networking "
                            "--no_aniso_filtering --limited_glsl --no_threaded_ogl");
+
+    // jamming
+    new SimMods(this);
 
     //shiva
     pShiva.setProgram(AppDirs::firmware().absoluteFilePath("sim/" + sim_executable));
@@ -191,7 +196,7 @@ void Simulator::launch()
 {
     apxMsg() << tr("Launching simulation").append("...");
 
-    if (f_oXplane->value().toBool())
+    if (f_sxpl->value().toBool())
         launchXplane();
 
     launchShiva();

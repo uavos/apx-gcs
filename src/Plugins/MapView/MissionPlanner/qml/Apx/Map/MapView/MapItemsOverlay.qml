@@ -32,9 +32,6 @@ MapBase {
 
     property var mapPlugin: apx.tools.missionplanner
 
-    //map item setup
-    color: 'transparent' // Necessary to make this map transparent
-
     Connections {
         target: map
         function onCenterChanged(){ mpTimer.start() }

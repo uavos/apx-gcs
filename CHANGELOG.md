@@ -1,106 +1,80 @@
-# [APX Ground Control v11.1.80](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.80) (11/09/22)
+# [APX Ground Control v11.1.12](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.12) (11/05/23)
 
 > Branch: `main`\
-> Date: `11/09/22 17:30:05`\
-> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/1da9dde2bd1461dbfda078a6653954575178c2a6...3db242c19fe094467a0bc274c1478c2febe7c582)
+> Date: `11/05/23 19:00:38`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/fe39810c4d78805213a6e01c6baa931da7f8a5fc...890bfbe7d8a9a88c1597c7c1953090525b965b56)
 
 ## Bug Fixes
-* firmware versions handling
+* datalink server TCP transport between apps
 
-# [APX Ground Control v11.1.78](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.78) (11/08/22)
-
-> Branch: `main`\
-> Date: `11/08/22 18:46:45`\
-> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/eb8d0043e2cfedc5165c22a3ec9ba4d7546355cc...ab76296e1fa8dd0bebd567aa4747a33a8b88f1a7)
-
-Security updates
-
-# [APX Ground Control v11.1.71](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.71) (08/30/22)
+# [APX Ground Control v11.1.11](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.11) (09/15/23)
 
 > Branch: `main`\
-> Date: `08/30/22 18:19:04`\
-> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/80acc12a5296b4e314c2862b62707a9240ef9830...e22c1bffd2cf0c7188035245512a100e6308c2aa)
-
-## Bug Fixes
-* COBS encoder
-
-# [APX Ground Control v11.1.68](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.68) (08/06/22)
-
-> Branch: `main`\
-> Date: `08/06/22 09:45:48`\
-> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/816720c4ffe97c179591269224aa70fff4ea5248...d9968455f8930468b8f2bb5b01cf33c17ce49e9e)
+> Date: `09/15/23 11:09:32`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/e2f755a458616e70a96277cb47e1963c7cf6aaeb...b0cd14a0758ca5427e7af77262d02abad06856ee)
 
 ## New Features
+* GNSS Jamming/Spoofing Simulation
+* Estimated position error display on map view
+
+## Bug Fixes
+* CpuID for Linux
+* sim plugin AP link timeouts and UDP reconnect
+
+# [APX Ground Control v11.1.10](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.10) (07/10/23)
+
+> Branch: `main`\
+> Date: `07/10/23 20:33:16`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/5e4a5e450873a691878a6187e946fdaddfc2a941...5f68765c2b6a39a4bb8551e08ecc63562fe2f8f2)
+
+## New Features
+* TCP datalink uses COBS codec
+* UDP datalink server
+* UDP for simulator link
+
+## Bug Fixes
+* server discovery via UDP
+
+# [APX Ground Control v11.1.9](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.9) (06/21/23)
+
+> Branch: `main`\
+> Date: `06/21/23 12:24:54`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/96357916c51c4147ba3fd842eb5605d0a8413d56...5e4a5e450873a691878a6187e946fdaddfc2a941)
+
+## New Features
+* WASM console `dump` function
+* WASM scripting helpers
 * Mandala status display
 * telemetry auto sync dataset option
 * mandala silent send value method
 * multiline node messages
+* VCP to SerialPort forwarding plugin
 
 ## Bug Fixes
+* apxfw versioning and updates
+* RSS ground and onboard display
+* vscode search paths
+* WASM math lib warnings
+* TTS config
+* mandala report menu URL
 * empty telemetry stream support
 * telemetry initial values recording
 * engine start switch on multi GCS bug
 * node download with no files
 * mandala send value units conversion
-
-## Performance Enhancements
-* telemetry datasets selection
-
-# [APX Ground Control v11.1.42](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.42) (03/16/22)
-
-> Branch: `main`\
-> Date: `03/16/22 19:46:03`\
-> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b429ff081305964329c1cf2a222459a210db4db4...f00fb1ad67a7fb91f383b1598a7afd297e760eee)
-
-## New Features
-* WASM scripting helpers
-
-## Bug Fixes
-* TTS config
-* mandala report menu URL
+* COBS encoder
+* firmware versions handling
+* run docker image
+* local build by dockerfile
+* CI MacOS build
+* export vehicle config from `REPLAY`
+* mission export title
+* SerialPort forwarding plugin
+* Qt5.15.10 compatibility (remove itemsoverlay on map)
 
 ## Performance Enhancements
 * remove group mandala facts from data streams
-
-# [APX Ground Control v11.1.36](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.36) (03/15/22)
-
-> Branch: `main`\
-> Date: `03/15/22 21:44:33`\
-> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/70866a4664de3a1aaa86e3e9151749a1aa920582...bdd4f85743acdae74f9b9dbf5fb14938154318bf)
-
-## New Features
-* WASM console `dump` function
-
-## Bug Fixes
-* RSS ground and onboard display
-* vscode search paths
-* WASM math lib warnings
-
-# [APX Ground Control v11.1.25](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.25) (02/04/22)
-
-> Branch: `main`\
-> Date: `02/04/22 16:54:29`\
-> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/c7445bb5e3ba2a9616c538b7a172ab6357516168...9fe4101539b75fd343efdf03f7106dda99dc9074)
-
-## Bug Fixes
-* apxfw versioning and updates
-
-# [APX Ground Control v11.1.17](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.17) (02/03/22)
-
-> Branch: `main`\
-> Date: `02/03/22 15:17:29`\
-> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/313891275d9366b21a8506d4e191643c351a9909...7cb76c492517ff26998cc32ff3d520cf1c8d0690)
-
-## New Features
-* Signals with custom expressions
-* speech and PFD signs for helicopters
-* maneuver status display
-
-## Bug Fixes
-* signals for engine prop
-
-## Performance Enhancements
-* Xplane11 simulation
+* telemetry datasets selection
 
 # [APX Ground Control v11.0.221](https://github.com/uavos/apx-gcs/releases/tag/release-11.0.221) (05/20/21)
 

@@ -6,6 +6,7 @@
 			"label": "C/C++: WASM build active file",
 			"command": "${config:wasm.cc}",
 			"args": [
+				"--target=wasm32",
 				"--sysroot=${config:wasm.sysroot}",
 				"${config:wasm.flags}",
 				"-Wall",
@@ -23,9 +24,9 @@
 				"-z",
 				"stack-size=8192",
 				"-Wl,--initial-memory=65536",
+				"-Wl,--export=__heap_base,--export=__data_end",
 				"-Wl,--export=main",
 				"-Wl,--export-dynamic",
-				"-Wl,--export=__heap_base,--export=__data_end",
 				"-Wl,--no-entry",
 				"-Wl,--strip-all",
 				"-Wl,--allow-undefined-file=${config:wasm.sysroot}/share/defined-symbols.txt",

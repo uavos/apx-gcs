@@ -34,18 +34,11 @@ static QByteArray getCpuId()
     return QByteArray(reinterpret_cast<const char *>(info), sizeof(NXArchInfo));
 }
 #elif defined Q_OS_LINUX
-static void getCpuIdArray(unsigned int *p, unsigned int ax)
-{
-    __asm __volatile("movl %%ebx, %%esi\n\t"
-                     "cpuid\n\t"
-                     "xchgl %%ebx, %%esi"
-                     : "=a"(p[0]), "=S"(p[1]), "=c"(p[2]), "=d"(p[3])
-                     : "0"(ax));
-}
+#include <cpuid.h>
 static QByteArray getCpuId()
 {
     unsigned int info[4] = {0, 0, 0, 0};
-    getCpuIdArray(info, 0);
+    __get_cpuid(0, &info[0], &info[1], &info[2], &info[3]);
     return QByteArray(reinterpret_cast<const char *>(info), sizeof(info));
 }
 #elif defined Q_OS_WIN
@@ -90,15 +83,16 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     m_year = GIT_YEAR;
 
     // identity
-    m_hostname = QSysInfo::machineHostName();
+    m_hostname = QSysInfo::machineHostName().simplified();
+    if (m_hostname.endsWith(".local"))
+        m_hostname = m_hostname.left(m_hostname.length() - 6);
+    if (m_hostname.isEmpty())
+        m_hostname = "localhost";
 
     // machine ID
     QByteArray uid = QSysInfo::machineUniqueId();
-    if (uid.isEmpty()) {
-        uid = getCpuId();
-    }
-    uid.append(m_hostname.toUtf8());
-    //m_machineUID=uid.toHex().toUpper();
+    uid.append(getCpuId());
+    uid.append(QSysInfo::machineHostName().toUtf8());
     m_machineUID = QCryptographicHash::hash(uid, QCryptographicHash::Sha1).toHex().toUpper();
 
     // guess user name

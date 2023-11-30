@@ -96,9 +96,6 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     f_lon = f_mandala->fact(mandala::est::nav::pos::lon::uid);
     f_hmsl = f_mandala->fact(mandala::est::nav::pos::hmsl::uid);
 
-    f_pos = f_mandala->fact(mandala::est::nav::pos::uid);
-
-    f_ref = f_mandala->fact(mandala::est::nav::ref::uid);
     f_ref_hmsl = f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
 
     f_vspeed = f_mandala->fact(mandala::est::nav::pos::vspeed::uid);
@@ -388,12 +385,10 @@ void Vehicle::sendPositionFix(QGeoCoordinate c)
         return;
     if (!c.isValid())
         return;
-    apxMsgW() << "Not implemented";
-    //    MandalaFact::BundleValues values;
-    //    values.insert(mandala::est::nav::pos::lat::meta.uid, c.latitude());
-    //    values.insert(mandala::est::nav::pos::lon::meta.uid, c.longitude());
-    //    values.insert(mandala::est::nav::pos::hmsl::meta.uid, f_hmsl->value());
-    //    f_pos->sendBundle(values);
+    QVariantList value;
+    value << c.latitude();
+    value << c.longitude();
+    f_mandala->sendValue(mandala::est::nav::pos::uid, value);
 }
 
 void Vehicle::resetGeoPath()

@@ -26,6 +26,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Release)
 endif()
 
 option(CMAKE_VERBOSE_MAKEFILE "" OFF)
+option(CCACHE "Use ccache if available" ON)
 
 set(CMAKE_INSTALL_PREFIX
     "${CMAKE_CURRENT_BINARY_DIR}/install"

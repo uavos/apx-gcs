@@ -99,12 +99,13 @@ Item {
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
-    readonly property var f_att_rest: mandala.est.att.rest
+    readonly property var f_ahrs_rest: mandala.est.ahrs.rest
     readonly property var f_pos_status: mandala.est.pos.status
-    readonly property var f_pos_hsrc: mandala.est.pos.hsrc
+    readonly property var f_ahrs_href: mandala.est.ahrs.href
     readonly property var f_lpos_status: mandala.est.lpos.status
     readonly property var f_air_stall: mandala.est.air.stall
     readonly property var f_ahrs_inair: mandala.cmd.ahrs.inair
+    readonly property var f_ahrs_hsel: mandala.cmd.ahrs.hsel
 
     readonly property var f_att_valid: mandala.est.att.valid
     readonly property var f_pos_valid: mandala.est.pos.valid
@@ -171,7 +172,7 @@ Item {
             anchors.horizontalCenter: windArrow.horizontalCenter
             anchors.bottomMargin: height*2
             height: pfdScene.txtHeight*0.5
-            fact: f_att_rest
+            fact: f_ahrs_rest
             type: CleanText.Clean
             show: fact.value > 0
             text: fact.title.toUpperCase()
@@ -401,13 +402,23 @@ Item {
                 anchors.topMargin: pfdScene.topFramesMargin
                 anchors.bottomMargin: (parent.width-parent.width*0.5)*0.3
 
-                CleanText { // height source
+                CleanText { // height reference
+                    id: ahrs_href
                     anchors.verticalCenterOffset: -pfdScene.flagHeight*1.5
                     anchors.centerIn: parent
-                    visible: ui.test || ( fact.value !== pos_hsrc_gps && isValid)
+                    visible: ui.test || (isValid)
                     height: pfdScene.txtHeight*0.5
-                    fact: f_pos_hsrc
+                    fact: f_ahrs_href
                     type: CleanText.Clean
+                }
+                CleanText { // height source selection
+                    anchors.horizontalCenter: ahrs_href.horizontalCenter
+                    anchors.bottom: ahrs_href.top
+                    anchors.bottomMargin: height/4
+                    visible: ahrs_href.visible && f_ahrs_href.text!=f_ahrs_hsel.text
+                    height: ahrs_href.height
+                    fact: f_ahrs_hsel
+                    type: CleanText.Yellow
                 }
             }
 

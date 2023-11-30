@@ -4,7 +4,7 @@ import os
 import xml.etree.ElementTree as ElementTree
 
 from subprocess import check_call
-from urllib import unquote
+from urllib.parse import unquote
 
 # Parse commandline
 parser = argparse.ArgumentParser(

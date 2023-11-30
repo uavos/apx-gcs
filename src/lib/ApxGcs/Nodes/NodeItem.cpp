@@ -318,7 +318,7 @@ void NodeItem::groupArrays(Fact *group)
 
     group->bindProperty(f1, "value", true);
 
-    bool bControls = group->name() == "controls";
+    bool bControls = group->name() == "controls" || group->name() == "mixer";
 
     int colCnt = group->size();
     for (int row = 0; row < f1->size(); ++row) {

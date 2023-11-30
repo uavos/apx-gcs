@@ -150,8 +150,6 @@ MapQuickItem {  //to be used inside MapComponent only
             id: image
             source: bGCU?"../icons/gcu.svg":"../icons/uav.svg"
             property int sz: (bGCU?32:48)*map.itemsScaleFactor*ui.scale
-            //width: sz
-            //height: sz
             sourceSize.height: sz
             sourceSize.width: sz
 
@@ -196,8 +194,8 @@ MapQuickItem {  //to be used inside MapComponent only
                     angle: vyaw-map.bearing
                 }
             ]
-
         }
+
         Image {
             id: cmdCrsArrow
             source: "../icons/cmd-crs-arrow.svg"

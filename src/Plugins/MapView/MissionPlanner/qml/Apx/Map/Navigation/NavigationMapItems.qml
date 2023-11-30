@@ -30,6 +30,8 @@ MapItemGroup {
         map.addMapItemGroup(group)
     }
 
+    PosErrorCircle { }
+    PosErrorMark { }
 
     TravelPath { }
     EnergyCircle { }

@@ -51,12 +51,12 @@ jobs:
     runs-on: macos-latest
     env:
       # VERSION_QT: 5.15.2
-      VERSION_GST: 1.20.5
-      VERSION_SDL: 2.26.1
-      
+      VERSION_GST: 1.22.5
+      VERSION_SDL: 2.28.3
+
       VERSION_SPARKLE: 1.27.1
 
-      PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages
+      PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
 
     steps:
       - uses: actions/checkout@v2
@@ -72,15 +72,15 @@ jobs:
           pip3 install networkx simplejson jinja2 pyyaml dmgbuild
 
       - name: Install Qt
-      # TODO migrate to Qt6 and use python https://github.com/miurahr/aqtinstall
-      #   run: |
-      #     curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
-      #     chmod +x install-qt.sh
-      #     ./install-qt.sh --version $VERSION_QT --directory Qt \
-      #         qtbase qtdeclarative qttools \
-      #         quickcontrols2 serialport multimedia speech svg location \
-      #         graphicaleffects qtcharts
-      #     echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
+        # TODO migrate to Qt6 and use python https://github.com/miurahr/aqtinstall
+        #   run: |
+        #     curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
+        #     chmod +x install-qt.sh
+        #     ./install-qt.sh --version $VERSION_QT --directory Qt \
+        #         qtbase qtdeclarative qttools \
+        #         quickcontrols2 serialport multimedia speech svg location \
+        #         graphicaleffects qtcharts
+        #     echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
         run: |
           export HOMEBREW_NO_AUTO_UPDATE=1
           export HOMEBREW_NO_INSTALL_CLEANUP=1

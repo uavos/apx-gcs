@@ -94,7 +94,7 @@ Fact {
             Fact { binding: mandala.cmd.ahrs.inair; flags: Fact.Bool; }
             Fact { binding: mandala.cmd.ahrs.nogps; flags: Fact.Bool; }
             Fact { binding: mandala.cmd.ahrs.nomag; flags: Fact.Bool; }
-            Fact { binding: mandala.cmd.ahrs.hsrc }
+            Fact { binding: mandala.cmd.ahrs.hsel }
         }
     }
     Fact {

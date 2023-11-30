@@ -113,9 +113,6 @@ private:
     Fact *f_lon;
     Fact *f_hmsl;
 
-    MandalaFact *f_pos;
-
-    MandalaFact *f_ref;
     MandalaFact *f_ref_hmsl;
 
     Fact *f_vspeed;
