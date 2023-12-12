@@ -103,6 +103,21 @@ enum constants_e : uint8_t {
     las_status_holdon = 1,
     las_status_cancel = 2,
 
+    // sns.nav.vps.src
+    vps_src_unknown = 0,
+    vps_src_local = 1,
+    vps_src_primary = 2,
+    vps_src_secondary = 3,
+    vps_src_failsafe = 4,
+    vps_src_auxillary = 5,
+
+    // sns.nav.vps.status
+    vps_status_unknown = 0,
+    vps_status_available = 1,
+    vps_status_warning = 2,
+    vps_status_critical = 3,
+    vps_status_failure = 4,
+
     // sns.env.eng.health
     eng_health_unknown = 0,
     eng_health_idle = 1,
@@ -782,19 +797,9 @@ namespace sns
         };
         namespace vps
         {
-            enum { vx = 0xb1 };
-            enum { vy = 0xb2 };
-            enum { vz = 0xb3 };
-            enum { dx = 0xb4 };
-            enum { dy = 0xb5 };
-            enum { dz = 0xb6 };
-            enum { roll = 0xb7 };
-            enum { pitch = 0xb8 };
-            enum { yaw = 0xb9 };
-            enum { lat = 0xba };
-            enum { lon = 0xbb };
-            enum { hmsl = 0xbc };
-            enum { altitude = 0xbd };
+            enum { src = 0xb1 };
+            enum { cnt = 0xb2 };
+            enum { status = 0xb3 };
         };
         namespace tcas
         {

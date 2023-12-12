@@ -78,7 +78,7 @@ bool UdpForwarding::forwardToPHY(QByteArray data)
     if (_dest_addr.isNull())
         return false;
 
-    // qDebug() << _dest_addr.toString() << _dest_port << data.size();
+    // qDebug() << _dest_addr.toString() << _dest_port << data.size() << data.toHex().toUpper();
 
     return _udp.writeDatagram(data, _dest_addr, _dest_port) == data.size();
 }
