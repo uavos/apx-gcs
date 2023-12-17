@@ -800,6 +800,12 @@ namespace sns
             enum { src = 0xb1 };
             enum { cnt = 0xb2 };
             enum { status = 0xb3 };
+            enum { x = 0xb4 };
+            enum { y = 0xb5 };
+            enum { z = 0xb6 };
+            enum { vx = 0xb7 };
+            enum { vy = 0xb8 };
+            enum { vz = 0xb9 };
         };
         namespace tcas
         {
