@@ -1,3 +1,16 @@
+# [APX Ground Control v11.1.13](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.13) (12/17/23)
+
+> Branch: `main`\
+> Date: `12/17/23 17:00:39`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b4c109c4940b041735ffc0ba3f814f40c538f8a8...31601115bbb32ed7028b73c8671fa2daa19f2af1)
+
+## New Features
+* send position fix command for `AHRS`
+* system LLVM support for script compiler
+
+## Bug Fixes
+* default units precision
+
 # [APX Ground Control v11.1.12](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.12) (11/05/23)
 
 > Branch: `main`\
