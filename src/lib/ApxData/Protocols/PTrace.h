@@ -55,11 +55,11 @@ public:
         data(QByteArray(reinterpret_cast<const char *>(&r), sizeof(r)));
     }
 
-private:
-    QStringList _blocks;
-
 protected:
     bool _enabled{false};
+
+private:
+    QStringList _blocks;
 
 signals:
     void packet(QStringList blocks);

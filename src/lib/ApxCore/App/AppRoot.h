@@ -49,10 +49,6 @@ public:
     //global progress
     void updateProgress(Fact *fact);
 
-private:
-    static AppRoot *_instance;
-    QList<QPointer<Fact>> progressList;
-
     //----------------------------------
     // static helpers and data converters
 public:
@@ -93,6 +89,10 @@ public:
 
 public:
     Q_INVOKABLE static void sound(const QString &v);
+
+private:
+    static AppRoot *_instance;
+    QList<QPointer<Fact>> progressList;
 
 signals:
     void factTriggered(Fact *fact, QVariantMap opts);

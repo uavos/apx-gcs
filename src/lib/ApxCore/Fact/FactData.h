@@ -81,32 +81,10 @@ public slots:
     virtual void restore();
     void restoreDefaults();
 
-protected:
-    bool updateValue(const QVariant &v);
-    void updateValueText();
-    void updateText();
-
-    virtual QString toText(const QVariant &v) const;
-
-    QString prefsGroup() const;
-
-    static int _string_to_bool(QString s);
-    static int _string_to_int(const QString &s);
-    static bool _check_type(const QVariant &v, QMetaType::Type t);
-    static bool _check_int(const QVariant &v);
-
-    QVariant _type_value(const QVariant &v) const;
-    QString _string_with_units(const QString &v) const;
-
-private slots:
-    void getPresistentValue();
-
 public slots:
     void savePresistentValue();
     void loadPresistentValue();
 
-    //---------------------------------------
-    // PROPERTIES
 public:
     FactBase::Flag dataType() const;
     void setDataType(FactBase::Flag v);
@@ -154,6 +132,23 @@ public:
     void setDefaultValue(const QVariant &v);
 
 protected:
+    bool updateValue(const QVariant &v);
+    void updateValueText();
+    void updateText();
+
+    virtual QString toText(const QVariant &v) const;
+
+    QString prefsGroup() const;
+
+    static int _string_to_bool(QString s);
+    static int _string_to_int(const QString &s);
+    static bool _check_type(const QVariant &v, QMetaType::Type t);
+    static bool _check_int(const QVariant &v);
+
+    QVariant _type_value(const QVariant &v) const;
+    QString _string_with_units(const QString &v) const;
+
+protected:
     Flag m_dataType{NoFlags};
 
     QVariant m_value;
@@ -181,6 +176,12 @@ protected:
     QString m_units;
 
     QVariant m_defaultValue;
+
+private slots:
+    void getPresistentValue();
+
+    //---------------------------------------
+    // PROPERTIES
 
 signals:
     void dataTypeChanged();

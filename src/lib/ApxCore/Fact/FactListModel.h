@@ -39,13 +39,13 @@ public:
 
     QHash<int, QByteArray> roleNames() const;
 
-public slots:
-    void sync();
-    void scheduleSync();
-    void resetFilter();
+public:
+    Q_INVOKABLE Fact *get(int i) const;
 
-private:
-    QTimer *syncTimer;
+public:
+    int count() const;
+    QString filter() const;
+    void setFilter(QString v);
 
 protected:
     Fact *fact;
@@ -61,18 +61,17 @@ protected:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
-public:
-    Q_INVOKABLE Fact *get(int i) const;
-
-    //-----------------------------------------
-    //PROPERTIES
-public:
-    int count() const;
-    QString filter() const;
-    void setFilter(QString v);
-
 private:
     QString m_filter;
+
+private:
+    QTimer *syncTimer;
+
+public slots:
+    void sync();
+    void scheduleSync();
+    void resetFilter();
+
 signals:
     void countChanged();
     void filterChanged();

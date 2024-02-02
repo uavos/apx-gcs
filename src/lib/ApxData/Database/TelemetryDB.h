@@ -88,11 +88,12 @@ public:
         , records(records)
     {}
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     Records records;
 
-protected:
-    bool run(QSqlQuery &query);
 signals:
     void progress(int v);
 };

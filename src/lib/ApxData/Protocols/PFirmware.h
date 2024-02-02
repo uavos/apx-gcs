@@ -44,9 +44,6 @@ public:
 
     virtual void upgradeFirmware(QString uid, QString name, QByteArray data, quint32 offset);
 
-private:
-    bool m_upgrading{};
-
 protected:
     QString _uid;
     QString _name;
@@ -54,6 +51,9 @@ protected:
     quint32 _offset;
 
     bool _success{};
+
+private:
+    bool m_upgrading{};
 
 protected slots:
     virtual void finish();
