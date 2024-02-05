@@ -46,6 +46,8 @@ Terminal::Terminal(Fact *parent)
     qmlRegisterUncreatableType<Terminal>("APX.Terminal", 1, 0, "Terminal", "Reference only");
 
     loadQml("qrc:/" PLUGIN_NAME "/TerminalPlugin.qml");
+
+    connect(clipboard, &QClipboard::dataChanged, this, &Terminal::clipboardContentChangedSignal);
 }
 
 void Terminal::exec(QString cmd)
@@ -238,6 +240,21 @@ QString Terminal::autocomplete(QString cmd)
     hints.sort();
     enter(hints.join(" "));
     return c;
+}
+
+bool Terminal::isClipboardEmpty() const
+{
+    return clipboard->text().isEmpty();
+}
+
+void Terminal::copyConsoleHistoryToClipboard() const
+{
+    AppNotify::instance()->copyTextToClipboardSignal();
+}
+
+void Terminal::copyTextToClipboard(const QString &text) const
+{
+    clipboard->setText(text);
 }
 
 QMap<QString, QJSValue> Terminal::_get_js_properties(QString scope, QString flt)

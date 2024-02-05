@@ -68,5 +68,6 @@ private slots:
 
 signals:
     void notification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
+    void copyTextToClipboardSignal();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(AppNotify::NotifyFlags)

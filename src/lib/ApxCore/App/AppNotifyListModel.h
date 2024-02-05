@@ -66,7 +66,10 @@ public:
     };
     QList<NotifyListItem *> m_items;
 
-protected:
+private slots:
+    void notification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
+    void copyTextToClipboardSlot() const;
+
 signals:
     void countChanged();
 

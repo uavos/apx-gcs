@@ -50,8 +50,62 @@ Rectangle {
             Layout.alignment: Qt.AlignBottom
             Layout.preferredWidth: 300
             Layout.preferredHeight: 400
+            currentIndex: -1
+
+            property list<Item> selectedItems
 
             spacing: lineSpace
+
+            Menu {
+                id: contextMenu
+                MenuItem {
+                    text: "Cut"
+                    enabled: listView.footerItem.isSomeSelection()
+                    onTriggered: {
+                        listView.footerItem.cut()
+                    }
+                }
+                MenuItem {
+                    text: "Copy"
+                    enabled: listView.footerItem.isSomeSelection() || (listView.currentIndex !== -1)
+                    onTriggered: {
+                        if (listView.currentIndex !== -1)
+                            listView.copySelectedLines()
+                        else
+                            listView.footerItem.copy()
+                    }
+                }
+                MenuItem {
+                    text: "Paste"
+                    enabled: !listView.footerItem.isClipboardEmpty
+                    onTriggered: {
+                        listView.footerItem.paste()
+                        listView.footerItem.setFocus()
+                    }
+                }
+                MenuItem {
+                    text: "Copy all"
+                    onTriggered: {
+                        listView.footerItem.copyAll()
+                    }
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.RightButton
+                onClicked: contextMenu.popup()
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.MiddleButton
+                onWheel: {
+                    if (wheel.angleDelta.y > 0)
+                        listView.focus=false
+                    wheel.accepted=false
+                }
+            }
 
             model: application.notifyModel
             delegate: TerminalLine {
@@ -75,13 +129,97 @@ Rectangle {
                     easing.type: Easing.OutCubic
                 }
             }
-            
-            footer: TerminalExec {
-                width: parent.width
-                onFocused: listView.scrollToEnd()
+
+            onCountChanged: scrollTimer.start()
+            Timer {
+                id: scrollTimer
+                interval: 1
+                onTriggered: listView.scrollToEnd()
             }
 
-            onClicked: listView.footerItem.focusRequested()
+            Keys.onPressed: {
+                if (event.key === Qt.Key_C && (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) {
+                    copySelectedLines()
+                }
+                if ((event.text.length == 1 && event.modifiers == Qt.NoModifier) || event.key == Qt.Key_Backspace) {
+                    event.accepted=true
+                    footerItem.setFocus();
+                    if (event.key != Qt.Key_Backspace)
+                        footerItem.appendCmd(event.text)
+                    else
+                        footerItem.doBackSpace()
+                }
+            }
+            Keys.onTabPressed: {
+                event.accepted=true
+                footerItem.hints()
+                footerItem.setFocus()
+            }
+            Keys.onEnterPressed: {
+                event.accepted = true
+                footerItem.exec()
+            }
+            Keys.onReturnPressed: {
+                event.accepted = true
+                footerItem.exec()
+            }
+            Keys.onUpPressed: {
+                footerItem.setFocus()
+                footerItem.upPressed(event)
+            }
+            Keys.onDownPressed: {
+                footerItem.setFocus()
+                footerItem.downPressed(event)
+            }
+
+            footer: TerminalExec {
+                width: parent.width
+                onFocused: {
+                    listView.scrollToEnd()
+                    listView.currentIndex = -1
+
+                    for (var i = 0; i < listView.selectedItems.length; i++) {
+                        listView.selectedItems[i].selected=false
+                    }
+                    listView.selectedItems.length=0
+                }
+            }
+
+            function copySelectedLines()
+            {
+                var selectedText = ""
+                for (var i = 0; i < selectedItems.length; i++) {
+                    selectedText += selectedItems[i].text + '\n'
+                }
+                footerItem.copyText(selectedText)
+            }
+        }
+    }
+
+    Item {
+        anchors {
+            top: parent.top
+            right: parent.right
+            rightMargin: 35
+            topMargin: 15
+        }
+
+        Rectangle {
+            width: 25
+            height: 20
+            color: "#80808080"
+
+            Text {
+                anchors.centerIn: parent
+                text: "☰"
+                color: "white"
+                font.pixelSize: 12
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: contextMenu.popup()
+            }
         }
     }
 }
