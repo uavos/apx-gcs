@@ -36,8 +36,13 @@ ListView {
     keyNavigationEnabled: false
 
     ScrollBar.vertical: ScrollBar {
+        id: scrollBar
         width: Style.buttonSize/4
         active: !listView.atYEnd
+        onPressedChanged: {
+            if (pressed)
+                listView.focus=false
+        }
     }
     boundsBehavior: Flickable.StopAtBounds
     
@@ -49,6 +54,7 @@ ListView {
     Component.onCompleted: scrollToEnd()
     function scrollToEnd()
     {
+        positionViewAtEnd()
         positionViewAtEnd()
         stickEnd=true
     }
@@ -65,14 +71,6 @@ ListView {
                 listView.scrollToEnd()
                 scrollEndTimer.start()
             }
-        }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            listView.scrollToEnd()
-            listView.clicked()
         }
     }
 }

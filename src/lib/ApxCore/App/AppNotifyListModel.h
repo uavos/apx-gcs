@@ -45,6 +45,7 @@ public:
         FactRole,
 
         TimestampRole,
+        SelectedRole
     };
     QHash<int, QByteArray> roleNames() const override;
 
@@ -63,13 +64,13 @@ public:
         QString subsystem;
         AppNotify::NotifyFlags flags;
         QPointer<Fact> fact;
+        bool selected{false};
     };
     QList<NotifyListItem *> m_items;
 
-protected:
-signals:
-    void countChanged();
-
 private slots:
     void notification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
+
+signals:
+    void countChanged();
 };

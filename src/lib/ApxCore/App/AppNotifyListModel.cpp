@@ -50,6 +50,7 @@ QHash<int, QByteArray> AppNotifyListModel::roleNames() const
     roles[AppNotifyListModel::OptionsRole] = "options";
     roles[AppNotifyListModel::FactRole] = "fact";
     roles[AppNotifyListModel::TimestampRole] = "timestamp";
+    roles[AppNotifyListModel::SelectedRole] = "selected";
     return roles;
 }
 
@@ -73,6 +74,8 @@ QVariant AppNotifyListModel::data(const QModelIndex &index, int role) const
         return QVariant::fromValue(item->fact);
     case TimestampRole:
         return item->timestamp;
+    case SelectedRole:
+        return item->selected;
     }
     return QVariant();
 }
@@ -102,7 +105,6 @@ void AppNotifyListModel::notification(QString msg,
     m_items.append(item);
     endInsertRows();
     emit countChanged();
-    //qDebug()<<"rows"<<rowCount();
 }
 
 void AppNotifyListModel::updateItem(int row, const QVariant &value, int role)
@@ -139,6 +141,9 @@ void AppNotifyListModel::updateItem(int row, const QVariant &value, int role)
         break;
     case TimestampRole:
         item->timestamp = value.toLongLong();
+        break;
+    case SelectedRole:
+        item->selected = value.toBool();
         break;
     }
     QModelIndex i = index(row, 0);

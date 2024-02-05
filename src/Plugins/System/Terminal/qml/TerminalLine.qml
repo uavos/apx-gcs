@@ -39,6 +39,7 @@ RowLayout {
     property int options
     property var fact
     property int timestamp
+    property bool selected
 
     readonly property color color: {
 
@@ -63,15 +64,41 @@ RowLayout {
     Label {
         Layout.fillWidth: true
         focus: false
-        color: control.color
+        color: selected ? "#0977e3" : control.color
         font: apx.font(lineSize,control.bold)
         wrapMode: Text.WrapAnywhere
         text: control.text
         textFormat: html?Text.RichText:Text.AutoText
+
+        Keys.onUpPressed: listView.Keys.upPressed(event)
+        Keys.onDownPressed: listView.Keys.downPressed(event)
+
+        Connections {
+            target: listView.terminal
+            function onSelectionChanged() {
+                selected = model.selected
+            }
+        }
+
+        MouseArea {
+            acceptedButtons: Qt.LeftButton
+            anchors.fill: parent
+            onClicked: {
+                if (mouse.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) {
+                    listView.currentIndex = index
+                    listView.terminal.selectLine(index)
+                    selected = model.selected
+                    forceActiveFocus()
+                }
+                if (mouse.modifiers == Qt.NoModifier) {
+                    listView.footerItem.setFocus()
+                }
+            }
+        }
     }
     Label {
         Layout.alignment: Qt.AlignRight|Qt.AlignVCenter
-        visible: text //&& control.x==0
+        visible: text
         text: control.subsystem
         color: "#aaa"
         font: apx.font_narrow(lineSize*0.9)

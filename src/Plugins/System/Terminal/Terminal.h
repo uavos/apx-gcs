@@ -22,9 +22,11 @@
 #pragma once
 
 #include <Fact/Fact.h>
+#include <set>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QQmlEngine>
 #include <QtCore>
-
 class Terminal : public Fact
 {
     Q_OBJECT
@@ -40,11 +42,18 @@ public:
 
     Q_INVOKABLE QString autocomplete(QString cmd);
 
+    Q_INVOKABLE void copyConsoleHistoryToClipboard() const;
+    Q_INVOKABLE void copySelectedLinesToClipboard() const;
+    Q_INVOKABLE void unselectAllLines();
+    Q_INVOKABLE void selectLine(int row);
+
 private:
     int _enterIndex;
     QStringList _history;
     int _historyIndex;
     QString _replacedHistory;
+    QClipboard *_clipboard{QGuiApplication::clipboard()};
+    std::set<int> _selectedLines;
 
     QMap<QString, QJSValue> _get_js_properties(QString scope, QString flt);
 
@@ -54,4 +63,5 @@ public slots:
 
 signals:
     void newMessage(QtMsgType type, QString category, QString text);
+    void selectionChanged();
 };

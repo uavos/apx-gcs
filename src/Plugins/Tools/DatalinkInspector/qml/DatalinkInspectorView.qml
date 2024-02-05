@@ -33,4 +33,12 @@ LogListView {
         width: listView.width
         packet: model.blocks
     }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            listView.scrollToEnd()
+            listView.clicked()
+        }
+    }
 }
