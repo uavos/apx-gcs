@@ -60,7 +60,7 @@ RowLayout {
         return true
     }
 
-    Label {
+    TextEdit {
         Layout.fillWidth: true
         focus: false
         color: control.color
@@ -68,6 +68,12 @@ RowLayout {
         wrapMode: Text.WrapAnywhere
         text: control.text
         textFormat: html?Text.RichText:Text.AutoText
+        readOnly: true;
+        selectByMouse: true;
+        selectByKeyboard: true
+
+        Keys.onUpPressed: listView.Keys.upPressed(event)
+        Keys.onDownPressed: listView.Keys.downPressed(event)
     }
     Label {
         Layout.alignment: Qt.AlignRight|Qt.AlignVCenter

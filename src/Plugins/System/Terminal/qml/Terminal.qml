@@ -76,12 +76,42 @@ Rectangle {
                 }
             }
             
+            Keys.onPressed: {
+                if (event.text.length == 1 || event.key == Qt.Key_Backspace) {
+                    event.accepted=true
+                    footerItem.setFocus();
+                    if (event.key != Qt.Key_Backspace)
+                        footerItem.appendCmd(event.text)
+                    else
+                        footerItem.doBackSpace()
+                }
+            }
+            Keys.onTabPressed: {
+                event.accepted=true
+                footerItem.hints()
+                footerItem.setFocus()
+            }
+            Keys.onEnterPressed: {
+                event.accepted = true
+                footerItem.exec()
+            }
+            Keys.onReturnPressed: {
+                event.accepted = true
+                footerItem.exec()
+            }
+            Keys.onUpPressed: {
+                footerItem.setFocus()
+                footerItem.upPressed(event)
+            }
+            Keys.onDownPressed: {
+                footerItem.setFocus()
+                footerItem.downPressed(event)
+            }
+
             footer: TerminalExec {
                 width: parent.width
                 onFocused: listView.scrollToEnd()
             }
-
-            onClicked: listView.footerItem.focusRequested()
         }
     }
 }

@@ -67,12 +67,4 @@ ListView {
             }
         }
     }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            listView.scrollToEnd()
-            listView.clicked()
-        }
-    }
 }
