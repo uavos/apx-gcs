@@ -17,19 +17,27 @@ ReportGenerator::ReportGenerator(Fact *parent)
            tr("Report generator"),
            tr("Report creation using templates"),
            Group,
-           "video")
+           "file-document")
     , m_template_loaded(false)
 {
-    f_choose_template
-        = new Fact(this, "template-picker", tr("Select template"), tr(""), Action | Apply, "play");
+    f_choose_template = new Fact(this,
+                                 "template-picker",
+                                 tr("Select template"),
+                                 tr(""),
+                                 Action | Apply,
+                                 "upload");
 
     connect(f_choose_template,
             &Fact::triggered,
             this,
             &ReportGenerator::pick_template_button_pressed);
 
-    f_generate_report
-        = new Fact(this, "generate_report", tr("Generate report"), tr(""), Action | Apply, "play");
+    f_generate_report = new Fact(this,
+                                 "generate_report",
+                                 tr("Generate report"),
+                                 tr(""),
+                                 Action | Apply,
+                                 "export");
     connect(f_generate_report,
             &Fact::triggered,
             this,
