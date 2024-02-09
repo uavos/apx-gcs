@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rgInterfaces/IResolver.h"
 #include "rgTelemetry/TelemetryResolver.h"
 #include <optional>
 #include <QtCore>
@@ -16,5 +17,6 @@ public:
     std::optional<QString> resolve_path(QString command);
 
 private:
-    TelemetryResolver m_telemetry_resolver;
+    TelemetryResolver m_impl_telemetry_resolver;
+    QMap<QString, IResolver *> m_data = {{"telemetry", &m_impl_telemetry_resolver}};
 };
