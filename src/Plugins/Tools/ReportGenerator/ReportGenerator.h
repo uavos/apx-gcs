@@ -17,6 +17,10 @@ private slots:
     void telemetry_data_changed(quint64 cache_id);
 
 private:
+    void load_template();
+    void request_commands();
+    void save_report();
+
     Fact *f_choose_template;
     Fact *f_generate_report;
 
@@ -28,8 +32,4 @@ private:
     QVector<QPoint> m_command_positions;
 
     bool m_template_loaded;
-
-    void load_template();
-    void request_commands();
-    void save_report();
 };
