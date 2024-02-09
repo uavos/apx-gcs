@@ -9,13 +9,13 @@ struct CachedFunction
 
     CachedFunction(func_t func)
         : m_func(func)
-        , is_cached(false){};
+        , m_is_cached(false){};
 
-    void clear_cache() { is_cached = false; };
+    void clear_cache() { m_is_cached = false; };
 
     RetT operator()()
     {
-        if (is_cached)
+        if (m_is_cached)
             return m_cached_v;
         return m_cached_v = m_func();
     }
@@ -23,5 +23,5 @@ struct CachedFunction
 private:
     func_t m_func;
     RetT m_cached_v;
-    bool is_cached;
+    bool m_is_cached;
 };
