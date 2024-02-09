@@ -9,6 +9,7 @@
 #include <Telemetry/TelemetryShare.h>
 #include <Vehicles/Vehicles.h>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QtCore>
 
 ReportGenerator::ReportGenerator(Fact *parent)
@@ -20,6 +21,13 @@ ReportGenerator::ReportGenerator(Fact *parent)
            "file-document")
     , m_template_loaded(false)
 {
+    f_open_browser = new Fact(this,
+                              "enable",
+                              tr("Open Browser"),
+                              tr("Open generated file in Browser"),
+                              Fact::Bool,
+                              "web");
+
     f_choose_template = new Fact(this,
                                  "template-picker",
                                  tr("Select template"),
@@ -131,6 +139,9 @@ void ReportGenerator::save_report()
     f.close();
 
     apxMsg() << "Report successfully saved";
+
+    if (f_open_browser->value().toBool())
+        QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
 }
 
 void ReportGenerator::pick_template_button_pressed()

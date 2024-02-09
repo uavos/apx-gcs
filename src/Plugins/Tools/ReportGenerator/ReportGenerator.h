@@ -27,6 +27,7 @@ private:
 
     Fact *f_choose_template;
     Fact *f_generate_report;
+    Fact *f_open_browser;
 
     QString m_template_path;
     QString m_template_raw;

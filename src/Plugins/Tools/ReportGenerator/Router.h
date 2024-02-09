@@ -18,5 +18,5 @@ public:
 
 private:
     TelemetryResolver m_impl_telemetry_resolver;
-    QMap<QString, IResolver *> m_data = {{"telemetry", &m_impl_telemetry_resolver}};
+    QMap<QString, IResolver *> m_resolvers_map = {{"telemetry", &m_impl_telemetry_resolver}};
 };
