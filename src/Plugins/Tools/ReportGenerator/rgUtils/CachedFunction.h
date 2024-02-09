@@ -2,6 +2,11 @@
 
 #include <functional>
 
+/**
+ * @brief Caches the return value of a parameterless function
+ * 
+ * @param RetT Return type of function
+ */
 template<class RetT>
 struct CachedFunction
 {

@@ -4,6 +4,10 @@
 #include <optional>
 #include <QtCore>
 
+/**
+ * @brief The router is used to distribute requests between resolvers
+ * 
+ */
 class Router
 {
 public:

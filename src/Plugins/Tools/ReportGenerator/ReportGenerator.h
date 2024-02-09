@@ -4,6 +4,10 @@
 #include "Router.h"
 #include <QtWidgets>
 
+/**
+ * @brief A class that reads a template, inserts values returned by resolvers, and saves the report
+ * 
+ */
 class ReportGenerator : public Fact
 {
     Q_OBJECT

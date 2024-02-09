@@ -5,6 +5,10 @@
 #include <optional>
 #include <QtCore>
 
+/**
+ * @brief Used for convenient access to telemetry data
+ * 
+ */
 class TelemetryExtractor : public QObject
 {
     Q_OBJECT

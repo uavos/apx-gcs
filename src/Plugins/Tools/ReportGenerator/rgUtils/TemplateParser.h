@@ -2,6 +2,10 @@
 
 #include <QtCore>
 
+/**
+ * @brief Used to get positions of commands in template file
+ * 
+ */
 class TemplateParser
 {
 public:

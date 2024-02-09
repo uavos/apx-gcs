@@ -10,11 +10,19 @@
 
 class TelemetryFuncRegistry;
 
+/**
+ * @brief Cached function class, using name of function for reflection
+ * 
+ */
 struct TelemetryFunc : public CachedFunction<QVariant>
 {
     TelemetryFunc(TelemetryFuncRegistry *parent, QString func_name, std::function<QVariant()> func);
 };
 
+/**
+ * @brief Used to store functions for telemetry resolver
+ * 
+ */
 class TelemetryFuncRegistry : public QObject
 {
     Q_OBJECT
@@ -36,7 +44,7 @@ private:
 
     TelemetryExtractor &m_ext{TelemetryExtractor::instance()};
 
-        // Functions for telemetry calculations
+    // Functions for telemetry calculations
 public:
     TelFunction(max_altitude, {
         auto altitude_opt = m_ext.by_id(mandala::est::nav::pos::altitude::uid);

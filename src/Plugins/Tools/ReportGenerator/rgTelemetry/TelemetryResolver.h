@@ -5,6 +5,10 @@
 
 class TelemetryFuncRegistry;
 
+/**
+ * @brief The task of the class is to return a string value that will be inserted into the final report
+ * 
+ */
 class TelemetryResolver
 {
 public:
