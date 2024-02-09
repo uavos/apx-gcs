@@ -19,20 +19,22 @@ TelemetryExtractor::TelemetryExtractor()
 void TelemetryExtractor::sync()
 {
     clear();
+    std::for_each(m_reader->fieldNames.constKeyValueBegin(),
+                  m_reader->fieldNames.constKeyValueEnd(),
+                  [this](auto it) {
+                      auto fid = it.first;
+                      const QString &s = it.second;
 
-    for (auto fid : m_reader->fieldNames.keys()) {
-        QVector<QPointF> *d = m_reader->fieldData.value(fid);
-        if (!d)
-            continue;
+                      QVector<QPointF> *d = m_reader->fieldData.value(fid);
+                      if (!d)
+                          return;
 
-        const QString &s = m_reader->fieldNames.value(fid);
+                      MandalaFact *f = qobject_cast<MandalaFact *>(
+                          Vehicles::instance()->f_replay->f_mandala->findChild(s));
 
-        MandalaFact *f = qobject_cast<MandalaFact *>(
-            Vehicles::instance()->f_replay->f_mandala->findChild(s));
-
-        m_name_data.insert(s, d);
-        m_uid_data.insert(f->uid(), d);
-    }
+                      m_name_data.insert(s, d);
+                      m_uid_data.insert(f->uid(), d);
+                  });
 }
 
 void TelemetryExtractor::clear()
