@@ -71,7 +71,11 @@ void AppImageAutoUpdater::checkForUpdatesInBackground()
     if (updater) {
         auto t = std::thread([this, updater]() {
             bool updateAvailable = false;
-            updater->checkForChanges(updateAvailable);
+            try {
+                updater->checkForChanges(updateAvailable);
+            } catch (const std::exception &e) {
+                apxMsgW() << tr("Error while checking for updates: ") << e.what();
+            }
             if (updateAvailable) {
                 setState(UpdateAvailable);
                 trigger();
