@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Share.h"
-
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
@@ -61,8 +60,12 @@ Share::Share(Fact *parent, QString type, QString dataTitle, QDir defaultDir, Fla
     connect(App::instance(), &App::loadingFinished, this, [this]() {
         QTimer::singleShot(1000, this, &Share::syncTemplates);
     });
-}
 
+    AppDirs::copyPath(AppDirs::res().absoluteFilePath("templates/share"),
+                      AppDirs::configs().absoluteFilePath(""),
+                      "vehicle",
+                      AppDirs::configBackups().absoluteFilePath(""));
+}
 void Share::exportTriggered()
 {
     if (_exportFormats.isEmpty())
