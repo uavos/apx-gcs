@@ -12,11 +12,11 @@
 class Router
 {
 public:
-    Router();
+    Router() = default;
 
-    std::optional<QString> resolve_path(QString command);
+    std::optional<QString> resolve_path(const QString &command) const;
 
 private:
     TelemetryResolver m_impl_telemetry_resolver;
-    QMap<QString, IResolver *> m_resolvers_map = {{"telemetry", &m_impl_telemetry_resolver}};
+    QHash<QString, IResolver *> m_resolvers_map = {{"telemetry", &m_impl_telemetry_resolver}};
 };

@@ -3,7 +3,6 @@
 #include "App/AppLog.h"
 #include "rgTelemetry/TelemetryExtractor.h"
 #include "rgTelemetry/TelemetryResolver.h"
-#include "rgUtils/TemplateParser.h"
 #include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryShare.h>
@@ -52,11 +51,6 @@ ReportGenerator::ReportGenerator(Fact *parent)
             &ReportGenerator::generate_template_button_pressed);
 
     f_generate_report->setEnabled(false);
-
-    connect(Vehicles::instance()->f_replay->f_telemetry->f_reader,
-            &TelemetryReader::dataAvailable,
-            this,
-            &ReportGenerator::telemetry_data_changed);
 }
 
 void ReportGenerator::generate_template_button_pressed()
@@ -64,31 +58,8 @@ void ReportGenerator::generate_template_button_pressed()
     if (!m_template_loaded)
         return;
 
-    request_commands();
-
-    m_report_raw.clear();
-    m_report_raw.reserve(m_template_raw.size());
-
-    size_t start_iter = 0;
-    for (size_t idx = 0; idx < m_command_rets.size(); idx++) {
-        auto pos = m_command_positions[idx];
-
-        m_report_raw.append(m_template_raw.mid(start_iter, pos.x() - start_iter));
-        m_report_raw.append(m_command_rets[idx]);
-        start_iter = pos.y() + 1;
-    }
-
-    m_report_raw.append(m_template_raw.mid(start_iter, m_template_raw.size() - start_iter));
-
+    generate_report();
     save_report();
-}
-
-void ReportGenerator::telemetry_data_changed(quint64 cache_id)
-{
-    if (!m_template_loaded)
-        return;
-
-    request_commands();
 }
 
 void ReportGenerator::load_template()
@@ -111,22 +82,6 @@ void ReportGenerator::load_template()
     f_generate_report->setEnabled(true);
 }
 
-void ReportGenerator::request_commands()
-{
-    m_command_rets.clear();
-    m_command_positions = TemplateParser::getCommandPositions(m_template_raw);
-
-    for (auto com_pos = m_command_positions.begin(); com_pos != m_command_positions.end();
-         com_pos++) {
-        auto start = com_pos->x() + 1;
-        auto end = com_pos->y();
-
-        auto command = m_template_raw.mid(start, end - start).trimmed();
-
-        m_command_rets.push_back(m_router.resolve_path(command).value_or("COMMAND NOT FOUND"));
-    }
-}
-
 void ReportGenerator::save_report()
 {
     auto filename = QFileDialog::getSaveFileName();
@@ -142,6 +97,29 @@ void ReportGenerator::save_report()
 
     if (f_open_browser->value().toBool())
         QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
+}
+
+void ReportGenerator::generate_report()
+{
+    QRegularExpression pattern("\\{([^{}]*)\\}");
+
+    QRegularExpressionMatchIterator matches = pattern.globalMatch(m_template_raw);
+
+    m_report_raw.clear();
+    m_report_raw.reserve(m_template_raw.length());
+
+    size_t start_iter = 0;
+    while (matches.hasNext()) {
+        QRegularExpressionMatch match = matches.next();
+        auto command = match.captured(1).trimmed();
+        auto ret = m_router.resolve_path(command).value_or("COMMAND NOT FOUND");
+        m_report_raw.append(m_template_raw.mid(start_iter, match.capturedStart(0) - start_iter));
+        m_report_raw.append(ret);
+
+        start_iter = match.capturedEnd(0);
+    }
+
+    m_report_raw.append(m_template_raw.mid(start_iter, m_template_raw.size() - start_iter));
 }
 
 void ReportGenerator::pick_template_button_pressed()

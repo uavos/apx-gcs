@@ -14,9 +14,13 @@ class TelemetryExtractor : public QObject
     Q_OBJECT
 
 public:
+    using name_t = QString;
+    using uid_t = quint64;
+
     static TelemetryExtractor &instance();
-    std::optional<QVector<QPointF> *> by_id(quint64 uid);
-    std::optional<QVector<QPointF> *> by_name(QString name);
+
+    template<typename Key>
+    std::optional<QVector<QPointF> *> by(const Key &key);
 
 private slots:
     void telemetry_data_changed();
@@ -24,9 +28,24 @@ private slots:
 private:
     TelemetryExtractor();
     void sync();
-    void clear();
+    void clear_synced_data();
 
-    QMap<QString, QVector<QPointF> *> m_name_data;
-    QMap<quint64, QVector<QPointF> *> m_uid_data;
+    std::tuple<QMap<quint64, QVector<QPointF> *>, QMap<QString, QVector<QPointF> *>> data;
     TelemetryReader *m_reader;
 };
+
+template<typename Key>
+inline std::optional<QVector<QPointF> *> TelemetryExtractor::by(const Key &key)
+{
+    QVector<QPointF> *ret = nullptr;
+    if constexpr (std::is_same<Key, uid_t>::value) {
+        ret = std::get<0>(data).value(key, nullptr);
+    } else if constexpr (std::is_same<Key, name_t>::value) {
+        ret = std::get<1>(data).value(key, nullptr);
+    }
+
+    if (ret == nullptr)
+        return std::nullopt;
+
+    return ret;
+}

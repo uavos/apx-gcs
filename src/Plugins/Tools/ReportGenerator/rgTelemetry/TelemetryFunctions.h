@@ -47,7 +47,8 @@ private:
     // Functions for telemetry calculations
 public:
     TelFunction(max_altitude, {
-        auto altitude_opt = m_ext.by_id(mandala::est::nav::pos::altitude::uid);
+        auto altitude_opt = m_ext.by<TelemetryExtractor::uid_t>(
+            mandala::est::nav::pos::altitude::uid);
 
         if (!altitude_opt.has_value())
             return QVariant();
@@ -63,7 +64,7 @@ public:
     });
 
     TelFunction(max_speed, {
-        auto speed_opt = m_ext.by_id(mandala::est::nav::pos::speed::uid);
+        auto speed_opt = m_ext.by<TelemetryExtractor::uid_t>(mandala::est::nav::pos::speed::uid);
 
         if (!speed_opt.has_value())
             return QVariant();

@@ -18,29 +18,28 @@ TelemetryExtractor::TelemetryExtractor()
 
 void TelemetryExtractor::sync()
 {
-    clear();
+    clear_synced_data();
+
     std::for_each(m_reader->fieldNames.constKeyValueBegin(),
                   m_reader->fieldNames.constKeyValueEnd(),
                   [this](auto it) {
                       auto fid = it.first;
                       const QString &s = it.second;
 
-                      QVector<QPointF> *d = m_reader->fieldData.value(fid);
-                      if (!d)
-                          return;
+                      if (auto *d = m_reader->fieldData.value(fid)) {
+                          MandalaFact *f = qobject_cast<MandalaFact *>(
+                              Vehicles::instance()->f_replay->f_mandala->findChild(s));
 
-                      MandalaFact *f = qobject_cast<MandalaFact *>(
-                          Vehicles::instance()->f_replay->f_mandala->findChild(s));
-
-                      m_name_data.insert(s, d);
-                      m_uid_data.insert(f->uid(), d);
+                          std::get<0>(data).insert(f->uid(), d);
+                          std::get<1>(data).insert(s, d);
+                      }
                   });
 }
 
-void TelemetryExtractor::clear()
+void TelemetryExtractor::clear_synced_data()
 {
-    m_name_data.clear();
-    m_uid_data.clear();
+    std::get<0>(data).clear();
+    std::get<1>(data).clear();
 }
 
 TelemetryExtractor &TelemetryExtractor::instance()
@@ -52,24 +51,4 @@ TelemetryExtractor &TelemetryExtractor::instance()
 void TelemetryExtractor::telemetry_data_changed()
 {
     sync();
-}
-
-std::optional<QVector<QPointF> *> TelemetryExtractor::by_id(quint64 uid)
-{
-    auto it = m_uid_data.find(uid);
-
-    if (it == m_uid_data.end() || it.value() == nullptr)
-        return std::nullopt;
-
-    return it.value();
-}
-
-std::optional<QVector<QPointF> *> TelemetryExtractor::by_name(QString name)
-{
-    auto it = m_name_data.find(name);
-
-    if (it == m_name_data.end() || it.value() == nullptr)
-        return std::nullopt;
-
-    return it.value();
 }
