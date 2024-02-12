@@ -2,7 +2,7 @@
 #include "TelemetryFunctions.h"
 
 TelemetryResolver::TelemetryResolver()
-    : m_functions(TelemetryFuncRegistry::instance())
+    : m_functions(Singleton<TelemetryFuncRegistry>::getInstance())
 {}
 
 std::optional<QString> TelemetryResolver::get_value(QString command)

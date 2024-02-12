@@ -42,12 +42,6 @@ void TelemetryExtractor::clear_synced_data()
     std::get<1>(data).clear();
 }
 
-TelemetryExtractor &TelemetryExtractor::instance()
-{
-    static TelemetryExtractor inst;
-    return inst;
-}
-
 void TelemetryExtractor::telemetry_data_changed()
 {
     sync();

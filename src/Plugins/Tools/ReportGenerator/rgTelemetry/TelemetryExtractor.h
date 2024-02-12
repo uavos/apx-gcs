@@ -3,6 +3,7 @@
 #include <Mandala/Mandala.h>
 #include <Telemetry/TelemetryReader.h>
 #include <optional>
+#include <rgUtils/Singleton.h>
 #include <QtCore>
 
 /**
@@ -14,10 +15,10 @@ class TelemetryExtractor : public QObject
     Q_OBJECT
 
 public:
+    TelemetryExtractor();
+
     using name_t = QString;
     using uid_t = quint64;
-
-    static TelemetryExtractor &instance();
 
     template<typename Key>
     std::optional<QVector<QPointF> *> by(const Key &key);
@@ -26,7 +27,6 @@ private slots:
     void telemetry_data_changed();
 
 private:
-    TelemetryExtractor();
     void sync();
     void clear_synced_data();
 

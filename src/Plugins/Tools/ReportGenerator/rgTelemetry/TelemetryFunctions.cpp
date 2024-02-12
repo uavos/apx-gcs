@@ -16,12 +16,6 @@ TelemetryFuncRegistry::TelemetryFuncRegistry()
             &TelemetryFuncRegistry::telemetry_data_changed);
 }
 
-TelemetryFuncRegistry &TelemetryFuncRegistry::instance()
-{
-    static TelemetryFuncRegistry inst;
-    return inst;
-}
-
 std::optional<QVariant> TelemetryFuncRegistry::call_by_name(QString name)
 {
     auto it = m_registry.find(name);

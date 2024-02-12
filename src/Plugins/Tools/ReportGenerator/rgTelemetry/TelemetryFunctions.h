@@ -28,7 +28,7 @@ class TelemetryFuncRegistry : public QObject
     Q_OBJECT
 
 public:
-    static TelemetryFuncRegistry &instance();
+    TelemetryFuncRegistry();
 
     std::optional<QVariant> call_by_name(QString name);
 
@@ -38,11 +38,9 @@ private slots:
     void telemetry_data_changed();
 
 private:
-    TelemetryFuncRegistry();
+        QMap<QString, TelemetryFunc *> m_registry;
 
-    QMap<QString, TelemetryFunc *> m_registry;
-
-    TelemetryExtractor &m_ext{TelemetryExtractor::instance()};
+    TelemetryExtractor &m_ext{Singleton<TelemetryExtractor>::getInstance()};
 
     // Functions for telemetry calculations
 public:
