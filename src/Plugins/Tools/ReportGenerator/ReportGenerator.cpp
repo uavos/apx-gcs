@@ -101,7 +101,7 @@ void ReportGenerator::save_report()
 
 void ReportGenerator::generate_report()
 {
-    QRegularExpression pattern("\\{([^{}]*)\\}");
+    QRegularExpression pattern("\\$\\{([^{}]*)\\}");
 
     QRegularExpressionMatchIterator matches = pattern.globalMatch(m_template_raw);
 
@@ -124,18 +124,18 @@ void ReportGenerator::generate_report()
 
 void ReportGenerator::pick_template_button_pressed()
 {
-    QFileDialog dlg(nullptr, "Choose template", AppDirs::user().absolutePath());
+    QString directory = QDir::currentPath();
+    QString filter = "Template HTML files (*.template.html)";
 
-    QStringList filters;
-    filters << tr("All supported types") + " (*.html)";
-    dlg.setNameFilters(filters);
+    m_template_path = QFileDialog::getOpenFileName(nullptr,
+                                                   "Select Template HTML File",
+                                                   directory,
+                                                   filter);
 
-    dlg.exec();
-
-    if (!dlg.selectedFiles().size())
+    if (m_template_path.isEmpty()) {
+        m_template_loaded = false;
         return;
-
-    m_template_path = dlg.selectedFiles().at(0);
+    }
 
     load_template();
 }
