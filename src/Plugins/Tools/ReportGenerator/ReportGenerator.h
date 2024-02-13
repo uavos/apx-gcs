@@ -4,6 +4,7 @@
 #include "Router.h"
 #include <QtWidgets>
 
+namespace ReportGenerator {
 /**
  * @brief A class that reads a template, inserts values returned by resolvers, and saves the report
  * 
@@ -16,13 +17,14 @@ public:
     explicit ReportGenerator(Fact *parent = nullptr);
 
 private slots:
-    void pick_template_button_pressed();
-    void generate_template_button_pressed();
+    void loadTemplateSlot();
+    void generateReportSlot();
 
 private:
-    void load_template();
-    void save_report();
-    void generate_report();
+    void loadTemplate();
+    void saveReport();
+    void generateReport();
+    void updateGenerateButtonState();
 
     Fact *f_choose_template;
     Fact *f_generate_report;
@@ -35,3 +37,4 @@ private:
 
     bool m_template_loaded;
 };
+}; // namespace ReportGenerator

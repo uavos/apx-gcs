@@ -1,8 +1,9 @@
 #include "ReportGenerator.h"
 #include "App/AppDirs.h"
 #include "App/AppLog.h"
-#include "rgTelemetry/TelemetryExtractor.h"
+#include "rgTelemetry/TelemetryAccessor.h"
 #include "rgTelemetry/TelemetryResolver.h"
+#include "rgUtils/TemplateStepper.h"
 #include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryShare.h>
@@ -11,6 +12,7 @@
 #include <QDesktopServices>
 #include <QtCore>
 
+namespace ReportGenerator {
 ReportGenerator::ReportGenerator(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -34,10 +36,7 @@ ReportGenerator::ReportGenerator(Fact *parent)
                                  Action | Apply,
                                  "upload");
 
-    connect(f_choose_template,
-            &Fact::triggered,
-            this,
-            &ReportGenerator::pick_template_button_pressed);
+    connect(f_choose_template, &Fact::triggered, this, &ReportGenerator::loadTemplateSlot);
 
     f_generate_report = new Fact(this,
                                  "generate_report",
@@ -45,27 +44,24 @@ ReportGenerator::ReportGenerator(Fact *parent)
                                  tr(""),
                                  Action | Apply,
                                  "export");
-    connect(f_generate_report,
-            &Fact::triggered,
-            this,
-            &ReportGenerator::generate_template_button_pressed);
+    connect(f_generate_report, &Fact::triggered, this, &ReportGenerator::generateReportSlot);
 
     f_generate_report->setEnabled(false);
 }
 
-void ReportGenerator::generate_template_button_pressed()
+void ReportGenerator::generateReportSlot()
 {
     if (!m_template_loaded)
         return;
 
-    generate_report();
-    save_report();
+    generateReport();
+    saveReport();
 }
 
-void ReportGenerator::load_template()
+void ReportGenerator::loadTemplate()
 {
     m_template_loaded = false;
-    m_template_raw = "";
+    m_template_raw.clear();
 
     QFile file(m_template_path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -79,10 +75,10 @@ void ReportGenerator::load_template()
     file.close();
 
     m_template_loaded = true;
-    f_generate_report->setEnabled(true);
+    updateGenerateButtonState();
 }
 
-void ReportGenerator::save_report()
+void ReportGenerator::saveReport()
 {
     auto filename = QFileDialog::getSaveFileName();
     QFile f(filename);
@@ -99,30 +95,24 @@ void ReportGenerator::save_report()
         QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
 }
 
-void ReportGenerator::generate_report()
+void ReportGenerator::generateReport()
 {
-    QRegularExpression pattern("\\$\\{([^{}]*)\\}");
-
-    QRegularExpressionMatchIterator matches = pattern.globalMatch(m_template_raw);
-
-    m_report_raw.clear();
-    m_report_raw.reserve(m_template_raw.length());
-
-    size_t start_iter = 0;
-    while (matches.hasNext()) {
-        QRegularExpressionMatch match = matches.next();
-        auto command = match.captured(1).trimmed();
-        auto ret = m_router.resolve_path(command).value_or("COMMAND NOT FOUND");
-        m_report_raw.append(m_template_raw.mid(start_iter, match.capturedStart(0) - start_iter));
-        m_report_raw.append(ret);
-
-        start_iter = match.capturedEnd(0);
-    }
-
-    m_report_raw.append(m_template_raw.mid(start_iter, m_template_raw.size() - start_iter));
+    QString pattern{"\\$\\{([^{}]*)\\}"};
+    m_report_raw = TemplateStepper::replaceCommands(m_template_raw,
+                                                    pattern,
+                                                    [this](QString command) -> QString {
+                                                        return m_router
+                                                            .resolvePath(command.trimmed())
+                                                            .value_or("COMMAND NOT FOUND");
+                                                    });
 }
 
-void ReportGenerator::pick_template_button_pressed()
+void ReportGenerator::updateGenerateButtonState()
+{
+    f_generate_report->setEnabled(m_template_loaded);
+}
+
+void ReportGenerator::loadTemplateSlot()
 {
     QString directory = QDir::currentPath();
     QString filter = "Template HTML files (*.template.html)";
@@ -134,8 +124,10 @@ void ReportGenerator::pick_template_button_pressed()
 
     if (m_template_path.isEmpty()) {
         m_template_loaded = false;
+        updateGenerateButtonState();
         return;
     }
 
-    load_template();
+    loadTemplate();
 }
+}; // namespace ReportGenerator

@@ -1,11 +1,13 @@
-#include "TelemetryExtractor.h"
+#include "TelemetryAccessor.h"
 #include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryShare.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
-TelemetryExtractor::TelemetryExtractor()
+namespace ReportGenerator {
+
+TelemetryAccessor::TelemetryAccessor()
 {
     auto telemetry = Vehicles::instance()->f_replay->f_telemetry;
     m_reader = telemetry->f_reader;
@@ -13,13 +15,21 @@ TelemetryExtractor::TelemetryExtractor()
     connect(m_reader,
             &TelemetryReader::dataAvailable,
             this,
-            &TelemetryExtractor::telemetry_data_changed);
+            &TelemetryAccessor::updateTelemetryDataSlot);
 }
 
-void TelemetryExtractor::sync()
+std::optional<QVector<QPointF> *> TelemetryAccessor::get(uid_t uid)
 {
-    clear_synced_data();
+    auto it = m_synced_data.find(uid);
 
+    if (it == m_synced_data.end() || it.value() == nullptr)
+        return std::nullopt;
+
+    return it.value();
+}
+
+void TelemetryAccessor::sync()
+{
     std::for_each(m_reader->fieldNames.constKeyValueBegin(),
                   m_reader->fieldNames.constKeyValueEnd(),
                   [this](auto it) {
@@ -30,19 +40,20 @@ void TelemetryExtractor::sync()
                           MandalaFact *f = qobject_cast<MandalaFact *>(
                               Vehicles::instance()->f_replay->f_mandala->findChild(s));
 
-                          std::get<0>(data).insert(f->uid(), d);
-                          std::get<1>(data).insert(s, d);
+                          m_synced_data.insert(f->uid(), d);
                       }
                   });
 }
 
-void TelemetryExtractor::clear_synced_data()
+void TelemetryAccessor::clearSyncedData()
 {
-    std::get<0>(data).clear();
-    std::get<1>(data).clear();
+    m_synced_data.clear();
 }
 
-void TelemetryExtractor::telemetry_data_changed()
+void TelemetryAccessor::updateTelemetryDataSlot()
 {
+    clearSyncedData();
     sync();
 }
+
+}; // namespace ReportGenerator

@@ -1,14 +1,18 @@
 #include "TelemetryResolver.h"
 #include "TelemetryFunctions.h"
 
+namespace ReportGenerator {
+
 TelemetryResolver::TelemetryResolver()
-    : m_functions(Singleton<TelemetryFuncRegistry>::getInstance())
+    : m_functions(TelemetryFunctions::getInstance())
 {}
 
-std::optional<QString> TelemetryResolver::get_value(QString command)
+std::optional<QString> TelemetryResolver::getValue(QString command)
 {
-    auto temp = m_functions.call_by_name(command);
+    auto temp = m_functions.call(command);
     if (!temp.has_value())
         return std::nullopt;
     return temp.value().toString();
 }
+
+}; // namespace ReportGenerator

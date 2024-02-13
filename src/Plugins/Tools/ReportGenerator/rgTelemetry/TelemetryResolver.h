@@ -4,7 +4,9 @@
 #include <optional>
 #include <QtCore>
 
-class TelemetryFuncRegistry;
+namespace ReportGenerator {
+
+class TelemetryFunctions;
 
 /**
  * @brief The task of the class is to return a string value that will be inserted into the final report
@@ -15,8 +17,10 @@ class TelemetryResolver : public IResolver
 public:
     TelemetryResolver();
 
-    virtual std::optional<QString> get_value(QString command) override;
+    virtual std::optional<QString> getValue(QString command) override;
 
 private:
-    TelemetryFuncRegistry &m_functions;
+    TelemetryFunctions &m_functions;
+};
+
 };

@@ -2,6 +2,8 @@
 
 #include <QtCore>
 
+namespace ReportGenerator {
+
 /**
  * @brief Interface for Resolvers
  * 
@@ -15,5 +17,7 @@ public:
      * @param command 
      * @return std::optional<QString> if no command found, then std::nullopt returned
      */
-    virtual std::optional<QString> get_value(QString command) = 0;
+    virtual std::optional<QString> getValue(QString command) = 0;
 };
+
+}; // namespace ReportGenerator

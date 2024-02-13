@@ -5,18 +5,17 @@
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
-TelemetryFuncRegistry::TelemetryFuncRegistry()
+namespace ReportGenerator {
+
+TelemetryFunctions::TelemetryFunctions()
 {
     auto telemetry = Vehicles::instance()->f_replay->f_telemetry;
     auto reader = telemetry->f_reader;
 
-    connect(reader,
-            &TelemetryReader::dataAvailable,
-            this,
-            &TelemetryFuncRegistry::telemetry_data_changed);
+    connect(reader, &TelemetryReader::dataAvailable, this, &TelemetryFunctions::clearCacheSlot);
 }
 
-std::optional<QVariant> TelemetryFuncRegistry::call_by_name(QString name)
+std::optional<QVariant> TelemetryFunctions::call(QString name)
 {
     auto it = m_registry.find(name);
 
@@ -26,22 +25,24 @@ std::optional<QVariant> TelemetryFuncRegistry::call_by_name(QString name)
     return (*it.value())();
 }
 
-void TelemetryFuncRegistry::clear_cache()
+void TelemetryFunctions::clearCache()
 {
     for (auto el : m_registry) {
-        el->clear_cache();
+        el->clearCache();
     }
 }
 
-void TelemetryFuncRegistry::telemetry_data_changed()
+void TelemetryFunctions::clearCacheSlot()
 {
-    clear_cache();
+    clearCache();
 }
 
-TelemetryFunc::TelemetryFunc(TelemetryFuncRegistry *parent,
+TelemetryFunc::TelemetryFunc(TelemetryFunctions *parent,
                              QString func_name,
                              std::function<QVariant()> func)
-    : CachedFunction(func)
+    : ParamlessCachedFunction(func)
 {
     parent->m_registry[func_name] = this;
 }
+
+} // namespace ReportGenerator

@@ -1,6 +1,8 @@
 #include "Router.h"
 
-std::optional<QString> Router::resolve_path(const QString &command) const
+namespace ReportGenerator {
+
+std::optional<QString> Router::resolvePath(const QString &command) const
 {
     const auto routes = command.split("/");
 
@@ -11,8 +13,10 @@ std::optional<QString> Router::resolve_path(const QString &command) const
     const auto &function_name = routes[1];
 
     if (auto it = m_resolvers_map.find(resolver); it != m_resolvers_map.end()) {
-        return it.value()->get_value(function_name);
+        return it.value()->getValue(function_name);
     }
 
     return std::nullopt;
 }
+
+}; // namespace ReportGenerator

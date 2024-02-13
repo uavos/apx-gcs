@@ -8,15 +8,15 @@
  * @param RetT Return type of function
  */
 template<class RetT>
-struct CachedFunction
+struct ParamlessCachedFunction
 {
     using func_t = std::function<RetT()>;
 
-    CachedFunction(func_t func)
+    ParamlessCachedFunction(func_t func)
         : m_func(func)
         , m_is_cached(false){};
 
-    void clear_cache() { m_is_cached = false; };
+    void clearCache() { m_is_cached = false; };
 
     RetT operator()()
     {

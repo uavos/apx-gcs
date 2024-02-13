@@ -1,52 +1,56 @@
 #pragma once
 
-#include "rgTelemetry/TelemetryExtractor.h"
+#include "rgTelemetry/TelemetryAccessor.h"
 #include "rgUtils/CachedFunction.h"
 #include <optional>
 #include <QtCore>
 
+namespace ReportGenerator {
+
 #define TelFunction(name, body) \
     TelemetryFunc name = TelemetryFunc(this, #name, [this]() -> QVariant body)
 
-class TelemetryFuncRegistry;
+class TelemetryFunctions;
 
 /**
  * @brief Cached function class, using name of function for reflection
  * 
  */
-struct TelemetryFunc : public CachedFunction<QVariant>
+struct TelemetryFunc : public ParamlessCachedFunction<QVariant>
 {
-    TelemetryFunc(TelemetryFuncRegistry *parent, QString func_name, std::function<QVariant()> func);
+    TelemetryFunc(TelemetryFunctions *parent, QString func_name, std::function<QVariant()> func);
 };
 
 /**
  * @brief Used to store functions for telemetry resolver
  * 
  */
-class TelemetryFuncRegistry : public QObject
+class TelemetryFunctions : public QObject, public Singleton<TelemetryFunctions>
 {
     Q_OBJECT
 
 public:
-    TelemetryFuncRegistry();
+    TelemetryFunctions();
 
-    std::optional<QVariant> call_by_name(QString name);
+    TelemetryFunctions(const TelemetryFunctions &) = delete;
+    TelemetryFunctions &operator=(const TelemetryFunctions &) = default;
 
-    void clear_cache();
+    std::optional<QVariant> call(QString name);
+
+    void clearCache();
 
 private slots:
-    void telemetry_data_changed();
+    void clearCacheSlot();
 
 private:
-        QMap<QString, TelemetryFunc *> m_registry;
+    QMap<QString, TelemetryFunc *> m_registry;
 
-    TelemetryExtractor &m_ext{Singleton<TelemetryExtractor>::getInstance()};
+    TelemetryAccessor &m_ext{TelemetryAccessor::getInstance()};
 
     // Functions for telemetry calculations
 public:
     TelFunction(max_altitude, {
-        auto altitude_opt = m_ext.by<TelemetryExtractor::uid_t>(
-            mandala::est::nav::pos::altitude::uid);
+        auto altitude_opt = m_ext.get(mandala::est::nav::pos::altitude::uid);
 
         if (!altitude_opt.has_value())
             return QVariant();
@@ -62,7 +66,7 @@ public:
     });
 
     TelFunction(max_speed, {
-        auto speed_opt = m_ext.by<TelemetryExtractor::uid_t>(mandala::est::nav::pos::speed::uid);
+        auto speed_opt = m_ext.get(mandala::est::nav::pos::speed::uid);
 
         if (!speed_opt.has_value())
             return QVariant();
@@ -78,3 +82,5 @@ public:
 
     friend class TelemetryFunc;
 };
+
+}; // namespace ReportGenerator
