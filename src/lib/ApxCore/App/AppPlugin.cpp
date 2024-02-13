@@ -108,85 +108,89 @@ void AppPlugin::loadLib()
     sx_blacklist.setValue(name, _hash);
     sx_blacklist.sync();
 
-    p = qobject_cast<PluginInterface *>(instance);
-    interface = p;
+    try {
+        p = qobject_cast<PluginInterface *>(instance);
+        interface = p;
 
-    if (!interface)
-        return;
+        if (!interface)
+            return;
 
-    if (!f_enabled->value().toBool())
-        return;
+        if (!f_enabled->value().toBool())
+            return;
 
-    //check depends
-    depends = p->depends();
-    if (!depends.isEmpty()) {
-        bool ok = false;
-        //apxConsole() << tr("Deps").append(":") << depends;
-        for (auto d : *plugins) {
-            if (!depends.contains(d->name))
-                continue;
-            ok = true;
-            apxConsole() << tr("Depends").append(":") << d->name;
-            d->load();
+        //check depends
+        depends = p->depends();
+        if (!depends.isEmpty()) {
+            bool ok = false;
+            //apxConsole() << tr("Deps").append(":") << depends;
+            for (auto d : *plugins) {
+                if (!depends.contains(d->name))
+                    continue;
+                ok = true;
+                apxConsole() << tr("Depends").append(":") << d->name;
+                d->load();
+            }
+            if (!ok) {
+                apxMsgW() << tr("Dependency not found").append(":") << depends;
+            }
+            apxConsole() << tr("Initializing").append(":") << name;
         }
-        if (!ok) {
-            apxMsgW() << tr("Dependency not found").append(":") << depends;
+
+        //define section
+        switch (p->flags() & PluginInterface::PluginSectionMask) {
+        default:
+            section = tr("Other");
+            break;
+        case PluginInterface::System:
+            section = tr("System features");
+            break;
+        case PluginInterface::Tool:
+            section = tr("Tools");
+            break;
+        case PluginInterface::Map:
+            section = tr("Mission");
+            break;
         }
-        apxConsole() << tr("Initializing").append(":") << name;
-    }
 
-    //define section
-    switch (p->flags() & PluginInterface::PluginSectionMask) {
-    default:
-        section = tr("Other");
-        break;
-    case PluginInterface::System:
-        section = tr("System features");
-        break;
-    case PluginInterface::Tool:
-        section = tr("Tools");
-        break;
-    case PluginInterface::Map:
-        section = tr("Mission");
-        break;
-    }
+        //initialize lib
+        p->init();
+        QString title = p->title();
+        QString descr = p->descr();
+        switch (p->flags() & PluginInterface::PluginTypeMask) {
+        default:
+            break;
+        case PluginInterface::Feature: {
+            control = p->createControl();
+            Fact *f = qobject_cast<Fact *>(control);
+            if (f) {
+                if (title.isEmpty())
+                    title = f->title();
+                if (descr.isEmpty())
+                    descr = f->descr();
+                //connect(App::instance(), &App::aboutToQuit, f, &Fact::remove);
+            } else {
+                //connect(App::instance(), &App::aboutToQuit, control, &QObject::deleteLater);
+            }
+            f_enabled->setSection(section);
+            if (!descr.isEmpty())
+                descr.prepend(tr("Tool").append(": "));
 
-    //initialize lib
-    p->init();
-    QString title = p->title();
-    QString descr = p->descr();
-    switch (p->flags() & PluginInterface::PluginTypeMask) {
-    default:
-        break;
-    case PluginInterface::Feature: {
-        control = p->createControl();
-        Fact *f = qobject_cast<Fact *>(control);
-        if (f) {
-            if (title.isEmpty())
-                title = f->title();
-            if (descr.isEmpty())
-                descr = f->descr();
-            //connect(App::instance(), &App::aboutToQuit, f, &Fact::remove);
-        } else {
-            //connect(App::instance(), &App::aboutToQuit, control, &QObject::deleteLater);
+            plugins->loadedTool(this);
+        } break;
+        case PluginInterface::Widget: {
+            f_enabled->setSection(tr("Windows"));
+            descr.prepend(tr("Window").append(": "));
+            plugins->loadedWindow(this);
+        } break;
         }
-        f_enabled->setSection(section);
-        if (!descr.isEmpty())
-            descr.prepend(tr("Tool").append(": "));
+        f_enabled->setTitle(title);
+        f_enabled->setDescr(descr);
 
-        plugins->loadedTool(this);
-    } break;
-    case PluginInterface::Widget: {
-        f_enabled->setSection(tr("Windows"));
-        descr.prepend(tr("Window").append(": "));
-        plugins->loadedWindow(this);
-    } break;
+        sx_blacklist.remove(name);
+        sx_blacklist.sync();
+    } catch (const std::exception &e) {
+        apxMsgW() << "Error loading plugin " << name << ": " << e.what();
     }
-    f_enabled->setTitle(title);
-    f_enabled->setDescr(descr);
-
-    sx_blacklist.remove(name);
-    sx_blacklist.sync();
 }
 void AppPlugin::loadQml()
 {
