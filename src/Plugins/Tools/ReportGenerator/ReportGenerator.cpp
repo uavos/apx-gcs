@@ -12,7 +12,7 @@
 #include <QDesktopServices>
 #include <QtCore>
 
-namespace ReportGenerator {
+namespace RG {
 ReportGenerator::ReportGenerator(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -98,13 +98,13 @@ void ReportGenerator::saveReport()
 void ReportGenerator::generateReport()
 {
     QString pattern{"\\$\\{([^{}]*)\\}"};
-    m_report_raw = TemplateStepper::replaceCommands(m_template_raw,
-                                                    pattern,
-                                                    [this](QString command) -> QString {
-                                                        return m_router
-                                                            .resolvePath(command.trimmed())
-                                                            .value_or("COMMAND NOT FOUND");
-                                                    });
+    m_report_raw = TemplateStepper::resolvePatternMatches(m_template_raw,
+                                                          pattern,
+                                                          [this](QString command) -> QString {
+                                                              return m_router
+                                                                  .resolvePath(command.trimmed())
+                                                                  .value_or("COMMAND NOT FOUND");
+                                                          });
 }
 
 void ReportGenerator::updateGenerateButtonState()
@@ -130,4 +130,4 @@ void ReportGenerator::loadTemplateSlot()
 
     loadTemplate();
 }
-}; // namespace ReportGenerator
+}; // namespace RG

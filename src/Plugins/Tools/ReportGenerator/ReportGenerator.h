@@ -4,7 +4,7 @@
 #include "Router.h"
 #include <QtWidgets>
 
-namespace ReportGenerator {
+namespace RG {
 /**
  * @brief A class that reads a template, inserts values returned by resolvers, and saves the report
  * 
@@ -37,4 +37,4 @@ private:
 
     bool m_template_loaded;
 };
-}; // namespace ReportGenerator
+}; // namespace RG

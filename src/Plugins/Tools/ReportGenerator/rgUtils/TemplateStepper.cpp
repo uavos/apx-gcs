@@ -1,6 +1,6 @@
 #include "TemplateStepper.h"
 
-QString TemplateStepper::replaceCommands(const QString &text,
+QString TemplateStepper::resolvePatternMatches(const QString &text,
                                          const QString &pattern,
                                          std::function<QString(QString)> resolver)
 {

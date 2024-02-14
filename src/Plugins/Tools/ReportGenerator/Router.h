@@ -5,7 +5,7 @@
 #include <optional>
 #include <QtCore>
 
-namespace ReportGenerator {
+namespace RG {
 
 /**
  * @brief The router is used to distribute requests between resolvers
@@ -24,4 +24,4 @@ private:
     QHash<QString, IResolver *> m_resolvers_map = {{"telemetry", &m_impl_telemetry_resolver}};
 };
 
-}; // namespace ReportGenerator
+}; // namespace RG

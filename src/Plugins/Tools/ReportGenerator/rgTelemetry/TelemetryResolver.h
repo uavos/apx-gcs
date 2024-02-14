@@ -4,9 +4,9 @@
 #include <optional>
 #include <QtCore>
 
-namespace ReportGenerator {
+namespace RG {
 
-class TelemetryFunctions;
+class TelemetryVariables;
 
 /**
  * @brief The task of the class is to return a string value that will be inserted into the final report
@@ -20,7 +20,7 @@ public:
     virtual std::optional<QString> getValue(QString command) override;
 
 private:
-    TelemetryFunctions &m_functions;
+    TelemetryVariables &m_variables;
 };
 
-};
+}; // namespace RG

@@ -6,7 +6,7 @@
 class TemplateStepper
 {
 public:
-    static QString replaceCommands(const QString &text,
-                                   const QString &pattern,
-                                   std::function<QString(QString)> resolver);
+    static QString resolvePatternMatches(const QString &text,
+                                         const QString &pattern,
+                                         std::function<QString(QString)> valueResolver);
 };

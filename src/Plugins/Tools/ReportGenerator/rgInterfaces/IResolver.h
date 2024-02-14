@@ -2,7 +2,7 @@
 
 #include <QtCore>
 
-namespace ReportGenerator {
+namespace RG {
 
 /**
  * @brief Interface for Resolvers

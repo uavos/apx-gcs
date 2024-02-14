@@ -1,11 +1,12 @@
 #include "TelemetryAccessor.h"
 #include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
+#include <Telemetry/TelemetryReader.h>
 #include <Telemetry/TelemetryShare.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
-namespace ReportGenerator {
+namespace RG {
 
 TelemetryAccessor::TelemetryAccessor()
 {
@@ -56,4 +57,4 @@ void TelemetryAccessor::updateTelemetryDataSlot()
     sync();
 }
 
-}; // namespace ReportGenerator
+}; // namespace RG

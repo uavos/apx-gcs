@@ -1,12 +1,13 @@
 #pragma once
 
 #include <Mandala/Mandala.h>
-#include <Telemetry/TelemetryReader.h>
 #include <optional>
 #include <rgUtils/Singleton.h>
 #include <QtCore>
 
-namespace ReportGenerator {
+class TelemetryReader;
+
+namespace RG {
 
 /**
  * @brief Used for convenient access to telemetry data
@@ -18,8 +19,6 @@ class TelemetryAccessor : public QObject, public Singleton<TelemetryAccessor>
 
 public:
     TelemetryAccessor();
-    TelemetryAccessor(const TelemetryAccessor &) = delete;
-    TelemetryAccessor &operator=(const TelemetryAccessor &) = delete;
 
     std::optional<QVector<QPointF> *> get(uid_t uid);
 
@@ -34,4 +33,4 @@ private:
     TelemetryReader *m_reader;
 };
 
-}; // namespace ReportGenerator
+}; // namespace RG

@@ -1,6 +1,6 @@
 #include "Router.h"
 
-namespace ReportGenerator {
+namespace RG {
 
 std::optional<QString> Router::resolvePath(const QString &command) const
 {

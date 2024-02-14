@@ -32,5 +32,5 @@ class ReportGeneratorPlugin : public PluginInterface
     Q_INTERFACES(PluginInterface)
 public:
     int flags() override { return Feature | Tool; }
-    QObject *createControl() override { return new ReportGenerator::ReportGenerator(); }
+    QObject *createControl() override { return new RG::ReportGenerator(); }
 };
