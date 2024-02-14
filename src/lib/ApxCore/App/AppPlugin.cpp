@@ -138,9 +138,6 @@ void AppPlugin::loadLib()
 
         //define section
         switch (p->flags() & PluginInterface::PluginSectionMask) {
-        default:
-            section = tr("Other");
-            break;
         case PluginInterface::System:
             section = tr("System features");
             break;
@@ -149,6 +146,9 @@ void AppPlugin::loadLib()
             break;
         case PluginInterface::Map:
             section = tr("Mission");
+            break;
+        default:
+            section = tr("Other");
             break;
         }
 
