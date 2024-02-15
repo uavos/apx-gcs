@@ -217,30 +217,8 @@ bool DatalinkTcp::checkServerRequestHeader()
                 setUrl(sname);
                 return true;
             }
-            //generic request
-            bool ok = false;
             setStatus("HTTP");
-            emit httpRequest(stream, req, &ok);
-            if (!ok) {
-                stream << "HTTP/1.1 404 Not Found\r\n";
-                stream << "Content-Type: text/html; charset=\"utf-8\"\r\n";
-                stream << "\r\n";
-                stream << QString("<b>GCS HTTP Server</b> (%1:%2)")
-                              .arg(_tcp->localAddress().toString())
-                              .arg(_tcp->localPort());
-                if (req != "/")
-                    stream << QString("<br>No service for '%1'").arg(req);
-                stream << "<hr size=1>";
-                stream << QString("<a href=%1>%1</a> - %2<br>").arg("/kml").arg("Google Earth KML");
-                stream << QString("<a href=%1>%1</a> - %2<br>")
-                              .arg("/datalink")
-                              .arg("Datalink stream [uint16 packet size][CRC_16_IBM][packet data]");
-                stream << QString("<a href=%1>%1</a> - %2<br>")
-                              .arg("/mandala")
-                              .arg("Mandala XML data and commands");
-                stream << QString("<br>More info here: <a href=%1>%1</a>")
-                              .arg("https://docs.uavos.com/");
-            }
+            emit httpRequest(stream, req, _tcp);
             stream.flush();
             _tcp->close();
             return false;
