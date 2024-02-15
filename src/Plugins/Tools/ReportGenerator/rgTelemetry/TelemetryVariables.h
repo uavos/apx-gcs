@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rgCore/CachedVariableFact.h"
+#include "rgCore/CachedVariable.h"
 #include "rgTelemetry/TelemetryAccessor.h"
 #include "rgUtils/CachedFunction.h"
 #include <optional>
@@ -27,13 +27,13 @@ private slots:
     void clearCacheSlot();
 
 private:
-    QHash<QString, CachedVariableFact *> m_registry = {{"max_altitude", &max_altitude},
-                                                       {"max_speed", &max_speed}};
+    QHash<QString, CachedVariable *> m_registry = {{"max_altitude", &max_altitude},
+                                                   {"max_speed", &max_speed}};
 
     TelemetryAccessor &m_telemetry{TelemetryAccessor::getInstance()};
 
 public:
-    CachedVariableFact max_altitude{[this]() -> FunctionResult {
+    CachedVariable max_altitude{[this]() -> FunctionResult {
         auto altitude_opt = m_telemetry.get(mandala::est::nav::pos::altitude::uid);
 
         if (!altitude_opt.has_value())
@@ -49,7 +49,7 @@ public:
         return FunctionResult(max_altitude);
     }};
 
-    CachedVariableFact max_speed{[this]() -> FunctionResult {
+    CachedVariable max_speed{[this]() -> FunctionResult {
         auto speed_opt = m_telemetry.get(mandala::est::nav::pos::speed::uid);
 
         if (!speed_opt.has_value())

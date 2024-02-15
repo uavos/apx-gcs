@@ -6,10 +6,10 @@
 
 namespace RG {
 
-class CachedVariableFact : public CachedFunction<FunctionResult>
+class CachedVariable : public CachedFunction<FunctionResult>
 {
 public:
-    CachedVariableFact(std::function<FunctionResult()> func);
+    CachedVariable(std::function<FunctionResult()> func);
 };
 
 } // namespace RG
