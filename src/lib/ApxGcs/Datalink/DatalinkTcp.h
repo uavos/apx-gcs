@@ -66,7 +66,7 @@ protected:
     void requestDatalinkHeader();
 
 signals:
-    void httpRequest(QTextStream &stream, QString req, bool *ok);
+    void httpRequest(QTextStream &stream, QString req, QTcpSocket *tcp);
     void disconnected();
     void error();
 };
