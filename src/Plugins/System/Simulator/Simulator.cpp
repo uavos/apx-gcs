@@ -216,20 +216,26 @@ void Simulator::launchXplane()
                 dir = QDir(AppDirs::libs().absolutePath(), "*.xpl");
             if (dir.isEmpty())
                 apxMsgW() << tr("XPL Plugin not found");
-            for (auto const &fi : dir.entryInfoList()) {
-                QString dest = d.absoluteFilePath(fi.fileName());
-                QFileInfo fiDest(dest);
-                //qDebug()<<dest;
-                if (fiDest.isSymLink() && fiDest.symLinkTarget() == fi.absoluteFilePath())
-                    continue;
-                //qDebug()<<fi.absoluteFilePath()<<dest<<QFile::exists(dest);
-                if (fiDest.isSymLink() || QFile::exists(dest))
-                    QFile::remove(dest);
-                //qDebug()<<fi.absoluteFilePath()<<dest<<QFile::exists(dest);
-                if (QFile::link(fi.absoluteFilePath(), dest)) {
-                    apxMsg() << tr("XPL Plugin installed").append(":") << dest;
+
+            for (auto const &fiSource : dir.entryInfoList()) {
+                QString destPath = d.absoluteFilePath(fiSource.fileName());
+                QFileInfo fiDest(destPath);
+
+                if (QFile::exists(destPath)) {
+                    if (fiDest.lastModified() == fiSource.lastModified())
+                        continue;
+
+                    QFile::remove(destPath);
+                }
+
+                if (QFile::copy(fiSource.absoluteFilePath(), fiDest.absoluteFilePath())) {
+                    QFile fDest(destPath);
+                    fDest.open(QFile::ReadOnly);
+                    fDest.setFileTime(fiSource.lastModified(), QFile::FileModificationTime);
+
+                    apxMsg() << tr("XPL Plugin installed").append(":") << destPath;
                 } else {
-                    apxMsgW() << tr("XPL Plugin error").append(":") << dest;
+                    apxMsgW() << tr("XPL Plugin error").append(":") << destPath;
                 }
             }
         }

@@ -88,7 +88,7 @@ public slots:
 signals:
     void packetReceived(QByteArray packet);
     void packetTransmitted(QByteArray packet);
-    void httpRequest(QTextStream &stream, QString req, bool *ok);
+    void httpRequest(QTextStream &stream, QString req, QTcpSocket *tcp);
     void heartbeat();
 
     //-----------------------------------------

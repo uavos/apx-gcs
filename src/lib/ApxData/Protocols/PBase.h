@@ -50,11 +50,11 @@ public:
     // interface to node firmware loader
     PFirmware *firmware() const { return m_firmware; }
 
-private:
-    PTrace *_trace;
-
 protected:
     PFirmware *m_firmware{};
+
+private:
+    PTrace *_trace;
 
     // data comm
 public slots:

@@ -64,6 +64,17 @@ public:
     QStringList tableFields(QString tableName) const;
     void updateTableFields(const QString tableName, QStringList fields);
 
+public:
+    quint64 capacity() const;
+
+protected:
+    quint64 m_capacity;
+
+protected:
+    Database *database;
+    DatabaseWorker *m_worker;
+    QReadWriteLock m_workerLock;
+
 private:
     QTimer modifiedTimer;
 
@@ -71,11 +82,6 @@ private:
     int infoQueueSize;
 
     QHash<QString, QStringList> _tableFields;
-
-protected:
-    Database *database;
-    DatabaseWorker *m_worker;
-    QReadWriteLock m_workerLock;
 
 private slots:
     void updateInfo();
@@ -92,13 +98,6 @@ public slots:
 signals:
     void modified();
 
-    //-----------------------------------------
-    //PROPERTIES
-public:
-    quint64 capacity() const;
-
-protected:
-    quint64 m_capacity;
 signals:
     void capacityChanged();
 };
@@ -119,13 +118,13 @@ public:
         exec();
     }
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     QString tableName;
     QStringList fields;
     QString tail;
-
-protected:
-    bool run(QSqlQuery &query);
 };
 class DBReqMakeIndex : public DatabaseRequest
 {
@@ -143,13 +142,13 @@ public:
         exec();
     }
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     QString tableName;
     QString indexName;
     bool unique;
-
-protected:
-    bool run(QSqlQuery &query);
 };
 class DBReqVacuum : public DatabaseRequest
 {
@@ -160,11 +159,11 @@ public:
         , name(QFileInfo(db->fileName).baseName())
     {}
 
-private:
-    QString name;
-
 protected:
     bool run(QSqlQuery &query);
+
+private:
+    QString name;
 };
 class DBReqAnalyze : public DatabaseRequest
 {
@@ -175,9 +174,9 @@ public:
         , name(QFileInfo(db->fileName).baseName())
     {}
 
-private:
-    QString name;
-
 protected:
     bool run(QSqlQuery &query);
+
+private:
+    QString name;
 };

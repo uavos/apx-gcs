@@ -80,5 +80,5 @@ signals:
     void binded();
 
     // forwarded from connections for plugins
-    void httpRequest(QTextStream &stream, QString req, bool *ok);
+    void httpRequest(QTextStream &stream, QString req, QTcpSocket *tcp);
 };

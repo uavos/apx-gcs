@@ -139,31 +139,6 @@ public:
     virtual QString mandalaToString(quint16 pid_raw) const override;
     virtual quint16 stringToMandala(const QString &s) const override;
 
-private:
-    Fact *m_mandala{nullptr};
-
-    int m_progress_s{0};
-
-private:
-    QString pTitle() const;
-
-    void updateBinding(Fact *src);
-
-private slots:
-    void updateModels();
-    void onOptionsChanged();
-    void trackProgress();
-
-public slots:
-    //trigger fact from UI (f.ex. to display menu)
-    void trigger(QVariantMap opts = QVariantMap());
-
-signals:
-    void triggered(QVariantMap opts);
-    void menuBack();
-
-    //---------------------------------------
-    // PROPERTIES
 public:
     FactBase::Flags flags() const;
     void setFlags(FactBase::Flags v);
@@ -222,6 +197,36 @@ protected:
 
     int m_scnt{0};
 
+private:
+    Fact *m_mandala{nullptr};
+
+    int m_progress_s{0};
+
+private:
+    QString pTitle() const;
+
+    void updateBinding(Fact *src);
+
+    //tree properties propagate
+private:
+    bool m_parentEnabled{true};
+    void updateParentEnabled();
+    bool m_parentVisible{true};
+    void updateParentVisible();
+
+private slots:
+    void updateModels();
+    void onOptionsChanged();
+    void trackProgress();
+
+public slots:
+    //trigger fact from UI (f.ex. to display menu)
+    void trigger(QVariantMap opts = QVariantMap());
+
+signals:
+    void triggered(QVariantMap opts);
+    void menuBack();
+
 signals:
     void flagsChanged();
 
@@ -244,11 +249,4 @@ signals:
     void optsChanged();
 
     void scntChanged();
-
-    //tree properties propagate
-private:
-    bool m_parentEnabled{true};
-    void updateParentEnabled();
-    bool m_parentVisible{true};
-    void updateParentVisible();
 };
