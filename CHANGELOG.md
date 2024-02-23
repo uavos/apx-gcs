@@ -1,3 +1,32 @@
+# [APX Ground Control v11.1.14](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.14) (02/23/24)
+
+> Branch: `main`\
+> Date: `02/23/24 08:58:47`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/f69f9f789c1fca25dee2edd7948f6bd251196080...9b75ea65ba46fc209aeddf6930c831aa78963a25)
+
+## Bug Fixes
+* Autoupdate crush bug
+* [`11`](https://github.com/uavos/apx-gcs/issues/11) Access modifiers order fix
+* [`44`](https://github.com/uavos/apx-gcs/issues/44) exchange creating symlink on .xpl plugin
+* [`45`](https://github.com/uavos/apx-gcs/issues/45) add exception check
+* [`45`](https://github.com/uavos/apx-gcs/issues/45) plugins blacklisted on segfault
+
+## Comments
+
+**fix:[`44`](https://github.com/uavos/apx-gcs/issues/44) exchange creating symlink on .xpl plugin**
+
+with copying of it
+
+**fix:[`45`](https://github.com/uavos/apx-gcs/issues/45) add exception check**
+
+to give other plugins chance
+to go out of blacklist
+
+**fix:[`45`](https://github.com/uavos/apx-gcs/issues/45) plugins blacklisted on segfault**
+
+replace try-catch with removing plugin
+from blacklist while dependency is loading
+
 # [APX Ground Control v11.1.13](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.13) (12/17/23)
 
 > Branch: `main`\
