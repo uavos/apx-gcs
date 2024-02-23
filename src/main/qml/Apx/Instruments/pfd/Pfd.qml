@@ -479,7 +479,7 @@ Item {
                 fact: f_reg_pos
                 show: ui.test || ((status != reg_pos_direct || !m_wpt_status) && isValid)
                 blinking: status===reg_pos_hover && m_reg_spd
-                text: fact.text
+                text: fact.text==="runway" ? "rw" : fact.text
                 type: status===reg_pos_off || !m_wpt_status
                       ? CleanText.White
                       : (status===reg_pos_hdg || blinking)

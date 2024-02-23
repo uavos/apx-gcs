@@ -60,7 +60,7 @@ Rectangle {
 
     readonly property int m_reg_pos: mandala.cmd.reg.pos.value
     readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
-    property bool isTrack: m_reg_taxi || m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
+    property bool isTrack: m_reg_taxi || m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_runway || m_reg_pos===reg_pos_loiter
 
     border.width: 0
     color: "#000"
