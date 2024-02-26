@@ -72,7 +72,4 @@ private slots:
 
 signals:
     void countChanged();
-
-private slots:
-    void notification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
 };
