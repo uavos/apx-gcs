@@ -54,45 +54,6 @@ public:
     void setEncoder(SerialEncoder *encoder);
     void setDecoder(SerialDecoder *decoder);
 
-protected:
-    // helpers
-    bool isControlPacket(const QByteArray &packet) const;
-    virtual void resetDataStream();
-
-    // interface with codec implementation
-    virtual QByteArray read();
-    virtual void write(const QByteArray &packet);
-
-    SerialEncoder *_encoder{};
-    SerialDecoder *_decoder{};
-
-private:
-    // receiver fifo and packets queue
-    static constexpr size_t RXBUF_SIZE{xbus::size_packet_max * 8};
-    apx::fifo_packet_static<RXBUF_SIZE> _rx_fifo;
-    QByteArray _rx_pkt{xbus::size_packet_max, '\0'};
-    QByteArray _readPacket();
-
-protected slots:
-    void updateDescr();
-    void updateTitle();
-
-    void readDataAvailable();
-    void opened();
-    void closed();
-
-public slots:
-    virtual void open();
-    virtual void close();
-
-    //export data
-signals:
-    void packetReceived(QByteArray packet, quint16 network);
-public slots:
-    void sendPacket(QByteArray packet, quint16 network);
-
-    //-----------------------------------------
-    //PROPERTIES
 public:
     QString url() const;
     void setUrl(const QString &v);
@@ -112,6 +73,25 @@ public:
     bool blockService() const;
     void setBlockService(const bool &v);
 
+protected:
+    // helpers
+    bool isControlPacket(const QByteArray &packet) const;
+    virtual void resetDataStream();
+
+    // interface with codec implementation
+    virtual QByteArray read();
+    virtual void write(const QByteArray &packet);
+
+    SerialEncoder *_encoder{};
+    SerialDecoder *_decoder{};
+
+private:
+    // receiver fifo and packets queue
+    static constexpr size_t RXBUF_SIZE{xbus::size_packet_max * 8};
+    apx::fifo_packet_static<RXBUF_SIZE> _rx_fifo;
+    QByteArray _rx_pkt{xbus::size_packet_max, '\0'};
+    QByteArray _readPacket();
+
 private:
     QString m_url;
     QString m_status;
@@ -122,6 +102,25 @@ private:
 
     bool m_blockControls;
     bool m_blockService;
+
+protected slots:
+    void updateDescr();
+    void updateTitle();
+
+    void readDataAvailable();
+    void opened();
+    void closed();
+
+public slots:
+    virtual void open();
+    virtual void close();
+
+    //export data
+signals:
+    void packetReceived(QByteArray packet, quint16 network);
+public slots:
+    void sendPacket(QByteArray packet, quint16 network);
+
 signals:
     void urlChanged();
     void statusChanged();
