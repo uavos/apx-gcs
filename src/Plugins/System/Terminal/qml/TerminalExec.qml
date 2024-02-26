@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.7
+import QtQuick 2.15
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 
@@ -34,16 +34,17 @@ Rectangle{
     readonly property string user: apx.vehicles.current.title
     readonly property string pdel: "> "
     readonly property string prefix: user+pdel
+    property bool isClipboardEmpty: terminal.isClipboardEmpty()
 
     property var terminal: apx.tools.terminal
 
     signal focused()
-
-    signal focusRequested() //fwd to text field
-
+    signal upPressed(var event)
+    signal downPressed(var event)
+    onUpPressed: (event) => cmdText.Keys.upPressed(event)
+    onDownPressed: (event) => cmdText.Keys.downPressed(event)
 
     onPrefixChanged: setCmd(getCmd())
-    onFocusRequested: cmdText.forceActiveFocus()
 
     TextInput {
         id: cmdText
@@ -56,6 +57,7 @@ Rectangle{
         readonly property int pos0: text.indexOf(pdel)+pdel.length
         readonly property int pos: cursorPosition-pos0
         text: prefix //+"</font><font color='#fff'>"
+        persistentSelection: true
 
         onActiveFocusChanged: if(activeFocus)focused()
 
@@ -79,12 +81,12 @@ Rectangle{
             onTriggered: if(cmdText.selectionStart<cmdText.pos0)cmdText.select(cmdText.pos0,cmdText.selectionEnd)
         }
         Keys.onPressed: {
-            //console.log("key: "+event.key+" mod: "+event.modifiers+" text: "+event.text)
+            // console.log("key: "+event.key+" mod: "+event.modifiers+" text: "+event.text)
             consoleExec.focused()
             forceActiveFocus()
             if(pos<=0 && event.key===Qt.Key_Backspace){
                 event.accepted=true
-            }else if(event.key===Qt.Key_C && (event.modifiers&(Qt.ControlModifier|Qt.MetaModifier))){
+            }else if(event.key===Qt.Key_C && (event.modifiers&(Qt.ControlModifier|Qt.MetaModifier)) && selectedText == ""){
                 event.accepted=true
                 text+="^C"
                 reset()
@@ -95,13 +97,6 @@ Rectangle{
                 reset()
             }*/
         }
-        Keys.onTabPressed: {
-            //console.log("tabE")
-            event.accepted=true
-            hints()
-        }
-        Keys.onEnterPressed: enter(event)
-        Keys.onReturnPressed: enter(event)
         Keys.onUpPressed: {
             event.accepted=true
             //var cpos=cursorPosition
@@ -113,11 +108,6 @@ Rectangle{
             //var cpos=cursorPosition
             setCmd(terminal.historyPrev(getCmd()),true)
             //cursorPosition=cpos
-        }
-        function enter(event)
-        {
-            event.accepted=true
-            exec()
         }
     }
     Timer {
@@ -143,15 +133,15 @@ Rectangle{
     }
     function exec()
     {
+        setFocus()
         var cmd=getCmd()
         reset()
         if(cmd.length<=0)return
         terminal.exec(cmd)
-        setFocus()
     }
     function reset()
     {
-        consoleExec.focused()
+        focused()
         terminal.enter(cmdText.text)
         setCmd("")
         terminal.historyReset()
@@ -164,6 +154,36 @@ Rectangle{
         var c=terminal.autocomplete(cmd)
         if(c===cmd)return
         setCmd(c,true)
-
     }
+
+    function appendCmd(cmd)
+    {
+        cmdText.text+=cmd
+        cmdText.cursorPosition=cmdText.text.length
+        cmdText.forceActiveFocus()
+    }
+
+    function doBackSpace()
+    {
+        if (cmdText.text.length != prefix.length)
+            cmdText.text = cmdText.text.slice(0, cmdText.text.length-1)
+    }
+
+    Connections {
+        target: terminal
+        function onClipboardContentChangedSignal() {
+            isClipboardEmpty = terminal.isClipboardEmpty()
+        }
+    }
+
+    function isSomeSelection()
+    {
+        return cmdText.selectedText != ""
+    }
+
+    function cut() {cmdText.cut()}
+    function paste() {cmdText.paste()}
+    function copy() {cmdText.copy()}
+    function copyAll() {terminal.copyConsoleHistoryToClipboard()}
+    function copyText(text) {terminal.copyTextToClipboard(text)}
 }

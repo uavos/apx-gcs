@@ -39,8 +39,10 @@ RowLayout {
     property int options
     property var fact
     property int timestamp
+    property bool selected: false
+    property int id: 0
 
-    readonly property color color: {
+    readonly property color color : {
 
         var cImportant = (source==AppNotify.FromVehicle)?"#aff":"#afa"
         var cInfo = (source==AppNotify.FromInput)?"#ccc":"#aaa"
@@ -53,6 +55,7 @@ RowLayout {
         case AppNotify.Error: return "#f88"
         }
     }
+
     readonly property bool html: text.startsWith("<html>")
     readonly property bool bold: {
         if(source==AppNotify.FromInput) return true
@@ -63,11 +66,37 @@ RowLayout {
     Label {
         Layout.fillWidth: true
         focus: false
-        color: control.color
+        color: selected ? "#0977e3" : control.color
         font: apx.font(lineSize,control.bold)
         wrapMode: Text.WrapAnywhere
         text: control.text
         textFormat: html?Text.RichText:Text.AutoText
+
+        Keys.onUpPressed: listView.Keys.upPressed(event)
+        Keys.onDownPressed: listView.Keys.downPressed(event)
+
+        MouseArea {
+            acceptedButtons: Qt.LeftButton
+            anchors.fill: parent
+            onClicked: {
+                if (mouse.modifiers & (Qt.ControlModifier | Qt.MetaModifier)) {
+                    listView.currentIndex = index
+                    listView.currentItem.id = index
+                    listView.selectedItems.push(listView.currentItem)
+                    for (var i = listView.selectedItems.length - 1; i >= 1 &&
+                        listView.selectedItems[i].id < listView.selectedItems[i-1].id; i--) {
+                        var tmp = listView.selectedItems[i]
+                        listView.selectedItems[i] = listView.selectedItems[i-1]
+                        listView.selectedItems[i-1]=tmp
+                    }
+                    selected=true
+                    forceActiveFocus()
+                }
+                if (mouse.modifiers == Qt.NoModifier) {
+                    listView.footerItem.setFocus()
+                }
+            }
+        }
     }
     Label {
         Layout.alignment: Qt.AlignRight|Qt.AlignVCenter

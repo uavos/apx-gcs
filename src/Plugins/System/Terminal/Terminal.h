@@ -22,6 +22,8 @@
 #pragma once
 
 #include <Fact/Fact.h>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QQmlEngine>
 #include <QtCore>
 
@@ -40,11 +42,18 @@ public:
 
     Q_INVOKABLE QString autocomplete(QString cmd);
 
+    Q_INVOKABLE bool isClipboardEmpty() const;
+
+    Q_INVOKABLE void copyConsoleHistoryToClipboard() const;
+
+    Q_INVOKABLE void copyTextToClipboard(const QString &text) const;
+
 private:
     int _enterIndex;
     QStringList _history;
     int _historyIndex;
     QString _replacedHistory;
+    QClipboard *clipboard{QGuiApplication::clipboard()};
 
     QMap<QString, QJSValue> _get_js_properties(QString scope, QString flt);
 
@@ -54,4 +63,5 @@ public slots:
 
 signals:
     void newMessage(QtMsgType type, QString category, QString text);
+    void clipboardContentChangedSignal();
 };

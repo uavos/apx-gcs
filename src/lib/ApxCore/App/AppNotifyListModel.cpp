@@ -21,6 +21,9 @@
  */
 #include "AppNotifyListModel.h"
 #include <Fact/Fact.h>
+#include <algorithm>
+#include <QClipboard>
+#include <QGuiApplication>
 
 AppNotifyListModel::AppNotifyListModel(AppNotify *appNotify)
     : QAbstractListModel(appNotify)
@@ -28,6 +31,10 @@ AppNotifyListModel::AppNotifyListModel(AppNotify *appNotify)
     qRegisterMetaType<QtMsgType>("QtMsgType");
 
     connect(appNotify, &AppNotify::notification, this, &AppNotifyListModel::notification);
+    connect(appNotify,
+            &AppNotify::copyTextToClipboardSignal,
+            this,
+            &AppNotifyListModel::copyTextToClipboardSlot);
 }
 AppNotifyListModel::~AppNotifyListModel()
 {
@@ -75,6 +82,17 @@ QVariant AppNotifyListModel::data(const QModelIndex &index, int role) const
         return item->timestamp;
     }
     return QVariant();
+}
+
+void AppNotifyListModel::copyTextToClipboardSlot() const
+{
+    QString log = std::accumulate(std::cbegin(m_items),
+                                  std::cend(m_items),
+                                  QString(),
+                                  [](auto a, auto b) {
+                                      return std::move(a).append('\n' + b->text);
+                                  });
+    QGuiApplication::clipboard()->setText(std::move(log));
 }
 
 void AppNotifyListModel::notification(QString msg,
