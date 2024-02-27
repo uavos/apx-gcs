@@ -99,60 +99,6 @@ public:
     QVariant toVariant() override;
     void fromVariant(const QVariant &var) override;
 
-private:
-    PVehicle *_protocol;
-    VehicleStorage *_storage;
-
-    qint64 _lastSeenTime{};
-
-    QTimer updateInfoTimer;
-
-    Fact *f_lat;
-    Fact *f_lon;
-    Fact *f_hmsl;
-
-    MandalaFact *f_ref_hmsl;
-
-    Fact *f_vspeed;
-    Fact *f_mode;
-    Fact *f_stage;
-
-private slots:
-    void updateInfo();
-    void updateInfoReq();
-    void updateCoordinate();
-    void updateFlightState();
-    void updateGeoPath();
-
-    void updateActive();
-
-    void packetReceived(mandala::uid_t uid);
-
-signals:
-    void selected();
-
-signals:
-    void requestScript(QString func);
-
-    void geoPathAppend(QGeoCoordinate p);
-
-    void deleteVehicle();
-
-    //provided methods
-public slots:
-    void flyHere(QGeoCoordinate c);
-    void lookHere(QGeoCoordinate c);
-    void setHomePoint(QGeoCoordinate c);
-    void sendPositionFix(QGeoCoordinate c);
-
-    void resetGeoPath();
-
-    void message(QString msg,
-                 AppNotify::NotifyFlags flags = AppNotify::FromApp | AppNotify::Info,
-                 QString subsystem = QString());
-
-    //---------------------------------------
-    // PROPERTIES
 public:
     QString toolTip() const override;
 
@@ -193,6 +139,58 @@ protected:
     bool m_is_replay{};
     bool m_is_identified{};
     bool m_is_gcs{};
+
+private:
+    PVehicle *_protocol;
+    VehicleStorage *_storage;
+
+    qint64 _lastSeenTime{};
+
+    QTimer updateInfoTimer;
+
+    Fact *f_lat;
+    Fact *f_lon;
+    Fact *f_hmsl;
+
+    MandalaFact *f_ref_hmsl;
+
+    Fact *f_vspeed;
+    Fact *f_mode;
+    Fact *f_stage;
+
+private slots:
+    void updateInfo();
+    void updateInfoReq();
+    void updateCoordinate();
+    void updateFlightState();
+    void updateGeoPath();
+
+    void updateActive();
+
+    void packetReceived(mandala::uid_t uid);
+
+    //provided methods
+public slots:
+    void flyHere(QGeoCoordinate c);
+    void lookHere(QGeoCoordinate c);
+    void setHomePoint(QGeoCoordinate c);
+    void sendPositionFix(QGeoCoordinate c);
+
+    void resetGeoPath();
+
+    void message(QString msg,
+                 AppNotify::NotifyFlags flags = AppNotify::FromApp | AppNotify::Info,
+                 QString subsystem = QString());
+
+signals:
+    void selected();
+
+signals:
+    void requestScript(QString func);
+
+    void geoPathAppend(QGeoCoordinate p);
+
+    void deleteVehicle();
 
 signals:
     void infoChanged();
