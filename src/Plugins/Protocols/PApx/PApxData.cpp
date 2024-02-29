@@ -36,6 +36,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         if (pid.uid < mandala::cmd::env::uid) {
             if (is_request)
                 return true;
+
             if (mandala::is_bundle(pid.uid)) {
                 Mandala *mandalaInstance = Vehicles::instance()->current()->f_mandala;
                 mandala::bundle::pos_ll_s bundlePos;
@@ -49,28 +50,28 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
                 if (lat && lon) {
                     lat->sendValue(mandala::from_gps(bundlePos.lat));
                     lon->sendValue(mandala::from_gps(bundlePos.lon));
-                    return true;
                 }
-            } else {
-                if (stream.available() <= mandala::spec_s::psize()) {
-                    qWarning() << "size" << stream.available();
-                    break;
-                }
-
-                mandala::spec_s spec;
-                spec.read(&stream);
-                trace()->block(QString("T%1").arg(spec.type));
-
-                trace()->data(stream.payload());
-
-                PBase::Values values = unpack(pid, spec, stream);
-                if (values.isEmpty() || stream.available() > 0) {
-                    qWarning() << "unpack data values error";
-                    break;
-                }
-                emit valuesData(values);
                 return true;
             }
+
+            if (stream.available() <= mandala::spec_s::psize()) {
+                qWarning() << "size" << stream.available();
+                break;
+            }
+
+            mandala::spec_s spec;
+            spec.read(&stream);
+            trace()->block(QString("T%1").arg(spec.type));
+
+            trace()->data(stream.payload());
+
+            PBase::Values values = unpack(pid, spec, stream);
+            if (values.isEmpty() || stream.available() > 0) {
+                qWarning() << "unpack data values error";
+                break;
+            }
+            emit valuesData(values);
+            return true;
         }
 
         switch (pid.uid) {
