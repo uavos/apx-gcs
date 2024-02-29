@@ -47,6 +47,14 @@ public:
 
     VehicleSelect *f_select;
 
+public:
+    Vehicle *current(void) const { return m_current; }
+    Vehicle *gcs(void) const { return m_gcs; }
+
+protected:
+    QPointer<Vehicle> m_current;
+    QPointer<Vehicle> m_gcs;
+
 private:
     static Vehicles *_instance;
 
@@ -62,24 +70,14 @@ public slots:
     void deleteVehicle(Vehicle *v);
     void clearAll();
 
-signals:
-    void vehicleRegistered(Vehicle *vehicle);
-    void vehicleRemoved(Vehicle *vehicle);
-    void vehicleSelected(Vehicle *vehicle);
-
     //data connection
 private slots:
     void vehicle_available(PVehicle *protocol);
 
-    //---------------------------------------
-    // PROPERTIES
-public:
-    Vehicle *current(void) const { return m_current; }
-    Vehicle *gcs(void) const { return m_gcs; }
-
-protected:
-    QPointer<Vehicle> m_current;
-    QPointer<Vehicle> m_gcs;
+signals:
+    void vehicleRegistered(Vehicle *vehicle);
+    void vehicleRemoved(Vehicle *vehicle);
+    void vehicleSelected(Vehicle *vehicle);
 
 signals:
     void currentChanged();

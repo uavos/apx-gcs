@@ -543,8 +543,9 @@ enum constants_e : uint8_t {
     reg_pos_hdg = 1,
     reg_pos_direct = 2,
     reg_pos_track = 3,
-    reg_pos_loiter = 4,
-    reg_pos_hover = 5,
+    reg_pos_runway = 4,
+    reg_pos_loiter = 5,
+    reg_pos_hover = 6,
 
     // cmd.nav.reg.spd
     reg_spd_off = 0,

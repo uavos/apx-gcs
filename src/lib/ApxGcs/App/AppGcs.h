@@ -60,11 +60,11 @@ public:
 
     static inline ApxFw *apxfw() { return _instance->f_apxfw; }
 
-private:
-    static AppGcs *_instance;
-
 protected:
     void loadServices() override;
+
+private:
+    static AppGcs *_instance;
 
 public slots:
     void openFile(AppGcs::FileType type = FileType::UnknownFile);
