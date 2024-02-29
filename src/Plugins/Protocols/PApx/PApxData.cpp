@@ -22,6 +22,7 @@
 #include "PApxData.h"
 
 #include <Mandala/Mandala.h>
+#include <Vehicles/Vehicle.h>
 
 PApxData::PApxData(PApxVehicle *parent)
     : PData(parent)
@@ -35,7 +36,24 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         if (pid.uid < mandala::cmd::env::uid) {
             if (is_request)
                 return true;
-            // regular packed variable
+
+            if (mandala::is_bundle(pid.uid)) {
+                Mandala *mandalaInstance = Vehicles::instance()->current()->f_mandala;
+                mandala::bundle::pos_ll_s bundlePos;
+                stream.read(&bundlePos, 8);
+
+                QString factNamePath = bundleFactsNamePathsMap.value(pid.uid);
+                MandalaFact *lat = qobject_cast<MandalaFact *>(
+                    mandalaInstance->findChild(factNamePath + ".lat"));
+                MandalaFact *lon = qobject_cast<MandalaFact *>(
+                    mandalaInstance->findChild(factNamePath + ".lon"));
+                if (lat && lon) {
+                    lat->sendValue(mandala::from_gps(bundlePos.lat));
+                    lon->sendValue(mandala::from_gps(bundlePos.lon));
+                }
+                return true;
+            }
+
             if (stream.available() <= mandala::spec_s::psize()) {
                 qWarning() << "size" << stream.available();
                 break;
@@ -184,34 +202,6 @@ PBase::Values PApxData::unpack(const xbus::pid_s &pid,
         qWarning() << "pri:" << pid.pri << Mandala::meta(pid.uid).path;
     }
 
-    /*if (spec.type >= mandala::type_bundle) {
-        int vcnt = 0;
-        switch (spec.type) {
-        default:
-            break;
-        case mandala::type_vec2:
-            vcnt = 2;
-            break;
-        case mandala::type_vec3:
-            vcnt = 3;
-            break;
-        }
-        mandala::spec_s vspec{};
-        xbus::pid_s vpid(pid);
-        for (int i = 0; i < vcnt; ++i) {
-            vspec.type = Mandala::meta(vpid.uid).type_id;
-            PBase::Values vlist = unpack(vpid, vspec, stream);
-            if (vlist.isEmpty())
-                break;
-            values.insert(vlist);
-            vpid.uid++;
-        }
-        if (values.size() != vcnt)
-            values.clear();
-        return values;
-    }*/
-
-    //qDebug() << Mandala::meta(pid.uid).name << stream->dump_payload();
     QVariant v;
     switch (spec.type) {
     case mandala::type_byte:
