@@ -355,7 +355,7 @@ void Vehicle::flyHere(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    f_mandala->sendValue(mandala::cmd::nav::pos::uid, value);
+    emit f_mandala->sendValue(mandala::cmd::nav::pos::uid, value);
 }
 void Vehicle::lookHere(QGeoCoordinate c)
 {
@@ -366,7 +366,7 @@ void Vehicle::lookHere(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    f_mandala->sendValue(mandala::cmd::nav::gimbal::uid, value);
+    emit f_mandala->sendValue(mandala::cmd::nav::gimbal::uid, value);
 }
 void Vehicle::setHomePoint(QGeoCoordinate c)
 {
@@ -377,7 +377,7 @@ void Vehicle::setHomePoint(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    f_mandala->sendValue(mandala::est::nav::ref::uid, value);
+    emit f_mandala->sendValue(mandala::est::nav::ref::uid, value);
 }
 void Vehicle::sendPositionFix(QGeoCoordinate c)
 {
@@ -388,7 +388,7 @@ void Vehicle::sendPositionFix(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    f_mandala->sendValue(mandala::est::nav::pos::uid, value);
+    emit f_mandala->sendValue(mandala::est::nav::pos::uid, value);
 }
 
 void Vehicle::resetGeoPath()

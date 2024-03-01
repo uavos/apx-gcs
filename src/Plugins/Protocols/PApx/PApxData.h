@@ -23,6 +23,8 @@
 
 #include "PApxVehicle.h"
 
+#include <QHash>
+
 class PApxVehicle;
 
 class PApxData : public PData
@@ -36,6 +38,10 @@ public:
 
 private:
     PApxRequest _req;
+
+    QHash<mandala::uid_t, QString> bundleFactsNamePathsMap{{mandala::cmd::nav::pos::uid, "cmd.pos"},
+                                                           {mandala::est::nav::pos::uid, "est.pos"},
+                                                           {mandala::est::nav::ref::uid, "est.ref"}};
 
     template<typename S>
     void sendBundleT(mandala::uid_t uid, const S &data)

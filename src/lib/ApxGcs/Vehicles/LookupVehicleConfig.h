@@ -34,12 +34,12 @@ class LookupVehicleConfig : public DatabaseLookup
 public:
     explicit LookupVehicleConfig(Vehicle *vehicle, Fact *parent);
 
-private:
-    Vehicle *_vehicle;
-
 protected:
     bool fixItemDataThr(QVariantMap *item) override;
     void defaultLookup() override;
+
+private:
+    Vehicle *_vehicle;
 
 private slots:
     void loadItem(QVariantMap modelData);
