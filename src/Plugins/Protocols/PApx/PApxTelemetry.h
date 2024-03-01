@@ -24,7 +24,6 @@
 #include "PApxVehicle.h"
 
 #include <telemetry/TelemetryDecoder.h>
-#include <uart/CobsDecoder.h>
 
 class PApxVehicle;
 

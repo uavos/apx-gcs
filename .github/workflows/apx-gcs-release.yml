@@ -2,20 +2,20 @@ name: APX GCS CI
 
 on:
   push:
+    # branches:
+    #   - test-rel
     tags:
       - "release-*"
+      - "test-*"
 
 env:
   BUILD_DIR: build-release
-  VERSION_QT: 5.15.2
-  VERSION_GST: 1.18.5
-  VERSION_SPARKLE: 1.27.1
-  VERSION_SDL: 2.0.20
 
 jobs:
   build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
+    # if: "false"
     container:
       image: uavos/apx-gcs-linux:latest
       options: --privileged
@@ -23,7 +23,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - run: git fetch --prune --unshallow --tags
+      - name: Fetch version tags
+        run: |
+          git config --global --add safe.directory `pwd`
+          git fetch --prune --unshallow --tags
 
       - name: Build package
         run: make release-package
@@ -47,38 +50,58 @@ jobs:
   build-macos:
     name: Build MacOS
     runs-on: macos-latest
+    env:
+      # VERSION_QT: 5.15.2
+      VERSION_GST: 1.22.5
+      VERSION_SDL: 2.28.3
+
+      VERSION_SPARKLE: 1.27.1
+
+      PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
+
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - run: git fetch --prune --unshallow --tags
+      - name: Fetch version tags
+        run: |
+          git config --global --add safe.directory `pwd`
+          git fetch --prune --unshallow --tags
 
-      - name: Install Tools
+      - name: Install Tools (python)
         run: |
           pip3 install networkx simplejson jinja2 pyyaml dmgbuild
 
       - name: Install Qt
+        # TODO migrate to Qt6 and use python https://github.com/miurahr/aqtinstall
+        #   run: |
+        #     curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
+        #     chmod +x install-qt.sh
+        #     ./install-qt.sh --version $VERSION_QT --directory Qt \
+        #         qtbase qtdeclarative qttools \
+        #         quickcontrols2 serialport multimedia speech svg location \
+        #         graphicaleffects qtcharts
+        #     echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
         run: |
-          curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
-          chmod +x install-qt.sh
-          ./install-qt.sh --version $VERSION_QT --directory Qt \
-              qtbase qtdeclarative qttools \
-              quickcontrols2 serialport multimedia speech svg location \
-              graphicaleffects qtcharts
-          echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          brew update
+          brew install qt@5
+          echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
 
       - name: Install SDL
         working-directory: /tmp
         run: |
-          curl -L https://www.libsdl.org/release/SDL2-$VERSION_SDL.dmg --output sdl.dmg
+          curl -L https://github.com/libsdl-org/SDL/releases/download/release-$VERSION_SDL/SDL2-$VERSION_SDL.dmg --output sdl.dmg
           hdiutil attach -noverify sdl.dmg
           sudo cp -a /Volumes/SDL2/SDL2.framework /Library/Frameworks/
 
       - name: Install GST
         working-directory: /tmp
         run: |
-          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-$VERSION_GST-x86_64.pkg --output gst.pkg
-          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-devel-$VERSION_GST-x86_64.pkg --output gst-devel.pkg
+          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-$VERSION_GST-universal.pkg --output gst.pkg
+          curl -L https://gstreamer.freedesktop.org/data/pkg/osx/$VERSION_GST/gstreamer-1.0-devel-$VERSION_GST-universal.pkg --output gst-devel.pkg
           sudo installer -package gst.pkg -target /
           sudo installer -package gst-devel.pkg -target /
           rm -f gst*.pkg
@@ -90,6 +113,9 @@ jobs:
           gunzip -k -c sparkle.tar.xz | tar xopf -
           sudo mv Sparkle.framework /Library/Frameworks/
           echo "$(pwd)/bin" >> $GITHUB_PATH
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
 
       - name: Install KEYS
         env:
@@ -181,6 +207,8 @@ jobs:
     name: Publish Release
     needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.ref, 'refs/tags/test-') }}
+    # if: "false"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2

@@ -4,6 +4,8 @@ if(APPLE)
     apx_add_framework(${MODULE} GStreamer)
     target_link_libraries(${MODULE} PRIVATE "-L${FW_GStreamer}/Versions/Current/lib")
 
+    target_link_options(${MODULE} PRIVATE "-Wl,-rpath,${FW_GStreamer}/Versions/Current/lib")
+
 elseif(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GLIB REQUIRED glib-2.0)

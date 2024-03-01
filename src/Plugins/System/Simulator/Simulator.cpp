@@ -20,6 +20,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Simulator.h"
+#include "SimMods.h"
+
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
@@ -48,14 +50,14 @@ Simulator::Simulator(Fact *parent)
 
     AppLog::add(SimLog().categoryName(), "sim.txt", true);
 
-    f_launch = new Fact(this, "launch", tr("Launch"), tr("Start simulation"), Action | Apply, "play");
+    f_launch = new Fact(this, "launch", tr("Start"), tr("Start simulation"), Action | Apply, "play");
     connect(f_launch, &Fact::triggered, this, &Simulator::launch);
-    //connect(parent,&Vehicles::vehicleSelected,this,[=](Vehicle *v){ f_select->setEnabled(v!=this); });
 
-    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop simulation"), Action | Stop, "stop");
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop APX app"), Action | Stop, "stop");
     f_stop->setEnabled(false);
     connect(f_stop, &Fact::triggered, &pShiva, &QProcess::terminate);
 
+    // Xplane group
     f_type = new Fact(this,
                       "type",
                       tr("Type"),
@@ -63,8 +65,8 @@ Simulator::Simulator(Fact *parent)
                       Enum | PersistentValue | SystemSettings);
     f_type->setIcon("package-variant");
 
-    f_oXplane = new Fact(this, "oxplane", tr("X-Plane"), tr("Run X-Plane on start"), Bool);
-    connect(f_oXplane, &Fact::triggered, this, &Simulator::launchXplane);
+    f_sxpl = new Fact(this, "sxpl", tr("Start XPlane"), tr("Run X-Plane on start"), Bool);
+    connect(f_sxpl, &Fact::triggered, this, &Simulator::launchXplane);
 
     f_cmd = new Fact(this,
                      "cmd",
@@ -73,6 +75,9 @@ Simulator::Simulator(Fact *parent)
                      Text | PersistentValue);
     f_cmd->setDefaultValue("--window=200x200 --no_sound --no_joysticks --disable_networking "
                            "--no_aniso_filtering --limited_glsl --no_threaded_ogl");
+
+    // jamming
+    new SimMods(this);
 
     //shiva
     pShiva.setProgram(AppDirs::firmware().absoluteFilePath("sim/" + sim_executable));
@@ -191,7 +196,7 @@ void Simulator::launch()
 {
     apxMsg() << tr("Launching simulation").append("...");
 
-    if (f_oXplane->value().toBool())
+    if (f_sxpl->value().toBool())
         launchXplane();
 
     launchShiva();
@@ -211,20 +216,26 @@ void Simulator::launchXplane()
                 dir = QDir(AppDirs::libs().absolutePath(), "*.xpl");
             if (dir.isEmpty())
                 apxMsgW() << tr("XPL Plugin not found");
-            for (auto const &fi : dir.entryInfoList()) {
-                QString dest = d.absoluteFilePath(fi.fileName());
-                QFileInfo fiDest(dest);
-                //qDebug()<<dest;
-                if (fiDest.isSymLink() && fiDest.symLinkTarget() == fi.absoluteFilePath())
-                    continue;
-                //qDebug()<<fi.absoluteFilePath()<<dest<<QFile::exists(dest);
-                if (fiDest.isSymLink() || QFile::exists(dest))
-                    QFile::remove(dest);
-                //qDebug()<<fi.absoluteFilePath()<<dest<<QFile::exists(dest);
-                if (QFile::link(fi.absoluteFilePath(), dest)) {
-                    apxMsg() << tr("XPL Plugin installed").append(":") << dest;
+
+            for (auto const &fiSource : dir.entryInfoList()) {
+                QString destPath = d.absoluteFilePath(fiSource.fileName());
+                QFileInfo fiDest(destPath);
+
+                if (QFile::exists(destPath)) {
+                    if (fiDest.lastModified() == fiSource.lastModified())
+                        continue;
+
+                    QFile::remove(destPath);
+                }
+
+                if (QFile::copy(fiSource.absoluteFilePath(), fiDest.absoluteFilePath())) {
+                    QFile fDest(destPath);
+                    fDest.open(QFile::ReadOnly);
+                    fDest.setFileTime(fiSource.lastModified(), QFile::FileModificationTime);
+
+                    apxMsg() << tr("XPL Plugin installed").append(":") << destPath;
                 } else {
-                    apxMsgW() << tr("XPL Plugin error").append(":") << dest;
+                    apxMsgW() << tr("XPL Plugin error").append(":") << destPath;
                 }
             }
         }

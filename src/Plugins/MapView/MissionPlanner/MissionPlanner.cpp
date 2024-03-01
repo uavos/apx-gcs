@@ -52,18 +52,17 @@ MissionPlanner::MissionPlanner(Fact *parent)
     f = new Fact(f_add, "taxiway", tr("Taxiway"), "", CloseOnTrigger, "vector-polyline");
     connect(f, &Fact::triggered, this, [=]() { mission()->f_taxiways->add(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "fly", tr("Fly here"), "", CloseOnTrigger, "airplane");
+    f = new Fact(f_vehicle, "fly_here", tr("Fly here"), "", CloseOnTrigger, "airplane");
     connect(f, &Fact::triggered, this, [=]() { vehicle()->flyHere(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "look", tr("Look here"), "", CloseOnTrigger, "eye");
+    f = new Fact(f_vehicle, "look_here", tr("Look here"), "", CloseOnTrigger, "eye");
     connect(f, &Fact::triggered, this, [=]() { vehicle()->lookHere(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "home", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
+    f = new Fact(f_vehicle, "home_here", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
     connect(f, &Fact::triggered, this, [=]() { vehicle()->setHomePoint(clickCoordinate()); });
 
-    // TODO pos fix action
-    // f = new Fact(f_vehicle, "fix", tr("Send position fix"), "", CloseOnTrigger, "crosshairs-gps");
-    // connect(f, &Fact::triggered, this, [=]() { vehicle()->sendPositionFix(clickCoordinate()); });
+    f = new Fact(f_vehicle, "pos_here", tr("Fix position"), "", CloseOnTrigger, "crosshairs-gps");
+    connect(f, &Fact::triggered, this, [=]() { vehicle()->sendPositionFix(clickCoordinate()); });
 
     new MapPrefs(this);
 

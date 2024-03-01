@@ -193,6 +193,8 @@ QByteArray Share::loadData(QString fileName)
 
 bool Share::saveData(QByteArray data, QString fileName)
 {
+    qDebug() << fileName << data.size();
+
     if (data.isEmpty())
         return false;
     QFile file(fileName);

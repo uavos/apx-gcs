@@ -8,16 +8,29 @@ ENV DEBIAN_FRONTEND=noninteractive
 # basic APT packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    ca-certificates \
+    ca-certificates bc \
     build-essential rsync curl git make ninja-build pkg-config python3-pip \
     bc \
     && \
     rm -Rf /var/cache/apt
 
+# architecture detect
+RUN arch="$(dpkg --print-architecture)" && \
+    case "${arch##*-}" in \
+        amd64) arch='x86_64' ;; \
+        arm64) arch='aarch64' ;; \
+        armhf) arch='armv7l' ;; \
+        i386) arch='i686' ;; \
+        *) echo >&2 "error: unsupported architecture: ${arch}"; exit 1 ;; \
+    esac && \
+    echo "Detected architecture: ${arch}" && \
+    echo "${arch}" > /arch
+
 # cmake
 ARG CMAKE_VERSION=3.22.1
 
-RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh --output /tmp/install-cmake.sh && \
+
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-$(cat /arch).sh --output /tmp/install-cmake.sh && \
     sh /tmp/install-cmake.sh --skip-license --prefix=/usr/local &&\
     cmake --version
 
@@ -34,10 +47,13 @@ RUN curl -L ${INSTALL_QT_SRC} --output /tmp/install-qt.sh && \
         graphicaleffects qtcharts icu \
         && \
     rsync -av /tmp/qt/${VERSION_QT}/*/ /usr/local/ && rm -Rf /tmp/*
-
+# RUN apt-get install -q -y --no-install-recommends \
+#     qt5*-dev \
+#     qtquickcontrols2-5-dev \
+#     libqt5svg5-dev \
 
 # Qt deploy tools
-RUN apt-get install -qq -y --no-install-recommends fuse && rm -Rf /var/cache/apt
+RUN apt-get install -q -y --no-install-recommends fuse && rm -Rf /var/cache/apt
 
 # other versions <=8 are segfaulting by some reason
 # TODO consider https://github.com/linuxdeploy

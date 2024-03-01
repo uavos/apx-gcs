@@ -66,13 +66,10 @@ public:
     };
     QList<NotifyListItem *> m_items;
 
-private slots:
-    void notification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
-
-    //-----------------------------------------
-    //PROPERTIES
-public:
 protected:
 signals:
     void countChanged();
+
+private slots:
+    void notification(QString msg, QString subsystem, AppNotify::NotifyFlags flags, Fact *fact);
 };

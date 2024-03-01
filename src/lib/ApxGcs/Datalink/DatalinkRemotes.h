@@ -48,7 +48,7 @@ public:
     Fact *f_alloff;
 
     DatalinkRemote *registerHost(QUrl url);
-    DatalinkRemote *remoteByAddr(QHostAddress addr);
+    DatalinkRemote *findRemote(QUrl url);
 
 private:
     QUdpSocket *udpDiscover;

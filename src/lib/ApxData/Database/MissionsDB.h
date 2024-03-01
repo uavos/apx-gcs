@@ -119,14 +119,15 @@ public:
         , key(key)
     {}
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     QString title;
     double lat;
     double lon;
     quint64 key;
 
-protected:
-    bool run(QSqlQuery &query);
 signals:
     void siteAdded(QString title);
     void siteModified(QString title);
@@ -140,11 +141,12 @@ public:
         , key(key)
     {}
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     quint64 key;
 
-protected:
-    bool run(QSqlQuery &query);
 signals:
     void siteRemoved();
 };

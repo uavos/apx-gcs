@@ -27,7 +27,7 @@ apx_lib(
     shared.common
     shared.crc
     shared.xbus
-    shared.xbus.uart
+    shared.xbus.serial
     shared.xbus.tcp
     shared.xbus.telemetry
     shared.mandala

@@ -3,7 +3,7 @@
 
 # Ground Control Software
 
-[![GSC video](http://img.youtube.com/vi/CSPNkGZuP8M/0.jpg)](https://youtu.be/CSPNkGZuP8M)
+[![GSC video](https://img.youtube.com/vi/CSPNkGZuP8M/0.jpg)](https://youtu.be/CSPNkGZuP8M)
 
 APX Ground Control Software (`GCS`) is open-source project, leaded by [UAVOS Company](http://uavos.com).
 

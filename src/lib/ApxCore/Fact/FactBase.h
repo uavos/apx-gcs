@@ -123,41 +123,6 @@ public:
     Q_INVOKABLE QString jsname() const;
     Q_INVOKABLE QString jspath() const;
 
-public slots:
-    void deleteFact();
-    void deleteChildren();
-
-signals:
-    //tree structure change signals for models
-    void itemToBeInserted(int row, FactBase *item);
-    void itemInserted(FactBase *item);
-    void itemToBeRemoved(int row, FactBase *item);
-    void itemRemoved(FactBase *item);
-    void itemToBeMoved(int row, int dest, FactBase *item);
-    void itemMoved(FactBase *item);
-
-    void actionsUpdated();
-
-    void removed();
-
-private:
-    FactList m_facts;
-    FactList m_actions;
-
-    void addChild(Fact *item);
-    void removeChild(Fact *item);
-    void moveChild(Fact *item, int n, bool safeMode = false);
-
-    void updateNum();
-    void updateSize();
-    void updateChildrenNums();
-
-    void updatePath();
-
-    QList<FactPropertyBinding *> _property_binds;
-
-    //-----------------------------------------
-    //PROPERTIES
 public:
     FactBase::Flag treeType() const;
     void setTreeType(FactBase::Flag v);
@@ -183,6 +148,39 @@ protected:
 
     int m_size{0};
     int m_num{0};
+
+private:
+    FactList m_facts;
+    FactList m_actions;
+
+    void addChild(Fact *item);
+    void removeChild(Fact *item);
+    void moveChild(Fact *item, int n, bool safeMode = false);
+
+    void updateNum();
+    void updateSize();
+    void updateChildrenNums();
+
+    void updatePath();
+
+    QList<FactPropertyBinding *> _property_binds;
+
+public slots:
+    void deleteFact();
+    void deleteChildren();
+
+signals:
+    //tree structure change signals for models
+    void itemToBeInserted(int row, FactBase *item);
+    void itemInserted(FactBase *item);
+    void itemToBeRemoved(int row, FactBase *item);
+    void itemRemoved(FactBase *item);
+    void itemToBeMoved(int row, int dest, FactBase *item);
+    void itemMoved(FactBase *item);
+
+    void actionsUpdated();
+
+    void removed();
 
 signals:
     void treeTypeChanged();

@@ -25,8 +25,8 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <uart/CobsDecoder.h>
-#include <uart/CobsEncoder.h>
+#include <serial/CobsDecoder.h>
+#include <serial/CobsEncoder.h>
 
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wdelete-abstract-non-virtual-dtor"
@@ -63,6 +63,13 @@ DatalinkSerial::DatalinkSerial(Fact *parent, QString devName, uint baud)
     openTimer.setInterval(800);
     connect(&openTimer, &QTimer::timeout, this, &DatalinkSerial::openNext);
 }
+DatalinkSerial::~DatalinkSerial()
+{
+    if (_encoder)
+        delete _encoder;
+    if (_decoder)
+        delete _decoder;
+}
 
 void DatalinkSerial::setDevName(QString v)
 {
@@ -86,20 +93,20 @@ void DatalinkSerial::setBaud(uint v)
 
 void DatalinkSerial::setCodec(CodecType v)
 {
-    if (encoder) {
-        delete encoder;
-        encoder = nullptr;
+    if (_encoder) {
+        delete _encoder;
+        setEncoder(nullptr);
     }
-    if (decoder) {
-        delete decoder;
-        decoder = nullptr;
+    if (_decoder) {
+        delete _decoder;
+        setDecoder(nullptr);
     }
     switch (v) {
     default:
         break;
     case COBS:
-        encoder = new CobsEncoder();
-        decoder = new CobsDecoder();
+        setEncoder(new CobsEncoder());
+        setDecoder(new CobsDecoder());
         break;
     }
 }
@@ -225,6 +232,7 @@ void DatalinkSerial::serialPortError(QSerialPort::SerialPortError error)
     if (error == QSerialPort::NoError)
         return;
     apxConsoleW() << "Serial error:" << error;
+
     dev->clearError();
     if (dev->isOpen()) {
         closePort();
@@ -252,18 +260,7 @@ void DatalinkSerial::write(const QByteArray &packet)
     if (!dev->isOpen())
         return;
 
-    if (!encoder) {
-        qWarning() << "not supported";
-        return;
-    }
-
-    auto cnt = encoder->encode(packet.data(), static_cast<size_t>(packet.size()));
-    if (cnt <= 0) {
-        apxConsoleW() << "tx encode:" << packet.size() << cnt;
-        return;
-    }
-
-    auto wcnt = dev->write((const char *) encoder->data(), cnt);
+    auto wcnt = dev->write(packet.data(), packet.size());
 
     if (wcnt <= 0) {
         qWarning() << "tx" << wcnt;
@@ -277,20 +274,8 @@ void DatalinkSerial::write(const QByteArray &packet)
 QByteArray DatalinkSerial::read()
 {
     if (!dev->isOpen()) {
-        if (decoder)
-            decoder->reset();
-        _rx_fifo.reset();
+        resetDataStream();
         return {};
-    }
-
-    // first return already decoded packets
-    if (!_rx_fifo.empty()) {
-        // qDebug() << "RX FIFO" << _rx_fifo.used();
-        auto cnt = _rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size());
-        if (cnt > 0) {
-            QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
-            return _rx_pkt.left(cnt);
-        }
     }
 
     if (dev->bytesAvailable() <= 0)
@@ -304,10 +289,6 @@ QByteArray DatalinkSerial::read()
         serialPortError(QSerialPort::ReadError);
         return {};
     }
-    if (!decoder) {
-        qWarning() << "data stream not supported";
-        return {};
-    }
     if (rcnt <= 0) {
         qWarning() << "rx empty" << rcnt;
         return {};
@@ -316,43 +297,5 @@ QByteArray DatalinkSerial::read()
     // schedule reads for next packet
     QTimer::singleShot(0, this, &DatalinkSerial::readDataAvailable);
 
-    // read bytes count (rcnt) might be more than one packet
-    // decode all packets from raw data into fifo
-    auto src = _rxbuf_raw;
-    size_t cnt = rcnt;
-    bool pkt = false;
-    while (cnt > 0) {
-        // feed the decoder
-        auto decoded_cnt = decoder->decode(src, cnt);
-        // qDebug() << "RX" << decoded_cnt << cnt;
-
-        if (decoded_cnt <= 0)
-            qWarning() << "rx decode:" << cnt << decoded_cnt;
-
-        src += decoded_cnt;
-        cnt -= decoded_cnt;
-
-        // check if some pkt is available
-        switch (decoder->status()) {
-        case SerialDecoder::PacketAvailable:
-            pkt = true;
-            // qDebug() << "RX PKT" << decoder->size();
-
-            if (!_rx_fifo.write_packet(decoder->data(), decoder->size())) {
-                qWarning() << "rx fifo full";
-            }
-            break;
-        case SerialDecoder::DataAccepted:
-        case SerialDecoder::DataDropped:
-            break;
-        default:
-            apxConsoleW() << "SerialDecoder rx err:" << decoder->status() << rcnt << decoded_cnt;
-            break;
-        }
-    }
-
-    if (!pkt)
-        return {};
-
-    return _rx_pkt.left(_rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size()));
+    return QByteArray(reinterpret_cast<char *>(_rxbuf_raw), rcnt);
 }

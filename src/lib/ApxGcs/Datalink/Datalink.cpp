@@ -68,7 +68,7 @@ Datalink::Datalink(Fact *parent)
 
     //heartbeat timer
     connect(f_hbeat, &Fact::valueChanged, this, &Datalink::hbeatChanged);
-    connect(&heartbeatTimer, SIGNAL(timeout()), this, SLOT(heartbeatTimeout()));
+    connect(&heartbeatTimer, &QTimer::timeout, this, &Datalink::heartbeatTimeout);
     heartbeatTimer.setInterval(1500);
     hbeatChanged();
 

@@ -53,7 +53,7 @@ MapQuickItem {  //to be used inside MapComponent only
 
     readonly property int m_reg_pos: mandala.cmd.reg.pos.value
     readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
-    property bool isTrack: m_reg_taxi || m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_loiter
+    property bool isTrack: m_reg_taxi || m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_runway || m_reg_pos===reg_pos_loiter
 
     readonly property bool active: vehicle.active
 
@@ -150,8 +150,6 @@ MapQuickItem {  //to be used inside MapComponent only
             id: image
             source: bGCU?"../icons/gcu.svg":"../icons/uav.svg"
             property int sz: (bGCU?32:48)*map.itemsScaleFactor*ui.scale
-            //width: sz
-            //height: sz
             sourceSize.height: sz
             sourceSize.width: sz
 
@@ -196,8 +194,8 @@ MapQuickItem {  //to be used inside MapComponent only
                     angle: vyaw-map.bearing
                 }
             ]
-
         }
+
         Image {
             id: cmdCrsArrow
             source: "../icons/cmd-crs-arrow.svg"

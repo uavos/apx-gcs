@@ -37,9 +37,16 @@
 #include <XbusPacket.h>
 
 #include <tcp_ports.h>
-#include <tcp_server.h>
 
-static xbus::tcp::Server *tcp = {};
+#include <udp_client.h>
+
+#include <serial/CobsDecoder.h>
+#include <serial/CobsEncoder.h>
+
+static xbus::tcp::udp_client udp;
+
+static CobsDecoder<> _rx_decoder;
+static CobsEncoder<> _tx_encoder;
 
 static bool enabled;
 
@@ -86,27 +93,31 @@ static XPLMDataTypeID xpl_type[xpl_channels_max];
 
 static uint8_t packet_buf[xbus::size_packet_max];
 
-static void send_bundle()
+static void send_packet(XbusStreamWriter *stream)
 {
-    if (!tcp)
+    if (!udp.is_connected())
         return;
 
+    auto cnt = _tx_encoder.encode(stream->buffer(), stream->pos());
+    udp.write(_tx_encoder.data(), cnt);
+}
+
+static void send_bundle()
+{
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     sim_pid.write(&stream);
     stream.write(&sim_bundle, sizeof(sim_bundle));
 
-    tcp->write_packet(stream.buffer(), stream.pos());
+    send_packet(&stream);
+
     sim_pid.seq++;
 }
 
 static void request_controls()
 {
-    if (!tcp)
-        return;
-
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     cfg_pid.write(&stream);
-    tcp->write_packet(stream.buffer(), stream.pos());
+    send_packet(&stream);
     cfg_pid.seq++;
 }
 
@@ -258,13 +269,6 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     printf("--------------------------------------\n");
     fflush(stdout);
 
-    if (!tcp) {
-        tcp = new xbus::tcp::Server();
-    }
-
-    tcp->set_host("127.0.0.1", TCP_PORT_SIM, "/sim");
-    tcp->connect();
-
     strcpy(outName, "UAVOS Autopilot SIL plugin");
     strcpy(outSig, "www.uavos.com");
     strcpy(outDesc, "Exchange data with autopilot for SIL/HIL simulation (v" VERSION ").");
@@ -329,23 +333,67 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
                                 int inCounter,
                                 void *inRefcon)
 {
-    if (!(enabled && tcp && tcp->is_connected())) {
+    static uint ap_link_timeout = 0;
+
+    ap_link_timeout++;
+
+    if (ap_link_timeout > 3) {
+        ap_link_timeout = 0;
+        xpl_channels = 0; // reset channels assignments
+    }
+
+    if (!(enabled && udp.is_connected())) {
         xpl_channels = 0;
+        ap_link_timeout = 0;
         return 1.f;
     }
 
     do {
-        while (1) {
-            size_t cnt = tcp->read_packet(packet_buf, sizeof(packet_buf));
-            if (!cnt)
+        for (;;) {
+            if (!udp.dataAvailable())
                 break;
-            parse_rx(packet_buf, cnt);
+
+            ap_link_timeout = 0;
+
+            // printf("udp.dataAvailable\n");
+
+            size_t rcnt = udp.read(packet_buf, sizeof(packet_buf));
+            if (!rcnt)
+                break;
+
+            // printf("udp.read: %lu\n", rcnt);
+
+            const uint8_t *data = packet_buf;
+            while (rcnt > 0) {
+                auto dcnt = _rx_decoder.decode(data, rcnt);
+
+                switch (_rx_decoder.status()) {
+                case SerialDecoder::PacketAvailable: {
+                    data = static_cast<const uint8_t *>(data) + dcnt;
+                    parse_rx(_rx_decoder.data(), _rx_decoder.size());
+                    break;
+                }
+
+                case SerialDecoder::DataAccepted:
+                case SerialDecoder::DataDropped:
+                    rcnt = 0;
+                    break;
+                default:
+                    break;
+                }
+
+                if (rcnt > dcnt)
+                    rcnt -= dcnt;
+                else
+                    rcnt = 0;
+            }
         }
 
         if (!xpl_channels) {
+            printf("X-Plane controls request\n");
             //xpl_channels = 1;
             request_controls();
-            return 0.5f;
+            return 2.5f;
         }
 
     } while (0);
@@ -358,19 +406,15 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
 
 PLUGIN_API void XPluginStop(void)
 {
-    if (tcp) {
-        delete tcp;
-        tcp = {};
-    }
+    udp.close();
 
     enabled = false;
 }
 PLUGIN_API void XPluginDisable(void)
 {
-    if (tcp) {
-        delete tcp;
-        tcp = {};
-    }
+    printf("X-Plane plugin disabled\n");
+
+    udp.close();
 
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 0);
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 0);
@@ -380,12 +424,17 @@ PLUGIN_API void XPluginDisable(void)
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 0);
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 0);
 
-    //server.close();
-
     enabled = false;
 }
 PLUGIN_API int XPluginEnable(void)
 {
+    printf("X-Plane plugin enabled\n");
+
+    if (!udp.is_connected()) {
+        udp.set_dest("127.0.0.1", UDP_PORT_AP_SNS);
+        udp.bind(UDP_PORT_SIM_CTR);
+    }
+
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 1);
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 1);
     //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 1);

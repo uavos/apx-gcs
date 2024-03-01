@@ -21,11 +21,11 @@
  */
 #pragma once
 
-#include "DatalinkTcpSocket.h"
+#include "DatalinkTcp.h"
 #include <QtCore>
 class Datalink;
 
-class DatalinkRemote : public DatalinkTcpSocket
+class DatalinkRemote : public DatalinkTcp
 {
     Q_OBJECT
 public:

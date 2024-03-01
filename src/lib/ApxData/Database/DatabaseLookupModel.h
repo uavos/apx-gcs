@@ -44,6 +44,15 @@ public:
 
     int indexOf(const QString &name, const QVariant &value) const;
 
+public:
+    Q_INVOKABLE QVariantMap get(int i) const;
+    Q_INVOKABLE bool set(int i, QVariantMap v);
+
+public:
+    int count() const;
+    QString filter() const;
+    void setFilter(QString v);
+
 protected:
     ItemsList _items;
     QList<quint64> keys;
@@ -52,9 +61,8 @@ protected:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
-public:
-    Q_INVOKABLE QVariantMap get(int i) const;
-    Q_INVOKABLE bool set(int i, QVariantMap v);
+private:
+    QString m_filter;
 
 public slots:
     void syncItems(ItemsList list);
@@ -65,15 +73,6 @@ signals:
     void itemRemoved(int i, QVariantMap v);
     void synced();
 
-    //-----------------------------------------
-    //PROPERTIES
-public:
-    int count() const;
-    QString filter() const;
-    void setFilter(QString v);
-
-private:
-    QString m_filter;
 signals:
     void countChanged();
     void filterChanged();
