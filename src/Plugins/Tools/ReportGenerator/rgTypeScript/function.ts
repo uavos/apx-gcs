@@ -4,20 +4,28 @@ import { Mandala } from "./mandala_object";
 type FunctionParams = { [key: string]: string }
 type CallBackParams = { [key: string]: Mandala }
 
-class CalculatedValue {
+type DecoratorFunction = (val: any) => string
+
+export function wrap(val: any, decorator: DecoratorFunction | null = null) {
+    return new CalculatedValue(decorator, val)
+}
+
+export class CalculatedValue {
     public is_calculated = true
     private _is_error: boolean;
     private _what: string;
     private _value: any;
     private _callParams: CallBackParams;
     private _allParamsAvailable: boolean;
+    private _decorator_function: DecoratorFunction | null
 
-    constructor() {
-        this._is_error = true;
-        this._what = "Did not find any mandala set that fits function requirements";
+    constructor(decorator_function: DecoratorFunction | null = null, default_value: any = undefined) {
+        this._is_error = default_value === undefined;
+        this._what = "Not detected";
         this._callParams = {};
         this._allParamsAvailable = false;
-        this._value = undefined
+        this._value = default_value
+        this._decorator_function = decorator_function
     }
 
     public params(objParams: FunctionParams): this {
@@ -60,8 +68,15 @@ class CalculatedValue {
     public what() {
         return this._what
     }
+
+    public stringify() {
+        if (this.isError()) return this.what()
+        if (this._decorator_function === null) return this.value()
+
+        return this._decorator_function(this.value())
+    }
 }
 
-export function priorityFunction() {
-    return new CalculatedValue()
+export function priorityFunction(func: DecoratorFunction | null = null) {
+    return new CalculatedValue(func)
 }

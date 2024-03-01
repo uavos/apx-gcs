@@ -1,0 +1,22 @@
+{
+   "compilerOptions": {
+      "target": "ES5",
+      "outFile": "./generated/bundle.gen.js",
+      "lib": [
+         "ES5",
+         "DOM",
+         "ES2017.Object",
+         "ES2015.Core"
+      ],
+      "module": "AMD",
+      "sourceMap": false,
+      "esModuleInterop": true
+   },
+   "include": [
+      "*.ts",
+      "calc_functions/distance.ts",
+      "calc_functions/duration.ts",
+      "calc_functions/general.ts",
+      "calc_functions/parachute.ts"
+   ]
+}

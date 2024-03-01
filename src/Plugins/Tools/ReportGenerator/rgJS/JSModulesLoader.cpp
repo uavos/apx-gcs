@@ -7,7 +7,7 @@
 RG::ModulesLoader::ModulesLoader(QJSEngine *eng)
     : m_engine{eng}
 {
-    m_resources_scripts_dir.setPath(AppDirs::res().filePath("scripts/ReportGenerator/js/"));
+    m_resources_scripts_dir.setPath(AppDirs::res().filePath("scripts/ReportGenerator/"));
     m_user_scripts_dir.setPath(AppDirs::scripts().filePath("ReportGenerator"));
 
     if (!m_user_scripts_dir.exists())

@@ -15,6 +15,30 @@ class DataElement {
     index_range: Range
 }
 
+export function iterateSynchronizedByTime(arr1: DataElement[], arr2: DataElement[], callback: (element1: DataElement, element2: DataElement) => void) {
+    let i = 0;
+    let j = 0;
+
+    while (i < arr1.length && j < arr2.length) {
+        const element1 = arr1[i];
+        const element2 = arr2[j];
+
+        if (element1.time_range.start <= element2.time_range.end && element1.time_range.end >= element2.time_range.start) {
+            callback(element1, element2);
+
+            if (element1.time_range.end <= element2.time_range.end) {
+                i++;
+            } else {
+                j++;
+            }
+        } else if (element1.time_range.end < element2.time_range.start) {
+            i++;
+        } else {
+            j++;
+        }
+    }
+}
+
 export function findIntersectionsSorted(ranges: Array<Array<Range>>): Array<Range> {
     if (ranges.length === 0) {
         return [];
@@ -98,21 +122,19 @@ export class Mandala implements Range {
         this._data_array.forEach((element, index, arr) => {
             let is_right_value = pred(element)
 
-            if (!is_in_range) {
-                if (!is_right_value) return;
-                is_in_range = true;
-                range_start = index;
-                return;
-            }
-
-            if (!is_right_value) {
+            if (is_right_value) {
+                if (!is_in_range) {
+                    is_in_range = true;
+                    range_start = index;
+                    return;
+                }
+            } else if (is_in_range) {
                 output.push(new Mandala({ tel_data_array: arr.slice(range_start, index) }))
                 is_in_range = false;
             }
         });
-
         if (is_in_range) {
-            output.push(new Mandala({ tel_data_array: this._data_array.slice(range_start, this._data_array.length - 1) }))
+            output.push(new Mandala({ tel_data_array: this._data_array.slice(range_start) }))
         }
 
         return output

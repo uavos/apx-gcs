@@ -1,8 +1,10 @@
-import { Mandala, findIntersectionsSorted } from "./mandala_object";
-import { priorityFunction } from "./function";
+import { Mandala, findIntersectionsSorted } from "../mandala_object";
+import { priorityFunction } from "../function";
 import { landing_time } from "./general";
+import { altitude_decorator, speed_decorator, time_decorator } from "../decorators";
+import { generateTimeObject, getTelTime as get_tel_time } from "../time";
 
-export const launch_time = () => priorityFunction()
+export const launch_time = () => priorityFunction(time_decorator)
     .params({
         launch: "ctr.ers.launch"
     }
@@ -13,14 +15,16 @@ export const launch_time = () => priorityFunction()
             return val.value == enum_ON_value
         })
 
-        return temp === undefined ? undefined : temp.time_range.start
+        if (temp === undefined) return undefined
+
+        return generateTimeObject(temp.time_range.start)
     });
 
-export const open_altitude = () => priorityFunction()
+export const open_altitude = () => priorityFunction(altitude_decorator)
     .params({
         alt: "est.pos.altitude"
     }).call((data) => {
-        const launch_time_obj = launch_time()
+        const launch_time_obj = get_tel_time(launch_time())
 
         if (launch_time_obj.isError()) return undefined
         const launch_time_ = launch_time_obj.value()
@@ -32,12 +36,12 @@ export const open_altitude = () => priorityFunction()
         return altitude_value_on_time === undefined ? undefined : altitude_value_on_time.value
     });
 
-export const open_speed = () => priorityFunction()
+export const open_speed = () => priorityFunction(speed_decorator)
     .params({
         speed: "est.pos.speed",
     }
     ).call((data) => {
-        const launch_time_obj = launch_time()
+        const launch_time_obj = get_tel_time(launch_time())
 
         if (launch_time_obj.isError()) return undefined
         const launch_time_ = launch_time_obj.value()
@@ -49,12 +53,12 @@ export const open_speed = () => priorityFunction()
         return speed_value_on_time === undefined ? undefined : speed_value_on_time.value
     });
 
-export const average_landing_speed = () => priorityFunction()
+export const average_landing_speed = () => priorityFunction(speed_decorator)
     .params({
         speed: "est.pos.speed"
     }).call((data) => {
-        const launch_time_obj = launch_time()
-        const landing_time_obj = landing_time()
+        const launch_time_obj = get_tel_time(launch_time())
+        const landing_time_obj = get_tel_time(landing_time())
 
         if (launch_time_obj.isError()) return undefined
         if (landing_time_obj.isError()) return undefined

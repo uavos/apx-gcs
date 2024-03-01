@@ -68,9 +68,7 @@ QString RG::JSHandler::evaluateCommand(QString command)
     auto evaluatedValue = m_engine->evaluate(command);
 
     if (evaluatedValue.hasProperty("is_calculated")) {
-        if (evaluatedValue.property("_is_error").toBool() == true)
-            return evaluatedValue.property("_what").toString();
-        return evaluatedValue.property("_value").toString();
+        return evaluatedValue.property("stringify").callWithInstance(evaluatedValue).toString();
     }
 
     return evaluatedValue.toString();

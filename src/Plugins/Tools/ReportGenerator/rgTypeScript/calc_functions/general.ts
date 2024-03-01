@@ -1,7 +1,9 @@
-import { priorityFunction } from "./function";
-import { findIntersectionsSorted } from "./mandala_object";
+import { altitude_decorator, distance_decorator, duration_decorator, speed_decorator, sys_time_decorator, tel_time_decorator, time_decorator } from "../decorators";
+import { priorityFunction, CalculatedValue } from "../function";
+import { findIntersectionsSorted, iterateSynchronizedByTime, Range } from "../mandala_object";
+import { generateTimeObject, getTelTime } from "../time";
 
-export const landing_time = () => priorityFunction()
+export const landing_time = () => priorityFunction(time_decorator)
     .params({
         vx: "est.lpos.ax"
     }).call((data) => {
@@ -12,10 +14,10 @@ export const landing_time = () => priorityFunction()
 
         const tel_time = data.vx.data[min_index].time_range.start
 
-        return tel_time
+        return generateTimeObject(tel_time)
     });
 
-export const takeoff_time = () => priorityFunction()
+export const takeoff_time = () => priorityFunction(time_decorator)
     .params({
         vx: "est.lpos.vx",
         vy: "est.lpos.vy",
@@ -39,7 +41,7 @@ export const takeoff_time = () => priorityFunction()
 
         if (time_interceptions.length === 0) return undefined
 
-        return time_interceptions[0].start;
+        return generateTimeObject(time_interceptions[0].start);
     })
     .params({
         speed: "est.pos.speed",
@@ -59,15 +61,15 @@ export const takeoff_time = () => priorityFunction()
 
         if (time_interceptions.length === 0) return undefined
 
-        return time_interceptions[0].start;
+        return generateTimeObject(time_interceptions[0].start);
     }))
 
-export const takeoff_speed = () => priorityFunction()
+export const takeoff_speed = () => priorityFunction(speed_decorator)
     .params(
         {
             speed: "est.pos.speed"
         }).call((data) => {
-            const takeoff_time_obj = takeoff_time()
+            const takeoff_time_obj = getTelTime(takeoff_time())
 
             if (takeoff_time_obj.isError()) return undefined
 
@@ -80,11 +82,11 @@ export const takeoff_speed = () => priorityFunction()
             return speeds.data[0].value
         });
 
-export const landing_speed = () => priorityFunction()
+export const landing_speed = () => priorityFunction(speed_decorator)
     .params({
         speed: "est.pos.speed"
     }).call((data) => {
-        const landing_time_obj = landing_time()
+        const landing_time_obj = getTelTime(landing_time())
 
         if (landing_time_obj.isError()) return undefined
 
@@ -97,18 +99,17 @@ export const landing_speed = () => priorityFunction()
         return speeds.data[0].value
     });
 
-export const max_altitude = (stage: string) => priorityFunction()
+export const max_altitude_by_mode = (mode: string) => priorityFunction(altitude_decorator)
     .params({
         alt: "est.pos.altitude",
         proc: "cmd.proc.mode"
     }).call((data) => {
-        if (data.proc.meta.enum[stage] === undefined) return undefined
+        if (data.proc.meta.enum[mode] === undefined) return undefined
 
-        const proc_index = Number(data.proc.meta.enum[stage])
+        const proc_index = Number(data.proc.meta.enum[mode])
         const command_ranges = data.proc.getContinuesRanges((el) => {
             return el.value === proc_index
         });
-
         const interceptions_maxes = findIntersectionsSorted([[data.alt], command_ranges]).map((inter) => {
             const curr_alt = data.alt.sliceByTime(inter)
             return Math.max(...curr_alt.data.map(el => el.value))
@@ -117,4 +118,12 @@ export const max_altitude = (stage: string) => priorityFunction()
         if (interceptions_maxes.length === 0) return undefined
 
         return Math.max(...interceptions_maxes)
+    });
+
+
+export const max_altitude = () => priorityFunction(altitude_decorator)
+    .params({
+        alt: "est.pos.altitude"
+    }).call((data) => {
+        return Math.max(...data.alt.data.map(el => el.value))
     });
