@@ -1,0 +1,197 @@
+<html>
+
+<head>
+  <style>
+    table {
+      border: 1px solid #ccc;
+      border-collapse: collapse;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    table caption {
+      font-size: 1.5em;
+      margin: .5em 0 .75em;
+    }
+
+    table tr {
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      padding: .35em;
+    }
+
+    table th,
+    table td {
+      padding: .625em;
+      text-align: center;
+    }
+
+    table th {
+      font-size: .85em;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    @media screen and (max-width: 600px) {
+      table {
+        border: 0;
+      }
+
+      table caption {
+        font-size: 1.3em;
+      }
+
+      table thead {
+        border: none;
+        clip: rect(0 0 0 0);
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        width: 1px;
+      }
+
+      table tr {
+        border-bottom: 3px solid #ddd;
+        display: block;
+        margin-bottom: .625em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Max altitude by stages</h2>
+  <table>
+    <tr>
+      <th>Stage</th>
+      <th>Altitude</th>
+    </tr>
+    <tr>
+      <td>EMG</td>
+      <td>${general.max_altitude_by_mode("EMG")}</td>
+    </tr>
+    <tr>
+      <td>RPV</td>
+      <td>${general.max_altitude_by_mode("RPV")}</td>
+    </tr>
+    <tr>
+      <td>UAV</td>
+      <td>${general.max_altitude_by_mode("UAV")}</td>
+    </tr>
+    <tr>
+      <td>WPT</td>
+      <td>${general.max_altitude_by_mode("WPT")}</td>
+    </tr>
+    <tr>
+      <td>STBY</td>
+      <td>${general.max_altitude_by_mode("STBY")}</td>
+    </tr>
+    <tr>
+      <td>TAXI</td>
+      <td>${general.max_altitude_by_mode("TAXI")}</td>
+    </tr>
+    <tr>
+      <td>TAKEOFF</td>
+      <td>${general.max_altitude_by_mode("TAKEOFF")}</td>
+    </tr>
+    <tr>
+      <td>LANDING</td>
+      <td>${general.max_altitude_by_mode("LANDING")}</td>
+    </tr>
+  </table>
+
+  <p>
+    <b>Max Altitude - ${general.max_altitude()}</b>
+  </p>
+
+  <h2>Main moments</h2>
+  <table>
+    <tr>
+      <th>Moment</th>
+      <th>Telemetry time</th>
+      <th>System time</th>
+    </tr>
+    <tr>
+      <td>Takeoff time</td>
+      <td>${general.takeoff_time().value().tel_time}</td>
+      <td>${general.takeoff_time().value().sys_time}</td>
+    </tr>
+    <tr>
+      <td>Landing time</td>
+      <td>${general.landing_time().value().tel_time}</td>
+      <td>${general.landing_time().value().sys_time}</td>
+    </tr>
+  </table>
+
+  <h2>Main speeds</h2>
+  <table>
+    <tr>
+      <th>Moment</th>
+      <th>Speed</th>
+    </tr>
+    <tr>
+      <td>Takeoff speed</td>
+      <td>${general.takeoff_speed()}</td>
+    </tr>
+    <tr>
+      <td>Landing speed</td>
+      <td>${general.landing_speed()}</td>
+    </tr>
+  </table>
+
+  <h2>Durations</h2>
+  <table>
+    <tr>
+      <th>Moment</th>
+      <th>Duration</th>
+    </tr>
+    <tr>
+      <td>Overall time in flight</td>
+      <td>${duration.overall_seconds_in_flight()}</td>
+    </tr>
+  </table>
+
+  <h2>Distances</h2>
+  <table>
+    <tr>
+      <th>Moment</th>
+      <th>Distance</th>
+    </tr>
+    <tr>
+      <td>Overall distance in flight</td>
+      <td>${distance.overall_distance_in_flight()}</td>
+    </tr>
+  </table>
+
+  <h2>Parachute</h2>
+  <table>
+    <tr>
+      <th>Moment</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>Launch time</td>
+      <td>${parachute.launch_time()}</td>
+    </tr>
+    <tr>
+      <td>Open altitude</td>
+      <td>${parachute.open_altitude()}</td>
+    </tr>
+    <tr>
+      <td>Open speed</td>
+      <td>${parachute.open_speed()}</td>
+    </tr>
+    <tr>
+      <td>Average landing speed</td>
+      <td>${parachute.average_landing_speed()}</td>
+    </tr>
+  </table>
+
+
+</body>
+
+</html>

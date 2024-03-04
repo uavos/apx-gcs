@@ -33,6 +33,9 @@ Doc
 archive
 site
 
+#TSC generated files
+*.gen.js
+
 #archives
 *.zip
 *.rar

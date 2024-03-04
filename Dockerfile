@@ -17,11 +17,11 @@ RUN apt-get update && \
 # architecture detect
 RUN arch="$(dpkg --print-architecture)" && \
     case "${arch##*-}" in \
-        amd64) arch='x86_64' ;; \
-        arm64) arch='aarch64' ;; \
-        armhf) arch='armv7l' ;; \
-        i386) arch='i686' ;; \
-        *) echo >&2 "error: unsupported architecture: ${arch}"; exit 1 ;; \
+    amd64) arch='x86_64' ;; \
+    arm64) arch='aarch64' ;; \
+    armhf) arch='armv7l' ;; \
+    i386) arch='i686' ;; \
+    *) echo >&2 "error: unsupported architecture: ${arch}"; exit 1 ;; \
     esac && \
     echo "Detected architecture: ${arch}" && \
     echo "${arch}" > /arch
@@ -42,10 +42,10 @@ RUN apt-get install -y --no-install-recommends p7zip-full && rm -Rf /var/cache/a
 RUN curl -L ${INSTALL_QT_SRC} --output /tmp/install-qt.sh && \
     chmod +x /tmp/install-qt.sh && \
     /tmp/install-qt.sh --version ${VERSION_QT} --directory /tmp/qt \
-        qtbase qtdeclarative qttools \
-        quickcontrols2 serialport multimedia speech svg location \
-        graphicaleffects qtcharts icu \
-        && \
+    qtbase qtdeclarative qttools \
+    quickcontrols2 serialport multimedia speech svg location \
+    graphicaleffects qtcharts icu \
+    && \
     rsync -av /tmp/qt/${VERSION_QT}/*/ /usr/local/ && rm -Rf /tmp/*
 # RUN apt-get install -q -y --no-install-recommends \
 #     qt5*-dev \
@@ -79,9 +79,9 @@ RUN curl -L ${APPIMAGETOOL_SRC} --output /usr/local/bin/appimagetool && \
 # RUN curl -L ${LINUXDEPLOY_PLUGIN_GSTREAMER_SRC} --output /usr/local/bin/linuxdeploy-plugin-gstreamer.sh && \
 # 	chmod +x /usr/local/bin/linuxdeploy-plugin-gstreamer.sh
 
-
 # libs: appimageupdate
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     xxd wget automake desktop-file-utils librsvg2-dev libfuse-dev patchelf \
     libcurl4-openssl-dev libssl-dev libtool libglib2.0-dev libcairo-dev \
     argagg-dev libgcrypt-dev \
@@ -90,11 +90,11 @@ RUN apt-get install -y --no-install-recommends \
 ARG VERSION_APPIMAGEUPDATE=2.0.0-alpha-1-20220124
 RUN git clone --depth=1 --recurse-submodules -b ${VERSION_APPIMAGEUPDATE} --single-branch https://github.com/AppImage/AppImageUpdate.git && \
     cd AppImageUpdate && \
-        sed -i 's/\"HTTP\/1\", 6/\"HTTP\/1\", 4/' lib/zsync2/src/legacy_http.c && \
-        cmake -H. -Bbuild && \
-        cmake --build build --target install && \
-	find build -name '*.a' -exec cp "{}" /usr/local/lib/ \; && \
-	cd .. && rm -Rf AppImageUpdate
+    sed -i 's/\"HTTP\/1\", 6/\"HTTP\/1\", 4/' lib/zsync2/src/legacy_http.c && \
+    cmake -H. -Bbuild && \
+    cmake --build build --target install && \
+    find build -name '*.a' -exec cp "{}" /usr/local/lib/ \; && \
+    cd .. && rm -Rf AppImageUpdate
 
 
 # libs: apt
@@ -124,3 +124,9 @@ RUN cd $LIBS_DIST_DIR && apt-get download libsdl2-2.0-0 libsndio7.0
 # python
 RUN pip3 install networkx simplejson jinja2 pyyaml
 
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+# Install TypeScript globally
+RUN npm install -g typescript
