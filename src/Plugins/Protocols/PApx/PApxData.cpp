@@ -48,8 +48,8 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
                 MandalaFact *lon = qobject_cast<MandalaFact *>(
                     mandalaInstance->findChild(factNamePath + ".lon"));
                 if (lat && lon) {
-                    lat->sendValue(mandala::from_gps(bundlePos.lat));
-                    lon->sendValue(mandala::from_gps(bundlePos.lon));
+                    lat->setRawValueLocal(mandala::from_gps(bundlePos.lat));
+                    lon->setRawValueLocal(mandala::from_gps(bundlePos.lon));
                 }
                 return true;
             }
