@@ -1,3 +1,13 @@
+# [APX Ground Control v11.1.15](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.15) (03/10/24)
+
+> Branch: `main`\
+> Date: `03/10/24 13:27:50`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b69c2fa4d3991cbee52dd8db13f2ffe0013666ee...c3ea5472029ada288896893dd175557198b705de)
+
+## Bug Fixes
+* [`27`](https://github.com/uavos/apx-gcs/issues/27) multi gcs commands unpack error
+* multi GCS bundle unpack locally
+
 # [APX Ground Control v11.1.14](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.14) (02/23/24)
 
 > Branch: `main`\
