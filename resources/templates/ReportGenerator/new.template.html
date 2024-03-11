@@ -1,0 +1,386 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+    <title>Flight Report</title>
+    <style type="text/css">
+        body {
+            font-size: 12px;
+        }
+
+        td {
+            vertical-align: top;
+            white-space: nowrap;
+        }
+
+        input,
+        textarea,
+        select,
+        option {
+            width: 100%;
+            display: block;
+            border: solid 0px;
+            padding: 0px;
+            margin: 0px;
+            display: inline;
+            background: none;
+        }
+
+        input:hover,
+        textarea:hover {
+            background-color: #e0e0f0;
+        }
+
+        input:focus,
+        textarea:focus {
+            background-color: #e0e0f0;
+        }
+
+        .table_list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1px;
+        }
+
+        .table_holder {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    ${user.declareTextValue("uav_name", "UAV")}
+    ${user.declareTextValue("place_name", "Place")}
+    ${user.declareTextValue("position", "Position")}
+    ${user.declareEnumValue("weather_info", "Weather info", ["clear", "cloudy", "rain", "storm"])}
+    ${user.declareTextValue("wind_speed", "Wind info")}
+    ${user.declareTextValue("ambient_temp", "Ambient temperature")}
+    ${user.declareTextValue("max_temp", "Max temperature")}
+    ${user.declareEnumValue("payload_type", "Payload type", ["cargo", "people"])}
+    ${user.declareEnumValue("flight_type", "Takeoff type", ["manual", "autonomous"])}
+    ${user.declareEnumValue("landing_type", "Landing type", ["manual", "autonomous", "crash"])}
+    ${user.declareEnumValue("status", "Status", ["success", "failed"])}
+    ${user.declareTextValue("comments", "Comments")}
+    ${user.declareTextValue("goal", "Goal")}
+    <div class="table_holder">
+        <h2>User data</h2>
+        <table>
+            <tr>
+                <th>name</th>
+                <th>value</th>
+            </tr>
+            <tr>
+                <td>UAV</td>
+                <td>${user.getUserValue("uav_name")}</td>
+            </tr>
+            <tr>
+                <td>Place</td>
+                <td>${user.getUserValue("place_name")}</td>
+            </tr>
+            <tr>
+                <td>Position</td>
+                <td>${user.getUserValue("position")}</td>
+            </tr>
+            <tr>
+                <td>Weather info</td>
+                <td>${user.getUserValue("weather_info")}</td>
+            </tr>
+            <tr>
+                <td>Wind info</td>
+                <td>${user.getUserValue("wind_speed")}</td>
+            </tr>
+            <tr>
+                <td>Ambient temperature</td>
+                <td>${user.getUserValue("ambient_temp")}</td>
+            </tr>
+            <tr>
+                <td>Max temperature</td>
+                <td>${user.getUserValue("max_temp")}</td>
+            </tr>
+            <tr>
+                <td>Payload type</td>
+                <td>${user.getUserValue("payload_type")}</td>
+            </tr>
+            <tr>
+                <td>Takeoff type</td>
+                <td>${user.getUserValue("flight_type")}</td>
+            </tr>
+            <tr>
+                <td>Landing type</td>
+                <td>${user.getUserValue("landing_type")}</td>
+            </tr>
+            <tr>
+                <td>Status</td>
+                <td>${user.getUserValue("status")}</td>
+            </tr>
+            <tr>
+                <td>Comments</td>
+                <td>${user.getUserValue("comments")}</td>
+            </tr>
+            <tr>
+                <td>Goal</td>
+                <td>${user.getUserValue("goal")}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="table_list">
+
+
+        <div class="table_holder">
+            <h2>Running stage</h2>
+            <table>
+                <tr>
+                    <th>name</th>
+                    <th>max</th>
+                    <th>min</th>
+                </tr>
+                <tr>
+                    <td>tas</td>
+                    <td>${stage.running.tas.max()}</td>
+                    <td>${stage.running.tas.min()}</td>
+                </tr>
+                <tr>
+                    <td>ias</td>
+                    <td>${stage.running.ias.max()}</td>
+                    <td>${stage.running.ias.min()}</td>
+                </tr>
+                <tr>
+                    <td>agl</td>
+                    <td>${stage.running.agl.max()}</td>
+                    <td>${stage.running.agl.min()}</td>
+                </tr>
+                <tr>
+                    <td>hmsl</td>
+                    <td>${stage.running.hmsl.max()}</td>
+                    <td>${stage.running.hmsl.min()}</td>
+                </tr>
+                <tr>
+                    <td>vspeed</td>
+                    <td>${stage.running.vspeed.max()}</td>
+                    <td>${stage.running.vspeed.min()}</td>
+                </tr>
+            </table>
+
+            <b>Start - ${stage.running.start()}</b><br>
+            <b>End - ${stage.running.end()}</b>
+
+        </div>
+
+        <div class="table_holder">
+            <h2>Takeoff stage</h2>
+            <table>
+                <tr>
+                    <th>name</th>
+                    <th>max</th>
+                    <th>min</th>
+                </tr>
+                <tr>
+                    <td>tas</td>
+                    <td>${stage.takeoff.tas.max()}</td>
+                    <td>${stage.takeoff.tas.min()}</td>
+                </tr>
+                <tr>
+                    <td>ias</td>
+                    <td>${stage.takeoff.ias.max()}</td>
+                    <td>${stage.takeoff.ias.min()}</td>
+                </tr>
+                <tr>
+                    <td>agl</td>
+                    <td>${stage.takeoff.agl.max()}</td>
+                    <td>${stage.takeoff.agl.min()}</td>
+                </tr>
+                <tr>
+                    <td>hmsl</td>
+                    <td>${stage.takeoff.hmsl.max()}</td>
+                    <td>${stage.takeoff.hmsl.min()}</td>
+                </tr>
+                <tr>
+                    <td>vspeed</td>
+                    <td>${stage.takeoff.vspeed.max()}</td>
+                    <td>${stage.takeoff.vspeed.min()}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="table_holder">
+            <h2>Flight stage</h2>
+            <table>
+                <tr>
+                    <th>name</th>
+                    <th>max</th>
+                    <th>min</th>
+                </tr>
+                <tr>
+                    <td>tas</td>
+                    <td>${stage.flight.tas.max()}</td>
+                    <td>${stage.flight.tas.min()}</td>
+                </tr>
+                <tr>
+                    <td>ias</td>
+                    <td>${stage.flight.ias.max()}</td>
+                    <td>${stage.flight.ias.min()}</td>
+                </tr>
+                <tr>
+                    <td>agl</td>
+                    <td>${stage.flight.agl.max()}</td>
+                    <td>${stage.flight.agl.min()}</td>
+                </tr>
+                <tr>
+                    <td>hmsl</td>
+                    <td>${stage.flight.hmsl.max()}</td>
+                    <td>${stage.flight.hmsl.min()}</td>
+                </tr>
+                <tr>
+                    <td>vspeed</td>
+                    <td>${stage.flight.vspeed.max()}</td>
+                    <td>${stage.flight.vspeed.min()}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="table_holder">
+            <h2>Landing stage</h2>
+            <table>
+                <tr>
+                    <th>name</th>
+                    <th>max</th>
+                    <th>min</th>
+                </tr>
+                <tr>
+                    <td>tas</td>
+                    <td>${stage.landing.tas.max()}</td>
+                    <td>${stage.landing.tas.min()}</td>
+                </tr>
+                <tr>
+                    <td>ias</td>
+                    <td>${stage.landing.ias.max()}</td>
+                    <td>${stage.landing.ias.min()}</td>
+                </tr>
+                <tr>
+                    <td>agl</td>
+                    <td>${stage.landing.agl.max()}</td>
+                    <td>${stage.landing.agl.min()}</td>
+                </tr>
+                <tr>
+                    <td>hmsl</td>
+                    <td>${stage.landing.hmsl.max()}</td>
+                    <td>${stage.landing.hmsl.min()}</td>
+                </tr>
+                <tr>
+                    <td>vspeed</td>
+                    <td>${stage.landing.vspeed.max()}</td>
+                    <td>${stage.landing.vspeed.min()}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="table_holder">
+            <h2>Rollout stage</h2>
+            <table>
+                <tr>
+                    <th>name</th>
+                    <th>max</th>
+                    <th>min</th>
+                </tr>
+                <tr>
+                    <td>tas</td>
+                    <td>${stage.rollout.tas.max()}</td>
+                    <td>${stage.rollout.tas.min()}</td>
+                </tr>
+                <tr>
+                    <td>ias</td>
+                    <td>${stage.rollout.ias.max()}</td>
+                    <td>${stage.rollout.ias.min()}</td>
+                </tr>
+                <tr>
+                    <td>agl</td>
+                    <td>${stage.rollout.agl.max()}</td>
+                    <td>${stage.rollout.agl.min()}</td>
+                </tr>
+                <tr>
+                    <td>hmsl</td>
+                    <td>${stage.rollout.hmsl.max()}</td>
+                    <td>${stage.rollout.hmsl.min()}</td>
+                </tr>
+                <tr>
+                    <td>vspeed</td>
+                    <td>${stage.rollout.vspeed.max()}</td>
+                    <td>${stage.rollout.vspeed.min()}</td>
+                </tr>
+            </table>
+            <b>Start - ${stage.rollout.start()}</b><br>
+            <b>End - ${stage.rollout.end()}</b>
+        </div>
+        <div class="table_holder">
+            <h2>Moments</h2>
+            <h3>Touchdown</h3>
+            <table>
+                <tr>
+                    <td>Time</td>
+                    <td>${moment.touchdown.time()}</td>
+                </tr>
+                <tr>
+                    <td>IAS</td>
+                    <td>${moment.touchdown.speed.ias()}</td>
+                </tr>
+                <tr>
+                    <td>Ground speed</td>
+                    <td>${moment.touchdown.speed.ground_speed()}</td>
+                </tr>
+            </table>
+            <h3>Liftoff</h3>
+            <table>
+                <tr>
+                    <td>Time</td>
+                    <td>${moment.liftoff.time()}</td>
+                </tr>
+                <tr>
+                    <td>IAS</td>
+                    <td>${moment.liftoff.speed.ias()}</td>
+                </tr>
+                <tr>
+                    <td>Ground speed</td>
+                    <td>${moment.liftoff.speed.ground_speed()}</td>
+                </tr>
+            </table>
+            <div class="table_holder">
+                <h2>Parachute</h2>
+                <table>
+                    <tr>
+                        <td>Launch time</td>
+                        <td>${parachute.launch_time()}</td>
+                    </tr>
+                    <tr>
+                        <td>Open hmsl</td>
+                        <td>${parachute.open.alt.hmsl()}</td>
+                    </tr>
+                    <tr>
+                        <td>Open agl</td>
+                        <td>${parachute.open.alt.agl()}</td>
+                    </tr>
+                    <tr>
+                        <td>Open ias</td>
+                        <td>${parachute.open.speed.ias()}</td>
+                    </tr>
+                    <tr>
+                        <td>Average vspeed on landing</td>
+                        <td>${parachute.avg.landing_speed()}</td>
+                    </tr>
+                </table>
+                <h2>Overall</h2>
+                <table>
+                    <tr>
+                        <td>Overall distance</td>
+                        <td>${distance.overall_distance_in_flight()}</td>
+                    </tr>
+                    <tr>
+                        <td>Overall time in air</td>
+                        <td>${duration.overall_seconds_in_flight()}</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+</body>
+
+</html>
