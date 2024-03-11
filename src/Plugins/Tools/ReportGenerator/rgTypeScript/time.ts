@@ -1,5 +1,5 @@
-import { sys_time_decorator as sys_time_decorator, tel_time_decorator } from "./decorators";
-import { CalculatedValue, priorityFunction, wrap } from "./function";
+import { decorators } from "./decorators";
+import { CalculatedValue, calculationFunction, wrap } from "./function";
 
 export interface Time {
     tel_time: CalculatedValue,
@@ -7,7 +7,7 @@ export interface Time {
 }
 
 export function generateTimeObject(tel_time: number) {
-    const wrapped_tel_time = wrap(tel_time, tel_time_decorator)
+    const wrapped_tel_time = wrap(tel_time, decorators.tel_time)
     return {
         tel_time: wrapped_tel_time,
         sys_time: systime(wrapped_tel_time)
@@ -19,7 +19,7 @@ export function getTelTime(time: CalculatedValue): CalculatedValue {
     return time.value().tel_time
 }
 
-export const systime = (tel_time: CalculatedValue) => priorityFunction(sys_time_decorator)
+export const systime = (tel_time: CalculatedValue) => calculationFunction(decorators.sys_time)
     .params({
         sys_time: "est.sys.time"
     }).call((data) => {

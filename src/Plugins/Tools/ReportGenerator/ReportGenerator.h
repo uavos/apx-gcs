@@ -7,6 +7,8 @@
 #include <QtWidgets>
 
 namespace RG {
+class UserDefinedData;
+
 /**
  * @brief A class that reads a template, inserts values returned by resolvers, and saves the report
  * 
@@ -29,6 +31,8 @@ private:
     Fact *f_choose_template;
     Fact *f_generate_report;
     Fact *f_open_browser;
+
+    UserDefinedData *m_user_defined_data;
 
     JSHandler m_js_handler;
     Report m_report;

@@ -1,6 +1,7 @@
 #include "ReportGenerator.h"
 #include "App/AppDirs.h"
 #include "App/AppLog.h"
+#include "rgJS/UserDefinedData.h"
 #include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryReader.h>
@@ -31,8 +32,14 @@ ReportGenerator::ReportGenerator(Fact *parent)
                                  tr(""),
                                  Action | Apply,
                                  "upload")}
-    , f_generate_report{
-          new Fact(this, "generate_report", tr("Generate report"), tr(""), Action | Apply, "export")}
+    , f_generate_report{new Fact(this,
+                                 "generate_report",
+                                 tr("Generate report"),
+                                 tr(""),
+                                 Action | Apply,
+                                 "export")}
+    , m_user_defined_data{new UserDefinedData(this)}
+    , m_js_handler{m_user_defined_data}
 {
     connect(f_choose_template, &Fact::triggered, this, &ReportGenerator::loadTemplateSlot);
 
@@ -59,7 +66,6 @@ void ReportGenerator::generateReportSlot()
         filepath.append(".html");
     }
 
-    m_js_handler.reloadHandler();
     m_report.generateReport();
     m_report.saveReportToFile(filepath);
 

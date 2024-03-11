@@ -1,16 +1,24 @@
 import { IMandala, accessRaw } from "./bridge";
+import { ScriptStageEnum } from "./enums";
 import { Mandala } from "./mandala_object";
 
 type FunctionParams = { [key: string]: string }
 type CallBackParams = { [key: string]: Mandala }
 
-type DecoratorFunction = (val: any) => string
+export type DecoratorFunction = (val: any) => string
 
 export function wrap(val: any, decorator: DecoratorFunction | null = null) {
     return new CalculatedValue(decorator, val)
 }
 
-export class CalculatedValue {
+export interface IReturnValue {
+    isError()
+    value()
+    what()
+    stringify()
+}
+
+export class CalculatedValue implements IReturnValue {
     public is_calculated = true
     private _is_error: boolean;
     private _what: string;
@@ -21,9 +29,9 @@ export class CalculatedValue {
 
     constructor(decorator_function: DecoratorFunction | null = null, default_value: any = undefined) {
         this._is_error = default_value === undefined;
-        this._what = "Not detected";
+        this._what = "Not detected"
         this._callParams = {};
-        this._allParamsAvailable = false;
+        this._allParamsAvailable = true;
         this._value = default_value
         this._decorator_function = decorator_function
     }
@@ -77,6 +85,12 @@ export class CalculatedValue {
     }
 }
 
-export function priorityFunction(func: DecoratorFunction | null = null) {
+export function calculationFunction(func: DecoratorFunction | null = null) {
+    if (ScriptStage !== ScriptStageEnum.ReportGeneration) return wrap("")
+    return new CalculatedValue(func)
+}
+
+export function preheatFunction(func: DecoratorFunction | null = null) {
+    if (ScriptStage !== ScriptStageEnum.Preheating) return wrap("")
     return new CalculatedValue(func)
 }

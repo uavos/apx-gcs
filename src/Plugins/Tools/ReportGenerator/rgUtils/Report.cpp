@@ -19,6 +19,8 @@ bool RG::Report::loadTemplateFromFile(QString path)
 
     file.close();
 
+    runPreheatingStage();
+
     return true;
 }
 
@@ -36,19 +38,49 @@ bool RG::Report::saveReportToFile(QString path)
 
 void RG::Report::generateReport()
 {
-    m_raw_report = m_raw_template;
-    QRegExp regex(k_search_pattern);
-    int pos = 0;
-    while ((pos = regex.indexIn(m_raw_report, pos)) != -1) {
-        QString matchedText = regex.cap(0);
-        QString command = regex.cap(1);
-        auto resolvedValue = m_js_handler->evaluateCommand(command);
-        m_raw_report.replace(pos, matchedText.length(), resolvedValue);
-        pos += resolvedValue.length();
+    m_js_handler->setScriptStage(ScriptStage::ReportGeneration);
+    m_raw_report.clear();
+    size_t cut_begin = 0;
+    for (auto command : m_commands) {
+        auto ret_value = m_js_handler->evaluateCommand(command.command_string);
+
+        m_raw_report.append(m_raw_template.midRef(cut_begin, command.command_pos.x() - cut_begin));
+
+        m_raw_report.append(ret_value);
+
+        cut_begin = command.command_pos.y();
     }
+
+    m_raw_report.append(m_raw_template.mid(cut_begin));
 }
 
 bool RG::Report::isTemplateLoaded()
 {
     return !m_raw_template.isEmpty();
+}
+
+void RG::Report::runPreheatingStage()
+{
+    m_js_handler->reloadHandler();
+    m_js_handler->setScriptStage(ScriptStage::Preheating);
+    parseTemplate();
+    for (auto it : m_commands) {
+        m_js_handler->evaluateCommand(it.command_string);
+    }
+}
+
+void RG::Report::parseTemplate()
+{
+    m_commands.clear();
+    QRegExp regex(k_search_pattern);
+    int pos = 0;
+    while ((pos = regex.indexIn(m_raw_template, pos)) != -1) {
+        QString matchedText = regex.cap(0);
+        QString command = regex.cap(1);
+
+        Command temp_command = {command, QPoint(pos, pos + matchedText.length())};
+        pos += matchedText.length();
+
+        m_commands.push_back(temp_command);
+    };
 }

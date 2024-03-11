@@ -1,4 +1,6 @@
 #include "JSHandler.h"
+
+#include "UserDefinedData.h"
 #include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryReader.h>
@@ -6,9 +8,10 @@
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
 
-RG::JSHandler::JSHandler()
+RG::JSHandler::JSHandler(UserDefinedData *user_defined_data_fact)
     : m_engine{std::make_unique<QJSEngine>()}
     , m_registry{m_engine.get()}
+    , m_user_defined{user_defined_data_fact}
 {
     m_engine->installExtensions(QJSEngine::ConsoleExtension | QJSEngine::GarbageCollectionExtension);
 }
@@ -47,12 +50,18 @@ void RG::JSHandler::syncMandala()
 
 void RG::JSHandler::reloadHandler()
 {
+    m_user_defined->clearContext();
+
     if (!m_registry.isFilesChanged())
         return;
 
     resetEngine();
     m_registry.resetEnginePointer(m_engine.get());
     syncMandala();
+
+    m_engine->globalObject().setProperty(k_global_raw_userdata_object_name,
+                                         m_engine->newQObject(
+                                             qobject_cast<QObject *>(m_user_defined)));
 
     m_registry.reloadModules();
 }
@@ -72,6 +81,12 @@ QString RG::JSHandler::evaluateCommand(QString command)
     }
 
     return evaluatedValue.toString();
+}
+
+void RG::JSHandler::setScriptStage(ScriptStage stage)
+{
+    m_engine->globalObject().setProperty("ScriptStage",
+                                         static_cast<std::underlying_type_t<ScriptStage>>(stage));
 }
 
 void RG::JSHandler::resetEngine()

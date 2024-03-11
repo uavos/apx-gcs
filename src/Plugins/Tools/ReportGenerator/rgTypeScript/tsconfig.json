@@ -17,6 +17,9 @@
       "calc_functions/distance.ts",
       "calc_functions/duration.ts",
       "calc_functions/general.ts",
-      "calc_functions/parachute.ts"
+      "calc_functions/parachute.ts",
+      "calc_functions/battery.ts",
+      "calc_functions/stage.ts",
+      "calc_functions/moment.ts"
    ]
 }

@@ -145,6 +145,19 @@ export class Mandala implements Range {
             return element.time_range.start <= range.end && element.time_range.end >= range.start;
         });
 
+        if (temp.length === 1) {
+            const element_copy = { ...temp[0] }
+            element_copy.time_range = range
+            temp[0] = element_copy
+        } else if (temp.length >= 2) {
+            const first_element_copy = { ...temp[0] }
+            const last_element_copy = { ...temp[temp.length - 1] }
+            first_element_copy.time_range.start = range.start
+            last_element_copy.time_range.end = range.end
+            temp[0] = first_element_copy
+            temp[temp.length - 1] = last_element_copy
+        }
+
         return new Mandala({ tel_data_array: temp })
     }
 

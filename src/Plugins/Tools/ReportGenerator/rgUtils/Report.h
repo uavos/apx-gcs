@@ -6,9 +6,14 @@ namespace RG {
 
 class JSHandler;
 
+struct Command
+{
+    QString command_string;
+    QPoint command_pos;
+};
+
 class Report
 {
-    //Searches for ${...} pattern in template
     static constexpr auto k_search_pattern = "\\$\\{([^{}]*)\\}";
 
 public:
@@ -18,10 +23,15 @@ public:
     void generateReport();
     bool isTemplateLoaded();
 
+    void runPreheatingStage();
+
 private:
+    void parseTemplate();
+
     QString m_raw_template;
     QString m_raw_report;
     JSHandler *m_js_handler;
+    QVector<Command> m_commands;
 };
 
 } // namespace RG
