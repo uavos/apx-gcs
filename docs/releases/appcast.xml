@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>APX Ground Control</title>
+        <item>
+            <title>11.1.15</title>
+            <pubDate>Mon, 11 Mar 2024 01:37:39 +0000</pubDate>
+            <sparkle:minimumSystemVersion>10.9</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/uavos/apx-gcs/releases/download/release-11.1.15/APX_Ground_Control-11.1.15-macos-x86_64.dmg" sparkle:version="11.1.15" sparkle:shortVersionString="11.1.15" length="139878656" type="application/octet-stream" sparkle:edSignature="mdn6bkIqjzkv0/cNTMQVckB0VTfeqH0FPXHr9ObG393MaD9s3eA5rKTsMQf/C8nW+j8ZuOaPs8YNTKfMk2RMDA==" />
+            <sparkle:deltas>
+                <enclosure url="https://github.com/uavos/apx-gcs/releases/download/release-11.1.15/update_dmg-11.1.15-11.1.14.delta" sparkle:version="11.1.15" sparkle:shortVersionString="11.1.15" sparkle:deltaFrom="11.1.14" length="104168525" type="application/octet-stream" sparkle:edSignature="kWvKl0shembQm2zYbLmZCymR9af5Mu+/Sm7OwZl/48T77TSkXay2hFloFaZWCRRSexXxzkmWSMyAWH5Ol1EoCA==" />
+            </sparkle:deltas>
+        <sparkle:releaseNotesLink>https://uavos.github.io/apx-gcs/docs/releases/release-11.1.15.html</sparkle:releaseNotesLink></item>
+        <item>
+            <title>11.1.14</title>
+            <pubDate>Mon, 11 Mar 2024 01:37:33 +0000</pubDate>
+            <sparkle:minimumSystemVersion>10.9</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/uavos/apx-gcs/releases/download/release-11.1.14/APX_Ground_Control-11.1.14-macos-arm64.dmg" sparkle:version="11.1.14" sparkle:shortVersionString="11.1.14" length="131447762" type="application/octet-stream" sparkle:edSignature="0G9v62bFqGlS9U86Gep6cIgeDUkm606ha7+5l5t6RnNjj1JGgKFtOcY9XIu+NPwvpHF310EhyFz0IVYOgp0bBQ==" />
+        <sparkle:releaseNotesLink>https://uavos.github.io/apx-gcs/docs/releases/release-11.1.14.html</sparkle:releaseNotesLink></item>
+        <item>
+            <title>11.1.14</title>
+            <pubDate>Mon, 11 Mar 2024 01:37:36 +0000</pubDate>
+            <sparkle:minimumSystemVersion>10.9</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/uavos/apx-gcs/releases/download/release-11.1.14/APX_Ground_Control-11.1.14-macos-x86_64.dmg" sparkle:version="11.1.14" sparkle:shortVersionString="11.1.14" length="139878330" type="application/octet-stream" sparkle:edSignature="XG9xxxvHo3LJvyFjEppFJHfv33FC99Jmvyb0bdVRxZQRXUMM+pfl0rKsqwoA/ThwnGKh0kfbp7YOEevSut0aBw==" />
+        <sparkle:releaseNotesLink>https://uavos.github.io/apx-gcs/docs/releases/release-11.1.14.html</sparkle:releaseNotesLink></item>
+    </channel>
+</rss>
