@@ -442,7 +442,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     //update fhdr
     fhdr.size = stream.pos() - pos_s;
 
-    strncpy(fhdr.title, m.value("title").toString().toLocal8Bit(), sizeof(fhdr.title));
+    strncpy(fhdr.title, m.value("title").toString().toLocal8Bit(), sizeof(fhdr.title) - 1);
 
     stream.reset();
     fhdr.write(&stream);
