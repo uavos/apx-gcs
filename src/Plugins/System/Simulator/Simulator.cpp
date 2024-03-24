@@ -239,24 +239,6 @@ void Simulator::launchXplane()
                 }
             }
         }
-        //install xpl aircrafts
-        if (d.cd(xplaneDir) && d.cd("Aircraft")) {
-            d.mkpath("APX");
-            d.cd("APX");
-            QFileInfoList fiSrcList(QDir(AppDirs::res().absoluteFilePath("xplane/models"),
-                                         "",
-                                         QDir::Unsorted,
-                                         QDir::AllDirs | QDir::NoDotAndDotDot)
-                                        .entryInfoList());
-            foreach (QFileInfo fi, fiSrcList) {
-                QFileInfo fiDest(d.absoluteFilePath(fi.fileName()));
-                //qDebug()<<fiDest.absoluteFilePath();
-                if (fiDest.exists())
-                    continue;
-                AppDirs::copyPath(fi.absoluteFilePath(), fiDest.absoluteFilePath());
-                apxMsg() << tr("XPL Aircraft installed").append(":") << fiDest.absoluteFilePath();
-            }
-        }
 
         break;
     }
@@ -307,9 +289,7 @@ void Simulator::_launchXplane(QString xplaneDir)
             break;
 #elif defined Q_OS_LINUX
         QDir("/media/cdrom").mkpath(".");
-        if (QProcess::execute("mount",
-                              QStringList() << imgFile << "/media/cdrom"
-                                            << "-o loop,ro")
+        if (QProcess::execute("mount", QStringList() << imgFile << "/media/cdrom" << "-o loop,ro")
             == 0)
             break;
 #endif
