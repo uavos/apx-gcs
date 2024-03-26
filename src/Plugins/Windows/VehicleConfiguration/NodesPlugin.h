@@ -34,5 +34,7 @@ public:
     QObject *createControl() { return new NodesFrame(); }
     int flags() { return Widget | Restore | Launcher; }
 
+    QString title() { return tr("Vehicle Configuration"); }
+    QString descr() { return tr("Parameters of vehicle hardware components"); }
     QString icon() { return "puzzle"; }
 };
