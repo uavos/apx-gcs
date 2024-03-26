@@ -23,6 +23,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppNotifyListModel.h>
+#include <algorithm>
 #include <QDesktopServices>
 #include <QQmlEngine>
 
@@ -238,6 +239,47 @@ QString Terminal::autocomplete(QString cmd)
     hints.sort();
     enter(hints.join(" "));
     return c;
+}
+
+void Terminal::copyConsoleHistoryToClipboard() const
+{
+    const auto &modelItems = App::instance()->notifyModel()->m_items;
+    QString log = std::accumulate(std::cbegin(modelItems),
+                                  std::cend(modelItems),
+                                  QString(),
+                                  [](auto res, auto item) {
+                                      return std::move(res).append('\n' + item->text);
+                                  });
+    _clipboard->setText(std::move(log));
+}
+
+void Terminal::copySelectedLinesToClipboard() const
+{
+    const auto &modelItems = App::instance()->notifyModel()->m_items;
+    QString selectedText = std::accumulate(std::cbegin(_selectedLines),
+                                           std::cend(_selectedLines),
+                                           QString(),
+                                           [&modelItems](auto res, auto row) {
+                                               return std::move(res).append(
+                                                   '\n' + modelItems.at(row)->text);
+                                           });
+    _clipboard->setText(std::move(selectedText));
+}
+
+void Terminal::unselectAllLines()
+{
+    auto &modelItems = App::instance()->notifyModel()->m_items;
+    std::for_each(std::cbegin(_selectedLines), std::cend(_selectedLines), [&modelItems](auto row) {
+        modelItems.at(row)->selected = false;
+    });
+    _selectedLines.clear();
+    emit selectionChanged();
+}
+
+void Terminal::selectLine(int row)
+{
+    App::instance()->notifyModel()->updateItem(row, true, AppNotifyListModel::SelectedRole);
+    _selectedLines.insert(row);
 }
 
 QMap<QString, QJSValue> Terminal::_get_js_properties(QString scope, QString flt)
