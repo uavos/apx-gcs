@@ -55,6 +55,7 @@ AppBase *AppBase::_instance = nullptr;
 
 AppBase::AppBase(int &argc, char **argv, const QString &name)
     : QApplication(argc, argv)
+    , m_version{VERSION}
 {
     _instance = this;
 
@@ -75,7 +76,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     QApplication::setWindowIcon(QIcon("qrc:///icons/uavos-logo.icns"));
 
     // app constants
-    m_version = VERSION;
+
     apxConsole() << tr("Version").append(":") << m_version;
 
     m_hash = GIT_HASH;
