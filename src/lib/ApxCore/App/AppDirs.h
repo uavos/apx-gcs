@@ -21,31 +21,61 @@
  */
 #pragma once
 
+#include <QFileDialog>
 #include <QtCore>
 
-class AppDirs
-{
-public:
-    static QDir res();
-    static QDir user();
+namespace AppDirs {
 
-    static QDir libs();
+QDir res();
+QDir user();
+QDir libs();
+QDir plugins();
+QDir userPlugins();
+QDir firmware();
+QDir prefs();
+QDir missions();
+QDir configs();
+QDir scripts();
+QDir db();
+QDir logs();
+QDir video();
+QDir images();
+QDir configBackups();
 
-    static QDir plugins();
-    static QDir userPlugins();
+//helpers
+namespace utils {
 
-    static QDir firmware();
+QByteArray getFileHash(const QFileInfo &fileInfo);
 
-    static QDir prefs();
-    static QDir missions();
-    static QDir configs();
-    static QDir scripts();
-    static QDir db();
-    static QDir logs();
-    static QDir video();
-    static QDir images();
+QFileInfo newerFile(const QFileInfo &info1, const QFileInfo &info2);
 
-    //-------------------------------------------
-    //HELPERS
-    static bool copyPath(QString sourceDir, QString destinationDir);
-};
+template<typename... Args>
+QFileInfo newerFile(const QFileInfo &firstInfo, Args &&...infos);
+
+template<typename... Args>
+bool isHashEqual(const QFileInfo &firstHash, Args &&...hashes);
+
+bool backupFile(const QFileInfo &fileToBackupInfo, const QString &backupDirPath);
+
+bool simpleCopy(const QFileInfo &srcInfo, const QFileInfo &destInfo, const bool overwrite = true);
+
+bool createDir(const QDir &directory);
+
+bool isFileNeedOverwrite(const QFileInfo &srcInfo, const QFileInfo &destInfo);
+
+bool hasSomeHash(const QFileInfo &sourceFileInfo, const QDir &targetDir);
+
+bool copyFile(QString sourceFilePath, QString destinationPath, QString backupDirPath = "");
+
+bool copyDir(QString sourceDirPath,
+             QString destinationDirPath,
+             QString fileExtension = "*",
+             QString backupDirPath = "");
+} // namespace utils
+
+void copyPath(const QString &sourcePath,
+              const QString &destinationPath,
+              const QString &fileExtension = "*",
+              const QString &backupDirPath = "");
+
+}; // namespace AppDirs
