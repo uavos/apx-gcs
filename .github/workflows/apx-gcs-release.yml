@@ -58,8 +58,8 @@ jobs:
       VERSION_SPARKLE: 1.27.1
 
       # we replace system python with brew python
-      # PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
-      PYTHONPATH: /usr/local/lib/python3.12/site-packages
+      PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
+      # PYTHONPATH: /usr/local/lib/python3.12/site-packages
 
     steps:
       - uses: actions/checkout@v2
