@@ -1,3 +1,16 @@
+# [APX Ground Control v11.1.16](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.16) (04/24/24)
+
+> Branch: `main`\
+> Date: `04/24/24 16:05:30`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/0fdf2020589d4955289786c402cd444bd06d37b3...9397ad4321ab5d5a28249db6dec17c7db8112b3c)
+
+## Bug Fixes
+* mission title buffer overflow crash (closes [`71`](https://github.com/uavos/apx-gcs/issues/71))
+* nodes plugin title
+
+## Performance Enhancements
+* move xplane models and files to another [repo](uavos/apx-sim-xpl)
+
 # [APX Ground Control v11.1.15](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.15) (03/10/24)
 
 > Branch: `main`\
