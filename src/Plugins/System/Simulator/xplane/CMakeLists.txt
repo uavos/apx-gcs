@@ -10,9 +10,16 @@ apx_module(
     shared.mandala
 )
 
+set(arch ${CMAKE_SYSTEM_PROCESSOR})
+
+if(APPLE)
+    set_target_properties(${MODULE} PROPERTIES OSX_ARCHITECTURES "arm64;x86_64")
+    set(arch "universal")
+endif()
+
 set_target_properties(
     ${MODULE}
-    PROPERTIES OUTPUT_NAME "ApxSIL_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}"
+    PROPERTIES OUTPUT_NAME "ApxSIL_${CMAKE_SYSTEM_NAME}_${arch}"
                PREFIX ""
                SUFFIX ".xpl"
 )
