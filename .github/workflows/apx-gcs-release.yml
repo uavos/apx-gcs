@@ -90,7 +90,7 @@ jobs:
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
           brew update
           brew install qt@5
-          echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/opt/qt@5/bin" >> $GITHUB_PATH
 
       - name: Install Tools (python)
         run: |
