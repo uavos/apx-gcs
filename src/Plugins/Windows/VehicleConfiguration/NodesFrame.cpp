@@ -35,7 +35,7 @@ NodesFrame::NodesFrame(QWidget *parent)
 {
     vlayout = new QVBoxLayout(this);
     setLayout(vlayout);
-    vlayout->setMargin(0);
+    vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
 
     toolBar = new QToolBar(this);

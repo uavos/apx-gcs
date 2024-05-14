@@ -31,7 +31,7 @@ FactDelegateMandala::FactDelegateMandala(Fact *fact, QWidget *parent)
 
     setWindowTitle(fact->title());
     QVBoxLayout *vlayout = new QVBoxLayout(this);
-    vlayout->setMargin(0);
+    vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
     tree = new FactTreeView(this);
     QSizePolicy sp = tree->sizePolicy();
@@ -86,7 +86,7 @@ FactDelegateMandala::FactDelegateMandala(Fact *fact, QWidget *parent)
     }
 
     //set geometry
-    QRect scr = QApplication::desktop()->availableGeometry(parent);
+    QRect scr = QGuiApplication::primaryScreen()->availableGeometry();
     QPoint p = parent->mapToGlobal(QPoint(0, 0));
     setMaximumHeight(scr.height() - p.y());
     setMaximumWidth(scr.width() - p.x());
@@ -107,8 +107,9 @@ void FactDelegateMandala::closeEvent(QCloseEvent *event)
 void FactDelegateMandala::updateFilter()
 {
     QString s = eFilter->text();
-    QRegExp regExp(s, Qt::CaseSensitive, QRegExp::WildcardUnix);
-    proxy->setFilterRegExp(regExp);
+    auto regExp = QRegularExpression::fromWildcard(s);
+    regExp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+    proxy->setFilterRegularExpression(regExp);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     if (s.size()) {
         tree->expandAll();

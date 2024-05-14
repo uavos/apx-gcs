@@ -28,14 +28,14 @@
 #include "videothread.h"
 
 #include <Fact/Fact.h>
-#include <QAbstractVideoSurface>
+#include <QVideoSink>
 #include <QtCore>
 
 class Vehicle;
 class GstPlayer : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractVideoSurface *videoSurface MEMBER m_videoSurface)
+    Q_PROPERTY(QVideoSink *videoSurface MEMBER m_videoSurface)
     Q_PROPERTY(ConnectionState connectionState READ getConnectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(quint64 frameCnt READ frameCnt NOTIFY frameCntChanged)
 
@@ -81,7 +81,7 @@ public:
     static QString getMediaFileName(MediaType type);
 
 private:
-    QAbstractVideoSurface *m_videoSurface = nullptr;
+    QVideoSink *m_videoSurface = nullptr;
     VideoThread m_videoThread;
     QImage m_lastFrame;
     ConnectionState m_connectionState = STATE_UNCONNECTED;

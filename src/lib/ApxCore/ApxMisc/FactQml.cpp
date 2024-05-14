@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "FactQml.h"
+#include <QQmlListProperty>
 
 FactQml::FactQml(QObject *parent)
     : Fact(parent)
@@ -39,7 +40,7 @@ void FactQml::appendChildren(QQmlListProperty<FactQml> *property, FactQml *value
 {
     value->setParentFact(reinterpret_cast<Fact *>(property->data));
 }
-FactQml *FactQml::atChildren(QQmlListProperty<FactQml> *property, int index)
+FactQml *FactQml::atChildren(QQmlListProperty<FactQml> *property, qsizetype index)
 {
     return reinterpret_cast<FactQml *>(reinterpret_cast<Fact *>(property->data)->child(index));
 }
@@ -47,7 +48,7 @@ void FactQml::clearChildren(QQmlListProperty<FactQml> *property)
 {
     reinterpret_cast<Fact *>(property->data)->deleteChildren();
 }
-int FactQml::countChildren(QQmlListProperty<FactQml> *property)
+qsizetype FactQml::countChildren(QQmlListProperty<FactQml> *property)
 {
     return reinterpret_cast<Fact *>(property->data)->size();
 }

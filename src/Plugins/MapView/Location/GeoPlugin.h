@@ -33,7 +33,7 @@ class GeoPlugin : public PluginInterface, public QGeoServiceProviderFactory
     Q_OBJECT
     Q_INTERFACES(QGeoServiceProviderFactory)
     Q_INTERFACES(PluginInterface)
-    Q_PLUGIN_METADATA(IID "org.qt-project.qt.geoservice.serviceproviderfactory/5.0" FILE
+    Q_PLUGIN_METADATA(IID "org.qt-project.qt.geoservice.serviceproviderfactory/6.0" FILE
                           "GeoPlugin.json")
 
 public:
@@ -57,3 +57,4 @@ public:
                                                   QGeoServiceProvider::Error *error,
                                                   QString *errorString) const override;
 };
+Q_IMPORT_PLUGIN(GeoPlugin)

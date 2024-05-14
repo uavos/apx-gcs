@@ -44,20 +44,6 @@ int main(int argc, char *argv[])
 #endif
 
     //app initialization
-    //QApplication::setAttribute(Qt::AA_PluginApplication); //macos faster?
-    QApplication::setAttribute(Qt::AA_DisableWindowContextHelpButton);
-
-    //high DPI scaling
-
-    // automatic scaling based on the monitor's pixel density
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
-    // turns off all scaling
-    // QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
-
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
-    // QApplication::setAttribute(Qt::AA_Use96Dpi);
 
     //performance graphics
     //QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);

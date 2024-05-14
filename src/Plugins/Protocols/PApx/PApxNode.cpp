@@ -302,10 +302,11 @@ bool PApxNode::find_field(QString name,
                           xbus::node::conf::type_e *type) const
 {
     xbus::node::conf::fid_t v{};
-    QRegExp re("_(\\d+)$");
-    auto a = re.indexIn(name);
+    static QRegularExpression re("_(\\d+)$");
+    auto match = re.match(name);
+    auto a = match.capturedStart();
     if (a > 1) {
-        auto i = re.cap(1).toInt() - 1;
+        auto i = match.captured(1).toInt() - 1;
         if (i < 0) {
             qWarning() << "array" << name;
             return false;

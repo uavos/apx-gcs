@@ -23,16 +23,13 @@
 #include "AppDirs.h"
 #include "AppNotifyListModel.h"
 #include "AppQuickView.h"
-#include "AppWindow.h"
 
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/SvgImageProvider.h>
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QFontDatabase>
 #include <QFontInfo>
-#include <QGLFormat>
 #include <QQuickStyle>
 #include <QQuickView>
 #include <QScreen>
@@ -241,10 +238,10 @@ void App::updateSurfaceFormat()
     //return;
 
     if (f_opengl) {
-        connect(f_opengl, &Fact::valueChanged, this, &App::updateSurfaceFormat, Qt::UniqueConnection);
+        connect(f_opengl, &Fact::valueChanged, this, &App::updateSurfaceFormat);
 
         int v = f_opengl->value().toInt();
-        QGLFormat::OpenGLVersionFlags gl = QGLFormat::openGLVersionFlags();
+        auto gl = QOpenGLContext::openGLModuleType();
         switch (v) {
         default:
             fmt.setRenderableType(QSurfaceFormat::DefaultRenderableType);
@@ -257,7 +254,7 @@ void App::updateSurfaceFormat()
             fmt.setRenderableType(QSurfaceFormat::OpenGL);
             break;
         case 2:
-            if (!(gl & QGLFormat::OpenGL_ES_Version_2_0)) {
+            if (!(gl & QOpenGLContext::LibGLES)) {
                 apxMsgW() << tr("Render type not supported") << "OpenGLES";
                 break;
             }
@@ -279,11 +276,7 @@ void App::updateSurfaceFormat()
     }*/
 
     if (f_effects) {
-        connect(f_effects,
-                &Fact::valueChanged,
-                this,
-                &App::updateSurfaceFormat,
-                Qt::UniqueConnection);
+        connect(f_effects, &Fact::valueChanged, this, &App::updateSurfaceFormat);
 
         int v = f_effects->value().toInt();
         if (v < 2) {
@@ -492,11 +485,11 @@ void App::loadTranslations()
     apxConsole() << QObject::tr("Loading translations").append("...");
 
     QDir trDir(AppDirs::res().absoluteFilePath("translations"));
-    for (auto fi : trDir.entryInfoList(QStringList() << "*.qm", QDir::Files)) {
+    for (auto &fi : trDir.entryInfoList(QStringList() << "*.qm", QDir::Files)) {
         m_languages.append(fi.baseName());
     }
     QDir trDirUser(AppDirs::user().absoluteFilePath("Translations"));
-    for (auto fi : trDirUser.entryInfoList(QStringList() << "*.qm", QDir::Files)) {
+    for (auto &fi : trDirUser.entryInfoList(QStringList() << "*.qm", QDir::Files)) {
         m_languages.append(fi.baseName());
     }
     m_languages.removeDuplicates();
@@ -523,9 +516,12 @@ void App::loadTranslations()
 void App::loadTranslator(const QString &fileName)
 {
     QTranslator *translator = new QTranslator();
-    translator->load(fileName);
-    installTranslator(translator);
-    apxConsole() << "Translator added:" << QFileInfo(fileName).fileName();
+    if (!translator->load(fileName)) {
+        apxConsoleW() << "Translator load failed:" << fileName;
+    } else {
+        installTranslator(translator);
+        apxConsole() << "Translator added:" << QFileInfo(fileName).fileName();
+    }
 }
 
 QQuickWindow *App::window() const

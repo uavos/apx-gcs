@@ -59,7 +59,7 @@ FactBase::Flag FactData::dataType() const
 }
 void FactData::setDataType(FactBase::Flag v)
 {
-    v = static_cast<Flag>(v & DataMask);
+    v = static_cast<Flag>((v & DataMask).toInt());
     if (m_dataType == v)
         return;
     m_dataType = v;

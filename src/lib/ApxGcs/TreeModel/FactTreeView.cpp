@@ -96,7 +96,7 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     }
     if (!ok) {
         //qDebug()<<"flt"<<fact->path();
-        return filterRegExp().isEmpty() ? true : false;
+        return filterRegularExpression().isValid() ? false : true;
     }
     return showThis(index);
 }
@@ -132,7 +132,7 @@ bool FactProxyModel::showThisItem(const QModelIndex index) const
 }
 bool FactProxyModel::showThisFact(Fact *f) const
 {
-    return f->showThis(filterRegExp());
+    return f->showThis(filterRegularExpression());
 }
 
 bool FactProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
@@ -158,7 +158,7 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
 {
     setWindowTitle(fact->title());
     vlayout = new QVBoxLayout(this);
-    vlayout->setMargin(0);
+    vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
     tree = new FactTreeView(this);
     QSizePolicy sp = tree->sizePolicy();
@@ -173,7 +173,7 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     toolBar = new QToolBar(this);
     //toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolBar->setIconSize(QSize(14, 14));
-    toolBar->layout()->setMargin(0);
+    toolBar->layout()->setContentsMargins(0, 0, 0, 0);
     aBack = new QAction(MaterialIcon("arrow-left"), tr("Back"), this);
     aBack->setVisible(backNavigation);
     connect(aBack, &QAction::triggered, this, &FactTreeWidget::back);
@@ -219,13 +219,13 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
 void FactTreeWidget::filterChanged()
 {
     QString s = eFilter->text();
-    QRegExp regExp(s, Qt::CaseSensitive, QRegExp::WildcardUnix);
+    auto regExp = QRegularExpression::fromWildcard(s);
 
     auto rootIndex = tree->rootIndex();
     //qDebug() << rootIndex;
     // tree->reset();
 
-    proxy->setFilterRegExp(regExp);
+    proxy->setFilterRegularExpression(regExp);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     // tree->setRootIndex(proxy->mapFromSource(model->factIndex(proxy->rootFact())));
     tree->setRootIndex(rootIndex);

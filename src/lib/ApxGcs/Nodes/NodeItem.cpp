@@ -95,7 +95,7 @@ void NodeItem::validateData()
     qDebug() << "Node data valid:" << path();
 
     if (_protocol)
-        _nodes->nodeNotify(this);
+        emit _nodes->nodeNotify(this);
 }
 
 void NodeItem::updateStatus()
@@ -181,7 +181,7 @@ void NodeItem::upload()
     QVariantMap values;
     for (auto i : fields) {
         values.insert(i->fpath(), i->toVariant());
-        _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
+        emit _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
     }
     _protocol->requestUpdate(values);
 }
@@ -251,14 +251,13 @@ QString NodeItem::toolTip() const
     if (!_ident.isEmpty()) {
         st << "";
         st << "[ident]";
-        for (auto k : _ident.keys()) {
-            auto v = _ident.value(k);
+        for (auto [k, v] : _ident.asKeyValueRange()) {
             QString s(v.toString().trimmed());
             if (s.isEmpty())
                 s = QJsonDocument::fromVariant(v).toJson();
             if (s.isEmpty())
                 continue;
-            st.append(QString("%1: %2").arg(k).arg(s));
+            st.append(QString("%1: %2").arg(k, s));
         }
     }
     return st.join('\n');
@@ -504,7 +503,7 @@ void NodeItem::importValues(QVariantMap values)
         st.removeOne(fpath);
     }
     if (st.size() > 0) {
-        for (auto i : st) {
+        for (auto &i : st) {
             qWarning() << "missing field:" << i;
         }
         auto rcnt = values.size() - st.size();
@@ -517,11 +516,12 @@ void NodeItem::importValues(QVariantMap values)
 
 NodeField *NodeItem::field(QString name) const
 {
-    QRegExp re("_(\\d+)$");
-    auto a = re.indexIn(name);
+    static QRegularExpression re("_(\\d+)$");
+    auto match = re.match(name);
+    auto a = match.capturedStart();
     int aidx = -1;
     if (a > 1) {
-        auto i = re.cap(1).toInt() - 1;
+        auto i = match.captured(1).toInt() - 1;
         if (i < 0) {
             qWarning() << "array" << name;
             return nullptr;
@@ -572,7 +572,7 @@ void NodeItem::identReceived(QVariantMap ident)
     if (_protocol && !_protocol->upgrading()) {
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
         storage->saveNodeInfo();
-        _nodes->nodeNotify(this);
+        emit _nodes->nodeNotify(this);
 
         // try to request dict automatically
         do {
@@ -675,7 +675,8 @@ static QVariant jsonToVariant(QJsonValue json)
         return QString::number(json.toVariant().toFloat());
     case QJsonValue::Array: {
         QVariantList list;
-        for (auto v : json.toArray())
+        const auto a = json.toArray();
+        for (auto v : a)
             list.append(jsonToVariant(v));
         return list;
     }
@@ -718,8 +719,8 @@ void NodeItem::confReceived(QVariantMap values)
     }
 
     // report missing fields
-    for (auto fpath : values.keys()) {
-        if (!fields.contains(fpath)) {
+    for (auto fpath : values.asKeyValueRange()) {
+        if (!fields.contains(fpath.first)) {
             qWarning() << "missing field for:" << fpath;
         }
     }
@@ -739,13 +740,13 @@ void NodeItem::confUpdated(QVariantMap values)
     // updated from another GCS instance
     if (!valid())
         return;
-    for (auto name : values.keys()) {
+    for (auto [name, value] : values.asKeyValueRange()) {
         auto f = field(name);
         if (!f)
             continue;
         f->fromVariant(values.take(name));
         f->backup();
-        apxMsg() << tr("Updated").append(':') << name.append(':') << f->text();
+        apxMsg() << tr("Updated").append(':') << name + ':' << f->text();
     }
     if (values.isEmpty())
         return;

@@ -112,7 +112,9 @@ void ApxFw::syncFacts()
         if (vPkg > vDirs) {
             // extract pkg
             if (extractRelease(mapPkg.last().absoluteFilePath())) {
-                mapDirs.insert(vPkg, QString("%1-%2").arg(m_packagePrefix).arg(vPkg.toString()));
+                mapDirs.insert(vPkg,
+                               QFileInfo(
+                                   QString("%1-%2").arg(m_packagePrefix).arg(vPkg.toString())));
             }
         }
     }

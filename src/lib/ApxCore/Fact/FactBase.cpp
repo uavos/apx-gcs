@@ -157,6 +157,8 @@ void FactBase::moveChild(Fact *item, int n, bool safeMode)
             n++;
         emit itemToBeMoved(i, n, item);
         m_facts.removeAt(i);
+        if (n > m_facts.size())
+            n = m_facts.size();
         m_facts.insert(n, item);
         emit itemMoved(item);
     }
@@ -341,7 +343,7 @@ FactBase::Flag FactBase::treeType(void) const
 }
 void FactBase::setTreeType(FactBase::Flag v)
 {
-    v = static_cast<Flag>(v & TypeMask);
+    v = static_cast<Flag>((v & TypeMask).toInt());
     if (m_treeType == v)
         return;
     m_treeType = v;
@@ -404,9 +406,9 @@ void FactBase::setParentFact(Fact *v)
 
     //QObject::setParent(v);
     m_parentFact = v;
-    emit parentFactChanged();
     if (!v)
         return;
+    emit parentFactChanged();
     v->addChild(static_cast<Fact *>(this));
     updatePath();
 }

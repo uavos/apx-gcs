@@ -99,7 +99,7 @@ bool JSTreeProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &source
     }
     if (!ok) {
         //qDebug()<<"flt"<<jsItem->path();
-        return filterRegExp().isEmpty() ? true : false;
+        return filterRegularExpression().isValid() ? false : true;
     }
     return showThis(index);
 }
@@ -108,10 +108,10 @@ bool JSTreeProxyModel::showThis(const QModelIndex index) const
 {
     QModelIndex useIndex = sourceModel()->index(index.row(), 0, index.parent());
 
-    bool bFlt = !filterRegExp().isEmpty();
+    bool bFlt = filterRegularExpression().isValid();
     JSTreeItem *item = useIndex.data(JSTreeModel::ModelDataRole).value<JSTreeItem *>();
-    QRegExp re = filterRegExp();
-    re.setCaseSensitivity(Qt::CaseInsensitive);
+    QRegularExpression re = filterRegularExpression();
+    re.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
     if (bFlt && item) {
         if (item->parentItem != m_rootItem)
             return false;
@@ -154,7 +154,7 @@ JSTreeWidget::JSTreeWidget(QJSEngine *e, bool filterEdit, bool backNavigation, Q
     : QWidget(parent)
 {
     vlayout = new QVBoxLayout(this);
-    vlayout->setMargin(0);
+    vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
     tree = new JSTreeView(this);
     QSizePolicy sp = tree->sizePolicy();
@@ -167,7 +167,7 @@ JSTreeWidget::JSTreeWidget(QJSEngine *e, bool filterEdit, bool backNavigation, Q
 
     toolBar = new QToolBar(this);
     toolBar->setIconSize(QSize(14, 14));
-    toolBar->layout()->setMargin(0);
+    toolBar->layout()->setContentsMargins(0, 0, 0, 0);
     aBack = new QAction(MaterialIcon("arrow-left"), tr("Back"), this);
     aBack->setVisible(backNavigation);
     connect(aBack, &QAction::triggered, this, &JSTreeWidget::back);
@@ -210,8 +210,8 @@ JSTreeWidget::JSTreeWidget(QJSEngine *e, bool filterEdit, bool backNavigation, Q
 void JSTreeWidget::filterChanged()
 {
     QString s = eFilter->text();
-    QRegExp regExp(s, Qt::CaseSensitive, QRegExp::WildcardUnix);
-    proxy->setFilterRegExp(regExp);
+    auto regExp = QRegularExpression::fromWildcard(s);
+    proxy->setFilterRegularExpression(regExp);
     tree->setRootIndex(proxy->mapFromSource(model->itemIndex(proxy->rootItem())));
     updateActions();
     if (s.size()) {

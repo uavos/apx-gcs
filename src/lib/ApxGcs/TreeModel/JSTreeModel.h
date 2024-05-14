@@ -54,7 +54,7 @@ public:
     void sync();
 
     static bool lessThan(const JSTreeItem *i1, const JSTreeItem *i2);
-    bool showThis(const QRegExp &regexp);
+    bool showThis(const QRegularExpression &regexp);
 
 private:
     QString m_path;

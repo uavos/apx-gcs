@@ -22,7 +22,9 @@
 #pragma once
 
 #include <QPlainTextEdit>
+#include <QRegularExpression>
 #include <QSyntaxHighlighter>
+
 class Highlighter;
 
 class SourceEdit : public QPlainTextEdit
@@ -52,7 +54,7 @@ public:
 
     struct HighlightingRule
     {
-        QRegExp pattern;
+        QRegularExpression pattern;
         QTextCharFormat format;
     };
     QTextCharFormat defaultCharFormat;
@@ -67,8 +69,8 @@ protected:
 private:
     QVector<HighlightingRule> highlightingRules;
 
-    QRegExp commentStartExpression;
-    QRegExp commentEndExpression;
+    QRegularExpression commentStartExpression;
+    QRegularExpression commentEndExpression;
     enum { f_bold = 1, f_italic = 2 };
 
     QTextCharFormat multiLineCommentFormat;

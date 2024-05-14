@@ -75,8 +75,8 @@ public:
     Q_INVOKABLE bool fromJsonDocument(QByteArray data);
     Q_INVOKABLE static QVariant parseJsonDocument(QByteArray data);
 
-    virtual bool lessThan(Fact *other) const; //sorting helper
-    virtual bool showThis(QRegExp re) const;  //filter helper
+    virtual bool lessThan(Fact *other) const;           //sorting helper
+    virtual bool showThis(QRegularExpression re) const; //filter helper
 
     //data model
     enum {

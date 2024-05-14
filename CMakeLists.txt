@@ -67,12 +67,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # Qt should be found in PATH
-find_package(
-    Qt5
-    COMPONENTS Core QuickCompiler
-    REQUIRED
-)
-get_filename_component(QT_DIR "${Qt5Core_DIR}/../../.." ABSOLUTE)
+find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
+get_filename_component(QT_DIR "${Qt6Core_DIR}/../../.." ABSOLUTE)
 
 include(apx_gcs_qt)
 include(apx_gcs_qrc)

@@ -52,7 +52,7 @@ QmlOverlay::QmlOverlay(QObject *parent)
         return;
 
     m_context->makeCurrent(m_offscreenSurface);
-    m_renderControl->initialize(m_context);
+    m_renderControl->initialize();
     m_context->doneCurrent();
 
     loadQmlFile(QString("qrc:/%1/Overlay.qml").arg(PLUGIN_NAME), QSize(100, 100));

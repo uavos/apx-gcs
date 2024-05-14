@@ -45,7 +45,7 @@ private:
     {
         KmlPolygon kmlPolygon;
         QPolygonF polygon;
-        bool operator==(const KmlPolygonExtended &other)
+        bool operator==(const KmlPolygonExtended &other) const
         {
             return kmlPolygon.id == other.kmlPolygon.id;
         }

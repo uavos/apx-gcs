@@ -389,7 +389,7 @@ bool Fact::lessThan(Fact *other) const
     //no sorting by default
     return num() < other->num();
 }
-bool Fact::showThis(QRegExp re) const
+bool Fact::showThis(QRegularExpression re) const
 {
     if (options() & FilterExclude)
         return false;

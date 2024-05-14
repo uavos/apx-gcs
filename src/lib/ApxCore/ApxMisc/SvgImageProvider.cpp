@@ -26,8 +26,7 @@
 #include <QUrl>
 
 SvgImageProvider::SvgImageProvider(const QString &basePath)
-    : QObject()
-    , QQuickImageProvider(QQuickImageProvider::Image)
+    : QQuickImageProvider(QQuickImageProvider::Image)
     , m_basePath(basePath)
 {}
 
@@ -123,21 +122,24 @@ QImage SvgImageProvider::requestImage(const QString &id, QSize *size, const QSiz
         if (sn == "e") {
             element = sv;
         } else if (sn == "hslice") {
-            QRegExp rx("(\\d+):(\\d+)");
-            if (rx.indexIn(sv) != -1) {
-                hSlice = rx.cap(1).toInt();
-                hSlicesCount = rx.cap(2).toInt();
+            static QRegularExpression rx("(\\d+):(\\d+)");
+            QRegularExpressionMatch rxm = rx.match(sv);
+            if (rxm.hasMatch()) {
+                hSlice = rxm.captured(1).toInt();
+                hSlicesCount = rxm.captured(2).toInt();
             }
         } else if (sn == "vslice") {
-            QRegExp rx("(\\d+):(\\d+)");
-            if (rx.indexIn(sv) != -1) {
-                vSlice = rx.cap(1).toInt();
-                vSlicesCount = rx.cap(2).toInt();
+            static QRegularExpression rx("(\\d+):(\\d+)");
+            auto rxm = rx.match(sv);
+            if (rxm.hasMatch()) {
+                vSlice = rxm.captured(1).toInt();
+                vSlicesCount = rxm.captured(2).toInt();
             }
         } else if (sn == "border") {
-            QRegExp rx("(\\d+)");
-            if (rx.indexIn(sv) != -1) {
-                border = rx.cap(1).toInt();
+            static QRegularExpression rx("(\\d+)");
+            auto rxm = rx.match(sv);
+            if (rxm.hasMatch()) {
+                border = rxm.captured(1).toInt();
             }
         } else if (sn == "color") {
             color = sv;

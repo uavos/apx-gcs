@@ -45,7 +45,7 @@ CompassFrame::CompassFrame(QWidget *parent)
     toolBar = new QToolBar(this);
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolBar->setIconSize(QSize(16, 16));
-    toolBar->layout()->setMargin(0);
+    toolBar->layout()->setContentsMargins(0, 0, 0, 0);
     vbLayout->addWidget(toolBar);
     buttonClose.setText(tr("Close"));
     buttonClose.setObjectName("killButton");

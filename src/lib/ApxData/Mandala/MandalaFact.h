@@ -66,7 +66,7 @@ public:
 protected:
     //Fact override
     virtual QVariant data(int col, int role) override;
-    virtual bool showThis(QRegExp re) const override; //filter helper
+    virtual bool showThis(QRegularExpression re) const override; //filter helper
 
 private:
     Mandala *m_tree;

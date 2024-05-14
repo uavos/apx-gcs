@@ -6,6 +6,8 @@ apx_lib(
     .
     DEPENDS
     lib.ApxData
+    QT
+    Core5Compat
 )
 
 target_compile_options(${MODULE} PRIVATE -Wno-deprecated-declarations)

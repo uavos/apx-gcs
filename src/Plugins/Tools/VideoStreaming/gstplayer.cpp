@@ -30,8 +30,8 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
-#include <QCameraInfo>
-#include <QVideoSurfaceFormat>
+
+#include <QMediaDevices>
 #include <QtQml>
 
 using namespace std::placeholders;
@@ -400,7 +400,7 @@ QString GstPlayer::inputToUri()
 
 QStringList GstPlayer::getAvailableWebcams()
 {
-    auto cameras = QCameraInfo::availableCameras();
+    auto cameras = QMediaDevices::videoInputs();
     QStringList ids;
     std::transform(cameras.begin(), cameras.end(), std::back_inserter(ids), [](auto c) {
         return c.description();
