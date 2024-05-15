@@ -119,14 +119,15 @@ Sounds::Sounds(Fact *parent)
     alias["connected"] = "radar_lock";
     //load files and create effects
     //qDebug() << QSoundEffect::supportedMimeTypes();
-    QDir fdir(AppDirs::res().filePath("audio/alerts"), "*.ogg *.wav");
+    // QDir fdir(AppDirs::res().filePath("audio/alerts"), "*.ogg *.wav");
+    QDir fdir(":audio/alerts", "*.ogg *.wav");
     foreach (QFileInfo fi, fdir.entryInfoList()) {
         if (!alias.values().contains(fi.baseName()))
             continue;
         auto se = new QSoundEffect(this);
-        se->setSource(fi.absoluteFilePath());
+        se->setSource(QUrl::fromLocalFile(fi.absoluteFilePath()));
         effects.insert(alias.key(fi.baseName()), se);
-        //qDebug()<<alias.key(fi.baseName())<<fi.baseName();
+        // qDebug() << alias.key(fi.baseName()) << fi.baseName();
     }
 
     //say text repeated timeout timer
@@ -248,11 +249,12 @@ void Sounds::voiceChanged()
             else
                 voice = "vicki";
         }
-        QDir fdir(AppDirs::res().filePath("audio/speech/" + voice), "*.ogg *.wav");
+        QDir fdir(":audio/speech/" + voice, "*.ogg *.wav");
+        // QDir fdir(AppDirs::res().filePath("audio/speech/" + voice), "*.ogg *.wav");
         //qDebug()<<fdir.absolutePath();
         foreach (QString file, fdir.entryList()) {
             auto se = new QSoundEffect(this);
-            se->setSource(fdir.absoluteFilePath(file));
+            se->setSource(QUrl::fromLocalFile(fdir.absoluteFilePath(file)));
             speech.insert(file.left(file.indexOf('.')), se);
             //qDebug()<<file;
         }
