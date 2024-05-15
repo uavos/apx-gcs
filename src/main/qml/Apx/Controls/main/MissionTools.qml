@@ -19,19 +19,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.5;
-import QtQuick.Layouts 1.3
-import QtPositioning 5.6
+import QtQuick
+import QtQuick.Layouts
+import QtPositioning
 
-import QtQuick.Controls 2.2
-import QtQuick.Controls.Material 2.2
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
-import APX.Vehicles 1.0 as APX
-import APX.Mission 1.0
+import APX.Vehicles as APX
+import APX.Mission
 
-import Apx.Common 1.0
-import Apx.Controls 1.0
-import Apx.Menu 1.0
+import Apx.Common
+import Apx.Controls
+import Apx.Menu
 
 Row {
 

@@ -19,11 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.13
-import QtLocation 5.13
-import QtPositioning 5.13
-import QtQml 2.13
-import KmlGeoPolygon 1.0
+import QtQuick
+import QtLocation
+import QtPositioning
+import QtQml
+import KmlGeoPolygon
 
 MapItemGroup {
     id: control

@@ -23,7 +23,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import APX.Facts 1.0
+import APX.Facts
 
 Flickable {
     id: infoItem

@@ -19,15 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.0
-import QtQuick.Controls 2.2
-import QtQuick.Layouts 1.3
-import QtMultimedia 5.13
-import QtQuick.Controls.Material 2.12
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtMultimedia
+import QtQuick.Controls.Material
 
-import GstPlayer 1.0
+import GstPlayer
 
-import Apx.Common 1.0
+import Apx.Common
 
 // sample stream:
 // rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov

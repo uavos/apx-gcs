@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtGraphicalEffects 1.0
+import QtQuick
+import QtGraphicalEffects
 
 Item {
     id: control

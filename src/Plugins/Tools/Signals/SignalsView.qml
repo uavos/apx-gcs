@@ -19,10 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.3
-import QtCharts 2.2
-import QtQuick.Controls 2.2
-import QtQml 2.12
+import QtQuick
+import QtCharts
+import QtQuick.Controls
+import QtQml
 
 Item {
     id: chartItem
