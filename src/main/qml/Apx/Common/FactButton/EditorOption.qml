@@ -37,6 +37,8 @@ ComboBox {
 
     topInset: 0
     bottomInset: 0
+    leftInset: 0
+    rightInset: 0
 
     padding: 0
     property real paddingScale: 0.8
@@ -53,7 +55,7 @@ ComboBox {
     model: fact.enumStrings
 
     Component.onCompleted: updateIndex()
-    onActivated: {
+    onActivated: (index) => {
         fact.setValue(textAt(index))
         factButton.forceActiveFocus();
     }

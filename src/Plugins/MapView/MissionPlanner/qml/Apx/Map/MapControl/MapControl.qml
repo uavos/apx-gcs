@@ -19,15 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick          2.12
-import QtLocation       5.12
+import QtQuick
+import QtLocation
 
-import QtQuick.Controls 2.5
-import QtGraphicalEffects 1.0
+import QtQuick.Controls
 
-import Apx.Map.Vehicles 1.0
-import Apx.Map.Mission 1.0
-import Apx.Map.Navigation 1.0
+import Apx.Map.Vehicles
+import Apx.Map.Mission
+import Apx.Map.Navigation
 
 Control {
     id: control
@@ -41,7 +40,7 @@ Control {
     property bool showInfo: showNavigation
 
 
-    property alias map: map
+    property alias map: mapView
 
     signal mapBackgroundItemLoaded(var item)
 
@@ -53,14 +52,13 @@ Control {
         anchors.fill: parent
         layer.enabled: ui.effects
         layer.effect: ShaderEffect {
-            fragmentShader: Qt.resolvedUrl("/shaders/vignette.fsh")
+            fragmentShader: Qt.resolvedUrl("/shaders/vignette.frag.qsb")
         }
 
         MapItemsOverlay {
-            id: map
+            id: mapView
             anchors.fill: parent
 
-            gesture.enabled: false
             focus: false
 
             color: "#333"
@@ -70,7 +68,7 @@ Control {
                 // assign plugin after map is created
 
                 // collect available providers
-                var plugin = Qt.createQmlObject(`import QtLocation 5.12; Plugin {}`, map)
+                var plugin = Qt.createQmlObject(`import QtLocation 5.12; Plugin {}`, mapView)
                 mapPlugin.prefs.provider.enumStrings=plugin.availableServiceProviders
                 plugin.destroy()
 
@@ -82,15 +80,15 @@ Control {
                             "osm"
                         ]
                     }
-                `, map)
+                `, mapView)
 
 
-                map.plugin=plugin
+                mapView.plugin=plugin
 
                 // collect available map types
                 var vtypes=[]
-                for(var i in map.supportedMapTypes){
-                    var mt=map.supportedMapTypes[i]
+                for(var i in mapView.supportedMapTypes){
+                    var mt=mapView.supportedMapTypes[i]
                     vtypes.push(mt.description)
                 }
                 mapPlugin.prefs.maptype.enumStrings=vtypes
@@ -98,12 +96,12 @@ Control {
 
             activeMapType: {
                 var v = mapPlugin.prefs.maptype.text
-                for(var i in map.supportedMapTypes){
-                    var mt=map.supportedMapTypes[i]
+                for(var i in mapView.supportedMapTypes){
+                    var mt=mapView.supportedMapTypes[i]
                     if(mt.description !== v) continue
                     return mt
                 }
-                return map.supportedMapTypes[0]
+                return mapView.supportedMapTypes[0]
             }
 
 
@@ -127,7 +125,7 @@ Control {
             Connections {
                 enabled: showVehicles && showNavigation
                 target: apx.vehicles.current.mission
-                function onTriggered(){ map.showRegion(apx.vehicles.current.mission.boundingGeoRectangle()) }
+                function onTriggered(){ mapView.showRegion(apx.vehicles.current.mission.boundingGeoRectangle()) }
             }
         }
 

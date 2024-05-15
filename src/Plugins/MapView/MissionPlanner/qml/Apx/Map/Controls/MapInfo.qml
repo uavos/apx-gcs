@@ -104,7 +104,7 @@ RowLayout {
         Layout.alignment: Qt.AlignVCenter
 
         size: control.size
-        fact: apx.tools?apx.tools.location.offline:null
+        fact: (apx.tools && apx.tools.location)?apx.tools.location.offline:null
         showText: false
         showIcon: false
         value: (active?qsTr("offline"):qsTr("online")).toUpperCase()

@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtLocation 5.13
-import QtGraphicalEffects 1.0
+import QtQuick
+import QtQuick.Effects
+import QtLocation
 
-import Apx.Map.Common 1.0
+import Apx.Map.Common
 
-import APX.Mission 1.0 as APX
+import APX.Mission as APX
 
 
 MissionObject {
@@ -127,34 +127,28 @@ MissionObject {
             active: waypointItem.active || interacting //&& showDetails
             asynchronous: true
             sourceComponent: Component {
-                FastBlur {
+                MultiEffect {
                     id: crsArrow
+                    source: Image {
+                        width: crsArrow.height
+                        height: width
+                        source: "../icons/waypoint-course.svg"
+                    }
                     x: -width/2
                     y: height
                     z: -1
                     width: 24
                     height: width
-                    cached: true
                     transform: Rotation {
                         origin.x: crsArrow.width/2
                         origin.y: -crsArrow.width
                         axis.z: 1
                         angle: waypointItem.f_bearing-map.bearing
                     }
-                    radius: ui.antialiasing?1:0
                     opacity: ui.effects?0.6:1
-                    source: ColorOverlay {
-                        width: crsArrow.height
-                        height: width
-                        //smooth: ui.antialiasing
-                        source: Image {
-                            width: crsArrow.height
-                            height: width
-                            //smooth: ui.antialiasing
-                            source: "../icons/waypoint-course.svg"
-                        }
-                        color: pathColor
-                    }
+                    brightness: 1
+                    colorization: 1
+                    colorizationColor: pathColor
                 }
             }
         }

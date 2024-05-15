@@ -19,21 +19,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick          2.12
-import QtLocation       5.12
-import QtPositioning    5.12
+import QtQuick
+import QtLocation
+import QtPositioning
 
-import Apx.Common 1.0
+import Apx.Common
 
 MapBase {
-    id: map
+    id: control
 
     readonly property real fontSize: Style.fontSize
 
     property var mapPlugin: apx.tools.missionplanner
 
     Connections {
-        target: map
+        target: control
         function onCenterChanged(){ mpTimer.start() }
         function onZoomLevelChanged(){ mpTimer.start() }
     }
@@ -65,7 +65,7 @@ MapBase {
     //---------------------------
     //MapTools sync
     onMouseClickCoordinateChanged: {
-        if(mapPlugin) mapPlugin.clickCoordinate=map.mouseClickCoordinate
+        if(mapPlugin) mapPlugin.clickCoordinate=control.mouseClickCoordinate
     }
     onMenuRequested: {
         if(selectedTool){
@@ -84,8 +84,8 @@ MapBase {
     }
     function updateMapToolsArea()
     {
-        mapPlugin.area=map.visibleRegion
-        area=map.visibleRegion
+        mapPlugin.area=control.visibleRegion
+        area=control.visibleRegion
     }
     property var area: QtPositioning.shape()
 

@@ -19,10 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.Controls 2.12
-import QtQuick.Controls.Material 2.12
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
 import ".."
 
@@ -48,6 +48,8 @@ Button {
     font.capitalization: Font.MixedCase
 
     // geometry
+
+    Material.roundedScale: height/32
 
     padding: height/32
     spacing: height/20

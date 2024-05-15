@@ -6,6 +6,10 @@ add_executable(${target} ${SRCS})
 
 apx_qrc(${target} BASE "qml" SRCS "**")
 
+# shaders
+find_package(Qt6 COMPONENTS ShaderTools)
+qt6_add_shaders(${target} "shaders" PREFIX "/" FILES "shaders/vignette.frag")
+
 # dependencies
 
 set(DEPENDS lib.ApxGcs)

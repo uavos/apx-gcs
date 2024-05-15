@@ -19,16 +19,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
+import QtQuick
+import QtQuick.Layouts
 
-import Apx.Application 1.0
-import Apx.Map.MapView 1.0
+import Apx.Application
+import Apx.Map.MapControl
 
-import Apx.Common 1.0
-import Apx.Controls 1.0
+import Apx.Common
+import Apx.Controls
 
-MapView {
+MapControl {
     id: missionPlanner
 
     readonly property bool showWind: mandala.est.wind.status.value > 0 || mandala.est.wind.speed.value > 0

@@ -19,9 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick          2.12
-import QtLocation       5.11
-import QtPositioning    5.11
+import QtQuick
+import QtLocation
+import QtPositioning
 
 Map {
     id: control
@@ -36,7 +36,6 @@ Map {
     property point mouseClickPoint: Qt.point(pressX, pressY)
 
     property var defaultCoordinate: QtPositioning.coordinate(37.406015,-122.045175)
-
 
     function showRegion(r)
     {
@@ -57,7 +56,7 @@ Map {
     }
 
 
-    Behavior on zoomLevel { enabled: ui.smooth; NumberAnimation {duration: 500; easing.type: Easing.InOutQuad; } }
+    // Behavior on zoomLevel { enabled: ui.smooth; NumberAnimation {duration: 500; easing.type: Easing.InOutQuad; } }
 
     onMoved: {
         anim.stop()
@@ -109,8 +108,8 @@ Map {
     }
     function resetFlicking()
     {
-        gesture.enabled=false
-        gesture.enabled=true
+        drag.enabled=false
+        drag.enabled=true
     }
 
     //---------------------------
@@ -154,36 +153,109 @@ Map {
 
     center: defaultCoordinate
 
-    gesture.acceptedGestures: MapGestureArea.PanGesture | MapGestureArea.FlickGesture | MapGestureArea.PinchGesture | MapGestureArea.RotationGesture | MapGestureArea.TiltGesture
-    gesture.enabled: true
-
     focus: true
     onCopyrightLinkActivated: Qt.openUrlExternally(link)
 
-
-
-    gesture.onPanStarted:       moved()
-    gesture.onFlickStarted:     moved()
-
-    //Keyboard controls
-    Keys.onPressed: {
-        if (event.key === Qt.Key_Plus) {
-            zoomLevel++;
-        } else if (event.key === Qt.Key_Minus) {
-            zoomLevel--;
-        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right ||
-                   event.key === Qt.Key_Up   || event.key === Qt.Key_Down) {
-            var dx = 0;
-            var dy = 0;
-            switch (event.key) {
-                case Qt.Key_Left: dx = width / 4; break;
-                case Qt.Key_Right: dx = -width / 4; break;
-                case Qt.Key_Up: dy = height / 4; break;
-                case Qt.Key_Down: dy = -height / 4; break;
+    // user controls
+    /*PinchHandler {
+        id: pinch
+        target: null
+        onActiveChanged: if (active) {
+            control.startCentroid = control.toCoordinate(pinch.centroid.position, false)
+        }
+        onScaleChanged: (delta) => {
+            control.zoomLevel += Math.log2(delta)
+            control.alignCoordinateToPoint(control.startCentroid, pinch.centroid.position)
+        }
+        onRotationChanged: (delta) => {
+            control.bearing -= delta
+            control.alignCoordinateToPoint(control.startCentroid, pinch.centroid.position)
+        }
+        grabPermissions: PointerHandler.TakeOverForbidden
+    }*/
+    WheelHandler {
+        id: wheel
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        // grabPermissions: PointerHandler.CanTakeOverFromHandlersOfDifferentType | PointerHandler.ApprovesTakeOverByItems
+        onWheel: (event) => {
+            const loc = control.toCoordinate(wheel.point.position)
+            switch (event.modifiers) {
+                case Qt.NoModifier:
+                    control.zoomLevel += event.angleDelta.y / 120
+                    break
+                case Qt.ShiftModifier:
+                    control.bearing += event.angleDelta.y / 15
+                    break
+                case Qt.ControlModifier:
+                    control.tilt += event.angleDelta.y / 15
+                    break
             }
-            center = toCoordinate(Qt.point(width / 2.0 - dx, height / 2.0 - dy));
+            control.alignCoordinateToPoint(loc, wheel.point.position)
         }
     }
+
+    DragHandler {
+        id: drag
+        signal flickStarted
+        signal flickEnded
+        target: null
+        onTranslationChanged: (delta) => control.pan(-delta.x, -delta.y)
+        onActiveChanged: if (active) {
+            control.followStop()
+            flickAnimation.stop()
+        } else {
+            flickAnimation.restart(centroid.velocity)
+        }
+    }
+
+    property vector3d animDest
+    onAnimDestChanged: if (flickAnimation.running) {
+        const delta = Qt.vector2d(animDest.x - flickAnimation.animDestLast.x, animDest.y - flickAnimation.animDestLast.y)
+        control.pan(-delta.x, -delta.y)
+        flickAnimation.animDestLast = animDest
+    }
+
+    Vector3dAnimation on animDest {
+        id: flickAnimation
+        property vector3d animDestLast
+        from: Qt.vector3d(0, 0, 0)
+        duration: 500
+        easing.type: Easing.OutQuad
+        onStarted: drag.flickStarted()
+        onStopped: drag.flickEnded()
+
+        function restart(vel) {
+            stop()
+            control.animDest = Qt.vector3d(0, 0, 0)
+            animDestLast = Qt.vector3d(0, 0, 0)
+            to = Qt.vector3d(vel.x / duration * 100, vel.y / duration * 100, 0)
+            start()
+        }
+    }
+
+    tilt: tiltHandler.persistentTranslation.y / -5
+    DragHandler {
+        id: tiltHandler
+        minimumPointCount: 2
+        maximumPointCount: 2
+        target: null
+        xAxis.enabled: false
+        grabPermissions: PointerHandler.TakeOverForbidden
+        onActiveChanged: if (active) flickAnimation.stop()
+    }
+
+
+    Shortcut {
+        enabled: control.zoomLevel < control.maximumZoomLevel
+        sequence: StandardKey.ZoomIn
+        onActivated: control.zoomLevel = Math.round(control.zoomLevel + 1)
+    }
+    Shortcut {
+        enabled: control.zoomLevel > control.minimumZoomLevel
+        sequence: StandardKey.ZoomOut
+        onActivated: control.zoomLevel = Math.round(control.zoomLevel - 1)
+    }
+
 
 
     // Mouse
@@ -199,9 +271,9 @@ Map {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
-        propagateComposedEvents: true
+        propagateComposedEvents: false
 
-        onPressed : {
+        onPressed : (mouse) => {
             forceActiveFocus()
             lastX = mouse.x
             lastY = mouse.y
@@ -210,14 +282,14 @@ Map {
             mouseClickCoordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
         }
 
-        onPositionChanged: {
+        onPositionChanged: (mouse) => {
             if (mouse.button == Qt.LeftButton) {
                 lastX = mouse.x
                 lastY = mouse.y
             }
         }
 
-        onClicked: {
+        onClicked: (mouse) => {
             if (mouse.button === Qt.LeftButton) {
                 control.clicked(mouseClickCoordinate)
             }else if (mouse.button === Qt.RightButton) {
@@ -225,7 +297,7 @@ Map {
             }
         }
 
-        onDoubleClicked: {
+        onDoubleClicked: (mouse) => {
             var mouseGeoPos = toCoordinate(Qt.point(mouse.x, mouse.y));
             var preZoomPoint = fromCoordinate(mouseGeoPos, false);
             if (mouse.button === Qt.LeftButton) {
@@ -243,7 +315,7 @@ Map {
             lastY = -1;
         }
 
-        onPressAndHold:{
+        onPressAndHold: (mouse) => {
             if (Math.abs(pressX - mouse.x ) < jitterThreshold
                     && Math.abs(pressY - mouse.y ) < jitterThreshold) {
                 control.menuRequested()

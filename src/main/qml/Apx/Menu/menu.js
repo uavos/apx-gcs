@@ -37,7 +37,7 @@ function show(fact,opts,parent)
     if(!opts) opts={}
     if(!parent) parent=ui.window
 
-    //console.log("Menu.show", fact, JSON.stringify(opts), parent)
+    // console.log("Menu.show", fact, JSON.stringify(opts), parent)
 
     var av=Array.from(menuViews).sort((a,b) => b.priority-a.priority)
     for(var menuItem of av){
@@ -65,6 +65,7 @@ function show(fact,opts,parent)
     opts.fact = factMenu
 
     for(var opt in factMenu.opts){
+        // console.log(opt)
         if(opts[opt]) continue
         opts[opt] = factMenu.opts[opt]
     }
@@ -85,11 +86,18 @@ function createMenuObject(component, opts, parent)
     }
     if (component.status !== Qml.Component.Ready) return;
 
-    var obj = component.createObject(parent, opts);
+    var obj = component.createObject(parent,opts);
 
     if (obj === null || obj.status === Qml.Component.Error) {
         console.log("Error creating object:", obj.errorString());
         return
+    }
+
+    // apply options
+    for(var opt in opts){
+        // console.log(opt)
+        if(!obj.hasOwnProperty(opt)) continue
+        obj[opt] = opts[opt]
     }
 
     //close all unpinned popups

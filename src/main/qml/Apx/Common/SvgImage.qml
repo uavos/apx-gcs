@@ -19,32 +19,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.2
-import QtGraphicalEffects 1.0
+import QtQuick
+import QtQuick.Effects
 
 Item {
     property alias source: image.source
     property alias sourceSize: image.sourceSize
-    property alias color: imageColor.color
+    property alias color: imageEffect.colorizationColor
 
-    property Component effect
+    property alias shadowEnabled: imageEffect.shadowEnabled
 
-    //smooth: ui.antialiasing
     width: image.width
     height: image.height
     Image {
         id: image
         fillMode: Image.PreserveAspectFit
-        //smooth: ui.antialiasing
+        visible: true
     }
-    ColorOverlay {
-        id: imageColor
+    MultiEffect {
+        id: imageEffect
         anchors.fill: image
         source: image
-        color: "#FFFFFF"
-        cached: true
-        layer.enabled: effect
-        //layer.smooth: ui.antialiasing
-        layer.effect: effect
+        brightness: 1
+        colorization: 1
+        colorizationColor: "#FFFFFF"
+        shadowEnabled: true
     }
 }
