@@ -23,21 +23,17 @@
 #include "GeoTiledMappingManagerEngine.h"
 #include <QtLocation/private/qgeotiledmappingmanagerengine_p.h>
 
-// extern "C" Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QPluginMetaData) qt_plugin_query_metadata_GeoPlugin();
-// extern "C" Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) * qt_plugin_instance_GeoPlugin();
+extern "C" Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QPluginMetaData) qt_plugin_query_metadata_v2();
+extern "C" Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) * qt_plugin_instance();
 
-void GeoPlugin::init()
+const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_GeoPlugin()
 {
-    //load static plugin
-    // Q_IMPORT_PLUGIN(GeoPlugin)
+    QT_PREPEND_NAMESPACE(QStaticPlugin) plugin = {qt_plugin_instance, qt_plugin_query_metadata_v2};
+    return plugin;
 }
 
-// const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_GeoPlugin()
-// {
-//     QT_PREPEND_NAMESPACE(QStaticPlugin)
-//     plugin = {qt_plugin_instance_GeoPlugin, qt_plugin_query_metadata_GeoPlugin};
-//     return plugin;
-// }
+void GeoPlugin::init(){//load static plugin
+                       Q_IMPORT_PLUGIN(GeoPlugin)}
 
 QGeoCodingManagerEngine *GeoPlugin::createGeocodingManagerEngine(const QVariantMap &,
                                                                  QGeoServiceProvider::Error *,

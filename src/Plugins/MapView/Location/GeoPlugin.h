@@ -26,6 +26,7 @@
 #include <QtCore/QObject>
 #include <QtCore>
 #include <QtLocation/QGeoServiceProviderFactory>
+
 #include <QtPlugin>
 
 class GeoPlugin : public PluginInterface, public QGeoServiceProviderFactory
@@ -57,4 +58,3 @@ public:
                                                   QGeoServiceProvider::Error *error,
                                                   QString *errorString) const override;
 };
-Q_IMPORT_PLUGIN(GeoPlugin)
