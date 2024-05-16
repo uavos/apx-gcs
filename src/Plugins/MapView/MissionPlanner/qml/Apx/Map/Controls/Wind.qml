@@ -76,7 +76,7 @@ Item {
         id: image
         color: "#fff" //"#fd6"
         source: "../Map/icons/wind-arrow.svg"
-        sourceSize.height: Math.round(arrowSize)
+        size: Math.round(arrowSize)
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         rotation: v-map.bearing

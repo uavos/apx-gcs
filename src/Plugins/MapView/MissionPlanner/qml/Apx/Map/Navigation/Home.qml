@@ -42,8 +42,6 @@ MapQuickItem {  //to be used inside MapComponent only
     SvgImage {
         id: image
         source: "../Map/icons/home.svg"
-        sourceSize.height: 16*map.itemsScaleFactor
-        color: "#000"
     }
 
 }

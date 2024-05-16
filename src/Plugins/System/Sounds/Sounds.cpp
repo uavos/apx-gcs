@@ -176,7 +176,7 @@ void Sounds::engineChanged()
         locales.append(QLocale(QLocale::English, QLocale::UnitedStates));
         foreach (const QLocale &locale, tts->availableLocales()) {
             st << QString("%1 (%2)").arg(QLocale::languageToString(locale.language()),
-                                         QLocale::countryToString(locale.country()));
+                                         QLocale::territoryToString(locale.territory()));
             locales.append(locale);
         }
     }

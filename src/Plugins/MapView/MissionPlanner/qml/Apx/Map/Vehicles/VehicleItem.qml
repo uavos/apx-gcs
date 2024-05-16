@@ -156,6 +156,11 @@ MapQuickItem {  //to be used inside MapComponent only
             opacity: ui.effects?(active?0.9:0.7):1
             scale: active?1:0.6
 
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: ui.effects
+            }
+
             transform: [
                 Scale {
                     origin.x: image.width/2
@@ -275,9 +280,8 @@ MapQuickItem {  //to be used inside MapComponent only
             id: windArrow
             z: image.z-100
             visible: active && (f_LDTO||follow) && f_windSpd>0
-            color: "#fff" //"#fd6"
             source: "../Map/icons/wind-arrow.svg"
-            sourceSize.height: image.width
+            size: image.width
             anchors.top: image.verticalCenter
             anchors.topMargin: image.width*1.5
             anchors.horizontalCenter: image.horizontalCenter

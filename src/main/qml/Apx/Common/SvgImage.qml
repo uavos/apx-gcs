@@ -23,26 +23,32 @@ import QtQuick
 import QtQuick.Effects
 
 Item {
+    id: imageItem
     property alias source: image.source
     property alias sourceSize: image.sourceSize
-    property alias color: imageEffect.colorizationColor
 
-    property alias shadowEnabled: imageEffect.shadowEnabled
+    property color color: "#fff"
+    property color shadowColor: "#000"
 
-    width: image.width
-    height: image.height
+    property bool shadowEnabled: true
+
+    property real size: Style.buttonSize
+
+    implicitWidth: size
+    implicitHeight: size
+
     Image {
         id: image
+        anchors.fill: parent
         fillMode: Image.PreserveAspectFit
-        visible: true
-    }
-    MultiEffect {
-        id: imageEffect
-        anchors.fill: image
-        source: image
-        brightness: 1
-        colorization: 1
-        colorizationColor: "#FFFFFF"
-        shadowEnabled: true
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            brightness: 1
+            colorization: 1
+            colorizationColor: imageItem.color
+            shadowEnabled: imageItem.shadowEnabled && ui.effects
+            shadowColor: imageItem.shadowColor
+        }
     }
 }
