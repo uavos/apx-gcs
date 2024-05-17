@@ -76,8 +76,7 @@ ControlArea {
                     anchors.rightMargin: 1
                     anchors.right: parent.right
                     anchors.verticalCenterOffset: (index-2)*height + height/10 * (speed_window.speed_value-Math.floor(speed_window.speed_value/1)*1)
-                    width: parent.width
-                    height: elementBounds.height*speed_window.strip_scale
+                    sourceScale: speed_window.strip_scale
                 }
             }
         }
@@ -121,8 +120,7 @@ ControlArea {
         PfdImage {
             id: speed_waypoint
             elementName: "speed-waypoint"
-            width: elementBounds.width*height/elementBounds.height  //speed_window.strip_scale
-            height: speed_box.height    //elementBounds.height*speed_window.strip_scale
+            sourceScale: speed_window.strip_scale
 
             anchors.right: speed_scale.right
             anchors.verticalCenter: parent.verticalCenter
@@ -168,9 +166,7 @@ ControlArea {
     PfdImage {
         id: speed_triangle
         elementName: "speed-triangle"
-        //smooth: ui.antialiasing
-        width: elementBounds.width*speed_window.strip_scale
-        height: elementBounds.height*speed_window.strip_scale
+        sourceScale: speed_window.strip_scale
         anchors.left: speed_window.right
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: apx.limit(speed_window.num2scaleHeight * (f_airspeed.value - f_speed.value),-speed_window.height/2,speed_window.height/2)

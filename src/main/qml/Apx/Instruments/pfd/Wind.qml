@@ -45,7 +45,6 @@ Item {
         anchors.centerIn: parent
         anchors.margins: simplified?1:0
         elementName: simplified?"wind-arrow-simple":"wind-arrow"
-        //smooth: ui.antialiasing
         fillMode: Image.PreserveAspectFit
         rotation: value
         Behavior on rotation { enabled: ui.smooth; RotationAnimation {duration: anumation_duration; direction: RotationAnimation.Shortest; } }

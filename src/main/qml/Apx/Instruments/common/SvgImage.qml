@@ -41,14 +41,12 @@ Image {
         return s
     }
 
-    property variant elementBounds: svgRenderer.elementBounds(svgFileNamePath, elementName)
+    property rect elementBounds: svgRenderer.elementBounds(svgFileNamePath, elementName)
 
-    property double scaleFactor: width/elementBounds.width
+    property real scaleFactor: width/elementBounds.width
 
-    sourceSize.width: Math.round(width)
-    sourceSize.height: Math.round(height)
-
-
+    sourceSize: Qt.size(Math.round(elementBounds.width*sourceScale),Math.round(elementBounds.height*sourceScale))
+    property real sourceScale: 1
 
     Component.onCompleted: reloadImage()
     onElementNameChanged: reloadImage()
