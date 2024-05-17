@@ -109,7 +109,7 @@ Map {
     function resetFlicking()
     {
         drag.enabled=false
-        drag.enabled=true
+        // drag.enabled=true
     }
 
     //---------------------------

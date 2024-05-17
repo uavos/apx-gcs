@@ -86,7 +86,7 @@ function createMenuObject(component, opts, parent)
     }
     if (component.status !== Qml.Component.Ready) return;
 
-    var obj = component.createObject(parent,opts);
+    var obj = component.createObject(parent,{ fact: opts.fact });
 
     if (obj === null || obj.status === Qml.Component.Error) {
         console.log("Error creating object:", obj.errorString());
