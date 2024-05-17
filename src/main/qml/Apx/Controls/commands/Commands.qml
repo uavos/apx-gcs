@@ -35,21 +35,19 @@ Rectangle {
 
     readonly property var f_mode: mandala.cmd.proc.mode
 
-
     border.width: 0
     color: "#000"
-    implicitWidth: 400
-    implicitHeight: 400
 
-    onWidthChanged: implicitHeight=width
-    onHeightChanged: implicitWidth=height
+    implicitWidth: height
+    implicitHeight: 200
+
 
     readonly property real margins: width/200
 
     property APX.Vehicle vehicle: apx.vehicles.current
 
     //sizes
-    readonly property real buttonHeight: width/10
+    readonly property real buttonHeight: height/10
     readonly property real buttonSpacing: buttonHeight/10
 
     property real size: Math.max(50,width)*0.08
@@ -59,7 +57,7 @@ Rectangle {
         anchors.margins: root.margins
         spacing: buttonSpacing*2
 
-
+        // top buttons of vehicle facts
         RowLayout {
             Layout.alignment: Qt.AlignTop|Qt.AlignLeft
             height: buttonHeight

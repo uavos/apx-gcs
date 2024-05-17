@@ -51,6 +51,7 @@ RowLayout {
     //internal
     readonly property color sepColor: "#244"
     spacing: 0
+    height: instrumentsHeight
 
     function addComponent(c)
     {

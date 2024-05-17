@@ -29,8 +29,8 @@ ColumnLayout {
         property var list: flow.controls[flow.key]
         model: list?list:flow.defaultControls
         Loader {
-            Layout.alignment: (Qt.AlignRight|Qt.AlignTop)
             sourceComponent: modelData
+            Layout.fillWidth: true
         }
     }
     property string key: ""

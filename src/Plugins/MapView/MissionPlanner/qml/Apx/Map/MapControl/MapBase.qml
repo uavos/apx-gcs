@@ -181,7 +181,7 @@ Map {
             const loc = control.toCoordinate(wheel.point.position)
             switch (event.modifiers) {
                 case Qt.NoModifier:
-                    control.zoomLevel += event.angleDelta.y / 120
+                    control.zoomLevel += event.angleDelta.y / 600
                     break
                 case Qt.ShiftModifier:
                     control.bearing += event.angleDelta.y / 15
