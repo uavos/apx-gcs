@@ -205,6 +205,14 @@ Map {
             flickAnimation.stop()
         } else {
             flickAnimation.restart(centroid.velocity)
+            drag.enabled=false
+        }
+        enabled: false
+        grabPermissions:
+            (PointerHandler.CanTakeOverFromItems | PointerHandler.CanTakeOverFromHandlersOfDifferentType | PointerHandler.ApprovesTakeOverByAnything)
+
+        onEnabledChanged: {
+            // console.log("enabled: "+enabled)
         }
     }
 
@@ -274,12 +282,16 @@ Map {
         propagateComposedEvents: false
 
         onPressed : (mouse) => {
+            drag.enabled=true
             forceActiveFocus()
             lastX = mouse.x
             lastY = mouse.y
             pressX = mouse.x
             pressY = mouse.y
             mouseClickCoordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
+        }
+        onReleased: {
+            drag.enabled=false // workaround to allow windows dragging
         }
 
         onPositionChanged: (mouse) => {
