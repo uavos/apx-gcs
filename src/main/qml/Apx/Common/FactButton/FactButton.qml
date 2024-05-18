@@ -250,7 +250,6 @@ ActionButton {
                 }
                 Loader {
                     id: _editor
-                    asynchronous: true
                     active: source
                     Material.accent: Material.color(Material.Green)
                     source: showEditor?getEditorSource():""
@@ -268,7 +267,6 @@ ActionButton {
     Loader {
         parent: contentItem
         z: -1
-        asynchronous: true
         active: factButton.progress>=0
         anchors.fill: parent
         anchors.margins: 1
@@ -332,7 +330,6 @@ ActionButton {
     Loader {
         anchors.fill: parent
         active: signaled
-        asynchronous: true
         sourceComponent: Component {
             Ripple {
                 id: ripple

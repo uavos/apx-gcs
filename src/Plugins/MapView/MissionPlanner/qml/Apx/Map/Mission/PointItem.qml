@@ -60,7 +60,7 @@ MissionObject {
     contentsTop: [
         Loader {
             active: f_hmsl!==0 && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -74,7 +74,7 @@ MissionObject {
     contentsBottom: [
         Loader {
             active: (f_loops>0 || f_time>0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -99,7 +99,7 @@ MissionObject {
     }
     Loader {
         //handle
-        asynchronous: true
+        // asynchronous: true
         onLoaded: {
             map.addMapItem(item)
             radiusPoint=item
@@ -161,7 +161,7 @@ MissionObject {
         }
     }
     Loader {
-        asynchronous: true
+        // asynchronous: true
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MapCircle {
@@ -176,7 +176,7 @@ MissionObject {
         }
     }
     Loader {
-        asynchronous: true
+        // asynchronous: true
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MapLine {

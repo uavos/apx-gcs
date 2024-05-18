@@ -112,7 +112,7 @@ MapControl {
             Loader {
                 id: wind
                 active: showWind
-                asynchronous: true
+                // asynchronous: true
                 sourceComponent: Component { Wind { } }
                 visible: wind.status===Loader.Ready
             }

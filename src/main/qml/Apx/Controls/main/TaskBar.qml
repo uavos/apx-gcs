@@ -101,7 +101,6 @@ RowLayout {
     //simulator
     Loader {
         Layout.fillHeight: true
-        asynchronous: true
         active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (vehicle.isLocal || apx.tools.simulator.stop.enabled || vehicle.title==="SIM")
         sourceComponent: Component {
             IconButton {

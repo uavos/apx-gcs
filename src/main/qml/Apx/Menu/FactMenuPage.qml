@@ -81,7 +81,6 @@ ColumnLayout {
     Loader {
         id: titleItem
         active: valid
-        asynchronous: true
         source: "FactMenuPageTitle.qml"
         Layout.fillWidth: true
         Layout.leftMargin: padding
@@ -93,7 +92,6 @@ ColumnLayout {
     Loader {
         id: pageLoader
         active: valid
-        asynchronous: true
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.leftMargin: padding

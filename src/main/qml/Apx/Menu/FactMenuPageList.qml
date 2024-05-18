@@ -86,7 +86,7 @@ ColumnLayout {
         onHeaderItemChanged: updateHeight()
 
         delegate: Loader{
-            asynchronous: true
+            // asynchronous: true
             active: modelData?modelData.visible:false
             visible: active
             width: control.width
@@ -217,7 +217,6 @@ ColumnLayout {
             id: repeater
             model: fact.actionsModel
             delegate: Loader{
-                asynchronous: true
                 active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
                 visible: active
                 sourceComponent: Component {

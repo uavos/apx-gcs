@@ -73,7 +73,7 @@ MissionObject {
     contentsTop: [
         Loader {
             active: dragging||hover
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -84,7 +84,7 @@ MissionObject {
         },
         Loader {
             active: dragging||hover
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -97,7 +97,7 @@ MissionObject {
     contentsRight: [
         Loader {
             active: (!dragging) && (hover||selected)?1:0
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -110,7 +110,7 @@ MissionObject {
     contentsBottom: [
         Loader {
             active: actionsText.length>0 && ((!dragging)?((hover||selected)?1:((detailsLevel>13 && showDetails)?(ui.effects?0.6:1):0)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -125,7 +125,7 @@ MissionObject {
         //courese arrow
         Loader {
             active: waypointItem.active || interacting //&& showDetails
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MultiEffect {
                     id: crsArrow
@@ -156,7 +156,7 @@ MissionObject {
 
     //Flight Path
     Loader {
-        asynchronous: true
+        // asynchronous: true
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MapPolyline {

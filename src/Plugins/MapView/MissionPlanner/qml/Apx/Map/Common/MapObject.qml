@@ -152,7 +152,7 @@ MapQuickItem {  //to be used inside MapComponent only
         Loader {
             anchors.centerIn: textItem
             active: selected
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 Rectangle {
                     id: frame
@@ -178,7 +178,7 @@ MapQuickItem {  //to be used inside MapComponent only
             id: shadowLoader
             anchors.fill: parent
             active: shadow
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MultiEffect {
                     source: textItem

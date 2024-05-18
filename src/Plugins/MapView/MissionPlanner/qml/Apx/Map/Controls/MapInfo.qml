@@ -40,7 +40,7 @@ RowLayout {
         Loader {
             id: loaderSite
             anchors.fill: parent
-            asynchronous: true
+            // asynchronous: true
             property int viewIndex: 0
             sourceComponent: components[viewIndex%components.length]
             property var components: [ siteC, posC ]
@@ -125,7 +125,7 @@ RowLayout {
         
         Loader {
             id: loaderScale
-            asynchronous: true
+            // asynchronous: true
             property int viewIndex: 0
             sourceComponent: components[viewIndex%components.length]
             property var components: [ scaleC, distC ]

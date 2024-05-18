@@ -80,7 +80,7 @@ Item {
     Loader {
         active: selTool
         visible: active
-        asynchronous: true
+        // asynchronous: true
         sourceComponent: Component {
             MapQuickItem {
                 coordinate: map.mouseCoordinate

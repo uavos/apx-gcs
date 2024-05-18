@@ -108,17 +108,17 @@ Control {
 
             Loader {
                 active: showVehicles
-                asynchronous: true
+                // asynchronous: true
                 sourceComponent: VehiclesMapItems { }
             }
             Loader {
                 active: showMission
-                asynchronous: true
+                // asynchronous: true
                 sourceComponent: MissionMapItems { }
             }
             Loader {
                 active: showNavigation
-                asynchronous: true
+                // asynchronous: true
                 sourceComponent: NavigationMapItems { }
             }
 

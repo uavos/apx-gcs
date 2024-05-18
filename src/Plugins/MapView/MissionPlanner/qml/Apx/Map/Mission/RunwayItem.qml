@@ -72,7 +72,7 @@ MissionObject {
     contentsRight: [
         Loader {
             active: showDetails && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -83,7 +83,7 @@ MissionObject {
         },
         Loader {
             active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -169,7 +169,7 @@ MissionObject {
     //handles
     Loader {
         //appPoint
-        asynchronous: true
+        // asynchronous: true
         onLoaded: {
             map.addMapItem(item)
             appPoint=item
@@ -193,7 +193,7 @@ MissionObject {
     }
     Loader {
         //endPoint
-        asynchronous: true
+        // asynchronous: true
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MissionObject {
@@ -208,7 +208,7 @@ MissionObject {
                 contentsRight: [
                     Loader {
                         active: showDetails && ((dragging||hover||selected)?1:0)
-                        asynchronous: true
+                        // asynchronous: true
                         sourceComponent: Component {
                             MapText {
                                 textColor: "white"

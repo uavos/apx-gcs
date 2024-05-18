@@ -58,7 +58,7 @@ MissionObject {
         //courese arrow
         Loader {
             active: (!f_first) && (interacting || showDetails)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MultiEffect {
                     id: crsArrow
@@ -91,7 +91,7 @@ MissionObject {
 
     //Txi Path
     Loader {
-        asynchronous: true
+        // asynchronous: true
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MapPolyline {

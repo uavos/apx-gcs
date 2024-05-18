@@ -35,7 +35,7 @@ FactMenuPageList {
     property var parentFact: fact
 
     delegate: Loader{
-        asynchronous: true
+        // asynchronous: true
         active: true
         visible: active
         width: listView.width
