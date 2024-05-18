@@ -121,8 +121,8 @@ QwtPlotCurve *TelemetryPlot::addCurve(const QString &name,
     curve->setPen(pen);
     curve->setYAxis(QwtPlot::yLeft);
     curve->setLegendAttribute(QwtPlotCurve::LegendShowLine);
-    curve->setRenderHint(QwtPlotItem::RenderAntialiased);
-    curve->setRenderThreadCount(0);
+    // curve->setRenderHint(QwtPlotItem::RenderAntialiased);
+    // curve->setRenderThreadCount(0);
     curve->attach(this);
     //legend tooltip
     QString s = "<html><NOBR>";
@@ -220,7 +220,7 @@ void TelemetryPlot::restoreSettings()
         QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(items.at(i));
 
         bool show = st.contains(curve->title().text());
-        if(calc_curves.contains(curve)) {
+        if (calc_curves.contains(curve)) {
             show = false;
         }
         showCurve(itemToInfo(curve), show);
@@ -323,7 +323,7 @@ void TelemetryPlot::showCurve(const QVariant &itemInfo, bool on, int index)
         replot();
 }
 
-void TelemetryPlot::refreshCalculated(QwtPlotCurve* curve_calc)
+void TelemetryPlot::refreshCalculated(QwtPlotCurve *curve_calc)
 {
     bool ok;
     QString exp_calc = calc_curves.value(curve_calc);

@@ -1,5 +1,5 @@
 add_subdirectory("VehicleConfiguration")
-# add_subdirectory("TelemetryChart")
+add_subdirectory("TelemetryChart")
 
 add_subdirectory("CompassCalibration")
 
