@@ -86,6 +86,8 @@ Datalink::Datalink(Fact *parent)
     connect(this, &Datalink::packetReceived, this, [this]() { setValid(true); });
 
     App::jsync(this);
+
+    connect(App::instance(), &App::appQuit, this, [this]() { disconnect(); });
 }
 
 void Datalink::addConnection(DatalinkConnection *c)

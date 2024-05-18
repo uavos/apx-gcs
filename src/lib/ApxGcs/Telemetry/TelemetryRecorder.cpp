@@ -111,6 +111,8 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
             &TelemetryRecorder::restartRecording);
 
     updateStatus();
+
+    connect(App::instance(), &App::appQuit, this, [this]() { disconnect(); });
 }
 
 void TelemetryRecorder::updateStatus()
@@ -127,11 +129,18 @@ void TelemetryRecorder::invalidateCache()
 {
     if (!recTelemetryID)
         return;
-    Database::instance()->telemetry->markCacheInvalid(recTelemetryID);
+
+    if (Database::instance()->telemetry)
+        Database::instance()->telemetry->markCacheInvalid(recTelemetryID);
 }
 
 bool TelemetryRecorder::dbCheckRecord()
 {
+    if (!Database::instance()->telemetry) {
+        recTelemetryID = 0;
+        return false;
+    }
+
     checkAutoRecord();
     if (recTelemetryID)
         return true;

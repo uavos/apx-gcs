@@ -44,6 +44,9 @@ DatabaseRequest::DatabaseRequest(DatabaseSession *db,
     , bindValues(bindValues)
     , m_discarded(false)
 {
+    if (!db)
+        return;
+
     connect(this,
             &DatabaseRequest::dbModified,
             db,
@@ -53,10 +56,16 @@ DatabaseRequest::DatabaseRequest(DatabaseSession *db,
 
 void DatabaseRequest::exec()
 {
+    if (!db)
+        return;
+
     db->request(this);
 }
 bool DatabaseRequest::execSynchronous()
 {
+    if (!db)
+        return false;
+
     isSynchronous = true;
     db->request(this);
     auto future = m_finishedPromise.get_future();

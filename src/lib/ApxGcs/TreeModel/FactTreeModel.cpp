@@ -187,14 +187,34 @@ void FactTreeModel::checkConnections(Fact *fact) const
         connect(fact, &Fact::itemToBeMoved, this, &FactTreeModel::itemToBeMoved);
         connect(fact, &Fact::itemMoved, this, &FactTreeModel::itemMoved);
 
-        connect(fact, &Fact::textChanged, this, &FactTreeModel::textChanged);
-        connect(fact, &Fact::titleChanged, this, &FactTreeModel::titleChanged);
-        connect(fact, &Fact::descrChanged, this, &FactTreeModel::descrChanged);
-        connect(fact, &Fact::enabledChanged, this, &FactTreeModel::enabledChanged);
-        connect(fact, &Fact::activeChanged, this, &FactTreeModel::activeChanged);
-        connect(fact, &Fact::modifiedChanged, this, &FactTreeModel::modifiedChanged);
-        connect(fact, &Fact::progressChanged, this, &FactTreeModel::progressChanged);
-        connect(fact, &Fact::visibleChanged, this, &FactTreeModel::visibleChanged);
+        connect(fact, &Fact::textChanged, this, &FactTreeModel::textChanged, Qt::QueuedConnection);
+        connect(fact, &Fact::titleChanged, this, &FactTreeModel::titleChanged, Qt::QueuedConnection);
+        connect(fact, &Fact::descrChanged, this, &FactTreeModel::descrChanged, Qt::QueuedConnection);
+        connect(fact,
+                &Fact::enabledChanged,
+                this,
+                &FactTreeModel::enabledChanged,
+                Qt::QueuedConnection);
+        connect(fact,
+                &Fact::activeChanged,
+                this,
+                &FactTreeModel::activeChanged,
+                Qt::QueuedConnection);
+        connect(fact,
+                &Fact::modifiedChanged,
+                this,
+                &FactTreeModel::modifiedChanged,
+                Qt::QueuedConnection);
+        connect(fact,
+                &Fact::progressChanged,
+                this,
+                &FactTreeModel::progressChanged,
+                Qt::QueuedConnection);
+        connect(fact,
+                &Fact::visibleChanged,
+                this,
+                &FactTreeModel::visibleChanged,
+                Qt::QueuedConnection);
     }
 }
 

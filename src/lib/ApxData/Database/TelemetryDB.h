@@ -29,6 +29,7 @@ class TelemetryDB : public DatabaseSession
     Q_OBJECT
 public:
     explicit TelemetryDB(QObject *parent, QString sessionName);
+    ~TelemetryDB();
 
     void markCacheInvalid(quint64 telemetryID);
     QList<quint64> invalidCacheList();
