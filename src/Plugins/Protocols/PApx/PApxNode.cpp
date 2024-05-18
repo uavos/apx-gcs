@@ -855,7 +855,7 @@ void PApxNode::parseScriptData(PApxNode *node,
             qWarning() << "empty" << stream.available() << src.size() << code.size();
             return;
         }
-        QString title = QString(QByteArray(hdr.title, sizeof(hdr.title)));
+        QString title = QString::fromUtf8(hdr.title, strnlen(hdr.title, sizeof(hdr.title)));
 
         qDebug() << "script:" << title; // << _script_code.toHex().toUpper();
 

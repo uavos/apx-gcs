@@ -163,7 +163,8 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
             case xbus::mission::ACT_SCR: {
                 xbus::mission::act_scr_s e;
                 e.read(&stream);
-                a.insert("script", QString(QByteArray(e.scr, sizeof(e.scr))));
+                a.insert("script",
+                         QString::fromUtf8(QByteArray(e.scr, strnlen(e.scr, sizeof(e.scr)))));
                 break;
             }
             case xbus::mission::ACT_SHOT: {
