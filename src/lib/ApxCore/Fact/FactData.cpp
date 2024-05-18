@@ -793,11 +793,7 @@ void FactData::loadPresistentValue()
     if (!parentFact())
         return;
     QVariant v = defaultValue();
-    if (m_options & SystemSettings) {
-        v = QSettings().value(path(), v);
-    } else {
-        v = AppPrefs::instance()->loadValue(name(), prefsGroup(), v);
-    }
+    v = AppPrefs::instance()->loadValue(name(), prefsGroup(), v);
     if (!updateValue(v))
         return;
 
@@ -813,17 +809,10 @@ void FactData::savePresistentValue()
         rm = v == defaultValue() || s == defaultValue() || s == toText(defaultValue());
     }
 
-    if (m_options & SystemSettings) {
-        if (rm)
-            QSettings().remove(path());
-        else
-            QSettings().setValue(path(), s);
-    } else {
-        if (rm)
-            AppPrefs::instance()->removeValue(name(), prefsGroup());
-        else
-            AppPrefs::instance()->saveValue(name(), s, prefsGroup());
-    }
+    if (rm)
+        AppPrefs::instance()->removeValue(name(), prefsGroup());
+    else
+        AppPrefs::instance()->saveValue(name(), s, prefsGroup());
 }
 QString FactData::prefsGroup() const
 {

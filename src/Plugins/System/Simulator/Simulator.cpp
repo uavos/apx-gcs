@@ -58,11 +58,7 @@ Simulator::Simulator(Fact *parent)
     connect(f_stop, &Fact::triggered, &pShiva, &QProcess::terminate);
 
     // Xplane group
-    f_type = new Fact(this,
-                      "type",
-                      tr("Type"),
-                      tr("Simulator type"),
-                      Enum | PersistentValue | SystemSettings);
+    f_type = new Fact(this, "type", tr("Type"), tr("Simulator type"), Enum | PersistentValue);
     f_type->setIcon("package-variant");
 
     f_sxpl = new Fact(this, "sxpl", tr("Start XPlane"), tr("Run X-Plane on start"), Bool);
@@ -289,7 +285,9 @@ void Simulator::_launchXplane(QString xplaneDir)
             break;
 #elif defined Q_OS_LINUX
         QDir("/media/cdrom").mkpath(".");
-        if (QProcess::execute("mount", QStringList() << imgFile << "/media/cdrom" << "-o loop,ro")
+        if (QProcess::execute("mount",
+                              QStringList() << imgFile << "/media/cdrom"
+                                            << "-o loop,ro")
             == 0)
             break;
 #endif

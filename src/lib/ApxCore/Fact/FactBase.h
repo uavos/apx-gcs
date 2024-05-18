@@ -63,7 +63,6 @@ public:
         DragChildren = 1 << 9, //child items are draggable to change order
 
         PersistentValue = 1 << 10, //save and restore value in QSettings
-        SystemSettings = 1 << 11,  //use default QSettings to store value
 
         FilterModel = 1 << 12,     //show search filter
         FilterSearchAll = 1 << 13, //search name/title/descr by filters
