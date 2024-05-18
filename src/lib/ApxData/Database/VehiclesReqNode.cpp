@@ -603,7 +603,7 @@ bool DBReqLoadNodeConfig::run(QSqlQuery &query)
 
     while (query.next()) {
         QString s = query.value(0).toString();
-        if (_values.contains(s) && !_values.value(s).canConvert<QVariantList>()) {
+        if (_values.contains(s) && _values.value(s).typeId() != QMetaType::QVariantList) {
             qWarning() << "duplicate field" << s;
         }
         const QVariant &v = query.value(2);

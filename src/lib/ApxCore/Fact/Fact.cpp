@@ -572,7 +572,8 @@ void Fact::fromVariant(const QVariant &var)
 {
     if (var.isNull())
         return;
-    if (var.canConvert(QMetaType::QVariantMap)) {
+
+    if (var.typeId() == QMetaType::QVariantMap) {
         auto m = var.value<QVariantMap>();
         for (auto key : m.keys()) {
             Fact *f = child(key);
@@ -581,11 +582,11 @@ void Fact::fromVariant(const QVariant &var)
                 continue;
             }
             auto v = m.value(key);
-            if (v.canConvert(QMetaType::QVariantMap)) {
+            if (v.typeId() == QMetaType::QVariantMap) {
                 f->fromVariant(v);
                 continue;
             }
-            if (v.canConvert(QMetaType::QVariantList)) {
+            if (v.typeId() == QMetaType::QVariantList) {
                 f->fromVariant(v);
                 continue;
             }
@@ -593,7 +594,7 @@ void Fact::fromVariant(const QVariant &var)
         }
         return;
     }
-    if (var.canConvert(QMetaType::QVariantList)) {
+    if (var.typeId() == QMetaType::QVariantList) {
         // must be implemented in subclasses to create children structure from array
         return;
     }
@@ -603,6 +604,7 @@ void Fact::fromVariant(const QVariant &var)
         return;
     if (dataType() == NoFlags || dataType() == Count)
         return;
+
     setValue(var);
 }
 

@@ -281,7 +281,7 @@ bool DBReqMissionsSave::writeItems(QSqlQuery &query, const QVariant &var, QStrin
         r.append(num++);
         for (int i = 2; i < records.names.size(); ++i) {
             auto v = obj.value(records.names.at(i));
-            if (v.canConvert<QVariantMap>()) {
+            if (v.typeId() == QMetaType::QVariantMap) {
                 QStringList st;
                 auto vobj = v.value<QVariantMap>();
                 for (auto k : vobj.keys()) {
