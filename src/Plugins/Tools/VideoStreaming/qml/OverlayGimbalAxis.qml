@@ -20,8 +20,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
-import QtGraphicalEffects
 import QtQuick.Controls.Material
+import QtQuick.Effects
 
 import Apx.Common
 
@@ -102,13 +102,13 @@ Item {
             ]
         }
     }
-    DropShadow {
+
+    MultiEffect {
         anchors.fill: content
-        samples: 15
-        color: "#000"
         source: content
-        cached: true
+        shadowEnabled: true
     }
+
     MaterialIcon {
         name: "chevron-double-right"
         size: control.r //*0.9

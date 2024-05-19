@@ -22,7 +22,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtGraphicalEffects
 
 import Apx.Common
 import Apx.Controls

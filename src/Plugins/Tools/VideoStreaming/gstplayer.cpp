@@ -247,13 +247,13 @@ GstPlayer::GstPlayer(Fact *parent)
 
     onSourceTypeChanged();
 
-    overlay = new QmlOverlay();
+    /*overlay = new QmlOverlay();
     m_videoThread.setOverlayCallback(std::bind(&QmlOverlay::cb_drawOverlay, overlay, _1));
 
     connect(App::instance(), &App::appQuit, overlay, [this]() {
         delete overlay;
         overlay = nullptr;
-    });
+    });*/
 }
 
 GstPlayer::~GstPlayer()
@@ -305,7 +305,7 @@ QString GstPlayer::getMediaFileName(MediaType type)
         ext = "png";
     } else if (type == mtVideo) {
         base = AppDirs::video().absolutePath();
-        ext = "mkv";
+        ext = "mp4";
     }
 
     QString currentDateTime = QDateTime::currentDateTime().toString("dd_mm_yyyyThh_mm_ss_zzz");
@@ -341,9 +341,9 @@ void GstPlayer::stop()
         m_videoThread.terminate();
     }
 
-    QImage splash(m_lastFrame.size(), QImage::Format_RGB32);
-    splash.fill(Qt::black);
-    onFrameReceived(splash);
+    // QImage splash(m_lastFrame.size(), QImage::Format_RGB32);
+    // splash.fill(Qt::black);
+    // onFrameReceived(splash);
 
     setConnectionState(STATE_UNCONNECTED);
     m_reconnectTimer.stop();
@@ -414,25 +414,23 @@ void GstPlayer::stopAndPlay()
     play();
 }
 
-void GstPlayer::onFrameReceived(const QImage &image)
+void GstPlayer::onFrameReceived(const QVideoFrame &frame)
 {
     m_reconnectTimer.start();
 
     if (getConnectionState() == STATE_CONNECTING)
         setConnectionState(STATE_CONNECTED);
 
+    // qDebug() << frame << m_videoSink;
+
     setFrameCnt(frameCnt() + 1);
-    m_lastFrame = image;
-    if (m_videoSurface) {
-        if (image.size() != m_videoSurface->surfaceFormat().frameSize())
-            m_videoSurface->stop();
-
-        if (!m_videoSurface->isActive())
-            m_videoSurface->start(QVideoSurfaceFormat(image.size(), QVideoFrame::Format_RGB32));
-
-        QVideoFrame frame(image);
-        if (!m_videoSurface->present(frame))
-            onErrorOccured("Can't present frame on surface");
+    m_lastFrame = frame.toImage();
+    if (m_videoSink) {
+        // if (frame.size() != m_frameSize) {
+        //     m_frameSize = frame.size();
+        //     emit frameSizeChanged();
+        // }
+        m_videoSink->setVideoFrame(frame);
     }
 }
 

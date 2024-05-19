@@ -29,6 +29,8 @@ import GstPlayer
 
 import Apx.Common
 
+import "."
+
 // sample stream:
 // rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
@@ -69,14 +71,15 @@ Control {
             VideoOutput {
                 id: videoOutput
                 anchors.fill: parent
-                source: plugin
-                flushMode: VideoOutput.EmptyFrame
                 fillMode: viewMode>0?VideoOutput.PreserveAspectCrop:VideoOutput.PreserveAspectFit
 
                 layer.enabled: ui.effects
                 layer.effect: ShaderEffect {
-                    fragmentShader: Qt.resolvedUrl("/shaders/vignette.fsh")
+                    fragmentShader: Qt.resolvedUrl("/shaders/vignette.frag.qsb")
                 }
+            }
+            Component.onCompleted: {
+                plugin.videoSink = videoOutput.videoSink
             }
 
             Overlay {

@@ -24,18 +24,20 @@
 
 #pragma once
 
+#include <QVideoSink>
+#include <QtCore>
+#include <QtMultimedia>
+
 #include "QmlOverlay.h"
 #include "videothread.h"
 
 #include <Fact/Fact.h>
-#include <QVideoSink>
-#include <QtCore>
 
 class Vehicle;
 class GstPlayer : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(QVideoSink *videoSurface MEMBER m_videoSurface)
+    Q_PROPERTY(QVideoSink *videoSink MEMBER m_videoSink)
     Q_PROPERTY(ConnectionState connectionState READ getConnectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(quint64 frameCnt READ frameCnt NOTIFY frameCntChanged)
 
@@ -81,7 +83,7 @@ public:
     static QString getMediaFileName(MediaType type);
 
 private:
-    QVideoSink *m_videoSurface = nullptr;
+    QVideoSink *m_videoSink = nullptr;
     VideoThread m_videoThread;
     QImage m_lastFrame;
     ConnectionState m_connectionState = STATE_UNCONNECTED;
@@ -102,7 +104,7 @@ private:
 private slots:
     void stopAndPlay();
 
-    void onFrameReceived(const QImage &image);
+    void onFrameReceived(const QVideoFrame &frame);
     void onActiveValueChanged();
     void onRecordValueChanged();
     void onSourceTypeChanged();

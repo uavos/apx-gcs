@@ -24,6 +24,9 @@
 #include <App/App.h>
 #include <QSurfaceFormat>
 
+// https://forum.qt.io/topic/155040/qt6-render-qml-to-images-using-qquickrendercontrol/3
+// https://www.qtcentre.org/threads/72013-Rendering-a-QQuickItem-into-a-QImage-(Qt6)
+
 QmlOverlay::QmlOverlay(QObject *parent)
     : QObject(parent)
 {
@@ -111,7 +114,8 @@ void QmlOverlay::createFbo(const QSize &size)
     m_context->makeCurrent(m_offscreenSurface);
     m_fbo = new QOpenGLFramebufferObject(size * m_dpr,
                                          QOpenGLFramebufferObject::CombinedDepthStencil);
-    m_quickWindow->setRenderTarget(m_fbo);
+    m_quickWindow->setRenderTarget(
+        QQuickRenderTarget::fromOpenGLRenderBuffer(m_fbo->handle(), m_fbo->size(), 1));
     m_context->doneCurrent();
 }
 

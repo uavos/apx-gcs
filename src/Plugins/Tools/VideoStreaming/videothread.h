@@ -29,6 +29,7 @@
 #include <QMutex>
 #include <QThread>
 #include <QUrl>
+#include <QVideoFrame>
 
 /*
  * urisourcebin -> parsebin -> tee -> decodebin -> videoconvert -> tee -> appsink
@@ -119,7 +120,7 @@ private:
     std::atomic_bool m_lowLatency;
     QString m_uri;
     std::shared_ptr<GMainLoop> m_loop;
-    StreamContext::OverlayCallback m_overlayCallback;
+    StreamContext::OverlayCallback m_overlayCallback{};
 
     GstElement *createSourceElement(StreamContext *context);
 
@@ -129,10 +130,11 @@ private:
     void onSampleReceived(StreamContext *context, GstElement *appsink);
 
     QImage sample2qimage(const std::shared_ptr<GstSample> &sample);
+    QVideoFrame unpackSample(const std::shared_ptr<GstSample> &sample);
 
     void setupEnvironment();
 
 signals:
-    void frameReceived(QImage image);
+    void frameReceived(QVideoFrame frame);
     void errorOccured(QString error);
 };

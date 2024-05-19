@@ -23,7 +23,6 @@ import QtQuick
 import APX.Vehicles as APX
 import "../common"
 import "."
-//import QtGraphicalEffects 1.0
 
 
 
