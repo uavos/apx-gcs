@@ -111,11 +111,22 @@ void QmlOverlay::loadQmlFile(const QString &qmlFile, const QSize &size, qreal de
 
 void QmlOverlay::createFbo(const QSize &size)
 {
+    m_quickWindow->setGraphicsApi(QSGRendererInterface::OpenGL);
+
     m_context->makeCurrent(m_offscreenSurface);
     m_fbo = new QOpenGLFramebufferObject(size * m_dpr,
                                          QOpenGLFramebufferObject::CombinedDepthStencil);
-    m_quickWindow->setRenderTarget(
-        QQuickRenderTarget::fromOpenGLRenderBuffer(m_fbo->handle(), m_fbo->size(), 1));
+
+    QQuickRenderTarget rt = QQuickRenderTarget::fromOpenGLRenderBuffer(m_fbo->handle(),
+                                                                       m_fbo->size(),
+                                                                       1);
+
+    // QQuickRenderTarget rt = QQuickRenderTarget::fromVulkanImage(vulkanImage,
+    //                                                             VK_IMAGE_LAYOUT_PREINITIALIZED,
+    //                                                             m_fbo->size(),
+    //                                                             1);
+
+    m_quickWindow->setRenderTarget(rt);
     m_context->doneCurrent();
 }
 
@@ -215,6 +226,8 @@ void QmlOverlay::renderNext()
     if (!m_context->makeCurrent(m_offscreenSurface))
         return;
 
+    // m_quickWindow->beginExternalCommands(); // Begin external OpenGL commands
+    m_renderControl->beginFrame();
     if (m_needPolishAndSync) {
         m_needPolishAndSync = false;
         //qDebug() << m_renderControl;
@@ -222,6 +235,8 @@ void QmlOverlay::renderNext()
         m_renderControl->sync();
     }
     m_renderControl->render();
+    m_renderControl->endFrame();
+    // m_quickWindow->endExternalCommands(); // End external OpenGL commands
 
     m_context->functions()->glFlush();
     mutex.lock();
