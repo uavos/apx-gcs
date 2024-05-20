@@ -56,10 +56,6 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
             &PData::serialData,
             this,
             [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, false); });
-    connect(vehicle->protocol()->data(),
-            &PData::sendSerial,
-            this,
-            [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, true); });
 
     // record config on each upload or save
     connect(vehicle->storage(),
