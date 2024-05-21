@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
+set(CMAKE_PREFIX_PATH /Users/uavinda/Qt/6.7.0/macos)
+
 # paths used by apx_module
 get_filename_component(APX_SHARED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shared" ABSOLUTE)
 get_filename_component(APX_MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" ABSOLUTE)
@@ -38,12 +40,13 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET
     "11"
     CACHE STRING "Minimum OS X deployment version"
 )
-# Uncomment below to allow universal binary build for MacOS
-# Currently not supported due to Qt5.x issues
-# set(CMAKE_OSX_ARCHITECTURES
-#     "arm64;x86_64"
-#     CACHE STRING "MacOS universal binary" FORCE
-# )
+# Universal binary build for MacOS Release
+if(CMAKE_BUILD_TYPE STREQUAL Release AND APPLE)
+    set(CMAKE_OSX_ARCHITECTURES
+        "arm64;x86_64"
+        CACHE STRING "MacOS universal binary" FORCE
+    )
+endif()
 
 # Project creation and versioning
 include(git)
@@ -69,6 +72,7 @@ set(CMAKE_AUTOUIC ON)
 # Qt should be found in PATH
 find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
 get_filename_component(QT_DIR "${Qt6Core_DIR}/../../.." ABSOLUTE)
+message(STATUS "Qt6 found in ${QT_DIR}")
 
 include(apx_gcs_qt)
 include(apx_gcs_qrc)

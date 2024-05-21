@@ -48,7 +48,7 @@ function(apx_qrc TARGET)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         qt_add_resources(rcc ${qrc_file} OPTIONS -no-compress)
     else()
-        qtquick_compiler_add_resources(rcc ${qrc_file} OPTIONS -no-compress)
+        qt_add_resources(rcc ${qrc_file} OPTIONS -no-compress)
     endif()
     target_sources(${TARGET} PRIVATE ${rcc})
 

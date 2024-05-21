@@ -15,7 +15,7 @@ build:
 	@$(CMAKE) --build $(BUILD_DIR)
 
 bundle:
-	$(CMAKE) --build $(BUILD_DIR) --target bundle
+	$(CMAKE) --build $(BUILD_DIR) --target deploy_bundle
 
 package:
 	$(CMAKE) --build $(BUILD_DIR) --target deploy_package

@@ -104,8 +104,10 @@ def deploy_qt(path, json):
     elif platform == 'macos':
         opts.append(os.path.join(path, app['path']['bundle']))
         opts.append('-qmldir='+app['path']['src'])
-        opts.append('-appstore-compliant')
+        # opts.append('-appstore-compliant')
         # opts.append('-libpath=/Library/Frameworks')
+        opts.append('-verbose=1')
+
         opts.append(
             '-libpath='+os.path.abspath(os.path.join(path, app['path']['libs'])))
         if 'plugins' in json:
@@ -143,8 +145,10 @@ def deploy_qt(path, json):
         qml_path = os.path.abspath(os.path.join(
             path, app['path']['data'], 'qml'))
         utils.remove_all(
-            qml_path, ['designer', 'Fusion', 'Imagine', 'Universal'])
-        utils.remove_all(os.path.join(qml_path, 'QtQuick'), ['*.qml'])
+            qml_path, ['designer', 'Fusion', 'Imagine', 'Universal', 'NativeStyle'])
+        utils.remove_all(qml_path, ['*.qml','*.dSYM'])
+        fw_path = os.path.abspath(os.path.join(path, app['path']['libs']))
+        utils.remove_all(fw_path, ['Qt3D*.framework'])
 
     utils.remove_all(os.path.abspath(
         os.path.join(path, app['path']['libs'])), ['*.prl'])

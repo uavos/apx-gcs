@@ -61,7 +61,8 @@ def copy_framework(src, dst, arch):
     if os.path.exists(dst):
         return
     utils.remove(dst)
-    subprocess.call(['ditto', '-v', '--arch', arch, src, dst])
+    # subprocess.call(['ditto', '-v', '--arch', arch, src, dst])
+    subprocess.call(['ditto', '-v', src, dst])
     # print('installed')
     # copy_tree(fw, dst,  preserve_symlinks=True, verbose=1)
     utils.strip_framework(dst)
@@ -117,6 +118,8 @@ def deploy_libs(path, json, dist):
 
     for fw in frameworks:
         if not fw.startswith('/Library/Frameworks'):
+            continue
+        if fw.endswith('GStreamer.framework'):
             continue
         copy_framework(fw, library_path, arch)
 

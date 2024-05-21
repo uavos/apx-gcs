@@ -75,7 +75,7 @@ void AppPlugin::loadLib()
     QLibrary lib(fname);
     try {
         if (!lib.load()) {
-            apxMsgW() << "lib-load:" << lib.errorString() << "(" + fname + ")";
+            apxConsoleW() << "lib-load:" << lib.errorString() << "(" + fname + ")";
             return;
         }
         loader = new QPluginLoader(fname);
