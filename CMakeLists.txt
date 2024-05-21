@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-set(CMAKE_PREFIX_PATH /Users/uavinda/Qt/6.7.0/macos)
-
 # paths used by apx_module
 get_filename_component(APX_SHARED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shared" ABSOLUTE)
 get_filename_component(APX_MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" ABSOLUTE)
@@ -41,7 +39,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET
     CACHE STRING "Minimum OS X deployment version"
 )
 # Universal binary build for MacOS Release
-if(CMAKE_BUILD_TYPE STREQUAL Release AND APPLE)
+if(APPLE AND CMAKE_BUILD_TYPE STREQUAL Release)
     set(CMAKE_OSX_ARCHITECTURES
         "arm64;x86_64"
         CACHE STRING "MacOS universal binary" FORCE
