@@ -63,6 +63,7 @@ void FactProxyModel::setRoot(Fact *f)
     beginResetModel();
     _root = f;
     endResetModel();
+
     invalidate();
 }
 
@@ -156,7 +157,6 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     : QWidget(parent)
     , _backNavigation(backNavigation)
 {
-    setWindowTitle(fact->title());
     vlayout = new QVBoxLayout(this);
     vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
@@ -199,12 +199,9 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     model = new FactTreeModel(fact, this);
 
     proxy = new FactProxyModel(this);
-    proxy->setRoot(fact);
     proxy->setSourceModel(model);
 
-    tree->setModel(proxy);
-
-    updateActions();
+    setRoot(fact);
 
     connect(eFilter,
             &QLineEdit::textChanged,
@@ -301,8 +298,21 @@ void FactTreeWidget::setRoot(Fact *fact)
 
     //if(proxy->rootFact()) disconnect(proxy->rootFact(),&Fact::removed,this,&FactTreeWidget::factRemoved);
 
-    proxy->setRoot(fact);
+    // tree->setModel(nullptr);
+    // proxy->setSourceModel(nullptr);
+    proxy->setRoot(nullptr);
+    proxy->invalidate();
+
     model->setRoot(fact);
+
+    proxy->setRoot(fact);
+    // proxy->setSourceModel(model);
+    proxy->invalidate();
+
+    if (fact) {
+        setWindowTitle(fact->title());
+        tree->setModel(proxy);
+    }
 
     // tree->setRootIndex(proxy->mapFromSource(model->factIndex(fact)));
 

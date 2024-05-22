@@ -46,7 +46,7 @@ NodesFrame::NodesFrame(QWidget *parent)
     lbUavName->setFont(App::font());
     vlayout->addWidget(lbUavName);
 
-    treeWidget = new FactTreeWidget(AppRoot::instance(), true, false, this);
+    treeWidget = new FactTreeWidget(nullptr, true, false, this);
     vlayout->addWidget(treeWidget);
     connect(treeWidget->tree,
             &FactTreeView::customContextMenuRequested,
@@ -64,8 +64,11 @@ NodesFrame::NodesFrame(QWidget *parent)
 
 void NodesFrame::vehicleSelected(Vehicle *v)
 {
-    if (vehicle)
+    if (vehicle) {
+        vehicle->disconnect(this);
         disconnect(vehicle);
+    }
+
     vehicle = v;
     Nodes *fNodes = v->f_nodes;
     treeWidget->setRoot(fNodes);
@@ -109,7 +112,7 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     //all actions signals
     foreach (QAction *a, toolBar->actions()) {
         toolBar->widgetForAction(a)->setObjectName(a->objectName());
-        connect(a, &QAction::triggered, [this]() { treeWidget->tree->setFocus(); });
+        connect(a, &QAction::triggered, this, [this]() { treeWidget->tree->setFocus(); });
     }
     connect(vehicle->f_nodes->f_search, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(vehicle->f_nodes->f_reload, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
@@ -246,7 +249,9 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
                 a->setObjectName(s);
                 a->setToolTip(nodeName);
                 m->addAction(a);
-                connect(a, &QAction::triggered, [dbq, modelData]() { dbq->triggerItem(modelData); });
+                connect(a, &QAction::triggered, dbq, [dbq, modelData]() {
+                    dbq->triggerItem(modelData);
+                });
             }
             return;
         }
@@ -282,12 +287,12 @@ void NodesFrame::updateMenuTitles(QMenu *menu)
 {
     QStringList st = menu->toolTip().split(',', Qt::SkipEmptyParts);
     QString s = st.size() > 3 ? QString::number(st.size()) : st.join(',');
-    menu->setTitle(QString("%1 [%2]").arg(menu->objectName()).arg(s));
+    menu->setTitle(QString("%1 [%2]").arg(menu->objectName(), s));
 
     for (auto a : menu->actions()) {
         QStringList st = a->toolTip().split(',', Qt::SkipEmptyParts);
         QString s = st.size() > 3 ? QString::number(st.size()) : st.join(',');
-        a->setText(QString("%1 [%2]").arg(a->objectName()).arg(s));
+        a->setText(QString("%1 [%2]").arg(a->objectName(), s));
     }
 
     for (auto i : menu->findChildren<QMenu *>()) {
