@@ -73,10 +73,13 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     Fact *fact = index.data(Fact::ModelDataRole).value<Fact *>();
     if (!fact)
         return false;
+
     if (!fact->visible())
         return false;
+
     if (fact == _root)
         return true;
+
     //accept all parents of rootFact
     bool ok = false;
     for (Fact *f = _root; f; f = f->parentFact()) {
@@ -85,6 +88,7 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
             break;
         }
     }
+
     //check if index has parent as rootindex
     if (!ok) {
         for (Fact *f = fact; f; f = f->parentFact()) {
@@ -95,10 +99,12 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
             }
         }
     }
+
     if (!ok) {
         //qDebug()<<"flt"<<fact->path();
         return filterRegularExpression().isValid() ? false : true;
     }
+
     return showThis(index);
 }
 
@@ -106,6 +112,7 @@ bool FactProxyModel::showThis(const QModelIndex index) const
 {
     if (showThisItem(index))
         return true;
+
     //look for matching parents
     QModelIndex parentIndex = sourceModel()->parent(index);
     while (parentIndex.isValid()) {
@@ -215,8 +222,10 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
 
 void FactTreeWidget::filterChanged()
 {
-    QString s = eFilter->text();
-    auto regExp = QRegularExpression::fromWildcard(s);
+    QString s = eFilter->text().trimmed();
+    auto regExp = QRegularExpression::fromWildcard(s,
+                                                   Qt::CaseInsensitive,
+                                                   QRegularExpression::UnanchoredWildcardConversion);
 
     auto rootIndex = tree->rootIndex();
     //qDebug() << rootIndex;

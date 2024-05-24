@@ -67,8 +67,7 @@ private:
     QList<QPointer<Fact>> conFactLayout;
 
     using FactIndexHash = QMap<QPointer<Fact>, std::array<QModelIndex, Fact::FACT_MODEL_COLUMN_CNT>>;
-    using ModelFactIndexHash = QHash<const FactTreeModel *, FactIndexHash>;
-    static ModelFactIndexHash indexHash;
+    FactIndexHash indexHash;
 
 private slots:
     void itemToBeInserted(int row, FactBase *item);
@@ -89,4 +88,6 @@ private slots:
 
     void updateTimerTimeout();
     void itemDestroyed();
+
+    void indexHashCleanup();
 };

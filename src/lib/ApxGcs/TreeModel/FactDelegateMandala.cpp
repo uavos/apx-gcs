@@ -107,7 +107,9 @@ void FactDelegateMandala::closeEvent(QCloseEvent *event)
 void FactDelegateMandala::updateFilter()
 {
     QString s = eFilter->text();
-    auto regExp = QRegularExpression::fromWildcard(s);
+    auto regExp = QRegularExpression::fromWildcard(s,
+                                                   Qt::CaseInsensitive,
+                                                   QRegularExpression::UnanchoredWildcardConversion);
     regExp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
     proxy->setFilterRegularExpression(regExp);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);

@@ -210,7 +210,9 @@ JSTreeWidget::JSTreeWidget(QJSEngine *e, bool filterEdit, bool backNavigation, Q
 void JSTreeWidget::filterChanged()
 {
     QString s = eFilter->text();
-    auto regExp = QRegularExpression::fromWildcard(s);
+    auto regExp = QRegularExpression::fromWildcard(s,
+                                                   Qt::CaseInsensitive,
+                                                   QRegularExpression::UnanchoredWildcardConversion);
     proxy->setFilterRegularExpression(regExp);
     tree->setRootIndex(proxy->mapFromSource(model->itemIndex(proxy->rootItem())));
     updateActions();

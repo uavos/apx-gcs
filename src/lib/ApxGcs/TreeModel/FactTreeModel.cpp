@@ -23,8 +23,6 @@
 #include <Fact/Fact.h>
 #include <QDomDocument>
 
-FactTreeModel::ModelFactIndexHash FactTreeModel::indexHash;
-
 FactTreeModel::FactTreeModel(Fact *root, QObject *parent)
     : QAbstractItemModel(parent)
 {
@@ -35,10 +33,7 @@ FactTreeModel::FactTreeModel(Fact *root, QObject *parent)
     setRoot(root);
 }
 
-FactTreeModel::~FactTreeModel()
-{
-    indexHash.remove(this);
-}
+FactTreeModel::~FactTreeModel() {}
 
 void FactTreeModel::setRoot(Fact *f)
 {
@@ -53,6 +48,7 @@ void FactTreeModel::setRoot(Fact *f)
     endResetModel();
 
     checkConnections(f);
+    indexHashCleanup();
 }
 
 QHash<int, QByteArray> FactTreeModel::roleNames() const
@@ -101,7 +97,7 @@ QModelIndex FactTreeModel::index(int row, int column, const QModelIndex &parent)
 
     checkConnections(f);
     auto i = createIndex(row, column, f);
-    indexHash[this][f][column] = i;
+    (*const_cast<FactIndexHash *>(&indexHash))[f][column] = i;
     return i;
 }
 
@@ -124,7 +120,7 @@ QModelIndex FactTreeModel::parent(const QModelIndex &index) const
 
     checkConnections(p);
     auto i = createIndex(row, 0, p);
-    indexHash[this][p][0] = i;
+    (*const_cast<FactIndexHash *>(&indexHash))[p][0] = i;
     return i;
 }
 
@@ -196,23 +192,39 @@ QModelIndex FactTreeModel::factIndex(FactBase *item, int column) const
     if (!f)
         return {};
 
-    return indexHash[this][f][column];
+    return (*const_cast<FactIndexHash *>(&indexHash))[f][column];
+}
+
+void FactTreeModel::indexHashCleanup()
+{
+    // remove deleted facts
+
+    // qDebug() << "\n\n\n\n" << indexHash.size();
+
+    if (indexHash.contains(nullptr))
+        return;
+
+    size_t rm = 0;
+    for (;;) {
+        auto cnt = indexHash.remove(nullptr);
+        if (cnt <= 0)
+            break;
+        rm += cnt;
+    }
+    // qDebug() << "\n\n\nindex removed:" << rm << "\n\n";
 }
 
 void FactTreeModel::checkConnections(Fact *fact) const
 {
-    // remove deleted facts
-    auto rm = indexHash[this].removeIf([](FactIndexHash::iterator i) { return i.key().isNull(); });
-    if (rm > 0) {
-        // qDebug() << "index removed:" << rm;
-    }
-
     if (!fact || conFactLayout.contains(fact))
         return;
+
+    const_cast<FactTreeModel *>(this)->indexHashCleanup();
 
     const_cast<QList<QPointer<Fact>> *>(&conFactLayout)->append(fact);
 
     auto t = Qt::UniqueConnection;
+    connect(fact, &Fact::removed, this, &FactTreeModel::itemDestroyed, t);
     connect(fact, &Fact::destroyed, this, &FactTreeModel::itemDestroyed, t);
 
     connect(fact, &Fact::itemToBeInserted, this, &FactTreeModel::itemToBeInserted, t);
@@ -244,6 +256,7 @@ void FactTreeModel::recursiveDisconnect(Fact *fact)
         return;
 
     fact->disconnect(this);
+    indexHash.remove(fact);
 
     //resetInternalData();
     conFactLayout.removeAll(fact);
@@ -376,4 +389,5 @@ void FactTreeModel::itemDestroyed()
     conFactLayout.removeAll(f);
     expandedFacts.removeAll(f);
     updateList.removeAll(f);
+    indexHash.remove(f);
 }
