@@ -53,10 +53,7 @@ NodesFrame::NodesFrame(QWidget *parent)
             this,
             &NodesFrame::treeContextMenu);
 
-    connect(treeWidget->tree->selectionModel(),
-            &QItemSelectionModel::selectionChanged,
-            this,
-            &NodesFrame::updateActions);
+    connect(treeWidget, &FactTreeWidget::selectionChanged, this, &NodesFrame::updateActions);
 
     connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &NodesFrame::vehicleSelected);
     vehicleSelected(Vehicles::instance()->current());
@@ -88,7 +85,6 @@ void NodesFrame::vehicleSelected(Vehicle *v)
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_search));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_reload));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_stop));
-    // toolBar->addAction(new QActionFact(vehicle->f_nodes->f_status));
     toolBar->addAction(new QActionFact(vehicle->f_nodes->f_clear));
 
     QAction *aLookup = new QActionFact(vehicle->f_lookup);
@@ -110,13 +106,12 @@ void NodesFrame::vehicleSelected(Vehicle *v)
                                    &NodesFrame::aDefaults_triggered);
 
     //all actions signals
-    foreach (QAction *a, toolBar->actions()) {
+    for (auto a : toolBar->actions()) {
         toolBar->widgetForAction(a)->setObjectName(a->objectName());
-        connect(a, &QAction::triggered, this, [this]() { treeWidget->tree->setFocus(); });
+        connect(a, &QAction::triggered, treeWidget, [this]() { treeWidget->tree->setFocus(); });
     }
     connect(vehicle->f_nodes->f_search, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(vehicle->f_nodes->f_reload, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
-    // connect(vehicle->f_nodes->f_status, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
     connect(vehicle->f_nodes->f_clear, &Fact::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
     updateActions();
@@ -126,8 +121,8 @@ void NodesFrame::updateActions(void)
 {
     bool bMod = vehicle->f_nodes->modified();
     if (!bMod) {
-        foreach (Fact *i, selectedItems()) {
-            if (i->modified()) {
+        for (auto f : treeWidget->tree->selectedItems()) {
+            if (f->modified()) {
                 bMod = true;
                 break;
             }
@@ -139,14 +134,14 @@ void NodesFrame::updateActions(void)
 void NodesFrame::treeContextMenu(const QPoint &pos)
 {
     //scan selected items
-    QList<NodeItem *> nlist = selectedItems<NodeItem>();
+    QList<NodeItem *> nlist = treeWidget->tree->selectedItems<NodeItem>();
     QMenu m(treeWidget);
 
     //editor actions
     QAction *a = new QAction(aDefaults->icon(), aDefaults->text(), &m);
     connect(a, &QAction::triggered, aDefaults, &QAction::trigger);
     m.addAction(a);
-    for (auto i : selectedItems<Fact>()) {
+    for (auto i : treeWidget->tree->selectedItems<Fact>()) {
         if (!i->modified())
             continue;
         a = new QAction(aUndo->icon(), aUndo->text(), &m);
@@ -180,7 +175,7 @@ void NodesFrame::treeContextMenu(const QPoint &pos)
 void NodesFrame::aUndo_triggered(void)
 {
     treeWidget->tree->setFocus();
-    QList<Fact *> list = selectedItems<Fact>();
+    QList<Fact *> list = treeWidget->tree->selectedItems<Fact>();
     for (auto i : list) {
         if (i->modified())
             i->restore();
@@ -191,7 +186,7 @@ void NodesFrame::aUndo_triggered(void)
 void NodesFrame::aDefaults_triggered(void)
 {
     treeWidget->tree->setFocus();
-    QList<Fact *> list = selectedItems<Fact>();
+    QList<Fact *> list = treeWidget->tree->selectedItems<Fact>();
     for (auto i : list) {
         i->restoreDefaults();
     }

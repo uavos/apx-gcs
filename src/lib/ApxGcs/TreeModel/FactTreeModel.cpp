@@ -23,6 +23,8 @@
 #include <Fact/Fact.h>
 #include <QDomDocument>
 
+FactTreeModel::ModelFactIndexHash FactTreeModel::indexHash;
+
 FactTreeModel::FactTreeModel(Fact *root, QObject *parent)
     : QAbstractItemModel(parent)
 {
@@ -35,12 +37,7 @@ FactTreeModel::FactTreeModel(Fact *root, QObject *parent)
 
 FactTreeModel::~FactTreeModel()
 {
-    // beginResetModel();
-
-    // for (auto i : conFactLayout)
-    //     recursiveDisconnect(i);
-
-    // endResetModel();
+    indexHash.remove(this);
 }
 
 void FactTreeModel::setRoot(Fact *f)
@@ -66,10 +63,10 @@ QHash<int, QByteArray> FactTreeModel::roleNames() const
 QVariant FactTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
-        return QVariant();
-    Fact *f = fact(index);
+        return {};
+    auto f = fact(index);
     if (!f)
-        return QVariant();
+        return {};
     return f->data(index.column(), role);
 }
 
@@ -78,7 +75,7 @@ bool FactTreeModel::setData(const QModelIndex &index, const QVariant &value, int
     if ((!index.isValid()) || (role != Qt::EditRole)
         || index.column() != Fact::FACT_MODEL_COLUMN_VALUE)
         return false;
-    Fact *f = fact(index);
+    auto f = fact(index);
     if (!f)
         return false;
     if (data(index, role) == value)
@@ -92,47 +89,52 @@ bool FactTreeModel::setData(const QModelIndex &index, const QVariant &value, int
 QModelIndex FactTreeModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
-        return QModelIndex();
-    Fact *parentFact;
-    if (!parent.isValid())
-        parentFact = _root;
-    else
-        parentFact = fact(parent);
+        return {};
+
+    auto parentFact = parent.isValid() ? fact(parent) : _root;
     if (!parentFact)
-        return QModelIndex();
-    Fact *childFact = parentFact->child(row);
-    if (!childFact)
-        return QModelIndex();
-    checkConnections(childFact);
-    return factIndex(childFact, column);
+        return {};
+
+    auto f = parentFact->child(row);
+    if (!f)
+        return {};
+
+    checkConnections(f);
+    auto i = createIndex(row, column, f);
+    indexHash[this][f][column] = i;
+    return i;
 }
 
 QModelIndex FactTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return QModelIndex();
-    Fact *i = fact(index);
-    if (!i)
-        return QModelIndex();
-    if (!i->parentFact())
-        return QModelIndex();
-    Fact *p = i->parentFact();
-    if (!p || p == _root)
-        return QModelIndex();
+        return {};
+
+    auto f = fact(index);
+    if (!f)
+        return {};
+
+    auto p = f->parentFact();
+    if (!p || p == _root || !p->parentFact())
+        return {};
+
+    int row = p->indexInParent();
+    if (row < 0)
+        return {};
+
     checkConnections(p);
-    return factIndex(p);
+    auto i = createIndex(row, 0, p);
+    indexHash[this][p][0] = i;
+    return i;
 }
 
 int FactTreeModel::rowCount(const QModelIndex &parent) const
 {
-    Fact *parentFact;
     if (parent.column() > 0)
         return 0;
-    if (!parent.isValid())
-        parentFact = _root;
-    else
-        parentFact = fact(parent);
-    return parentFact->size();
+
+    auto parentFact = parent.isValid() ? fact(parent) : _root;
+    return parentFact ? parentFact->size() : 0;
 }
 
 int FactTreeModel::columnCount(const QModelIndex &parent) const
@@ -159,8 +161,8 @@ QVariant FactTreeModel::headerData(int section, Qt::Orientation orientation, int
 
 Qt::ItemFlags FactTreeModel::flags(const QModelIndex &index) const
 {
-    Qt::ItemFlags fx = Qt::NoItemFlags;
-    Fact *f = fact(index);
+    Qt::ItemFlags fx = QAbstractItemModel::flags(index);
+    auto f = fact(index);
     if (!f)
         return fx;
     if (f->enabled())
@@ -188,43 +190,51 @@ Fact *FactTreeModel::fact(const QModelIndex &index) const
 QModelIndex FactTreeModel::factIndex(FactBase *item, int column) const
 {
     if (!item || item == _root)
-        return QModelIndex();
-    return createIndex(item->num(), column, item);
+        return {};
+
+    auto f = qobject_cast<Fact *>(item);
+    if (!f)
+        return {};
+
+    return indexHash[this][f][column];
 }
 
 void FactTreeModel::checkConnections(Fact *fact) const
 {
-    if (!conFactLayout.contains(fact)) {
-        const_cast<QList<QPointer<Fact>> *>(&conFactLayout)->append(fact);
-
-        auto t = Qt::UniqueConnection;
-        connect(fact, &Fact::destroyed, this, &FactTreeModel::itemDestroyed, t);
-
-        connect(fact, &Fact::itemToBeInserted, this, &FactTreeModel::itemToBeInserted, t);
-        connect(fact, &Fact::itemInserted, this, &FactTreeModel::itemInserted, t);
-        connect(fact, &Fact::itemToBeRemoved, this, &FactTreeModel::itemToBeRemoved, t);
-        connect(fact, &Fact::itemRemoved, this, &FactTreeModel::itemRemoved, t);
-        connect(fact, &Fact::itemToBeMoved, this, &FactTreeModel::itemToBeMoved, t);
-        connect(fact, &Fact::itemMoved, this, &FactTreeModel::itemMoved, t);
-
-        t = (Qt::ConnectionType)(Qt::UniqueConnection | Qt::QueuedConnection);
-        connect(fact, &Fact::textChanged, this, &FactTreeModel::textChanged, t);
-        connect(fact, &Fact::titleChanged, this, &FactTreeModel::titleChanged, t);
-        connect(fact, &Fact::descrChanged, this, &FactTreeModel::descrChanged, t);
-        connect(fact, &Fact::enabledChanged, this, &FactTreeModel::enabledChanged, t);
-        connect(fact, &Fact::activeChanged, this, &FactTreeModel::activeChanged, t);
-        connect(fact, &Fact::modifiedChanged, this, &FactTreeModel::modifiedChanged, t);
-        connect(fact, &Fact::progressChanged, this, &FactTreeModel::progressChanged, t);
-        connect(fact, &Fact::visibleChanged, this, &FactTreeModel::visibleChanged, t);
+    // remove deleted facts
+    auto rm = indexHash[this].removeIf([](FactIndexHash::iterator i) { return i.key().isNull(); });
+    if (rm > 0) {
+        // qDebug() << "index removed:" << rm;
     }
+
+    if (!fact || conFactLayout.contains(fact))
+        return;
+
+    const_cast<QList<QPointer<Fact>> *>(&conFactLayout)->append(fact);
+
+    auto t = Qt::UniqueConnection;
+    connect(fact, &Fact::destroyed, this, &FactTreeModel::itemDestroyed, t);
+
+    connect(fact, &Fact::itemToBeInserted, this, &FactTreeModel::itemToBeInserted, t);
+    connect(fact, &Fact::itemInserted, this, &FactTreeModel::itemInserted, t);
+    connect(fact, &Fact::itemToBeRemoved, this, &FactTreeModel::itemToBeRemoved, t);
+    connect(fact, &Fact::itemRemoved, this, &FactTreeModel::itemRemoved, t);
+    connect(fact, &Fact::itemToBeMoved, this, &FactTreeModel::itemToBeMoved, t);
+    connect(fact, &Fact::itemMoved, this, &FactTreeModel::itemMoved, t);
+
+    t = (Qt::ConnectionType)(Qt::UniqueConnection | Qt::QueuedConnection);
+    connect(fact, &Fact::textChanged, this, &FactTreeModel::textChanged, t);
+    connect(fact, &Fact::titleChanged, this, &FactTreeModel::titleChanged, t);
+    connect(fact, &Fact::descrChanged, this, &FactTreeModel::descrChanged, t);
+    connect(fact, &Fact::enabledChanged, this, &FactTreeModel::enabledChanged, t);
+    connect(fact, &Fact::activeChanged, this, &FactTreeModel::activeChanged, t);
+    connect(fact, &Fact::modifiedChanged, this, &FactTreeModel::modifiedChanged, t);
+    connect(fact, &Fact::progressChanged, this, &FactTreeModel::progressChanged, t);
+    connect(fact, &Fact::visibleChanged, this, &FactTreeModel::visibleChanged, t);
 }
 
 void FactTreeModel::recursiveDisconnect(Fact *fact)
 {
-    // for (int i = 0; i < fact->size(); ++i) {
-    //     recursiveDisconnect(fact->child(i));
-    // }
-
     if (!qobject_cast<Fact *>(fact)) {
         conFactLayout.removeAll(fact);
         return;
@@ -235,21 +245,12 @@ void FactTreeModel::recursiveDisconnect(Fact *fact)
 
     fact->disconnect(this);
 
-    /*disconnect(fact,&Fact::itemToBeInserted,this,&FactTreeModel::itemToBeInserted);
-  disconnect(fact,&Fact::itemInserted,this,&FactTreeModel::itemInserted);
-  disconnect(fact,&Fact::itemToBeRemoved,this,&FactTreeModel::itemToBeRemoved);
-  disconnect(fact,&Fact::itemRemoved,this,&FactTreeModel::itemRemoved);
-  disconnect(fact,&Fact::textChanged, this, &FactTreeModel::textChanged);
-  disconnect(fact,&Fact::statusChanged, this, &FactTreeModel::textChanged);
-  disconnect(fact,&Fact::titleChanged, this, &FactTreeModel::titleChanged);
-  disconnect(fact,&Fact::descrChanged, this, &FactTreeModel::descrChanged);
-  disconnect(fact,&Fact::enabledChanged, this, &FactTreeModel::enabledChanged);
-  disconnect(fact,&Fact::activeChanged, this, &FactTreeModel::activeChanged);
-  disconnect(fact,&Fact::progressChanged, this, &FactTreeModel::progressChanged);*/
-
-    //qDebug()<<"dis"<<fact->path();
     //resetInternalData();
     conFactLayout.removeAll(fact);
+
+    for (auto f : fact->facts()) {
+        recursiveDisconnect(f);
+    }
 }
 
 void FactTreeModel::itemToBeInserted(int row, FactBase *item)
@@ -288,43 +289,49 @@ void FactTreeModel::textChanged()
 {
     if (!sender())
         return;
-    Fact *fact = qobject_cast<Fact *>(sender())->parentFact();
-    if (!fact)
+
+    auto f = qobject_cast<Fact *>(sender())->parentFact();
+    if (!f)
         return;
     //qDebug()<<fact->path();
-    if (!updateList.contains(fact))
-        updateList.append(fact);
-    if (!updateHash.values(fact).contains(Fact::FACT_MODEL_COLUMN_VALUE))
-        updateHash.insert(fact, Fact::FACT_MODEL_COLUMN_VALUE);
+    if (!updateList.contains(f))
+        updateList.append(f);
+    if (!updateHash.values(f).contains(Fact::FACT_MODEL_COLUMN_VALUE))
+        updateHash.insert(f, Fact::FACT_MODEL_COLUMN_VALUE);
     if (!updateTimer.isActive())
         updateTimer.start();
 }
 void FactTreeModel::titleChanged()
 {
     QModelIndex index = factIndex(qobject_cast<Fact *>(sender()), Fact::FACT_MODEL_COLUMN_NAME);
-    emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
+    if (index.isValid())
+        emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
 }
 void FactTreeModel::descrChanged()
 {
     QModelIndex index = factIndex(qobject_cast<Fact *>(sender()), Fact::FACT_MODEL_COLUMN_DESCR);
-    emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
+    if (index.isValid())
+        emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
 }
 void FactTreeModel::enabledChanged()
 {
     QModelIndex index1 = factIndex(qobject_cast<Fact *>(sender()), Fact::FACT_MODEL_COLUMN_NAME);
     QModelIndex index2 = factIndex(qobject_cast<Fact *>(sender()), Fact::FACT_MODEL_COLUMN_DESCR);
-    emit dataChanged(index1, index2, QVector<int>() << Qt::ForegroundRole << Qt::BackgroundRole);
+    if (index1.isValid() && index2.isValid())
+        emit dataChanged(index1, index2, QVector<int>() << Qt::ForegroundRole << Qt::BackgroundRole);
 }
 void FactTreeModel::activeChanged()
 {
     QModelIndex index = factIndex(qobject_cast<Fact *>(sender()), Fact::FACT_MODEL_COLUMN_NAME);
-    emit dataChanged(index, index, QVector<int>() << Qt::ForegroundRole);
+    if (index.isValid())
+        emit dataChanged(index, index, QVector<int>() << Qt::ForegroundRole);
 }
 void FactTreeModel::modifiedChanged()
 {
     QModelIndex index1 = factIndex(qobject_cast<Fact *>(sender()), Fact::FACT_MODEL_COLUMN_NAME);
     QModelIndex index2 = factIndex(qobject_cast<Fact *>(sender()), Fact::FACT_MODEL_COLUMN_VALUE);
-    emit dataChanged(index1, index2, QVector<int>() << Qt::ForegroundRole);
+    if (index1.isValid() && index2.isValid())
+        emit dataChanged(index1, index2, QVector<int>() << Qt::ForegroundRole);
 }
 void FactTreeModel::progressChanged()
 {
@@ -348,18 +355,18 @@ void FactTreeModel::updateTimerTimeout()
     for (auto &f : updateList) {
         if (f.isNull())
             continue;
-        if (f->size() < 1)
+        if (f->size() <= 0)
             continue;
         if (!expandedFacts.contains(f))
             continue;
-        foreach (int col, updateHash.values(f)) {
-            QModelIndex index1 = createIndex(0, col, f->child(0));
-            QModelIndex index2 = createIndex(f->size() - 1, col, f->child(f->size() - 1));
-            emit dataChanged(index1, index2, QVector<int>() << Qt::DisplayRole);
+        for (auto col : updateHash.values(f)) {
+            QModelIndex index1 = factIndex(f->child(0), col);
+            QModelIndex index2 = factIndex(f->child(f->size() - 1), col);
+            if (index1.isValid() && index2.isValid())
+                emit dataChanged(index1, index2, QVector<int>() << Qt::DisplayRole);
             //qDebug()<<f->path();
         }
     }
-    //emit dataChanged(QModelIndex(),QModelIndex());
     updateList.clear();
     updateHash.clear();
 }

@@ -26,7 +26,11 @@
 class Fact;
 class FactPropertyBinding;
 
-typedef QList<Fact *> FactList;
+template<typename T>
+using FactListT = QList<T *>;
+// using FactListT = QList<std::unique_ptr<T>>;
+
+using FactList = FactListT<Fact>;
 
 class FactBase : public QObject
 {
@@ -162,7 +166,7 @@ private:
 
     void updatePath();
 
-    QList<FactPropertyBinding *> _property_binds;
+    QList<QPointer<FactPropertyBinding>> _property_binds;
 
 public slots:
     void deleteFact();

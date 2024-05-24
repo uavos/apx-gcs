@@ -197,9 +197,9 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
 
     //model
     model = new FactTreeModel(fact, this);
-
     proxy = new FactProxyModel(this);
     proxy->setSourceModel(model);
+    tree->setModel(proxy);
 
     setRoot(fact);
 
@@ -296,28 +296,28 @@ void FactTreeWidget::setRoot(Fact *fact)
 
     resetFilter();
 
-    //if(proxy->rootFact()) disconnect(proxy->rootFact(),&Fact::removed,this,&FactTreeWidget::factRemoved);
+    if (model->root()) {
+        model->root()->disconnect(this);
 
-    // tree->setModel(nullptr);
-    // proxy->setSourceModel(nullptr);
-    proxy->setRoot(nullptr);
-    proxy->invalidate();
+        if (tree->selectionModel()) {
+            tree->selectionModel()->disconnect(this);
+        }
+    }
 
     model->setRoot(fact);
-
     proxy->setRoot(fact);
-    // proxy->setSourceModel(model);
     proxy->invalidate();
 
     if (fact) {
         setWindowTitle(fact->title());
-        tree->setModel(proxy);
+
+        connect(fact, &Fact::removed, this, &FactTreeWidget::factRemoved);
+        connect(tree->selectionModel(),
+                &QItemSelectionModel::selectionChanged,
+                this,
+                &FactTreeWidget::selectionChanged);
     }
 
-    // tree->setRootIndex(proxy->mapFromSource(model->factIndex(fact)));
-
-    connect(fact, &Fact::removed, this, &FactTreeWidget::factRemoved);
-    //qDebug()<<"root"<<fact->path();
     //cut current path
     for (int i = 0; i < rootList.size(); i++) {
         Fact *f = rootList.at(i);
@@ -327,6 +327,7 @@ void FactTreeWidget::setRoot(Fact *fact)
             break;
         }
     }
+
     updateActions();
 }
 
