@@ -28,6 +28,7 @@ var popupItem = null
 var menuViews = new Set()
 var menuPopups = new Set()
 
+// application calls this function to show menu popup
 function show(fact,opts,parent)
 {
     if(!fact) return
@@ -117,10 +118,10 @@ function raisePopup(popup)
     for(var p of menuPopups){
         if(p === popup)continue
         p.menuEnabled=false
-        while(z <= p.z)
-            p.z-=0.01
+        if (z < p.z)
+            z = p.z
     }
-    //popup.z = z
+    popup.z = z+1
     popup.menuEnabled=true
     //console.log(z)
 }

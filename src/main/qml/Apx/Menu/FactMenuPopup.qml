@@ -27,7 +27,6 @@ import APX.Facts
 
 import Apx.Common
 
-// import Apx.Menu
 import "."
 
 Popup {
@@ -108,7 +107,7 @@ Popup {
     //draggable window
     MouseArea {
         id: mouseArea
-        z: popup.menuEnabled?0:(contentItem.z+100)
+        // z: popup.menuEnabled?0:(contentItem.z+100)
         anchors.fill: parent
         propagateComposedEvents: popup.menuEnabled
         property point clickPos: Qt.point(0,0)
