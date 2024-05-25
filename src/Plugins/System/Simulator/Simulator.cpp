@@ -234,6 +234,13 @@ void Simulator::launchXplane()
                     apxMsgW() << tr("XPL Plugin error").append(":") << destPath;
                 }
             }
+
+            // now check if there are duplicates found
+            auto xplFiles = QDir(d.absolutePath(), "ApxSIL_*.xpl").entryInfoList();
+            if (xplFiles.size() > 1) {
+                apxMsgW() << tr("Multiple XPL plugins found in X-Plane plugins directory. Please "
+                                "remove duplicates.");
+            }
         }
 
         break;
