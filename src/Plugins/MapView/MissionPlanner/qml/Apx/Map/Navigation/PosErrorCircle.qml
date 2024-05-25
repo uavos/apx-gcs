@@ -39,5 +39,9 @@ MapCircle {
     //calculate circle
     visible: eph>5
     center: QtPositioning.coordinate(lat,lon)
-    radius: eph
+    radius: eph<0
+        ? 0
+        : eph>1000000
+            ? 1000000
+            : eph
 }
