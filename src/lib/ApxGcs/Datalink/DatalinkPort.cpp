@@ -166,9 +166,13 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         if (f_connection) {
             f_connection->setEnabled(false);
             f_connection->setVisible(false);
-            connect(this, &Fact::valueChanged, f_connection, [this]() {
-                f_connection->setActivated(value().toBool());
+
+            // connect after app loading with some delay
+            connect(this, &Fact::valueChanged, this, &DatalinkPort::updateEnabled);
+            connect(App::instance(), &App::loadingFinished, this, [this]() {
+                QTimer::singleShot(1000, this, &DatalinkPort::updateEnabled);
             });
+
             connect(f_connection, &DatalinkConnection::activatedChanged, this, [this]() {
                 setValue(f_connection->activated());
             });
@@ -182,15 +186,22 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         }
 
         //enable switch
-        connect(App::instance(), &App::loadingFinished, this, [this]() {
-            bindProperty(f_enable, "value");
-        });
+        bindProperty(f_enable, "value");
     }
 
     for (int i = 0; i < size(); ++i) {
         connect(child(i), &Fact::valueChanged, this, &DatalinkPort::updateStatus);
     }
     updateStatus();
+}
+
+void DatalinkPort::updateEnabled()
+{
+    if (!App::loaded())
+        return;
+    if (!f_connection)
+        return;
+    f_connection->setActivated(value().toBool());
 }
 
 void DatalinkPort::defaults()

@@ -210,6 +210,8 @@ void App::loadApp()
     jsync(f_apx);
 
     apxConsole() << QObject::tr("Loading finished");
+
+    _loaded = true;
     emit loadingFinished();
 }
 

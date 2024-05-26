@@ -36,15 +36,15 @@ MapControl {
     readonly property real margins: Style.spacing
 
     //initial animation
-    PropertyAnimation {
+    /*PropertyAnimation {
         running: true
         target: map
         property: "zoomLevel"
         from: 12
         to: 16.33
-        duration: 1000
+        duration: 100
         easing.type: Easing.OutInCirc
-    }
+    }*/
 
     Component.onCompleted: {
         application.registerUiComponent(map,"map")

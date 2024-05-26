@@ -56,7 +56,7 @@ Control {
         id: loaderMain
         anchors.fill: parent
         active: false
-        asynchronous: true
+        asynchronous: false
         source: typeof(qmlMainFile)!='undefined'?qmlMainFile:"GroundControl.qml"
         visible: false //hide to show BG image
         onLoaded: {
@@ -65,7 +65,7 @@ Control {
             application.registerUiComponent(item, "main")
         }
         opacity: visible?1:0
-        Behavior on opacity { PropertyAnimation { duration: 2000; easing.type: Easing.InQuart; } }
+        Behavior on opacity { PropertyAnimation { duration: 1000; easing.type: Easing.InQuart; } }
     }
 
     //fact menu dispatcher

@@ -51,6 +51,7 @@ class App : public AppBase
     Q_PROPERTY(AppPrefs *prefs READ prefs CONSTANT)
 
     Q_PROPERTY(QString lang READ lang CONSTANT)
+    Q_PROPERTY(bool loaded READ loaded() NOTIFY loadingFinished)
 
 public:
     explicit App(int &argc, char **argv, const QString &name, const QUrl &url);
@@ -86,6 +87,8 @@ public:
 
     static AppPlugin *plugin(QString name);
 
+    static bool loaded() { return _instance->_loaded; }
+
 public:
     AppEngine *engine() const;
 
@@ -107,7 +110,6 @@ protected:
     virtual void loadFonts();
     virtual void loadServices();
 
-protected:
     AppEngine *m_engine;
     QQuickWindow *m_window;
     double m_scale;
@@ -127,6 +129,8 @@ private:
 
     AppPlugins *plugins;
     AppInstances *appInstances;
+
+    bool _loaded{};
 
     void loadTranslations();
     void loadTranslator(const QString &fileName);
@@ -158,7 +162,6 @@ signals:
 
     void appQuit();
 
-signals:
     void windowChanged();
     void scaleChanged();
 };
