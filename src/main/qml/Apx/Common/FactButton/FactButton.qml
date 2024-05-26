@@ -184,12 +184,15 @@ ActionButton {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.leftMargin: Style.spacing
+                anchors.right: _next.left
+                anchors.rightMargin: _value.valueWidth + _editor.editorWidth
                 visible: showText
                 verticalAlignment: _descrText.visible?Text.AlignTop:Text.AlignVCenter
                 font.family: factButton.font.family
                 font.pixelSize: titleSize<5?5:titleSize
                 text: factButton.text
                 color: factButton.enabled?textColor:disabledTextColor
+                // elide: Text.ElideRight
             }
             Text {
                 id: _descrText
@@ -245,7 +248,7 @@ ActionButton {
                         color: Material.secondaryTextColor
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignRight
-                        elide: Text.ElideMiddle
+                        // elide: Text.ElideMiddle
                     }
                 }
                 Loader {
