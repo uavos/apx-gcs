@@ -101,9 +101,11 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
 
     xbus::mission::file_hdr_s fhdr{};
     fhdr.read(&stream);
-    QString title(QByteArray(fhdr.title, sizeof(fhdr.title)));
 
-    qDebug() << title << stream.size() << "bytes";
+    QString title = QString::fromUtf8(
+        QByteArray(fhdr.title, strnlen(fhdr.title, sizeof(fhdr.title))));
+
+    // qDebug() << title << stream.size() << "bytes";
 
     if (fhdr.size != stream.available()) {
         qWarning() << "data size" << fhdr.size << stream.available();
