@@ -39,7 +39,7 @@ ColumnLayout {
     readonly property APX.Vehicle vehicle: apx.vehicles.current
     
     readonly property Mission mission: vehicle.mission
-    readonly property bool empty: mission?mission.empty:true
+    readonly property bool empty: mission.empty
 
     function focusOnMap(fact)
     {
@@ -50,13 +50,12 @@ ColumnLayout {
         id: missionListView
         Layout.fillHeight: true
         model: mission.listModel
-        implicitWidth: contentItem.childrenRect.width
+        implicitWidth: Math.max(Style.buttonSize, contentItem.childrenRect.width)
         orientation: ListView.Vertical
         spacing: Style.spacing/2
         clip: true
         snapMode: ListView.SnapToItem
         visible: !empty
-
 
         delegate: RowLayout{
             spacing: Style.spacing
