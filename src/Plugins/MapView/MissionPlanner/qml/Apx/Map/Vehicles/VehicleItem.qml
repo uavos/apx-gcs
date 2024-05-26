@@ -62,6 +62,8 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property bool bGCU: vehicle.isGroundControl
     readonly property bool bLOCAL: vehicle.isLocal
 
+    readonly property bool bXPDR: vehicle.streamType===APX.PVehicle.XPDR
+
 
     Connections {
         target: vehicle
@@ -118,14 +120,14 @@ MapQuickItem {  //to be used inside MapComponent only
     }
 
     //animated vars
-    property real vyaw: f_yaw
+    property real vyaw: bXPDR?f_bearing:f_yaw
     Behavior on vyaw { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
 
 
     //info box
     property bool bInfoShowRight: true
-    property bool bInfoPosChk2: f_yaw<=50 || f_yaw>120
-    property bool bInfoPosChk1: f_yaw<=40 || f_yaw>130
+    property bool bInfoPosChk2: vyaw<=50 || vyaw>120
+    property bool bInfoPosChk1: vyaw<=40 || vyaw>130
     onBInfoPosChk1Changed: {
         if(bGCU)return;
         if(bInfoShowRight)return;
@@ -139,7 +141,7 @@ MapQuickItem {  //to be used inside MapComponent only
 
 
     //constants
-    property int animation_duration: 100
+    property int animation_duration: bXPDR?500:100
 
     anchorPoint.x: image.width/2
     anchorPoint.y: image.height/2
@@ -208,7 +210,7 @@ MapQuickItem {  //to be used inside MapComponent only
             sourceSize.height: image.width*2
             fillMode: Image.PreserveAspectFit
             //smooth: ui.antialiasing
-            visible: active
+            visible: active && !bXPDR
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             transform: Rotation{
@@ -244,7 +246,7 @@ MapQuickItem {  //to be used inside MapComponent only
             sourceSize.height: image.width*2
             fillMode: Image.PreserveAspectFit
             //smooth: ui.antialiasing
-            visible: active
+            visible: active && !bXPDR
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             transform: Rotation{
@@ -259,7 +261,7 @@ MapQuickItem {  //to be used inside MapComponent only
             z: image.z-10
             sourceSize.height: image.width*2
             fillMode: Image.PreserveAspectFit
-            visible: active && isTrack
+            visible: active && isTrack && !bXPDR
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             readonly property real max: image.width*0.8
