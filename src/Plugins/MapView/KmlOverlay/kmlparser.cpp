@@ -67,7 +67,7 @@ void KmlParser::placemarkCallback(const QDomElement &el)
     if (!styles.isEmpty()) {
         auto color = styles.at(0).toElement().elementsByTagName("color");
         if (!color.isEmpty())
-            polygonColor.setNamedColor("#" + color.at(0).toElement().text());
+            polygonColor.fromString("#" + color.at(0).toElement().text());
         if (!polygonColor.isValid())
             qDebug() << "not valid";
     }

@@ -34,9 +34,9 @@
 #include <time.h>
 
 #include <zlib.h>
-#if (ZLIB_VERNUM < 0x1270)
+// #if (ZLIB_VERNUM < 0x1270)
 typedef uLongf z_crc_t;
-#endif
+// #endif
 #include "zip.h"
 
 #ifdef STDC

@@ -474,7 +474,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
                 return false;
             }
             const QVariant &v = _values.value(key);
-            if (static_cast<QMetaType::Type>(v.type()) == QMetaType::QVariantList) {
+            if (v.typeId() == QMetaType::QVariantList) {
                 int subidx = 0;
                 for (auto const &i : v.value<QVariantList>()) {
                     quint64 valueID = getValueID(query, i);

@@ -34,12 +34,15 @@ static QByteArray getCpuId()
     return QByteArray(reinterpret_cast<const char *>(info), sizeof(NXArchInfo));
 }
 #elif defined Q_OS_LINUX
-#include <cpuid.h>
 static QByteArray getCpuId()
 {
-    unsigned int info[4] = {0, 0, 0, 0};
-    __get_cpuid(0, &info[0], &info[1], &info[2], &info[3]);
-    return QByteArray(reinterpret_cast<const char *>(info), sizeof(info));
+    QByteArray uid;
+    QFile f("/proc/cpuinfo");
+    if (f.open(QIODevice::ReadOnly)) {
+        uid = QCryptographicHash::hash(f.readAll(), QCryptographicHash::Sha1);
+        f.close();
+    }
+    return uid;
 }
 #elif defined Q_OS_WIN
 #include <machine_id.h>

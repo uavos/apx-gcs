@@ -74,9 +74,9 @@
 #include <string.h>
 
 #include <zlib.h>
-#if (ZLIB_VERNUM < 0x1270)
+// #if (ZLIB_VERNUM < 0x1270)
 typedef uLongf z_crc_t;
-#endif
+// #endif
 #include "unzip.h"
 
 #ifdef STDC
@@ -193,7 +193,7 @@ typedef struct
 
 #    ifndef NOUNCRYPT
     unsigned long keys[3];     /* keys defining the pseudo-random sequence */
-    const z_crc_t FAR * pcrc_32_tab;
+    const z_crc_t  * pcrc_32_tab;
 #    endif
 } unz64_s;
 

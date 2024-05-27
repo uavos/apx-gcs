@@ -41,7 +41,7 @@ def deploy_qt(path, json):
 
     deploy_tool = {
         'macos': os.path.join(app['path']['qt'], 'bin', 'macdeployqt'),
-        'linux': os.path.join(app['path']['qt'], 'bin', 'linuxdeployqt'),
+        'linux': os.path.join(app['path']['qt'], 'bin', 'linuxdeploy'),
         'windows': os.path.join(app['path']['qt'], 'bin', 'windeployqt')
     }
 
@@ -50,7 +50,7 @@ def deploy_qt(path, json):
     # general opts
     opts.append(deploy_tool[platform])
 
-    if platform == 'linux':
+    if platform == 'linux2':
         opts.append(os.path.join(
             path, app['path']['bundle'], "share/applications", app['name'] + ".desktop"))
 
@@ -83,15 +83,16 @@ def deploy_qt(path, json):
 
         subprocess.check_call(opts)
 
-    elif platform == 'linux2':
+    elif platform == 'linux':
+        # opts.append('-v3')
         opts.append('--appdir='+path)
         opts.append('--deploy-deps-only=' +
                     os.path.join(path, app['path']['plugins']))
         opts.append('--plugin=qt')
         # opts.append('--plugin=gstreamer')
         opts.append('--output=appimage')
-        opts.append('--custom-apprun='+os.path.join(path,
-                                                    app['path']['data'], 'AppRun.sh'))
+        # opts.append('--custom-apprun='+os.path.join(path,
+        #                                             app['path']['data'], 'AppRun.sh'))
 
         env = os.environ.copy()
         if 'qtplugins' in json and len(json['qtplugins']) > 0:

@@ -309,7 +309,7 @@ int FactData::_string_to_int(const QString &s)
 }
 bool FactData::_check_type(const QVariant &v, QMetaType::Type t)
 {
-    return static_cast<QMetaType::Type>(v.type()) == t;
+    return v.typeId() == t;
 }
 bool FactData::_check_int(const QVariant &v)
 {

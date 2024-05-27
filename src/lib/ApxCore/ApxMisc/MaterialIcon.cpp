@@ -81,7 +81,7 @@ void MaterialIcon::updateMap()
                 if (s.size() == 1)
                     c = s.at(0);
             } else if (s.startsWith("\\", Qt::CaseInsensitive)) {
-                uint code = s.mid(1).toUInt(nullptr, 16);
+                const char32_t code = s.mid(1).toUInt(nullptr, 16);
                 c = QString::fromUcs4(&code, 1);
             }
             if (c == '\0') {

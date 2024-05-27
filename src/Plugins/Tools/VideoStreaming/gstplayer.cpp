@@ -381,14 +381,14 @@ QString GstPlayer::inputToUri()
     } else if (f_sourceType->value().toInt() == stWebcam) {
 #ifdef Q_OS_LINUX
         QString camDescr = f_webcamInput->enumText(f_webcamInput->value().toInt());
-        auto cameras = QCameraInfo::availableCameras();
+        const QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
         auto res = std::find_if(cameras.begin(), cameras.end(), [camDescr](auto c) {
             return camDescr == c.description();
         });
         if (res == cameras.end()) {
             onErrorOccured("Can't find webcam");
         } else {
-            result = QString("v4l2://%1").arg(res->deviceName());
+            result = QString("v4l2://%1").arg(res->id());
         }
 #endif
 #ifdef Q_OS_MAC

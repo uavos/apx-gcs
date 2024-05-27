@@ -6,8 +6,12 @@ if(APPLE)
     apx_add_framework(${MODULE} SDL2)
 
 elseif(UNIX AND NOT APPLE)
-    find_package(SDL2 REQUIRED)
-    target_include_directories(${MODULE} PRIVATE ${SDL2_INCLUDE_DIRS})
+    # find_package(SDL2 REQUIRED)
+
+    find_file(SDL2_INCLUDE_DIR NAME SDL.h HINTS SDL2)
+    find_library(SDL2_LIBRARY NAME SDL2)
+
+    target_include_directories(${MODULE} PRIVATE ${SDL2_INCLUDE_DIRS} "/usr/include/SDL2")
     target_link_libraries(${MODULE} PRIVATE ${SDL2_LIBRARIES})
 
 elseif(WIN32)

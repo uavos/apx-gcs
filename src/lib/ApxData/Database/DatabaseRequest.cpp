@@ -292,7 +292,7 @@ void DatabaseRequest::getHash(QCryptographicHash &h, const QVariantMap &map) con
     foreach (QString s, map.keys()) {
         h.addData(s.toUtf8());
         const QVariant &v = map.value(s);
-        if (static_cast<QMetaType::Type>(v.type()) == QMetaType::QVariantList) {
+        if (v.typeId() == QMetaType::QVariantList) {
             for (auto const &i : v.value<QVariantList>())
                 h.addData(i.toString().toUtf8());
         } else {
