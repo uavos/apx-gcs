@@ -45,6 +45,8 @@ Updater::Updater(Fact *parent)
     m->setOpt("role", QAction::ApplicationSpecificRole);
     m->setBinding(f_check);
 
+    f_check->setOpt("page", "qrc:/" PLUGIN_NAME "/Updater.qml");
+
     initUpdaterImpl();
 
     if (m_impl) {
@@ -52,7 +54,7 @@ Updater::Updater(Fact *parent)
         connect(f_auto, &Fact::valueChanged, this, &Updater::updateAuto);
         updateAuto();
     } else {
-        setEnabled(false);
+        // setEnabled(false);
     }
 
     App::jsync(this);

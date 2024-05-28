@@ -4,6 +4,8 @@ LABEL maintainer="sa@uavos.com"
 
 ENV TERM=xterm-color
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
 
 # basic APT packages
 RUN apt-get update && \
@@ -35,8 +37,8 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}
     cmake --version
 
 # LINUXDEPLOY
-RUN curl -L https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$(cat /arch).AppImage --output /usr/local/bin/linuxdeployqt && \
-    chmod +x /usr/local/bin/linuxdeployqt && \
+RUN curl -L https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy && \
+    chmod +x /usr/local/bin/linuxdeploy && \
     curl -L https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy-plugin-qt && \
     chmod +x /usr/local/bin/linuxdeploy-plugin-qt && \
     curl -L https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-$(cat /arch).tar.gz --output /tmp/patchelf.tar.gz && \
@@ -103,7 +105,3 @@ RUN git clone --depth=1 --recurse-submodules -b ${VERSION_APPIMAGEUPDATE} --sing
     cmake --build build --target install && \
     find build -name '*.a' -exec cp "{}" /usr/local/lib/ \; && \
     cd .. && rm -Rf AppImageUpdate
-
-# build fixes and patches
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8

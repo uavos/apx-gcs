@@ -28,7 +28,7 @@
 #include <QtQml>
 
 AppImageAutoUpdater::AppImageAutoUpdater(Fact *parent)
-    : Fact(parent, tr("appimage_updater"), tr("Good news everyone"))
+    : Fact(parent, tr("appimage_updater"), tr("Update available"))
 {
     net.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
     connect(

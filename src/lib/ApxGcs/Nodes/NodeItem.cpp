@@ -251,13 +251,13 @@ QString NodeItem::toolTip() const
     if (!_ident.isEmpty()) {
         st << "";
         st << "[ident]";
-        for (auto [k, v] : _ident.asKeyValueRange()) {
-            QString s(v.toString().trimmed());
+        for (const auto &[key, value] : _ident.asKeyValueRange()) {
+            QString s(value.toString().trimmed());
             if (s.isEmpty())
-                s = QJsonDocument::fromVariant(v).toJson();
+                s = QJsonDocument::fromVariant(value).toJson();
             if (s.isEmpty())
                 continue;
-            st.append(QString("%1: %2").arg(k, s));
+            st.append(QString("%1: %2").arg(key, s));
         }
     }
     return st.join('\n');
@@ -719,9 +719,9 @@ void NodeItem::confReceived(QVariantMap values)
     }
 
     // report missing fields
-    for (auto fpath : values.asKeyValueRange()) {
-        if (!fields.contains(fpath.first)) {
-            qWarning() << "missing field for:" << fpath;
+    for (const auto &[key, value] : values.asKeyValueRange()) {
+        if (!fields.contains(key)) {
+            qWarning() << "missing field for:" << key;
         }
     }
     if (fields.size() != m_fields.size()) {
@@ -740,7 +740,7 @@ void NodeItem::confUpdated(QVariantMap values)
     // updated from another GCS instance
     if (!valid())
         return;
-    for (auto [name, value] : values.asKeyValueRange()) {
+    for (const auto &[name, value] : values.asKeyValueRange()) {
         auto f = field(name);
         if (!f)
             continue;
