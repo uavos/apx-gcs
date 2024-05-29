@@ -25,7 +25,6 @@ import QtQuick.Controls
 import Apx.Menu
 
 Control {
-
     // load sequence
     Timer {
         interval: 1
@@ -45,10 +44,6 @@ Control {
             c.closed.connect(c.destroy)
             c.open()
         }
-        /*onClosing: {
-            loaderMain.visible=false
-            loaderMain.active=false
-        }*/
     }
 
     //load main layout
@@ -80,7 +75,9 @@ Control {
     //about dialog
     Component {
         id: c_about
-        AboutDialog { }
+        AboutDialog { 
+            z: 99999
+        }
     }
 
 

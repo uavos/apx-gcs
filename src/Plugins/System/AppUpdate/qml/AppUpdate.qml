@@ -24,6 +24,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
+import Apx.Common
+
 Pane {
     id: root
     anchors.fill: parent
@@ -31,8 +33,6 @@ Pane {
     implicitHeight: 400
 
     property var plugin: apx.settings.application.appupdate
-
-    property string test: "### Bug Fixes\r\n* [`27`](https://github.com/uavos/apx-gcs/issues/27) multi gcs commands unpack error\r\n* multi GCS bundle unpack locally\r\n"
 
     ColumnLayout {
         anchors.fill: parent
@@ -53,7 +53,8 @@ Pane {
                 wrapMode: Text.WordWrap
                 readOnly: true
                 textFormat: TextEdit.MarkdownText
-                text: test //plugin.checker.releaseNotes
+                font.pixelSize: Style.fontSize
+                text: plugin.checker.releaseNotes
             }
         }
     }

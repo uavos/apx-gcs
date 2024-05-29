@@ -31,6 +31,8 @@ import "../Button"
 ComboBox {
     id: editor
 
+    popup.z: 1000
+
     spacing: 0
     topPadding: 0
     bottomPadding: 0

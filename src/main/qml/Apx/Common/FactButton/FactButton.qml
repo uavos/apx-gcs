@@ -105,8 +105,9 @@ ActionButton {
     property bool showDescr: descr
 
 
-    ToolTip.visible: pressed
-    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+
+    toolTipItem.visible: pressed
+    toolTipItem.delay: Qt.styleHints.mousePressAndHoldInterval
 
     property bool held: false
 

@@ -36,8 +36,8 @@ function show(fact,opts,parent)
     if(!factMenu) return
 
     if(!opts) opts={}
-    if(!parent) parent=ui.window
-
+    if (!parent) parent = application.window
+    
     // console.log("Menu.show", fact, JSON.stringify(opts), parent)
 
     var av=Array.from(menuViews).sort((a,b) => b.priority-a.priority)
@@ -121,7 +121,7 @@ function raisePopup(popup)
         if (z < p.z)
             z = p.z
     }
-    popup.z = z+1
+    popup.z = z+0.001
     popup.menuEnabled=true
     //console.log(z)
 }

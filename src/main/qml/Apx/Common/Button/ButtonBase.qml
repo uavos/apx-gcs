@@ -74,13 +74,15 @@ Button {
     Material.primary: Material.color(Material.LightGreen)
 
     // tooltip
-
-    //ToolTip.enabled: true
-    ToolTip.delay: 1000
-    ToolTip.timeout: 5000
-    ToolTip.visible: ToolTip.text && (down || hovered)
-    ToolTip.text: toolTip
-
+    property alias toolTipItem: _tooltipItem
+    ToolTip {
+        id: _tooltipItem
+        z: 1000
+        text: control.toolTip
+        visible: text && (down || hovered)
+        delay: 1000
+        timeout: 5000
+    }
 
     // actions
 
