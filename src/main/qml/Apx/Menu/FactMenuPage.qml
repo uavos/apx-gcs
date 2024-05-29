@@ -112,6 +112,13 @@ ColumnLayout {
         return "FactMenuPageList.qml"
     }
 
+    function factButtonTriggered(fact)
+    {
+        if(factMenu)
+            factMenu.factButtonTriggered(fact)
+    }
+
+
     //actions
     RowLayout {
         id: actionsItem
@@ -134,7 +141,7 @@ ColumnLayout {
                 sourceComponent: Component {
                     ActionButton {
                         fact: modelData
-                        onTriggered: control.factButtonTriggered(modelData)
+                        onTriggered: menuPage.factButtonTriggered(modelData)
                     }
                 }
             }

@@ -40,16 +40,27 @@ public:
     auto releaseVersion() const { return _releaseVersion.toString(); }
     auto releaseNotes() const { return _releaseNotes; }
 
+    auto repoName() const { return _gh.repoName(); }
+
+    Fact *f_upgrade;
+    Fact *f_stop;
+    Fact *f_www;
+
 private:
     GithubReleases _gh{"uavos/apx-gcs", this};
 
     QVersionNumber _releaseVersion;
+
     QString _releaseName;
     QString _releaseNotes;
     QString _assetName;
     QUrl _assetUrl;
+    QUrl _releaseUrl;
 
     void updateStatus();
+
+    void reinstallApplication(QString filePath);
+    QProcess *_process{};
 
 private slots:
     // GithubReleases
@@ -57,6 +68,9 @@ private slots:
     void releaseInfo(QJsonDocument json);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void downloadFinished(QString assetName, QFile *data);
+
+    // process
+    void hdutilFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 public slots:
     void abort();

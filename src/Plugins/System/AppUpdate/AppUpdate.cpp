@@ -25,6 +25,8 @@
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
 
+#include <QDesktopServices>
+
 #include "AppUpdateChecker.h"
 
 AppUpdate::AppUpdate(Fact *parent)
@@ -43,8 +45,15 @@ AppUpdate::AppUpdate(Fact *parent)
 
     f_checker = new AppUpdateChecker(this);
 
+    auto f_www = new Fact(this, "www", tr("Visit site"), "", Action, "web");
+    connect(f_www, &Fact::triggered, this, [this]() {
+        QDesktopServices::openUrl(
+            QString("https://github.com/%1/releases").arg(f_checker->repoName()));
+    });
+
     f_check = new Fact(this, "update", tr("Check for updates"), title(), Action | Apply, "update");
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop checking"), Action | Stop, "stop");
+    connect(f_stop, &Fact::triggered, f_checker, &AppUpdateChecker::abort);
     f_stop->setEnabled(false);
 
     connect(f_checker, &Fact::progressChanged, f_check, [this]() {
@@ -61,7 +70,9 @@ AppUpdate::AppUpdate(Fact *parent)
     connect(f_check, &Fact::triggered, f_checker, &AppUpdateChecker::checkForUpdates);
     bindProperty(f_checker, "progress", true);
 
-    connect(f_stop, &Fact::triggered, f_checker, &AppUpdateChecker::abort);
-
     App::jsync(this);
+
+    if (App::bundle() && f_auto->value().toBool()) {
+        QTimer::singleShot(5000, f_checker, &AppUpdateChecker::checkForUpdates);
+    }
 }

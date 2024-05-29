@@ -151,6 +151,8 @@ public slots:
     //load
     virtual void loadApp();
 
+    void hide();
+
 signals:
     void loadingFinished();
     void uiComponentLoaded(QString name, QJSValue object);

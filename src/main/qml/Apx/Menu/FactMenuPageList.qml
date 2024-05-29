@@ -39,11 +39,6 @@ ColumnLayout {
 
     property ListView listView: listView
 
-    function factButtonTriggered(fact)
-    {
-        if(factMenu)
-            factMenu.factButtonTriggered(fact)
-    }
     property int maximumHeight: ui.window.height
                                 -titleSize
                                 -(listView.headerItem?listView.headerItem.implicitHeight:0)
@@ -96,7 +91,7 @@ ColumnLayout {
                     size: MenuStyle.itemSize
                     onTriggered: {
                         listView.currentIndex=index
-                        control.factButtonTriggered(modelData)
+                        menuPage.factButtonTriggered(modelData)
                     }
                 }
             }

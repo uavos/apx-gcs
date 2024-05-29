@@ -34,6 +34,9 @@ class GithubReleases : public QObject
 public:
     GithubReleases(QString repo, QObject *parent = nullptr);
 
+    auto repoName() const { return _repo; }
+    auto latestVersion() const { return _latest; }
+
 private:
     QString _repo;
     QVersionNumber _latest;

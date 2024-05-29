@@ -176,6 +176,13 @@ App::~App()
 {
     qDebug() << QDateTime::currentDateTimeUtc().toString();
 }
+
+void App::hide()
+{
+    if (m_window)
+        m_window->hide();
+}
+
 void App::mainWindowClosed(QCloseEvent *event)
 {
     event->ignore();
