@@ -111,4 +111,34 @@ ColumnLayout {
         }
         return "FactMenuPageList.qml"
     }
+
+    //actions
+    RowLayout {
+        id: actionsItem
+
+        Layout.alignment: Qt.AlignRight
+        Layout.bottomMargin: Style.spacing
+        Layout.leftMargin: Style.spacing
+        Layout.rightMargin: Style.spacing
+
+        spacing: Style.spacing
+        visible: repeater.count>0
+
+        property alias model: repeater.model
+        Repeater {
+            id: repeater
+            model: fact.actionsModel
+            delegate: Loader{
+                active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
+                visible: active
+                sourceComponent: Component {
+                    ActionButton {
+                        fact: modelData
+                        onTriggered: control.factButtonTriggered(modelData)
+                    }
+                }
+            }
+        }
+    }
+
 }

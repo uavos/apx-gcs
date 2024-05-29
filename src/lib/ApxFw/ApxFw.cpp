@@ -46,23 +46,23 @@ ApxFw::ApxFw(Fact *parent)
     f_sync = new Fact(this, "sync", tr("Sync"), tr("Check for updates"), Action | Apply, "sync");
     connect(f_sync, &Fact::triggered, this, &ApxFw::sync);
 
-    net.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
-    QTimer::singleShot(100, this, &ApxFw::sync);
-}
+    connect(&_gh, &GithubReleases::latestVersionInfo, this, &ApxFw::latestVersionInfo);
+    connect(&_gh, &GithubReleases::releaseInfo, this, &ApxFw::releaseInfo);
+    connect(&_gh, &GithubReleases::downloadProgress, this, &ApxFw::downloadProgress);
+    connect(&_gh, &GithubReleases::downloadFinished, this, &ApxFw::downloadFinished);
+    connect(&_gh, &GithubReleases::finished, this, [this]() { setProgress(-1); });
+    connect(&_gh, &GithubReleases::error, this, [this](QString msg) {
+        apxMsgW() << title().append(':') << msg;
+        setProgress(-1);
+    });
 
-void ApxFw::abort()
-{
-    if (!reply)
-        return;
-    reply->abort();
-    reply = nullptr;
-    setProgress(-1);
+    QTimer::singleShot(5000, this, &ApxFw::sync);
 }
 
 void ApxFw::sync()
 {
     syncFacts();
-    requestLatestTag();
+    _gh.requestLatestVersionInfo();
 }
 
 void ApxFw::syncFacts()
@@ -239,48 +239,6 @@ void ApxFw::clean()
     }
 }
 
-QNetworkReply *ApxFw::request(const QString &r)
-{
-    return request(QUrl(QString("https://api.github.com/repos/uavos/apx-ap/releases%1").arg(r)));
-}
-QNetworkReply *ApxFw::request(const QUrl &url)
-{
-    QNetworkRequest *request = new QNetworkRequest(url);
-
-    QSslConfiguration ssl = request->sslConfiguration();
-    ssl.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request->setSslConfiguration(ssl);
-
-    request->setRawHeader("Accept", "*/*");
-    request->setRawHeader("User-Agent",
-                          QString("%1 (v%2)")
-                              .arg(QCoreApplication::applicationName())
-                              .arg(App::version())
-                              .toUtf8());
-
-    QNetworkReply *reply = net.get(*request);
-    return reply;
-}
-
-QNetworkReply *ApxFw::checkReply(QObject *sender)
-{
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender);
-    if (!reply)
-        return nullptr;
-    reply->deleteLater();
-    setProgress(-1);
-
-    if (this->reply != reply) {
-        qWarning() << "wrong reply" << reply;
-        return nullptr;
-    }
-    this->reply = nullptr;
-
-    if (reply->error()) {
-        qWarning() << reply->errorString();
-    }
-    return reply;
-}
 bool ApxFw::isFirmwarePackageFile(const QString &s)
 {
     if (!s.startsWith(m_packagePrefix + "-"))
@@ -290,74 +248,28 @@ bool ApxFw::isFirmwarePackageFile(const QString &s)
     return true;
 }
 
-void ApxFw::requestLatestTag()
+void ApxFw::latestVersionInfo(QVersionNumber version, QString tag)
 {
-    abort();
-    setProgress(0);
-    reply = request(QUrl("https://github.com/uavos/apx-ap/releases/latest"));
-    connect(reply, &QNetworkReply::finished, this, &ApxFw::responseLatestTag);
-}
-void ApxFw::responseLatestTag()
-{
-    QNetworkReply *reply = checkReply(sender());
-    if (!reply)
-        return;
-    QString s(reply->url().toString());
-    qDebug() << s;
-    s = s.mid(s.lastIndexOf('/') + 1);
-    QVersionNumber v = QVersionNumber::fromString(s.mid(s.lastIndexOf('-') + 1));
-    if (v.isNull()) {
-        apxMsgW() << tr("APXFW release not found");
-        qWarning() << "apxfw:" << s;
-        return;
-    }
     auto v_current = QVersionNumber::fromString(value().toString());
-    if (v_current >= v) {
-        qDebug() << "no updates:" << v_current << ">=" << v;
+    if (v_current >= version) {
+        qDebug() << "no updates:" << v_current << ">=" << version;
         return;
     }
-    if (_versionPrefix.majorVersion() < v.majorVersion()
-        && _versionPrefix.minorVersion() < v.minorVersion()) {
-        qDebug() << "old gcs:" << v_current << ">=" << v << "prefix:" << _versionPrefix;
+    if (_versionPrefix.majorVersion() < version.majorVersion()
+        && _versionPrefix.minorVersion() < version.minorVersion()) {
+        qDebug() << "old gcs:" << v_current << ">=" << version << "prefix:" << _versionPrefix;
         return;
     }
-    apxMsg() << title().append(':') << v.toString() << tr("available");
-    requestRelease(QString("tags/%1").arg(s));
+    apxMsg() << title().append(':') << version.toString() << tr("available");
+    _gh.requestReleaseInfo(tag);
 }
 
-void ApxFw::requestRelease(QString req)
+void ApxFw::releaseInfo(QJsonDocument json)
 {
-    abort();
-    setProgress(0);
-    reply = request(QString("/%1").arg(req));
-    connect(reply, &QNetworkReply::finished, this, &ApxFw::responseRelease);
-}
-void ApxFw::responseRelease()
-{
-    QNetworkReply *reply = checkReply(sender());
-    if (!reply)
-        return;
-
-    QJsonParseError jserr;
-    QJsonDocument json(QJsonDocument::fromJson(reply->readAll(), &jserr));
-    if (jserr.error != QJsonParseError::NoError) {
-        qWarning() << jserr.errorString();
-        return;
-    }
-    if (json.object().contains("message")) {
-        QString msg = json["message"].toString();
-        apxMsgW() << title().append(':') << msg;
-        if (msg.toLower() == "not found") {
-            QDateTime t = QDateTime::currentDateTimeUtc();
-            QSettings().setValue(QString("%1_%2").arg(name()).arg(App::version()), t);
-            apxMsgW() << title().append(':') << tr("Requesting latest release");
-            requestRelease("latest");
-            return;
-        }
-    }
     while (json["assets"].toArray().count() > 0) {
         if (json["author"]["login"].toString() != "uavinda")
             break;
+
         //find asset
         QJsonArray ja = json["assets"].toArray();
         QUrl url;
@@ -378,61 +290,41 @@ void ApxFw::responseRelease()
             apxMsgW() << title().append(':') << "Missing asset";
             break;
         }
-        requestDownload(url);
+        apxMsg() << title().append(':') << tr("Downloading firmware").append("...");
         qDebug() << "download" << url.toString();
+        _gh.requestDownload(url);
         return;
     }
     apxMsgW() << title().append(':') << tr("Firmware not available");
     qWarning() << json;
 }
 
-void ApxFw::requestDownload(QUrl url)
-{
-    apxMsg() << title().append(':') << tr("Downloading firmware").append("...");
-    abort();
-    setProgress(0);
-    reply = request(url);
-    connect(reply, &QNetworkReply::finished, this, &ApxFw::responseDownload);
-    connect(reply, &QNetworkReply::downloadProgress, this, &ApxFw::downloadProgress);
-}
 void ApxFw::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     if (bytesTotal > 0) {
         setProgress((bytesReceived * 100) / bytesTotal);
     }
 }
-void ApxFw::responseDownload()
+
+void ApxFw::downloadFinished(QString assetName, QFile *data)
 {
-    QNetworkReply *reply = checkReply(sender());
-    if (!reply)
-        return;
-    if (reply->error())
-        return;
-    QByteArray data = reply->readAll();
-    if (data.isEmpty()) {
-        qWarning() << "no data";
-        return;
-    }
-    QString s = reply->header(QNetworkRequest::ContentDispositionHeader).toString();
-    s = s.mid(s.lastIndexOf("filename=", Qt::CaseInsensitive));
-    s = s.mid(s.indexOf("=") + 1);
-    s = s.left(s.indexOf(";"));
-    if (!isFirmwarePackageFile(s)) {
-        apxMsgW() << title().append(':') << tr("Unknown response") << s;
+    if (!isFirmwarePackageFile(assetName)) {
+        apxMsgW() << title().append(':') << tr("Unknown response") << assetName;
         return;
     }
 
     QDir dir(AppDirs::firmware().absoluteFilePath("releases"));
     dir.mkpath(".");
-    QFile fzip(dir.absoluteFilePath(s));
-    if (!fzip.open(QFile::WriteOnly)) {
-        qWarning() << "can't write" << fzip.fileName();
+    auto newFileName = dir.absoluteFilePath(assetName);
+
+    if (!data->copy(newFileName)) {
+        apxMsgW() << tr("Can't copy file:") << newFileName;
         return;
     }
-    fzip.write(data);
-    fzip.close();
-    qDebug() << "downloaded" << fzip.fileName();
-    if (extractRelease(fzip.fileName())) {
+
+    qDebug() << "downloaded" << newFileName << QFileInfo(newFileName).size();
+
+    if (extractRelease(newFileName)) {
         syncFacts();
     }
 }

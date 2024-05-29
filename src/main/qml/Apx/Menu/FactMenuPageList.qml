@@ -33,7 +33,6 @@ ColumnLayout {
 
     property alias model: listView.model
     property alias delegate: listView.delegate
-    property alias actionsModel: actionsItem.model
 
     property alias header: listView.header
     property alias headerItem: listView.headerItem
@@ -47,7 +46,6 @@ ColumnLayout {
     }
     property int maximumHeight: ui.window.height
                                 -titleSize
-                                -(actionsItem.visible?actionsItem.implicitHeight+spacing:0)
                                 -(listView.headerItem?listView.headerItem.implicitHeight:0)
                                 -(listView.footerItem?listView.footerItem.implicitHeight:0)
                                 -Style.buttonSize*2
@@ -199,33 +197,6 @@ ColumnLayout {
 
             listView.implicitHeight=h
             //console.log("h",h,count,footerItem?footerItem.implicitHeight:-1)
-        }
-    }
-
-    //actions
-    RowLayout {
-        id: actionsItem
-
-        Layout.alignment: Qt.AlignRight
-        Layout.bottomMargin: control.spacing
-
-        spacing: Style.spacing
-        visible: repeater.count>0
-
-        property alias model: repeater.model
-        Repeater {
-            id: repeater
-            model: fact.actionsModel
-            delegate: Loader{
-                active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
-                visible: active
-                sourceComponent: Component {
-                    ActionButton {
-                        fact: modelData
-                        onTriggered: control.factButtonTriggered(modelData)
-                    }
-                }
-            }
         }
     }
 }

@@ -21,20 +21,19 @@
  */
 #pragma once
 
-#include "Updater.h"
-#include <App/AppSettings.h>
-#include <App/PluginInterface.h>
-#include <QtCore>
+#include <Fact/Fact.h>
 
-class UpdaterPlugin : public PluginInterface
+class AppUpdateChecker;
+
+class AppUpdate : public Fact
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
-    Q_INTERFACES(PluginInterface)
 public:
-    int flags() override { return Feature | System; }
-    QObject *createControl() override
-    {
-        return new Updater(AppSettings::instance()->f_application);
-    }
+    AppUpdate(Fact *parent = nullptr);
+
+    Fact *f_auto;
+    Fact *f_check;
+    Fact *f_stop;
+
+    AppUpdateChecker *f_checker;
 };

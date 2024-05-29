@@ -19,17 +19,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "Updater.h"
+#include "AppUpdate.h"
+
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
 
-Updater::Updater(Fact *parent)
+#include "AppUpdateChecker.h"
+
+AppUpdate::AppUpdate(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
-           tr("Check for updates"),
-           tr("Update application"),
-           Group)
+           tr("App updates"),
+           tr("Check for software updates"),
+           Group | ProgressTrack)
 {
     f_auto = new Fact(this,
                       "auto",
@@ -38,62 +41,27 @@ Updater::Updater(Fact *parent)
                       Bool | PersistentValue);
     f_auto->setDefaultValue(true);
 
+    f_checker = new AppUpdateChecker(this);
+
     f_check = new Fact(this, "update", tr("Check for updates"), title(), Action | Apply, "update");
+    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop checking"), Action | Stop, "stop");
+    f_stop->setEnabled(false);
+
+    connect(f_checker, &Fact::progressChanged, f_check, [this]() {
+        f_check->setEnabled(f_checker->progress() < 0);
+        f_stop->setEnabled(!f_check->enabled());
+    });
 
     //add menu to app
     Fact *m = new Fact(AppGcs::instance()->f_menu->app, f_check->name());
     m->setOpt("role", QAction::ApplicationSpecificRole);
     m->setBinding(f_check);
 
-    f_check->setOpt("page", "qrc:/" PLUGIN_NAME "/Updater.qml");
+    connect(f_check, &Fact::triggered, this, &Fact::trigger);
+    connect(f_check, &Fact::triggered, f_checker, &AppUpdateChecker::checkForUpdates);
+    bindProperty(f_checker, "progress", true);
 
-    initUpdaterImpl();
-
-    if (m_impl) {
-        connect(f_check, &Fact::triggered, this, &Updater::check);
-        connect(f_auto, &Fact::valueChanged, this, &Updater::updateAuto);
-        updateAuto();
-    } else {
-        // setEnabled(false);
-    }
+    connect(f_stop, &Fact::triggered, f_checker, &AppUpdateChecker::abort);
 
     App::jsync(this);
-}
-
-void Updater::initUpdaterImpl()
-{
-    m_impl = nullptr;
-    if (!App::bundle())
-        return;
-
-#ifdef Q_OS_MAC
-    m_impl = std::make_unique<SparkleAutoUpdater>();
-    m_impl->setFeedURL("https://uavos.github.io/apx-gcs/docs/releases/appcast");
-#endif
-
-#ifdef Q_OS_LINUX
-    m_impl = new AppImageAutoUpdater(this);
-#endif
-}
-
-void Updater::check()
-{
-    if (m_impl)
-        m_impl->checkForUpdates();
-}
-
-void Updater::checkInBackground()
-{
-    if (m_impl)
-        m_impl->checkForUpdatesInBackground();
-}
-
-void Updater::updateAuto()
-{
-    bool v = f_auto->value().toBool();
-    if (m_impl)
-        m_impl->setAutomaticallyChecksForUpdates(v);
-    if (v) {
-        checkInBackground();
-    }
 }

@@ -29,6 +29,34 @@ Pane {
     anchors.fill: parent
     implicitWidth: 300
     implicitHeight: 400
+
+    property var plugin: apx.settings.application.appupdate
+
+    property string test: "### Bug Fixes\r\n* [`27`](https://github.com/uavos/apx-gcs/issues/27) multi gcs commands unpack error\r\n* multi GCS bundle unpack locally\r\n"
+
+    ColumnLayout {
+        anchors.fill: parent
+
+        Label {
+            Layout.alignment: Qt.AlignHCenter
+            horizontalAlignment: Qt.AlignHCenter
+            text: plugin.checker.releaseName
+        }
+
+        ScrollView {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            clip: true
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            TextArea {
+                width: parent.width
+                wrapMode: Text.WordWrap
+                readOnly: true
+                textFormat: TextEdit.MarkdownText
+                text: test //plugin.checker.releaseNotes
+            }
+        }
+    }
 }
 
 /*Dialog {

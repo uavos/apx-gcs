@@ -21,58 +21,48 @@
  */
 #pragma once
 
-#include <App/AppNotify.h>
-#include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
-#include <QtCore>
 
 #include <GithubReleases.h>
 
-class ScriptCompiler : public Fact
+class AppUpdateChecker : public Fact
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString cc MEMBER m_cc);
-    Q_PROPERTY(Fact *use_vscode MEMBER f_vscode);
+    Q_PROPERTY(QString releaseName READ releaseName NOTIFY releaseInfoChanged)
+    Q_PROPERTY(QString releaseVersion READ releaseVersion NOTIFY releaseInfoChanged)
+    Q_PROPERTY(QString releaseNotes READ releaseNotes NOTIFY releaseInfoChanged)
 
 public:
-    explicit ScriptCompiler(QObject *parent = nullptr);
+    AppUpdateChecker(Fact *parent = nullptr);
 
-    Fact *f_vscode;
-    Fact *f_cc;
-    Fact *f_llvm_path;
+    auto releaseName() const { return _releaseName; }
+    auto releaseVersion() const { return _releaseVersion.toString(); }
+    auto releaseNotes() const { return _releaseNotes; }
 
 private:
-    GithubReleases _gh{"WebAssembly/wasi-sdk", this};
+    GithubReleases _gh{"uavos/apx-gcs", this};
 
-    bool lookup();
-    bool lookup_llvm();
-    bool lookup_wasi();
+    QVersionNumber _releaseVersion;
+    QString _releaseName;
+    QString _releaseNotes;
+    QString _assetName;
+    QUrl _assetUrl;
 
-    QString m_cc;
-
-    QString m_tag;
-    QString m_sdk;
-
-    QDir m_dir;
-
-    bool _justExtracted{};
-
-    void extract(QString fileName);
-
-    void update_vscode();
-
-    void setCompiler(QString cc);
+    void updateStatus();
 
 private slots:
-    void lookup_init();
-
-    void download();
+    // GithubReleases
+    void latestVersionInfo(QVersionNumber version, QString tag);
+    void releaseInfo(QJsonDocument json);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void downloadFinished(QString assetName, QFile *data);
 
-    void extractFinished(int exitCode, QProcess::ExitStatus exitStatus);
+public slots:
+    void abort();
+    void checkForUpdates();
+    void installUpdate();
 
 signals:
-    void available();
+    void releaseInfoChanged();
 };

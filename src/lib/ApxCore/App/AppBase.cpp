@@ -208,20 +208,20 @@ QString AppBase::aboutString()
                  .arg(QCoreApplication::applicationName())
                  .arg(version());
     lines << QString("%1: %2").arg(tr("Timestamp")).arg(git_time());
-    lines << QString("Qt: %1 (%2, %3 bit)")
-                 .arg(QLatin1String(qVersion()))
-                 .arg(compilerString())
-                 .arg(QString::number(QSysInfo::WordSize));
-    lines << QString("%1: %2 %3")
-                 .arg(tr("Built"))
-                 .arg(QLatin1String(__DATE__))
-                 .arg(QLatin1String(__TIME__));
+
+    lines << QString("%1: %2 (%3)")
+                 .arg(tr("Platform"), QSysInfo::productType(), QSysInfo::buildCpuArchitecture());
+
+    lines << QString("Qt: %1 (%2, %3 bit, %4)")
+                 .arg(QLatin1String(qVersion()),
+                      compilerString(),
+                      QString::number(QSysInfo::WordSize),
+                      QSysInfo::buildCpuArchitecture());
+
+    lines << QString("%1: %2 %3").arg(tr("Built"), QLatin1String(__DATE__), QLatin1String(__TIME__));
     lines << QString("%1: %2").arg(tr("Hash")).arg(git_hash());
-    lines << QString("%1: %2 (%3@%4)")
-                 .arg(tr("Machine"))
-                 .arg(machineUID())
-                 .arg(username())
-                 .arg(hostname());
+
+    lines << QString("%1: %2 (%3@%4)").arg(tr("Machine"), machineUID(), username(), hostname());
 
     /*lines << "";
     lines << QString("%1: http://docs.uavos.com/").arg(tr("Documentation"));

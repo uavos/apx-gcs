@@ -21,58 +21,53 @@
  */
 #pragma once
 
-#include <App/AppNotify.h>
-#include <ApxMisc/DelayedEvent.h>
-#include <Fact/Fact.h>
 #include <QtCore>
 
-#include <GithubReleases.h>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
-class ScriptCompiler : public Fact
+class GithubReleases : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString cc MEMBER m_cc);
-    Q_PROPERTY(Fact *use_vscode MEMBER f_vscode);
-
 public:
-    explicit ScriptCompiler(QObject *parent = nullptr);
-
-    Fact *f_vscode;
-    Fact *f_cc;
-    Fact *f_llvm_path;
+    GithubReleases(QString repo, QObject *parent = nullptr);
 
 private:
-    GithubReleases _gh{"WebAssembly/wasi-sdk", this};
+    QString _repo;
+    QVersionNumber _latest;
 
-    bool lookup();
-    bool lookup_llvm();
-    bool lookup_wasi();
+    QNetworkAccessManager _net;
+    QNetworkReply *_reply{};
+    QNetworkReply *request(QUrl url);
+    QNetworkReply *getReply(QObject *sender);
 
-    QString m_cc;
-
-    QString m_tag;
-    QString m_sdk;
-
-    QDir m_dir;
-
-    bool _justExtracted{};
-
-    void extract(QString fileName);
-
-    void update_vscode();
-
-    void setCompiler(QString cc);
+    QTemporaryFile *_file{};
 
 private slots:
-    void lookup_init();
+    void responseError(QString msg);
+    void responseLatestVersionInfo();
+    void responseReleaseInfo();
+    void responseDownload();
+    void responseDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
-    void download();
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void downloadFinished(QString assetName, QFile *data);
+public slots:
+    void requestLatestVersionInfo();
+    void requestReleaseInfo(QString tag);
 
-    void extractFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void requestDownload(QUrl url);
+    void requestDownloadAsset(QString assetName, QString tag);
+
+    void abort();
 
 signals:
-    void available();
+    void finished();
+    void error(QString msg);
+
+    void latestVersionInfo(QVersionNumber version, QString tag);
+
+    void releaseInfo(QJsonDocument json);
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void downloadFinished(QString assetName, QFile *data);
 };

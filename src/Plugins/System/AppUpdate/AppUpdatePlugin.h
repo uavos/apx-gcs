@@ -21,39 +21,19 @@
  */
 #pragma once
 
-#include <QtCore>
+#include "AppUpdate.h"
+#include <App/AppSettings.h>
+#include <App/PluginInterface.h>
 
-#include <ApxMisc/DelayedEvent.h>
-#include <Fact/Fact.h>
-#ifdef Q_OS_MAC
-#include <SparkleAutoUpdater.h>
-#endif
-#ifdef Q_OS_LINUX
-#include <AppImageAutoUpdater.h>
-#endif
-
-class Updater : public Fact
+class UpdaterPlugin : public PluginInterface
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
-    Updater(Fact *parent = nullptr);
-
-    Fact *f_auto;
-    Fact *f_check;
-
-private:
-#ifdef Q_OS_MAC
-    std::unique_ptr<SparkleAutoUpdater> m_impl{};
-#endif
-#ifdef Q_OS_LINUX
-    AppImageAutoUpdater *m_impl{};
-#endif
-    void initUpdaterImpl();
-
-private slots:
-    void updateAuto();
-
-public slots:
-    void check();
-    void checkInBackground();
+    int flags() override { return Feature | System; }
+    QObject *createControl() override
+    {
+        return new AppUpdate(AppSettings::instance()->f_application);
+    }
 };
