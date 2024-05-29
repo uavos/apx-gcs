@@ -4,35 +4,13 @@ on:
   push:
     branches:
       - main
-      - docker
     paths:
       - "Dockerfile"
 
 jobs:
-  build-gcs-linux:
+  docker-apx-gcs-linux:
     name: Docker apx-gcs-linux
     runs-on: ubuntu-latest
-    if: false
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.CI_PAT }}
-
-      - run: make docker-image
-
-      - name: Push to DockerHub
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          docker login -u ${DOCKER_USERNAME} -p "${DOCKER_PASSWORD}"
-          make docker-push
-
-  buildx-gcs-linux:
-    name: Docker apx-gcs-linux (multiarch)
-    runs-on: ubuntu-latest
-    # if: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,12 +34,3 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: uavos/apx-gcs-linux:latest
-#
-# GPR GITHUB HOSTED
-# - name: Push to GPR
-#   run: |
-#     docker tag uavos/apx-gcs-linux docker.pkg.github.com/uavos/apx-gcs/apx-gcs-linux:latest
-#     docker login docker.pkg.github.com -u publisher -p "${GITHUB_PACKAGE_REGISTRY_TOKEN}"
-#     docker push docker.pkg.github.com/uavos/apx-gcs/apx-gcs-linux:latest
-#   env:
-#     GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN_RELEASES }}
