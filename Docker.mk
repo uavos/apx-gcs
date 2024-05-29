@@ -7,6 +7,11 @@ docker-image:
 	@docker stop $(DOCKER_IMAGE); docker rm -f $(DOCKER_IMAGE); echo ""
 	docker build -t uavos/$(DOCKER_IMAGE) - < Dockerfile
 
+docker-images:
+	@docker stop $(DOCKER_IMAGE); docker rm -f $(DOCKER_IMAGE); echo ""
+	docker buildx build --push --platform linux/amd64,linux/arm64 -t uavos/$(DOCKER_IMAGE) .
+
+
 docker-run:
 	@docker run -it -v $(realpath $(CURDIR))/:$(DOCKER_PROJECT_DIR) -w $(DOCKER_PROJECT_DIR) $(DOCKER_FUSE) uavos/$(DOCKER_IMAGE) bash
 
