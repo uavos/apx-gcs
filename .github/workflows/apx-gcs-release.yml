@@ -18,7 +18,7 @@ jobs:
       image: uavos/apx-gcs-linux:latest
       options: --privileged
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Fetch version tags
@@ -54,7 +54,7 @@ jobs:
       # PYTHONPATH: /usr/local/lib/python3.12/site-packages
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Fetch version tags
@@ -194,7 +194,7 @@ jobs:
     if: ${{ !startsWith(github.event.ref, 'refs/tags/test-') }}
     # if: "false"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v2
         with:
           path: package

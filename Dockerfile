@@ -89,19 +89,3 @@ RUN pip install aqtinstall &&\
     qtshadertools qt5compat qtcharts qtmultimedia \
     qtspeech qtlocation qtpositioning qtserialport &&\
     rsync -av /${VERSION_QT}/*/ /usr/local/ && rm -Rf /${VERSION_QT}
-
-# libs: appimageupdate
-RUN apt-get install -y --no-install-recommends \
-    xxd wget automake desktop-file-utils librsvg2-dev libfuse-dev patchelf \
-    libcurl4-openssl-dev libssl-dev libtool libglib2.0-dev libcairo-dev \
-    argagg-dev libgcrypt-dev \
-    libboost-system-dev nlohmann-json3-dev libgpgme-dev \
-    && rm -Rf /var/cache/apt
-
-ARG VERSION_APPIMAGEUPDATE=continuous
-RUN git clone --depth=1 --recurse-submodules -b ${VERSION_APPIMAGEUPDATE} --single-branch https://github.com/AppImage/AppImageUpdate.git && \
-    cd AppImageUpdate && \
-    cmake -H. -Bbuild && \
-    cmake --build build --target install && \
-    find build -name '*.a' -exec cp "{}" /usr/local/lib/ \; && \
-    cd .. && rm -Rf AppImageUpdate
