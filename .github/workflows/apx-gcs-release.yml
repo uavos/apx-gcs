@@ -32,6 +32,7 @@ jobs:
           submodules: recursive
           fetch-tags: true
           fetch-depth: 0
+      - run: git config --global --add safe.directory `pwd`
 
       - name: Build package
         run: make release-package
@@ -63,18 +64,18 @@ jobs:
           submodules: recursive
           fetch-tags: true
           fetch-depth: 0
+      - run: git config --global --add safe.directory `pwd`
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
 
       - name: Install Tools (python)
         run: |
-          pip3 install networkx simplejson jinja2 pyyaml dmgbuild --break-system-packages
+          pip3 install networkx simplejson jinja2 pyyaml dmgbuild aqtinstall --break-system-packages
 
       - name: Install Qt
         working-directory: /tmp
         run: |
-          pip3 install aqtinstall
           aqt install-qt mac desktop $VERSION_QT -m \
             qtshadertools qt5compat qtcharts qtmultimedia \
             qtspeech qtlocation qtpositioning qtserialport
