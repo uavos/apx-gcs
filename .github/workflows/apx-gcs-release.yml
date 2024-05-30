@@ -74,12 +74,12 @@ jobs:
           pip3 install networkx simplejson jinja2 pyyaml dmgbuild aqtinstall --break-system-packages
 
       - name: Install Qt
-        working-directory: /usr/local/opt
+        working-directory: /tmp
         run: |
           aqt install-qt mac desktop $VERSION_QT -m \
             qtshadertools qt5compat qtcharts qtmultimedia \
             qtspeech qtlocation qtpositioning qtserialport
-          echo "/usr/local/opt/$VERSION_QT/bin" >> $GITHUB_PATH
+          echo "/tmp/$VERSION_QT/bin" >> $GITHUB_PATH
 
       - name: Install SDL
         working-directory: /tmp
@@ -125,7 +125,7 @@ jobs:
       - name: Build package
         env:
           CODE_IDENTITY: ${{ secrets.CODE_IDENTITY }}
-          LD_LIBRARY_PATH: /usr/local/opt/$VERSION_QT/lib
+          LD_LIBRARY_PATH: /tmp/$VERSION_QT/lib
         run: |
           make release-package
 
