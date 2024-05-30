@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     # if: "false"
 
-    strategy:
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+    # strategy:
+    #   matrix:
+    #     platform:
+    #       - linux/amd64
+    #       - linux/arm64
 
     container:
       image: uavos/apx-gcs-linux:latest
@@ -42,7 +42,7 @@ jobs:
         with:
           path: |
             ${{ env.BUILD_DIR }}/deploy/*.AppImage
-          name: apx-gcs-linux-${{ matrix.platform }}
+          name: apx-gcs-linux
           if-no-files-found: error
           retention-days: 1
 
