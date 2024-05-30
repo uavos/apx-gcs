@@ -95,7 +95,8 @@ RUN pip install aqtinstall &&\
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
 # tweak qt database plugin
-RUN cp -af libqsqlite.so libmimerapi.so && \
+RUN cd /usr/local/plugins/sqldrivers && \
+    cp -af libqsqlite.so libmimerapi.so && \
     cp -af libqsqlite.so libqsqlmimer.so && \
     cp -af libqsqlite.so libqsqlmysql.so && \
     cp -af libqsqlite.so libqsqlodbc.so && \
