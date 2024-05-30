@@ -68,7 +68,7 @@ def deploy_appimage(path, json, apprun):
         'appimagetool',
         # '-u', zsync_link,
         # '--no-appstream',
-        # '--comp=xz',
+        '--comp=xz',
         # '--verbose',
         app_path,
         os.path.join(packages_path, filename)

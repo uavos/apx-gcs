@@ -142,6 +142,7 @@ def deploy_qt(path, json):
         utils.remove_all(
             app_path, ['designer', 'Fusion', 'Imagine', 'Universal'])
         utils.remove_all(os.path.join(app_path, 'qml', 'QtQuick'), ['*.qml'])
+        utils.remove(os.path.join(app_path, 'share', 'doc'))
     elif platform == 'macos':
         qml_path = os.path.abspath(os.path.join(
             path, app['path']['data'], 'qml'))
