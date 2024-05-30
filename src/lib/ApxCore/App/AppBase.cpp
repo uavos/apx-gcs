@@ -26,34 +26,6 @@
 #include <app_def.h>
 #include <QIcon>
 
-#ifdef Q_OS_MAC
-#include <mach-o/arch.h>
-static QByteArray getCpuId()
-{
-    const NXArchInfo *info = NXGetLocalArchInfo();
-    return QByteArray(reinterpret_cast<const char *>(info), sizeof(NXArchInfo));
-}
-#elif defined Q_OS_LINUX
-static QByteArray getCpuId()
-{
-    QByteArray uid;
-    QFile f("/proc/cpuinfo");
-    if (f.open(QIODevice::ReadOnly)) {
-        uid = QCryptographicHash::hash(f.readAll(), QCryptographicHash::Sha1);
-        f.close();
-    }
-    return uid;
-}
-#elif defined Q_OS_WIN
-#include <machine_id.h>
-static QByteArray getCpuId()
-{
-    unsigned int info[4] = {0, 0, 0, 0};
-    __cpuid(info, 0);
-    return QByteArray(reinterpret_cast<const char *>(info), sizeof(info));
-}
-#endif
-
 AppBase *AppBase::_instance = nullptr;
 
 AppBase::AppBase(int &argc, char **argv, const QString &name)
@@ -93,8 +65,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
         m_hostname = "localhost";
 
     // machine ID
-    QByteArray uid = QSysInfo::machineUniqueId();
-    uid.append(getCpuId());
+    auto uid = QSysInfo::machineUniqueId();
     uid.append(QSysInfo::machineHostName().toUtf8());
     m_machineUID = QCryptographicHash::hash(uid, QCryptographicHash::Sha1).toHex().toUpper();
 

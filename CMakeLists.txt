@@ -33,13 +33,12 @@ set(CMAKE_INSTALL_PREFIX
     CACHE PATH ""
 )
 
-# OSX specific options
-set(CMAKE_OSX_DEPLOYMENT_TARGET
-    "11"
-    CACHE STRING "Minimum OS X deployment version"
-)
 # Universal binary build for MacOS Release
 if(APPLE AND CMAKE_BUILD_TYPE STREQUAL Release)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET
+        "12"
+        CACHE STRING "Minimum OS X deployment version"
+    )
     set(CMAKE_OSX_ARCHITECTURES
         "arm64;x86_64"
         CACHE STRING "MacOS universal binary" FORCE
