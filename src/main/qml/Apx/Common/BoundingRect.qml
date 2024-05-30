@@ -34,7 +34,7 @@ Rectangle {
     opacity: 0.3
 
     Component.onCompleted: {
-        console.warn(rect, item)
+        // console.warn(rect, item)
         if(!item)return
 
         x = Qt.binding(function(){return itemRect().x})

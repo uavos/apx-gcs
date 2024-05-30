@@ -57,7 +57,7 @@ Button {
     bottomInset: 1
 
     leftPadding: padding+1
-    rightPadding: padding+2
+    rightPadding: padding+1
     topPadding: padding
     bottomPadding: padding+1
 

@@ -155,10 +155,7 @@ ActionButton {
     contentComponent: Component {
         Item {
 
-            //BoundingRect{}
-
-            id: titleLayout
-            // anchors.fill: parent
+            // BoundingRect{}
 
             readonly property bool showIcon: factButton.showIcon && factButton.iconName
             readonly property bool showText: factButton.showText && factButton.text
@@ -166,8 +163,8 @@ ActionButton {
             implicitWidth: (showIcon?_icon.implicitWidth:0)
                          + (showText?_titleText.implicitWidth+Style.spacing:0)
                          + (showNext?_next.implicitWidth+Style.spacing:0)
-                         + (_value.item?_value.implicitWidth+Style.spacing:0)
-                         + (_editor.item?_editor.implicitWidth+Style.spacing:0)
+                         + (_value.item?_value.item.implicitWidth+Style.spacing:0)
+                         + (_editor.item?_editor.item.implicitWidth+Style.spacing:0)
                          + Style.spacing
 
             Loader {
@@ -186,14 +183,12 @@ ActionButton {
                 anchors.bottom: parent.bottom
                 anchors.leftMargin: Style.spacing
                 anchors.right: _next.left
-                anchors.rightMargin: _value.valueWidth + _editor.editorWidth
                 visible: showText
                 verticalAlignment: _descrText.visible?Text.AlignTop:Text.AlignVCenter
                 font.family: factButton.font.family
                 font.pixelSize: titleSize<5?5:titleSize
                 text: factButton.text
                 color: factButton.enabled?textColor:disabledTextColor
-                // elide: Text.ElideRight
             }
             Text {
                 id: _descrText
@@ -202,7 +197,6 @@ ActionButton {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.leftMargin: Style.spacing
-                anchors.rightMargin: _value.valueWidth + _editor.editorWidth
                 visible: _titleText.visible && showDescr && text
                 verticalAlignment: Text.AlignBottom
                 font: apx.font_condenced(descrSize)
@@ -227,21 +221,17 @@ ActionButton {
 
             // value
             Item {
-                anchors.left: _titleText.right
                 anchors.right: _next.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
+
+                implicitWidth: (_value.item?_value.item.implicitWidth:0)
+                            + (_editor.item?_editor.item.implicitWidth:0)
 
                 Loader {
                     id: _value
                     active: showValue && (!_editor.item)
                     anchors.fill: parent
-                    readonly property real valueWidth: item
-                            ? (item.truncated
-                                ? item.width
-                                : implicitWidth
-                            )
-                            : 0
                     sourceComponent: Text {
                         id: textItem
                         text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
@@ -249,19 +239,14 @@ ActionButton {
                         color: Material.secondaryTextColor
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignRight
-                        // elide: Text.ElideMiddle
                     }
                 }
                 Loader {
                     id: _editor
-                    active: source
-                    Material.accent: Material.color(Material.Green)
-                    source: showEditor?getEditorSource():""
+                    active: showEditor
                     anchors.fill: parent
-                    // anchors.leftMargin: Style.spacing
-                    anchors.leftMargin: Math.max(0,parent.width-(item?item.implicitWidth:0))
-
-                    readonly property real editorWidth: item?item.implicitWidth:0
+                    Material.accent: Material.color(Material.Green)
+                    source: active?getEditorSource():""
                 }
             }
 
