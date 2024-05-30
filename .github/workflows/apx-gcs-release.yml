@@ -28,11 +28,11 @@ jobs:
           fetch-depth: 0
       - run: git config --global --add safe.directory `pwd`
 
-      - name: Setup vscode tunnel # https://code.visualstudio.com/docs/remote/tunnels
-        run: |
-          curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' --output vscode_cli.tar.gz
-          tar -xf vscode_cli.tar.gz
-          ./code tunnel --accept-server-license-terms
+      # - name: Setup vscode tunnel # https://code.visualstudio.com/docs/remote/tunnels
+      #   run: |
+      #     curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' --output vscode_cli.tar.gz
+      #     tar -xf vscode_cli.tar.gz
+      #     ./code tunnel --accept-server-license-terms
 
       - name: Build package
         run: make release-package
@@ -125,7 +125,10 @@ jobs:
       - name: Build package
         env:
           CODE_IDENTITY: ${{ secrets.CODE_IDENTITY }}
-          LD_LIBRARY_PATH: /tmp/$VERSION_QT/lib
+          QT_PATH: /tmp/$VERSION_QT
+          LD_LIBRARY_PATH: $QT_PATH/lib
+          PKG_CONFIG_PATH: $QT_PATH/lib/pkgconfig
+
         run: |
           make release-package
 
@@ -206,15 +209,3 @@ jobs:
               release_id: "${{ steps.create_release.outputs.id }}",
               draft: false
             });
-
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
-
-      # - name: Update release branch
-      #   run: |
-      #     git config user.name "$GITHUB_ACTOR"
-      #     git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-      #     git fetch origin release
-      #     git checkout release
-      #     git commit -am "Publish ${{ steps.package.outputs.version }}"
-      #     git push origin release
