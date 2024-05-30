@@ -106,8 +106,7 @@ jobs:
         env:
           KEYCHAIN: default.keychain
           KEYCHAIN_PASSWORD: uavos
-          SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
-          # base64 build_certificate.p12 | pbcopy
+          # base64 -i build_certificate.p12 | pbcopy
           SIGNING_CERTIFICATE_P12_DATA: ${{ secrets.SIGNING_CERTIFICATE_P12_DATA }}
           SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
           CODE_IDENTITY: ${{ secrets.CODE_IDENTITY }}
