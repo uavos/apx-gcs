@@ -57,9 +57,16 @@ ColumnLayout {
         snapMode: ListView.SnapToItem
         visible: !empty
 
-        delegate: RowLayout{
-            spacing: Style.spacing
+        delegate: Item{
+            implicitHeight: button.implicitHeight
+            implicitWidth: button.implicitWidth
+                +(activeIndicator.item?activeIndicator.item.implicitWidth:0)
+
             TextButton {
+                id: button
+                anchors.fill: parent
+                anchors.rightMargin: activeIndicator.item?activeIndicator.item.implicitWidth:0
+                
                 size: Style.buttonSize*0.7
 
                 toolTip: modelData?modelData.descr:""
@@ -98,8 +105,12 @@ ColumnLayout {
                 }
             }
             Loader {
+                id: activeIndicator
                 active: modelData.active
-                Layout.fillHeight: true
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+
                 sourceComponent: Component {
                     MaterialIcon {
                         verticalAlignment: Text.AlignVCenter
