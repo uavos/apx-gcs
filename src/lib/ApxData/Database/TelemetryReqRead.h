@@ -118,12 +118,13 @@ public:
         , time(time)
     {}
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     quint64 cacheID;
     quint64 time;
 
-protected:
-    bool run(QSqlQuery &query);
 signals:
     void eventsLoaded(DatabaseRequest::Records records);
 };
@@ -139,13 +140,14 @@ public:
         , name(name)
     {}
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     quint64 cacheID;
     quint64 time;
     QString name;
 
-protected:
-    bool run(QSqlQuery &query);
 signals:
     void eventLoaded(QString value, QString uid, bool uplink);
 };
@@ -160,12 +162,13 @@ public:
         , time(time)
     {}
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     quint64 cacheID;
     quint64 time;
 
-protected:
-    bool run(QSqlQuery &query);
 signals:
     void confLoaded(DatabaseRequest::Records records);
 };
@@ -223,11 +226,12 @@ public:
         , telemetryID(telemetryID)
     {}
 
+protected:
+    bool run(QSqlQuery &query);
+
 private:
     quint64 telemetryID;
 
-protected:
-    bool run(QSqlQuery &query);
 signals:
     void deletedID(quint64 telemetryID);
 };

@@ -56,3 +56,4 @@ build*
 compile_commands.json
 
 *.fileloc
+.cache

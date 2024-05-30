@@ -44,6 +44,9 @@ function(apx_plugin)
     # depends
 
     list(APPEND DEPENDS "lib.ApxCore")
+    list(APPEND DEPENDS "lib.ApxData")
+    list(APPEND DEPENDS "lib.ApxGcs")
+    list(APPEND DEPENDS "lib.ApxFw")
 
     foreach(dep ${DEPENDS})
         if(NOT TARGET ${dep})

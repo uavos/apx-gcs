@@ -56,10 +56,6 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
             &PData::serialData,
             this,
             [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, false); });
-    connect(vehicle->protocol()->data(),
-            &PData::sendSerial,
-            this,
-            [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, true); });
 
     // record config on each upload or save
     connect(vehicle->storage(),
@@ -106,6 +102,8 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
             &TelemetryRecorder::restartRecording);
 
     updateStatus();
+
+    connect(App::instance(), &App::appQuit, this, [this]() { disconnect(); });
 }
 
 void TelemetryRecorder::updateStatus()
@@ -122,11 +120,18 @@ void TelemetryRecorder::invalidateCache()
 {
     if (!recTelemetryID)
         return;
-    Database::instance()->telemetry->markCacheInvalid(recTelemetryID);
+
+    if (Database::instance()->telemetry)
+        Database::instance()->telemetry->markCacheInvalid(recTelemetryID);
 }
 
 bool TelemetryRecorder::dbCheckRecord()
 {
+    if (!Database::instance()->telemetry) {
+        recTelemetryID = 0;
+        return false;
+    }
+
     checkAutoRecord();
     if (recTelemetryID)
         return true;

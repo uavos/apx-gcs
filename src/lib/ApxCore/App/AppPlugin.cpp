@@ -36,7 +36,6 @@ AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
     , f_enabled(nullptr)
     , interface(nullptr)
     , control(nullptr)
-    , loader(nullptr)
 {
     Fact *f = new Fact(plugins->f_enabled,
                        name.toLower(),
@@ -75,11 +74,13 @@ void AppPlugin::loadLib()
     QLibrary lib(fname);
     try {
         if (!lib.load()) {
-            apxMsgW() << "lib-load:" << lib.errorString() << "(" + fname + ")";
+            apxConsoleW() << "lib-load:" << lib.errorString() << "(" + fname + ")";
             return;
         }
-        loader = new QPluginLoader(fname);
-        instance = loader->instance();
+        auto ptr = reinterpret_cast<QtPluginInstanceFunction>(lib.resolve("qt_plugin_instance"));
+        if (ptr) {
+            instance = ptr();
+        }
     } catch (...) {
         apxMsgW() << "Plugin load error" << name << "(" + fname + ")";
         instance = nullptr;
@@ -94,9 +95,6 @@ void AppPlugin::loadLib()
             fileName = "qrc" + qrcFileName;
             loadQml();
             return;
-        }
-        if (loader) {
-            apxMsgW() << "loader:" << loader->errorString() << "(" + fname + ")";
         }
         return;
     }
@@ -120,8 +118,10 @@ void AppPlugin::loadLib()
     //check depends
     depends = p->depends();
     if (!depends.isEmpty()) {
+        sx_blacklist.remove(name);
+        sx_blacklist.sync();
+
         bool ok = false;
-        //apxConsole() << tr("Deps").append(":") << depends;
         for (auto d : *plugins) {
             if (!depends.contains(d->name))
                 continue;
@@ -133,13 +133,13 @@ void AppPlugin::loadLib()
             apxMsgW() << tr("Dependency not found").append(":") << depends;
         }
         apxConsole() << tr("Initializing").append(":") << name;
+
+        sx_blacklist.setValue(name, _hash);
+        sx_blacklist.sync();
     }
 
     //define section
     switch (p->flags() & PluginInterface::PluginSectionMask) {
-    default:
-        section = tr("Other");
-        break;
     case PluginInterface::System:
         section = tr("System features");
         break;
@@ -149,6 +149,9 @@ void AppPlugin::loadLib()
     case PluginInterface::Map:
         section = tr("Mission");
         break;
+    default:
+        section = tr("Other");
+        break;
     }
 
     //initialize lib
@@ -156,8 +159,6 @@ void AppPlugin::loadLib()
     QString title = p->title();
     QString descr = p->descr();
     switch (p->flags() & PluginInterface::PluginTypeMask) {
-    default:
-        break;
     case PluginInterface::Feature: {
         control = p->createControl();
         Fact *f = qobject_cast<Fact *>(control);
@@ -166,10 +167,8 @@ void AppPlugin::loadLib()
                 title = f->title();
             if (descr.isEmpty())
                 descr = f->descr();
-            //connect(App::instance(), &App::aboutToQuit, f, &Fact::remove);
-        } else {
-            //connect(App::instance(), &App::aboutToQuit, control, &QObject::deleteLater);
         }
+
         f_enabled->setSection(section);
         if (!descr.isEmpty())
             descr.prepend(tr("Tool").append(": "));
@@ -181,7 +180,10 @@ void AppPlugin::loadLib()
         descr.prepend(tr("Window").append(": "));
         plugins->loadedWindow(this);
     } break;
+    default:
+        break;
     }
+
     f_enabled->setTitle(title);
     f_enabled->setDescr(descr);
 
@@ -205,7 +207,7 @@ void AppPlugin::loadQml()
 
 void AppPlugin::load()
 {
-    if (loader || control)
+    if (control)
         return;
     if (fileName.endsWith(".gcs") || fileName.endsWith(".so") || fileName.endsWith(".dylib")
         || fileName.endsWith(".bundle")) {

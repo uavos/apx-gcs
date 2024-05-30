@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.11
-import QtQuick.Layouts 1.3
-import QtQuick.Controls.Material 2.2
-import QtQml.Models 2.12
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls.Material
+import QtQml.Models
 
-import Apx.Common 1.0
+import Apx.Common
 
 RowLayout {
 
@@ -43,7 +43,6 @@ RowLayout {
     spacing: buttonSpacing*4
 
     ColumnLayout {
-        Layout.fillHeight: true
         Layout.alignment: Qt.AlignTop|Qt.AlignLeft
         spacing: buttonSpacing
         CtrNum { title: "THR"; fact: f_thr; min: 0; max: 100; mult: 100; stepSize: 1; }
@@ -52,9 +51,8 @@ RowLayout {
         CtrNum { title: "ABR"; fact: f_airbrk; min: 0; max: 100; mult: 100; stepSize: 10; visible: f_mode.value===proc_mode_LANDING}
     }
     CtrFlow {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
         Layout.alignment: Qt.AlignTop
+        Layout.fillWidth: true
         key: f_mode.text
         controls: {
             "TAXI": [btnCANCEL,btnATAXI,btnINC,btnDEC,btnBRK_TAXI],
@@ -92,7 +90,6 @@ RowLayout {
             fact: f_brake
             readonly property real v: fact.value
             color: (v>0 && v<1)?Qt.darker(Material.color(Material.Orange),1.5):undefined
-            minimumWidth: height*3
             highlighted: v>0
             onTriggered: {
                 if(m_reg_taxi){
@@ -108,7 +105,6 @@ RowLayout {
         CtrButton {
             text: "BRAKE"
             fact: f_brake
-            minimumWidth: height*3
             onTriggered: fact.value=highlighted?0:1
             highlighted: fact.value>0
         }
@@ -118,7 +114,6 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: m_reg_taxi?"STOP":"AUTO"
-            minimumWidth: height*4
             highlighted: m_reg_taxi
             onTriggered: fact.value=m_reg_taxi?proc_action_reset:proc_action_next
         }
@@ -128,7 +123,6 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "NEXT"
-            minimumWidth: height*4
             onTriggered: fact.value=proc_action_next
         }
     }
@@ -137,7 +131,6 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "NEXT"
-            minimumWidth: height*4
             onTriggered: fact.value=proc_action_inc
         }
     }
@@ -146,7 +139,6 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "PREV"
-            minimumWidth: height*4
             onTriggered: fact.value=proc_action_dec
         }
     }
@@ -155,7 +147,6 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "CANCEL"
-            minimumWidth: height*4
             onTriggered: fact.value=proc_action_reset
         }
     }
@@ -164,7 +155,6 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "RESET"
-            minimumWidth: height*4
             onTriggered: fact.value=proc_action_reset
         }
     }

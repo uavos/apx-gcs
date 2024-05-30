@@ -45,17 +45,17 @@ public:
 
     void updateUsed(int adj);
 
+protected:
+    // Fact override
+    virtual QString mandalaToString(xbus::pid_raw_t pid_raw) const override;
+    virtual xbus::pid_raw_t stringToMandala(const QString &s) const override;
+
 private:
     QMap<mandala::uid_t, MandalaFact *> _uid_map;
     QList<MandalaFact *> _valueFacts;
 
     uint _total{};
     uint _used{};
-
-protected:
-    // Fact override
-    virtual QString mandalaToString(xbus::pid_raw_t pid_raw) const override;
-    virtual xbus::pid_raw_t stringToMandala(const QString &s) const override;
 
 private slots:
     void recordSendValue(mandala::uid_t uid, QVariant value);
@@ -65,7 +65,6 @@ private slots:
 public slots:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
     void valuesData(PBase::Values values);
-    void xpdrData(PBase::Values values);
 
     void resetCounters();
 

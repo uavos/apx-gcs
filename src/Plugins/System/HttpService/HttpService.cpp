@@ -27,6 +27,70 @@
 #include <Datalink/Datalink.h>
 #include <Vehicles/Vehicles.h>
 
+namespace {
+namespace HttpMessage {
+
+using HttpCode = uint16_t;
+
+enum ContentType {
+
+    ApplicationXml,
+    TextHtml,
+};
+
+QHash<HttpCode, QString> httpCodesStrTable{
+    {200, "HTTP/1.0 200 OK\r\n"},
+    {404, "HTTP/1.0 404 Not Found\r\n"},
+};
+
+QHash<ContentType, QString> contentTypeStrTable{
+    {ContentType::ApplicationXml, "Content-Type: application/xml; charset=\"utf-8\"\r\n\r\n"},
+    {ContentType::TextHtml, "Content-Type: text/html; charset=\"utf-8\"\r\n\r\n"},
+};
+
+QString buildHttpHeader(HttpCode code)
+{
+    auto it = httpCodesStrTable.find(code);
+    return it != httpCodesStrTable.end() ? *it : httpCodesStrTable[404];
+}
+
+QString buildContentType(ContentType c_type)
+{
+    auto it = contentTypeStrTable.find(c_type);
+    return it != contentTypeStrTable.end() ? *it : contentTypeStrTable[ContentType::TextHtml];
+}
+
+QString httpServerHostInfo(const QString &localAddr, quint16 localPort)
+{
+    return QString("<b>GCS HTTP Server</b> (%1:%2)").arg(localAddr).arg(localPort);
+}
+
+QString buildPayloadWithInfo()
+{
+    QString payload{};
+    QTextStream s_payload{&payload};
+    s_payload << "<hr size=1>";
+    s_payload << QString("<a href=%1>%1</a> - %2<br>").arg("/kml").arg("Google Earth KML");
+    s_payload << QString("<a href=%1>%1</a> - %2<br>")
+                     .arg("/datalink")
+                     .arg("Datalink stream [uint16 packet size][CRC_16_IBM][packet data]");
+    s_payload << QString("<a href=%1>%1</a> - %2<br>")
+                     .arg("/mandala")
+                     .arg("Mandala XML data and commands");
+    s_payload << QString("<br>More info here: <a href=%1>%1</a>").arg("https://docs.uavos.com/");
+    return payload;
+}
+QString buildGcsVersionPayload()
+{
+    return QString("<br>GCS Version: <a>%1</a><br>").arg(AppBase::version());
+}
+QString buildPageNotFoundPayload(QString &req)
+{
+    return QString("<br>No service for '%1'").arg(req);
+}
+} // namespace HttpMessage
+} // namespace
+
 HttpService::HttpService(QObject *parent)
     : QObject(parent)
 {
@@ -48,25 +112,33 @@ void HttpService::vehicleSelected(Vehicle *vehicle)
     c_pitch = vehicle->f_mandala->fact(mandala::est::nav::att::pitch::uid);
 }
 
-void HttpService::httpRequest(QTextStream &stream, QString req, bool *ok)
+void HttpService::httpRequest(QTextStream &stream, QString req, const QTcpSocket *tcp)
 {
-    if (req.startsWith("/kml")) {
-        stream << "HTTP/1.0 200 Ok\r\n";
+    if (req == "/") {
+        stream << HttpMessage::buildHttpHeader(200);
+        stream << HttpMessage::buildContentType(HttpMessage::ContentType::TextHtml);
+        stream << HttpMessage::httpServerHostInfo(tcp->localAddress().toString(), tcp->localPort());
+        stream << HttpMessage::buildGcsVersionPayload();
+        stream << HttpMessage::buildPayloadWithInfo();
+
+    } else if (req.startsWith("/kml")) {
+        stream << HttpMessage::buildHttpHeader(200);
         stream << (req.contains(".dae") ? "application/xml dae"
                                         : "application/vnd.google-earth.kml+xml");
-        stream << "; charset=\"utf-8\"\r\n";
-        stream << "\r\n";
+        stream << "; charset=\"utf-8\"\r\n\r\n";
         stream << reply_google(req.mid(4));
-        *ok = true;
-        return;
-    }
-    if (req.startsWith("/mandala")) {
-        stream << "HTTP/1.0 200 Ok\r\n";
-        stream << "Content-Type: application/xml; charset=\"utf-8\"\r\n";
-        stream << "\r\n";
+
+    } else if (req.startsWith("/mandala")) {
+        stream << HttpMessage::buildHttpHeader(200);
+        stream << HttpMessage::buildContentType(HttpMessage::ContentType::ApplicationXml);
         stream << reply_mandala(req.contains('?') ? req.mid(req.indexOf("?") + 1) : "");
-        *ok = true;
-        return;
+
+    } else {
+        stream << HttpMessage::buildHttpHeader(404);
+        stream << HttpMessage::buildContentType(HttpMessage::ContentType::TextHtml);
+        stream << HttpMessage::httpServerHostInfo(tcp->localAddress().toString(), tcp->localPort());
+        stream << HttpMessage::buildPageNotFoundPayload(req);
+        stream << HttpMessage::buildPayloadWithInfo();
     }
 }
 
@@ -74,7 +146,7 @@ void HttpService::httpRequest(QTextStream &stream, QString req, bool *ok)
  {
   QTcpSocket* socket = (QTcpSocket*)sender();
   if (socket->canReadLine()) {
-    QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList tokens = QString(socket->readLine()).split(QRegularExpression("[ \r\n][ \r\n]*"));
     if (tokens[0]=="GET") {
       QString req=QUrl::fromPercentEncoding(tokens[1].toUtf8());
       QTextStream os(socket);

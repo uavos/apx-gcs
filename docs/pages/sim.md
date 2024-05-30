@@ -7,7 +7,9 @@ To get started with **Software in the loop simulation** (no hardware) you can fo
 
 - [Install Ground Control](install) application;
 - Install [X-plane Flight Simulator](http://www.x-plane.com/);
-  - The system works well with **X-plane 10**;
+- Install aircraft models from [here](https://github.com/uavos/apx-sim-xpl):
+  - Copy `models` sub folders to x-plane `Aircraft` folder;
+  - Import vehicle configuration from `conf` folder to GCS;
 - Launch the X-plane Simulator for the first time to ensure it is working and configured;
   - Configure minimal graphics settings and disable all sounds;
   - Exit the simulator app through menu;
@@ -20,7 +22,7 @@ To get started with **Software in the loop simulation** (no hardware) you can fo
 - Switch to X-Plane window;
   - Select the airport `KSEA`;
   - Select runway `RWY - 1 6 L`;
-  - Choose aircraft `UAVOS/MALE-B`
+  - Choose aircraft `S1B`
 - Switch to GCS window, wait until `SIM` vehicle is recognized, select it if needed in the `Vehicle` menu;
   - Open the `Vehicle parameters` window and make sure you have updated and uploaded configuration;
   - When there is no mission downloaded from vehicle exists - i.e. mission label on the map does not show any mission:

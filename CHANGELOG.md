@@ -1,3 +1,80 @@
+# [APX Ground Control v11.1.17](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.17) (05/30/24)
+
+> Branch: `main`\
+> Date: `05/30/24 17:03:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/145a2911defe7aa9dc23bb0fdfcf838eeda109d7...ab9f993f32a6139903d8342c29ccc2aef8448a99)
+
+## Bug Fixes
+* xplane plugin universal binary
+* XPDR protocol fix
+* Vehicle display in XPDR downlink mode
+* app loading ports enabling behavior
+
+# [APX Ground Control v11.1.16](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.16) (04/24/24)
+
+> Branch: `main`\
+> Date: `04/24/24 16:05:30`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/0fdf2020589d4955289786c402cd444bd06d37b3...9397ad4321ab5d5a28249db6dec17c7db8112b3c)
+
+## Bug Fixes
+* mission title buffer overflow crash (closes [`71`](https://github.com/uavos/apx-gcs/issues/71))
+* nodes plugin title
+
+## Performance Enhancements
+* move xplane models and files to another [repo](uavos/apx-sim-xpl)
+
+# [APX Ground Control v11.1.15](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.15) (03/10/24)
+
+> Branch: `main`\
+> Date: `03/10/24 13:27:50`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b69c2fa4d3991cbee52dd8db13f2ffe0013666ee...c3ea5472029ada288896893dd175557198b705de)
+
+## Bug Fixes
+* [`27`](https://github.com/uavos/apx-gcs/issues/27) multi gcs commands unpack error
+* multi GCS bundle unpack locally
+
+# [APX Ground Control v11.1.14](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.14) (02/23/24)
+
+> Branch: `main`\
+> Date: `02/23/24 08:58:47`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/f69f9f789c1fca25dee2edd7948f6bd251196080...9b75ea65ba46fc209aeddf6930c831aa78963a25)
+
+## Bug Fixes
+* Autoupdate crush bug
+* [`11`](https://github.com/uavos/apx-gcs/issues/11) Access modifiers order fix
+* [`44`](https://github.com/uavos/apx-gcs/issues/44) exchange creating symlink on .xpl plugin
+* [`45`](https://github.com/uavos/apx-gcs/issues/45) add exception check
+* [`45`](https://github.com/uavos/apx-gcs/issues/45) plugins blacklisted on segfault
+
+## Comments
+
+**fix:[`44`](https://github.com/uavos/apx-gcs/issues/44) exchange creating symlink on .xpl plugin**
+
+with copying of it
+
+**fix:[`45`](https://github.com/uavos/apx-gcs/issues/45) add exception check**
+
+to give other plugins chance
+to go out of blacklist
+
+**fix:[`45`](https://github.com/uavos/apx-gcs/issues/45) plugins blacklisted on segfault**
+
+replace try-catch with removing plugin
+from blacklist while dependency is loading
+
+# [APX Ground Control v11.1.13](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.13) (12/17/23)
+
+> Branch: `main`\
+> Date: `12/17/23 17:00:39`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b4c109c4940b041735ffc0ba3f814f40c538f8a8...31601115bbb32ed7028b73c8671fa2daa19f2af1)
+
+## New Features
+* send position fix command for `AHRS`
+* system LLVM support for script compiler
+
+## Bug Fixes
+* default units precision
+
 # [APX Ground Control v11.1.12](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.12) (11/05/23)
 
 > Branch: `main`\

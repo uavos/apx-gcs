@@ -66,10 +66,23 @@ public:
     void addConnection(DatalinkConnection *c);
     QList<QPointer<DatalinkConnection>> connections;
 
+public:
+    bool valid() const;
+    void setValid(const bool &v);
+    bool online() const;
+    void setOnline(const bool &v);
+    uint errcnt() const;
+    void setErrcnt(const uint &v);
+
 private:
     QTimer heartbeatTimer; //data link alive for vehicle
     bool bReadOnly;
     QTimer onlineTimer;
+
+private:
+    bool m_valid;
+    bool m_online;
+    uint m_errcnt;
 
 private slots:
     void updateStatus();
@@ -88,23 +101,9 @@ public slots:
 signals:
     void packetReceived(QByteArray packet);
     void packetTransmitted(QByteArray packet);
-    void httpRequest(QTextStream &stream, QString req, bool *ok);
+    void httpRequest(QTextStream &stream, QString req, QTcpSocket *tcp);
     void heartbeat();
 
-    //-----------------------------------------
-    //PROPERTIES
-public:
-    bool valid() const;
-    void setValid(const bool &v);
-    bool online() const;
-    void setOnline(const bool &v);
-    uint errcnt() const;
-    void setErrcnt(const uint &v);
-
-private:
-    bool m_valid;
-    bool m_online;
-    uint m_errcnt;
 signals:
     void validChanged();
     void onlineChanged();

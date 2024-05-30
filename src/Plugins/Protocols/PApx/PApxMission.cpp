@@ -101,9 +101,11 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
 
     xbus::mission::file_hdr_s fhdr{};
     fhdr.read(&stream);
-    QString title(QByteArray(fhdr.title, sizeof(fhdr.title)));
 
-    qDebug() << title << stream.size() << "bytes";
+    QString title = QString::fromUtf8(
+        QByteArray(fhdr.title, strnlen(fhdr.title, sizeof(fhdr.title))));
+
+    // qDebug() << title << stream.size() << "bytes";
 
     if (fhdr.size != stream.available()) {
         qWarning() << "data size" << fhdr.size << stream.available();
@@ -163,7 +165,8 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
             case xbus::mission::ACT_SCR: {
                 xbus::mission::act_scr_s e;
                 e.read(&stream);
-                a.insert("script", QString(QByteArray(e.scr, sizeof(e.scr))));
+                a.insert("script",
+                         QString::fromUtf8(QByteArray(e.scr, strnlen(e.scr, sizeof(e.scr)))));
                 break;
             }
             case xbus::mission::ACT_SHOT: {
@@ -442,7 +445,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     //update fhdr
     fhdr.size = stream.pos() - pos_s;
 
-    strncpy(fhdr.title, m.value("title").toString().toLocal8Bit(), sizeof(fhdr.title));
+    strncpy(fhdr.title, m.value("title").toString().toLocal8Bit(), sizeof(fhdr.title) - 1);
 
     stream.reset();
     fhdr.write(&stream);

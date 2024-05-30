@@ -19,11 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtLocation 5.12
-import QtPositioning 5.12
+import QtQuick
+import QtLocation
+import QtPositioning
 
-import Apx.Map.Common 1.0
+import Apx.Common
 
 MapQuickItem {  //to be used inside MapComponent only
 
@@ -39,12 +39,9 @@ MapQuickItem {  //to be used inside MapComponent only
     anchorPoint.y: image.height/2
 
     sourceItem:
-    MapSvgImage {
+    SvgImage {
         id: image
-        source: "../icons/home.svg"
-        sourceSize.height: 16*map.itemsScaleFactor
-        color: "#000"
-        glowColor: "#0f0"
+        source: "../Map/icons/home.svg"
     }
 
 }

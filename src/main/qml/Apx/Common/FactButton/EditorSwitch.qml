@@ -19,16 +19,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.6
-import QtQuick.Controls 2.5
-import QtQuick.Controls.Material 2.12
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
 Switch {
     id: editor
 
-    scale: ui.scale*0.8
+    scale: ui.scale*0.5
 
-    implicitWidth: (implicitIndicatorWidth + leftPadding + rightPadding) * scale
+    spacing: 0
+    padding: 0
+
+    contentItem: Item {
+        implicitWidth: editor.indicator.height
+        implicitHeight: implicitWidth
+    }
+
 
     checked: fact.value>0?true:false
     enabled: fact.enabled
@@ -37,5 +44,5 @@ Switch {
             fact.setValue(checked)
         }
     }
-    contentItem: null
+
 }

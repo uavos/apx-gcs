@@ -48,10 +48,8 @@ private:
     QElapsedTimer _timer;
     uint32_t _dt_ms{};
 
-    bool unpack(uint8_t pseq, PStreamReader &stream);
+    bool unpack(const xbus::pid_s &pid, PStreamReader &stream);
     QVariant raw_value(const void *src, mandala::type_id_e type);
-
-    bool unpack_xpdr(PStreamReader &stream);
 
     void requestTelemetry() override;
 

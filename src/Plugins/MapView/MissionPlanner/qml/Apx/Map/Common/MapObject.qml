@@ -19,9 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtLocation 5.13
-import QtGraphicalEffects 1.0
+import QtQuick
+import QtQuick.Effects
+import QtLocation
 
 MapQuickItem {  //to be used inside MapComponent only
     id: mapObject
@@ -152,7 +152,7 @@ MapQuickItem {  //to be used inside MapComponent only
         Loader {
             anchors.centerIn: textItem
             active: selected
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 Rectangle {
                     id: frame
@@ -178,14 +178,12 @@ MapQuickItem {  //to be used inside MapComponent only
             id: shadowLoader
             anchors.fill: parent
             active: shadow
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
-                DropShadow {
-                    samples: ui.effects?15:0
-                    color: (dragging||hover)?"#8f8":"#a0000000"
+                MultiEffect {
                     source: textItem
-                    cached: true
                     enabled: false
+                    shadowEnabled: ui.effects
                     visible: !textItem.visible
                 }
             }

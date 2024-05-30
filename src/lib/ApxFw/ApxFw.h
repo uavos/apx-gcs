@@ -23,9 +23,7 @@
 
 #include <Fact/Fact.h>
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
+#include <GithubReleases.h>
 
 class ApxFw : public Fact
 {
@@ -44,15 +42,11 @@ public:
     QJsonArray loadParameters(QString nodeName, QString hw);
 
 private:
-    QNetworkAccessManager net;
+    GithubReleases _gh{"uavos/apx-ap", this};
 
     QVersionNumber _versionPrefix;
 
     QString m_packagePrefix;
-
-    QNetworkReply *reply{nullptr};
-    QNetworkReply *request(const QString &r);
-    QNetworkReply *request(const QUrl &url);
 
     QDir releaseDir() const;
     QDir devDir() const;
@@ -60,9 +54,6 @@ private:
     bool extractRelease(const QString &filePath);
     void makeFacts(Fact *fact, QDir dir);
     void clean();
-
-    QNetworkReply *checkReply(QObject *sender);
-    bool isHttpRedirect(QNetworkReply *reply);
 
     bool isFirmwarePackageFile(const QString &s);
 
@@ -76,20 +67,14 @@ private:
     void updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json, QStringList path);
 
 private slots:
-    void abort();
     void sync();
     void syncFacts();
 
     void updateCurrent();
 
-    // internet
-    void requestLatestTag();
-    void responseLatestTag();
-
-    void requestRelease(QString req);
-    void responseRelease();
-
-    void requestDownload(QUrl url);
-    void responseDownload();
+    // GithubReleases
+    void latestVersionInfo(QVersionNumber version, QString tag);
+    void releaseInfo(QJsonDocument json);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void downloadFinished(QString assetName, QFile *data);
 };

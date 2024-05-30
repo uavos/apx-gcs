@@ -19,11 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.6
-import QtQuick.Controls 2.1
-import QtQuick.Controls.Material 2.1
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
-import APX.Vehicles 1.0 as APX
+import APX.Vehicles as APX
 import "."
 import "../common"
 
@@ -479,7 +479,7 @@ Item {
                 fact: f_reg_pos
                 show: ui.test || ((status != reg_pos_direct || !m_wpt_status) && isValid)
                 blinking: status===reg_pos_hover && m_reg_spd
-                text: fact.text
+                text: fact.text==="runway" ? "rw" : fact.text
                 type: status===reg_pos_off || !m_wpt_status
                       ? CleanText.White
                       : (status===reg_pos_hdg || blinking)

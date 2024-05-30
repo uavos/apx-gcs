@@ -19,15 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.6
-import QtQuick.Controls 2.1
-import QtGraphicalEffects 1.0
-import QtQuick.Controls.Material 2.2
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
-import APX.Facts 1.0
+import APX.Facts
 
-import Apx.Common 1.0
-import Apx.Menu 1.0
+import Apx.Common
+
+import "."
 
 Popup {
     id: popup
@@ -90,13 +90,13 @@ Popup {
 
         onFactOpened: raise()
 
-        onFactButtonTriggered: {
+        onFactButtonTriggered: (fact) => {
             if(!fact || (fact.options & Fact.CloseOnTrigger))
                 back()
             else popup.raise()
         }
         Connections {
-            target: fact
+            target: factMenu.fact
             function onProgressChanged(){ popup.pinned=true }
         }
         onStackEmpty: popup.close()
@@ -107,15 +107,15 @@ Popup {
     //draggable window
     MouseArea {
         id: mouseArea
-        z: popup.menuEnabled?0:(contentItem.z+100)
+        // z: popup.menuEnabled?0:(contentItem.z+100)
         anchors.fill: parent
         propagateComposedEvents: popup.menuEnabled
         property point clickPos: Qt.point(0,0)
-        onPressed: {
+        onPressed: (mouse) => {
             clickPos = Qt.point(mouse.x,mouse.y)
             popup.raise()
         }
-        onPositionChanged: {
+        onPositionChanged: (mouse) => {
             var delta = Qt.point(mouse.x-clickPos.x, mouse.y-clickPos.y)
             popup.x+=delta.x
             popup.y+=delta.y

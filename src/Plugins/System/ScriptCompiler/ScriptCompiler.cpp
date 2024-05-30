@@ -48,7 +48,7 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
                            Text | PersistentValue);
 
     // WASI SDK
-    m_version = "20.0";
+    m_tag = "wasi-sdk-20";
 
     QString platform;
 #if defined(Q_OS_MAC)
@@ -59,7 +59,7 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
     platform = "mingw";
 #endif
 
-    m_sdk = QString("wasi-sdk-%1-%2").arg(m_version).arg(platform);
+    m_sdk = QString("%1.0-%2").arg(m_tag).arg(platform);
 
     m_dir = QDir(AppDirs::scripts().absoluteFilePath("compiler"),
                  "wasi-sdk-*",
@@ -68,6 +68,14 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
 
     if (!m_dir.exists())
         m_dir.mkpath(".");
+
+    connect(&_gh, &GithubReleases::downloadProgress, this, &ScriptCompiler::downloadProgress);
+    connect(&_gh, &GithubReleases::downloadFinished, this, &ScriptCompiler::downloadFinished);
+    connect(&_gh, &GithubReleases::finished, this, [this]() { setProgress(-1); });
+    connect(&_gh, &GithubReleases::error, this, [this](QString msg) {
+        apxMsgW() << title().append(':') << msg;
+        setProgress(-1);
+    });
 
     QTimer::singleShot(0, this, &ScriptCompiler::lookup_init);
 }
@@ -220,40 +228,17 @@ void ScriptCompiler::update_vscode()
 
 void ScriptCompiler::download()
 {
-    QString fileName = QString("%1.tar.gz").arg(m_sdk);
+    apxMsg() << tr("Downloading") << title().append("...");
+    setProgress(0);
 
-    if (QFile::exists(m_dir.absoluteFilePath(fileName))) {
-        extract(fileName);
+    QString assetName = QString("%1.tar.gz").arg(m_sdk);
+
+    if (QFile::exists(m_dir.absoluteFilePath(assetName))) {
+        extract(assetName);
         return;
     }
 
-    apxMsg() << tr("Downloading") << title().append("...");
-
-    QUrl url(QString("https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-%1/%2")
-                 .arg(m_version.left(m_version.indexOf('.')))
-                 .arg(fileName));
-
-    qDebug() << url;
-
-    net.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
-
-    QNetworkRequest *request = new QNetworkRequest(url);
-
-    QSslConfiguration ssl = request->sslConfiguration();
-    ssl.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request->setSslConfiguration(ssl);
-
-    request->setRawHeader("Accept", "*/*");
-    request->setRawHeader("User-Agent",
-                          QString("%1 (v%2)")
-                              .arg(QCoreApplication::applicationName())
-                              .arg(App::version())
-                              .toUtf8());
-
-    setProgress(0);
-    QNetworkReply *reply = net.get(*request);
-    connect(reply, &QNetworkReply::finished, this, &ScriptCompiler::responseDownload);
-    connect(reply, &QNetworkReply::downloadProgress, this, &ScriptCompiler::downloadProgress);
+    _gh.requestDownloadAsset(assetName, m_tag);
 }
 
 void ScriptCompiler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -263,46 +248,22 @@ void ScriptCompiler::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
     }
 }
 
-void ScriptCompiler::responseDownload()
+void ScriptCompiler::downloadFinished(QString assetName, QFile *data)
 {
-    setProgress(-1);
-
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (!reply)
-        return;
-    reply->deleteLater();
-
-    if (reply->error()) {
-        qWarning() << reply->errorString();
+    if (!assetName.startsWith(m_sdk)) {
+        apxMsgW() << title().append(':') << tr("Unknown response") << assetName;
         return;
     }
-    QByteArray data = reply->readAll();
-    if (data.isEmpty()) {
-        qWarning() << "no data";
-        return;
-    }
+    apxMsg() << title().append(':') << tr("Received") << assetName;
 
-    QString s = reply->header(QNetworkRequest::ContentDispositionHeader).toString();
-    s = s.mid(s.lastIndexOf("filename=", Qt::CaseInsensitive));
-    s = s.mid(s.indexOf("=") + 1);
-    s = s.left(s.indexOf(";"));
-    if (!s.startsWith(m_sdk)) {
-        apxMsgW() << title().append(':') << tr("Unknown response") << s;
+    auto newFileName = m_dir.absoluteFilePath(assetName);
+    if (!data->copy(newFileName)) {
+        apxMsgW() << tr("Can't copy file:") << newFileName;
         return;
     }
-    apxMsg() << title().append(':') << tr("Received") << s;
-
-    QFile fzip(m_dir.absoluteFilePath(s));
-    if (!fzip.open(QFile::WriteOnly)) {
-        qWarning() << "can't write" << fzip.fileName();
-        return;
-    }
-    fzip.write(data);
-    fzip.close();
-    qDebug() << "downloaded" << fzip.fileName();
 
     // extract
-    extract(s);
+    extract(newFileName);
 }
 
 void ScriptCompiler::extract(QString fileName)

@@ -50,6 +50,13 @@ public:
     DatalinkRemote *registerHost(QUrl url);
     DatalinkRemote *findRemote(QUrl url);
 
+public:
+    int connectedCount() const;
+    void setConnectedCount(int v);
+
+protected:
+    int m_connectedCount;
+
 private:
     QUdpSocket *udpDiscover;
     Datalink *datalink;
@@ -63,14 +70,6 @@ private slots:
 
     void connectTriggered();
 
-    //-----------------------------------------
-    //PROPERTIES
-public:
-    int connectedCount() const;
-    void setConnectedCount(int v);
-
-protected:
-    int m_connectedCount;
 signals:
     void connectedCountChanged();
 };

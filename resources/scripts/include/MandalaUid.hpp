@@ -103,6 +103,21 @@ enum constants_e : uint8_t {
     las_status_holdon = 1,
     las_status_cancel = 2,
 
+    // sns.nav.vps.src
+    vps_src_unknown = 0,
+    vps_src_local = 1,
+    vps_src_primary = 2,
+    vps_src_secondary = 3,
+    vps_src_failsafe = 4,
+    vps_src_auxillary = 5,
+
+    // sns.nav.vps.status
+    vps_status_unknown = 0,
+    vps_status_available = 1,
+    vps_status_warning = 2,
+    vps_status_critical = 3,
+    vps_status_failure = 4,
+
     // sns.env.eng.health
     eng_health_unknown = 0,
     eng_health_idle = 1,
@@ -497,6 +512,70 @@ enum constants_e : uint8_t {
     sys_health_warning = 2,
     sys_health_critical = 3,
 
+    // est.env.usrb
+    env_usrb_off = 0,
+    env_usrb_on = 1,
+
+    // est.env.usrb.b1
+    usrb_b1_off = 0,
+    usrb_b1_on = 1,
+
+    // est.env.usrb.b2
+    usrb_b2_off = 0,
+    usrb_b2_on = 1,
+
+    // est.env.usrb.b3
+    usrb_b3_off = 0,
+    usrb_b3_on = 1,
+
+    // est.env.usrb.b4
+    usrb_b4_off = 0,
+    usrb_b4_on = 1,
+
+    // est.env.usrb.b5
+    usrb_b5_off = 0,
+    usrb_b5_on = 1,
+
+    // est.env.usrb.b6
+    usrb_b6_off = 0,
+    usrb_b6_on = 1,
+
+    // est.env.usrb.b7
+    usrb_b7_off = 0,
+    usrb_b7_on = 1,
+
+    // est.env.usrb.b8
+    usrb_b8_off = 0,
+    usrb_b8_on = 1,
+
+    // est.env.usrb.b9
+    usrb_b9_off = 0,
+    usrb_b9_on = 1,
+
+    // est.env.usrb.b10
+    usrb_b10_off = 0,
+    usrb_b10_on = 1,
+
+    // est.env.usrb.b11
+    usrb_b11_off = 0,
+    usrb_b11_on = 1,
+
+    // est.env.usrb.b12
+    usrb_b12_off = 0,
+    usrb_b12_on = 1,
+
+    // est.env.usrb.b13
+    usrb_b13_off = 0,
+    usrb_b13_on = 1,
+
+    // est.env.usrb.b14
+    usrb_b14_off = 0,
+    usrb_b14_on = 1,
+
+    // est.env.usrb.b15
+    usrb_b15_off = 0,
+    usrb_b15_on = 1,
+
 
     // cmd.nav.proc.mode
     proc_mode_EMG = 0,
@@ -528,8 +607,9 @@ enum constants_e : uint8_t {
     reg_pos_hdg = 1,
     reg_pos_direct = 2,
     reg_pos_track = 3,
-    reg_pos_loiter = 4,
-    reg_pos_hover = 5,
+    reg_pos_runway = 4,
+    reg_pos_loiter = 5,
+    reg_pos_hover = 6,
 
     // cmd.nav.reg.spd
     reg_spd_off = 0,
@@ -782,19 +862,15 @@ namespace sns
         };
         namespace vps
         {
-            enum { vx = 0xb1 };
-            enum { vy = 0xb2 };
-            enum { vz = 0xb3 };
-            enum { dx = 0xb4 };
-            enum { dy = 0xb5 };
-            enum { dz = 0xb6 };
-            enum { roll = 0xb7 };
-            enum { pitch = 0xb8 };
-            enum { yaw = 0xb9 };
-            enum { lat = 0xba };
-            enum { lon = 0xbb };
-            enum { hmsl = 0xbc };
-            enum { altitude = 0xbd };
+            enum { src = 0xb1 };
+            enum { cnt = 0xb2 };
+            enum { status = 0xb3 };
+            enum { x = 0xb4 };
+            enum { y = 0xb5 };
+            enum { z = 0xb6 };
+            enum { vx = 0xb7 };
+            enum { vy = 0xb8 };
+            enum { vz = 0xb9 };
         };
         namespace tcas
         {
@@ -1177,11 +1253,12 @@ namespace est
             enum { health = 0x502 };
             enum { time = 0x503 };
             enum { uptime = 0x504 };
-            enum { fuel = 0x505 };
-            enum { weight = 0x506 };
-            enum { ttl = 0x507 };
-            enum { range = 0x508 };
-            enum { corr = 0x509 };
+            enum { ltt = 0x505 };
+            enum { fuel = 0x506 };
+            enum { weight = 0x507 };
+            enum { ttl = 0x508 };
+            enum { range = 0x509 };
+            enum { corr = 0x50a };
         };
         namespace ats
         {
@@ -1262,59 +1339,77 @@ namespace est
             enum { b14 = 0x56e };
             enum { b15 = 0x56f };
         };
+        namespace usrc
+        {
+            enum { c1 = 0x571 };
+            enum { c2 = 0x572 };
+            enum { c3 = 0x573 };
+            enum { c4 = 0x574 };
+            enum { c5 = 0x575 };
+            enum { c6 = 0x576 };
+            enum { c7 = 0x577 };
+            enum { c8 = 0x578 };
+            enum { c9 = 0x579 };
+            enum { c10 = 0x57a };
+            enum { c11 = 0x57b };
+            enum { c12 = 0x57c };
+            enum { c13 = 0x57d };
+            enum { c14 = 0x57e };
+            enum { c15 = 0x57f };
+        };
         namespace usrw
         {
-            enum { w1 = 0x571 };
-            enum { w2 = 0x572 };
-            enum { w3 = 0x573 };
-            enum { w4 = 0x574 };
-            enum { w5 = 0x575 };
-            enum { w6 = 0x576 };
-            enum { w7 = 0x577 };
-            enum { w8 = 0x578 };
-            enum { w9 = 0x579 };
-            enum { w10 = 0x57a };
-            enum { w11 = 0x57b };
-            enum { w12 = 0x57c };
-            enum { w13 = 0x57d };
-            enum { w14 = 0x57e };
-            enum { w15 = 0x57f };
+            enum { w1 = 0x581 };
+            enum { w2 = 0x582 };
+            enum { w3 = 0x583 };
+            enum { w4 = 0x584 };
+            enum { w5 = 0x585 };
+            enum { w6 = 0x586 };
+            enum { w7 = 0x587 };
+            enum { w8 = 0x588 };
+            enum { w9 = 0x589 };
+            enum { w10 = 0x58a };
+            enum { w11 = 0x58b };
+            enum { w12 = 0x58c };
+            enum { w13 = 0x58d };
+            enum { w14 = 0x58e };
+            enum { w15 = 0x58f };
         };
         namespace usrf
         {
-            enum { f1 = 0x581 };
-            enum { f2 = 0x582 };
-            enum { f3 = 0x583 };
-            enum { f4 = 0x584 };
-            enum { f5 = 0x585 };
-            enum { f6 = 0x586 };
-            enum { f7 = 0x587 };
-            enum { f8 = 0x588 };
-            enum { f9 = 0x589 };
-            enum { f10 = 0x58a };
-            enum { f11 = 0x58b };
-            enum { f12 = 0x58c };
-            enum { f13 = 0x58d };
-            enum { f14 = 0x58e };
-            enum { f15 = 0x58f };
+            enum { f1 = 0x591 };
+            enum { f2 = 0x592 };
+            enum { f3 = 0x593 };
+            enum { f4 = 0x594 };
+            enum { f5 = 0x595 };
+            enum { f6 = 0x596 };
+            enum { f7 = 0x597 };
+            enum { f8 = 0x598 };
+            enum { f9 = 0x599 };
+            enum { f10 = 0x59a };
+            enum { f11 = 0x59b };
+            enum { f12 = 0x59c };
+            enum { f13 = 0x59d };
+            enum { f14 = 0x59e };
+            enum { f15 = 0x59f };
         };
         namespace usrx
         {
-            enum { x1 = 0x591 };
-            enum { x2 = 0x592 };
-            enum { x3 = 0x593 };
-            enum { x4 = 0x594 };
-            enum { x5 = 0x595 };
-            enum { x6 = 0x596 };
-            enum { x7 = 0x597 };
-            enum { x8 = 0x598 };
-            enum { x9 = 0x599 };
-            enum { x10 = 0x59a };
-            enum { x11 = 0x59b };
-            enum { x12 = 0x59c };
-            enum { x13 = 0x59d };
-            enum { x14 = 0x59e };
-            enum { x15 = 0x59f };
+            enum { x1 = 0x5a1 };
+            enum { x2 = 0x5a2 };
+            enum { x3 = 0x5a3 };
+            enum { x4 = 0x5a4 };
+            enum { x5 = 0x5a5 };
+            enum { x6 = 0x5a6 };
+            enum { x7 = 0x5a7 };
+            enum { x8 = 0x5a8 };
+            enum { x9 = 0x5a9 };
+            enum { x10 = 0x5aa };
+            enum { x11 = 0x5ab };
+            enum { x12 = 0x5ac };
+            enum { x13 = 0x5ad };
+            enum { x14 = 0x5ae };
+            enum { x15 = 0x5af };
         };
     };
 };
@@ -1374,6 +1469,8 @@ namespace cmd
             enum { vspeed = 0x647 };
             enum { tecs = 0x648 };
             enum { radius = 0x649 };
+            enum { vx = 0x64a };
+            enum { vy = 0x64b };
         };
         namespace eng
         {

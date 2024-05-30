@@ -474,7 +474,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
                 return false;
             }
             const QVariant &v = _values.value(key);
-            if (static_cast<QMetaType::Type>(v.type()) == QMetaType::QVariantList) {
+            if (v.typeId() == QMetaType::QVariantList) {
                 int subidx = 0;
                 for (auto const &i : v.value<QVariantList>()) {
                     quint64 valueID = getValueID(query, i);
@@ -603,7 +603,7 @@ bool DBReqLoadNodeConfig::run(QSqlQuery &query)
 
     while (query.next()) {
         QString s = query.value(0).toString();
-        if (_values.contains(s) && !_values.value(s).canConvert<QVariantList>()) {
+        if (_values.contains(s) && _values.value(s).typeId() != QMetaType::QVariantList) {
             qWarning() << "duplicate field" << s;
         }
         const QVariant &v = query.value(2);

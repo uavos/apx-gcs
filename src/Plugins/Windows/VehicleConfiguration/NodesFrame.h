@@ -41,21 +41,6 @@ private:
     QAction *aDefaults;
     QLabel *lbUavName;
 
-    template<class T = Fact>
-    inline QList<T *> selectedItems() const
-    {
-        QList<T *> list;
-        foreach (QModelIndex index, treeWidget->tree->selectionModel()->selectedRows()) {
-            Fact *i = index.data(Fact::ModelDataRole).value<Fact *>();
-            if (!i)
-                continue;
-            T *f = qobject_cast<T *>(i);
-            if (f)
-                list.append(f);
-        }
-        return list;
-    }
-
     void addNodeTools(QMenu *menu, Fact *fact, QString nodeName);
     void updateMenuTitles(QMenu *menu);
 

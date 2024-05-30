@@ -36,7 +36,7 @@ FactDelegateDialog::FactDelegateDialog(Fact *fact, QWidget *parent)
                    + QString(" (%1)").arg(fact->titlePath()));
 
     vlayout = new QVBoxLayout(this);
-    vlayout->setMargin(0);
+    vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
 
     toolBar = new QToolBar(this);

@@ -26,31 +26,6 @@
 #include <app_def.h>
 #include <QIcon>
 
-#ifdef Q_OS_MAC
-#include <mach-o/arch.h>
-static QByteArray getCpuId()
-{
-    const NXArchInfo *info = NXGetLocalArchInfo();
-    return QByteArray(reinterpret_cast<const char *>(info), sizeof(NXArchInfo));
-}
-#elif defined Q_OS_LINUX
-#include <cpuid.h>
-static QByteArray getCpuId()
-{
-    unsigned int info[4] = {0, 0, 0, 0};
-    __get_cpuid(0, &info[0], &info[1], &info[2], &info[3]);
-    return QByteArray(reinterpret_cast<const char *>(info), sizeof(info));
-}
-#elif defined Q_OS_WIN
-#include <machine_id.h>
-static QByteArray getCpuId()
-{
-    unsigned int info[4] = {0, 0, 0, 0};
-    __cpuid(info, 0);
-    return QByteArray(reinterpret_cast<const char *>(info), sizeof(info));
-}
-#endif
-
 AppBase *AppBase::_instance = nullptr;
 
 AppBase::AppBase(int &argc, char **argv, const QString &name)
@@ -90,8 +65,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
         m_hostname = "localhost";
 
     // machine ID
-    QByteArray uid = QSysInfo::machineUniqueId();
-    uid.append(getCpuId());
+    auto uid = QSysInfo::machineUniqueId();
     uid.append(QSysInfo::machineHostName().toUtf8());
     m_machineUID = QCryptographicHash::hash(uid, QCryptographicHash::Sha1).toHex().toUpper();
 
@@ -205,20 +179,20 @@ QString AppBase::aboutString()
                  .arg(QCoreApplication::applicationName())
                  .arg(version());
     lines << QString("%1: %2").arg(tr("Timestamp")).arg(git_time());
-    lines << QString("Qt: %1 (%2, %3 bit)")
-                 .arg(QLatin1String(qVersion()))
-                 .arg(compilerString())
-                 .arg(QString::number(QSysInfo::WordSize));
-    lines << QString("%1: %2 %3")
-                 .arg(tr("Built"))
-                 .arg(QLatin1String(__DATE__))
-                 .arg(QLatin1String(__TIME__));
+
+    lines << QString("%1: %2 (%3)")
+                 .arg(tr("Platform"), QSysInfo::productType(), QSysInfo::buildCpuArchitecture());
+
+    lines << QString("Qt: %1 (%2, %3 bit, %4)")
+                 .arg(QLatin1String(qVersion()),
+                      compilerString(),
+                      QString::number(QSysInfo::WordSize),
+                      QSysInfo::buildCpuArchitecture());
+
+    lines << QString("%1: %2 %3").arg(tr("Built"), QLatin1String(__DATE__), QLatin1String(__TIME__));
     lines << QString("%1: %2").arg(tr("Hash")).arg(git_hash());
-    lines << QString("%1: %2 (%3@%4)")
-                 .arg(tr("Machine"))
-                 .arg(machineUID())
-                 .arg(username())
-                 .arg(hostname());
+
+    lines << QString("%1: %2 (%3@%4)").arg(tr("Machine"), machineUID(), username(), hostname());
 
     /*lines << "";
     lines << QString("%1: http://docs.uavos.com/").arg(tr("Documentation"));

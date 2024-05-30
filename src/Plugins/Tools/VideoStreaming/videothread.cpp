@@ -162,9 +162,6 @@ static GstPadProbeReturn draw_overlay(GstPad *pad, GstPadProbeInfo *info, Stream
 
 void VideoThread::run()
 {
-    //    QmlOverlay *qmlOverlay = new QmlOverlay;
-    //    setOverlayCallback(std::bind(&QmlOverlay::drawOverlay, qmlOverlay, _1));
-
     auto context = std::make_unique<StreamContext>();
     context->reencoding = m_reencoding;
 
@@ -320,66 +317,60 @@ void VideoThread::openWriter(StreamContext *context)
     QString filename = GstPlayer::getMediaFileName(GstPlayer::mtVideo);
 
     //create
-    context->recQueue = gst_element_factory_make("queue", nullptr);
-    if (context->reencoding) {
-        context->recConverter = gst_element_factory_make("videoconvert", nullptr);
-        context->recEncoder = gst_element_factory_make("x264enc", nullptr);
-    }
-    context->recMuxer = gst_element_factory_make("matroskamux", nullptr);
+    context->recQueue = gst_element_factory_make("queue2", nullptr);
+    context->recConverter = gst_element_factory_make("videoconvert", nullptr);
+    context->recEncoder = gst_element_factory_make("x264enc", nullptr);
+    context->recMuxer = gst_element_factory_make("mp4mux", nullptr);
     context->recSink = gst_element_factory_make("filesink", nullptr);
 
-    if (!context->recQueue || !context->recMuxer || !context->recSink
-        || (context->reencoding && (!context->recEncoder || !context->recConverter))) {
+    if (!context->recQueue || !context->recConverter || !context->recEncoder || !context->recMuxer
+        || !context->recSink) {
         emit errorOccured("Can't create recording elements");
         return;
     }
 
     //tune
     g_object_set(G_OBJECT(context->recSink), "location", filename.toStdString().c_str(), nullptr);
-    if (context->reencoding) {
-        // g_object_set(G_OBJECT(context->recEncoder), "speed-preset", 1, nullptr);
-        // g_object_set(G_OBJECT(context->recEncoder), "tune", 4, nullptr);
 
-        g_object_set(G_OBJECT(context->recEncoder),
-                     "quantizer",
-                     18,
-                     "pass",
-                     5,
-                     "speed-preset",
-                     1,
-                     "tune",
-                     4,
-                     nullptr);
-    }
+    g_object_set(G_OBJECT(context->recMuxer),
+                 "fragment-duration",
+                 1000,
+                 "fragment-mode",
+                 1,
+                 //  "force-create-timecode-trak",
+                 //  1,
+                 //  "streamable",
+                 //  1,
+                 nullptr);
+
+    g_object_set(G_OBJECT(context->recEncoder),
+                 "quantizer",
+                 18,
+                 "pass",
+                 5,
+                 "speed-preset",
+                 1,
+                 "tune",
+                 4,
+                 nullptr);
 
     //add
     gst_bin_add_many(GST_BIN(context->pipeline.get()),
                      context->recQueue,
+                     context->recConverter,
+                     context->recEncoder,
                      context->recMuxer,
                      context->recSink,
                      nullptr);
-    if (context->reencoding)
-        gst_bin_add_many(GST_BIN(context->pipeline.get()),
-                         context->recConverter,
-                         context->recEncoder,
-                         nullptr);
 
     //link
-    bool linkResult = false;
-    if (!context->reencoding)
-        linkResult = gst_element_link_many(context->teeparse,
-                                           context->recQueue,
-                                           context->recMuxer,
-                                           context->recSink,
-                                           nullptr);
-    else
-        linkResult = gst_element_link_many(context->teeconvert,
-                                           context->recQueue,
-                                           context->recConverter,
-                                           context->recEncoder,
-                                           context->recMuxer,
-                                           context->recSink,
-                                           nullptr);
+    bool linkResult = gst_element_link_many(context->teeparse,
+                                            context->recQueue,
+                                            context->recConverter,
+                                            context->recEncoder,
+                                            context->recMuxer,
+                                            context->recSink,
+                                            nullptr);
     if (!linkResult) {
         emit errorOccured("Can't link elements from record pipeline");
         return;
@@ -387,12 +378,11 @@ void VideoThread::openWriter(StreamContext *context)
 
     //sync
     bool syncResult = gst_element_sync_state_with_parent(context->recQueue)
+                      && gst_element_sync_state_with_parent(context->recConverter)
+                      && gst_element_sync_state_with_parent(context->recEncoder)
                       && gst_element_sync_state_with_parent(context->recMuxer)
                       && gst_element_sync_state_with_parent(context->recSink);
-    if (context->reencoding) {
-        syncResult = syncResult && gst_element_sync_state_with_parent(context->recConverter)
-                     && gst_element_sync_state_with_parent(context->recEncoder);
-    }
+
     if (!syncResult) {
         emit errorOccured("Can't sync state of rec elements with parent");
         return;
@@ -409,7 +399,7 @@ void VideoThread::openWriter(StreamContext *context)
                           nullptr);
         context->overlayCallback = m_overlayCallback;
     } else
-        context->overlayCallback = [](auto) {};
+        context->overlayCallback = m_overlayCallback ? m_overlayCallback : ([](auto) {});
 
     context->recording = true;
 }
@@ -421,23 +411,17 @@ void VideoThread::closeWriter(StreamContext *context)
     //remove
     gst_bin_remove_many(GST_BIN(context->pipeline.get()),
                         context->recQueue,
+                        context->recConverter,
+                        context->recEncoder,
                         context->recMuxer,
                         context->recSink,
                         nullptr);
-    if (context->reencoding)
-        gst_bin_remove_many(GST_BIN(context->pipeline.get()),
-                            context->recConverter,
-                            context->recEncoder,
-                            nullptr);
 
     gst_element_set_state(context->recQueue, GST_STATE_NULL);
+    gst_element_set_state(context->recConverter, GST_STATE_NULL);
+    gst_element_set_state(context->recEncoder, GST_STATE_NULL);
     gst_element_set_state(context->recMuxer, GST_STATE_NULL);
     gst_element_set_state(context->recSink, GST_STATE_NULL);
-
-    if (context->reencoding) {
-        gst_element_set_state(context->recConverter, GST_STATE_NULL);
-        gst_element_set_state(context->recEncoder, GST_STATE_NULL);
-    }
 
     context->recording = false;
 }
@@ -446,15 +430,18 @@ void VideoThread::onSampleReceived(StreamContext *context, GstElement *appsink)
 {
     std::shared_ptr<GstSample> sample(gst_app_sink_pull_sample(GST_APP_SINK(appsink)),
                                       &gst_sample_unref);
-    QImage frame = sample2qimage(sample);
 
-    if (!context->recording && context->isRecordRequested())
-        openWriter(context);
+    auto frame = unpackSample(sample);
 
-    if (context->recording && !context->isRecordRequested())
-        closeWriter(context);
+    if (frame.isValid()) {
+        if (!context->recording && context->isRecordRequested())
+            openWriter(context);
 
-    emit frameReceived(frame);
+        if (context->recording && !context->isRecordRequested())
+            closeWriter(context);
+
+        emit frameReceived(frame);
+    }
 }
 
 QImage VideoThread::sample2qimage(const std::shared_ptr<GstSample> &sample)
@@ -474,6 +461,27 @@ QImage VideoThread::sample2qimage(const std::shared_ptr<GstSample> &sample)
         }
     }
     return QImage(width, height, QImage::Format_RGB32);
+}
+QVideoFrame VideoThread::unpackSample(const std::shared_ptr<GstSample> &sample)
+{
+    std::shared_ptr<GstCaps> caps(gst_sample_get_caps(sample.get()), [](auto) {});
+    int width = 0;
+    int height = 0;
+    if (getFrameSizeFromCaps(caps, width, height)) {
+        GstBuffer *buffer = gst_sample_get_buffer(sample.get());
+        GstMapInfo info;
+        gboolean success = gst_buffer_map(buffer, &info, (GstMapFlags) GST_MAP_READ);
+        if (success) {
+            QVideoFrameFormat format(QSize(width, height), QVideoFrameFormat::Format_RGBX8888);
+            QVideoFrame frame(format);
+            frame.map(QVideoFrame::WriteOnly);
+            memcpy(frame.bits(0), info.data, width * height * 4);
+            frame.unmap();
+            gst_buffer_unmap(buffer, &info);
+            return frame;
+        }
+    }
+    return {};
 }
 
 void VideoThread::setupEnvironment()

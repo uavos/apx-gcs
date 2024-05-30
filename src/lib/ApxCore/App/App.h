@@ -51,6 +51,7 @@ class App : public AppBase
     Q_PROPERTY(AppPrefs *prefs READ prefs CONSTANT)
 
     Q_PROPERTY(QString lang READ lang CONSTANT)
+    Q_PROPERTY(bool loaded READ loaded() NOTIFY loadingFinished)
 
 public:
     explicit App(int &argc, char **argv, const QString &name, const QUrl &url);
@@ -86,6 +87,38 @@ public:
 
     static AppPlugin *plugin(QString name);
 
+    static bool loaded() { return _instance->_loaded; }
+
+public:
+    AppEngine *engine() const;
+
+    QQuickWindow *window() const;
+    double scale() const;
+    void setScale(double v);
+
+    AppLog *appLog() const;
+    AppNotify *appNotify() const;
+    AppNotifyListModel *notifyModel() const;
+
+    AppPrefs *prefs() const;
+
+    QString lang() const;
+
+protected:
+    AppRoot *f_apx;
+
+    virtual void loadFonts();
+    virtual void loadServices();
+
+    AppEngine *m_engine;
+    QQuickWindow *m_window;
+    double m_scale;
+    AppNotify *m_appNotify;
+    AppNotifyListModel *m_notifyModel;
+    AppLog *m_appLog;
+    AppPrefs *m_prefs;
+    QString m_lang;
+
 private:
     static App *_instance;
 
@@ -97,14 +130,10 @@ private:
     AppPlugins *plugins;
     AppInstances *appInstances;
 
+    bool _loaded{};
+
     void loadTranslations();
     void loadTranslator(const QString &fileName);
-
-protected:
-    AppRoot *f_apx;
-
-    virtual void loadFonts();
-    virtual void loadServices();
 
 private slots:
     void appStateChanged(Qt::ApplicationState state);
@@ -122,6 +151,8 @@ public slots:
     //load
     virtual void loadApp();
 
+    void hide();
+
 signals:
     void loadingFinished();
     void uiComponentLoaded(QString name, QJSValue object);
@@ -133,34 +164,6 @@ signals:
 
     void appQuit();
 
-    //---------------------------------------
-    //PROPERTIES
-public:
-    AppEngine *engine() const;
-
-    QQuickWindow *window() const;
-    double scale() const;
-    void setScale(double v);
-
-    AppLog *appLog() const;
-    AppNotify *appNotify() const;
-    AppNotifyListModel *notifyModel() const;
-
-    AppPrefs *prefs() const;
-
-    QString lang() const;
-
-protected:
-    AppEngine *m_engine;
-    QQuickWindow *m_window;
-    double m_scale;
-    AppNotify *m_appNotify;
-    AppNotifyListModel *m_notifyModel;
-    AppLog *m_appLog;
-    AppPrefs *m_prefs;
-    QString m_lang;
-
-signals:
     void windowChanged();
     void scaleChanged();
 };

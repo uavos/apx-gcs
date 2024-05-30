@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.6
-import QtQuick.Controls 2.1
+import QtQuick
+import QtQuick.Controls
 //import QtQuick 2.2
 //import QtQuick.Controls 1.1
 import "../common"
@@ -84,15 +84,12 @@ ControlArea {
                 model: 8    //altitude_scale.item_cnt
                 PfdImage {
                     id: altitude_scale_image
-                    //smooth: ui.antialiasing
                     elementName: "altitude-scale"
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.rightMargin: 1
                     anchors.right: parent.right
                     anchors.verticalCenterOffset: (index-2)*height + height/10 * (altitude_window.altitude_value/altitude_window.strip_factor-Math.floor(altitude_window.altitude_value/altitude_window.strip_factor))
-                    width: parent.width
-                    height: elementBounds.height*altitude_window.strip_scale
-                    //altitude_scale.scale_size: height
+                    sourceScale: altitude_window.strip_scale
                 }
             }
         }
@@ -137,7 +134,7 @@ ControlArea {
         PfdImage {
             id: altitude_waypoint
             elementName: "altitude-waypoint"
-            //smooth: ui.antialiasing
+            sourceScale: altitude_window.strip_scale
             width: elementBounds.width*height/elementBounds.height
             height: altitude_box.height
 
@@ -151,7 +148,6 @@ ControlArea {
         PfdImage {
             id: altitude_box
             elementName: "altitude-box"
-            //smooth: ui.antialiasing
             clip: true
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
@@ -201,14 +197,14 @@ ControlArea {
         readonly property real v: f_ahrs_dh.value
 
         elementName: "altitude-triangle"
-        //smooth: ui.antialiasing
         visible: ui.test || apx.datalink.valid
-        width: elementBounds.width*altitude_window.strip_scale
-        height: elementBounds.height*altitude_window.strip_scale
+
+        sourceScale: altitude_window.strip_scale
         anchors.right: altitude_window.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: apx.limit(altitude_window.num2scaleHeight * v/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)
         Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
+
         Text {
             visible: Math.abs(altitude_triangle.v)>5
             text: altitude_triangle.v>0?("+"+altitude_triangle.v.toFixed()):altitude_triangle.v.toFixed()
@@ -226,10 +222,8 @@ ControlArea {
     PfdImage {
         id: agl_image
         elementName: "agl"
-        //smooth: ui.antialiasing
         visible: m_agl_valid
-        width: elementBounds.width*altitude_window.strip_scale
-        height: elementBounds.height*altitude_window.strip_scale
+        sourceScale: altitude_window.strip_scale
         anchors.right: altitude_window.left
         anchors.top: parent.verticalCenter
         anchors.topMargin: apx.limit(5*altitude_window.num2scaleHeight * (f_agl.value)/altitude_window.strip_factor,-altitude_window.height/2,altitude_window.height/2)

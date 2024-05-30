@@ -6,8 +6,6 @@
     "Version": 101,
     "Experimental": false,
     "Features": [
-        "OnlineMappingFeature",
-        "OnlineGeocodingFeature",
-        "ReverseGeocodingFeature"
+        "OnlineMappingFeature"
     ]
 }

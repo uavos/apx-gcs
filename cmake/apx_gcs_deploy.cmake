@@ -22,14 +22,26 @@ else()
     )
 endif()
 
-add_custom_target(
-    deploy_qt
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_qt.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
-    COMMENT "Deploying Qt..."
-    DEPENDS deploy_bundle ${PROJECT_NAME}.meta
-    WORKING_DIRECTORY ${APX_DEPLOY_DIR}
-    VERBATIM USES_TERMINAL
-)
+if(APPLE)
+    add_custom_target(
+        deploy_qt
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_qt.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+        COMMENT "Deploying Qt..."
+        DEPENDS deploy_bundle ${PROJECT_NAME}.meta
+        WORKING_DIRECTORY ${APX_DEPLOY_DIR}
+        VERBATIM USES_TERMINAL
+    )
+elseif(UNIX AND NOT APPLE)
+    add_custom_target(
+        deploy_qt
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy/deploy_qt.py --app=${APX_DEPLOY_DIR} --meta=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.json
+        COMMAND ${CMAKE_COMMAND} -E env --unset=DESTDIR ${CMAKE_COMMAND} --install ${CMAKE_CURRENT_BINARY_DIR} --prefix ${APX_DEPLOY_DIR} --strip --component Plugin
+        COMMENT "Deploying Qt..."
+        DEPENDS deploy_bundle ${PROJECT_NAME}.meta
+        WORKING_DIRECTORY ${APX_DEPLOY_DIR}
+        VERBATIM USES_TERMINAL
+    )
+endif()
 
 add_custom_target(
     deploy_libs

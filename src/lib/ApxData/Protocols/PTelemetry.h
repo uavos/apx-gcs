@@ -42,5 +42,5 @@ signals:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
     void telemetryReset();
 
-    void xpdrData(PBase::Values values);
+    void xpdrData(PBase::Values values, quint64 timestamp_ms);
 };

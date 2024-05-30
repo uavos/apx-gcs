@@ -58,11 +58,7 @@ Simulator::Simulator(Fact *parent)
     connect(f_stop, &Fact::triggered, &pShiva, &QProcess::terminate);
 
     // Xplane group
-    f_type = new Fact(this,
-                      "type",
-                      tr("Type"),
-                      tr("Simulator type"),
-                      Enum | PersistentValue | SystemSettings);
+    f_type = new Fact(this, "type", tr("Type"), tr("Simulator type"), Enum | PersistentValue);
     f_type->setIcon("package-variant");
 
     f_sxpl = new Fact(this, "sxpl", tr("Start XPlane"), tr("Run X-Plane on start"), Bool);
@@ -216,39 +212,34 @@ void Simulator::launchXplane()
                 dir = QDir(AppDirs::libs().absolutePath(), "*.xpl");
             if (dir.isEmpty())
                 apxMsgW() << tr("XPL Plugin not found");
-            for (auto const &fi : dir.entryInfoList()) {
-                QString dest = d.absoluteFilePath(fi.fileName());
-                QFileInfo fiDest(dest);
-                //qDebug()<<dest;
-                if (fiDest.isSymLink() && fiDest.symLinkTarget() == fi.absoluteFilePath())
-                    continue;
-                //qDebug()<<fi.absoluteFilePath()<<dest<<QFile::exists(dest);
-                if (fiDest.isSymLink() || QFile::exists(dest))
-                    QFile::remove(dest);
-                //qDebug()<<fi.absoluteFilePath()<<dest<<QFile::exists(dest);
-                if (QFile::link(fi.absoluteFilePath(), dest)) {
-                    apxMsg() << tr("XPL Plugin installed").append(":") << dest;
+
+            for (auto const &fiSource : dir.entryInfoList()) {
+                QString destPath = d.absoluteFilePath(fiSource.fileName());
+                QFileInfo fiDest(destPath);
+
+                if (QFile::exists(destPath)) {
+                    if (fiDest.lastModified() == fiSource.lastModified())
+                        continue;
+
+                    QFile::remove(destPath);
+                }
+
+                if (QFile::copy(fiSource.absoluteFilePath(), fiDest.absoluteFilePath())) {
+                    QFile fDest(destPath);
+                    fDest.open(QFile::ReadOnly);
+                    fDest.setFileTime(fiSource.lastModified(), QFile::FileModificationTime);
+
+                    apxMsg() << tr("XPL Plugin installed").append(":") << destPath;
                 } else {
-                    apxMsgW() << tr("XPL Plugin error").append(":") << dest;
+                    apxMsgW() << tr("XPL Plugin error").append(":") << destPath;
                 }
             }
-        }
-        //install xpl aircrafts
-        if (d.cd(xplaneDir) && d.cd("Aircraft")) {
-            d.mkpath("APX");
-            d.cd("APX");
-            QFileInfoList fiSrcList(QDir(AppDirs::res().absoluteFilePath("xplane/models"),
-                                         "",
-                                         QDir::Unsorted,
-                                         QDir::AllDirs | QDir::NoDotAndDotDot)
-                                        .entryInfoList());
-            foreach (QFileInfo fi, fiSrcList) {
-                QFileInfo fiDest(d.absoluteFilePath(fi.fileName()));
-                //qDebug()<<fiDest.absoluteFilePath();
-                if (fiDest.exists())
-                    continue;
-                AppDirs::copyPath(fi.absoluteFilePath(), fiDest.absoluteFilePath());
-                apxMsg() << tr("XPL Aircraft installed").append(":") << fiDest.absoluteFilePath();
+
+            // now check if there are duplicates found
+            auto xplFiles = QDir(d.absolutePath(), "ApxSIL_*.xpl").entryInfoList();
+            if (xplFiles.size() > 1) {
+                apxMsgW() << tr("Multiple XPL plugins found in X-Plane plugins directory. Please "
+                                "remove duplicates.");
             }
         }
 

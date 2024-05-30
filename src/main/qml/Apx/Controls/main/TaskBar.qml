@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.5;
-import QtQuick.Layouts 1.3
+import QtQuick
+import QtQuick.Layouts
 
-import QtQml.Models 2.11
+import QtQml.Models
 
-import Apx.Common 1.0
-import APX.Vehicles 1.0 as APX
+import Apx.Common
+import APX.Vehicles as APX
 
 RowLayout {
     id: control
@@ -101,7 +101,6 @@ RowLayout {
     //simulator
     Loader {
         Layout.fillHeight: true
-        asynchronous: true
         active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (vehicle.isLocal || apx.tools.simulator.stop.enabled || vehicle.title==="SIM")
         sourceComponent: Component {
             IconButton {

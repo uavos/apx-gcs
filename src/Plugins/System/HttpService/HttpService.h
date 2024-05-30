@@ -52,5 +52,5 @@ private slots:
     void vehicleSelected(Vehicle *vehicle);
 
 public slots:
-    void httpRequest(QTextStream &stream, QString req, bool *ok);
+    void httpRequest(QTextStream &stream, QString req, const QTcpSocket *tcp);
 };

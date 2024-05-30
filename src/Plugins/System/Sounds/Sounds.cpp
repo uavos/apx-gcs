@@ -119,12 +119,15 @@ Sounds::Sounds(Fact *parent)
     alias["connected"] = "radar_lock";
     //load files and create effects
     //qDebug() << QSoundEffect::supportedMimeTypes();
-    QDir fdir(AppDirs::res().filePath("audio/alerts"), "*.ogg *.wav");
+    // QDir fdir(AppDirs::res().filePath("audio/alerts"), "*.ogg *.wav");
+    QDir fdir(":audio/alerts", "*.ogg *.wav");
     foreach (QFileInfo fi, fdir.entryInfoList()) {
         if (!alias.values().contains(fi.baseName()))
             continue;
-        effects.insert(alias.key(fi.baseName()), new QSound(fi.absoluteFilePath(), this));
-        //qDebug()<<alias.key(fi.baseName())<<fi.baseName();
+        auto se = new QSoundEffect(this);
+        se->setSource(QUrl::fromLocalFile(fi.absoluteFilePath()));
+        effects.insert(alias.key(fi.baseName()), se);
+        // qDebug() << alias.key(fi.baseName()) << fi.baseName();
     }
 
     //say text repeated timeout timer
@@ -172,9 +175,8 @@ void Sounds::engineChanged()
         connect(tts, &QTextToSpeech::stateChanged, this, &Sounds::ttsStateChanged);
         locales.append(QLocale(QLocale::English, QLocale::UnitedStates));
         foreach (const QLocale &locale, tts->availableLocales()) {
-            st << QString("%1 (%2)")
-                      .arg(QLocale::languageToString(locale.language()))
-                      .arg(QLocale::countryToString(locale.country()));
+            st << QString("%1 (%2)").arg(QLocale::languageToString(locale.language()),
+                                         QLocale::territoryToString(locale.territory()));
             locales.append(locale);
         }
     }
@@ -188,9 +190,12 @@ void Sounds::engineChanged()
 void Sounds::langChanged()
 {
     disconnect(f_voice, &Fact::valueChanged, this, &Sounds::voiceChanged);
-    int i = f_lang->value().toInt();
-    if (i >= 0 && i < locales.size())
-        tts->setLocale(locales.at(i));
+    if (tts) {
+        int i = f_lang->value().toInt();
+        if (i >= 0 && i < locales.size())
+            tts->setLocale(locales.at(i));
+    }
+
     QStringList st;
     st << "default";
     voices.clear();
@@ -200,9 +205,9 @@ void Sounds::langChanged()
         //qDebug()<<defaultVoiceName<<defaultVoices;
         foreach (const QVoice &voice, tts->availableVoices()) {
             st << QString("%1 - %2 - %3")
-                      .arg(voice.name())
-                      .arg(QVoice::genderName(voice.gender()))
-                      .arg(QVoice::ageName(voice.age()));
+                      .arg(voice.name(),
+                           QVoice::genderName(voice.gender()),
+                           QVoice::ageName(voice.age()));
             voices.append(voice);
             if (voice.name() == defaultVoiceName)
                 voices[0] = voice;
@@ -244,11 +249,13 @@ void Sounds::voiceChanged()
             else
                 voice = "vicki";
         }
-        QDir fdir(AppDirs::res().filePath("audio/speech/" + voice), "*.ogg *.wav");
+        QDir fdir(":audio/speech/" + voice, "*.ogg *.wav");
+        // QDir fdir(AppDirs::res().filePath("audio/speech/" + voice), "*.ogg *.wav");
         //qDebug()<<fdir.absolutePath();
         foreach (QString file, fdir.entryList()) {
-            speech.insert(file.left(file.indexOf('.')),
-                          new QSound(fdir.absoluteFilePath(file), this));
+            auto se = new QSoundEffect(this);
+            se->setSource(QUrl::fromLocalFile(fdir.absoluteFilePath(file)));
+            speech.insert(file.left(file.indexOf('.')), se);
             //qDebug()<<file;
         }
     }
@@ -279,7 +286,7 @@ void Sounds::play(QString text)
     say(text.replace(':', ' ').simplified().toLower(), false);
 }
 
-void Sounds::queue(QSound *e)
+void Sounds::queue(QSoundEffect *e)
 {
     if (effect) {
         if (!effectsQueue.contains(e))
@@ -293,7 +300,7 @@ void Sounds::queue(QSound *e)
 
 void Sounds::effectTimeout()
 {
-    if (effect && (!effect->isFinished())) {
+    if (effect && effect->isPlaying()) {
         effectTimer.start();
         return;
     }
@@ -334,7 +341,7 @@ void Sounds::say(const QString &text, bool ttsForce)
         }
         if (st.isEmpty())
             return;
-        QSound *e = effects.value(st.last());
+        QSoundEffect *e = effects.value(st.last());
         if (!e)
             return;
         if (lastEffect == e)
@@ -372,7 +379,7 @@ void Sounds::sayNext()
             return;
         if (sayQueue.isEmpty())
             return;
-        QSound *e = speech.value(sayQueue.dequeue());
+        QSoundEffect *e = speech.value(sayQueue.dequeue());
         effect = e;
         e->play();
         effectTimer.start();

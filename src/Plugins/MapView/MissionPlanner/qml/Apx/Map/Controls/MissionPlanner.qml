@@ -19,16 +19,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
+import QtQuick
+import QtQuick.Layouts
 
-import Apx.Application 1.0
-import Apx.Map.MapView 1.0
+import Apx.Application
+import Apx.Map.MapControl
 
-import Apx.Common 1.0
-import Apx.Controls 1.0
+import Apx.Common
+import Apx.Controls
 
-MapView {
+MapControl {
     id: missionPlanner
 
     readonly property bool showWind: mandala.est.wind.status.value > 0 || mandala.est.wind.speed.value > 0
@@ -36,15 +36,15 @@ MapView {
     readonly property real margins: Style.spacing
 
     //initial animation
-    PropertyAnimation {
+    /*PropertyAnimation {
         running: true
         target: map
         property: "zoomLevel"
         from: 12
         to: 16.33
-        duration: 1000
+        duration: 100
         easing.type: Easing.OutInCirc
-    }
+    }*/
 
     Component.onCompleted: {
         application.registerUiComponent(map,"map")
@@ -112,7 +112,7 @@ MapView {
             Loader {
                 id: wind
                 active: showWind
-                asynchronous: true
+                // asynchronous: true
                 sourceComponent: Component { Wind { } }
                 visible: wind.status===Loader.Ready
             }

@@ -118,8 +118,12 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     connect(f_udp, &Fact::valueChanged, this, &DatalinkServer::udpActiveChanged);
 
     updateStatus();
-    QTimer::singleShot(500, this, &DatalinkServer::httpActiveChanged);
-    QTimer::singleShot(500, this, &DatalinkServer::udpActiveChanged);
+
+    // connect after app loading with some delay
+    connect(App::instance(), &App::loadingFinished, this, [this]() {
+        QTimer::singleShot(1000, this, &DatalinkServer::httpActiveChanged);
+        QTimer::singleShot(1000, this, &DatalinkServer::udpActiveChanged);
+    });
 }
 
 void DatalinkServer::updateStatus()
@@ -131,6 +135,9 @@ void DatalinkServer::updateStatus()
 
 void DatalinkServer::httpActiveChanged()
 {
+    if (!App::loaded())
+        return;
+
     if (!f_http->value().toBool()) {
         for (auto i : f_clients->findFacts<DatalinkTcp>())
             i->close();
@@ -146,6 +153,9 @@ void DatalinkServer::httpActiveChanged()
 }
 void DatalinkServer::udpActiveChanged()
 {
+    if (!App::loaded())
+        return;
+
     if (!f_udp->value().toBool()) {
         udpServer->close();
         f_udp->setActive(false);

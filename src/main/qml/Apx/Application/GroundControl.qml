@@ -19,10 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
-
-import Qt.labs.settings 1.0
+import QtQuick
+import QtQuick.Layouts
+import QtCore
 
 import "qrc:/Apx/Application"
 
@@ -86,29 +85,25 @@ Item {
         state=maximized?"normal":"maximized"
     }
 
-    GridLayout {
+    ColumnLayout {
         anchors.fill: parent
-        ColumnLayout {
+        spacing: 0
+
+        InstrumentsLayout {
+            id: instrumentsLayout
+            state: groundControl.state
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            Layout.preferredHeight: instrumentsHeight
+        }
+        Rectangle { visible: instrumentsLayout.visible; Layout.fillWidth: true; implicitHeight: visible?1:0; border.width: 0; color: sepColor; }
+
+        MainLayout {
+            id: mainLayout
+            state: groundControl.state
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 0
-
-            InstrumentsLayout {
-                id: instrumentsLayout
-                state: groundControl.state
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-                Layout.preferredHeight: instrumentsHeight
-            }
-            Rectangle { visible: instrumentsLayout.visible; Layout.fillWidth: true; implicitHeight: visible?1:0; border.width: 0; color: sepColor; }
-
-            MainLayout {
-                id: mainLayout
-                state: groundControl.state
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.minimumHeight: instrumentsHeight
-            }
+            Layout.minimumHeight: instrumentsHeight
         }
     }
 }

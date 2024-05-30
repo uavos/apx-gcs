@@ -65,6 +65,15 @@ public:
     inline mandala::fmt_e fmt() const { return m_fmt.fmt; }
     inline bool is_gps_converted() const { return _convert_gps; }
 
+public:
+    bool isSystem() const;
+    bool isGroup() const;
+
+protected:
+    //Fact override
+    virtual QVariant data(int col, int role) override;
+    virtual bool showThis(QRegularExpression re) const override; //filter helper
+
 private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;
@@ -90,15 +99,4 @@ private:
 
     QVariant convertFromStream(const QVariant &v) const;
     QVariant convertForStream(const QVariant &v) const;
-
-protected:
-    //Fact override
-    virtual QVariant data(int col, int role) override;
-    virtual bool showThis(QRegExp re) const override; //filter helper
-
-    //---------------------------------------
-    // PROPERTIES
-public:
-    bool isSystem() const;
-    bool isGroup() const;
 };
