@@ -32,8 +32,10 @@ const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_GeoPlugin()
     return plugin;
 }
 
-void GeoPlugin::init(){//load static plugin
-                       Q_IMPORT_PLUGIN(GeoPlugin)}
+void GeoPlugin::init()
+{ //load static plugin
+    Q_IMPORT_PLUGIN(GeoPlugin);
+}
 
 QGeoCodingManagerEngine *GeoPlugin::createGeocodingManagerEngine(const QVariantMap &,
                                                                  QGeoServiceProvider::Error *,
