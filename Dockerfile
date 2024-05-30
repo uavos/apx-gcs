@@ -90,3 +90,13 @@ RUN pip install aqtinstall &&\
     qtshadertools qt5compat qtcharts qtmultimedia \
     qtspeech qtlocation qtpositioning qtserialport &&\
     rsync -av /${VERSION_QT}/*/ /usr/local/ && rm -Rf /${VERSION_QT}
+
+# build patches
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+# tweak qt database plugin
+RUN cp -af libqsqlite.so libmimerapi.so && \
+    cp -af libqsqlite.so libqsqlmimer.so && \
+    cp -af libqsqlite.so libqsqlmysql.so && \
+    cp -af libqsqlite.so libqsqlodbc.so && \
+    cp -af libqsqlite.so libqsqlpsql.so
