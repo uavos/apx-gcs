@@ -15,12 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     # if: "false"
 
-    # strategy:
-    #   matrix:
-    #     platform:
-    #       - linux/amd64
-    #       - linux/arm64
-
     container:
       image: uavos/apx-gcs-linux:latest
       options: --privileged
@@ -33,6 +27,12 @@ jobs:
           fetch-tags: true
           fetch-depth: 0
       - run: git config --global --add safe.directory `pwd`
+
+      - name: Setup vscode tunnel # https://code.visualstudio.com/docs/remote/tunnels
+        run: |
+          curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' --output vscode_cli.tar.gz
+          tar -xf vscode_cli.tar.gz
+          code tunnel --accept-server-license-terms
 
       - name: Build package
         run: make release-package
