@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.2
+import QtQuick
 
 MouseArea {
     id: mouse_area
@@ -59,7 +59,7 @@ MouseArea {
     drag.maximumX: width - mouse_ptr.width/2
     drag.minimumY: -mouse_ptr.height/2
     drag.maximumY: height - mouse_ptr.height/2
-    onPressed: {
+    onPressed: (mouse) => {
         mouse_ptr.visible = true;
         mouse_ptr.x = mouse.x-mouse_ptr.width/2
         mouse_ptr.y = mouse.y-mouse_ptr.height/2

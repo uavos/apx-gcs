@@ -131,7 +131,7 @@ void SourceEdit::cleanText()
         QTextCursor cur(block);
         cur.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
         cur.removeSelectedText();
-        cur.insertText(s.remove(QRegExp("\\s+$")));
+        cur.insertText(s.remove(QRegularExpression("\\s+$")));
     }
 }
 
@@ -139,8 +139,8 @@ Highlighter::Highlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
     defaultCharFormat.setFont(SourceEdit::getFont());
-    commentStartExpression = QRegExp("/\\*");
-    commentEndExpression = QRegExp("\\*/");
+    commentStartExpression = QRegularExpression("/\\*");
+    commentEndExpression = QRegularExpression("\\*/");
     QStringList keywords = QStringList() << "new"
                                          << "const"
                                          << "printf"
@@ -254,7 +254,7 @@ Highlighter::HighlightingRule Highlighter::addRule(const QString &pattern,
     //charFormat.setFont(f);
     HighlightingRule rule;
     rule.format = charFormat;
-    rule.pattern = QRegExp(pattern);
+    rule.pattern = QRegularExpression(pattern);
     highlightingRules.append(rule);
     return rule;
 }
@@ -262,29 +262,31 @@ void Highlighter::highlightBlock(const QString &text)
 {
     setFormat(0, text.length(), defaultCharFormat);
     foreach (const HighlightingRule &rule, highlightingRules) {
-        QRegExp expression(rule.pattern);
-        int index = expression.indexIn(text);
-        while (index >= 0) {
-            int length = expression.matchedLength();
+        QRegularExpression expression(rule.pattern);
+        auto match = expression.match(text);
+        while (match.hasMatch()) {
+            int index = match.capturedStart();
+            int length = match.capturedLength();
             setFormat(index, length, rule.format);
-            index = expression.indexIn(text, index + length);
+            match = expression.match(text, index + length);
         }
     }
     setCurrentBlockState(0);
     int startIndex = 0;
     if (previousBlockState() != 1)
-        startIndex = commentStartExpression.indexIn(text);
+        startIndex = commentStartExpression.match(text).capturedStart();
 
     while (startIndex >= 0) {
-        int endIndex = commentEndExpression.indexIn(text, startIndex);
+        auto match = commentEndExpression.match(text, startIndex);
+        int endIndex = match.capturedEnd();
         int commentLength;
         if (endIndex == -1) {
             setCurrentBlockState(1);
             commentLength = text.length() - startIndex;
         } else {
-            commentLength = endIndex - startIndex + commentEndExpression.matchedLength();
+            commentLength = endIndex - startIndex + match.capturedLength();
         }
         setFormat(startIndex, commentLength, multiLineCommentFormat);
-        startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
+        startIndex = commentStartExpression.match(text, startIndex + commentLength).capturedStart();
     }
 }

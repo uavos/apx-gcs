@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.2
+import QtQuick
 
 Image {
     property string elementName
@@ -41,14 +41,12 @@ Image {
         return s
     }
 
-    property variant elementBounds: svgRenderer.elementBounds(svgFileNamePath, elementName)
+    property rect elementBounds: svgRenderer.elementBounds(svgFileNamePath, elementName)
 
-    property double scaleFactor: width/elementBounds.width
+    property real scaleFactor: width/elementBounds.width
 
-    sourceSize.width: Math.round(width)
-    sourceSize.height: Math.round(height)
-
-
+    sourceSize: Qt.size(Math.round(elementBounds.width*sourceScale),Math.round(elementBounds.height*sourceScale))
+    property real sourceScale: 1
 
     Component.onCompleted: reloadImage()
     onElementNameChanged: reloadImage()

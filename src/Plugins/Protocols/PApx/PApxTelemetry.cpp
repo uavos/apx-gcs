@@ -78,13 +78,6 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
     switch (pid.uid) {
     default:
         return false;
-    case mandala::cmd::env::telemetry::xpdr::uid:
-        trace()->data(stream.payload());
-        if (pid.pri == xbus::pri_request)
-            return true;
-        if (!unpack_xpdr(stream))
-            break;
-        return true;
 
     case mandala::cmd::env::telemetry::format::uid:
         trace()->data(stream.payload());
@@ -120,6 +113,7 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
         return true; // anyway accept the packet
 
     case mandala::cmd::env::telemetry::data::uid: // telemetry data stream
+    case mandala::cmd::env::telemetry::xpdr::uid: // XPDR data pack
         if (stream.available() < xbus::telemetry::hdr_s::psize()) {
             qWarning() << stream.available();
             break;
@@ -128,11 +122,11 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
         trace()->data(stream.toByteArray(stream.pos() + 2, 1)); // hash
         trace()->data(stream.toByteArray(stream.pos() + 3, stream.available() - 3));
 
-        if (!unpack(pid.seq, stream)) {
-            _vehicle->setStreamType(PVehicle::DATA);
-            break;
-        }
-        return true;
+        if (unpack(pid, stream))
+            return true;
+
+        _vehicle->setStreamType(PVehicle::DATA);
+        break;
     }
     //error
     trace()->block("ERR:");
@@ -144,9 +138,9 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
     //qDebug() << decoder.fmt_cnt() << QString::number(stream.ptr()[3], 16) << cobs.size();
 }
 
-bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
+bool PApxTelemetry::unpack(const xbus::pid_s &pid, PStreamReader &stream)
 {
-    bool upd = decoder.decode(pseq, stream);
+    bool upd = decoder.decode(pid, stream);
     bool valid = decoder.valid();
 
     // manage timestamp wraps
@@ -213,6 +207,20 @@ bool PApxTelemetry::unpack(uint8_t pseq, PStreamReader &stream)
     // collect updated values
     PBase::Values values;
 
+    if (pid.uid == mandala::cmd::env::telemetry::xpdr::uid) {
+        for (size_t i = 0; i < decoder.xpdr_slots_cnt(); ++i) {
+            auto raw = decoder.xpdr_slots().value[i];
+            auto type = decoder.xpdr_slots().value_type[i];
+            auto uid = xbus::telemetry::xpdr::dataset[i].uid;
+            QVariant v = raw_value(&raw, type);
+            values.insert(uid, v);
+        }
+        // qDebug() << "XPDR";
+        emit xpdrData(values, timestamp);
+        return true;
+    }
+
+    // full telemetry stream values
     for (size_t i = 0; i < decoder.slots_cnt(); ++i) {
         auto &flags = decoder.dec_slots().flags[i];
         if (!flags.upd)
@@ -244,9 +252,6 @@ QVariant PApxTelemetry::raw_value(const void *src, mandala::type_id_e type)
 
 void PApxTelemetry::request_format(uint8_t part)
 {
-    // return;
-    // when requests are disabled - the format is received silently through COBS stream
-
     //qDebug() << part;
     _request_format_time.start();
     _req.request(mandala::cmd::env::telemetry::format::uid);
@@ -254,34 +259,6 @@ void PApxTelemetry::request_format(uint8_t part)
     r.write(&_req);
     trace()->block(QString::number(part));
     _req.send();
-}
-
-bool PApxTelemetry::unpack_xpdr(PStreamReader &stream)
-{
-    if (stream.available() != xbus::telemetry::xpdr_s::psize())
-        return false;
-
-    xbus::telemetry::xpdr_s xpdr;
-    xpdr.read(&stream);
-
-    if (xpdr.version != xbus::telemetry::xpdr_s::current_version) {
-        qDebug() << "XPDR format error" << xpdr.version;
-        return true;
-    }
-
-    PBase::Values values;
-
-    values.insert(mandala::est::nav::pos::lat::uid, xpdr.lat);
-    values.insert(mandala::est::nav::pos::lon::uid, xpdr.lon);
-    values.insert(mandala::est::nav::pos::hmsl::uid, xpdr.hmsl);
-
-    values.insert(mandala::est::nav::pos::speed::uid, xpdr.speed);
-    values.insert(mandala::est::nav::pos::vspeed::uid, xpdr.vspeed);
-    values.insert(mandala::est::nav::pos::bearing::uid, xpdr.bearing);
-    values.insert(mandala::cmd::nav::proc::mode::uid, xpdr.mode);
-
-    emit xpdrData(values);
-    return true;
 }
 
 void PApxTelemetry::requestTelemetry()

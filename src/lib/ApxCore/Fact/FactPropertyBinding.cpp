@@ -94,7 +94,7 @@ void FactPropertyBinding::propertyChanged()
         _src_binding->unblock();
 }
 
-bool FactPropertyBinding::match(Fact *src, const QString &name)
+bool FactPropertyBinding::match(Fact *src, const QString &name) const
 {
     if (src != nullptr && src != _src)
         return false;

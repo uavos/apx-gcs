@@ -64,6 +64,8 @@ private:
     bool _blockUpdateRoutingFacts;
 
 private slots:
+    void updateEnabled();
+
     void updateStatus();
 
     void updateRoutingValue();

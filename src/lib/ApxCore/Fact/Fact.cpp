@@ -71,7 +71,7 @@ Fact::Fact(QObject *parent,
 void Fact::onOptionsChanged()
 {
     if (options() & ProgressTrack) {
-        connect(this, &Fact::sizeChanged, this, &Fact::trackProgress, Qt::UniqueConnection);
+        connect(this, &Fact::sizeChanged, this, &Fact::trackProgress);
     } else {
         disconnect(this, &Fact::sizeChanged, this, &Fact::trackProgress);
     }
@@ -150,7 +150,7 @@ QVariant Fact::data(int col, int role)
                 QString s = name();
                 for (int i = 0; i < size(); ++i) {
                     Fact *f = child(i);
-                    s += QString("\n%1: %2").arg(f->title()).arg(f->text());
+                    s += QString("\n%1: %2").arg(f->title(), f->text());
                 }
                 return s;
             } else {
@@ -207,10 +207,10 @@ QString Fact::toolTip() const
         sDataType += (sDataType.isEmpty() ? "" : ", ") + units();
     QString s = name();
     if (s != title())
-        s = QString("%1 (%2)").arg(s).arg(title());
+        s = QString("%1 (%2)").arg(s, title());
 
     if (!sDataType.isEmpty())
-        s = QString("%1 [%2]").arg(s).arg(sDataType);
+        s = QString("%1 [%2]").arg(s, sDataType);
 
     st << s;
 
@@ -241,7 +241,7 @@ QString Fact::toolTip() const
         st << "";
         st << "[opts]";
         for (auto k : opts().keys())
-            st << QString("%1: %2").arg(k).arg(opts().value(k).toString());
+            st << QString("%1: %2").arg(k, opts().value(k).toString());
     }
 
     return st.join('\n');
@@ -389,7 +389,7 @@ bool Fact::lessThan(Fact *other) const
     //no sorting by default
     return num() < other->num();
 }
-bool Fact::showThis(QRegExp re) const
+bool Fact::showThis(QRegularExpression re) const
 {
     if (options() & FilterExclude)
         return false;
@@ -418,7 +418,7 @@ void Fact::trigger(QVariantMap opts)
 
     //qDebug() << "trigger" << path();
     emit triggered(opts);
-    AppRoot::instance()->factTriggered(this, opts);
+    emit AppRoot::instance() -> factTriggered(this, opts);
 
     if (binding() && size() <= 0)
         binding()->trigger(opts);
@@ -572,7 +572,8 @@ void Fact::fromVariant(const QVariant &var)
 {
     if (var.isNull())
         return;
-    if (var.canConvert(QMetaType::QVariantMap)) {
+
+    if (var.typeId() == QMetaType::QVariantMap) {
         auto m = var.value<QVariantMap>();
         for (auto key : m.keys()) {
             Fact *f = child(key);
@@ -581,11 +582,11 @@ void Fact::fromVariant(const QVariant &var)
                 continue;
             }
             auto v = m.value(key);
-            if (v.canConvert(QMetaType::QVariantMap)) {
+            if (v.typeId() == QMetaType::QVariantMap) {
                 f->fromVariant(v);
                 continue;
             }
-            if (v.canConvert(QMetaType::QVariantList)) {
+            if (v.typeId() == QMetaType::QVariantList) {
                 f->fromVariant(v);
                 continue;
             }
@@ -593,7 +594,7 @@ void Fact::fromVariant(const QVariant &var)
         }
         return;
     }
-    if (var.canConvert(QMetaType::QVariantList)) {
+    if (var.typeId() == QMetaType::QVariantList) {
         // must be implemented in subclasses to create children structure from array
         return;
     }
@@ -603,6 +604,7 @@ void Fact::fromVariant(const QVariant &var)
         return;
     if (dataType() == NoFlags || dataType() == Count)
         return;
+
     setValue(var);
 }
 

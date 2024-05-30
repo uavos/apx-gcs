@@ -156,7 +156,7 @@ QString Terminal::autocomplete(QString cmd)
     QString scope;
     QMap<QString, QJSValue> map;
 
-    QRegExp del("[\\ \\,\\:\\t\\{\\}\\[\\]\\(\\)\\=]");
+    QRegularExpression del("[\\ \\,\\:\\t\\{\\}\\[\\]\\(\\)\\=]");
     if (!(c.contains(del) || prefix.startsWith('!') || c.contains('.'))) {
         //first word input (std command?)
         map = _get_js_properties(scope, c);
@@ -250,7 +250,7 @@ QMap<QString, QJSValue> Terminal::_get_js_properties(QString scope, QString flt)
         return map;
     }
 
-    QRegExp re("^" + flt);
+    QRegularExpression re("^" + flt);
     QJSValueIterator it(v);
     while (it.hasNext()) {
         it.next();

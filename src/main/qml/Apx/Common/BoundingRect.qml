@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.5;
+import QtQuick
 
 Rectangle {
     id: rect
@@ -34,7 +34,7 @@ Rectangle {
     opacity: 0.3
 
     Component.onCompleted: {
-        console.warn(rect, item)
+        // console.warn(rect, item)
         if(!item)return
 
         x = Qt.binding(function(){return itemRect().x})

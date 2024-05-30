@@ -50,6 +50,12 @@ def deploy_appimage(path, json, apprun):
 
     print('Deploy image ({})...'.format(filename))
 
+    # remove old images
+    for f in os.listdir(packages_path):
+        if f.endswith('.AppImage'):
+            os.remove(os.path.join(packages_path, f))
+    
+
     if apprun:
         dest = os.path.join(app_path, 'AppRun')
         if os.path.exists(dest):
@@ -60,8 +66,9 @@ def deploy_appimage(path, json, apprun):
     pargs = [
         'env', 'ARCH='+app_arch,
         'appimagetool',
-        '-u', zsync_link,
-        # '--comp=xz',
+        # '-u', zsync_link,
+        # '--no-appstream',
+        '--comp=xz',
         # '--verbose',
         app_path,
         os.path.join(packages_path, filename)

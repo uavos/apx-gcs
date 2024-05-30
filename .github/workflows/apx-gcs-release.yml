@@ -2,8 +2,6 @@ name: APX GCS CI
 
 on:
   push:
-    # branches:
-    #   - test-rel
     tags:
       - "release-*"
       - "test-*"
@@ -16,26 +14,21 @@ jobs:
     name: Build Linux
     runs-on: ubuntu-latest
     # if: "false"
+
     container:
       image: uavos/apx-gcs-linux:latest
       options: --privileged
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Fetch version tags
-        run: |
-          git config --global --add safe.directory `pwd`
-          git fetch --prune --unshallow --tags
+          fetch-tags: true
+          fetch-depth: 0
 
       - name: Build package
         run: make release-package
-
-      # - name: Build test
-      #   run: |
-      #     mkdir -p $BUILD_DIR/deploy
-      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.AppImage
-      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.AppImage.zsync
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
@@ -62,7 +55,7 @@ jobs:
       # PYTHONPATH: /usr/local/lib/python3.12/site-packages
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Fetch version tags
@@ -74,15 +67,6 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
 
       - name: Install Qt
-        # TODO migrate to Qt6 and use python https://github.com/miurahr/aqtinstall
-        #   run: |
-        #     curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
-        #     chmod +x install-qt.sh
-        #     ./install-qt.sh --version $VERSION_QT --directory Qt \
-        #         qtbase qtdeclarative qttools \
-        #         quickcontrols2 serialport multimedia speech svg location \
-        #         graphicaleffects qtcharts
-        #     echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
         run: |
           find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
           export HOMEBREW_NO_AUTO_UPDATE=1
@@ -151,12 +135,6 @@ jobs:
         run: |
           make release-package
 
-      # - name: Build test
-      #   run: |
-      #     mkdir -p $BUILD_DIR/deploy
-      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.dmg
-      #     echo "${{ github.ref }}"> appcast.xml
-
       - name: Download assets
         uses: actions/github-script@v3
         with:
@@ -217,7 +195,7 @@ jobs:
     if: ${{ !startsWith(github.event.ref, 'refs/tags/test-') }}
     # if: "false"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v2
         with:
           path: package

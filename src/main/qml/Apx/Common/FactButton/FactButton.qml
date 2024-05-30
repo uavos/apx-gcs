@@ -19,17 +19,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
-import QtGraphicalEffects 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
-import QtQuick.Controls.Material 2.12
-import QtQuick.Controls.Material.impl 2.12
+import QtQuick.Controls.Material
+import QtQuick.Controls.Material.impl
 
 
-import APX.Facts 1.0
-import Apx.Common 1.0
+import APX.Facts
+// import Apx.Common
 
 import "../Button"
 import ".."
@@ -106,8 +105,9 @@ ActionButton {
     property bool showDescr: descr
 
 
-    ToolTip.visible: pressed
-    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+
+    toolTipItem.visible: pressed
+    toolTipItem.delay: Qt.styleHints.mousePressAndHoldInterval
 
     property bool held: false
 
@@ -155,10 +155,7 @@ ActionButton {
     contentComponent: Component {
         Item {
 
-            //BoundingRect{}
-
-            id: titleLayout
-            // anchors.fill: parent
+            // BoundingRect{}
 
             readonly property bool showIcon: factButton.showIcon && factButton.iconName
             readonly property bool showText: factButton.showText && factButton.text
@@ -166,8 +163,8 @@ ActionButton {
             implicitWidth: (showIcon?_icon.implicitWidth:0)
                          + (showText?_titleText.implicitWidth+Style.spacing:0)
                          + (showNext?_next.implicitWidth+Style.spacing:0)
-                         + (_value.item?_value.implicitWidth+Style.spacing:0)
-                         + (_editor.item?_editor.implicitWidth+Style.spacing:0)
+                         + (_value.item?_value.item.implicitWidth+Style.spacing:0)
+                         + (_editor.item?_editor.item.implicitWidth+Style.spacing:0)
                          + Style.spacing
 
             Loader {
@@ -185,6 +182,7 @@ ActionButton {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.leftMargin: Style.spacing
+                anchors.right: _next.left
                 visible: showText
                 verticalAlignment: _descrText.visible?Text.AlignTop:Text.AlignVCenter
                 font.family: factButton.font.family
@@ -199,7 +197,6 @@ ActionButton {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.leftMargin: Style.spacing
-                anchors.rightMargin: _value.valueWidth + _editor.editorWidth
                 visible: _titleText.visible && showDescr && text
                 verticalAlignment: Text.AlignBottom
                 font: apx.font_condenced(descrSize)
@@ -224,21 +221,17 @@ ActionButton {
 
             // value
             Item {
-                anchors.left: _titleText.right
                 anchors.right: _next.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
+
+                implicitWidth: (_value.item?_value.item.implicitWidth:0)
+                            + (_editor.item?_editor.item.implicitWidth:0)
 
                 Loader {
                     id: _value
                     active: showValue && (!_editor.item)
                     anchors.fill: parent
-                    readonly property real valueWidth: item
-                            ? (item.truncated
-                                ? item.width
-                                : implicitWidth
-                            )
-                            : 0
                     sourceComponent: Text {
                         id: textItem
                         text: (value.length>64||value.indexOf("\n")>=0)?"<data>":value
@@ -246,20 +239,14 @@ ActionButton {
                         color: Material.secondaryTextColor
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignRight
-                        elide: Text.ElideMiddle
                     }
                 }
                 Loader {
                     id: _editor
-                    asynchronous: true
-                    active: source
-                    Material.accent: Material.color(Material.Green)
-                    source: showEditor?getEditorSource():""
+                    active: showEditor
                     anchors.fill: parent
-                    // anchors.leftMargin: Style.spacing
-                    anchors.leftMargin: Math.max(0,parent.width-(item?item.implicitWidth:0))
-
-                    readonly property real editorWidth: item?item.implicitWidth:0
+                    Material.accent: Material.color(Material.Green)
+                    source: active?getEditorSource():""
                 }
             }
 
@@ -269,7 +256,6 @@ ActionButton {
     Loader {
         parent: contentItem
         z: -1
-        asynchronous: true
         active: factButton.progress>=0
         anchors.fill: parent
         anchors.margins: 1
@@ -333,7 +319,6 @@ ActionButton {
     Loader {
         anchors.fill: parent
         active: signaled
-        asynchronous: true
         sourceComponent: Component {
             Ripple {
                 id: ripple

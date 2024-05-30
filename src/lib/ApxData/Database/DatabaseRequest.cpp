@@ -44,6 +44,9 @@ DatabaseRequest::DatabaseRequest(DatabaseSession *db,
     , bindValues(bindValues)
     , m_discarded(false)
 {
+    if (!db)
+        return;
+
     connect(this,
             &DatabaseRequest::dbModified,
             db,
@@ -53,10 +56,16 @@ DatabaseRequest::DatabaseRequest(DatabaseSession *db,
 
 void DatabaseRequest::exec()
 {
+    if (!db)
+        return;
+
     db->request(this);
 }
 bool DatabaseRequest::execSynchronous()
 {
+    if (!db)
+        return false;
+
     isSynchronous = true;
     db->request(this);
     auto future = m_finishedPromise.get_future();
@@ -283,7 +292,7 @@ void DatabaseRequest::getHash(QCryptographicHash &h, const QVariantMap &map) con
     foreach (QString s, map.keys()) {
         h.addData(s.toUtf8());
         const QVariant &v = map.value(s);
-        if (static_cast<QMetaType::Type>(v.type()) == QMetaType::QVariantList) {
+        if (v.typeId() == QMetaType::QVariantList) {
             for (auto const &i : v.value<QVariantList>())
                 h.addData(i.toString().toUtf8());
         } else {

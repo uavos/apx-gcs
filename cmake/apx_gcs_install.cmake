@@ -41,10 +41,10 @@ function(apx_install_plugin)
     set(dest ${APX_INSTALL_PLUGINS_DIR})
     install(
         TARGETS ${ARGN}
-        BUNDLE DESTINATION ${dest} COMPONENT Runtime
-        RUNTIME DESTINATION ${dest} COMPONENT Runtime
-        LIBRARY DESTINATION ${dest} COMPONENT Runtime
-        FRAMEWORK DESTINATION ${dest} COMPONENT Runtime
+        BUNDLE DESTINATION ${dest} COMPONENT Plugin
+        RUNTIME DESTINATION ${dest} COMPONENT Plugin
+        LIBRARY DESTINATION ${dest} COMPONENT Plugin
+        FRAMEWORK DESTINATION ${dest} COMPONENT Plugin
     )
 
     set_target_properties(${ARGN} PROPERTIES INSTALL_RPATH "${APX_INSTALL_PLUGINS_RPATH}")

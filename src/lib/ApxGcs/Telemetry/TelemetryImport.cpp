@@ -85,7 +85,7 @@ quint64 TelemetryImport::read(QString fileName)
     //check format
     QXmlStreamReader xml(&file);
     while (xml.readNextStartElement()) {
-        if (xml.name() == "telemetry")
+        if (xml.name().compare("telemetry") == 0)
             return read(xml);
         break;
     }

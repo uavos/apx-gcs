@@ -19,36 +19,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.9
-import QtQuick.Controls 2.2
-import QtQuick.Controls.Material 2.2
-import QtGraphicalEffects 1.0
-import QtQuick.Layouts 1.3
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Layouts
 
-import Apx.Common 1.0
+import Apx.Common
 
-import APX.Facts 1.0
+import APX.Facts
 
 ColumnLayout {
     id: control
 
     property alias model: listView.model
     property alias delegate: listView.delegate
-    property alias actionsModel: actionsItem.model
 
     property alias header: listView.header
     property alias headerItem: listView.headerItem
 
     property ListView listView: listView
 
-    function factButtonTriggered(fact)
-    {
-        if(factMenu)
-            factMenu.factButtonTriggered(fact)
-    }
     property int maximumHeight: ui.window.height
                                 -titleSize
-                                -(actionsItem.visible?actionsItem.implicitHeight+spacing:0)
                                 -(listView.headerItem?listView.headerItem.implicitHeight:0)
                                 -(listView.footerItem?listView.footerItem.implicitHeight:0)
                                 -Style.buttonSize*2
@@ -87,7 +79,7 @@ ColumnLayout {
         onHeaderItemChanged: updateHeight()
 
         delegate: Loader{
-            asynchronous: true
+            // asynchronous: true
             active: modelData?modelData.visible:false
             visible: active
             width: control.width
@@ -99,7 +91,7 @@ ColumnLayout {
                     size: MenuStyle.itemSize
                     onTriggered: {
                         listView.currentIndex=index
-                        control.factButtonTriggered(modelData)
+                        menuPage.factButtonTriggered(modelData)
                     }
                 }
             }
@@ -200,34 +192,6 @@ ColumnLayout {
 
             listView.implicitHeight=h
             //console.log("h",h,count,footerItem?footerItem.implicitHeight:-1)
-        }
-    }
-
-    //actions
-    RowLayout {
-        id: actionsItem
-
-        Layout.alignment: Qt.AlignRight
-        Layout.bottomMargin: control.spacing
-
-        spacing: Style.spacing
-        visible: repeater.count>0
-
-        property alias model: repeater.model
-        Repeater {
-            id: repeater
-            model: fact.actionsModel
-            delegate: Loader{
-                asynchronous: true
-                active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
-                visible: active
-                sourceComponent: Component {
-                    ActionButton {
-                        fact: modelData
-                        onTriggered: control.factButtonTriggered(modelData)
-                    }
-                }
-            }
         }
     }
 }

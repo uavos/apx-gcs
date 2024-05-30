@@ -19,10 +19,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.Controls 2.12
-import QtQuick.Controls.Material 2.12
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
 import ".."
 
@@ -49,13 +49,15 @@ Button {
 
     // geometry
 
+    Material.roundedScale: height/32
+
     padding: height/32
     spacing: height/20
     topInset: 0
     bottomInset: 1
 
     leftPadding: padding+1
-    rightPadding: padding+2
+    rightPadding: padding+1
     topPadding: padding
     bottomPadding: padding+1
 
@@ -72,13 +74,15 @@ Button {
     Material.primary: Material.color(Material.LightGreen)
 
     // tooltip
-
-    //ToolTip.enabled: true
-    ToolTip.delay: 1000
-    ToolTip.timeout: 5000
-    ToolTip.visible: ToolTip.text && (down || hovered)
-    ToolTip.text: toolTip
-
+    property alias toolTipItem: _tooltipItem
+    ToolTip {
+        id: _tooltipItem
+        z: 1000
+        text: control.toolTip
+        visible: text && (down || hovered)
+        delay: 1000
+        timeout: 5000
+    }
 
     // actions
 

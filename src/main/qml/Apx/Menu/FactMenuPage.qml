@@ -19,14 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.6
-import QtQuick.Controls 2.1
-import QtGraphicalEffects 1.0
-import QtQuick.Layouts 1.3
-import QtQml 2.12
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQml
 
-import APX.Facts 1.0
-import Apx.Common 1.0
+import APX.Facts
+import Apx.Common
 
 ColumnLayout {
     id: menuPage
@@ -82,7 +81,6 @@ ColumnLayout {
     Loader {
         id: titleItem
         active: valid
-        asynchronous: true
         source: "FactMenuPageTitle.qml"
         Layout.fillWidth: true
         Layout.leftMargin: padding
@@ -94,7 +92,6 @@ ColumnLayout {
     Loader {
         id: pageLoader
         active: valid
-        asynchronous: true
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.leftMargin: padding
@@ -114,4 +111,41 @@ ColumnLayout {
         }
         return "FactMenuPageList.qml"
     }
+
+    function factButtonTriggered(fact)
+    {
+        if(factMenu)
+            factMenu.factButtonTriggered(fact)
+    }
+
+
+    //actions
+    RowLayout {
+        id: actionsItem
+
+        Layout.alignment: Qt.AlignRight
+        Layout.bottomMargin: Style.spacing
+        Layout.leftMargin: Style.spacing
+        Layout.rightMargin: Style.spacing
+
+        spacing: Style.spacing
+        visible: repeater.count>0
+
+        property alias model: repeater.model
+        Repeater {
+            id: repeater
+            model: fact.actionsModel
+            delegate: Loader{
+                active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
+                visible: active
+                sourceComponent: Component {
+                    ActionButton {
+                        fact: modelData
+                        onTriggered: menuPage.factButtonTriggered(modelData)
+                    }
+                }
+            }
+        }
+    }
+
 }

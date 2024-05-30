@@ -41,7 +41,7 @@ public:
 
 public:
     static void appendChildren(QQmlListProperty<FactQml> *property, FactQml *value);
-    static FactQml *atChildren(QQmlListProperty<FactQml> *property, int index);
+    static FactQml *atChildren(QQmlListProperty<FactQml> *property, qsizetype index);
     static void clearChildren(QQmlListProperty<FactQml> *property);
-    static int countChildren(QQmlListProperty<FactQml> *property);
+    static qsizetype countChildren(QQmlListProperty<FactQml> *property);
 };

@@ -19,15 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtLocation 5.12
-import QtPositioning 5.12
+import QtQuick
+import QtQuick.Effects
+import QtLocation
+import QtPositioning
 
-import QtGraphicalEffects 1.0
 
-import Apx.Common 1.0
+import Apx.Common
 
-import APX.Vehicles 1.0 as APX
+import APX.Vehicles as APX
 
 
 MapQuickItem {  //to be used inside MapComponent only
@@ -61,6 +61,8 @@ MapQuickItem {  //to be used inside MapComponent only
 
     readonly property bool bGCU: vehicle.isGroundControl
     readonly property bool bLOCAL: vehicle.isLocal
+
+    readonly property bool bXPDR: vehicle.streamType===APX.PVehicle.XPDR
 
 
     Connections {
@@ -118,14 +120,14 @@ MapQuickItem {  //to be used inside MapComponent only
     }
 
     //animated vars
-    property real vyaw: f_yaw
+    property real vyaw: bXPDR?f_bearing:f_yaw
     Behavior on vyaw { enabled: ui.smooth; RotationAnimation {duration: animation_duration; direction: RotationAnimation.Shortest; } }
 
 
     //info box
     property bool bInfoShowRight: true
-    property bool bInfoPosChk2: f_yaw<=50 || f_yaw>120
-    property bool bInfoPosChk1: f_yaw<=40 || f_yaw>130
+    property bool bInfoPosChk2: vyaw<=50 || vyaw>120
+    property bool bInfoPosChk1: vyaw<=40 || vyaw>130
     onBInfoPosChk1Changed: {
         if(bGCU)return;
         if(bInfoShowRight)return;
@@ -139,7 +141,7 @@ MapQuickItem {  //to be used inside MapComponent only
 
 
     //constants
-    property int animation_duration: 100
+    property int animation_duration: bXPDR?500:100
 
     anchorPoint.x: image.width/2
     anchorPoint.y: image.height/2
@@ -155,6 +157,11 @@ MapQuickItem {  //to be used inside MapComponent only
 
             opacity: ui.effects?(active?0.9:0.7):1
             scale: active?1:0.6
+
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: ui.effects
+            }
 
             transform: [
                 Scale {
@@ -203,7 +210,7 @@ MapQuickItem {  //to be used inside MapComponent only
             sourceSize.height: image.width*2
             fillMode: Image.PreserveAspectFit
             //smooth: ui.antialiasing
-            visible: active
+            visible: active && !bXPDR
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             transform: Rotation{
@@ -239,7 +246,7 @@ MapQuickItem {  //to be used inside MapComponent only
             sourceSize.height: image.width*2
             fillMode: Image.PreserveAspectFit
             //smooth: ui.antialiasing
-            visible: active
+            visible: active && !bXPDR
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             transform: Rotation{
@@ -254,7 +261,7 @@ MapQuickItem {  //to be used inside MapComponent only
             z: image.z-10
             sourceSize.height: image.width*2
             fillMode: Image.PreserveAspectFit
-            visible: active && isTrack
+            visible: active && isTrack && !bXPDR
             anchors.bottom: image.verticalCenter
             anchors.horizontalCenter: image.horizontalCenter
             readonly property real max: image.width*0.8
@@ -275,9 +282,8 @@ MapQuickItem {  //to be used inside MapComponent only
             id: windArrow
             z: image.z-100
             visible: active && (f_LDTO||follow) && f_windSpd>0
-            color: "#fff" //"#fd6"
-            source: "../icons/wind-arrow.svg"
-            sourceSize.height: image.width
+            source: "../Map/icons/wind-arrow.svg"
+            size: image.width
             anchors.top: image.verticalCenter
             anchors.topMargin: image.width*1.5
             anchors.horizontalCenter: image.horizontalCenter
@@ -293,26 +299,23 @@ MapQuickItem {  //to be used inside MapComponent only
 
 
         //info label
-        Rectangle {
+        Item {
             anchors.centerIn: image
             VehicleLabel {
                 id: label
                 z: image.z-5
                 vehicle: vehicleItem.vehicle
                 colorFG: "#fff"
+                colorBG: "#aaa"
                 showDots: false
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: bInfoShowRight?0:(image.height/2+height/2)
                 anchors.horizontalCenterOffset: bInfoShowRight?(image.width/2+width/2):0
             }
-            DropShadow {
-                anchors.fill: label
-                horizontalOffset: 3
-                verticalOffset: 3
-                radius: 8.0
-                samples: 17
-                color: "#c0000000"
+            MultiEffect {
                 source: label
+                anchors.fill: label
+                shadowEnabled: true
             }
         }
 

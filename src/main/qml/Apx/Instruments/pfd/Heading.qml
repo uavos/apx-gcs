@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.2
+import QtQuick
 import "../common"
 import "."
 
@@ -85,13 +85,11 @@ Item {
             Repeater {
                 model: 4*2
                 PfdImage {
-                    //smooth: ui.antialiasing
                     elementName: "hdg-scale"
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
                     anchors.leftMargin: index*width-tickWidth*strip_scale/2
-                    width: elementBounds.width*strip_scale
-                    height: elementBounds.height*strip_scale
+                    sourceScale: strip_scale
                     property double tickWidth: 2
                 }
             }
@@ -216,7 +214,6 @@ Item {
     PfdImage {
         id: hdg_turnrate
         elementName: "hdg-turnrate"
-        //smooth: ui.antialiasing
         fillMode: Image.PreserveAspectFit
         anchors.fill: parent
         anchors.topMargin: scale_top.height

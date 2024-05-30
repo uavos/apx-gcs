@@ -19,15 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.11
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.4
-import QtQuick.Controls.Material 2.2
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
-import Apx.Common 1.0
-import Apx.Menu 1.0
+import Apx.Common
+import Apx.Menu
 
-import APX.Vehicles 1.0 as APX
+import APX.Vehicles as APX
 
 
 Rectangle {
@@ -35,21 +35,19 @@ Rectangle {
 
     readonly property var f_mode: mandala.cmd.proc.mode
 
-
     border.width: 0
     color: "#000"
-    implicitWidth: 400
-    implicitHeight: 400
 
-    onWidthChanged: implicitHeight=width
-    onHeightChanged: implicitWidth=height
+    implicitWidth: height
+    implicitHeight: 200
+
 
     readonly property real margins: width/200
 
     property APX.Vehicle vehicle: apx.vehicles.current
 
     //sizes
-    readonly property real buttonHeight: width/10
+    readonly property real buttonHeight: height/10
     readonly property real buttonSpacing: buttonHeight/10
 
     property real size: Math.max(50,width)*0.08
@@ -59,7 +57,7 @@ Rectangle {
         anchors.margins: root.margins
         spacing: buttonSpacing*2
 
-
+        // top buttons of vehicle facts
         RowLayout {
             Layout.alignment: Qt.AlignTop|Qt.AlignLeft
             height: buttonHeight

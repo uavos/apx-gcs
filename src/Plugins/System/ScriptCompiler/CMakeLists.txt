@@ -1,1 +1,1 @@
-apx_plugin()
+apx_plugin(DEPENDS lib.ApxGcs lib.ApxFw)

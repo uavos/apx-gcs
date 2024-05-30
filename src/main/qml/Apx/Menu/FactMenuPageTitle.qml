@@ -19,14 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.6
-import QtQuick.Controls 2.2
-import QtQuick.Controls.Material 2.2
+import QtQuick
+import QtQuick.Effects
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
-import QtGraphicalEffects 1.0
-import QtQuick.Layouts 1.3
+import QtQuick.Layouts
 
-import Apx.Common 1.0
+import Apx.Common
 
 Item {
     id: control
@@ -49,6 +49,14 @@ Item {
         visible: text!=""
         text: pageTitle
     }
+    MultiEffect {
+        anchors.fill: titleText
+        source: titleText
+        blurEnabled: ui.antialiasing
+        blur: 0.3
+        visible: factMenu && factMenu.effects && titleText.visible
+    }
+
     Text {
         id: titleDescr
         anchors.top: titleText.bottom
@@ -75,13 +83,8 @@ Item {
         text: pageStatus
         elide: Text.ElideMiddle
     }
-    FastBlur {
-        anchors.fill: titleText
-        transparentBorder: true
-        source: titleText
-        radius: ui.antialiasing?titleText.height/2:0
-        visible: factMenu && factMenu.effects && titleText.visible
-    }
+
+
 
     // Buttons
     IconButton {

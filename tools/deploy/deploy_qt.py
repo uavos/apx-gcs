@@ -41,7 +41,7 @@ def deploy_qt(path, json):
 
     deploy_tool = {
         'macos': os.path.join(app['path']['qt'], 'bin', 'macdeployqt'),
-        'linux': os.path.join(app['path']['qt'], 'bin', 'linuxdeployqt'),
+        'linux': os.path.join(app['path']['qt'], 'bin', 'linuxdeploy'),
         'windows': os.path.join(app['path']['qt'], 'bin', 'windeployqt')
     }
 
@@ -50,7 +50,7 @@ def deploy_qt(path, json):
     # general opts
     opts.append(deploy_tool[platform])
 
-    if platform == 'linux':
+    if platform == 'linux2':
         opts.append(os.path.join(
             path, app['path']['bundle'], "share/applications", app['name'] + ".desktop"))
 
@@ -83,15 +83,16 @@ def deploy_qt(path, json):
 
         subprocess.check_call(opts)
 
-    elif platform == 'linux2':
+    elif platform == 'linux':
+        # opts.append('-v3')
         opts.append('--appdir='+path)
         opts.append('--deploy-deps-only=' +
                     os.path.join(path, app['path']['plugins']))
         opts.append('--plugin=qt')
         # opts.append('--plugin=gstreamer')
         opts.append('--output=appimage')
-        opts.append('--custom-apprun='+os.path.join(path,
-                                                    app['path']['data'], 'AppRun.sh'))
+        # opts.append('--custom-apprun='+os.path.join(path,
+        #                                             app['path']['data'], 'AppRun.sh'))
 
         env = os.environ.copy()
         if 'qtplugins' in json and len(json['qtplugins']) > 0:
@@ -104,8 +105,10 @@ def deploy_qt(path, json):
     elif platform == 'macos':
         opts.append(os.path.join(path, app['path']['bundle']))
         opts.append('-qmldir='+app['path']['src'])
-        opts.append('-appstore-compliant')
+        # opts.append('-appstore-compliant')
         # opts.append('-libpath=/Library/Frameworks')
+        opts.append('-verbose=1')
+
         opts.append(
             '-libpath='+os.path.abspath(os.path.join(path, app['path']['libs'])))
         if 'plugins' in json:
@@ -139,12 +142,15 @@ def deploy_qt(path, json):
         utils.remove_all(
             app_path, ['designer', 'Fusion', 'Imagine', 'Universal'])
         utils.remove_all(os.path.join(app_path, 'qml', 'QtQuick'), ['*.qml'])
+        utils.remove(os.path.join(app_path, 'share', 'doc'))
     elif platform == 'macos':
         qml_path = os.path.abspath(os.path.join(
             path, app['path']['data'], 'qml'))
         utils.remove_all(
-            qml_path, ['designer', 'Fusion', 'Imagine', 'Universal'])
-        utils.remove_all(os.path.join(qml_path, 'QtQuick'), ['*.qml'])
+            qml_path, ['designer', 'Fusion', 'Imagine', 'Universal', 'NativeStyle'])
+        utils.remove_all(qml_path, ['*.qml','*.dSYM'])
+        fw_path = os.path.abspath(os.path.join(path, app['path']['libs']))
+        utils.remove_all(fw_path, ['Qt3D*.framework'])
 
     utils.remove_all(os.path.abspath(
         os.path.join(path, app['path']['libs'])), ['*.prl'])

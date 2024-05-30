@@ -21,7 +21,9 @@
  */
 #pragma once
 
+#include <QtLocation/private/qgeotiledmappingmanagerengine_p.h>
 #include <QtLocation/private/qgeotilefetcher_p.h>
+
 class TileLoader;
 class QGeoTiledMappingManagerEngine;
 

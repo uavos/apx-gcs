@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.Controls 2.12
-import QtQuick.Controls.Material 2.12
-import QtPositioning 5.12
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtPositioning
 
-import Apx.Common 1.0
+import Apx.Common
 
 Rectangle {
 
@@ -89,162 +89,163 @@ Rectangle {
 
     ColumnLayout{
         id: layout
-        width: parent.width
+        anchors.fill: parent
         spacing: 0
-        ColumnLayout {
-            spacing: 0
+
+        ValueRss {
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+
+        ValueDL {
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+
+        Loader {
+            asynchronous: true
+            active: apx.datalink.server.text || ui.test
+            visible: active
+            sourceComponent: Component {
+                ValueButton {
+                    text: qsTr("RC")
+                    fact: apx.datalink.server
+                    active: false
+                    valueScale: 0.8
+                    valueColor: fact.extctr.value?Material.color(Material.LightGreen):Material.color(Material.Red)
+                    enabled: true
+                }
+            }
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+
+        Loader {
+            asynchronous: true
+            active: apx.datalink.hosts.text
+            visible: active
+            sourceComponent: Component {
+                ValueButton {
+                    text: qsTr("RS")
+                    fact: apx.datalink.hosts
+                    active: false
+                    valueScale: 0.8
+                    valueColor: apx.datalink.server.extctr.value?Material.color(Material.LightGreen):Material.color(Material.LightRed)
+                    enabled: true
+                }
+            }
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+
+        ValueLOS {
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+
+
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+
+        ValueButton {
+            text: qsTr("H")
+            fact: f_hmsl
+            property real v: fact.value*(3.281/100)
+            value: "FL"+v.toFixed()
+            visible: ui.test || v>0
+            valueScale: 0.8
+            valueColor: Material.color(Material.BlueGrey)
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+        ValueButton {
+            text: qsTr("D")
+            fact: f_dist
+            value: wp_dist>0?apx.distanceToString(wp_dist):"--"
+            valueScale: 0.8
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+        ValueButton {
+            text: qsTr("ETA")
+            fact: f_eta
+            property int v: fact.value
+            property real valid: v>0
+            property int tsec: ("0"+Math.floor(v%60)).slice(-2)
+            property int tmin: ("0"+Math.floor(v/60)%60).slice(-2)
+            property int thrs: Math.floor(v/60/60)
+            property string sETA: (thrs?thrs+":":"")+("0"+tmin).slice(-2)+":"+("0"+tsec).slice(-2)
+            value: valid?sETA:"--:--"
+            valueScale: 0.8
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+        ValueButton {
+            text: qsTr("F")
+            fact: f_fuel
+            value: fact.value.toFixed()
+            visible: ui.test || fact.value>0
+            valueScale: 0.8
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight/2
+        }
+
+        ValueButton {
+            text: qsTr("WPT")
+            fact: f_wpidx
+            value: fact.value+1
+            visible: ui.test || (m_mode===proc_mode_WPT || m_mode===proc_mode_STBY)
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+        ValueButton {
+            text: qsTr("LPS")
+            fact: f_loops
+            visible: ui.test || (m_mode===proc_mode_STBY && fact.value>0)
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+        ValueButton {
+            text: qsTr("XT")
+            fact: f_xtrack
+            visible: ui.test || isTrack
+            property real v: fact.value
+            value: (Math.abs(v)<1?0:v.toFixed())+(m_adj>0?"+"+m_adj.toFixed():m_adj<0?"-"+(-m_adj).toFixed():"")
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+        ValueButton {
+            text: qsTr("LR")
+            fact: f_radius
+            visible: ui.test || m_mode===proc_mode_STBY || m_mode===proc_mode_LANDING
+            value: apx.distanceToString(Math.abs(fact.value))
+            valueScale: 0.8
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+        ValueButton {
+            text: qsTr("AGL")
+            fact: f_agl
+            value: fact.value.toFixed(1)
+            visible: ui.test || m_agl_show
+            warning: m_agl_warning
+            error: m_agl_failure
+            active: m_agl_ready
+            Layout.fillWidth: true
+            Layout.preferredHeight: itemHeight
+        }
+
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-
-            ValueRss {
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-
-            ValueDL {
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-
-            Loader {
-                asynchronous: true
-                active: apx.datalink.server.text || ui.test
-                visible: active
-                sourceComponent: Component {
-                    ValueButton {
-                        text: qsTr("RC")
-                        fact: apx.datalink.server
-                        active: false
-                        valueScale: 0.8
-                        valueColor: fact.extctr.value?Material.color(Material.LightGreen):Material.color(Material.Red)
-                        enabled: true
-                    }
-                }
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-
-            Loader {
-                asynchronous: true
-                active: apx.datalink.hosts.text
-                visible: active
-                sourceComponent: Component {
-                    ValueButton {
-                        text: qsTr("RS")
-                        fact: apx.datalink.hosts
-                        active: false
-                        valueScale: 0.8
-                        valueColor: apx.datalink.server.extctr.value?Material.color(Material.LightGreen):Material.color(Material.LightRed)
-                        enabled: true
-                    }
-                }
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-
-            ValueLOS {
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-
-
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-
-            ValueButton {
-                text: qsTr("H")
-                fact: f_hmsl
-                property real v: fact.value*(3.281/100)
-                value: "FL"+v.toFixed()
-                visible: ui.test || v>0
-                valueScale: 0.8
-                valueColor: Material.color(Material.BlueGrey)
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-            ValueButton {
-                text: qsTr("D")
-                fact: f_dist
-                value: wp_dist>0?apx.distanceToString(wp_dist):"--"
-                valueScale: 0.8
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-            ValueButton {
-                text: qsTr("ETA")
-                fact: f_eta
-                property int v: fact.value
-                property real valid: v>0
-                property int tsec: ("0"+Math.floor(v%60)).slice(-2)
-                property int tmin: ("0"+Math.floor(v/60)%60).slice(-2)
-                property int thrs: Math.floor(v/60/60)
-                property string sETA: (thrs?thrs+":":"")+("0"+tmin).slice(-2)+":"+("0"+tsec).slice(-2)
-                value: valid?sETA:"--:--"
-                valueScale: 0.8
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-            ValueButton {
-                text: qsTr("F")
-                fact: f_fuel
-                value: fact.value.toFixed()
-                visible: ui.test || fact.value>0
-                valueScale: 0.8
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight/2
-            }
-
-            ValueButton {
-                text: qsTr("WPT")
-                fact: f_wpidx
-                value: fact.value+1
-                visible: ui.test || (m_mode===proc_mode_WPT || m_mode===proc_mode_STBY)
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-            ValueButton {
-                text: qsTr("LPS")
-                fact: f_loops
-                visible: ui.test || (m_mode===proc_mode_STBY && fact.value>0)
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-            ValueButton {
-                text: qsTr("XT")
-                fact: f_xtrack
-                visible: ui.test || isTrack
-                property real v: fact.value
-                value: (Math.abs(v)<1?0:v.toFixed())+(m_adj>0?"+"+m_adj.toFixed():m_adj<0?"-"+(-m_adj).toFixed():"")
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-            ValueButton {
-                text: qsTr("LR")
-                fact: f_radius
-                visible: ui.test || m_mode===proc_mode_STBY || m_mode===proc_mode_LANDING
-                value: apx.distanceToString(Math.abs(fact.value))
-                valueScale: 0.8
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
-            ValueButton {
-                text: qsTr("AGL")
-                fact: f_agl
-                value: fact.value.toFixed(1)
-                visible: ui.test || m_agl_show
-                warning: m_agl_warning
-                error: m_agl_failure
-                active: m_agl_ready
-                Layout.fillWidth: true
-                Layout.preferredHeight: itemHeight
-            }
         }
+
     }
 }

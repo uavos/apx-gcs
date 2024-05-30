@@ -53,17 +53,14 @@ void FactBase::bindProperty(Fact *src, QString name, bool oneway)
 
     // find two-way binds to filter loops
     FactPropertyBinding *src_binding = nullptr;
-    for (auto i : src->_property_binds) {
+    for (const auto i : src->_property_binds) {
         if (!i->match(static_cast<Fact *>(this), name))
             continue;
         src_binding = i;
         break;
     }
 
-    FactPropertyBinding *b = new FactPropertyBinding(static_cast<Fact *>(this),
-                                                     src,
-                                                     name,
-                                                     src_binding);
+    auto b = new FactPropertyBinding(static_cast<Fact *>(this), src, name, src_binding);
     _property_binds.append(b);
 
     if (oneway)
@@ -77,16 +74,20 @@ void FactBase::unbindProperty(QString name)
 }
 void FactBase::unbindProperties(Fact *src, const QString &name)
 {
-    foreach (auto i, _property_binds) {
+    for (auto i : _property_binds) {
+        if (!i) {
+            _property_binds.removeAll(i);
+            continue;
+        }
         if (!i->match(src, name))
             continue;
-        _property_binds.removeOne(i);
+        _property_binds.removeAll(i);
         delete i;
     }
 }
 bool FactBase::bindedProperty(Fact *src, QString name)
 {
-    for (auto i : _property_binds) {
+    for (const auto i : _property_binds) {
         if (i->match(src, name))
             return true;
     }
@@ -157,6 +158,8 @@ void FactBase::moveChild(Fact *item, int n, bool safeMode)
             n++;
         emit itemToBeMoved(i, n, item);
         m_facts.removeAt(i);
+        if (n > m_facts.size())
+            n = m_facts.size();
         m_facts.insert(n, item);
         emit itemMoved(item);
     }
@@ -341,7 +344,7 @@ FactBase::Flag FactBase::treeType(void) const
 }
 void FactBase::setTreeType(FactBase::Flag v)
 {
-    v = static_cast<Flag>(v & TypeMask);
+    v = static_cast<Flag>((v & TypeMask).toInt());
     if (m_treeType == v)
         return;
     m_treeType = v;
@@ -404,9 +407,9 @@ void FactBase::setParentFact(Fact *v)
 
     //QObject::setParent(v);
     m_parentFact = v;
-    emit parentFactChanged();
     if (!v)
         return;
+    emit parentFactChanged();
     v->addChild(static_cast<Fact *>(this));
     updatePath();
 }

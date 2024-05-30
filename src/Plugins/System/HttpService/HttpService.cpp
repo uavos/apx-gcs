@@ -146,7 +146,7 @@ void HttpService::httpRequest(QTextStream &stream, QString req, const QTcpSocket
  {
   QTcpSocket* socket = (QTcpSocket*)sender();
   if (socket->canReadLine()) {
-    QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList tokens = QString(socket->readLine()).split(QRegularExpression("[ \r\n][ \r\n]*"));
     if (tokens[0]=="GET") {
       QString req=QUrl::fromPercentEncoding(tokens[1].toUtf8());
       QTextStream os(socket);

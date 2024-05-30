@@ -285,7 +285,7 @@ QVariant MandalaFact::data(int col, int role)
     return Fact::data(col, role);
 }
 
-bool MandalaFact::showThis(QRegExp re) const
+bool MandalaFact::showThis(QRegularExpression re) const
 {
     if (Fact::showThis(re))
         return true;

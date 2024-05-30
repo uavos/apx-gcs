@@ -21,9 +21,9 @@
  */
 import QtQuick          2.12
 import QtQuick.Layouts  1.12
-import QtQuick.Controls 2.12
+import QtQuick.Controls
 
-import Apx.Common 1.0
+import Apx.Common
 
 RowLayout {
     id: control
@@ -40,7 +40,7 @@ RowLayout {
         Loader {
             id: loaderSite
             anchors.fill: parent
-            asynchronous: true
+            // asynchronous: true
             property int viewIndex: 0
             sourceComponent: components[viewIndex%components.length]
             property var components: [ siteC, posC ]
@@ -104,7 +104,7 @@ RowLayout {
         Layout.alignment: Qt.AlignVCenter
 
         size: control.size
-        fact: apx.tools?apx.tools.location.offline:null
+        fact: (apx.tools && apx.tools.location)?apx.tools.location.offline:null
         showText: false
         showIcon: false
         value: (active?qsTr("offline"):qsTr("online")).toUpperCase()
@@ -125,7 +125,7 @@ RowLayout {
         
         Loader {
             id: loaderScale
-            asynchronous: true
+            // asynchronous: true
             property int viewIndex: 0
             sourceComponent: components[viewIndex%components.length]
             property var components: [ scaleC, distC ]

@@ -7,12 +7,12 @@ function(apx_qt TARGET)
     endif()
 
     find_package(
-        Qt5
+        Qt6
         COMPONENTS ${QT}
         REQUIRED
     )
     foreach(cmp ${QT})
-        target_link_libraries(${TARGET} PUBLIC Qt5::${cmp})
+        target_link_libraries(${TARGET} PUBLIC Qt6::${cmp})
     endforeach()
 
 endfunction()

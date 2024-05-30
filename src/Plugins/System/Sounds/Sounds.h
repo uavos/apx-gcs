@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <QSound>
+#include <QSoundEffect>
 #include <QTextToSpeech>
 #include <QtCore>
 
@@ -43,11 +43,11 @@ public:
     Fact *f_test;
 
 private:
-    QHash<QString, QSound *> speech;
-    QHash<QString, QSound *> effects;
-    QList<QSound *> effectsQueue;
-    QSound *effect;
-    QSound *lastEffect;
+    QHash<QString, QSoundEffect *> speech;
+    QHash<QString, QSoundEffect *> effects;
+    QList<QSoundEffect *> effectsQueue;
+    QSoundEffect *effect;
+    QSoundEffect *lastEffect;
 
     QTimer lastEffectTimer;
     QTimer effectTimer;
@@ -71,7 +71,7 @@ private slots:
     void enabledChanged();
 
     void effectTimeout();
-    void queue(QSound *e);
+    void queue(QSoundEffect *e);
 
     void ttsStateChanged(QTextToSpeech::State state);
 

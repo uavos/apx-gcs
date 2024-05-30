@@ -63,6 +63,7 @@ void FactProxyModel::setRoot(Fact *f)
     beginResetModel();
     _root = f;
     endResetModel();
+
     invalidate();
 }
 
@@ -72,10 +73,13 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     Fact *fact = index.data(Fact::ModelDataRole).value<Fact *>();
     if (!fact)
         return false;
+
     if (!fact->visible())
         return false;
+
     if (fact == _root)
         return true;
+
     //accept all parents of rootFact
     bool ok = false;
     for (Fact *f = _root; f; f = f->parentFact()) {
@@ -84,6 +88,7 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
             break;
         }
     }
+
     //check if index has parent as rootindex
     if (!ok) {
         for (Fact *f = fact; f; f = f->parentFact()) {
@@ -94,10 +99,12 @@ bool FactProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
             }
         }
     }
+
     if (!ok) {
         //qDebug()<<"flt"<<fact->path();
-        return filterRegExp().isEmpty() ? true : false;
+        return filterRegularExpression().isValid() ? false : true;
     }
+
     return showThis(index);
 }
 
@@ -105,6 +112,7 @@ bool FactProxyModel::showThis(const QModelIndex index) const
 {
     if (showThisItem(index))
         return true;
+
     //look for matching parents
     QModelIndex parentIndex = sourceModel()->parent(index);
     while (parentIndex.isValid()) {
@@ -132,7 +140,7 @@ bool FactProxyModel::showThisItem(const QModelIndex index) const
 }
 bool FactProxyModel::showThisFact(Fact *f) const
 {
-    return f->showThis(filterRegExp());
+    return f->showThis(filterRegularExpression());
 }
 
 bool FactProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
@@ -156,9 +164,8 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     : QWidget(parent)
     , _backNavigation(backNavigation)
 {
-    setWindowTitle(fact->title());
     vlayout = new QVBoxLayout(this);
-    vlayout->setMargin(0);
+    vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
     tree = new FactTreeView(this);
     QSizePolicy sp = tree->sizePolicy();
@@ -173,7 +180,7 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
     toolBar = new QToolBar(this);
     //toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolBar->setIconSize(QSize(14, 14));
-    toolBar->layout()->setMargin(0);
+    toolBar->layout()->setContentsMargins(0, 0, 0, 0);
     aBack = new QAction(MaterialIcon("arrow-left"), tr("Back"), this);
     aBack->setVisible(backNavigation);
     connect(aBack, &QAction::triggered, this, &FactTreeWidget::back);
@@ -197,14 +204,11 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
 
     //model
     model = new FactTreeModel(fact, this);
-
     proxy = new FactProxyModel(this);
-    proxy->setRoot(fact);
     proxy->setSourceModel(model);
-
     tree->setModel(proxy);
 
-    updateActions();
+    setRoot(fact);
 
     connect(eFilter,
             &QLineEdit::textChanged,
@@ -218,14 +222,16 @@ FactTreeWidget::FactTreeWidget(Fact *fact, bool filterEdit, bool backNavigation,
 
 void FactTreeWidget::filterChanged()
 {
-    QString s = eFilter->text();
-    QRegExp regExp(s, Qt::CaseSensitive, QRegExp::WildcardUnix);
+    QString s = eFilter->text().trimmed();
+    auto regExp = QRegularExpression::fromWildcard(s,
+                                                   Qt::CaseInsensitive,
+                                                   QRegularExpression::UnanchoredWildcardConversion);
 
     auto rootIndex = tree->rootIndex();
     //qDebug() << rootIndex;
     // tree->reset();
 
-    proxy->setFilterRegExp(regExp);
+    proxy->setFilterRegularExpression(regExp);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     // tree->setRootIndex(proxy->mapFromSource(model->factIndex(proxy->rootFact())));
     tree->setRootIndex(rootIndex);
@@ -299,15 +305,28 @@ void FactTreeWidget::setRoot(Fact *fact)
 
     resetFilter();
 
-    //if(proxy->rootFact()) disconnect(proxy->rootFact(),&Fact::removed,this,&FactTreeWidget::factRemoved);
+    if (model->root()) {
+        model->root()->disconnect(this);
 
-    proxy->setRoot(fact);
+        if (tree->selectionModel()) {
+            tree->selectionModel()->disconnect(this);
+        }
+    }
+
     model->setRoot(fact);
+    proxy->setRoot(fact);
+    proxy->invalidate();
 
-    // tree->setRootIndex(proxy->mapFromSource(model->factIndex(fact)));
+    if (fact) {
+        setWindowTitle(fact->title());
 
-    connect(fact, &Fact::removed, this, &FactTreeWidget::factRemoved);
-    //qDebug()<<"root"<<fact->path();
+        connect(fact, &Fact::removed, this, &FactTreeWidget::factRemoved);
+        connect(tree->selectionModel(),
+                &QItemSelectionModel::selectionChanged,
+                this,
+                &FactTreeWidget::selectionChanged);
+    }
+
     //cut current path
     for (int i = 0; i < rootList.size(); i++) {
         Fact *f = rootList.at(i);
@@ -317,6 +336,7 @@ void FactTreeWidget::setRoot(Fact *fact)
             break;
         }
     }
+
     updateActions();
 }
 

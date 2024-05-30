@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtLocation 5.13
-import QtPositioning 5.13
-import QtGraphicalEffects 1.0
+import QtQuick
+import QtQuick.Effects
+import QtLocation
+import QtPositioning
 
-import Apx.Map.Common 1.0
+import Apx.Map.Common
 
 MissionObject {
     id: pointItem
@@ -60,7 +60,7 @@ MissionObject {
     contentsTop: [
         Loader {
             active: f_hmsl!==0 && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -74,7 +74,7 @@ MissionObject {
     contentsBottom: [
         Loader {
             active: (f_loops>0 || f_time>0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -99,7 +99,7 @@ MissionObject {
     }
     Loader {
         //handle
-        asynchronous: true
+        // asynchronous: true
         onLoaded: {
             map.addMapItem(item)
             radiusPoint=item
@@ -120,14 +120,16 @@ MissionObject {
                 }
                 //direction arrow
                 contentsTop: [
-                    ColorOverlay {
+                    MultiEffect {
                         id: crsArrow1
                         //z: map.z
                         width: 24
                         height: width
                         opacity: ui.effects?0.8:1
-                        visible: (showDetails || circleActive) && (f_ccw)
-                        color: "white"
+                        brightness: 1
+                        visible: f_ccw
+                        colorization: showDetails || circleActive
+                        colorizationColor: Style.cPoint
                         source: Image {
                             width: crsArrow1.height
                             height: width
@@ -136,15 +138,17 @@ MissionObject {
                     }
                 ]
                 contentsBottom: [
-                    ColorOverlay {
+                    MultiEffect {
                         id: crsArrow2
                         //z: map.z
                         width: 24
                         height: width
                         rotation: 180
                         opacity: ui.effects?0.8:1
-                        visible: (showDetails || circleActive) && (!f_ccw)
-                        color: "white"
+                        brightness: 1
+                        visible: !f_ccw
+                        colorization: showDetails || circleActive
+                        colorizationColor: Style.cPoint
                         source: Image {
                             width: crsArrow2.height
                             height: width
@@ -157,7 +161,7 @@ MissionObject {
         }
     }
     Loader {
-        asynchronous: true
+        // asynchronous: true
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MapCircle {
@@ -172,7 +176,7 @@ MissionObject {
         }
     }
     Loader {
-        asynchronous: true
+        // asynchronous: true
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MapLine {

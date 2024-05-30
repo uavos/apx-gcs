@@ -35,7 +35,7 @@ public:
                                  FactPropertyBinding *src_binding);
     ~FactPropertyBinding();
 
-    bool match(Fact *src, const QString &name);
+    bool match(Fact *src, const QString &name) const;
 
     void block();
     void unblock();

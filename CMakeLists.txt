@@ -33,17 +33,17 @@ set(CMAKE_INSTALL_PREFIX
     CACHE PATH ""
 )
 
-# OSX specific options
-set(CMAKE_OSX_DEPLOYMENT_TARGET
-    "11"
-    CACHE STRING "Minimum OS X deployment version"
-)
-# Uncomment below to allow universal binary build for MacOS
-# Currently not supported due to Qt5.x issues
-# set(CMAKE_OSX_ARCHITECTURES
-#     "arm64;x86_64"
-#     CACHE STRING "MacOS universal binary" FORCE
-# )
+# Universal binary build for MacOS Release
+if(APPLE AND CMAKE_BUILD_TYPE STREQUAL Release)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET
+        "12"
+        CACHE STRING "Minimum OS X deployment version"
+    )
+    set(CMAKE_OSX_ARCHITECTURES
+        "arm64;x86_64"
+        CACHE STRING "MacOS universal binary" FORCE
+    )
+endif()
 
 # Project creation and versioning
 include(git)
@@ -67,12 +67,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # Qt should be found in PATH
-find_package(
-    Qt5
-    COMPONENTS Core QuickCompiler
-    REQUIRED
-)
-get_filename_component(QT_DIR "${Qt5Core_DIR}/../../.." ABSOLUTE)
+find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
+get_filename_component(QT_DIR "${Qt6Core_DIR}/../../.." ABSOLUTE)
+message(STATUS "Qt6 found in ${QT_DIR}")
 
 include(apx_gcs_qt)
 include(apx_gcs_qrc)

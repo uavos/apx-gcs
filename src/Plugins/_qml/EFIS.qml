@@ -19,9 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.7
+import QtQuick
 
-import Apx.Instruments 1.0
+import Apx.Instruments
 
 Loader {
     asynchronous: true

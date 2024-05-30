@@ -19,13 +19,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtLocation 5.13
-import QtGraphicalEffects 1.0
+import QtQuick
+import QtLocation
+import QtPositioning
 
-import Apx.Map.Common 1.0
+import Apx.Map.Common
 
-import APX.Mission 1.0 as APX
+import APX.Mission as APX
 
 
 MissionObject {
@@ -49,8 +49,8 @@ MissionObject {
     property int f_approach: fact?fact.approach.value:0
     property int f_hmsl: fact?fact.hmsl.value:0
     property real f_heading: fact?fact.heading:0
-    property var endPointCoordinate: fact && fact.endPoint?fact.endPoint:coordinate
-    property var appPointCoordinate: fact && fact.appPoint?fact.appPoint:coordinate
+    property var endPointCoordinate: (fact && fact.endPoint)?fact.endPoint:coordinate
+    property var appPointCoordinate: (fact && fact.appPoint)?fact.appPoint:coordinate
     property int num: fact?fact.num:0
 
     readonly property bool is_current: fact?fact.active:false
@@ -73,7 +73,7 @@ MissionObject {
     contentsRight: [
         Loader {
             active: showDetails && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -84,7 +84,7 @@ MissionObject {
         },
         Loader {
             active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
-            asynchronous: true
+            // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
@@ -104,15 +104,15 @@ MissionObject {
     property bool showDetailsApp: runwayItem.visible && detailsLevel>10
     property real appOpacity: ui.effects?(is_landing?1:0.6):1
 
-    property bool appHover: hover||appPoint.hover||dragging||appPoint.dragging
+    property bool appHover: fact?(hover||appPoint.hover||dragging||appPoint.dragging):false
     property bool appCircleActive: is_landing||appHover
     property bool appCircleVisible: runwayItem.visible && showDetailsApp && (f_approach>0||appHover)
     property int appCircleLineWidth: Math.max(1,(appCircleActive?2:1)*ui.scale)
     property real appCircleOpacity: ui.effects?(appCircleActive?0.8:0.6):1
 
     property variant appCircleAppCoord: appPointCoordinate
-    property variant appCircleCoordinate: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===0?-90:90))
-    property variant appCircleCoordinateDefault: appCircleAppCoord.atDistanceAndAzimuth(appCircleRadiusDefault,f_heading+(f_type===0?-90:90))
+    property variant appCircleCoordinate: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===0?-90:90)):coordinate
+    property variant appCircleCoordinateDefault: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadiusDefault,f_heading+(f_type===0?-90:90)):coordinate
     property real appCircleRadiusDefault: f_approach/2
     property real appCircleRadius: Math.max(100,is_landing?Math.abs(m_radius):appCircleRadiusDefault)
 
@@ -170,7 +170,8 @@ MissionObject {
     //handles
     Loader {
         //appPoint
-        asynchronous: true
+        // asynchronous: true
+        active: fact
         onLoaded: {
             map.addMapItem(item)
             appPoint=item
@@ -194,7 +195,8 @@ MissionObject {
     }
     Loader {
         //endPoint
-        asynchronous: true
+        // asynchronous: true
+        active: fact
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MissionObject {
@@ -209,7 +211,7 @@ MissionObject {
                 contentsRight: [
                     Loader {
                         active: showDetails && ((dragging||hover||selected)?1:0)
-                        asynchronous: true
+                        // asynchronous: true
                         sourceComponent: Component {
                             MapText {
                                 textColor: "white"

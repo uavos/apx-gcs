@@ -139,7 +139,7 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
                 f_mandala,
                 &Mandala::resetCounters);
 
-        connect(protocol->telemetry(), &PTelemetry::xpdrData, f_mandala, &Mandala::xpdrData);
+        connect(protocol->telemetry(), &PTelemetry::xpdrData, f_mandala, &Mandala::telemetryData);
 
         connect(protocol->data(), &PData::jsexecData, App::instance(), &App::jsexec);
 
