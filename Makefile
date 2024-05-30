@@ -9,7 +9,7 @@ APX_PROJECT_TITLE := "APX Ground Control"
 all: configure build
 
 configure:
-	@$(CMAKE) -DCMAKE_BUILD_TYPE=Release -H. -B$(BUILD_DIR) -G Ninja
+	@$(CMAKE) -DCMAKE_BUILD_TYPE=Release -H. -B$(BUILD_DIR) -G "Unix Makefiles"
 
 build:
 	@$(CMAKE) --build $(BUILD_DIR)

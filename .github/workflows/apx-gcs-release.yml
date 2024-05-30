@@ -14,17 +14,18 @@ jobs:
     name: Build Linux
     runs-on: ubuntu-latest
     # if: "false"
+
     container:
       image: uavos/apx-gcs-linux:latest
       options: --privileged
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Fetch version tags
-        run: |
-          git config --global --add safe.directory `pwd`
-          git fetch --prune --unshallow --tags
+          fetch-tags: true
+          fetch-depth: 0
 
       - name: Build package
         run: make release-package

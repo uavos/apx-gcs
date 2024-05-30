@@ -68,6 +68,7 @@ RUN apt-get install -y --no-install-recommends \
     gstreamer1.0-x gstreamer1.0-gl gstreamer1.0-libav gstreamer1.0-pulseaudio libgstreamer-plugins-base1.0-dev \
     libegl1-mesa-dev libgles2-mesa-dev libxkbcommon-x11-dev libspeechd-dev libffi-dev \
     libicu-dev libxcb-cursor-dev libmariadb3 \
+    file \
     && rm -Rf /var/cache/apt
 
 # libs: to include in release package
