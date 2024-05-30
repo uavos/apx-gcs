@@ -225,8 +225,11 @@ ActionButton {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
 
-                implicitWidth: (_value.item?_value.item.implicitWidth:0)
-                            + (_editor.item?_editor.item.implicitWidth:0)
+                readonly property real maxWidth: Style.buttonSize*Style.widthRatio*0.7
+                readonly property real implWidth: (_value.item?_value.item.implicitWidth:0)
+                                              + (_editor.item?_editor.item.implicitWidth:0)
+
+                implicitWidth: Math.min(maxWidth,implWidth)
 
                 Loader {
                     id: _value
