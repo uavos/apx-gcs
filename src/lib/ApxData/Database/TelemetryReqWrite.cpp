@@ -55,13 +55,12 @@ bool DBReqTelemetryWriteData::run(QSqlQuery &query)
 
     auto d = static_cast<TelemetryDB *>(db);
 
-    for (auto uid : _values.keys()) {
+    for (auto [uid, value] : _values) {
         auto fkey = d->field_key(uid);
         if (!fkey) {
             qWarning() << "missing mandala uid" << uid;
             continue;
         }
-        auto value = _values.value(uid);
 
         if (uplink) {
             query.prepare("INSERT INTO TelemetryUplink"

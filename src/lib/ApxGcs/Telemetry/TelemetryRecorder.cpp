@@ -167,11 +167,13 @@ bool TelemetryRecorder::dbCheckRecord()
         for (auto f : _vehicle->f_mandala->valueFacts()) {
             if (!f->everReceived())
                 continue;
-            values.insert(f->uid(), f->value());
+            values.push_back({f->uid(), f->value()});
             // qDebug() << f->mpath() << f->value();
         }
-        _values = values;
-        reqPendingList.append(new DBReqTelemetryWriteData(0, 0, _values, false));
+        for (auto [uid, v] : values) {
+            _valuesMap[uid] = v;
+        }
+        reqPendingList.append(new DBReqTelemetryWriteData(0, 0, values, false));
 
         apxConsole() << tr("Telemetry record request");
         reqNewRecord->exec();
@@ -215,14 +217,15 @@ void TelemetryRecorder::dbRecordCreated(quint64 telemetryID)
 }
 void TelemetryRecorder::cleanupValues(PBase::Values *values)
 {
-    for (auto uid : values->keys()) {
-        auto v = values->value(uid);
-        if (_values.value(uid) == v) {
-            values->remove(uid);
+    PBase::Values newValues;
+    for (auto [uid, value] : *values) {
+        if (_valuesMap[uid] == value) {
         } else {
-            _values.insert(uid, v);
+            _valuesMap[uid] = value;
+            newValues.push_back({uid, value});
         }
     }
+    values->swap(newValues);
 }
 void TelemetryRecorder::dbWriteRequest(DBReqTelemetryWriteBase *req)
 {
@@ -274,7 +277,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
 
     // record changed values only
     cleanupValues(&values);
-    if (values.isEmpty())
+    if (values.empty())
         return;
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, t, values, false));
@@ -288,7 +291,7 @@ void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 
     if (!uplink)
         cleanupValues(&values);
-    if (values.isEmpty())
+    if (values.empty())
         return;
 
     dbCheckRecord();

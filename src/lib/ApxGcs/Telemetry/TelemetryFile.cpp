@@ -125,7 +125,7 @@ bool TelemetryFile::create(Vehicle *vehicle)
         if (!(f->everReceived() || f->everSent()))
             continue;
 
-        values.insert(f->uid(), f->value());
+        values.push_back({f->uid(), f->value()});
         // qDebug() << f->mpath() << f->value();
     }
     write_values(values, false);
@@ -149,8 +149,8 @@ void TelemetryFile::write_timestamp(quint32 timestamp_ms)
 
 void TelemetryFile::write_values(const PBase::Values &values, bool uplink)
 {
-    for (auto uid : values.keys()) {
-        _write_value(uid, values.value(uid), uplink);
+    for (auto [uid, value] : values) {
+        _write_value(uid, value, uplink);
     }
 
     flush();

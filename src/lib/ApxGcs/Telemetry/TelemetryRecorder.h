@@ -68,7 +68,7 @@ private:
     DatabaseRequest *reqNewRecord{};
     QList<DBReqTelemetryWriteBase *> reqPendingList;
 
-    PBase::Values _values;
+    std::map<mandala::uid_t, QVariant> _valuesMap;
 
     QString confTitle;
 

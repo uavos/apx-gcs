@@ -50,10 +50,7 @@ public:
 
     virtual void process_downlink(QByteArray packet) = 0;
 
-    using value_t = std::pair<mandala::uid_t, mandala::variant_t>;
-    using ValuesList = std::vector<value_t>;
-
-    typedef QHash<mandala::uid_t, QVariant> Values;
+    typedef QList<std::pair<mandala::uid_t, QVariant>> Values;
 
     // interface to node firmware loader
     PFirmware *firmware() const { return m_firmware; }

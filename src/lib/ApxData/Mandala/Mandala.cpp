@@ -171,12 +171,12 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
 void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 {
     PBase::Values rec_values;
-    for (auto const &uid : values.keys()) {
+    for (auto const [uid, v] : values) {
         MandalaFact *f = fact(uid);
         if (!f)
             continue;
-        f->setValueFromStream(values.value(uid));
-        rec_values.insert(uid, f->value());
+        f->setValueFromStream(v);
+        rec_values.push_back({uid, f->value()});
     }
     emit recordTelemetry(rec_values, timestamp_ms);
     emit telemetryDecoded();
@@ -185,12 +185,12 @@ void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 void Mandala::valuesData(PBase::Values values)
 {
     PBase::Values rec_values;
-    for (auto const &uid : values.keys()) {
+    for (auto const [uid, v] : values) {
         MandalaFact *f = fact(uid);
         if (!f)
             continue;
-        f->setValueFromStream(values.value(uid));
-        rec_values.insert(uid, f->value());
+        f->setValueFromStream(v);
+        rec_values.push_back({uid, f->value()});
     }
     emit recordData(rec_values, false);
 }
@@ -204,6 +204,6 @@ void Mandala::recordSendValue(mandala::uid_t uid, QVariant value)
         value = f->value();
     }
     PBase::Values rec_values;
-    rec_values.insert(uid, value);
+    rec_values.push_back({uid, value});
     emit recordData(rec_values, true);
 }

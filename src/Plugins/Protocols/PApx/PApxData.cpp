@@ -66,7 +66,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             trace()->data(stream.payload());
 
             PBase::Values values = unpack(pid, spec, stream);
-            if (values.isEmpty() || stream.available() > 0) {
+            if (values.empty() || stream.available() > 0) {
                 qWarning() << "unpack data values error";
                 break;
             }
@@ -217,7 +217,7 @@ PBase::Values PApxData::unpack(const xbus::pid_s &pid,
         v = unpack<mandala::real_t>(stream);
         break;
     }
-    values.insert(pid.uid, v);
+    values.push_back({pid.uid, v});
 
     if (v.isNull()) {
         values.clear();

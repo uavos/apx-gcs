@@ -204,7 +204,7 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
                 auto uid = db->mandala_uid(name);
                 if (uid) {
                     PBase::Values values;
-                    values.insert(uid, xml.readElementText().toDouble());
+                    values.push_back({uid, (float) xml.readElementText().toDouble()});
                     dbSaveData(t, values, true);
                 } else {
                     qWarning() << "ignored field" << name;
@@ -226,10 +226,10 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
                     }
                     auto uid = xml_uid_map.at(i++);
                     if (uid) {
-                        values.insert(uid, s.toDouble());
+                        values.push_back({uid, s.toDouble()});
                     }
                 }
-                if (!values.isEmpty())
+                if (!values.empty())
                     dbSaveData(t, values, false);
                 continue;
             }
