@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "TelemetryFile.h"
+#include "TelemetryFileWriter.h"
 #include "TelemetryFileFormat.h"
 
 #include <App/App.h>
@@ -33,9 +33,9 @@
 
 using namespace telemetry;
 
-TelemetryFile::TelemetryFile() {}
+TelemetryFileWriter::TelemetryFileWriter() {}
 
-void TelemetryFile::print_stats()
+void TelemetryFileWriter::print_stats()
 {
     if (_stats_values.empty())
         return;
@@ -50,10 +50,8 @@ void TelemetryFile::print_stats()
     }
 }
 
-bool TelemetryFile::create(Vehicle *vehicle)
+bool TelemetryFileWriter::create(quint64 time_utc, Vehicle *vehicle)
 {
-    print_stats();
-
     _vehicle = vehicle;
 
     if (isOpen()) {
@@ -66,11 +64,7 @@ bool TelemetryFile::create(Vehicle *vehicle)
 
     QStringList st;
 
-    auto t = QDateTime::currentDateTime();
-
-    quint64 num = t.toMSecsSinceEpoch();
-
-    st.append(QString::number(num));
+    st.append(QString::number(time_utc));
 
     // st.append(t.toString("yyMMddHHmm"));
 
@@ -114,8 +108,8 @@ bool TelemetryFile::create(Vehicle *vehicle)
 
     strcpy(fhdr.magic.magic, "APXTLM");
     fhdr.magic.version = version;
-    fhdr.info.time = t.toMSecsSinceEpoch();
-    fhdr.info.utc_offset = t.offsetFromUtc();
+    fhdr.info.time = time_utc;
+    fhdr.info.utc_offset = QDateTime::fromMSecsSinceEpoch(time_utc).offsetFromUtc();
 
     // write tags
     XbusStreamWriter s(fhdr.tags, sizeof(fhdr.tags));
@@ -135,7 +129,7 @@ bool TelemetryFile::create(Vehicle *vehicle)
     _fields_map.clear();
     _values_s.clear();
     _stats_values.clear();
-    _stats_json.clear();
+    _json_objects.clear();
     _ts_s = 0;
 
     // write initial mandala state
@@ -150,8 +144,11 @@ bool TelemetryFile::create(Vehicle *vehicle)
     return true;
 }
 
-void TelemetryFile::write_timestamp(quint32 timestamp_ms)
+void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)
 {
+    if (!isOpen())
+        return;
+
     // qDebug() << timestamp_ms << _ts_s;
 
     if (timestamp_ms <= _ts_s)
@@ -164,8 +161,13 @@ void TelemetryFile::write_timestamp(quint32 timestamp_ms)
     QFile::write((const char *) &timestamp_ms, 4);
 }
 
-void TelemetryFile::write_values(quint32 timestamp_ms, const PBase::Values &values, bool uplink)
+void TelemetryFileWriter::write_values(quint32 timestamp_ms,
+                                       const PBase::Values &values,
+                                       bool uplink)
 {
+    if (!isOpen())
+        return;
+
     write_timestamp(timestamp_ms);
 
     for (auto [uid, value] : values) {
@@ -174,12 +176,15 @@ void TelemetryFile::write_values(quint32 timestamp_ms, const PBase::Values &valu
     flush();
 }
 
-void TelemetryFile::write_evt(quint32 timestamp_ms,
-                              const QString &name,
-                              const QString &value,
-                              const QString &uid,
-                              bool uplink)
+void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
+                                    const QString &name,
+                                    const QString &value,
+                                    const QString &uid,
+                                    bool uplink)
 {
+    if (!isOpen())
+        return;
+
     write_timestamp(timestamp_ms);
 
     if (uplink)
@@ -194,8 +199,13 @@ void TelemetryFile::write_evt(quint32 timestamp_ms,
     QFile::write("\0", 1);
 }
 
-void TelemetryFile::write_msg(quint32 timestamp_ms, const QString &text, const QString &subsystem)
+void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
+                                    const QString &text,
+                                    const QString &subsystem)
 {
+    if (!isOpen())
+        return;
+
     write_timestamp(timestamp_ms);
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::msg};
@@ -206,28 +216,34 @@ void TelemetryFile::write_msg(quint32 timestamp_ms, const QString &text, const Q
     QFile::write("\0", 1);
 }
 
-void TelemetryFile::write_json(const QString &name, const QJsonObject &json)
+void TelemetryFileWriter::write_json(const QString &name, const QJsonObject &json, bool uplink)
 {
+    if (!isOpen())
+        return;
+
+    if (uplink)
+        _write_uplink();
+
     QByteArray jdata;
     bool is_diff;
 
     // check if file already written
-    auto it = _stats_json.find(name);
-    if (it != _stats_json.end()) {
+    auto it = _json_objects.find(name);
+    if (it != _json_objects.end()) {
         QJsonObject diff;
         _json_diff(it->second, json, diff);
         if (diff.isEmpty()) {
             qDebug() << name << "json diff is empty";
             return;
         }
-        _stats_json[name] = json;
+        _json_objects[name] = json;
 
         jdata = QJsonDocument(diff).toJson(QJsonDocument::Compact);
         is_diff = true;
 
         qDebug() << name << "json diff:" << diff;
     } else {
-        _stats_json[name] = json;
+        _json_objects[name] = json;
 
         jdata = QJsonDocument(json).toJson(QJsonDocument::Compact);
         is_diff = false;
@@ -247,8 +263,14 @@ void TelemetryFile::write_json(const QString &name, const QJsonObject &json)
     QFile::write(data.constData(), data.size());
 }
 
-void TelemetryFile::write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink)
+void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
+                                    uint16_t id,
+                                    const QByteArray &data,
+                                    bool uplink)
 {
+    if (!isOpen())
+        return;
+
     write_timestamp(timestamp_ms);
 
     if (uplink)
@@ -264,7 +286,7 @@ void TelemetryFile::write_raw(quint32 timestamp_ms, uint16_t id, const QByteArra
     QFile::write(data.constData(), data.size());
 }
 
-bool TelemetryFile::_write_tag(XbusStreamWriter *stream, const char *name, const char *value)
+bool TelemetryFileWriter::_write_tag(XbusStreamWriter *stream, const char *name, const char *value)
 {
     if (!value || !value[0]) // skip empty values
         return true;
@@ -290,12 +312,12 @@ bool TelemetryFile::_write_tag(XbusStreamWriter *stream, const char *name, const
     return false;
 }
 
-void TelemetryFile::_write_string(const char *s)
+void TelemetryFileWriter::_write_string(const char *s)
 {
     QFile::write(s, qstrlen(s) + 1);
 }
 
-void TelemetryFile::_write_field(QString name, QString title, QString units)
+void TelemetryFileWriter::_write_field(QString name, QString title, QString units)
 {
     // qDebug() << name << title << units;
 
@@ -309,7 +331,7 @@ void TelemetryFile::_write_field(QString name, QString title, QString units)
     _write_string(units.toUtf8());
 }
 
-void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool uplink)
+void TelemetryFileWriter::_write_value(mandala::uid_t uid, const QVariant &value, bool uplink)
 {
     // map mandala fact
     auto f = _vehicle->f_mandala->fact(uid);
@@ -491,13 +513,15 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
     }
 }
 
-void TelemetryFile::_write_uplink()
+void TelemetryFileWriter::_write_uplink()
 {
     const dspec_s spec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::uplink};
     QFile::write((const char *) &spec, 1);
 }
 
-void TelemetryFile::_json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff)
+void TelemetryFileWriter::_json_diff(const QJsonObject &prev,
+                                     const QJsonObject &next,
+                                     QJsonObject &diff)
 {
     for (auto it = next.begin(); it != next.end(); ++it) {
         auto pit = prev.find(it.key());

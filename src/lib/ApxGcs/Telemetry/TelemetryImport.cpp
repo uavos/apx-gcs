@@ -319,7 +319,7 @@ quint64 TelemetryImport::dbReadSharedHashId(QString hash)
 quint64 TelemetryImport::dbSaveID(
     QString vehicleUID, QString callsign, QString comment, bool rec, quint64 timestamp)
 {
-    DBReqTelemetryNewRecord req(vehicleUID, callsign, comment, rec, timestamp);
+    DBReqTelemetryNewRecord req(vehicleUID, callsign, comment, rec, timestamp, "");
     req.execSynchronous();
     return req.telemetryID;
 }

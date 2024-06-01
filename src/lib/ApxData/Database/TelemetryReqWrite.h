@@ -28,8 +28,12 @@ class DBReqTelemetryNewRecord : public DBReqTelemetry
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryNewRecord(
-        QString vehicleUID, QString callsign, QString comment, bool recording, qint64 t)
+    explicit DBReqTelemetryNewRecord(QString vehicleUID,
+                                     QString callsign,
+                                     QString comment,
+                                     bool recording,
+                                     qint64 t,
+                                     QString fileName)
         : DBReqTelemetry()
         , telemetryID(0)
         , vehicleUID(vehicleUID)
@@ -37,6 +41,7 @@ public:
         , comment(comment)
         , recording(recording)
         , t(t)
+        , fileName(fileName)
     {}
     //result
     quint64 telemetryID;
@@ -47,6 +52,7 @@ private:
     QString comment;
     bool recording;
     qint64 t;
+    QString fileName;
 
 protected:
     bool run(QSqlQuery &query);

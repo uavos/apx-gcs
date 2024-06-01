@@ -28,13 +28,14 @@ bool DBReqTelemetryNewRecord::run(QSqlQuery &query)
 {
     // qDebug() << vehicleUID << callsign << t;
 
-    query.prepare(
-        "INSERT INTO Telemetry(vehicleUID, callsign, comment, trash, time) VALUES(?, ?, ?, ?, ?)");
+    query.prepare("INSERT INTO Telemetry(vehicleUID, callsign, comment, trash, time, file) "
+                  "VALUES(?, ?, ?, ?, ?, ?)");
     query.addBindValue(vehicleUID);
     query.addBindValue(callsign);
     query.addBindValue(comment);
     query.addBindValue(recording ? QVariant() : 1);
     query.addBindValue(t);
+    query.addBindValue(fileName);
     if (!query.exec())
         return false;
     telemetryID = query.lastInsertId().toULongLong();

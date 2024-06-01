@@ -33,8 +33,10 @@ struct fhdr_s
             int32_t utc_offset; // timestamp UTC offset of local machine
 
             // the following data can be rewritten after file is recorded
-            uint32_t size; // payload size
-            uint32_t crc;  // file payload crc32
+            // used for consistency check and fast stats access
+            uint64_t size; // payload size [bytes]
+            uint32_t rcnt; // records count
+            uint32_t tmax; // total time [ms] or max timestamp
 
             // the following data is ponters to the meta records when available
             // relative to the start of the file (must be non-zero)
@@ -109,7 +111,7 @@ enum class extid_e { // 4 bits (part of dspec)
     ts = 0, // [ms] u32 timestamp update relative to file
     uplink, // [dspec,data] uplink data (marks next dspec)
     field,  // [name,title,units] strings of used fields sequence
-    crc,    // [crc32] counted so far for the data stream
+    crc,    // [crc32] counted so far for the data stream (excl header)
 
     // special data types, strings separated by 0 and list terminated by another 0
     evt = 8, // [name,value,uid,0] generic event (conf update)

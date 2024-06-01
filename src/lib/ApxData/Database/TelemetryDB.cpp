@@ -66,6 +66,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
                                      << "callsign TEXT"
                                      << "notes TEXT"
                                      << "comment TEXT"
+                                     << "file TEXT"
                                      << "hash TEXT"
                                      << "totalTime INTEGER"
                                      << "downlink INTEGER"
@@ -76,6 +77,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "Telemetry", "time", false);
     new DBReqMakeIndex(this, "Telemetry", "vehicleUID", false);
     new DBReqMakeIndex(this, "Telemetry", "callsign", false);
+    new DBReqMakeIndex(this, "Telemetry", "file", false);
     new DBReqMakeIndex(this, "Telemetry", "hash", false);
 
     new DBReqMakeTable(this,

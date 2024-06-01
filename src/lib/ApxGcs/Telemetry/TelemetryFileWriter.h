@@ -31,14 +31,16 @@
 class Vehicle;
 class XbusStreamWriter;
 
-class TelemetryFile : private QFile
+class TelemetryFileWriter : private QFile
 {
     Q_OBJECT
 
 public:
-    explicit TelemetryFile();
+    explicit TelemetryFileWriter();
 
-    bool create(Vehicle *vehicle);
+    QString name() const { return QFileInfo(*this).completeBaseName(); }
+
+    bool create(quint64 time_utc, Vehicle *vehicle);
     void write_timestamp(quint32 timestamp_ms);
     void write_values(quint32 timestamp_ms, const PBase::Values &values, bool uplink);
 
@@ -48,7 +50,7 @@ public:
                    const QString &uid,
                    bool uplink);
     void write_msg(quint32 timestamp_ms, const QString &text, const QString &subsystem);
-    void write_json(const QString &name, const QJsonObject &json);
+    void write_json(const QString &name, const QJsonObject &json, bool uplink);
     void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink);
 
     void print_stats();
@@ -66,11 +68,12 @@ private:
 
     void _write_field(QString name, QString title, QString units);
 
+    // monitor changes and updates
     std::map<mandala::uid_t, uint16_t> _fields_map;
     std::map<mandala::uid_t, QVariant> _values_s;
+    std::map<QString, QJsonObject> _json_objects;
 
     std::map<mandala::uid_t, QSet<telemetry::dspec_e>> _stats_values;
-    std::map<QString, QJsonObject> _stats_json;
 
     quint32 _ts_s{};
     uint16_t _widx{};

@@ -26,7 +26,7 @@
 #include <Vehicles/Vehicles.h>
 #include <QtCore>
 
-#include "TelemetryFile.h"
+#include "TelemetryFileWriter.h"
 
 class Recorder;
 class NodeItem;
@@ -44,7 +44,7 @@ private:
 
     Fact *f_enable;
 
-    TelemetryFile _file;
+    TelemetryFileWriter _file;
 
     //database
     bool dbCheckRecord();
@@ -66,20 +66,10 @@ private:
     quint64 getEventTimestamp();
 
     DatabaseRequest *reqNewRecord{};
-    QList<DBReqTelemetryWriteBase *> reqPendingList;
-
-    std::map<mandala::uid_t, QVariant> _valuesMap;
 
     QString confTitle;
 
-    //cache duplicates
-    QString configHash;
-    QString missionHash;
-
-    void cleanupValues(PBase::Values *values);
-
     void invalidateCache();
-    void dbWriteRequest(DBReqTelemetryWriteBase *req);
 
 private slots:
     void updateStatus();
@@ -88,13 +78,10 @@ private slots:
 
     //database
     void dbRecordCreated(quint64 telemetryID);
-    void writeEvent(const QString &name, const QString &value, const QString &uid, bool uplink);
 
     //internal flow
-    void recordMissionDownlink();
-    void recordMissionUplink();
     void recordMission(bool uplink);
-    void recordConfig(QString hash, QString title);
+    void recordConfig(QString title);
 
 public slots:
     //exported slots for recording
