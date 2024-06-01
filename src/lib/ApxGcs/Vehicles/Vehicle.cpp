@@ -488,6 +488,8 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
     }
     AppNotify::instance()->report(msg, flags, subsystem);
 
+    emit messageReported(msg, subsystem);
+
     if (fType == AppNotify::Error) {
         f_warnings->error(msg);
     } else if (fType == AppNotify::Warning) {

@@ -35,8 +35,25 @@ using namespace telemetry;
 
 TelemetryFile::TelemetryFile() {}
 
+void TelemetryFile::print_stats()
+{
+    if (_stats_values.empty())
+        return;
+
+    for (auto [uid, dspec] : _stats_values) {
+        auto f = _vehicle->f_mandala->fact(uid);
+        QStringList sl;
+        for (auto i : dspec)
+            sl.append(telemetry::dspec_names[(uint) i]);
+
+        qDebug() << f->mpath().append(':') << sl.join(',');
+    }
+}
+
 bool TelemetryFile::create(Vehicle *vehicle)
 {
+    print_stats();
+
     _vehicle = vehicle;
 
     if (isOpen()) {
@@ -117,18 +134,18 @@ bool TelemetryFile::create(Vehicle *vehicle)
     _widx = 0;
     _fields_map.clear();
     _values_s.clear();
+    _stats_values.clear();
+    _stats_json.clear();
     _ts_s = 0;
 
     // write initial mandala state
-    PBase::Values values;
     for (auto f : vehicle->f_mandala->valueFacts()) {
         if (!(f->everReceived() || f->everSent()))
             continue;
-
-        values.push_back({f->uid(), f->value()});
+        _write_value(f->uid(), f->value(), false);
         // qDebug() << f->mpath() << f->value();
     }
-    write_values(values, false);
+    flush();
 
     return true;
 }
@@ -147,13 +164,104 @@ void TelemetryFile::write_timestamp(quint32 timestamp_ms)
     QFile::write((const char *) &timestamp_ms, 4);
 }
 
-void TelemetryFile::write_values(const PBase::Values &values, bool uplink)
+void TelemetryFile::write_values(quint32 timestamp_ms, const PBase::Values &values, bool uplink)
 {
+    write_timestamp(timestamp_ms);
+
     for (auto [uid, value] : values) {
         _write_value(uid, value, uplink);
     }
-
     flush();
+}
+
+void TelemetryFile::write_evt(quint32 timestamp_ms,
+                              const QString &name,
+                              const QString &value,
+                              const QString &uid,
+                              bool uplink)
+{
+    write_timestamp(timestamp_ms);
+
+    if (uplink)
+        _write_uplink();
+
+    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::evt};
+    QFile::write((const char *) &dspec, 1);
+
+    _write_string(name.toUtf8());
+    _write_string(value.toUtf8());
+    _write_string(uid.toUtf8());
+    QFile::write("\0", 1);
+}
+
+void TelemetryFile::write_msg(quint32 timestamp_ms, const QString &text, const QString &subsystem)
+{
+    write_timestamp(timestamp_ms);
+
+    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::msg};
+    QFile::write((const char *) &dspec, 1);
+
+    _write_string(text.toUtf8());
+    _write_string(subsystem.toUtf8());
+    QFile::write("\0", 1);
+}
+
+void TelemetryFile::write_json(const QString &name, const QJsonObject &json)
+{
+    QByteArray jdata;
+    bool is_diff;
+
+    // check if file already written
+    auto it = _stats_json.find(name);
+    if (it != _stats_json.end()) {
+        QJsonObject diff;
+        _json_diff(it->second, json, diff);
+        if (diff.isEmpty()) {
+            qDebug() << name << "json diff is empty";
+            return;
+        }
+        _stats_json[name] = json;
+
+        jdata = QJsonDocument(diff).toJson(QJsonDocument::Compact);
+        is_diff = true;
+
+        qDebug() << name << "json diff:" << diff;
+    } else {
+        _stats_json[name] = json;
+
+        jdata = QJsonDocument(json).toJson(QJsonDocument::Compact);
+        is_diff = false;
+
+        qDebug() << name << "json:" << json;
+    }
+
+    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext,
+                        .spec_ext.extid = (is_diff ? extid_e::jupd : extid_e::json)};
+    QFile::write((const char *) &dspec, 1);
+
+    _write_string(name.toUtf8());
+
+    auto data = qCompress(jdata, 9);
+    uint32_t size = data.size();
+    QFile::write((const char *) &size, 4);
+    QFile::write(data.constData(), data.size());
+}
+
+void TelemetryFile::write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink)
+{
+    write_timestamp(timestamp_ms);
+
+    if (uplink)
+        _write_uplink();
+
+    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::raw};
+    QFile::write((const char *) &dspec, 1);
+
+    QFile::write((const char *) &id, 2);
+
+    uint16_t size = data.size();
+    QFile::write((const char *) &size, 2);
+    QFile::write(data.constData(), data.size());
 }
 
 bool TelemetryFile::_write_tag(XbusStreamWriter *stream, const char *name, const char *value)
@@ -210,13 +318,23 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
 
     // determine data type
     bool is_uint;
-    if (f->fmt().type_id == mandala::type_real) {
+    if (f->dataType() == Fact::Float) {
         auto t = value.typeId();
         is_uint = t == QMetaType::Int || t == QMetaType::UInt || t == QMetaType::ULongLong;
 
         if (!is_uint) {
-            float vf = value.toFloat();
-            is_uint = std::isnan(vf) || (vf >= 0.f && std::ceil(vf) == vf);
+            // try check if float is integer
+            auto vf = value.toDouble();
+            if (std::isnan(vf)) {
+                is_uint = true;
+                vf = 0;
+            } else {
+                auto vfc = std::ceil(vf);
+                if (vf >= 0 && vfc == vf) {
+                    is_uint = true;
+                    vf = vfc;
+                }
+            }
         }
     } else {
         is_uint = true;
@@ -244,10 +362,14 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
         _values_s[uid] = value;
     }
 
-    // map value index by UID
+    // map value index by UID and write field descriptor when needed
     uint16_t vidx;
     auto it = _fields_map.find(uid);
     if (it == _fields_map.end()) {
+        if (_fields_map.size() >= 0x7FF) { // 11 bits
+            // too many fields;
+            return;
+        }
         vidx = _fields_map.size();
         _fields_map[uid] = vidx;
         _write_field(f->mpath(), f->title(), f->units());
@@ -268,7 +390,7 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
     }
     _widx = vidx;
 
-    // prepare value
+    // prepare value according to format
     uint64_t v = 0;
     size_t wcnt = 0;
 
@@ -296,10 +418,7 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
         }
     } else {
         // qDebug() << "float" << value;
-        const float vf = value.toFloat();
-        auto fmt = f->fmt();
-
-        switch (fmt.fmt) {
+        switch (f->fmt().fmt) {
         default:
             break;
 
@@ -315,13 +434,30 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
         case mandala::fmt_s16_rad2:
             spec.spec8.dspec = dspec_e::a16;
             wcnt = 2;
-            v = (uint16_t) xbus::telemetry::float_to_angle(vf, 180.f);
+            v = (uint16_t) xbus::telemetry::float_to_angle(value.toFloat(), 180.f);
+            break;
+
+        case mandala::fmt_f16:
+        case mandala::fmt_s8:
+        case mandala::fmt_s8_10:
+        case mandala::fmt_u8_10:
+        case mandala::fmt_s8_01:
+        case mandala::fmt_s8_001:
+        case mandala::fmt_u8_01:
+        case mandala::fmt_u8_001:
+        case mandala::fmt_u8_u:
+        case mandala::fmt_s8_u:
+        case mandala::fmt_s8_rad:
+            spec.spec8.dspec = dspec_e::f16;
+            wcnt = 2;
+            v = xbus::telemetry::float_to_f16(value.toFloat());
             break;
         }
 
         // default to raw float32
         if (!wcnt) {
             // check if f16 is enough
+            const float vf = value.toFloat();
             uint16_t f16 = xbus::telemetry::float_to_f16(vf);
             if (xbus::telemetry::float_from_f16(f16) == vf) {
                 spec.spec8.dspec = dspec_e::f16;
@@ -337,12 +473,12 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
         }
     }
 
+    // collect stats
+    _stats_values[uid].insert(spec.spec8.dspec);
+
     // prepend uplink wrap when needed
-    if (uplink) {
-        const dspec_s spec_uplink{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::uplink};
-        QFile::write((const char *) &spec_uplink, 1);
-        // dump("up", &spec_uplink, 1);
-    }
+    if (uplink)
+        _write_uplink();
 
     // write specifier to file
     QFile::write((const char *) &spec, spec.spec8.opt8 ? 1 : 2);
@@ -352,5 +488,42 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
     if (wcnt > 0) {
         QFile::write((const char *) &v, wcnt);
         // dump("data", &v, wcnt);
+    }
+}
+
+void TelemetryFile::_write_uplink()
+{
+    const dspec_s spec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::uplink};
+    QFile::write((const char *) &spec, 1);
+}
+
+void TelemetryFile::_json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff)
+{
+    for (auto it = next.begin(); it != next.end(); ++it) {
+        auto pit = prev.find(it.key());
+        if (pit == prev.end()) {
+            // new key added
+            diff[it.key()] = it.value();
+            // qDebug() << "new key" << it.key() << it.value();
+        } else if (pit.value() != it.value()) {
+            // qDebug() << "value diff" << it.key() << pit.value() << it.value();
+            if (pit.value().isObject() && it.value().isObject()) {
+                QJsonObject d;
+                _json_diff(pit.value().toObject(), it.value().toObject(), d);
+                diff[it.key()] = d;
+            } else if (pit.value().isArray() && it.value().isArray()) {
+                QJsonArray da;
+                auto pa = pit.value().toArray();
+                auto na = it.value().toArray();
+                for (int i = 0; i < na.size(); ++i) {
+                    QJsonObject d;
+                    _json_diff(pa.at(i).toObject(), na.at(i).toObject(), d);
+                    da.append(d);
+                }
+                diff[it.key()] = da;
+            } else {
+                diff[it.key()] = it.value();
+            }
+        }
     }
 }

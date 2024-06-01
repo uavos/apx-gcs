@@ -187,14 +187,12 @@ public slots:
 signals:
     void selected();
 
-signals:
     void requestScript(QString func);
-
     void geoPathAppend(QGeoCoordinate p);
-
     void deleteVehicle();
 
-signals:
+    void messageReported(QString msg, QString subsystem);
+
     void infoChanged();
     void followChanged();
     void coordinateChanged();

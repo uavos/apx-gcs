@@ -55,8 +55,8 @@ struct fhdr_s
 static_assert(sizeof(fhdr_s) == 1024, "size error");
 
 // data format identifiers
-enum class dspec_e { // 4 bits
-    ext,             // extended uid data (uid=extid_e)
+enum class dspec_e : uint8_t { // 4 bits
+    ext,                       // extended uid data (uid=extid_e)
 
     // unsigned raw
     u8,
@@ -73,7 +73,7 @@ enum class dspec_e { // 4 bits
     // special data types
     null,
 
-    // angle
+    // angle [deg]
     a16,
     a32,
 
@@ -84,18 +84,39 @@ enum class dspec_e { // 4 bits
     _rsv15,
 };
 
+static constexpr const char *dspec_names[] = {
+    "ext",
+    "u8",
+    "u16",
+    "u24",
+    "u32",
+    "u64",
+    "f16",
+    "f32",
+    "f64",
+    "null",
+    "a16",
+    "a32",
+    "_rsv12",
+    "_rsv13",
+    "_rsv14",
+    "_rsv15",
+};
+
 // special non-value data formats
-enum class extid_e { // 4 bits
+enum class extid_e { // 4 bits (part of dspec)
     // core services
     ts = 0, // [ms] u32 timestamp update relative to file
-    uplink, // [dspec,data] uplink data
+    uplink, // [dspec,data] uplink data (marks next dspec)
     field,  // [name,title,units] strings of used fields sequence
     crc,    // [crc32] counted so far for the data stream
 
-    // special data types
-    evt = 8, // [uplink,name,value,uid,0] event data
-    msg,     // [text,uid] message and source node uid
-    file,    // [name,json_base64_zip]
+    // special data types, strings separated by 0 and list terminated by another 0
+    evt = 8, // [name,value,uid,0] generic event (conf update)
+    msg,     // [text,subsystem,0] text message
+    json,    // [name,size(32),json_zip(...)] (nodes,mission)
+    jupd,    // [name,size(32),json_zip(...)] file patch (json diff)
+    raw,     // [id(16),size(16),data(...)] raw data (serial vcp)
 };
 
 // data specifier (1 or 2 bytes)

@@ -74,6 +74,8 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
             this,
             &TelemetryRecorder::recordNotification);
 
+    connect(vehicle, &Vehicle::messageReported, this, &TelemetryRecorder::recordMsg);
+
     // record mission on each upload or download
     connect(vehicle->f_mission, &VehicleMission::missionDownloaded, this, [this]() {
         connect(this->_vehicle->f_mission->storage,
@@ -282,8 +284,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, t, values, false));
 
-    _file.write_timestamp(t);
-    _file.write_values(values, false);
+    _file.write_values(t, values, false);
 }
 void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 {
@@ -298,8 +299,7 @@ void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 
     dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, uplink));
 
-    _file.write_timestamp(getEventTimestamp());
-    _file.write_values(values, uplink);
+    _file.write_values(getEventTimestamp(), values, uplink);
 }
 
 void TelemetryRecorder::writeEvent(const QString &name,
@@ -327,19 +327,36 @@ void TelemetryRecorder::recordNotification(QString msg,
 {
     if (msg.isEmpty())
         return;
+
+    qDebug() << "notify" << fact << msg << subsystem;
+
     QString uid;
     writeEvent("msg", QString("[%1]%2").arg(subsystem).arg(msg), uid, false);
+
+    if (!(flags & AppNotify::FromVehicle))
+        _file.write_msg(getEventTimestamp(), msg, "gcs/" + subsystem);
 }
+
+void TelemetryRecorder::recordMsg(QString msg, QString subsystem)
+{
+    if (msg.isEmpty())
+        return;
+    _file.write_msg(getEventTimestamp(), msg, subsystem);
+}
+
 void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString value)
 {
-    writeEvent("conf",
-               QString("%1/%2=%3").arg(node->title()).arg(name).arg(value),
-               node->uid(),
-               true);
+    value = QString("%1/%2=%3").arg(node->title()).arg(name).arg(value);
+
+    writeEvent("conf", value, node->uid(), true);
+
+    _file.write_evt(getEventTimestamp(), "conf", value, node->uid(), true);
 }
 void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool uplink)
 {
     writeEvent("serial", data.toHex().toUpper(), QString::number(portNo), uplink);
+
+    _file.write_raw(getEventTimestamp(), portNo, data, uplink);
 }
 
 void TelemetryRecorder::recordMissionDownlink()
@@ -369,6 +386,8 @@ void TelemetryRecorder::recordMission(bool uplink)
     missionHash = hash;
     //qDebug()<<title<<hash;
     writeEvent("mission", title, hash, uplink);
+
+    _file.write_json("mission", _vehicle->f_mission->toJsonDocument().object());
 }
 void TelemetryRecorder::recordConfig(QString hash, QString title)
 {
@@ -393,6 +412,8 @@ void TelemetryRecorder::recordConfig(QString hash, QString title)
             req->exec();
         }
     }
+
+    _file.write_json("nodes", _vehicle->toJsonDocument().object());
 }
 
 bool TelemetryRecorder::checkAutoRecord(void)

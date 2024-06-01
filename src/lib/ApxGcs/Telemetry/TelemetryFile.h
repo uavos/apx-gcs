@@ -26,17 +26,32 @@
 #include <Mandala/Mandala.h>
 #include <Mandala/MandalaContainers.h>
 
+#include "TelemetryFileFormat.h"
+
 class Vehicle;
 class XbusStreamWriter;
 
 class TelemetryFile : private QFile
 {
+    Q_OBJECT
+
 public:
     explicit TelemetryFile();
 
     bool create(Vehicle *vehicle);
     void write_timestamp(quint32 timestamp_ms);
-    void write_values(const PBase::Values &values, bool uplink);
+    void write_values(quint32 timestamp_ms, const PBase::Values &values, bool uplink);
+
+    void write_evt(quint32 timestamp_ms,
+                   const QString &name,
+                   const QString &value,
+                   const QString &uid,
+                   bool uplink);
+    void write_msg(quint32 timestamp_ms, const QString &text, const QString &subsystem);
+    void write_json(const QString &name, const QJsonObject &json);
+    void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink);
+
+    void print_stats();
 
 private:
     static constexpr auto suffix = "telemetry";
@@ -47,14 +62,20 @@ private:
     // helpers
     bool _write_tag(XbusStreamWriter *stream, const char *name, const char *value);
     void _write_string(const char *s);
+    void _write_uplink();
 
     void _write_field(QString name, QString title, QString units);
 
     std::map<mandala::uid_t, uint16_t> _fields_map;
     std::map<mandala::uid_t, QVariant> _values_s;
 
+    std::map<mandala::uid_t, QSet<telemetry::dspec_e>> _stats_values;
+    std::map<QString, QJsonObject> _stats_json;
+
     quint32 _ts_s{};
     uint16_t _widx{};
 
     void _write_value(mandala::uid_t uid, const QVariant &value, bool uplink);
+
+    void _json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff);
 };
