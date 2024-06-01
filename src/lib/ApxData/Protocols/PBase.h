@@ -28,6 +28,11 @@
 #include "PTrace.h"
 #include "PTreeBase.h"
 
+#include <Mandala/MandalaContainers.h>
+
+#include <map>
+#include <variant>
+
 class PVehicle;
 class PFirmware;
 class PTrace;
@@ -44,6 +49,9 @@ public:
     virtual void send_uplink(QByteArray packet) override;
 
     virtual void process_downlink(QByteArray packet) = 0;
+
+    using value_t = std::pair<mandala::uid_t, mandala::variant_t>;
+    using ValuesList = std::vector<value_t>;
 
     typedef QHash<mandala::uid_t, QVariant> Values;
 

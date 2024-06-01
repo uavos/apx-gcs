@@ -106,8 +106,8 @@ bool TelemetryFile::create(Vehicle *vehicle)
     _write_tag(&s, "vuid", vehicle->uid().toUtf8());
     _write_tag(&s, "conf", vehicle->confTitle().toUtf8());
     _write_tag(&s, "class", vehicle->vehicleTypeText().toUtf8());
-    _write_tag(&s, "huid", App::machineUID().toUtf8());
     _write_tag(&s, "host", QString("%1@%2").arg(App::username()).arg(App::hostname()).toUtf8());
+    _write_tag(&s, "huid", App::machineUID().toUtf8());
 
     // write header to file
     QFile::write((const char *) &fhdr, sizeof(fhdr));
@@ -209,43 +209,51 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
         return;
 
     // determine data type
-    bool is_uint = f->dataType() != Fact::Float;
-    is_uint |= value.type() == QVariant::Int;
-    is_uint |= value.type() == QVariant::UInt;
-    is_uint |= value.type() == QVariant::ULongLong;
+    bool is_uint;
+    if (f->fmt().type_id == mandala::type_real) {
+        auto t = value.typeId();
+        is_uint = t == QMetaType::Int || t == QMetaType::UInt || t == QMetaType::ULongLong;
 
-    if (!is_uint) {
-        float vf = value.toFloat();
-        is_uint = vf >= 0.f && std::ceil(vf) == vf;
-        is_uint |= std::isnan(vf);
+        if (!is_uint) {
+            float vf = value.toFloat();
+            is_uint = std::isnan(vf) || (vf >= 0.f && std::ceil(vf) == vf);
+        }
+    } else {
+        is_uint = true;
     }
 
     // uplink is always written
     if (!uplink) {
         // downlink is written only if value changed
-        if (_values_s.contains(uid)) {
-            if (_values_s.value(uid) == value)
+        auto it = _values_s.find(uid);
+        if (it != _values_s.end()) {
+            if (it->second == value)
                 return;
         } else {
+            // value never posted before
+            // initially - all values are assumed to be zero
             if (is_uint) {
                 if (value.toULongLong() == 0)
                     return;
             } else {
-                if (value.toDouble() == 0.)
+                if (value.toFloat() == 0)
                     return;
             }
         }
 
-        _values_s.insert(uid, value);
+        _values_s[uid] = value;
     }
 
     // map value index by UID
-    if (!_fields_map.contains(uid)) {
-        _fields_map.insert(uid, _fields_map.size());
-
+    uint16_t vidx;
+    auto it = _fields_map.find(uid);
+    if (it == _fields_map.end()) {
+        vidx = _fields_map.size();
+        _fields_map[uid] = vidx;
         _write_field(f->mpath(), f->title(), f->units());
+    } else {
+        vidx = it->second;
     }
-    const uint16_t vidx = _fields_map.value(uid);
 
     // prepare specifier
     dspec_s spec{};
@@ -260,6 +268,7 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
     }
     _widx = vidx;
 
+    // prepare value
     uint64_t v = 0;
     size_t wcnt = 0;
 
@@ -290,7 +299,7 @@ void TelemetryFile::_write_value(mandala::uid_t uid, const QVariant &value, bool
         const float vf = value.toFloat();
         auto fmt = f->fmt();
 
-        switch (fmt) {
+        switch (fmt.fmt) {
         default:
             break;
 

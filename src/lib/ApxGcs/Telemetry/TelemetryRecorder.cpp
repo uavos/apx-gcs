@@ -69,6 +69,11 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
             this,
             &TelemetryRecorder::recordConfigUpdate);
 
+    connect(AppNotify::instance(),
+            &AppNotify::notification,
+            this,
+            &TelemetryRecorder::recordNotification);
+
     // record mission on each upload or download
     connect(vehicle->f_mission, &VehicleMission::missionDownloaded, this, [this]() {
         connect(this->_vehicle->f_mission->storage,
@@ -312,6 +317,16 @@ void TelemetryRecorder::writeEvent(const QString &name,
 
 // write data slots
 
+void TelemetryRecorder::recordNotification(QString msg,
+                                           QString subsystem,
+                                           AppNotify::NotifyFlags flags,
+                                           Fact *fact)
+{
+    if (msg.isEmpty())
+        return;
+    QString uid;
+    writeEvent("msg", QString("[%1]%2").arg(subsystem).arg(msg), uid, false);
+}
 void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString value)
 {
     writeEvent("conf",

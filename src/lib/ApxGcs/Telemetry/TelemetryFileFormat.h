@@ -115,12 +115,14 @@ union dspec_s {
         dspec_e dspec : 4;
         bool opt8 : 1;       // must be set to 1
         uint vidx_delta : 3; // index delta [1..8] of variable in the sequence
+        uint _rsv : 8;
     } spec8;
 
     struct
     {
         dspec_e dspec : 4;
         extid_e extid : 4; // special field
+        uint _rsv : 8;
     } spec_ext;
 };
 static_assert(sizeof(dspec_s) == 2, "size error");

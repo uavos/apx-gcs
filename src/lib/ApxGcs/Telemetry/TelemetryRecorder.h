@@ -104,6 +104,10 @@ public slots:
     //events
     void recordConfigUpdate(NodeItem *node, QString name, QString value);
     void recordSerialData(quint16 portNo, QByteArray data, bool uplink);
+    void recordNotification(QString msg,
+                            QString subsystem,
+                            AppNotify::NotifyFlags flags,
+                            Fact *fact);
 
     //PROPERTIES
 public:

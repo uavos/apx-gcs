@@ -62,7 +62,7 @@ public:
     auto everSent() const { return _everSent; }
 
     inline const mandala::meta_s &meta() const { return m_meta; }
-    inline mandala::fmt_e fmt() const { return m_fmt.fmt; }
+    inline const mandala::fmt_s &fmt() const { return m_fmt; }
     inline bool is_gps_converted() const { return _convert_gps; }
 
 public:

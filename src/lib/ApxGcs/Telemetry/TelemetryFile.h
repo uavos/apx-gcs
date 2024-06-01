@@ -24,6 +24,7 @@
 #include <QtCore>
 
 #include <Mandala/Mandala.h>
+#include <Mandala/MandalaContainers.h>
 
 class Vehicle;
 class XbusStreamWriter;
@@ -48,8 +49,10 @@ private:
     void _write_string(const char *s);
 
     void _write_field(QString name, QString title, QString units);
-    QHash<mandala::uid_t, uint16_t> _fields_map;
-    QHash<mandala::uid_t, QVariant> _values_s;
+
+    std::map<mandala::uid_t, uint16_t> _fields_map;
+    std::map<mandala::uid_t, QVariant> _values_s;
+
     quint32 _ts_s{};
     uint16_t _widx{};
 
