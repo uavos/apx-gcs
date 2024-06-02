@@ -33,6 +33,12 @@ using namespace telemetry;
 
 bool TelemetryFileReader::open(QString name)
 {
+    _info = {};
+    _tags.clear();
+    _fields_map.clear();
+    _values_s.clear();
+    _meta_objects.clear();
+
     if (isOpen()) {
         qDebug() << "file break";
         close();
@@ -43,7 +49,7 @@ bool TelemetryFileReader::open(QString name)
         return false;
     }
 
-    name.append('.').append(suffix);
+    name.append('.').append(APXTLM_FTYPE);
 
     QFile::setFileName(AppDirs::telemetry().absoluteFilePath(name));
 
@@ -52,9 +58,59 @@ bool TelemetryFileReader::open(QString name)
         qWarning() << "failed to open file" << fileName();
         return false;
     }
+    do {
+        // read file header
+        fhdr_s fhdr;
+        if (read((char *) &fhdr, sizeof(fhdr)) != sizeof(fhdr)) {
+            qWarning() << "failed to read file header";
+            break;
+        }
 
-    // read file header
-    fhdr_s fhdr;
+        if (strcmp(fhdr.magic.magic, APXTLM_MAGIC)) {
+            qWarning() << "invalid file magic";
+            break;
+        }
 
-    return true;
+        if (fhdr.magic.version > APXTLM_VERSION) {
+            qWarning() << "invalid file version" << fhdr.magic.version << APXTLM_VERSION;
+            break;
+        }
+
+        if (fhdr.magic.hsize > sizeof(fhdr)) {
+            qWarning() << "invalid file header size" << fhdr.magic.hsize << sizeof(fhdr);
+            break;
+        }
+
+        // file format seem to be valid
+        _info = fhdr.info;
+
+        // seek back to the beginning of the payload if necessary
+        if (fhdr.magic.hsize < sizeof(fhdr)) {
+            QFile::seek(fhdr.magic.hsize);
+        }
+
+        // read tags
+        XbusStreamReader stream(fhdr.tags, sizeof(fhdr.tags));
+        while (stream.available() > 0) {
+            auto c = stream.read_string(stream.available());
+            if (!c)
+                break;
+            QString s = QString::fromUtf8((const char *) c);
+
+            QString key, value;
+            if (s.contains(':')) {
+                key = s.section(':', 0, 0);
+                value = s.section(':', 1);
+            } else {
+                key = s;
+            }
+            _tags[key] = value;
+        }
+
+        return true;
+    } while (0);
+
+    // some error occured
+    close();
+    return false;
 }

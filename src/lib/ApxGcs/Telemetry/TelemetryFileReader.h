@@ -37,14 +37,17 @@ class TelemetryFileReader : private QFile
 public:
     bool open(QString name);
 
+    auto &info() const { return _info; }
+    auto &tags() const { return _tags; }
+
 private:
-    static constexpr auto suffix = "telemetry";
-    static constexpr auto version = 1;
+    telemetry::fhdr_s::info_s _info;
+    QHash<QString, QString> _tags;
 
     // helpers
 
     // monitor changes and updates
     std::map<mandala::uid_t, uint16_t> _fields_map;
     std::map<mandala::uid_t, QVariant> _values_s;
-    std::map<QString, QJsonObject> _json_objects;
+    std::map<QString, QJsonObject> _meta_objects;
 };

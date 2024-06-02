@@ -9,6 +9,11 @@ namespace telemetry {
 
 #pragma pack(1)
 
+static constexpr auto APXTLM_VERSION = 1;
+
+static constexpr auto APXTLM_FTYPE = "telemetry";
+static constexpr auto APXTLM_MAGIC = "APXTLM";
+
 // file header
 struct fhdr_s
 {
@@ -18,8 +23,8 @@ struct fhdr_s
         struct
         {
             char magic[16];   // i.e. APXTLM
-            uint16_t version; // version number (1)
-            uint32_t hsize;   // header size (1024)
+            uint16_t version; // version number
+            uint16_t hsize;   // header size
         };
     } magic;
     static_assert(sizeof(magic_s) == 32, "size error");

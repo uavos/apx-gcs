@@ -80,7 +80,7 @@ bool TelemetryFileWriter::create(quint64 time_utc, Vehicle *vehicle)
         if (i > 0)
             s.append(QString("_%1").arg(i, 2, 10, QChar('0')));
 
-        s.append('.').append(suffix);
+        s.append('.').append(APXTLM_FTYPE);
 
         if (!QFile::exists(dir.absoluteFilePath(s))) {
             fname = s;
@@ -104,8 +104,9 @@ bool TelemetryFileWriter::create(quint64 time_utc, Vehicle *vehicle)
     // write file header
     fhdr_s fhdr{};
 
-    strcpy(fhdr.magic.magic, "APXTLM");
-    fhdr.magic.version = version;
+    strcpy(fhdr.magic.magic, APXTLM_MAGIC);
+    fhdr.magic.version = APXTLM_VERSION;
+    fhdr.magic.hsize = sizeof(fhdr);
     fhdr.info.time = time_utc;
     fhdr.info.utc_offset = QDateTime::fromMSecsSinceEpoch(time_utc).offsetFromUtc();
 

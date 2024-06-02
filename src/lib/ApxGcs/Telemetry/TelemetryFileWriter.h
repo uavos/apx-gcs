@@ -54,9 +54,6 @@ public:
     void print_stats();
 
 private:
-    static constexpr auto suffix = "telemetry";
-    static constexpr auto version = 1;
-
     Vehicle *_vehicle;
 
     // helpers
