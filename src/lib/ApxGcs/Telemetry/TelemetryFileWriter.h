@@ -38,7 +38,7 @@ class TelemetryFileWriter : private QFile
 public:
     QString name() const { return QFileInfo(*this).completeBaseName(); }
 
-    bool create(quint64 time_utc, Vehicle *vehicle);
+    bool create(const QString &path, quint64 time_utc, Vehicle *vehicle);
     void write_timestamp(quint32 timestamp_ms);
     void write_values(quint32 timestamp_ms, const PBase::Values &values, bool uplink);
 
@@ -52,6 +52,9 @@ public:
     void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink);
 
     void print_stats();
+
+    using QFile::close;
+    using QFile::isOpen;
 
 private:
     Vehicle *_vehicle;

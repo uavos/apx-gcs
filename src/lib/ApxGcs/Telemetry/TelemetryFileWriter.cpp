@@ -48,52 +48,16 @@ void TelemetryFileWriter::print_stats()
     }
 }
 
-bool TelemetryFileWriter::create(quint64 time_utc, Vehicle *vehicle)
+bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, Vehicle *vehicle)
 {
-    _vehicle = vehicle;
-
     if (isOpen()) {
         qDebug() << "file break";
         close();
     }
 
-    auto dir = AppDirs::telemetry();
-    dir.mkpath(".");
+    _vehicle = vehicle;
 
-    QStringList st;
-
-    st.append(QString::number(time_utc));
-
-    // st.append(t.toString("yyMMddHHmm"));
-
-    QString callsign = vehicle->title();
-    if (callsign.isEmpty())
-        callsign = vehicle->confTitle();
-    if (callsign.isEmpty())
-        callsign = "U";
-
-    st.append(callsign);
-
-    QString fname;
-    for (int i = 0; i < 100; ++i) {
-        QString s = st.join('_');
-        if (i > 0)
-            s.append(QString("_%1").arg(i, 2, 10, QChar('0')));
-
-        s.append('.').append(APXTLM_FTYPE);
-
-        if (!QFile::exists(dir.absoluteFilePath(s))) {
-            fname = s;
-            break;
-        }
-    }
-
-    if (fname.isEmpty()) {
-        qWarning() << "failed to create file name";
-        return false;
-    }
-
-    QFile::setFileName(dir.absoluteFilePath(fname));
+    QFile::setFileName(path);
 
     // open file for writing
     if (!QFile::open(QIODevice::WriteOnly)) {
@@ -104,18 +68,32 @@ bool TelemetryFileWriter::create(quint64 time_utc, Vehicle *vehicle)
     // write file header
     fhdr_s fhdr{};
 
-    strcpy(fhdr.magic.magic, APXTLM_MAGIC);
-    fhdr.magic.version = APXTLM_VERSION;
-    fhdr.magic.hsize = sizeof(fhdr);
-    fhdr.info.time = time_utc;
-    fhdr.info.utc_offset = QDateTime::fromMSecsSinceEpoch(time_utc).offsetFromUtc();
+    strcpy(fhdr.magic, APXTLM_MAGIC);
+    fhdr.version = APXTLM_VERSION;
+    fhdr.hsize = sizeof(fhdr);
+    fhdr.timestamp = time_utc;
+    fhdr.utc_offset = QDateTime::fromMSecsSinceEpoch(time_utc).offsetFromUtc();
+
+    auto sw_ver = QVersionNumber::fromString(QCoreApplication::applicationVersion());
+    if (!sw_ver.isNull()) {
+        fhdr.sw.version[0] = sw_ver.majorVersion();
+        fhdr.sw.version[1] = sw_ver.minorVersion();
+        fhdr.sw.version[2] = sw_ver.microVersion();
+    }
+
+    auto sw_hash = App::git_hash();
+    if (!sw_hash.isEmpty()) {
+        fhdr.sw.hash = sw_hash.toUInt(nullptr, 16);
+    }
 
     // write tags
     XbusStreamWriter s(fhdr.tags, sizeof(fhdr.tags));
+    _write_tag(&s, "name", name().toUtf8());
     _write_tag(&s, "call", vehicle->title().toUtf8());
     _write_tag(&s, "vuid", vehicle->uid().toUtf8());
     _write_tag(&s, "conf", vehicle->confTitle().toUtf8());
     _write_tag(&s, "class", vehicle->vehicleTypeText().toUtf8());
+
     _write_tag(&s, "host", QString("%1@%2").arg(App::username()).arg(App::hostname()).toUtf8());
     _write_tag(&s, "huid", App::machineUID().toUtf8());
 

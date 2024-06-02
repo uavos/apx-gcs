@@ -35,7 +35,7 @@ class TelemetryFileReader : private QFile
     Q_OBJECT
 
 public:
-    bool open(QString name);
+    bool open(QString filePath);
 
     auto &info() const { return _info; }
     auto &tags() const { return _tags; }

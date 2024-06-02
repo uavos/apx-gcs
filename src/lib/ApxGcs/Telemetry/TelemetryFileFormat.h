@@ -17,58 +17,110 @@ static constexpr auto APXTLM_MAGIC = "APXTLM";
 // file header
 struct fhdr_s
 {
-    // 32 bytes of file header format UID
-    union magic_s {
-        uint8_t _raw[32];
+    static constexpr auto SIZE = 1024;
+
+    // file header format UID
+    union {
+        uint8_t _raw1[64];
         struct
         {
-            char magic[16];   // i.e. APXTLM
+            char magic[16];   // i.e. "APXTLM"
             uint16_t version; // version number
-            uint16_t hsize;   // header size
+            uint16_t hsize;   // header size, i.e. sizeof(fhdr_s)
         };
-    } magic;
-    static_assert(sizeof(magic_s) == 32, "size error");
+    };
 
-    // current version implementation
-
-    union info_s {
-        uint8_t _raw[64];
+    // const data, written at the time of file creation
+    union {
+        uint8_t _raw2[64];
         struct
         {
-            uint64_t time; // file timestamp [ms since epoch] 1970-01-01, Coordinated Universal Time
+            uint64_t timestamp; // file timestamp [ms since epoch]
             int32_t utc_offset; // timestamp UTC offset of local machine
+            uint8_t _rsv1[4];
 
-            // the following data can be rewritten after file is recorded
-            // used for consistency check and fast stats access
-            uint64_t size; // payload size [bytes]
-            uint32_t tmax; // total time [ms] or max timestamp
             struct
+            {
+                uint8_t version[3]; // recorder software version: X.Y.Z
+                uint8_t _rsv2[1];
+
+                uint32_t hash; // git hash
+            } sw;
+        };
+    };
+
+    // file header info structure, updated after file is recorded
+    union info_s {
+        static constexpr auto OFFSET = 128;
+        static constexpr auto SIZE = 512 - OFFSET;
+        uint8_t _raw[SIZE];
+        struct
+        {
+            uint64_t parse_ts; // file parse timestamp [ms since epoch]
+
+            union {
+                uint64_t _raw;
+                struct
+                {
+                    bool parsed : 1;    // file parsed and meta data collected
+                    bool corrupted : 1; // ever found file corrupted
+                    bool edited : 1;    // file edited (splitted or merged)
+                };
+            } flags;
+
+            // used for consistency check and quick stats access
+            uint64_t size; // payload size [bytes]
+            uint64_t meta; // meta data offset [bytes] from the start of the file
+
+            uint32_t tmax; // total time [ms] or max timestamp
+            uint8_t _rsv1[4];
+
+            // @40
+
+            uint8_t sha1[20]; // file payload SHA1 hash
+            uint8_t _rsv2[4 + 32];
+
+            // @96
+
+            struct // file records counters
             {
                 uint32_t total;    // total records count
                 uint32_t downlink; // downlink records count
                 uint32_t uplink;   // uplink records count
                 uint32_t events;   // events records count
-                uint16_t fields;   // fields count
-                uint16_t meta;     // meta objects count
-            } cnt;
 
-            // the following data is ponters to the meta records when available
-            // relative to the start of the file (must be non-zero)
-            struct
-            {
-                uint32_t vehicle;
-                uint32_t mission;
-                uint32_t meta;
-            } offset;
+                uint16_t fields; // fields count
+                uint16_t meta;   // payload meta objects count
+
+                uint8_t _rsv1[12];
+            } cnt;
+            static_assert(sizeof(cnt) == 32, "size error");
+
+            // @128
+
+            uint8_t _padding;
         };
     } info;
-    static_assert(sizeof(info_s) == 64, "size error");
+    static_assert(sizeof(info) == info_s::SIZE, "size error");
 
     // tags: callsign,vehicle_uid,[anything else to help identify the case]
     // tags are always <name:value> pairs null terminated strings
-    char tags[1024 - sizeof(magic_s) - sizeof(info_s)];
+    static constexpr auto TAGS_SIZE = SIZE - info_s::OFFSET - info_s::SIZE;
+    char tags[TAGS_SIZE];
 };
-static_assert(sizeof(fhdr_s) == 1024, "size error");
+static_assert(sizeof(fhdr_s) == fhdr_s::SIZE, "size error");
+
+// tests
+namespace _tests {
+static constexpr auto info_extra = sizeof(fhdr_s::info) - offsetof(fhdr_s::info_s, _padding);
+static constexpr auto cnt_offset = offsetof(fhdr_s::info_s, cnt);
+static constexpr auto padding_offset = offsetof(fhdr_s::info_s, _padding);
+static constexpr auto tags_offset = offsetof(fhdr_s, tags);
+
+static_assert(cnt_offset == 96, "size error");
+static_assert(padding_offset == 128, "size error");
+static_assert(tags_offset == 512, "size error");
+} // namespace _tests
 
 // data format identifiers
 enum class dspec_e : uint8_t { // 4 bits

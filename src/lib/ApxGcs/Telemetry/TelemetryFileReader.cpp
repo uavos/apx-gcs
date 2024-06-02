@@ -31,7 +31,7 @@
 
 using namespace telemetry;
 
-bool TelemetryFileReader::open(QString name)
+bool TelemetryFileReader::open(QString filePath)
 {
     _info = {};
     _tags.clear();
@@ -44,14 +44,7 @@ bool TelemetryFileReader::open(QString name)
         close();
     }
 
-    if (name.isEmpty()) {
-        qWarning() << "failed to open file name";
-        return false;
-    }
-
-    name.append('.').append(APXTLM_FTYPE);
-
-    QFile::setFileName(AppDirs::telemetry().absoluteFilePath(name));
+    QFile::setFileName(filePath);
 
     // open file for reading
     if (!QFile::open(QIODevice::ReadOnly)) {
@@ -66,18 +59,18 @@ bool TelemetryFileReader::open(QString name)
             break;
         }
 
-        if (strcmp(fhdr.magic.magic, APXTLM_MAGIC)) {
+        if (strcmp(fhdr.magic, APXTLM_MAGIC)) {
             qWarning() << "invalid file magic";
             break;
         }
 
-        if (fhdr.magic.version > APXTLM_VERSION) {
-            qWarning() << "invalid file version" << fhdr.magic.version << APXTLM_VERSION;
+        if (fhdr.version > APXTLM_VERSION) {
+            qWarning() << "invalid file version" << fhdr.version << APXTLM_VERSION;
             break;
         }
 
-        if (fhdr.magic.hsize > sizeof(fhdr)) {
-            qWarning() << "invalid file header size" << fhdr.magic.hsize << sizeof(fhdr);
+        if (fhdr.hsize > sizeof(fhdr)) {
+            qWarning() << "invalid file header size" << fhdr.hsize << sizeof(fhdr);
             break;
         }
 
@@ -85,8 +78,8 @@ bool TelemetryFileReader::open(QString name)
         _info = fhdr.info;
 
         // seek back to the beginning of the payload if necessary
-        if (fhdr.magic.hsize < sizeof(fhdr)) {
-            QFile::seek(fhdr.magic.hsize);
+        if (fhdr.hsize < sizeof(fhdr)) {
+            QFile::seek(fhdr.hsize);
         }
 
         // read tags

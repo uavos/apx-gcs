@@ -117,75 +117,63 @@ void TelemetryRecorder::restartRecording()
     reset();
 }
 
-void TelemetryRecorder::invalidateCache()
-{
-    if (!recTelemetryID)
-        return;
-
-    if (Database::instance()->telemetry)
-        Database::instance()->telemetry->markCacheInvalid(recTelemetryID);
-}
-
 bool TelemetryRecorder::dbCheckRecord()
 {
-    if (!Database::instance()->telemetry) {
-        recTelemetryID = 0;
-        return false;
-    }
-
     checkAutoRecord();
-    if (recTelemetryID)
+
+    if (_file.isOpen())
         return true;
 
-    //register telemetry file record
-    if (!reqNewRecord) {
-        auto t = QDateTime::currentDateTime().toMSecsSinceEpoch();
-        _file.create(t, _vehicle);
+    auto time_utc = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
-        QString title = _vehicle->confTitle();
-        if (!title.isEmpty())
-            confTitle = title;
-        auto req = new DBReqTelemetryNewRecord(_vehicle->uid(),
-                                               _vehicle->title(),
-                                               confTitle,
-                                               recording(),
-                                               t,
-                                               _file.name());
-        connect(req,
-                &DBReqTelemetryNewRecord::idUpdated,
-                this,
-                &TelemetryRecorder::dbRecordCreated,
-                Qt::QueuedConnection);
-        reqNewRecord = req;
+    apxConsole() << tr("Telemetry record request");
 
-        apxConsole() << tr("Telemetry record request");
-        reqNewRecord->exec();
+    // construct new file name
 
-        // record initial meta data
-        recordConfig("init");
-        recordMission(false);
+    auto dir = AppDirs::telemetry();
+    if (!recording())
+        dir.setPath(dir.absoluteFilePath("trash"));
+    dir.mkpath(".");
+
+    QStringList st;
+    st.append(QString::number(time_utc));
+
+    // st.append(t.toString("yyMMddHHmm"));
+
+    QString callsign = _vehicle->title();
+    if (callsign.isEmpty())
+        callsign = _vehicle->confTitle();
+    if (callsign.isEmpty())
+        callsign = "U";
+
+    st.append(callsign);
+
+    QString fname;
+    for (int i = 0; i < 100; ++i) {
+        QString s = st.join('_');
+        if (i > 0)
+            s.append(QString("_%1").arg(i, 2, 10, QChar('0')));
+
+        s.append('.').append(telemetry::APXTLM_FTYPE);
+
+        if (!QFile::exists(dir.absoluteFilePath(s))) {
+            fname = s;
+            break;
+        }
     }
+    if (fname.isEmpty()) {
+        qWarning() << "failed to create file name";
+        return false;
+    }
+    fname = dir.absoluteFilePath(fname);
+
+    _file.create(fname, time_utc, _vehicle);
+
+    // record initial meta data
+    recordConfig();
+    recordMission(false);
 
     return false;
-}
-void TelemetryRecorder::dbRecordCreated(quint64 telemetryID)
-{
-    if (!reqNewRecord)
-        return;
-    if (!telemetryID)
-        return;
-
-    //qDebug() << telemetryID << reqPendingList.size();
-    recTelemetryID = telemetryID;
-    reqNewRecord = nullptr;
-
-    //record shared info
-    QVariantMap info;
-    info["machineUID"] = App::machineUID();
-    info["hostname"] = App::hostname();
-    info["username"] = App::username();
-    DBReqTelemetryWriteSharedInfo *req = new DBReqTelemetryWriteSharedInfo(telemetryID, info);
-    req->exec();
 }
 
 quint64 TelemetryRecorder::getEventTimestamp()
@@ -272,20 +260,9 @@ void TelemetryRecorder::recordMission(bool uplink)
 {
     _file.write_meta("mission", _vehicle->f_mission->toJsonDocument().object(), uplink);
 }
-void TelemetryRecorder::recordConfig(QString title)
+void TelemetryRecorder::recordConfig()
 {
     _file.write_meta("nodes", _vehicle->toJsonDocument().object(), false);
-
-    //check for config title change
-    if (confTitle != title) {
-        confTitle = title;
-        if (recTelemetryID) {
-            QVariantMap info;
-            info.insert("comment", title);
-            DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(recTelemetryID, info);
-            req->exec();
-        }
-    }
 }
 
 bool TelemetryRecorder::checkAutoRecord(void)
@@ -320,7 +297,7 @@ void TelemetryRecorder::setRecording(bool v)
 }
 void TelemetryRecorder::reset(void)
 {
-    recTelemetryID = 0;
+    _file.close();
 
     _reset_timestamp = true;
     _ts_t0 = _ts_t1 = _ts_t2 = 0;

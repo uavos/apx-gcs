@@ -49,8 +49,6 @@ private:
     //database
     bool dbCheckRecord();
 
-    quint64 recTelemetryID{};
-
     //auto recorder
     bool checkAutoRecord(void);
     Vehicle::FlightState flightState_s;
@@ -65,23 +63,16 @@ private:
 
     quint64 getEventTimestamp();
 
-    DatabaseRequest *reqNewRecord{};
-
     QString confTitle;
-
-    void invalidateCache();
 
 private slots:
     void updateStatus();
     void timeUpdate(void);
     void restartRecording();
 
-    //database
-    void dbRecordCreated(quint64 telemetryID);
-
     //internal flow
     void recordMission(bool uplink);
-    void recordConfig(QString title);
+    void recordConfig();
 
 public slots:
     //exported slots for recording
@@ -108,6 +99,7 @@ public:
 private:
     quint64 m_time{0};
     void setTime(quint64 v, bool forceUpdate = false);
+
 signals:
     void timeChanged();
     void recordingChanged();
