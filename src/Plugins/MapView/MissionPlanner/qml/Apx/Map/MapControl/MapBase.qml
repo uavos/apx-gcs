@@ -199,12 +199,14 @@ Map {
         signal flickStarted
         signal flickEnded
         target: null
+        enabled: false
         onTranslationChanged: (delta) => control.pan(-delta.x, -delta.y)
         onActiveChanged: if (active) {
             control.followStop()
             flickAnimation.stop()
         } else {
             flickAnimation.restart(centroid.velocity)
+            drag.enabled = false
         }
         grabPermissions:
             (PointerHandler.CanTakeOverFromItems | PointerHandler.CanTakeOverFromHandlersOfDifferentType | PointerHandler.ApprovesTakeOverByAnything)
@@ -282,6 +284,7 @@ Map {
             pressX = mouse.x
             pressY = mouse.y
             mouseClickCoordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
+            drag.enabled = true
         }
 
         onPositionChanged: (mouse) => {
