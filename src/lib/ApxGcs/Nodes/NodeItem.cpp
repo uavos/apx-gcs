@@ -251,7 +251,7 @@ QString NodeItem::toolTip() const
     if (!_ident.isEmpty()) {
         st << "";
         st << "[ident]";
-        for (const auto &[key, value] : _ident.asKeyValueRange()) {
+        for (const auto [key, value] : _ident.asKeyValueRange()) {
             QString s(value.toString().trimmed());
             if (s.isEmpty())
                 s = QJsonDocument::fromVariant(value).toJson();
@@ -719,7 +719,7 @@ void NodeItem::confReceived(QVariantMap values)
     }
 
     // report missing fields
-    for (const auto &[key, value] : values.asKeyValueRange()) {
+    for (const auto [key, value] : values.asKeyValueRange()) {
         if (!fields.contains(key)) {
             qWarning() << "missing field for:" << key;
         }
@@ -740,13 +740,13 @@ void NodeItem::confUpdated(QVariantMap values)
     // updated from another GCS instance
     if (!valid())
         return;
-    for (const auto &[name, value] : values.asKeyValueRange()) {
+    for (const auto name : values.keys()) {
         auto f = field(name);
         if (!f)
             continue;
         f->fromVariant(values.take(name));
         f->backup();
-        apxMsg() << tr("Updated").append(':') << name + ':' << f->text();
+        apxMsg() << tr("Updated").append(':') << f->name() + ':' << f->text();
     }
     if (values.isEmpty())
         return;

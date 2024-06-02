@@ -27,7 +27,7 @@ import Apx.Common
 import Apx.Controls
 import Apx.Instruments
 
-import Qt.labs.settings
+import QtCore
 
 // import "../Common"
 

@@ -22,7 +22,7 @@
 import QtQuick
 import QtQuick.Layouts
 
-import Qt.labs.settings
+import QtCore
 import QtQml.Models
 import QtQuick.Controls
 import QtQuick.Controls.Material
