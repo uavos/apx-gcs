@@ -19,6 +19,7 @@ struct fhdr_s
         {
             char magic[16];   // i.e. APXTLM
             uint16_t version; // version number (1)
+            uint32_t hsize;   // header size (1024)
         };
     } magic;
     static_assert(sizeof(magic_s) == 32, "size error");
@@ -35,8 +36,16 @@ struct fhdr_s
             // the following data can be rewritten after file is recorded
             // used for consistency check and fast stats access
             uint64_t size; // payload size [bytes]
-            uint32_t rcnt; // records count
             uint32_t tmax; // total time [ms] or max timestamp
+            struct
+            {
+                uint32_t total;    // total records count
+                uint32_t downlink; // downlink records count
+                uint32_t uplink;   // uplink records count
+                uint32_t events;   // events records count
+                uint16_t fields;   // fields count
+                uint16_t meta;     // meta objects count
+            } cnt;
 
             // the following data is ponters to the meta records when available
             // relative to the start of the file (must be non-zero)
@@ -116,8 +125,8 @@ enum class extid_e { // 4 bits (part of dspec)
     // special data types, strings separated by 0 and list terminated by another 0
     evt = 8, // [name,value,uid,0] generic event (conf update)
     msg,     // [text,subsystem,0] text message
-    json,    // [name,size(32),json_zip(...)] (nodes,mission)
-    jupd,    // [name,size(32),json_zip(...)] file patch (json diff)
+    meta,    // [name,size(32),meta_zip(...)] (nodes,mission)
+    mupd,    // [name,size(32),meta_zip(...)] meta data patch (json diff)
     raw,     // [id(16),size(16),data(...)] raw data (serial vcp)
 };
 

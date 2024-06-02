@@ -161,7 +161,7 @@ bool TelemetryRecorder::dbCheckRecord()
         apxConsole() << tr("Telemetry record request");
         reqNewRecord->exec();
 
-        // record initial json data
+        // record initial meta data
         recordConfig("init");
         recordMission(false);
     }
@@ -270,11 +270,11 @@ void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool u
 
 void TelemetryRecorder::recordMission(bool uplink)
 {
-    _file.write_json("mission", _vehicle->f_mission->toJsonDocument().object(), uplink);
+    _file.write_meta("mission", _vehicle->f_mission->toJsonDocument().object(), uplink);
 }
 void TelemetryRecorder::recordConfig(QString title)
 {
-    _file.write_json("nodes", _vehicle->toJsonDocument().object(), false);
+    _file.write_meta("nodes", _vehicle->toJsonDocument().object(), false);
 
     //check for config title change
     if (confTitle != title) {

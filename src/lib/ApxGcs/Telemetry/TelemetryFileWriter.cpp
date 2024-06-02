@@ -33,8 +33,6 @@
 
 using namespace telemetry;
 
-TelemetryFileWriter::TelemetryFileWriter() {}
-
 void TelemetryFileWriter::print_stats()
 {
     if (_stats_values.empty())
@@ -95,10 +93,10 @@ bool TelemetryFileWriter::create(quint64 time_utc, Vehicle *vehicle)
         return false;
     }
 
-    setFileName(dir.absoluteFilePath(fname));
+    QFile::setFileName(dir.absoluteFilePath(fname));
 
     // open file for writing
-    if (!open(QIODevice::WriteOnly)) {
+    if (!QFile::open(QIODevice::WriteOnly)) {
         qWarning() << "failed to open file" << fileName();
         return false;
     }
@@ -129,7 +127,7 @@ bool TelemetryFileWriter::create(quint64 time_utc, Vehicle *vehicle)
     _fields_map.clear();
     _values_s.clear();
     _stats_values.clear();
-    _json_objects.clear();
+    _meta_objects.clear();
     _ts_s = 0;
 
     // write initial mandala state
@@ -216,7 +214,7 @@ void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
     QFile::write("\0", 1);
 }
 
-void TelemetryFileWriter::write_json(const QString &name, const QJsonObject &json, bool uplink)
+void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &data, bool uplink)
 {
     if (!isOpen())
         return;
@@ -228,39 +226,39 @@ void TelemetryFileWriter::write_json(const QString &name, const QJsonObject &jso
     bool is_diff;
 
     // check if file already written
-    auto it = _json_objects.find(name);
-    if (it != _json_objects.end()) {
+    auto it = _meta_objects.find(name);
+    if (it != _meta_objects.end()) {
         QJsonObject diff;
-        _json_diff(it->second, json, diff);
+        _json_diff(it->second, data, diff);
         if (diff.isEmpty()) {
             qDebug() << name << "json diff is empty";
             return;
         }
-        _json_objects[name] = json;
+        _meta_objects[name] = data;
 
         jdata = QJsonDocument(diff).toJson(QJsonDocument::Compact);
         is_diff = true;
 
-        qDebug() << name << "json diff:" << diff;
+        // qDebug() << name << "json diff:" << diff;
     } else {
-        _json_objects[name] = json;
+        _meta_objects[name] = data;
 
-        jdata = QJsonDocument(json).toJson(QJsonDocument::Compact);
+        jdata = QJsonDocument(data).toJson(QJsonDocument::Compact);
         is_diff = false;
 
-        qDebug() << name << "json:" << json;
+        // qDebug() << name << "json:" << data;
     }
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext,
-                        .spec_ext.extid = (is_diff ? extid_e::jupd : extid_e::json)};
+                        .spec_ext.extid = (is_diff ? extid_e::mupd : extid_e::meta)};
     QFile::write((const char *) &dspec, 1);
 
     _write_string(name.toUtf8());
 
-    auto data = qCompress(jdata, 9);
-    uint32_t size = data.size();
+    auto ba = qCompress(jdata, 9);
+    uint32_t size = ba.size();
     QFile::write((const char *) &size, 4);
-    QFile::write(data.constData(), data.size());
+    QFile::write(ba.constData(), size);
 }
 
 void TelemetryFileWriter::write_raw(quint32 timestamp_ms,

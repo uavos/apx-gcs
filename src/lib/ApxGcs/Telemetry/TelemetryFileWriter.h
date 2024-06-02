@@ -36,8 +36,6 @@ class TelemetryFileWriter : private QFile
     Q_OBJECT
 
 public:
-    explicit TelemetryFileWriter();
-
     QString name() const { return QFileInfo(*this).completeBaseName(); }
 
     bool create(quint64 time_utc, Vehicle *vehicle);
@@ -50,7 +48,7 @@ public:
                    const QString &uid,
                    bool uplink);
     void write_msg(quint32 timestamp_ms, const QString &text, const QString &subsystem);
-    void write_json(const QString &name, const QJsonObject &json, bool uplink);
+    void write_meta(const QString &name, const QJsonObject &data, bool uplink);
     void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink);
 
     void print_stats();
@@ -71,7 +69,7 @@ private:
     // monitor changes and updates
     std::map<mandala::uid_t, uint16_t> _fields_map;
     std::map<mandala::uid_t, QVariant> _values_s;
-    std::map<QString, QJsonObject> _json_objects;
+    std::map<QString, QJsonObject> _meta_objects;
 
     std::map<mandala::uid_t, QSet<telemetry::dspec_e>> _stats_values;
 
