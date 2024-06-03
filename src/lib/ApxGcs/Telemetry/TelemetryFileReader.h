@@ -37,12 +37,22 @@ class TelemetryFileReader : private QFile
 public:
     bool open(QString filePath);
 
+    auto timestamp() const { return _timestamp; }
+    auto utc_offset() const { return _utc_offset; }
+
     auto &info() const { return _info; }
     auto &tags() const { return _tags; }
 
+    bool parse();
+
 private:
+    quint64 _timestamp;
+    int32_t _utc_offset;
+
     telemetry::fhdr_s::info_s _info;
     QHash<QString, QString> _tags;
+
+    uint32_t _payload_offset;
 
     // helpers
 

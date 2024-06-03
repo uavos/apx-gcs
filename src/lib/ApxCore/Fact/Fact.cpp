@@ -664,7 +664,7 @@ void Fact::setFlags(FactBase::Flags v)
     setDataType(static_cast<Flag>(static_cast<int>(v & DataMask)));
     setOptions(v & OptsMask);
 }
-QAbstractListModel *Fact::model()
+QAbstractItemModel *Fact::model()
 {
     /*if (!m_model && size() <= 0 && bind()) {
         return bind()->model();
@@ -682,14 +682,14 @@ QAbstractListModel *Fact::model()
     }
     return m_model;
 }
-void Fact::setModel(QAbstractListModel *v)
+void Fact::setModel(QAbstractItemModel *v)
 {
     if (m_model)
         m_model->deleteLater();
     m_model = v;
     emit modelChanged();
 }
-QAbstractListModel *Fact::actionsModel()
+QAbstractItemModel *Fact::actionsModel()
 {
     bool bEmpty = actions().isEmpty();
     if (!m_actionsModel) {
@@ -701,7 +701,7 @@ QAbstractListModel *Fact::actionsModel()
     }
     return m_actionsModel;
 }
-void Fact::setActionsModel(QAbstractListModel *v)
+void Fact::setActionsModel(QAbstractItemModel *v)
 {
     if (m_actionsModel)
         m_actionsModel->deleteLater();

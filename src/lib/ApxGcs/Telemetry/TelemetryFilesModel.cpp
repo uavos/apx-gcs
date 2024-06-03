@@ -1,0 +1,175 @@
+/*
+ * APX Autopilot project <http://docs.uavos.com>
+ *
+ * Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
+ * All rights reserved
+ *
+ * This file is part of APX Ground Control.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+#include "TelemetryFilesModel.h"
+#include "TelemetryFilesWorker.h"
+
+#include <App/App.h>
+
+static QString timestampToTitle(quint64 ts)
+{
+    return QDateTime::fromMSecsSinceEpoch(ts).toString("yyyy MMM dd hh:mm:ss");
+}
+
+TelemetryFilesModel::TelemetryFilesModel(TelemetryFilesWorker *worker,
+                                         const QString &path,
+                                         QObject *parent)
+    : QAbstractListModel(parent)
+    , _worker(worker)
+    , _path(path)
+{
+    updateFilesList();
+}
+
+void TelemetryFilesModel::updateFilesList()
+{
+    auto job = new TelemetryFilesListJob(_worker, _path);
+    connect(job, &TelemetryFilesListJob::result, this, [this](QStringList files) {
+        _filesList = files;
+        emit countChanged();
+    });
+    job->schedule();
+}
+
+void TelemetryFilesModel::cacheInfo(QVariantMap info, int id)
+{
+    // qDebug() << info;
+
+    if (id < 0 || id >= _filesList.size())
+        return;
+
+    if (_cache.contains(id))
+        return;
+
+    QString callsign = info["call"].toString();
+    QString comment = info["comment"].toString();
+    QString notes = info["notes"].toString();
+
+    QString total;
+    quint64 duration = info["duration"].toULongLong();
+    if (duration > 0)
+        total = AppRoot::timeToString(duration / 1000);
+
+    QStringList descr;
+    if (!comment.isEmpty())
+        descr << comment;
+    if (!notes.isEmpty())
+        descr << notes;
+
+    QStringList value;
+    if (!callsign.isEmpty())
+        value << callsign;
+    if (!total.isEmpty())
+        value << total;
+
+    info["title"] = timestampToTitle(info["timestamp"].toULongLong());
+    info["descr"] = descr.join(" - ");
+    info["value"] = value.join(' ');
+
+    // save cache
+    _cache[id] = info;
+    _cacheQueue.enqueue(id);
+
+    if (_cacheQueue.size() > 500)
+        _cache.remove(_cacheQueue.dequeue());
+
+    emit dataChanged(index(id, 0), index(id, 0), {ValuesRole});
+}
+
+int TelemetryFilesModel::rowCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent)
+    return _filesList.size();
+}
+
+QHash<int, QByteArray> TelemetryFilesModel::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles[ValuesRole] = "values";
+    return roles;
+}
+
+QVariantMap TelemetryFilesModel::get(int i) const
+{
+    if (i < 0 || i >= _filesList.size())
+        return {};
+
+    if (_cache.contains(i)) {
+        return _cache[i];
+    }
+
+    const auto &name = _filesList.at(i);
+
+    // request data from worker
+    auto job = new TelemetryFilesInfoJob(_worker,
+                                         QDir(_path).absoluteFilePath(name).append('.').append(
+                                             telemetry::APXTLM_FTYPE),
+                                         i);
+    connect(job, &TelemetryFilesInfoJob::result, this, &TelemetryFilesModel::cacheInfo);
+    job->schedule();
+
+    // guess temporary data from file name
+
+    QVariantMap m;
+    m["title"] = timestampToTitle(name.section('_', 0, 0).toLongLong());
+    m["value"] = name.section('_', 1, 1);
+    m["descr"] = name;
+
+    // m["active"] = true;
+
+    return m;
+}
+
+QVariant TelemetryFilesModel::data(const QModelIndex &index, int role) const
+{
+    if (index.row() < 0 || index.row() >= rowCount())
+        return {};
+
+    switch (role) {
+    default:
+        break;
+    case ValuesRole:
+        return get(index.row());
+    }
+
+    return {};
+}
+
+int TelemetryFilesModel::count() const
+{
+    return rowCount();
+}
+QString TelemetryFilesModel::filter() const
+{
+    return m_filter;
+}
+void TelemetryFilesModel::setFilter(QString v)
+{
+    v = v.trimmed();
+    if (m_filter == v)
+        return;
+    m_filter = v;
+    emit filterChanged();
+}
+void TelemetryFilesModel::resetFilter()
+{
+    setFilter({});
+}

@@ -29,8 +29,8 @@ class Fact : public FactData
 
     Q_PROPERTY(FactBase::Flags flags READ flags WRITE setFlags NOTIFY flagsChanged)
 
-    Q_PROPERTY(QAbstractListModel *model READ model NOTIFY modelChanged)
-    Q_PROPERTY(QAbstractListModel *actionsModel READ actionsModel NOTIFY actionsModelChanged)
+    Q_PROPERTY(QAbstractItemModel *model READ model NOTIFY modelChanged)
+    Q_PROPERTY(QAbstractItemModel *actionsModel READ actionsModel NOTIFY actionsModelChanged)
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
@@ -143,11 +143,11 @@ public:
     FactBase::Flags flags() const;
     void setFlags(FactBase::Flags v);
 
-    QAbstractListModel *model();
-    void setModel(QAbstractListModel *v);
+    QAbstractItemModel *model();
+    void setModel(QAbstractItemModel *v);
 
-    QAbstractListModel *actionsModel();
-    void setActionsModel(QAbstractListModel *v);
+    QAbstractItemModel *actionsModel();
+    void setActionsModel(QAbstractItemModel *v);
 
     bool enabled() const;
     void setEnabled(const bool v);
@@ -179,8 +179,8 @@ public:
     void setOpt(const QString &name, const QVariant &v);
 
 protected:
-    QAbstractListModel *m_model{nullptr};
-    QAbstractListModel *m_actionsModel{nullptr};
+    QAbstractItemModel *m_model{nullptr};
+    QAbstractItemModel *m_actionsModel{nullptr};
 
     bool m_enabled{true};
     bool m_visible{true};

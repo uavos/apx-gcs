@@ -21,6 +21,7 @@
  */
 #include "Telemetry.h"
 #include "LookupTelemetry.h"
+#include "TelemetryFiles.h"
 #include "TelemetryPlayer.h"
 #include "TelemetryReader.h"
 #include "TelemetryRecorder.h"
@@ -47,6 +48,8 @@ Telemetry::Telemetry(Vehicle *parent)
 {
     if (vehicle->isReplay()) {
         setOpt("pos", QPointF(1, 1));
+
+        f_files = new TelemetryFiles(this);
 
         f_lookup = new LookupTelemetry(this);
         f_lookup->f_latest->createAction(this);

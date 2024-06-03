@@ -172,11 +172,11 @@ void AppMenu::createMenuBar()
         QMenu *menu = _menuBar->addMenu(g->title());
         f->setOpt("qmenu", QVariant::fromValue(menu));
         updateMenu(f);
-        QAbstractListModel *model = f->model();
+        auto model = f->model();
         if (model) {
             connect(
                 model,
-                &QAbstractListModel::layoutChanged,
+                &QAbstractItemModel::layoutChanged,
                 this,
                 [this, f]() { updateMenu(f); },
                 Qt::QueuedConnection);

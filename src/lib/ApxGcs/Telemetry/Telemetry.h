@@ -25,6 +25,7 @@
 #include <QtCore>
 class Vehicle;
 class TelemetryRecorder;
+class TelemetryFiles;
 class LookupTelemetry;
 class TelemetryReader;
 class TelemetryPlayer;
@@ -40,7 +41,9 @@ public:
 
     TelemetryRecorder *f_recorder;
 
+    TelemetryFiles *f_files;
     LookupTelemetry *f_lookup;
+
     TelemetryReader *f_reader;
     TelemetryPlayer *f_player;
     TelemetryShare *f_share;

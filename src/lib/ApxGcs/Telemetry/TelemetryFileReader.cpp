@@ -35,6 +35,9 @@ bool TelemetryFileReader::open(QString filePath)
 {
     _info = {};
     _tags.clear();
+    _timestamp = 0;
+    _utc_offset = 0;
+
     _fields_map.clear();
     _values_s.clear();
     _meta_objects.clear();
@@ -75,6 +78,10 @@ bool TelemetryFileReader::open(QString filePath)
         }
 
         // file format seem to be valid
+        _payload_offset = fhdr.hsize;
+
+        _timestamp = fhdr.timestamp;
+        _utc_offset = fhdr.utc_offset;
         _info = fhdr.info;
 
         // seek back to the beginning of the payload if necessary
@@ -106,4 +113,19 @@ bool TelemetryFileReader::open(QString filePath)
     // some error occured
     close();
     return false;
+}
+
+bool TelemetryFileReader::parse()
+{
+    if (!isOpen()) {
+        qWarning() << "file not open";
+        return false;
+    }
+
+    if (!QFile::seek(_payload_offset)) {
+        qWarning() << "failed to seek to payload offset" << _payload_offset;
+        return false;
+    }
+
+    return true;
 }

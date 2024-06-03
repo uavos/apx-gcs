@@ -49,7 +49,7 @@ AppEngine::AppEngine(QObject *parent)
                                                      "FactListModelActions",
                                                      "Reference only");
 
-    qRegisterMetaType<QAbstractListModel *>("QAbstractListModel*");
+    qRegisterMetaType<QAbstractItemModel *>("QAbstractItemModel*");
 
     // script include file (default)
     QFile jsFile(AppDirs::res().filePath("scripts/gcs.js"));
