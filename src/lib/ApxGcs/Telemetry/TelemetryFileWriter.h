@@ -31,7 +31,7 @@
 class Vehicle;
 class XbusStreamWriter;
 
-class TelemetryFileWriter : private QFile
+class TelemetryFileWriter : public QFile
 {
     Q_OBJECT
 
@@ -53,8 +53,9 @@ public:
 
     void print_stats();
 
-    using QFile::close;
-    using QFile::isOpen;
+    // helpers
+    static uint64_t get_hdr_crc(const telemetry::fhdr_s *fhdr);
+    static void json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff);
 
 private:
     Vehicle *_vehicle;
@@ -77,6 +78,4 @@ private:
     uint16_t _widx{};
 
     void _write_value(mandala::uid_t uid, const QVariant &value, bool uplink);
-
-    void _json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff);
 };

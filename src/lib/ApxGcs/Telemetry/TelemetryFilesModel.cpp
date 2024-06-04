@@ -39,10 +39,27 @@ TelemetryFilesModel::TelemetryFilesModel(TelemetryFilesWorker *worker,
     updateFilesList();
 }
 
+void TelemetryFilesModel::setActiveId(int id)
+{
+    if (_activeId == id)
+        return;
+
+    auto oldId = _activeId;
+    _activeId = id;
+
+    // deselect old
+    if (oldId >= 0 && oldId < _filesList.size())
+        emit dataChanged(index(oldId, 0), index(oldId, 0), {ValuesRole});
+
+    // select new
+    if (id >= 0 && id < _filesList.size())
+        emit dataChanged(index(id, 0), index(id, 0), {ValuesRole});
+}
+
 void TelemetryFilesModel::updateFilesList()
 {
-    auto job = new TelemetryFilesListJob(_worker, _path);
-    connect(job, &TelemetryFilesListJob::result, this, [this](QStringList files) {
+    auto job = new TelemetryFilesJobList(_worker, _path);
+    connect(job, &TelemetryFilesJobList::result, this, [this](QStringList files) {
         _filesList = files;
         emit countChanged();
     });
@@ -60,7 +77,7 @@ void TelemetryFilesModel::cacheInfo(QVariantMap info, int id)
         return;
 
     QString callsign = info["call"].toString();
-    QString comment = info["comment"].toString();
+    QString comment = info["conf"].toString();
     QString notes = info["notes"].toString();
 
     QString total;
@@ -80,6 +97,7 @@ void TelemetryFilesModel::cacheInfo(QVariantMap info, int id)
     if (!total.isEmpty())
         value << total;
 
+    info["id"] = id;
     info["title"] = timestampToTitle(info["timestamp"].toULongLong());
     info["descr"] = descr.join(" - ");
     info["value"] = value.join(' ');
@@ -88,10 +106,17 @@ void TelemetryFilesModel::cacheInfo(QVariantMap info, int id)
     _cache[id] = info;
     _cacheQueue.enqueue(id);
 
-    if (_cacheQueue.size() > 500)
+    if (_cacheQueue.size() > 50)
         _cache.remove(_cacheQueue.dequeue());
 
+    _cacheReq.removeOne(id);
+
     emit dataChanged(index(id, 0), index(id, 0), {ValuesRole});
+}
+void TelemetryFilesModel::updateFileInfo(QVariantMap info, int id)
+{
+    _cache.remove(id);
+    cacheInfo(info, id);
 }
 
 int TelemetryFilesModel::rowCount(const QModelIndex &parent) const
@@ -113,27 +138,36 @@ QVariantMap TelemetryFilesModel::get(int i) const
         return {};
 
     if (_cache.contains(i)) {
-        return _cache[i];
+        auto m = _cache[i];
+        m["active"] = i == _activeId;
+        return m;
     }
 
     const auto &name = _filesList.at(i);
 
     // request data from worker
-    auto job = new TelemetryFilesInfoJob(_worker,
-                                         QDir(_path).absoluteFilePath(name).append('.').append(
-                                             telemetry::APXTLM_FTYPE),
-                                         i);
-    connect(job, &TelemetryFilesInfoJob::result, this, &TelemetryFilesModel::cacheInfo);
-    job->schedule();
+    if (!_cacheReq.contains(i)) {
+        const_cast<TelemetryFilesModel *>(this)->_cacheReq.append(i);
+        auto job = new TelemetryFilesJobInfo(_worker,
+                                             QDir(_path).absoluteFilePath(name).append('.').append(
+                                                 telemetry::APXTLM_FTYPE),
+                                             i);
+        connect(job, &TelemetryFilesJobInfo::result, this, &TelemetryFilesModel::cacheInfo);
+        job->schedule();
+    }
 
     // guess temporary data from file name
 
     QVariantMap m;
-    m["title"] = timestampToTitle(name.section('_', 0, 0).toLongLong());
+    m["id"] = i;
+    m["name"] = name;
+    auto timestamp = name.section('_', 0, 0).toLongLong();
+    m["timestamp"] = timestamp;
+    m["title"] = timestampToTitle(timestamp);
     m["value"] = name.section('_', 1, 1);
     m["descr"] = name;
 
-    // m["active"] = true;
+    m["active"] = i == _activeId;
 
     return m;
 }

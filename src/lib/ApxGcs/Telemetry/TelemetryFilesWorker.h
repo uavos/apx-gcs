@@ -24,6 +24,8 @@
 #include <QtCore>
 
 #include "TelemetryFileFormat.h"
+#include "TelemetryFileReader.h"
+#include "TelemetryFileWriter.h"
 
 class TelemetryFilesJob;
 
@@ -75,11 +77,11 @@ protected:
     bool isInterruptionRequested() const { return _worker->isInterruptionRequested(); }
 };
 
-class TelemetryFilesListJob : public TelemetryFilesJob
+class TelemetryFilesJobList : public TelemetryFilesJob
 {
     Q_OBJECT
 public:
-    explicit TelemetryFilesListJob(TelemetryFilesWorker *worker, QString path)
+    explicit TelemetryFilesJobList(TelemetryFilesWorker *worker, QString path)
         : TelemetryFilesJob(worker, path)
     {}
     void run() override;
@@ -88,18 +90,31 @@ signals:
     void result(QStringList files);
 };
 
-class TelemetryFilesInfoJob : public TelemetryFilesJob
+class TelemetryFilesJobInfo : public TelemetryFilesJob
 {
     Q_OBJECT
 public:
-    explicit TelemetryFilesInfoJob(TelemetryFilesWorker *worker, QString path, int id)
+    explicit TelemetryFilesJobInfo(TelemetryFilesWorker *worker, QString path, int id)
         : TelemetryFilesJob(worker, path)
         , _id(id)
     {}
-    void run() override;
+    virtual void run() override;
 
-private:
+    TelemetryFileReader reader; // used to connect to signels
+
+protected:
     int _id;
+
 signals:
     void result(QVariantMap info, int id);
+};
+
+class TelemetryFilesJobParse : public TelemetryFilesJobInfo
+{
+    Q_OBJECT
+public:
+    explicit TelemetryFilesJobParse(TelemetryFilesWorker *worker, QString path, int id)
+        : TelemetryFilesJobInfo(worker, path, id)
+    {}
+    void run() override;
 };

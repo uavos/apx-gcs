@@ -52,6 +52,10 @@ FactMenuPageList {
                 onTriggered: {
                     parentFact.triggerItem(modelData)
                 }
+                onPressAndHold: {
+                    console.log(JSON.stringify(d,' ',2))
+                }
+                // toolTip: JSON.stringify(d,' ',2)
             }
         }
     }

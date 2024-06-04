@@ -103,6 +103,30 @@ void TelemetryFiles::updateStatus()
     setValue(QString("%1/%2").arg(recordNum()).arg(recordsCount()));
 }
 
+void TelemetryFiles::triggerItem(QVariantMap modelData)
+{
+    auto id = modelData["id"].toULongLong();
+    _filesModel->setActiveId(id);
+
+    setRecordNum(id);
+    // setRecordInfo(modelData);
+    // setRecordTimestamp(modelData.value("timestamp").toULongLong());
+
+    auto path = AppDirs::telemetry().absoluteFilePath(
+        modelData["name"].toString().append('.').append(telemetry::APXTLM_FTYPE));
+
+    emit loadfile(path);
+
+    auto job = new TelemetryFilesJobParse(_worker, path, id);
+
+    connect(&job->reader, &TelemetryFileReader::progress, this, &TelemetryFiles::setProgress);
+    connect(&job->reader, &TelemetryFileReader::info, _filesModel, [this, id](QVariantMap info) {
+        _filesModel->updateFileInfo(info, id);
+    });
+
+    job->schedule();
+}
+
 // PROPERTIES
 
 quint64 TelemetryFiles::recordsCount() const

@@ -70,7 +70,7 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, Vehicle 
 
     strcpy(fhdr.magic, APXTLM_MAGIC);
     fhdr.version = APXTLM_VERSION;
-    fhdr.hsize = sizeof(fhdr);
+    fhdr.payload_offset = sizeof(fhdr);
     fhdr.timestamp = time_utc;
     fhdr.utc_offset = QDateTime::fromMSecsSinceEpoch(time_utc).offsetFromUtc();
 
@@ -98,6 +98,7 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, Vehicle 
     _write_tag(&s, "huid", App::machineUID().toUtf8());
 
     // write header to file
+    fhdr.info.hcrc = get_hdr_crc(&fhdr);
     QFile::write((const char *) &fhdr, sizeof(fhdr));
     flush();
 
@@ -202,34 +203,26 @@ void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &dat
         _write_uplink();
 
     QByteArray jdata;
-    bool is_diff;
 
     // check if file already written
     auto it = _meta_objects.find(name);
     if (it != _meta_objects.end()) {
         QJsonObject diff;
-        _json_diff(it->second, data, diff);
+        json_diff(it->second, data, diff);
         if (diff.isEmpty()) {
             qDebug() << name << "json diff is empty";
             return;
         }
         _meta_objects[name] = data;
-
         jdata = QJsonDocument(diff).toJson(QJsonDocument::Compact);
-        is_diff = true;
-
         // qDebug() << name << "json diff:" << diff;
     } else {
         _meta_objects[name] = data;
-
         jdata = QJsonDocument(data).toJson(QJsonDocument::Compact);
-        is_diff = false;
-
         // qDebug() << name << "json:" << data;
     }
 
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext,
-                        .spec_ext.extid = (is_diff ? extid_e::mupd : extid_e::meta)};
+    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::meta};
     QFile::write((const char *) &dspec, 1);
 
     _write_string(name.toUtf8());
@@ -261,6 +254,14 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     uint16_t size = data.size();
     QFile::write((const char *) &size, 2);
     QFile::write(data.constData(), data.size());
+}
+
+uint64_t TelemetryFileWriter::get_hdr_crc(const telemetry::fhdr_s *fhdr)
+{
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    auto offset = offsetof(fhdr_s, info.hcrc) + sizeof(fhdr->info.hcrc);
+    hash.addData(QByteArrayView((const char *) fhdr + offset, sizeof(fhdr_s) - offset));
+    return *reinterpret_cast<const uint64_t *>(hash.result().left(sizeof(uint64_t)).constData());
 }
 
 bool TelemetryFileWriter::_write_tag(XbusStreamWriter *stream, const char *name, const char *value)
@@ -496,9 +497,9 @@ void TelemetryFileWriter::_write_uplink()
     QFile::write((const char *) &spec, 1);
 }
 
-void TelemetryFileWriter::_json_diff(const QJsonObject &prev,
-                                     const QJsonObject &next,
-                                     QJsonObject &diff)
+void TelemetryFileWriter::json_diff(const QJsonObject &prev,
+                                    const QJsonObject &next,
+                                    QJsonObject &diff)
 {
     for (auto it = next.begin(); it != next.end(); ++it) {
         auto pit = prev.find(it.key());
@@ -510,7 +511,7 @@ void TelemetryFileWriter::_json_diff(const QJsonObject &prev,
             // qDebug() << "value diff" << it.key() << pit.value() << it.value();
             if (pit.value().isObject() && it.value().isObject()) {
                 QJsonObject d;
-                _json_diff(pit.value().toObject(), it.value().toObject(), d);
+                json_diff(pit.value().toObject(), it.value().toObject(), d);
                 diff[it.key()] = d;
             } else if (pit.value().isArray() && it.value().isArray()) {
                 QJsonArray da;
@@ -518,7 +519,7 @@ void TelemetryFileWriter::_json_diff(const QJsonObject &prev,
                 auto na = it.value().toArray();
                 for (int i = 0; i < na.size(); ++i) {
                     QJsonObject d;
-                    _json_diff(pa.at(i).toObject(), na.at(i).toObject(), d);
+                    json_diff(pa.at(i).toObject(), na.at(i).toObject(), d);
                     da.append(d);
                 }
                 diff[it.key()] = da;

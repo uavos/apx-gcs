@@ -50,6 +50,12 @@ private slots:
     void updateActions();
     void updateStatus();
 
+public slots:
+    void triggerItem(QVariantMap modelData);
+
+signals:
+    void loadfile(QString filePath);
+
     //PROPERTIES
 public:
     quint64 recordsCount() const;

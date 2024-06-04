@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryFilesWorker.h"
-#include "TelemetryFileReader.h"
 
 #include <App/App.h>
 
@@ -109,7 +108,7 @@ void TelemetryFilesWorker::run()
     }
 }
 
-void TelemetryFilesListJob::run()
+void TelemetryFilesJobList::run()
 {
     QStringList filters;
     filters << QStringList() << QString("*.").append(telemetry::APXTLM_FTYPE);
@@ -134,23 +133,21 @@ void TelemetryFilesListJob::run()
     emit result(files);
 }
 
-void TelemetryFilesInfoJob::run()
+void TelemetryFilesJobInfo::run()
 {
-    TelemetryFileReader reader;
     if (!reader.open(_path))
         return;
 
-    QVariantMap m;
+    emit result(reader.meta(), _id);
+}
 
-    m["timestamp"] = reader.timestamp();
-    m["utc_offset"] = reader.utc_offset();
+void TelemetryFilesJobParse::run()
+{
+    if (!reader.open(_path))
+        return;
 
-    const auto &info = reader.info();
-    m["size"] = info.size;
-    m["duration"] = info.tmax;
+    if (!reader.parse_payload())
+        return;
 
-    for (auto [key, value] : reader.tags().asKeyValueRange())
-        m[key] = value;
-
-    emit result(m, _id);
+    emit result(reader.meta(), _id);
 }

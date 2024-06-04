@@ -42,10 +42,12 @@ public:
     };
 
     Q_INVOKABLE QVariantMap get(int i) const;
-
     int count() const;
+
     QString filter() const;
     void setFilter(QString v);
+
+    void setActiveId(int id);
 
 protected:
     //ListModel override
@@ -65,9 +67,11 @@ private:
     void cacheInfo(QVariantMap info, int id);
 
     QString m_filter;
+    int _activeId{-1};
 
 public slots:
     void resetFilter();
+    void updateFileInfo(QVariantMap info, int id);
 
 signals:
     void itemEdited(int i, QVariantMap v);

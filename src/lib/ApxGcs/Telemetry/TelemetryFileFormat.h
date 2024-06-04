@@ -13,20 +13,22 @@ static constexpr auto APXTLM_VERSION = 1;
 
 static constexpr auto APXTLM_FTYPE = "telemetry";
 static constexpr auto APXTLM_MAGIC = "APXTLM";
+static constexpr auto APXTLM_META = "meta"; // tag to mark file stats meta data
 
 // file header
 struct fhdr_s
 {
     static constexpr auto SIZE = 1024;
+    static constexpr auto SIZE_MIN = 1024;
 
     // file header format UID
     union {
         uint8_t _raw1[64];
         struct
         {
-            char magic[16];   // i.e. "APXTLM"
-            uint16_t version; // version number
-            uint16_t hsize;   // header size, i.e. sizeof(fhdr_s)
+            char magic[16];          // i.e. "APXTLM"
+            uint16_t version;        // version number
+            uint16_t payload_offset; // header size, i.e. sizeof(fhdr_s)
         };
     };
 
@@ -56,7 +58,9 @@ struct fhdr_s
         uint8_t _raw[SIZE];
         struct
         {
-            uint64_t parse_ts; // file parse timestamp [ms since epoch]
+            // file header SHA1 (leftmost 8 bytes)
+            // start from end of this field, end at payload start
+            uint64_t hcrc;
 
             union {
                 uint64_t _raw;
@@ -68,35 +72,21 @@ struct fhdr_s
                 };
             } flags;
 
+            uint64_t parse_ts; // file parse timestamp [ms since epoch]
+
             // used for consistency check and quick stats access
-            uint64_t size; // payload size [bytes]
-            uint64_t meta; // meta data offset [bytes] from the start of the file
+            uint64_t payload_size; // payload size [bytes], excluding metadata at tail
+            uint64_t meta_offset;  // meta data offset [bytes] from the start of the file
 
             uint32_t tmax; // total time [ms] or max timestamp
-            uint8_t _rsv1[4];
+            uint8_t _rsv1[4 + 8];
 
-            // @40
+            // @48
 
-            uint8_t sha1[20]; // file payload SHA1 hash
-            uint8_t _rsv2[4 + 32];
+            uint8_t sha1[20]; // file payload SHA1 hash, excluding metadata at tail
+            uint8_t _rsv2[4 + 16];
 
             // @96
-
-            struct // file records counters
-            {
-                uint32_t total;    // total records count
-                uint32_t downlink; // downlink records count
-                uint32_t uplink;   // uplink records count
-                uint32_t events;   // events records count
-
-                uint16_t fields; // fields count
-                uint16_t meta;   // payload meta objects count
-
-                uint8_t _rsv1[12];
-            } cnt;
-            static_assert(sizeof(cnt) == 32, "size error");
-
-            // @128
 
             uint8_t _padding;
         };
@@ -113,12 +103,10 @@ static_assert(sizeof(fhdr_s) == fhdr_s::SIZE, "size error");
 // tests
 namespace _tests {
 static constexpr auto info_extra = sizeof(fhdr_s::info) - offsetof(fhdr_s::info_s, _padding);
-static constexpr auto cnt_offset = offsetof(fhdr_s::info_s, cnt);
 static constexpr auto padding_offset = offsetof(fhdr_s::info_s, _padding);
 static constexpr auto tags_offset = offsetof(fhdr_s, tags);
 
-static_assert(cnt_offset == 96, "size error");
-static_assert(padding_offset == 128, "size error");
+static_assert(padding_offset == 96, "size error");
 static_assert(tags_offset == 512, "size error");
 } // namespace _tests
 
@@ -172,18 +160,18 @@ static constexpr const char *dspec_names[] = {
 };
 
 // special non-value data formats
-enum class extid_e { // 4 bits (part of dspec)
+enum class extid_e : uint8_t { // 4 bits (part of dspec)
     // core services
-    ts = 0, // [ms] u32 timestamp update relative to file
-    uplink, // [dspec,data] uplink data (marks next dspec)
-    field,  // [name,title,units] strings of used fields sequence
-    crc,    // [crc32] counted so far for the data stream (excl header)
+    stop = 0, // [dspec==0] stop reading/writing stream
+    ts,       // [ms] u32 timestamp update relative to file
+    uplink,   // [dspec,data] uplink data (marks next dspec)
+    field,    // [name,title,units] strings of used fields sequence
+    // crc,      // [sha1-32] counted so far for the data stream (excl header)
 
     // special data types, strings separated by 0 and list terminated by another 0
     evt = 8, // [name,value,uid,0] generic event (conf update)
     msg,     // [text,subsystem,0] text message
-    meta,    // [name,size(32),meta_zip(...)] (nodes,mission)
-    mupd,    // [name,size(32),meta_zip(...)] meta data patch (json diff)
+    meta,    // [name,size(32),meta_zip(...)] json full or diff (nodes,mission)
     raw,     // [id(16),size(16),data(...)] raw data (serial vcp)
 };
 
@@ -204,14 +192,12 @@ union dspec_s {
         dspec_e dspec : 4;
         bool opt8 : 1;       // must be set to 1
         uint vidx_delta : 3; // index delta [1..8] of variable in the sequence
-        uint _rsv : 8;
     } spec8;
 
     struct
     {
         dspec_e dspec : 4;
         extid_e extid : 4; // special field
-        uint _rsv : 8;
     } spec_ext;
 };
 static_assert(sizeof(dspec_s) == 2, "size error");
