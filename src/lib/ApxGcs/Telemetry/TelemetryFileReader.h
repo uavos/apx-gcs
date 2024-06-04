@@ -37,13 +37,13 @@ class TelemetryFileReader : public QFile
 public:
     bool open(QString filePath);
 
-    auto &meta() const { return _meta; }
+    auto &info() const { return _info; }
 
     bool parse_payload();
     bool parse_header();
 
 private:
-    QVariantMap _meta;
+    QJsonObject _info;
 
     telemetry::fhdr_s _fhdr;
 
@@ -52,7 +52,7 @@ private:
     QString _read_string(bool *ok);
     QJsonObject _read_meta_data();
 
-    QJsonObject _read_file_meta_data();
+    QJsonObject _read_stats();
 
     QVariant _read_value(telemetry::dspec_e dspec);
     bool _read_ext(telemetry::extid_e extid, bool is_uplink);
@@ -75,7 +75,6 @@ private:
     quint32 _ts_s;
     uint16_t _widx;
     bool _next_uplink;
-    uint64_t _meta_offset; // offset of file meta data if wound
     QHash<QString, QJsonObject> _meta_objects;
 
     // data counters to be saved in metadata
@@ -113,12 +112,15 @@ private:
     void _commit_values();
 
     void _reset_data();
-
     void _json_patch(const QJsonObject &orig, const QJsonObject &patch, QJsonObject &result);
+    bool _update_stats();
 
-    bool _update_metadata();
+    void setProgress(int value);
+    int _progress{-1};
 
 signals:
+    void progressChanged(int value);
+
     // called by parse_payload
     void field(QString name, QString title, QString units);
     void values(quint64 timestamp_ms, Values data, bool uplink);
@@ -127,9 +129,8 @@ signals:
     void meta(QString name, QJsonObject data, bool uplink);
     void raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
-    void progress(int value);
     void parsed();
 
     // called by parse_header
-    void info(QVariantMap data);
+    void infoUpdated(QJsonObject data);
 };

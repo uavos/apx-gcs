@@ -54,7 +54,7 @@ bool TelemetryFileReader::open(QString filePath)
 
 bool TelemetryFileReader::parse_header()
 {
-    _meta.clear();
+    _info = {};
     _fhdr = {};
 
     if (!isOpen()) {
@@ -64,82 +64,78 @@ bool TelemetryFileReader::parse_header()
 
     do {
         // read file header
-        fhdr_s fhdr;
-        if (read((char *) &fhdr, sizeof(fhdr)) != sizeof(fhdr)) {
+        auto &h = _fhdr;
+        if (read((char *) &h, sizeof(h)) != sizeof(h)) {
             qWarning() << "failed to read file header";
             break;
         }
 
-        if (strcmp(fhdr.magic, APXTLM_MAGIC)) {
+        if (strcmp(h.magic, APXTLM_MAGIC)) {
             qWarning() << "invalid file magic";
             break;
         }
 
-        if (fhdr.version > APXTLM_VERSION) {
-            qWarning() << "invalid file version" << fhdr.version << APXTLM_VERSION;
+        if (h.version > APXTLM_VERSION) {
+            qWarning() << "invalid file version" << h.version << APXTLM_VERSION;
             break;
         }
 
-        if (fhdr.payload_offset > sizeof(fhdr) || fhdr.payload_offset < fhdr_s::SIZE_MIN) {
-            qWarning() << "invalid file header size" << fhdr.payload_offset << sizeof(fhdr);
+        if (h.payload_offset > sizeof(h) || h.payload_offset < fhdr_s::SIZE_MIN) {
+            qWarning() << "invalid file header size" << h.payload_offset << sizeof(h);
             break;
         }
 
         // check header crc
-        auto hcrc = TelemetryFileWriter::get_hdr_crc(&fhdr);
-        if (fhdr.info.hcrc != hcrc) {
-            qWarning() << "invalid file header crc" << fhdr.info.hcrc << hcrc;
+        auto hcrc = TelemetryFileWriter::get_hdr_crc(&h);
+        if (h.info.hcrc != hcrc) {
+            qWarning() << "invalid file header crc" << h.info.hcrc << hcrc;
             break;
         }
 
-        if (fhdr.info.flags.parsed) {
+        if (h.info.flags.parsed) {
             // check payload size
-            auto pld_size = (fhdr.info.meta_offset ? fhdr.info.meta_offset : QFile::size())
-                            - fhdr.payload_offset;
-            if (fhdr.info.payload_size != pld_size) {
-                qWarning() << "invalid file payload size" << fhdr.info.payload_size << pld_size;
+            auto pld_size = (h.info.stats_offset ? h.info.stats_offset : QFile::size())
+                            - h.payload_offset;
+            if (h.info.payload_size != pld_size) {
+                qWarning() << "invalid file payload size" << h.info.payload_size << pld_size;
                 break;
             }
 
-            // check meta data offset
-            if (fhdr.info.meta_offset > 0
-                && (fhdr.info.meta_offset < fhdr.payload_offset
-                    || fhdr.info.meta_offset >= (QFile::size() - 4))) {
-                qWarning() << "invalid file meta data offset" << fhdr.info.meta_offset
-                           << fhdr.payload_offset << QFile::size();
+            // check stats offset
+            if (h.info.stats_offset > 0
+                && (h.info.stats_offset < h.payload_offset
+                    || h.info.stats_offset >= (QFile::size() - 4))) {
+                qWarning() << "invalid file stats offset" << h.info.stats_offset << h.payload_offset
+                           << QFile::size();
                 break;
             }
         }
 
         // file format seem to be valid
-        _fhdr = fhdr;
-
         // read all metadata available
-        auto &m = _meta;
+        auto &m = _info;
 
         auto fi = QFileInfo(*this);
         m["name"] = fi.completeBaseName();
         m["path"] = fi.absoluteFilePath();
 
-        m["timestamp"] = fhdr.timestamp;
-        m["utc_offset"] = fhdr.utc_offset;
+        m["timestamp"] = (qint64) h.timestamp;
+        m["utc_offset"] = h.utc_offset;
 
-        m["sw_version"] = QString("%1.%2.%3")
-                              .arg(fhdr.sw.version[0])
-                              .arg(fhdr.sw.version[1])
-                              .arg(fhdr.sw.version[2]);
-        m["sw_hash"] = QString::number(fhdr.sw.hash, 16);
+        m["sw_version"]
+            = QString("%1.%2.%3").arg(h.sw.version[0]).arg(h.sw.version[1]).arg(h.sw.version[2]);
+        m["sw_hash"] = QString::number(h.sw.hash, 16);
 
         // seek back to the beginning of the payload if necessary
-        if (fhdr.payload_offset < sizeof(fhdr)) {
+        if (h.payload_offset < sizeof(h)) {
             qDebug() << "seeking back to payload:"
-                     << (int64_t) fhdr.payload_offset - (int64_t) sizeof(fhdr);
-            QFile::seek(fhdr.payload_offset);
+                     << (int64_t) h.payload_offset - (int64_t) sizeof(h);
+            QFile::seek(h.payload_offset);
         }
 
         // read tags
-        QVariantMap tags;
-        XbusStreamReader stream(fhdr.tags, sizeof(fhdr.tags));
+        QJsonObject tags;
+        XbusStreamReader stream(h.tags, sizeof(h.tags));
         while (stream.available() > 0) {
             auto c = stream.read_string(stream.available());
             if (!c)
@@ -167,39 +163,39 @@ bool TelemetryFileReader::parse_header()
             m["ovr"] = tags;
 
         // fill info from header
-        if (!fhdr.info.flags.parsed) {
-            emit info(m);
+        if (!h.info.flags.parsed) {
+            emit infoUpdated(m);
             return true;
         }
 
-        // file parsed and contains meta data
-        m["parsed"] = true;
-        m["corrupted"] = (bool) fhdr.info.flags.corrupted;
-        m["edited"] = (bool) fhdr.info.flags.edited;
-        m["parse_ts"] = fhdr.info.parse_ts;
-        m["payload_size"] = fhdr.info.payload_size;
-        m["duration"] = fhdr.info.tmax;
+        // file parsed and contains stats
+        m["duration"] = (qint64) h.info.tmax;
+        m["payload_size"] = (qint64) h.info.payload_size;
+        m["edited"] = (bool) h.info.flags.edited;
+        m["parse_ts"] = (qint64) h.info.parse_ts;
 
         // read meta data
-        if (!fhdr.info.meta_offset) {
-            emit info(m);
-            return true;
+        auto data = _read_stats();
+        if (data.empty()) {
+            qWarning() << "failed to read stats";
+            h.info.flags.parsed = false;
+            h.info.flags.corrupted = true;
+        } else {
+            m["stats"] = data;
         }
 
-        auto data = _read_file_meta_data();
-        if (data.isEmpty()) {
-            qWarning() << "failed to read meta data";
-            break;
-        }
-        m[APXTLM_META] = data.toVariantMap();
+        m["parsed"] = (bool) h.info.flags.parsed;
+        m["corrupted"] = (bool) h.info.flags.corrupted;
 
-        emit info(m);
+        emit infoUpdated(m);
         return true;
     } while (0);
 
     // some error occured
     close();
     _reset_data();
+    _fhdr = {};
+    _info = {};
     return false;
 }
 
@@ -218,20 +214,27 @@ bool TelemetryFileReader::parse_payload()
     }
 
     // read all data and collect statistics
+    quint64 payload_size = _fhdr.info.payload_size ? _fhdr.info.payload_size
+                                                   : (QFile::size() - _fhdr.payload_offset);
+    quint64 payload_pos_max = _fhdr.payload_offset + payload_size;
     bool ret = false;
-    while (isOpen() && !QFile::atEnd()) {
-        emit progress((QFile::pos() - _fhdr.payload_offset) * 100
-                      / (QFile::size() - _fhdr.payload_offset));
+    while (isOpen() && !QFile::atEnd() && QFile::pos() < payload_pos_max) {
+        setProgress((QFile::pos() - _fhdr.payload_offset) * 100
+                    / (QFile::size() - _fhdr.payload_offset));
 
         auto dspec = _read_dspec();
         if (dspec._raw8 == 0) {
-            qDebug() << "stream stop marker at" << QFile::pos();
+            qWarning() << "stream stop marker at" << QFile::pos();
+            QFile::seek(QFile::pos() - 1); // rollback to stop marker (begin of stats)
+            _fhdr.info.flags.corrupted = true;
+            _fhdr.info.stats_offset = 0; // invalidate stats
+            // still ok to return success
+            payload_pos_max = QFile::pos();
+            ret = true;
             break;
         }
 
         _counters.records++;
-
-        _meta_offset = 0; // remember only when metadata is at tail
 
         bool is_uplink = _next_uplink;
         _next_uplink = false;
@@ -268,6 +271,7 @@ bool TelemetryFileReader::parse_payload()
             ret = _read_ext(dspec.spec_ext.extid, is_uplink);
             break;
         }
+
         if (!ret) {
             qWarning() << "failed to read data at" << QFile::pos()
                        << "0x" + QString::number(QFile::pos(), 16);
@@ -275,12 +279,27 @@ bool TelemetryFileReader::parse_payload()
         }
     }
 
-    emit progress(0);
+    setProgress(0);
 
-    if (!ret || !isOpen() || !QFile::atEnd()) {
-        qWarning() << "failed to parse file at" << QFile::pos() << QFile::size();
-        emit progress(-1);
+    // check payload_size constraints
+    if (QFile::pos() != payload_pos_max) {
+        qWarning() << "invalid payload size" << QFile::pos() << payload_pos_max;
         return false;
+    }
+
+    if (!ret || !isOpen()) {
+        qWarning() << "failed to parse file at" << QFile::pos() << QFile::size();
+        setProgress(-1);
+        return false;
+    }
+
+    // read always ends at payload end
+    // update file header payload stop marker when needed
+    _fhdr.info.payload_size = QFile::pos() - _fhdr.payload_offset;
+
+    if (_fhdr.info.stats_offset && _fhdr.info.stats_offset != QFile::pos()) {
+        qWarning() << "invalid stats offset" << _fhdr.info.stats_offset << QFile::pos();
+        _fhdr.info.stats_offset = 0;
     }
 
     // file read successfully
@@ -298,15 +317,12 @@ bool TelemetryFileReader::parse_payload()
     _fhdr.info.tmax = _ts_s;
 
     // collect and update metadata
-    if (!_update_metadata()) {
-        qWarning() << "failed to update metadata";
+    if (!_update_stats()) {
+        qWarning() << "failed to update stats";
         QFile::close();
-        emit progress(-1);
+        setProgress(-1);
         return false;
     }
-    _fhdr.info.meta_offset = _meta_offset;
-    _fhdr.info.payload_size = (_meta_offset ? _meta_offset : QFile::size()) - _fhdr.payload_offset;
-    // qDebug() << "payload size" << _fhdr.info.payload_size << _fhdr.info.meta_offset;
 
     // payload sha1
     {
@@ -356,13 +372,13 @@ bool TelemetryFileReader::parse_payload()
         if (!ret) {
             qWarning() << "failed to write file header";
             QFile::close();
-            emit progress(-1);
+            setProgress(-1);
             return false;
         }
     }
 
     // success
-    emit progress(-1);
+    setProgress(-1);
     emit parsed();
     return true;
 }
@@ -372,7 +388,6 @@ void TelemetryFileReader::_reset_data()
     _ts_s = 0;
     _widx = 0;
     _next_uplink = false;
-    _meta_offset = 0;
 
     _counters = {};
 
@@ -470,23 +485,18 @@ QJsonObject TelemetryFileReader::_read_meta_data()
     return obj;
 }
 
-QJsonObject TelemetryFileReader::_read_file_meta_data()
+QJsonObject TelemetryFileReader::_read_stats()
 {
-    if (!_fhdr.info.meta_offset)
+    if (!_fhdr.info.stats_offset)
         return {};
-    if (!QFile::seek(_fhdr.info.meta_offset)) {
-        qWarning() << "failed to seek to meta data offset" << _fhdr.info.meta_offset;
+
+    if (!QFile::seek(_fhdr.info.stats_offset)) {
+        qWarning() << "failed to seek to stats offset" << _fhdr.info.stats_offset;
         return {};
     }
     auto dspec = _read_dspec();
-    if (dspec.spec_ext.dspec != dspec_e::ext || dspec.spec_ext.extid != extid_e::meta) {
-        qWarning() << "invalid meta data spec";
-        return {};
-    }
-    bool ok = false;
-    auto name = _read_string(&ok);
-    if (!ok || name != APXTLM_META) {
-        qWarning() << "failed to read meta data tag" << name;
+    if (dspec.spec_ext.dspec != dspec_e::ext || dspec.spec_ext.extid != extid_e::stop) {
+        qWarning() << "invalid stats spec";
         return {};
     }
     auto data = _read_meta_data();
@@ -676,13 +686,6 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         }
         _meta_objects[name] = data;
 
-        // don't count file metadata
-        if (name == APXTLM_META) {
-            _meta_offset = pos_s - sizeof(dspec_s::spec_ext);
-            _counters.records--;
-            return true;
-        }
-
         _counters.meta++;
         if (name == "nodes") {
             _counters.nodes++;
@@ -781,9 +784,9 @@ void TelemetryFileReader::_json_patch(const QJsonObject &orig,
     }
 }
 
-bool TelemetryFileReader::_update_metadata()
+bool TelemetryFileReader::_update_stats()
 {
-    // update counters
+    // update stats object
     QJsonObject counters;
     counters["records"] = _counters.records;
     counters["fields"] = _counters.fields;
@@ -797,31 +800,26 @@ bool TelemetryFileReader::_update_metadata()
     counters["nodes"] = _counters.nodes;
     counters["conf"] = _counters.conf;
 
-    auto m = _meta[APXTLM_META].toJsonObject();
-    m["counters"] = counters;
+    auto stats_orig = _info["stats"].toObject();
+    auto stats = stats_orig;
+    stats["counters"] = counters;
 
-    QJsonObject result;
-    _json_patch(_meta_objects[APXTLM_META], m, result);
-    m.swap(result);
-
-    if (_meta_offset && m == _meta_objects[APXTLM_META])
+    if (stats == stats_orig) // no changes
         return true;
 
+    _info["stats"] = stats;
+
+    auto stats_offset = _fhdr.info.stats_offset;
+
     // update meta data
-    qDebug() << "file metadata" << (_meta_offset ? "update" : "create")
+    qDebug() << "file metadata" << (stats_offset ? "update" : "create")
              << QFileInfo(fileName()).completeBaseName();
 
-    if (_meta_offset) {
-        result = {};
-        TelemetryFileWriter::json_diff(_meta_objects[APXTLM_META], m, result);
-        qDebug() << "metadata diff" << result;
-    }
-
-    _meta[APXTLM_META] = m.toVariantMap();
-
     // write meta data
-    if (!_meta_offset)
-        _meta_offset = QFile::size();
+    if (!stats_offset) {
+        stats_offset = _fhdr.payload_offset + _fhdr.info.payload_size;
+        _fhdr.info.stats_offset = stats_offset;
+    }
 
     // rewrite metadata at tail
     bool ret = false;
@@ -836,11 +834,12 @@ bool TelemetryFileReader::_update_metadata()
                 qWarning() << "failed to open file for writing";
                 break;
             }
-            if (!writer.seek(_meta_offset)) {
-                qWarning() << "failed to seek to meta data offset" << _meta_offset;
+            if (!writer.seek(stats_offset)) {
+                qWarning() << "failed to seek to meta data offset" << stats_offset;
                 break;
             }
-            writer.write_meta(APXTLM_META, m, false);
+
+            writer.write_stats(stats);
             writer.close();
         }
 
@@ -853,10 +852,18 @@ bool TelemetryFileReader::_update_metadata()
 
     if (!ret) {
         qWarning() << "failed to write file header";
-        emit progress(-1);
+        setProgress(-1);
         return false;
     }
 
-    emit info(_meta);
+    emit infoUpdated(_info);
     return true;
+}
+
+void TelemetryFileReader::setProgress(int value)
+{
+    if (_progress == value)
+        return;
+    _progress = value;
+    emit progressChanged(value);
 }

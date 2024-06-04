@@ -66,7 +66,7 @@ void TelemetryFilesModel::updateFilesList()
     job->schedule();
 }
 
-void TelemetryFilesModel::cacheInfo(QVariantMap info, int id)
+void TelemetryFilesModel::cacheInfo(QJsonObject info, int id)
 {
     // qDebug() << info;
 
@@ -81,7 +81,7 @@ void TelemetryFilesModel::cacheInfo(QVariantMap info, int id)
     QString notes = info["notes"].toString();
 
     QString total;
-    quint64 duration = info["duration"].toULongLong();
+    quint64 duration = info["duration"].toInteger();
     if (duration > 0)
         total = AppRoot::timeToString(duration / 1000);
 
@@ -98,7 +98,7 @@ void TelemetryFilesModel::cacheInfo(QVariantMap info, int id)
         value << total;
 
     info["id"] = id;
-    info["title"] = timestampToTitle(info["timestamp"].toULongLong());
+    info["title"] = timestampToTitle(info["timestamp"].toInteger());
     info["descr"] = descr.join(" - ");
     info["value"] = value.join(' ');
 
@@ -113,7 +113,7 @@ void TelemetryFilesModel::cacheInfo(QVariantMap info, int id)
 
     emit dataChanged(index(id, 0), index(id, 0), {ValuesRole});
 }
-void TelemetryFilesModel::updateFileInfo(QVariantMap info, int id)
+void TelemetryFilesModel::updateFileInfo(QJsonObject info, int id)
 {
     _cache.remove(id);
     cacheInfo(info, id);
@@ -132,7 +132,7 @@ QHash<int, QByteArray> TelemetryFilesModel::roleNames() const
     return roles;
 }
 
-QVariantMap TelemetryFilesModel::get(int i) const
+QJsonObject TelemetryFilesModel::get(int i) const
 {
     if (i < 0 || i >= _filesList.size())
         return {};
@@ -158,7 +158,7 @@ QVariantMap TelemetryFilesModel::get(int i) const
 
     // guess temporary data from file name
 
-    QVariantMap m;
+    QJsonObject m;
     m["id"] = i;
     m["name"] = name;
     auto timestamp = name.section('_', 0, 0).toLongLong();

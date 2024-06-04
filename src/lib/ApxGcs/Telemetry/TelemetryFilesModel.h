@@ -41,7 +41,7 @@ public:
         ValuesRole = Qt::UserRole + 1,
     };
 
-    Q_INVOKABLE QVariantMap get(int i) const;
+    Q_INVOKABLE QJsonObject get(int i) const;
     int count() const;
 
     QString filter() const;
@@ -61,22 +61,22 @@ private:
     QStringList _filesList;
     void updateFilesList();
 
-    QMap<int, QVariantMap> _cache;
+    QMap<int, QJsonObject> _cache;
     QQueue<int> _cacheQueue;
     QList<int> _cacheReq;
-    void cacheInfo(QVariantMap info, int id);
+    void cacheInfo(QJsonObject info, int id);
 
     QString m_filter;
     int _activeId{-1};
 
 public slots:
     void resetFilter();
-    void updateFileInfo(QVariantMap info, int id);
+    void updateFileInfo(QJsonObject info, int id);
 
 signals:
-    void itemEdited(int i, QVariantMap v);
-    void itemRemoved(int i, QVariantMap v);
-    void synced();
+    // void itemEdited(int i, QJsonObject v);
+    // void itemRemoved(int i, QJsonObject v);
+    // void synced();
 
 signals:
     void countChanged();

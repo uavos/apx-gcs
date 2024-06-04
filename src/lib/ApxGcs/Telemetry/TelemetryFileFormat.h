@@ -13,7 +13,6 @@ static constexpr auto APXTLM_VERSION = 1;
 
 static constexpr auto APXTLM_FTYPE = "telemetry";
 static constexpr auto APXTLM_MAGIC = "APXTLM";
-static constexpr auto APXTLM_META = "meta"; // tag to mark file stats meta data
 
 // file header
 struct fhdr_s
@@ -75,8 +74,8 @@ struct fhdr_s
             uint64_t parse_ts; // file parse timestamp [ms since epoch]
 
             // used for consistency check and quick stats access
-            uint64_t payload_size; // payload size [bytes], excluding metadata at tail
-            uint64_t meta_offset;  // meta data offset [bytes] from the start of the file
+            uint64_t payload_size; // payload size [bytes], excluding statistics at tail
+            uint64_t stats_offset; // statistics offset [bytes] from the start of the file
 
             uint32_t tmax; // total time [ms] or max timestamp
             uint8_t _rsv1[4 + 8];
@@ -162,7 +161,7 @@ static constexpr const char *dspec_names[] = {
 // special non-value data formats
 enum class extid_e : uint8_t { // 4 bits (part of dspec)
     // core services
-    stop = 0, // [dspec==0] stop reading/writing stream
+    stop = 0, // [dspec==0] stop reading/writing stream (stats are written after this)
     ts,       // [ms] u32 timestamp update relative to file
     uplink,   // [dspec,data] uplink data (marks next dspec)
     field,    // [name,title,units] strings of used fields sequence

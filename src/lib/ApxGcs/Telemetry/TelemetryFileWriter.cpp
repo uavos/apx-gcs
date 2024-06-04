@@ -256,6 +256,23 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     QFile::write(data.constData(), data.size());
 }
 
+void TelemetryFileWriter::write_stats(const QJsonObject &data)
+{
+    if (!isOpen())
+        return;
+
+    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::stop};
+    QFile::write((const char *) &dspec, 1);
+
+    auto ba = qCompress(QJsonDocument(data).toJson(QJsonDocument::Compact), 9);
+    uint32_t size = ba.size();
+    QFile::write((const char *) &size, 4);
+    QFile::write(ba.constData(), size);
+
+    // truncate file, as stats always written at the end
+    QFile::resize(QFile::pos());
+}
+
 uint64_t TelemetryFileWriter::get_hdr_crc(const telemetry::fhdr_s *fhdr)
 {
     QCryptographicHash hash(QCryptographicHash::Sha1);

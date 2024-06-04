@@ -106,7 +106,7 @@ protected:
     int _id;
 
 signals:
-    void result(QVariantMap info, int id);
+    void result(QJsonObject info, int id);
 };
 
 class TelemetryFilesJobParse : public TelemetryFilesJobInfo

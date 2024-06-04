@@ -51,9 +51,12 @@ public:
     void write_meta(const QString &name, const QJsonObject &data, bool uplink);
     void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink);
 
+    void write_stats(const QJsonObject &data);
+
     void print_stats();
 
     // helpers
+    static QString get_name(uint64_t timestamp_utc, const QString &callsign, QDir);
     static uint64_t get_hdr_crc(const telemetry::fhdr_s *fhdr);
     static void json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff);
 

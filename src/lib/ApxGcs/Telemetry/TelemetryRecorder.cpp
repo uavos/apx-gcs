@@ -136,7 +136,7 @@ bool TelemetryRecorder::dbCheckRecord()
     dir.mkpath(".");
 
     QStringList st;
-    st.append(QString::number(time_utc));
+    st.append(QString::number(time_utc, 16).toUpper());
 
     // st.append(t.toString("yyMMddHHmm"));
 

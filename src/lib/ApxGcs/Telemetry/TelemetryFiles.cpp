@@ -29,6 +29,10 @@ TelemetryFiles::TelemetryFiles(Fact *parent)
     , m_recordNum(0)
     , m_recordTimestamp(0)
 {
+    // get ms since epoch UTC at 2020-01-01 00:00:00
+    auto epoch = QDateTime(QDate(2020, 1, 1), QTime(0, 0, 0)).toMSecsSinceEpoch();
+    qWarning() << "epoch" << epoch;
+
     setOpt("pos", QPointF(1, 1));
 
     setOpt("page", "Menu/FactMenuPageLookupDB.qml");
@@ -119,10 +123,11 @@ void TelemetryFiles::triggerItem(QVariantMap modelData)
 
     auto job = new TelemetryFilesJobParse(_worker, path, id);
 
-    connect(&job->reader, &TelemetryFileReader::progress, this, &TelemetryFiles::setProgress);
-    connect(&job->reader, &TelemetryFileReader::info, _filesModel, [this, id](QVariantMap info) {
-        _filesModel->updateFileInfo(info, id);
-    });
+    connect(&job->reader, &TelemetryFileReader::progressChanged, this, &TelemetryFiles::setProgress);
+    connect(&job->reader,
+            &TelemetryFileReader::infoUpdated,
+            _filesModel,
+            [this, id](QJsonObject info) { _filesModel->updateFileInfo(info, id); });
 
     job->schedule();
 }

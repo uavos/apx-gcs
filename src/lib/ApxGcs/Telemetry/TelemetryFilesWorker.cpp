@@ -138,7 +138,7 @@ void TelemetryFilesJobInfo::run()
     if (!reader.open(_path))
         return;
 
-    emit result(reader.meta(), _id);
+    emit result(reader.info(), _id);
 }
 
 void TelemetryFilesJobParse::run()
@@ -149,5 +149,5 @@ void TelemetryFilesJobParse::run()
     if (!reader.parse_payload())
         return;
 
-    emit result(reader.meta(), _id);
+    emit result(reader.info(), _id);
 }
