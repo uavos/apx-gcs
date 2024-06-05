@@ -33,6 +33,34 @@
 
 using namespace telemetry;
 
+TelemetryFileWriter::~TelemetryFileWriter()
+{
+    if (_lock_file)
+        delete _lock_file;
+}
+
+QLockFile *TelemetryFileWriter::get_lock_file(QString fileName)
+{
+    fileName = QFileInfo(fileName).fileName();
+    auto lock_file = new QLockFile(QDir::temp().absoluteFilePath(fileName.append(".lock")));
+    lock_file->setStaleLockTime(0);
+    if (!lock_file->tryLock(10)) {
+        qWarning() << "failed to lock file" << fileName;
+        delete lock_file;
+        return nullptr;
+    }
+    return lock_file;
+}
+
+void TelemetryFileWriter::close()
+{
+    QFile::close();
+    if (_lock_file) {
+        delete _lock_file;
+        _lock_file = nullptr;
+    }
+}
+
 void TelemetryFileWriter::print_stats()
 {
     if (_stats_values.empty())
@@ -58,6 +86,10 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, Vehicle 
     _vehicle = vehicle;
 
     QFile::setFileName(path);
+
+    _lock_file = get_lock_file(fileName());
+    if (!_lock_file)
+        return true;
 
     // open file for writing
     if (!QFile::open(QIODevice::WriteOnly)) {
@@ -120,6 +152,58 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, Vehicle 
     flush();
 
     return true;
+}
+
+QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
+                                               const QString &callsign,
+                                               QString dirPath)
+{
+    QStringList st;
+    st.append(QString::number(timestamp.toMSecsSinceEpoch(), 10).toUpper());
+
+    // fix callsign style
+    auto cs = callsign.trimmed().toUpper().toUtf8();
+    QString cs_fixed;
+    for (auto s = cs.data(); *s; ++s) {
+        auto c = *s;
+        if (c >= '0' && c <= '9') { // allow any numbers
+            cs_fixed.append(c);
+        } else if (c >= 'A' && c <= 'Z') { // allow capital letters
+            cs_fixed.append(c);
+            continue;
+        }
+    }
+    st.append(cs_fixed.isEmpty() ? "U" : cs_fixed);
+
+    // add human readable timestamp
+    st.append(timestamp.toString("yyMMddHHmmtt").replace('+', 'P').replace('-', 'M'));
+
+    // join components
+    QString basename = st.join('_').toUpper();
+
+    if (dirPath.isEmpty()) {
+        return basename.append('.').append(telemetry::APXTLM_FTYPE);
+    }
+
+    QString fileName;
+    QDir dir(dirPath);
+    for (int i = 0; i < 100; ++i) {
+        QString s = basename;
+        if (i > 0)
+            s.append(QString("_%1").arg(i, 2, 10, QChar('0')));
+
+        s.append('.').append(telemetry::APXTLM_FTYPE);
+
+        if (!QFile::exists(dir.absoluteFilePath(s))) {
+            fileName = s;
+            break;
+        }
+    }
+    if (fileName.isEmpty()) {
+        qWarning() << "failed to create file name";
+        return {};
+    }
+    return fileName;
 }
 
 void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)
@@ -256,10 +340,10 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     QFile::write(data.constData(), data.size());
 }
 
-void TelemetryFileWriter::write_stats(const QJsonObject &data)
+bool TelemetryFileWriter::write_stats(const QJsonObject &data)
 {
     if (!isOpen())
-        return;
+        return false;
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::stop};
     QFile::write((const char *) &dspec, 1);
@@ -271,6 +355,8 @@ void TelemetryFileWriter::write_stats(const QJsonObject &data)
 
     // truncate file, as stats always written at the end
     QFile::resize(QFile::pos());
+
+    return true;
 }
 
 uint64_t TelemetryFileWriter::get_hdr_crc(const telemetry::fhdr_s *fhdr)
@@ -309,7 +395,10 @@ bool TelemetryFileWriter::_write_tag(XbusStreamWriter *stream, const char *name,
 
 void TelemetryFileWriter::_write_string(const char *s)
 {
-    QFile::write(s, qstrlen(s) + 1);
+    auto sz = qstrlen(s) + 1;
+    if (sz > 1024)
+        return;
+    QFile::write(s, sz);
 }
 
 void TelemetryFileWriter::_write_field(QString name, QString title, QString units)

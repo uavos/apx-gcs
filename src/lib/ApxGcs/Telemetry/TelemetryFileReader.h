@@ -37,10 +37,15 @@ class TelemetryFileReader : public QFile
 public:
     bool open(QString filePath);
 
-    auto &info() const { return _info; }
+    auto info() const { return _info; }
 
     bool parse_payload();
     bool parse_header();
+
+    auto callsign() const { return _info["call"].toString(); }
+    auto timestamp() const { return _info["timestamp"].toInteger(); }
+    auto utc_offset() const { return _info["utc_offset"].toInteger(); }
+    auto is_parsed() const { return _info["parsed"].toBool(); }
 
 private:
     QJsonObject _info;
@@ -113,6 +118,9 @@ private:
 
     void _reset_data();
     void _json_patch(const QJsonObject &orig, const QJsonObject &patch, QJsonObject &result);
+
+    // write updates to the file
+    bool _update_header();
     bool _update_stats();
 
     void setProgress(int value);

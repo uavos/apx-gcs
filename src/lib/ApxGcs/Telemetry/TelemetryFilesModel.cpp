@@ -36,7 +36,15 @@ TelemetryFilesModel::TelemetryFilesModel(TelemetryFilesWorker *worker,
     , _worker(worker)
     , _path(path)
 {
-    updateFilesList();
+    _updateTimer.setInterval(1000);
+    _updateTimer.setSingleShot(true);
+    connect(&_updateTimer, &QTimer::timeout, this, &TelemetryFilesModel::updateFilesList);
+
+    _watcher.addPath(AppDirs::telemetry().absolutePath());
+    connect(&_watcher, &QFileSystemWatcher::directoryChanged, this, [this]() {
+        if (!_updateTimer.isActive())
+            _updateTimer.start();
+    });
 }
 
 void TelemetryFilesModel::setActiveId(int id)
@@ -58,12 +66,43 @@ void TelemetryFilesModel::setActiveId(int id)
 
 void TelemetryFilesModel::updateFilesList()
 {
+    qDebug() << "updating files list...";
     auto job = new TelemetryFilesJobList(_worker, _path);
-    connect(job, &TelemetryFilesJobList::result, this, [this](QStringList files) {
-        _filesList = files;
-        emit countChanged();
-    });
+    connect(job, &TelemetryFilesJobList::result, this, &TelemetryFilesModel::filesListUpdated);
     job->schedule();
+}
+
+void TelemetryFilesModel::filesListUpdated(QStringList files)
+{
+    if (_filesList == files)
+        return;
+
+    // remove old
+    bool changed = false;
+    for (auto i = 0; i < _filesList.size(); i++) {
+        if (files.contains(_filesList.value(i)))
+            continue;
+        beginRemoveRows(QModelIndex(), i, i);
+        _filesList.removeAt(i);
+        _cache.clear();
+        _cacheQueue.clear();
+        endRemoveRows();
+        changed = true;
+        i--;
+    }
+    // add new
+    for (auto i = 0; i < files.size(); i++) {
+        if (_filesList.value(i) == files.value(i))
+            continue;
+        beginInsertRows(QModelIndex(), i, i);
+        _filesList.insert(i, files.value(i));
+        _cache.clear();
+        _cacheQueue.clear();
+        endInsertRows();
+        changed = true;
+    }
+    if (changed)
+        emit countChanged();
 }
 
 void TelemetryFilesModel::cacheInfo(QJsonObject info, int id)
@@ -106,7 +145,7 @@ void TelemetryFilesModel::cacheInfo(QJsonObject info, int id)
     _cache[id] = info;
     _cacheQueue.enqueue(id);
 
-    if (_cacheQueue.size() > 50)
+    if (_cacheQueue.size() > 500)
         _cache.remove(_cacheQueue.dequeue());
 
     _cacheReq.removeOne(id);

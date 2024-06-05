@@ -59,7 +59,9 @@ private:
     QString _path;
 
     QStringList _filesList;
-    void updateFilesList();
+
+    QTimer _updateTimer;
+    QFileSystemWatcher _watcher;
 
     QMap<int, QJsonObject> _cache;
     QQueue<int> _cacheQueue;
@@ -69,7 +71,11 @@ private:
     QString m_filter;
     int _activeId{-1};
 
+private slots:
+    void filesListUpdated(QStringList files);
+
 public slots:
+    void updateFilesList();
     void resetFilter();
     void updateFileInfo(QJsonObject info, int id);
 

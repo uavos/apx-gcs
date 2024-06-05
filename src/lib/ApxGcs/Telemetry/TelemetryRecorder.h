@@ -46,8 +46,8 @@ private:
 
     TelemetryFileWriter _file;
 
-    //database
-    bool dbCheckRecord();
+    //data file
+    void checkFileRecord();
 
     //auto recorder
     bool checkAutoRecord(void);

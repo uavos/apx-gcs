@@ -32,6 +32,14 @@
 
 using namespace telemetry;
 
+void TelemetryFileReader::setProgress(int value)
+{
+    if (_progress == value)
+        return;
+    _progress = value;
+    emit progressChanged(value);
+}
+
 bool TelemetryFileReader::open(QString filePath)
 {
     _reset_data();
@@ -49,6 +57,7 @@ bool TelemetryFileReader::open(QString filePath)
         return false;
     }
 
+    // qDebug() << "file opened" << fileName();
     return parse_header();
 }
 
@@ -164,6 +173,7 @@ bool TelemetryFileReader::parse_header()
 
         // fill info from header
         if (!h.info.flags.parsed) {
+            // qDebug() << "file not parsed yet";
             emit infoUpdated(m);
             return true;
         }
@@ -186,6 +196,8 @@ bool TelemetryFileReader::parse_header()
 
         m["parsed"] = (bool) h.info.flags.parsed;
         m["corrupted"] = (bool) h.info.flags.corrupted;
+
+        // qDebug() << "file header parsed";
 
         emit infoUpdated(m);
         return true;
@@ -279,7 +291,7 @@ bool TelemetryFileReader::parse_payload()
         }
     }
 
-    setProgress(0);
+    setProgress(-1);
 
     // check payload_size constraints
     if (QFile::pos() != payload_pos_max) {
@@ -289,7 +301,6 @@ bool TelemetryFileReader::parse_payload()
 
     if (!ret || !isOpen()) {
         qWarning() << "failed to parse file at" << QFile::pos() << QFile::size();
-        setProgress(-1);
         return false;
     }
 
@@ -307,6 +318,8 @@ bool TelemetryFileReader::parse_payload()
 
     qDebug() << "file parsed" << _ts_s << _fields.size();
 
+    setProgress(0);
+
     // update file header
     auto parse_ts = QDateTime::currentDateTime().toMSecsSinceEpoch();
     bool was_parsed = _fhdr.info.flags.parsed;
@@ -316,13 +329,11 @@ bool TelemetryFileReader::parse_payload()
     }
     _fhdr.info.tmax = _ts_s;
 
+    _info["duration"] = (qint64) _fhdr.info.tmax;
+    _info["payload_size"] = (qint64) _fhdr.info.payload_size;
+
     // collect and update metadata
-    if (!_update_stats()) {
-        qWarning() << "failed to update stats";
-        QFile::close();
-        setProgress(-1);
-        return false;
-    }
+    _update_stats();
 
     // payload sha1
     {
@@ -349,32 +360,7 @@ bool TelemetryFileReader::parse_payload()
         _fhdr.info.parse_ts = parse_ts;
         _fhdr.info.hcrc = TelemetryFileWriter::get_hdr_crc(&_fhdr);
 
-        // rewrite header
-        bool ret = false;
-        do {
-            QFile::close();
-            if (!QFile::open(QIODevice::ReadWrite)) {
-                qWarning() << "failed to open file for writing";
-                break;
-            }
-            if (QFile::write((const char *) &_fhdr, sizeof(_fhdr)) != sizeof(_fhdr)) {
-                qWarning() << "failed to write file header data";
-                break;
-            }
-            QFile::close();
-            if (!QFile::open(QIODevice::ReadOnly)) {
-                qWarning() << "failed to reopen file for reading";
-                break;
-            }
-            ret = parse_header();
-        } while (0);
-
-        if (!ret) {
-            qWarning() << "failed to write file header";
-            QFile::close();
-            setProgress(-1);
-            return false;
-        }
+        _update_header();
     }
 
     // success
@@ -431,7 +417,7 @@ QString TelemetryFileReader::_read_string(bool *ok)
         return {};
 
     QByteArray ba;
-    while (ba.size() < 255) {
+    while (ba.size() < 1024) {
         char c;
         if (QFile::read(&c, 1) != 1) {
             break;
@@ -784,6 +770,42 @@ void TelemetryFileReader::_json_patch(const QJsonObject &orig,
     }
 }
 
+bool TelemetryFileReader::_update_header()
+{
+    auto lock_file = TelemetryFileWriter::get_lock_file(fileName());
+    if (!lock_file)
+        return false;
+
+    // rewrite header
+    bool ret = false;
+    do {
+        QFile::close();
+        if (!QFile::open(QIODevice::ReadWrite)) {
+            qWarning() << "failed to open file for writing";
+            break;
+        }
+        if (QFile::write((const char *) &_fhdr, sizeof(_fhdr)) != sizeof(_fhdr)) {
+            qWarning() << "failed to write file header data";
+            break;
+        }
+        QFile::close();
+        if (!QFile::open(QIODevice::ReadOnly)) {
+            qWarning() << "failed to reopen file for reading";
+            break;
+        }
+    } while (0);
+
+    lock_file->unlock();
+
+    if (!ret) {
+        qWarning() << "failed to write file header";
+        QFile::close();
+        return false;
+    }
+
+    return true;
+}
+
 bool TelemetryFileReader::_update_stats()
 {
     // update stats object
@@ -821,7 +843,14 @@ bool TelemetryFileReader::_update_stats()
         _fhdr.info.stats_offset = stats_offset;
     }
 
-    // rewrite metadata at tail
+    emit infoUpdated(_info);
+
+    // rewrite stats at tail
+
+    auto lock_file = TelemetryFileWriter::get_lock_file(fileName());
+    if (!lock_file)
+        return false;
+
     bool ret = false;
     do {
         QFile::close();
@@ -850,20 +879,12 @@ bool TelemetryFileReader::_update_stats()
         ret = true;
     } while (0);
 
+    lock_file->unlock();
+
     if (!ret) {
         qWarning() << "failed to write file header";
         setProgress(-1);
         return false;
     }
-
-    emit infoUpdated(_info);
     return true;
-}
-
-void TelemetryFileReader::setProgress(int value)
-{
-    if (_progress == value)
-        return;
-    _progress = value;
-    emit progressChanged(value);
 }

@@ -46,6 +46,9 @@ TelemetryFiles::TelemetryFiles(Fact *parent)
         setRecordsCount(_filesModel->count());
     });
 
+    connect(this, &Fact::triggered, this, [this]() { _filesModel->updateFilesList(); });
+    connect(parent, &Fact::triggered, this, &Fact::triggered);
+
     //actions
     f_latest = new Fact(this,
                         "latest",
@@ -87,9 +90,6 @@ TelemetryFiles::TelemetryFiles(Fact *parent)
     connect(this, &TelemetryFiles::recordNumChanged, this, &TelemetryFiles::updateActions);
     connect(this, &TelemetryFiles::recordsCountChanged, this, &TelemetryFiles::updateActions);
     updateActions();
-
-    //refresh on load
-    // QTimer::singleShot(3000, this, &TelemetryFiles::defaultLookup);
 }
 void TelemetryFiles::updateActions()
 {

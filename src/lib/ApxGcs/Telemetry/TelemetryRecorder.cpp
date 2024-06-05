@@ -117,63 +117,36 @@ void TelemetryRecorder::restartRecording()
     reset();
 }
 
-bool TelemetryRecorder::dbCheckRecord()
+void TelemetryRecorder::checkFileRecord()
 {
     checkAutoRecord();
 
     if (_file.isOpen())
-        return true;
-
-    auto time_utc = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        return;
 
     apxConsole() << tr("Telemetry record request");
 
     // construct new file name
 
+    auto timestamp = QDateTime::currentDateTime();
     auto dir = AppDirs::telemetry();
     if (!recording())
         dir.setPath(dir.absoluteFilePath("trash"));
     dir.mkpath(".");
 
-    QStringList st;
-    st.append(QString::number(time_utc, 16).toUpper());
-
-    // st.append(t.toString("yyMMddHHmm"));
-
     QString callsign = _vehicle->title();
     if (callsign.isEmpty())
         callsign = _vehicle->confTitle();
-    if (callsign.isEmpty())
-        callsign = "U";
 
-    st.append(callsign);
+    auto fileName = TelemetryFileWriter::prepare_file_name(timestamp, callsign, dir.absolutePath());
+    if (fileName.isEmpty())
+        return;
 
-    QString fname;
-    for (int i = 0; i < 100; ++i) {
-        QString s = st.join('_');
-        if (i > 0)
-            s.append(QString("_%1").arg(i, 2, 10, QChar('0')));
-
-        s.append('.').append(telemetry::APXTLM_FTYPE);
-
-        if (!QFile::exists(dir.absoluteFilePath(s))) {
-            fname = s;
-            break;
-        }
-    }
-    if (fname.isEmpty()) {
-        qWarning() << "failed to create file name";
-        return false;
-    }
-    fname = dir.absoluteFilePath(fname);
-
-    _file.create(fname, time_utc, _vehicle);
+    _file.create(dir.absoluteFilePath(fileName), timestamp.toMSecsSinceEpoch(), _vehicle);
 
     // record initial meta data
     recordConfig();
     recordMission(false);
-
-    return false;
 }
 
 quint64 TelemetryRecorder::getEventTimestamp()
@@ -196,7 +169,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     if (t < _ts_t0)
         reset();
 
-    dbCheckRecord();
+    checkFileRecord();
 
     if (_reset_timestamp) {
         _reset_timestamp = false;
@@ -218,7 +191,7 @@ void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 {
     // qDebug() << values << uplink;
 
-    dbCheckRecord();
+    checkFileRecord();
 
     _file.write_values(getEventTimestamp(), values, uplink);
 }

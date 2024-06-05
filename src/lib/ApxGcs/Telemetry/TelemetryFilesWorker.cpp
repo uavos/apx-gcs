@@ -103,7 +103,6 @@ void TelemetryFilesWorker::run()
 
         job->run();
         emit job->finished();
-
         delete job;
     }
 }
@@ -137,6 +136,33 @@ void TelemetryFilesJobInfo::run()
 {
     if (!reader.open(_path))
         return;
+
+    if (isInterruptionRequested())
+        return;
+
+    // fix rename if necessary
+    auto timestamp = QDateTime::fromMSecsSinceEpoch(reader.timestamp(),
+                                                    QTimeZone(reader.utc_offset()));
+    auto callsign = reader.callsign();
+    auto fileName = TelemetryFileWriter::prepare_file_name(timestamp, callsign);
+    auto fi = QFileInfo(_path);
+    if (fileName != fi.fileName()) {
+        auto newPath = fi.dir().absoluteFilePath(fileName);
+        if (!QFile::rename(_path, newPath)) {
+            qWarning() << "Failed to rename" << fi.fileName() << "to" << fileName;
+        } else {
+            qDebug() << "Renamed" << fi.fileName() << "to" << fileName;
+            _path = newPath;
+            reader.close();
+            if (!reader.open(_path))
+                return;
+        }
+    }
+
+    // auto parse payloads for small files
+    if (!reader.is_parsed() && reader.size() < 1024 * 1024) {
+        reader.parse_payload();
+    }
 
     emit result(reader.info(), _id);
 }

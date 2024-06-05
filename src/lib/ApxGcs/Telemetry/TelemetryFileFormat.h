@@ -36,8 +36,8 @@ struct fhdr_s
         uint8_t _raw2[64];
         struct
         {
-            uint64_t timestamp; // file timestamp [ms since epoch]
-            int32_t utc_offset; // timestamp UTC offset of local machine
+            uint64_t timestamp; // file timestamp [ms] since epoch
+            int32_t utc_offset; // timestamp UTC offset [s] of local machine
             uint8_t _rsv1[4];
 
             struct

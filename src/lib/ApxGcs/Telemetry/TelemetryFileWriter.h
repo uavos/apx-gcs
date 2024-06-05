@@ -36,6 +36,9 @@ class TelemetryFileWriter : public QFile
     Q_OBJECT
 
 public:
+    virtual ~TelemetryFileWriter() override;
+    virtual void close() override;
+
     QString name() const { return QFileInfo(*this).completeBaseName(); }
 
     bool create(const QString &path, quint64 time_utc, Vehicle *vehicle);
@@ -51,17 +54,22 @@ public:
     void write_meta(const QString &name, const QJsonObject &data, bool uplink);
     void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink);
 
-    void write_stats(const QJsonObject &data);
+    bool write_stats(const QJsonObject &data);
 
     void print_stats();
 
     // helpers
-    static QString get_name(uint64_t timestamp_utc, const QString &callsign, QDir);
+    static QString prepare_file_name(QDateTime timestamp,
+                                     const QString &callsign,
+                                     QString dirPath = {});
     static uint64_t get_hdr_crc(const telemetry::fhdr_s *fhdr);
     static void json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff);
 
+    static QLockFile *get_lock_file(QString fileName);
+
 private:
     Vehicle *_vehicle;
+    QLockFile *_lock_file{};
 
     // helpers
     bool _write_tag(XbusStreamWriter *stream, const char *name, const char *value);
