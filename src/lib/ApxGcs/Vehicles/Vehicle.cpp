@@ -213,25 +213,25 @@ void Vehicle::updateActive()
     }
 }
 
-QVariantMap Vehicle::get_info() const
+QJsonObject Vehicle::get_info() const
 {
     if (!_protocol)
         return {};
 
-    QVariantMap vehicle;
-    vehicle.insert("uid", _protocol->uid());
-    vehicle.insert("callsign", title());
-    vehicle.insert("class", _protocol->vehicleTypeText());
+    QJsonObject info;
+    info.insert("uid", _protocol->uid());
+    info.insert("callsign", title());
+    info.insert("class", _protocol->vehicleTypeText());
     if (_lastSeenTime)
-        vehicle.insert("time", _lastSeenTime);
-    return vehicle;
+        info.insert("time", _lastSeenTime);
+    return info;
 }
 QVariant Vehicle::toVariant()
 {
     QVariantMap m;
 
     if (_protocol)
-        m.insert("vehicle", get_info());
+        m.insert("vehicle", get_info().toVariantMap());
 
     m.insert("nodes", f_nodes->toVariant());
     m.insert("title", f_nodes->getConfigTitle());

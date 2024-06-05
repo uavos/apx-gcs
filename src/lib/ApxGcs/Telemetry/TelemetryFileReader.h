@@ -40,14 +40,15 @@ public:
 
     bool open(QString filePath);
 
-    auto info() const { return _info; }
+    const auto &info() const { return _info; }
 
     bool parse_payload();
     bool parse_header();
 
-    auto callsign() const { return _info["call"].toString(); }
-    auto timestamp() const { return _info["timestamp"].toInteger(); }
-    auto utc_offset() const { return _info["utc_offset"].toInteger(); }
+    bool fix_name();
+
+    auto timestamp() const { return _fhdr.timestamp; }
+    auto utc_offset() const { return _fhdr.utc_offset; }
     auto is_parsed() const { return _info["parsed"].toBool(); }
 
     QByteArray get_hash();
@@ -62,7 +63,7 @@ private:
     QString _read_string(bool *ok);
     QJsonObject _read_meta_data();
 
-    QJsonObject _read_stats();
+    QJsonObject _read_info();
 
     QVariant _read_value(telemetry::dspec_e dspec);
     bool _read_ext(telemetry::extid_e extid, bool is_uplink);
@@ -123,10 +124,6 @@ private:
 
     void _reset_data();
     void _json_patch(const QJsonObject &orig, const QJsonObject &patch, QJsonObject &result);
-
-    // write updates to the file
-    bool _update_header();
-    bool _update_stats();
 
     void setProgress(int value);
     int _progress{-1};

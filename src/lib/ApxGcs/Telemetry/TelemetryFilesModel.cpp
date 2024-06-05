@@ -115,7 +115,7 @@ void TelemetryFilesModel::cacheInfo(QJsonObject info, int id)
     if (_cache.contains(id))
         return;
 
-    QString callsign = info["call"].toString();
+    QString callsign = info["vehicle"].toObject()["callsign"].toString();
     QString comment = info["conf"].toString();
     QString notes = info["notes"].toString();
 

@@ -37,7 +37,7 @@ void VehicleStorage::saveVehicleInfo()
     if (m.isEmpty())
         return;
 
-    auto *req = new DBReqSaveVehicleInfo(m);
+    auto *req = new DBReqSaveVehicleInfo(m.toVariantMap());
     req->exec();
 }
 

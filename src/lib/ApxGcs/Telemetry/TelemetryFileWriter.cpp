@@ -33,6 +33,15 @@
 
 using namespace telemetry;
 
+TelemetryFileWriter::TelemetryFileWriter(QObject *parent)
+    : QFile(parent)
+{}
+
+TelemetryFileWriter::TelemetryFileWriter(const Fields &fields, QObject *parent)
+    : QFile(parent)
+    , _fields(fields)
+{}
+
 TelemetryFileWriter::~TelemetryFileWriter()
 {
     if (_lock_file)
@@ -61,31 +70,14 @@ void TelemetryFileWriter::close()
     }
 }
 
-void TelemetryFileWriter::print_stats()
-{
-    if (_stats_values.empty())
-        return;
-
-    for (auto [uid, dspec] : _stats_values) {
-        auto f = _vehicle->f_mandala->fact(uid);
-        QStringList sl;
-        for (auto i : dspec)
-            sl.append(telemetry::dspec_names[(uint) i]);
-
-        qDebug() << f->mpath().append(':') << sl.join(',');
-    }
-}
-
-bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, Vehicle *vehicle)
+bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, const QJsonObject &info)
 {
     if (isOpen()) {
         qDebug() << "file break";
         close();
     }
 
-    _vehicle = vehicle;
-
-    QFile::setFileName(path);
+    setFileName(path);
 
     _lock_file = get_lock_file(fileName());
     if (!_lock_file)
@@ -94,44 +86,23 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, Vehicle 
     // open file for writing
     if (!QFile::open(QIODevice::WriteOnly)) {
         qWarning() << "failed to open file" << fileName();
+        close();
         return false;
     }
 
     // write file header
     fhdr_s fhdr{};
-
     strcpy(fhdr.magic, APXTLM_MAGIC);
     fhdr.version = APXTLM_VERSION;
     fhdr.payload_offset = sizeof(fhdr);
     fhdr.timestamp = time_utc;
     fhdr.utc_offset = QDateTime::fromMSecsSinceEpoch(time_utc).offsetFromUtc();
+    write((const char *) &fhdr, sizeof(fhdr));
 
-    auto sw_ver = QVersionNumber::fromString(QCoreApplication::applicationVersion());
-    if (!sw_ver.isNull()) {
-        fhdr.sw.version[0] = sw_ver.majorVersion();
-        fhdr.sw.version[1] = sw_ver.minorVersion();
-        fhdr.sw.version[2] = sw_ver.microVersion();
-    }
+    // write info
+    info["name_create"] = name(); // store original creation name
+    write_meta("info", info);
 
-    auto sw_hash = App::git_hash();
-    if (!sw_hash.isEmpty()) {
-        fhdr.sw.hash = sw_hash.toUInt(nullptr, 16);
-    }
-
-    // write tags
-    XbusStreamWriter s(fhdr.tags, sizeof(fhdr.tags));
-    _write_tag(&s, "name", name().toUtf8());
-    _write_tag(&s, "call", vehicle->title().toUtf8());
-    _write_tag(&s, "vuid", vehicle->uid().toUtf8());
-    _write_tag(&s, "conf", vehicle->confTitle().toUtf8());
-    _write_tag(&s, "class", vehicle->vehicleTypeText().toUtf8());
-
-    _write_tag(&s, "host", QString("%1@%2").arg(App::username()).arg(App::hostname()).toUtf8());
-    _write_tag(&s, "huid", App::machineUID().toUtf8());
-
-    // write header to file
-    fhdr.info.hcrc = get_hdr_crc(&fhdr);
-    QFile::write((const char *) &fhdr, sizeof(fhdr));
     flush();
 
     // reset stream counters
@@ -142,15 +113,6 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, Vehicle 
     _meta_objects.clear();
     _ts_s = 0;
 
-    // write initial mandala state
-    for (auto f : vehicle->f_mandala->valueFacts()) {
-        if (!(f->everReceived() || f->everSent()))
-            continue;
-        _write_value(f->uid(), f->value(), false);
-        // qDebug() << f->mpath() << f->value();
-    }
-    flush();
-
     return true;
 }
 
@@ -158,28 +120,36 @@ QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
                                                const QString &callsign,
                                                QString dirPath)
 {
-    QStringList st;
-    st.append(QString::number(timestamp.toMSecsSinceEpoch(), 10).toUpper());
+    QString basename;
+    {
+        QStringList st;
 
-    // fix callsign style
-    auto cs = callsign.trimmed().toUpper().toUtf8();
-    QString cs_fixed;
-    for (auto s = cs.data(); *s; ++s) {
-        auto c = *s;
-        if (c >= '0' && c <= '9') { // allow any numbers
-            cs_fixed.append(c);
-        } else if (c >= 'A' && c <= 'Z') { // allow capital letters
-            cs_fixed.append(c);
-            continue;
-        }
+        // add human readable timestamp
+        auto ts = timestamp.toString("yyMMdd_HHmm_zzz");
+        auto utc_offset = timestamp.offsetFromUtc();
+        ts.append(utc_offset > 0 ? 'E' : 'W');
+        auto offset_mins = std::abs(utc_offset) / 60;
+        ts.append(QString::number(offset_mins % 60 ? offset_mins : offset_mins / 60));
+        st.append(ts);
+
+        basename = st.join('_').toUpper();
     }
-    st.append(cs_fixed.isEmpty() ? "U" : cs_fixed);
 
-    // add human readable timestamp
-    st.append(timestamp.toString("yyMMddHHmmtt").replace('+', 'P').replace('-', 'M'));
-
-    // join components
-    QString basename = st.join('_').toUpper();
+    {
+        // fix callsign style
+        auto cs = callsign.trimmed().toUpper().toUtf8();
+        QString cs_fixed;
+        for (auto s = cs.data(); *s; ++s) {
+            auto c = *s;
+            if (c >= '0' && c <= '9') { // allow any numbers
+                cs_fixed.append(c);
+            } else if (c >= 'A' && c <= 'Z') { // allow capital letters
+                cs_fixed.append(c);
+                continue;
+            }
+        }
+        basename.append('-').append(cs_fixed.isEmpty() ? "U" : cs_fixed);
+    }
 
     if (dirPath.isEmpty()) {
         return basename.append('.').append(telemetry::APXTLM_FTYPE);
@@ -190,7 +160,7 @@ QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
     for (int i = 0; i < 100; ++i) {
         QString s = basename;
         if (i > 0)
-            s.append(QString("_%1").arg(i, 2, 10, QChar('0')));
+            s.append(QString("-%1").arg(i, 2, 10, QChar('0')));
 
         s.append('.').append(telemetry::APXTLM_FTYPE);
 
@@ -204,6 +174,49 @@ QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
         return {};
     }
     return fileName;
+}
+
+QJsonObject TelemetryFileWriter::get_info_from_filename(const QString &fileName)
+{
+    QJsonObject info;
+
+    auto name = QFileInfo(fileName).completeBaseName();
+    info["name"] = name;
+    info["path"] = QFileInfo(fileName).absoluteFilePath();
+
+    auto parts = name.split('_');
+    if (parts.size() < 3) {
+        qWarning() << "invalid file name" << fileName;
+        return {};
+    }
+
+    // parse timestamp
+    auto ts_fmt = QString("yyMMdd_HHmm_zzz");
+    auto ts = name.left(ts_fmt.size());
+    auto timestamp = QDateTime::fromString(ts, ts_fmt);
+    if (!timestamp.isValid()) {
+        qWarning() << "invalid timestamp" << ts;
+        return {};
+    }
+
+    ts = parts.at(2).mid(3);
+    auto utc_offset_sign = ts.startsWith('E') ? 1 : ts.startsWith('W') ? -1 : 0;
+    if (utc_offset_sign != 0) {
+        auto offset_mins = ts.mid(1).toInt();
+        if (offset_mins <= 12)
+            offset_mins *= 60;
+        timestamp.setOffsetFromUtc(offset_mins * 60 * utc_offset_sign);
+    } else {
+        qWarning() << "invalid utc offset sign" << ts;
+    }
+    info["timestamp"] = timestamp.toMSecsSinceEpoch();
+    info["utc_offset"] = timestamp.offsetFromUtc();
+
+    if (parts.size() >= 4) {
+        info["callsign"] = parts.at(3);
+    }
+
+    return info;
 }
 
 void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)
@@ -223,9 +236,7 @@ void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)
     QFile::write((const char *) &timestamp_ms, 4);
 }
 
-void TelemetryFileWriter::write_values(quint32 timestamp_ms,
-                                       const PBase::Values &values,
-                                       bool uplink)
+void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &values, bool uplink)
 {
     if (!isOpen())
         return;
@@ -233,7 +244,7 @@ void TelemetryFileWriter::write_values(quint32 timestamp_ms,
     write_timestamp(timestamp_ms);
 
     for (auto [uid, value] : values) {
-        _write_value(uid, value, uplink);
+        write_value(uid, value, uplink);
     }
     flush();
 }
@@ -281,6 +292,9 @@ void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
 void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &data, bool uplink)
 {
     if (!isOpen())
+        return;
+
+    if (data.isEmpty())
         return;
 
     if (uplink)
@@ -340,33 +354,6 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     QFile::write(data.constData(), data.size());
 }
 
-bool TelemetryFileWriter::write_stats(const QJsonObject &data)
-{
-    if (!isOpen())
-        return false;
-
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::stop};
-    QFile::write((const char *) &dspec, 1);
-
-    auto ba = qCompress(QJsonDocument(data).toJson(QJsonDocument::Compact), 9);
-    uint32_t size = ba.size();
-    QFile::write((const char *) &size, 4);
-    QFile::write(ba.constData(), size);
-
-    // truncate file, as stats always written at the end
-    QFile::resize(QFile::pos());
-
-    return true;
-}
-
-uint64_t TelemetryFileWriter::get_hdr_crc(const telemetry::fhdr_s *fhdr)
-{
-    QCryptographicHash hash(QCryptographicHash::Sha1);
-    auto offset = offsetof(fhdr_s, info.hcrc) + sizeof(fhdr->info.hcrc);
-    hash.addData(QByteArrayView((const char *) fhdr + offset, sizeof(fhdr_s) - offset));
-    return *reinterpret_cast<const uint64_t *>(hash.result().left(sizeof(uint64_t)).constData());
-}
-
 bool TelemetryFileWriter::_write_tag(XbusStreamWriter *stream, const char *name, const char *value)
 {
     if (!value || !value[0]) // skip empty values
@@ -417,35 +404,38 @@ void TelemetryFileWriter::_write_field(QString name, QString title, QString unit
     _write_string(units.toUtf8());
 }
 
-void TelemetryFileWriter::_write_value(mandala::uid_t uid, const QVariant &value, bool uplink)
+void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool uplink)
 {
     // map mandala fact
-    auto f = _vehicle->f_mandala->fact(uid);
-    if (!f)
+    auto f_it = _fields.find(uid);
+    if (f_it == _fields.end()) {
+        qWarning() << "unknown field" << uid;
         return;
+    }
+    const auto &field = f_it.value();
 
     // determine data type
-    bool is_uint;
-    if (f->dataType() == Fact::Float) {
+    bool is_uint = field.dspec <= dspec_e::u64 || value.isNull();
+    bool is_conv = !is_uint && (field.dspec == dspec_e::a16 || field.dspec == dspec_e::a32);
+
+    if (!is_uint && !is_conv) {
         auto t = value.typeId();
         is_uint = t == QMetaType::Int || t == QMetaType::UInt || t == QMetaType::ULongLong;
 
         if (!is_uint) {
             // try check if float is integer
             auto vf = value.toDouble();
-            if (std::isnan(vf)) {
+            if (std::isnan(vf) || std::isinf(vf) || vf == 0.) {
                 is_uint = true;
-                vf = 0;
-            } else {
+                value = 0;
+            } else if (vf > 0) {
                 auto vfc = std::ceil(vf);
-                if (vf >= 0 && vfc == vf) {
+                if (vfc == vf) {
                     is_uint = true;
-                    vf = vfc;
+                    value = vfc;
                 }
             }
         }
-    } else {
-        is_uint = true;
     }
 
     // uplink is always written
@@ -453,7 +443,7 @@ void TelemetryFileWriter::_write_value(mandala::uid_t uid, const QVariant &value
         // downlink is written only if value changed
         auto it = _values_s.find(uid);
         if (it != _values_s.end()) {
-            if (it->second == value)
+            if (it->second.typeId() == value.typeId() && it->second == value)
                 return;
         } else {
             // value never posted before
@@ -480,7 +470,7 @@ void TelemetryFileWriter::_write_value(mandala::uid_t uid, const QVariant &value
         }
         vidx = _fields_map.size();
         _fields_map[uid] = vidx;
-        _write_field(f->mpath(), f->title(), f->units());
+        _write_field(field.name, field.title, field.units);
     } else {
         vidx = it->second;
     }
@@ -499,86 +489,78 @@ void TelemetryFileWriter::_write_value(mandala::uid_t uid, const QVariant &value
     _widx = vidx;
 
     // prepare value according to format
-    uint64_t v = 0;
+    uint64_t wraw = 0;
     size_t wcnt = 0;
 
     if (is_uint) {
-        v = value.toULongLong();
+        wraw = value.toULongLong();
         // qDebug() << "uint" << v;
 
-        if (v > 0xFFFFFFFF) {
+        if (wraw > 0xFFFFFFFF) {
             spec.spec8.dspec = dspec_e::u64;
             wcnt = 8;
-        } else if (v > 0xFFFFFF) {
+        } else if (wraw > 0xFFFFFF) {
             spec.spec8.dspec = dspec_e::u32;
             wcnt = 4;
-        } else if (v > 0xFFFF) {
+        } else if (wraw > 0xFFFF) {
             spec.spec8.dspec = dspec_e::u24;
             wcnt = 3;
-        } else if (v > 0xFF) {
+        } else if (wraw > 0xFF) {
             spec.spec8.dspec = dspec_e::u16;
             wcnt = 2;
-        } else if (v > 0) {
+        } else if (wraw > 0) {
             spec.spec8.dspec = dspec_e::u8;
             wcnt = 1;
-        } else {
-            spec.spec8.dspec = dspec_e::null;
         }
     } else {
+        // float types
         // qDebug() << "float" << value;
-        switch (f->fmt().fmt) {
+        spec.spec8.dspec = field.dspec;
+
+        switch (field.dspec) {
         default:
             break;
 
-        case mandala::fmt_u32:
-            if (f->is_gps_converted()) {
-                spec.spec8.dspec = dspec_e::a32;
-                wcnt = 4;
-                v = mandala::to_gps(value.toDouble());
-            }
-            break;
-
-        case mandala::fmt_s16_rad:
-        case mandala::fmt_s16_rad2:
-            spec.spec8.dspec = dspec_e::a16;
+        case telemetry::dspec_e::f16:
             wcnt = 2;
-            v = (uint16_t) xbus::telemetry::float_to_angle(value.toFloat(), 180.f);
+            wraw = xbus::telemetry::float_to_f16(value.toFloat());
             break;
-
-        case mandala::fmt_f16:
-        case mandala::fmt_s8:
-        case mandala::fmt_s8_10:
-        case mandala::fmt_u8_10:
-        case mandala::fmt_s8_01:
-        case mandala::fmt_s8_001:
-        case mandala::fmt_u8_01:
-        case mandala::fmt_u8_001:
-        case mandala::fmt_u8_u:
-        case mandala::fmt_s8_u:
-        case mandala::fmt_s8_rad:
-            spec.spec8.dspec = dspec_e::f16;
-            wcnt = 2;
-            v = xbus::telemetry::float_to_f16(value.toFloat());
-            break;
-        }
-
-        // default to raw float32
-        if (!wcnt) {
+        case telemetry::dspec_e::f32: {
             // check if f16 is enough
             const float vf = value.toFloat();
             uint16_t f16 = xbus::telemetry::float_to_f16(vf);
             if (xbus::telemetry::float_from_f16(f16) == vf) {
                 spec.spec8.dspec = dspec_e::f16;
                 wcnt = 2;
-                v = f16;
+                wraw = f16;
                 // qDebug() << "f16" << vf;
             } else {
                 // store f32
                 spec.spec8.dspec = dspec_e::f32;
                 wcnt = 4;
-                memcpy(&v, &vf, 4);
+                memcpy(&wraw, &vf, 4);
             }
+            break;
         }
+        case telemetry::dspec_e::f64: {
+            wcnt = 8;
+            double d = value.toDouble();
+            memcpy(&wraw, &d, 8);
+            break;
+        }
+        case telemetry::dspec_e::a16:
+            wcnt = 2;
+            wraw = (uint16_t) xbus::telemetry::float_to_angle(value.toFloat(), 180.f);
+            break;
+        case telemetry::dspec_e::a32:
+            wcnt = 4;
+            wraw = mandala::to_gps(value.toDouble());
+            break;
+        }
+    }
+
+    if (!wcnt) {
+        spec.spec8.dspec = dspec_e::null;
     }
 
     // collect stats
@@ -594,7 +576,7 @@ void TelemetryFileWriter::_write_value(mandala::uid_t uid, const QVariant &value
 
     // write payload (when not null)
     if (wcnt > 0) {
-        QFile::write((const char *) &v, wcnt);
+        QFile::write((const char *) &wraw, wcnt);
         // dump("data", &v, wcnt);
     }
 }
@@ -635,5 +617,20 @@ void TelemetryFileWriter::json_diff(const QJsonObject &prev,
                 diff[it.key()] = it.value();
             }
         }
+    }
+}
+
+void TelemetryFileWriter::print_stats()
+{
+    if (_stats_values.empty())
+        return;
+
+    for (auto [uid, dspec] : _stats_values) {
+        const auto &field = _fields[uid];
+        QStringList sl;
+        for (auto i : dspec)
+            sl.append(telemetry::dspec_names[(uint) i]);
+
+        qDebug() << field.name + ":" << sl.join(',');
     }
 }

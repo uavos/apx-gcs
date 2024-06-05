@@ -95,7 +95,7 @@ public:
     QString vehicleTypeText() const { return _protocol ? _protocol->vehicleTypeText() : ""; }
 
     // variant conversions
-    QVariantMap get_info() const;
+    QJsonObject get_info() const;
 
     //Fact override
     QVariant toVariant() override;

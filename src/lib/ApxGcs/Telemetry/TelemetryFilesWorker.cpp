@@ -140,38 +140,7 @@ void TelemetryFilesJobInfo::run()
     if (isInterruptionRequested())
         return;
 
-    // fix rename if necessary
-    auto timestamp = QDateTime::fromMSecsSinceEpoch(reader.timestamp(),
-                                                    QTimeZone(reader.utc_offset()));
-    auto callsign = reader.callsign();
-    auto fileName = TelemetryFileWriter::prepare_file_name(timestamp, callsign);
-    auto fi = QFileInfo(_path);
-    if (fileName != fi.fileName()) {
-        auto newPath = fi.dir().absoluteFilePath(fileName);
-        // rename file
-        bool ok = QFile::rename(_path, newPath);
-        if (!ok) {
-            qWarning() << "Failed to rename" << fi.fileName() << "to" << fileName;
-            if (QFile::exists(newPath)) {
-                qWarning() << "File" << newPath << "already exists";
-                // compare two files and remove the old one if equal
-                auto hash = reader.get_hash();
-                auto newHash = TelemetryFileReader(newPath).get_hash();
-                if (hash == newHash) {
-                    qDebug() << "Removing duplicate" << fi.fileName();
-                    QFile::remove(newPath);
-                    ok = QFile::rename(_path, newPath);
-                }
-            }
-        }
-        if (ok) {
-            qDebug() << "Renamed" << fi.fileName() << "to" << fileName;
-            _path = newPath;
-            reader.close();
-            if (!reader.open(_path))
-                return;
-        }
-    }
+    reader.fix_name();
 
     // auto parse payloads for small files
     if (!reader.is_parsed() && reader.size() < 1024 * 1024) {

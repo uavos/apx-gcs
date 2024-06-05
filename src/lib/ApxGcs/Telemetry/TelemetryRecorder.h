@@ -41,12 +41,14 @@ public:
 
 private:
     Vehicle *_vehicle;
+    TelemetryFileWriter _file;
 
     Fact *f_enable;
 
-    TelemetryFileWriter _file;
-
     //data file
+    QJsonObject prepareFileInfo();
+    TelemetryFileWriter::Fields prepareFieldsMap();
+
     void checkFileRecord();
 
     //auto recorder

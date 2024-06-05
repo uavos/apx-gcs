@@ -33,6 +33,7 @@
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , _vehicle(vehicle)
+    , _file(prepareFieldsMap())
 {
     setIcon("record-rec");
 
@@ -142,11 +143,88 @@ void TelemetryRecorder::checkFileRecord()
     if (fileName.isEmpty())
         return;
 
-    _file.create(dir.absoluteFilePath(fileName), timestamp.toMSecsSinceEpoch(), _vehicle);
+    _file.create(dir.absoluteFilePath(fileName), timestamp.toMSecsSinceEpoch(), prepareFileInfo());
+
+    // record initial mandala state
+    for (auto f : _vehicle->f_mandala->valueFacts()) {
+        if (!(f->everReceived() || f->everSent()))
+            continue;
+        _file.write_value(f->uid(), f->value());
+    }
 
     // record initial meta data
-    recordConfig();
-    recordMission(false);
+    if (_vehicle->f_nodes->valid())
+        recordConfig();
+
+    if (!_vehicle->f_mission->empty())
+        recordMission(false);
+}
+
+QJsonObject TelemetryRecorder::prepareFileInfo()
+{
+    QJsonObject info;
+
+    info["vehicle"] = _vehicle->get_info();
+    info["conf"] = _vehicle->confTitle();
+
+    QJsonObject sw;
+    sw["version"] = QCoreApplication::applicationVersion();
+    sw["hash"] = App::git_hash();
+    info["sw"] = sw;
+
+    QJsonObject host;
+    host["hostname"] = App::hostname();
+    host["username"] = App::username();
+    host["uid"] = App::machineUID();
+    info["host"] = host;
+
+    return info;
+}
+
+TelemetryFileWriter::Fields TelemetryRecorder::prepareFieldsMap()
+{
+    TelemetryFileWriter::Fields fields;
+    for (auto f : _vehicle->f_mandala->valueFacts()) {
+        // guess field storage format
+        telemetry::dspec_e dspec;
+        do {
+            if (f->dataType() != Fact::Float) {
+                // recorder will truncate uint size if necessary
+                dspec = telemetry::dspec_e::u32;
+                break;
+            }
+            // guess float types
+            if (f->is_gps_converted()) {
+                dspec = telemetry::dspec_e::a32;
+                break;
+            }
+            switch (f->fmt().fmt) {
+            default:
+                dspec = telemetry::dspec_e::f32;
+                break;
+            case mandala::fmt_s16_rad:
+            case mandala::fmt_s16_rad2:
+                dspec = telemetry::dspec_e::a16;
+                break;
+            case mandala::fmt_f16:
+            case mandala::fmt_s8:
+            case mandala::fmt_s8_10:
+            case mandala::fmt_u8_10:
+            case mandala::fmt_s8_01:
+            case mandala::fmt_s8_001:
+            case mandala::fmt_u8_01:
+            case mandala::fmt_u8_001:
+            case mandala::fmt_u8_u:
+            case mandala::fmt_s8_u:
+            case mandala::fmt_s8_rad:
+                dspec = telemetry::dspec_e::f16;
+                break;
+            }
+        } while (0);
+        // prepare field map for telemetry file writer
+        fields[f->uid()] = {f->mpath(), f->title(), f->units(), dspec};
+    }
+    return fields;
 }
 
 quint64 TelemetryRecorder::getEventTimestamp()

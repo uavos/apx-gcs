@@ -36,25 +36,40 @@ class TelemetryFileWriter : public QFile
     Q_OBJECT
 
 public:
+    struct Field
+    {
+        QString name;
+        QString title;
+        QString units;
+        telemetry::dspec_e dspec;
+    };
+    using Fields = QHash<mandala::uid_t, Field>;
+    using Values = PBase::Values;
+
+    explicit TelemetryFileWriter(QObject *parent = nullptr);
+    explicit TelemetryFileWriter(const Fields &fields, QObject *parent = nullptr);
     virtual ~TelemetryFileWriter() override;
+
+    void setFields(const Fields &fields) { _fields = fields; }
+    const auto &fields() const { return _fields; }
+
+    bool create(const QString &path, quint64 time_utc, const QJsonObject &info);
     virtual void close() override;
 
     QString name() const { return QFileInfo(*this).completeBaseName(); }
 
-    bool create(const QString &path, quint64 time_utc, Vehicle *vehicle);
     void write_timestamp(quint32 timestamp_ms);
-    void write_values(quint32 timestamp_ms, const PBase::Values &values, bool uplink);
+    void write_values(quint32 timestamp_ms, const Values &values, bool uplink = false);
+    void write_value(mandala::uid_t uid, QVariant value, bool uplink = false);
 
     void write_evt(quint32 timestamp_ms,
                    const QString &name,
                    const QString &value,
                    const QString &uid,
-                   bool uplink);
+                   bool uplink = false);
     void write_msg(quint32 timestamp_ms, const QString &text, const QString &subsystem);
-    void write_meta(const QString &name, const QJsonObject &data, bool uplink);
-    void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink);
-
-    bool write_stats(const QJsonObject &data);
+    void write_meta(const QString &name, const QJsonObject &data, bool uplink = false);
+    void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink = false);
 
     void print_stats();
 
@@ -62,13 +77,15 @@ public:
     static QString prepare_file_name(QDateTime timestamp,
                                      const QString &callsign,
                                      QString dirPath = {});
-    static uint64_t get_hdr_crc(const telemetry::fhdr_s *fhdr);
     static void json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff);
 
     static QLockFile *get_lock_file(QString fileName);
 
+    static QJsonObject get_info_from_filename(const QString &fileName);
+
 private:
-    Vehicle *_vehicle;
+    Fields _fields;
+
     QLockFile *_lock_file{};
 
     // helpers
@@ -87,6 +104,4 @@ private:
 
     quint32 _ts_s{};
     uint16_t _widx{};
-
-    void _write_value(mandala::uid_t uid, const QVariant &value, bool uplink);
 };

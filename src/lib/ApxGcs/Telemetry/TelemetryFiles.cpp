@@ -116,18 +116,16 @@ void TelemetryFiles::triggerItem(QVariantMap modelData)
     // setRecordInfo(modelData);
     // setRecordTimestamp(modelData.value("timestamp").toULongLong());
 
-    auto path = AppDirs::telemetry().absoluteFilePath(
-        modelData["name"].toString().append('.').append(telemetry::APXTLM_FTYPE));
+    auto path = modelData["path"].toString();
 
     emit loadfile(path);
 
     auto job = new TelemetryFilesJobParse(_worker, path, id);
 
     connect(&job->reader, &TelemetryFileReader::progressChanged, this, &TelemetryFiles::setProgress);
-    connect(&job->reader,
-            &TelemetryFileReader::infoUpdated,
-            _filesModel,
-            [this, id](QJsonObject info) { _filesModel->updateFileInfo(info, id); });
+    connect(job, &TelemetryFilesJobParse::result, _filesModel, [this](QJsonObject info, int id) {
+        _filesModel->updateFileInfo(info, id);
+    });
 
     job->schedule();
 }
