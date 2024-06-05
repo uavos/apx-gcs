@@ -148,9 +148,23 @@ void TelemetryFilesJobInfo::run()
     auto fi = QFileInfo(_path);
     if (fileName != fi.fileName()) {
         auto newPath = fi.dir().absoluteFilePath(fileName);
-        if (!QFile::rename(_path, newPath)) {
+        // rename file
+        bool ok = QFile::rename(_path, newPath);
+        if (!ok) {
             qWarning() << "Failed to rename" << fi.fileName() << "to" << fileName;
-        } else {
+            if (QFile::exists(newPath)) {
+                qWarning() << "File" << newPath << "already exists";
+                // compare two files and remove the old one if equal
+                auto hash = reader.get_hash();
+                auto newHash = TelemetryFileReader(newPath).get_hash();
+                if (hash == newHash) {
+                    qDebug() << "Removing duplicate" << fi.fileName();
+                    QFile::remove(newPath);
+                    ok = QFile::rename(_path, newPath);
+                }
+            }
+        }
+        if (ok) {
             qDebug() << "Renamed" << fi.fileName() << "to" << fileName;
             _path = newPath;
             reader.close();

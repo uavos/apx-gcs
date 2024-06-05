@@ -396,8 +396,10 @@ bool TelemetryFileWriter::_write_tag(XbusStreamWriter *stream, const char *name,
 void TelemetryFileWriter::_write_string(const char *s)
 {
     auto sz = qstrlen(s) + 1;
-    if (sz > 1024)
+    if (sz > 1024) {
+        qWarning() << "string too long" << sz;
         return;
+    }
     QFile::write(s, sz);
 }
 

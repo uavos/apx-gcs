@@ -32,6 +32,34 @@
 
 using namespace telemetry;
 
+TelemetryFileReader::TelemetryFileReader(QString filePath, QObject *parent)
+    : QFile(parent)
+{
+    setFileName(filePath);
+}
+
+TelemetryFileReader::TelemetryFileReader(QObject *parent)
+    : QFile(parent)
+{}
+
+QByteArray TelemetryFileReader::get_hash()
+{
+    if (!isOpen()) {
+        // open file for reading
+        if (!QFile::open(QIODevice::ReadOnly)) {
+            qWarning() << "failed to open file" << fileName();
+            return {};
+        }
+    }
+
+    if (!QFile::seek(0))
+        return {};
+
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    hash.addData(this);
+    return hash.result();
+}
+
 void TelemetryFileReader::setProgress(int value)
 {
     if (_progress == value)

@@ -35,6 +35,9 @@ class TelemetryFileReader : public QFile
     Q_OBJECT
 
 public:
+    explicit TelemetryFileReader(QObject *parent = nullptr);
+    explicit TelemetryFileReader(QString filePath, QObject *parent = nullptr);
+
     bool open(QString filePath);
 
     auto info() const { return _info; }
@@ -46,6 +49,8 @@ public:
     auto timestamp() const { return _info["timestamp"].toInteger(); }
     auto utc_offset() const { return _info["utc_offset"].toInteger(); }
     auto is_parsed() const { return _info["parsed"].toBool(); }
+
+    QByteArray get_hash();
 
 private:
     QJsonObject _info;
