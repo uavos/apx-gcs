@@ -70,7 +70,7 @@ void TelemetryFileWriter::close()
     }
 }
 
-bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, const QJsonObject &info)
+bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, QJsonObject info)
 {
     if (isOpen()) {
         qDebug() << "file break";
@@ -125,7 +125,7 @@ QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
         QStringList st;
 
         // add human readable timestamp
-        auto ts = timestamp.toString("yyMMdd_HHmm_zzz");
+        auto ts = timestamp.toString("yyMMdd_HHmm_sszzz");
         auto utc_offset = timestamp.offsetFromUtc();
         ts.append(utc_offset > 0 ? 'E' : 'W');
         auto offset_mins = std::abs(utc_offset) / 60;
@@ -184,36 +184,40 @@ QJsonObject TelemetryFileWriter::get_info_from_filename(const QString &fileName)
     info["name"] = name;
     info["path"] = QFileInfo(fileName).absoluteFilePath();
 
-    auto parts = name.split('_');
-    if (parts.size() < 3) {
+    auto ts_s = name.section('-', 0, 0);
+    auto ts_parts = ts_s.split('_');
+    if (ts_parts.size() != 3) {
         qWarning() << "invalid file name" << fileName;
         return {};
     }
 
     // parse timestamp
-    auto ts_fmt = QString("yyMMdd_HHmm_zzz");
-    auto ts = name.left(ts_fmt.size());
-    auto timestamp = QDateTime::fromString(ts, ts_fmt);
+    auto ts_fmt = QString("yyMMdd_HHmm_sszzz");
+    auto s = ts_s.left(ts_fmt.size());
+    auto timestamp = QDateTime::fromString(s, ts_fmt);
     if (!timestamp.isValid()) {
-        qWarning() << "invalid timestamp" << ts;
+        qWarning() << "invalid timestamp" << s;
         return {};
     }
 
-    ts = parts.at(2).mid(3);
-    auto utc_offset_sign = ts.startsWith('E') ? 1 : ts.startsWith('W') ? -1 : 0;
+    s = ts_s.mid(ts_fmt.size());
+    auto utc_offset_sign = s.startsWith('E') ? 1 : s.startsWith('W') ? -1 : 0;
     if (utc_offset_sign != 0) {
-        auto offset_mins = ts.mid(1).toInt();
+        auto offset_mins = s.mid(1).toInt();
         if (offset_mins <= 12)
             offset_mins *= 60;
         timestamp.setOffsetFromUtc(offset_mins * 60 * utc_offset_sign);
     } else {
-        qWarning() << "invalid utc offset sign" << ts;
+        qWarning() << "invalid utc offset sign" << s;
     }
     info["timestamp"] = timestamp.toMSecsSinceEpoch();
     info["utc_offset"] = timestamp.offsetFromUtc();
 
-    if (parts.size() >= 4) {
-        info["callsign"] = parts.at(3);
+    auto cs = name.section('-', 1, 1);
+    if (cs.isEmpty()) {
+        qWarning() << "invalid callsign" << name;
+    } else {
+        info["callsign"] = cs.section('-', 0, 0);
     }
 
     return info;
@@ -258,6 +262,11 @@ void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
     if (!isOpen())
         return;
 
+    if (name.size() >= MAX_STRLEN || value.size() >= MAX_STRLEN || uid.size() >= MAX_STRLEN) {
+        qWarning() << "string too long";
+        return;
+    }
+
     write_timestamp(timestamp_ms);
 
     if (uplink)
@@ -269,7 +278,6 @@ void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
     _write_string(name.toUtf8());
     _write_string(value.toUtf8());
     _write_string(uid.toUtf8());
-    QFile::write("\0", 1);
 }
 
 void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
@@ -279,6 +287,11 @@ void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
     if (!isOpen())
         return;
 
+    if (text.size() >= MAX_STRLEN || subsystem.size() >= MAX_STRLEN) {
+        qWarning() << "string too long";
+        return;
+    }
+
     write_timestamp(timestamp_ms);
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::msg};
@@ -286,7 +299,6 @@ void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
 
     _write_string(text.toUtf8());
     _write_string(subsystem.toUtf8());
-    QFile::write("\0", 1);
 }
 
 void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &data, bool uplink)
@@ -296,6 +308,11 @@ void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &dat
 
     if (data.isEmpty())
         return;
+
+    if (name.size() >= MAX_STRLEN) {
+        qWarning() << "string too long";
+        return;
+    }
 
     if (uplink)
         _write_uplink();
@@ -354,37 +371,13 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     QFile::write(data.constData(), data.size());
 }
 
-bool TelemetryFileWriter::_write_tag(XbusStreamWriter *stream, const char *name, const char *value)
-{
-    if (!value || !value[0]) // skip empty values
-        return true;
-
-    auto spos = stream->pos();
-
-    do {
-        if (!stream->write_string(name))
-            break;
-        stream->reset(stream->pos() - 1);
-
-        if (!stream->write_string(":"))
-            break;
-        stream->reset(stream->pos() - 1);
-
-        if (!stream->write_string(value))
-            break;
-
-        return true;
-    } while (0);
-
-    stream->reset(spos);
-    return false;
-}
-
 void TelemetryFileWriter::_write_string(const char *s)
 {
     auto sz = qstrlen(s) + 1;
-    if (sz > 1024) {
+    if (sz > MAX_STRLEN) {
         qWarning() << "string too long" << sz;
+        QFile::write(s, MAX_STRLEN - 1);
+        QFile::write("\0", 1);
         return;
     }
     QFile::write(s, sz);

@@ -53,7 +53,7 @@ public:
     void setFields(const Fields &fields) { _fields = fields; }
     const auto &fields() const { return _fields; }
 
-    bool create(const QString &path, quint64 time_utc, const QJsonObject &info);
+    bool create(const QString &path, quint64 time_utc, QJsonObject info);
     virtual void close() override;
 
     QString name() const { return QFileInfo(*this).completeBaseName(); }
@@ -89,7 +89,6 @@ private:
     QLockFile *_lock_file{};
 
     // helpers
-    bool _write_tag(XbusStreamWriter *stream, const char *name, const char *value);
     void _write_string(const char *s);
     void _write_uplink();
 

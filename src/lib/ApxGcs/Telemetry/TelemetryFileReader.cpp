@@ -350,6 +350,17 @@ bool TelemetryFileReader::parse_payload()
     counters["conf"] = _counters.conf;
 
     _info["counters"] = counters;
+
+    QJsonArray meta_names;
+    for (auto i : _meta_objects.keys())
+        meta_names.append(i);
+    _info["meta_names"] = meta_names;
+
+    QJsonArray evt_names;
+    for (auto i : _evt_names)
+        evt_names.append(i);
+    _info["evt_names"] = evt_names;
+
     emit infoUpdated(_info);
 
     // success
@@ -368,6 +379,7 @@ void TelemetryFileReader::_reset_data()
 
     _fields.clear();
     _meta_objects.clear();
+    _evt_names.clear();
 
     _downlink_values.clear();
     _downlink_values.clear();
@@ -406,7 +418,7 @@ QString TelemetryFileReader::_read_string(bool *ok)
         return {};
 
     QByteArray ba;
-    while (ba.size() < 1024) {
+    while (ba.size() < MAX_STRLEN) {
         char c;
         if (QFile::read(&c, 1) != 1) {
             break;
@@ -580,11 +592,11 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         auto uid = _read_string(&ok);
         if (!ok)
             break;
-        auto end = _read_raw<uint8_t>(&ok);
-        if (!ok || end)
-            break;
 
         _counters.evt++;
+
+        if (!_evt_names.contains(name))
+            _evt_names.append(name);
 
         if (name == "conf")
             _counters.conf++;
@@ -603,9 +615,6 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
             break;
         auto subsystem = _read_string(&ok);
         if (!ok)
-            break;
-        auto end = _read_raw<uint8_t>(&ok);
-        if (!ok || end)
             break;
 
         _counters.msg++;

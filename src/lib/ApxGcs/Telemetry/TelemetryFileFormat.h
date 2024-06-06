@@ -97,11 +97,13 @@ enum class extid_e : uint8_t { // 4 bits (part of dspec)
     field,    // [name,title,units] strings of used fields sequence
 
     // special data types, strings separated by 0 and list terminated by another 0
-    evt = 8, // [name,value,uid,0] generic event (conf update)
-    msg,     // [text,subsystem,0] text message
+    evt = 8, // [name,value,uid] generic event (conf update)
+    msg,     // [text,subsystem] text message
     meta,    // [name,size(32),meta_zip(...)] json full or diff (nodes,mission)
     raw,     // [id(16),size(16),data(...)] raw data (serial vcp)
 };
+
+static constexpr const auto MAX_STRLEN = 4096; // including null terminator
 
 // data specifier (1 or 2 bytes)
 union dspec_s {

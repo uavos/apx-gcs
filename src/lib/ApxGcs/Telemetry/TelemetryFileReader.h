@@ -87,6 +87,7 @@ private:
     uint16_t _widx;
     bool _next_uplink;
     QHash<QString, QJsonObject> _meta_objects;
+    QStringList _evt_names;
 
     // data counters to be saved in metadata
     struct
