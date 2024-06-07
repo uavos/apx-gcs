@@ -136,5 +136,3 @@ void DatabaseLookup::triggerItem(QVariantMap modelData)
 {
     emit itemTriggered(modelData);
 }
-
-void DatabaseLookup::defaultLookup() {}

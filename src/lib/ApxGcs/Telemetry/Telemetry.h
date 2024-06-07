@@ -26,7 +26,7 @@
 class Vehicle;
 class TelemetryRecorder;
 class TelemetryFiles;
-class LookupTelemetry;
+class TelemetryRecords;
 class TelemetryReader;
 class TelemetryPlayer;
 class TelemetryShare;
@@ -42,7 +42,7 @@ public:
     TelemetryRecorder *f_recorder;
 
     TelemetryFiles *f_files;
-    LookupTelemetry *f_lookup;
+    TelemetryRecords *f_records;
 
     TelemetryReader *f_reader;
     TelemetryPlayer *f_player;

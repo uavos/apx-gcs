@@ -20,11 +20,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Telemetry.h"
-#include "LookupTelemetry.h"
 #include "TelemetryFiles.h"
 #include "TelemetryPlayer.h"
 #include "TelemetryReader.h"
 #include "TelemetryRecorder.h"
+#include "TelemetryRecords.h"
 #include "TelemetryShare.h"
 
 #include <App/App.h>
@@ -42,20 +42,22 @@ Telemetry::Telemetry(Vehicle *parent)
            "inbox-arrow-down")
     , vehicle(parent)
     , f_recorder(nullptr)
-    , f_lookup(nullptr)
+    , f_records(nullptr)
     , f_reader(nullptr)
     , f_share(nullptr)
 {
     if (vehicle->isReplay()) {
         setOpt("pos", QPointF(1, 1));
 
-        f_files = new TelemetryFiles(this);
+        // f_files = new TelemetryFiles(this);
 
-        f_lookup = new LookupTelemetry(this);
-        f_lookup->f_latest->createAction(this);
-        f_lookup->f_prev->createAction(this);
-        f_lookup->f_next->createAction(this);
-        f_reader = new TelemetryReader(f_lookup, this);
+        f_records = new TelemetryRecords(this);
+        f_records->f_latest->createAction(this);
+        f_records->f_prev->createAction(this);
+        f_records->f_next->createAction(this);
+        connect(this, &Fact::triggered, f_records, &TelemetryRecords::defaultLookup);
+
+        f_reader = new TelemetryReader(f_records, this);
         connect(f_reader, &Fact::valueChanged, this, &Telemetry::updateStatus);
         connect(f_reader, &Fact::progressChanged, this, &Telemetry::updateProgress);
         connect(f_reader,
@@ -75,17 +77,9 @@ Telemetry::Telemetry(Vehicle *parent)
 
         f_share = new TelemetryShare(this, this);
         connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {
-            f_lookup->jumpToRecord(id);
+            f_records->jumpToRecord(id);
         });
         connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);
-
-        connect(App::instance(), &App::loadingFinished, this, [this]() {
-            connect(vehicle,
-                    &Vehicle::selected,
-                    f_reader,
-                    &TelemetryReader::loadCurrent,
-                    Qt::QueuedConnection);
-        });
 
     } else {
         f_recorder = new TelemetryRecorder(vehicle, this);

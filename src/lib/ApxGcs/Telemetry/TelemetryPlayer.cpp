@@ -20,9 +20,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryPlayer.h"
-#include "LookupTelemetry.h"
 #include "Telemetry.h"
 #include "TelemetryReader.h"
+#include "TelemetryRecords.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
@@ -75,14 +75,14 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, this, &TelemetryPlayer::next);
 
-    connect(telemetry->f_lookup, &LookupTelemetry::recordIdChanged, this, &TelemetryPlayer::reset);
+    connect(telemetry->f_records, &TelemetryRecords::recordIdChanged, this, &TelemetryPlayer::reset);
     connect(telemetry->f_reader, &TelemetryReader::totalTimeChanged, this, [=]() {
         f_time->setMax(telemetry->f_reader->totalTime());
     });
 
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActions);
 
-    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
+    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [this](Vehicle *v) {
         if (v != vehicle)
             stop();
     });
@@ -151,7 +151,7 @@ void TelemetryPlayer::play()
 {
     if (active())
         return;
-    if (!telemetry->f_lookup->recordId())
+    if (!telemetry->f_records->recordId())
         return;
     vehicle->f_select->trigger();
     setActive(true);

@@ -22,10 +22,10 @@
 #pragma once
 
 #include "TelemetryPlot.h"
-#include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryPlayer.h>
 #include <Telemetry/TelemetryReader.h>
+#include <Telemetry/TelemetryRecords.h>
 //#include <Telemetry/TelemetryShare.h>
 #include <QtCore>
 
@@ -39,7 +39,7 @@ private:
     Telemetry *telemetry;
 
     //members of telemetry
-    LookupTelemetry *lookup;
+    TelemetryRecords *records;
     TelemetryReader *reader;
     TelemetryPlayer *player;
     TelemetryShare *share;

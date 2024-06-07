@@ -24,7 +24,7 @@
 #include <App/AppRoot.h>
 
 TelemetryFiles::TelemetryFiles(Fact *parent)
-    : Fact(parent, "files", tr("Files"), tr("Telemetry files lookup"), FilterModel, "database-search")
+    : Fact(parent, "files", tr("Files"), tr("Telemetry files"), FilterModel, "database-search")
     , m_recordsCount(0)
     , m_recordNum(0)
     , m_recordTimestamp(0)

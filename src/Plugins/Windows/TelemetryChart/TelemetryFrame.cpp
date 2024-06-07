@@ -24,7 +24,7 @@
 #include <App/AppDirs.h>
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
-#include <Telemetry/LookupTelemetry.h>
+#include <Telemetry/TelemetryRecords.h>
 #include <Telemetry/TelemetryShare.h>
 #include <Vehicles/Vehicle.h>
 #include <Vehicles/Vehicles.h>
@@ -40,13 +40,13 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     //setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
 
     telemetry = Vehicles::instance()->f_replay->f_telemetry;
-    lookup = telemetry->f_lookup;
+    records = telemetry->f_records;
     reader = telemetry->f_reader;
     player = telemetry->f_player;
     share = telemetry->f_share;
 
-    connect(lookup, &LookupTelemetry::recordIdChanged, this, &TelemetryFrame::resetPlot);
-    connect(lookup, &LookupTelemetry::valueChanged, this, &TelemetryFrame::updateStats);
+    connect(records, &TelemetryRecords::recordIdChanged, this, &TelemetryFrame::resetPlot);
+    connect(records, &TelemetryRecords::valueChanged, this, &TelemetryFrame::updateStats);
 
     connect(reader, &TelemetryReader::statsAvailable, this, &TelemetryFrame::updateStats);
     connect(reader, &TelemetryReader::dataAvailable, this, &TelemetryFrame::updateData);
@@ -97,12 +97,12 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
 
     //actions
     QAction *a;
-    toolBar->addAction(new QActionFact(lookup->f_latest));
+    toolBar->addAction(new QActionFact(records->f_latest));
     toolBar->addSeparator();
-    toolBar->addAction(new QActionFact(lookup->f_prev));
-    toolBar->addAction(new QActionFact(lookup->f_next));
+    toolBar->addAction(new QActionFact(records->f_prev));
+    toolBar->addAction(new QActionFact(records->f_next));
     toolBar->addSeparator();
-    a = new QActionFact(lookup);
+    a = new QActionFact(records);
     toolBar->addAction(a);
     toolBar->addSeparator();
     aSplit = toolBar->addAction(MaterialIcon("book-open-variant"),
@@ -121,7 +121,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     toolBar->addAction(new QActionFact(share->f_export));
     toolBar->addAction(new QActionFact(share->f_import));
     toolBar->addSeparator();
-    toolBar->addAction(new QActionFact(lookup->f_remove));
+    toolBar->addAction(new QActionFact(records->f_remove));
     toolBar->addSeparator();
 
     aReplay = toolBar->addAction(MaterialIcon(player->icon()),
@@ -225,7 +225,7 @@ void TelemetryFrame::updateStats()
     recStats = st.join(" | ");
     //set label
     lbTitle->setText(QString("%1    \t%2%3")
-                         .arg(lookup->value().toString())
+                         .arg(records->value().toString())
                          .arg(s)
                          .arg(recStats.isEmpty() ? recStats : recStats.prepend("\n\t")));
     lbTitle->adjustSize();

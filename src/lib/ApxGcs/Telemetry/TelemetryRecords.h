@@ -25,7 +25,7 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
-class LookupTelemetry : public DatabaseLookup
+class TelemetryRecords : public DatabaseLookup
 {
     Q_OBJECT
     Q_PROPERTY(quint64 recordsCount READ recordsCount NOTIFY recordsCountChanged)
@@ -35,7 +35,7 @@ class LookupTelemetry : public DatabaseLookup
     Q_PROPERTY(QVariantMap recordInfo READ recordInfo NOTIFY recordInfoChanged)
 
 public:
-    explicit LookupTelemetry(Fact *parent);
+    explicit TelemetryRecords(Fact *parent);
 
     Fact *f_latest;
     Fact *f_prev;
@@ -45,9 +45,10 @@ public:
     void jumpToRecord(quint64 v);
 
     //DatabaseLookup override
+    void defaultLookup() override;
+
 protected:
     bool fixItemDataThr(QVariantMap *item) override;
-    void defaultLookup() override;
 
 private:
     QString filterQuery() const;
@@ -56,7 +57,7 @@ private:
 
     QMutex mutexRecordId;
 
-    quint64 _findNumId;
+    quint64 _findNumId{};
 
 private slots:
     void updateActions();
@@ -100,11 +101,11 @@ public:
     void setRecordInfo(const QVariantMap &v);
 
 private:
-    quint64 m_recordsCount;
-    quint64 m_recordNum;
-    quint64 m_recordId;
-    quint64 m_recordTimestamp;
-    QVariantMap m_recordInfo;
+    quint64 m_recordsCount{};
+    quint64 m_recordNum{};
+    quint64 m_recordId{};
+    quint64 m_recordTimestamp{};
+    QVariantMap m_recordInfo{};
 signals:
     void recordsCountChanged();
     void recordNumChanged();

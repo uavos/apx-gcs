@@ -142,6 +142,8 @@ bool TelemetryFileReader::parse_header()
         m["timestamp"] = (qint64) h.timestamp;
         m["utc_offset"] = h.utc_offset;
 
+        m["size"] = size();
+
         emit infoUpdated(m);
         return true;
     } while (0);
@@ -252,6 +254,14 @@ bool TelemetryFileReader::parse_payload()
         qWarning() << "file not open";
         return false;
     }
+
+    // get whole file hash
+    auto hash = get_hash();
+    if (hash.isEmpty()) {
+        qWarning() << "failed to get file hash";
+        return false;
+    }
+    _info["hash"] = QString(hash.toHex().toUpper());
 
     if (!seek(_fhdr.payload_offset)) {
         qWarning() << "failed to seek to payload offset" << _fhdr.payload_offset;

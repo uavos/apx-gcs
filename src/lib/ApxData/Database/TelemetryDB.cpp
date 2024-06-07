@@ -66,19 +66,23 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
                                      << "callsign TEXT"
                                      << "notes TEXT"
                                      << "comment TEXT"
-                                     << "file TEXT"
                                      << "hash TEXT"
                                      << "totalTime INTEGER"
                                      << "downlink INTEGER"
                                      << "uplink INTEGER"
                                      << "events INTEGER"
-                                     << "evtDetails TEXT");
+                                     << "evtDetails TEXT"
+                                     // file
+                                     << "file TEXT"
+                                     << "finfo TEXT");
+
     new DBReqMakeIndex(this, "Telemetry", "trash", false);
     new DBReqMakeIndex(this, "Telemetry", "time", false);
     new DBReqMakeIndex(this, "Telemetry", "vehicleUID", false);
     new DBReqMakeIndex(this, "Telemetry", "callsign", false);
-    new DBReqMakeIndex(this, "Telemetry", "file", false);
     new DBReqMakeIndex(this, "Telemetry", "hash", false);
+
+    new DBReqMakeIndex(this, "Telemetry", "file", true);
 
     new DBReqMakeTable(this,
                        "TelemetryShare",

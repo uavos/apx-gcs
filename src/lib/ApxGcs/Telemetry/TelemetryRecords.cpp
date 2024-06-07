@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "LookupTelemetry.h"
+#include "TelemetryRecords.h"
 #include <Database/Database.h>
 #include <Database/TelemetryDB.h>
 #include <Database/TelemetryReqRead.h>
@@ -27,21 +27,16 @@
 
 #include <App/AppRoot.h>
 
-LookupTelemetry::LookupTelemetry(Fact *parent)
+TelemetryRecords::TelemetryRecords(Fact *parent)
     : DatabaseLookup(parent,
-                     "lookup",
+                     "records",
                      tr("Records"),
-                     tr("Database lookup"),
+                     tr("Database records"),
                      Database::instance()->telemetry)
-    , _findNumId(0)
-    , m_recordsCount(0)
-    , m_recordNum(0)
-    , m_recordId(0)
-    , m_recordTimestamp(0)
 {
     setOpt("pos", QPointF(1, 1));
 
-    connect(this, &DatabaseLookup::itemTriggered, this, &LookupTelemetry::loadItem);
+    connect(this, &DatabaseLookup::itemTriggered, this, &TelemetryRecords::loadItem);
 
     //actions
     f_latest = new Fact(this,
@@ -50,7 +45,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                         tr("Load latest"),
                         Action | ShowDisabled | Apply | IconOnly,
                         "fast-forward");
-    connect(f_latest, &Fact::triggered, this, &LookupTelemetry::dbLoadLatest);
+    connect(f_latest, &Fact::triggered, this, &TelemetryRecords::dbLoadLatest);
 
     f_prev = new Fact(this,
                       "prev",
@@ -58,7 +53,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                       tr("Load previous"),
                       Action | ShowDisabled | IconOnly,
                       "chevron-left");
-    connect(f_prev, &Fact::triggered, this, &LookupTelemetry::dbLoadPrev);
+    connect(f_prev, &Fact::triggered, this, &TelemetryRecords::dbLoadPrev);
 
     f_next = new Fact(this,
                       "next",
@@ -66,7 +61,7 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                       tr("Load next"),
                       Action | ShowDisabled | IconOnly,
                       "chevron-right");
-    connect(f_next, &Fact::triggered, this, &LookupTelemetry::dbLoadNext);
+    connect(f_next, &Fact::triggered, this, &TelemetryRecords::dbLoadNext);
 
     f_remove = new Fact(this,
                         "remove",
@@ -74,34 +69,31 @@ LookupTelemetry::LookupTelemetry(Fact *parent)
                         tr("Remove current record"),
                         Action | ShowDisabled | Remove | IconOnly,
                         "delete");
-    connect(f_remove, &Fact::triggered, this, &LookupTelemetry::dbRemove);
+    connect(f_remove, &Fact::triggered, this, &TelemetryRecords::dbRemove);
 
-    //totals
-    connect(this, &LookupTelemetry::recordsCountChanged, this, &LookupTelemetry::updateStatus);
-    connect(this, &LookupTelemetry::recordNumChanged, this, &LookupTelemetry::updateStatus);
+    // status totals
+    connect(this, &TelemetryRecords::recordsCountChanged, this, &TelemetryRecords::updateStatus);
+    connect(this, &TelemetryRecords::recordNumChanged, this, &TelemetryRecords::updateStatus);
 
-    //active record highlight
+    // active record highlight
     connect(this,
-            &LookupTelemetry::recordIdChanged,
+            &TelemetryRecords::recordIdChanged,
             this,
-            &LookupTelemetry::reloadQueryResults,
+            &TelemetryRecords::reloadQueryResults,
             Qt::QueuedConnection);
-    //connect(this,&LookupTelemetry::recordsCountChanged,this,&LookupTelemetry::dbLoadLatest);
+    //connect(this,&TelemetryRecords::recordsCountChanged,this,&TelemetryRecords::dbLoadLatest);
 
-    connect(this, &LookupTelemetry::recordIdChanged, this, &LookupTelemetry::dbLoadInfo);
-    connect(this, &LookupTelemetry::recordIdChanged, this, &LookupTelemetry::dbFindNum);
-    connect(this, &LookupTelemetry::recordsCountChanged, this, &LookupTelemetry::dbFindNum);
+    connect(this, &TelemetryRecords::recordIdChanged, this, &TelemetryRecords::dbLoadInfo);
+    connect(this, &TelemetryRecords::recordIdChanged, this, &TelemetryRecords::dbFindNum);
+    connect(this, &TelemetryRecords::recordsCountChanged, this, &TelemetryRecords::dbFindNum);
 
-    //actions update
-    connect(this, &LookupTelemetry::recordIdChanged, this, &LookupTelemetry::updateActions);
-    connect(this, &LookupTelemetry::recordNumChanged, this, &LookupTelemetry::updateActions);
-    connect(this, &LookupTelemetry::recordsCountChanged, this, &LookupTelemetry::updateActions);
+    // actions update
+    connect(this, &TelemetryRecords::recordIdChanged, this, &TelemetryRecords::updateActions);
+    connect(this, &TelemetryRecords::recordNumChanged, this, &TelemetryRecords::updateActions);
+    connect(this, &TelemetryRecords::recordsCountChanged, this, &TelemetryRecords::updateActions);
     updateActions();
-
-    //refresh on load
-    QTimer::singleShot(3000, this, &LookupTelemetry::defaultLookup);
 }
-void LookupTelemetry::updateActions()
+void TelemetryRecords::updateActions()
 {
     quint64 num = recordNum();
     quint64 cnt = recordsCount();
@@ -114,11 +106,11 @@ void LookupTelemetry::updateActions()
         setRecordNum(0);
     }
 }
-void LookupTelemetry::updateStatus()
+void TelemetryRecords::updateStatus()
 {
     setValue(QString("%1/%2").arg(recordNum()).arg(recordsCount()));
 }
-void LookupTelemetry::loadItem(QVariantMap modelData)
+void TelemetryRecords::loadItem(QVariantMap modelData)
 {
     quint64 key = modelData.value("key", 0).toUInt();
     if (!key)
@@ -128,7 +120,7 @@ void LookupTelemetry::loadItem(QVariantMap modelData)
     emit recordTriggered(recordId());
 }
 
-void LookupTelemetry::jumpToRecord(quint64 v)
+void TelemetryRecords::jumpToRecord(quint64 v)
 {
     quint64 id = recordId();
     setRecordId(v);
@@ -136,7 +128,7 @@ void LookupTelemetry::jumpToRecord(quint64 v)
         emit recordTriggered(recordId());
 }
 
-bool LookupTelemetry::fixItemDataThr(QVariantMap *item)
+bool TelemetryRecords::fixItemDataThr(QVariantMap *item)
 {
     QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
                        .toString("yyyy MMM dd hh:mm:ss");
@@ -166,46 +158,44 @@ bool LookupTelemetry::fixItemDataThr(QVariantMap *item)
     return true;
 }
 
-QString LookupTelemetry::filterQuery() const
+QString TelemetryRecords::filterQuery() const
 {
     return "( callsign LIKE ? OR notes LIKE ? OR comment LIKE ? )";
 }
-QVariantList LookupTelemetry::filterValues() const
+QVariantList TelemetryRecords::filterValues() const
 {
     const QString sf = QString("%%%1%%").arg(filter());
     return QVariantList() << sf << sf << sf;
 }
-QString LookupTelemetry::filterTrash() const
+QString TelemetryRecords::filterTrash() const
 {
     return "trash IS NULL";
 }
 
-void LookupTelemetry::defaultLookup()
+void TelemetryRecords::defaultLookup()
 {
-    //qDebug()<<filter();
+    qDebug() << filter();
+
     query("SELECT * FROM Telemetry"
           " WHERE "
               + filterTrash() + (filter().isEmpty() ? "" : " AND " + filterQuery())
               + " ORDER BY time DESC, key DESC",
           filter().isEmpty() ? QVariantList() : filterValues());
+
     //find count
     QString qs = "SELECT COUNT(*) FROM Telemetry"
                  " WHERE "
                  + filterTrash() + " AND " + filterQuery();
     DatabaseRequest *req = new DatabaseRequest(db, qs, filterValues());
-    connect(req,
-            &DatabaseRequest::queryResults,
-            this,
-            &LookupTelemetry::dbResultsLookup,
-            Qt::QueuedConnection);
+    connect(req, &DatabaseRequest::queryResults, this, &TelemetryRecords::dbResultsLookup);
     req->exec();
 }
-void LookupTelemetry::dbResultsLookup(DatabaseRequest::Records records)
+void TelemetryRecords::dbResultsLookup(DatabaseRequest::Records records)
 {
     setRecordsCount(records.values.isEmpty() ? 0 : records.values.first().first().toULongLong());
 }
 
-void LookupTelemetry::dbLoadInfo()
+void TelemetryRecords::dbLoadInfo()
 {
     quint64 key = recordId();
     if (!key)
@@ -213,15 +203,15 @@ void LookupTelemetry::dbLoadInfo()
     QString qs = "SELECT * FROM Telemetry"
                  " WHERE Telemetry.key=?";
     DatabaseRequest *req = new DatabaseRequest(db, qs, QVariantList() << recordId());
-    connect(this, &LookupTelemetry::discardRequests, req, &DatabaseRequest::discard);
+    connect(this, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
     connect(req,
             &DatabaseRequest::queryResults,
             this,
-            &LookupTelemetry::dbResultsInfo,
+            &TelemetryRecords::dbResultsInfo,
             Qt::QueuedConnection);
     req->exec();
 }
-void LookupTelemetry::dbResultsInfo(DatabaseRequest::Records records)
+void TelemetryRecords::dbResultsInfo(DatabaseRequest::Records records)
 {
     if (records.values.isEmpty())
         return;
@@ -233,7 +223,7 @@ void LookupTelemetry::dbResultsInfo(DatabaseRequest::Records records)
     setRecordInfo(info);
 }
 
-void LookupTelemetry::dbFindNum()
+void TelemetryRecords::dbFindNum()
 {
     quint64 key = recordId();
     if (!key)
@@ -249,15 +239,15 @@ void LookupTelemetry::dbFindNum()
                                                    << (filter().isEmpty() ? QVariantList()
                                                                           : filterValues())
                                                    << recordTimestamp());
-    connect(this, &LookupTelemetry::discardRequests, req, &DatabaseRequest::discard);
+    connect(this, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
     connect(req,
             &DatabaseRequest::queryResults,
             this,
-            &LookupTelemetry::dbResultsNum,
+            &TelemetryRecords::dbResultsNum,
             Qt::QueuedConnection);
     req->exec();
 }
-void LookupTelemetry::dbResultsNum(DatabaseRequest::Records records)
+void TelemetryRecords::dbResultsNum(DatabaseRequest::Records records)
 {
     if (records.values.isEmpty())
         return;
@@ -280,15 +270,15 @@ void LookupTelemetry::dbResultsNum(DatabaseRequest::Records records)
                                                    << (filter().isEmpty() ? QVariantList()
                                                                           : filterValues())
                                                    << recordTimestamp());
-    connect(this, &LookupTelemetry::discardRequests, req, &DatabaseRequest::discard);
+    connect(this, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
     connect(req,
             &DatabaseRequest::queryResults,
             this,
-            &LookupTelemetry::dbResultsNumNext,
+            &TelemetryRecords::dbResultsNumNext,
             Qt::QueuedConnection);
     req->exec();
 }
-void LookupTelemetry::dbResultsNumNext(DatabaseRequest::Records records)
+void TelemetryRecords::dbResultsNumNext(DatabaseRequest::Records records)
 {
     if (records.values.isEmpty())
         return;
@@ -304,7 +294,7 @@ void LookupTelemetry::dbResultsNumNext(DatabaseRequest::Records records)
     setRecordNum(num);
 }
 
-void LookupTelemetry::dbLoadLatest()
+void TelemetryRecords::dbLoadLatest()
 {
     emit discardRequests();
     defaultLookup();
@@ -315,15 +305,15 @@ void LookupTelemetry::dbLoadLatest()
     DatabaseRequest *req = new DatabaseRequest(db,
                                                qs,
                                                filter().isEmpty() ? QVariantList() : filterValues());
-    connect(this, &LookupTelemetry::discardRequests, req, &DatabaseRequest::discard);
+    connect(this, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
     connect(req,
             &DatabaseRequest::queryResults,
             this,
-            &LookupTelemetry::dbResultsLatest,
+            &TelemetryRecords::dbResultsLatest,
             Qt::QueuedConnection);
     req->exec();
 }
-void LookupTelemetry::dbResultsLatest(DatabaseRequest::Records records)
+void TelemetryRecords::dbResultsLatest(DatabaseRequest::Records records)
 {
     if (records.values.isEmpty())
         return;
@@ -334,7 +324,7 @@ void LookupTelemetry::dbResultsLatest(DatabaseRequest::Records records)
     emit recordTriggered(recordId());
 }
 
-void LookupTelemetry::dbLoadPrev()
+void TelemetryRecords::dbLoadPrev()
 {
     emit discardRequests();
     if (!recordId()) {
@@ -350,15 +340,15 @@ void LookupTelemetry::dbLoadPrev()
                                                qs,
                                                (filter().isEmpty() ? QVariantList() : filterValues())
                                                    << recordTimestamp());
-    connect(this, &LookupTelemetry::discardRequests, req, &DatabaseRequest::discard);
+    connect(this, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
     connect(req,
             &DatabaseRequest::queryResults,
             this,
-            &LookupTelemetry::dbResultsPrevNext,
+            &TelemetryRecords::dbResultsPrevNext,
             Qt::QueuedConnection);
     req->exec();
 }
-void LookupTelemetry::dbLoadNext()
+void TelemetryRecords::dbLoadNext()
 {
     emit discardRequests();
     if (!recordId()) {
@@ -374,15 +364,15 @@ void LookupTelemetry::dbLoadNext()
                                                qs,
                                                (filter().isEmpty() ? QVariantList() : filterValues())
                                                    << recordTimestamp());
-    connect(this, &LookupTelemetry::discardRequests, req, &DatabaseRequest::discard);
+    connect(this, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
     connect(req,
             &DatabaseRequest::queryResults,
             this,
-            &LookupTelemetry::dbResultsPrevNext,
+            &TelemetryRecords::dbResultsPrevNext,
             Qt::QueuedConnection);
     req->exec();
 }
-void LookupTelemetry::dbRemove()
+void TelemetryRecords::dbRemove()
 {
     quint64 key = recordId();
     if (!key)
@@ -404,7 +394,7 @@ void LookupTelemetry::dbRemove()
     req->exec();
 }
 
-void LookupTelemetry::dbResultsPrevNext(DatabaseRequest::Records records)
+void TelemetryRecords::dbResultsPrevNext(DatabaseRequest::Records records)
 {
     if (records.values.isEmpty())
         return;
@@ -425,34 +415,34 @@ void LookupTelemetry::dbResultsPrevNext(DatabaseRequest::Records records)
     }
 }
 
-quint64 LookupTelemetry::recordsCount() const
+quint64 TelemetryRecords::recordsCount() const
 {
     return m_recordsCount;
 }
-void LookupTelemetry::setRecordsCount(quint64 v)
+void TelemetryRecords::setRecordsCount(quint64 v)
 {
     if (m_recordsCount == v)
         return;
     m_recordsCount = v;
     emit recordsCountChanged();
 }
-quint64 LookupTelemetry::recordNum() const
+quint64 TelemetryRecords::recordNum() const
 {
     return m_recordNum;
 }
-void LookupTelemetry::setRecordNum(quint64 v)
+void TelemetryRecords::setRecordNum(quint64 v)
 {
     if (m_recordNum == v)
         return;
     m_recordNum = v;
     emit recordNumChanged();
 }
-quint64 LookupTelemetry::recordId()
+quint64 TelemetryRecords::recordId()
 {
     QMutexLocker lock(&mutexRecordId);
     return m_recordId;
 }
-void LookupTelemetry::setRecordId(quint64 v)
+void TelemetryRecords::setRecordId(quint64 v)
 {
     mutexRecordId.lock();
     if (m_recordId == v) {
@@ -463,22 +453,22 @@ void LookupTelemetry::setRecordId(quint64 v)
     mutexRecordId.unlock();
     emit recordIdChanged();
 }
-quint64 LookupTelemetry::recordTimestamp() const
+quint64 TelemetryRecords::recordTimestamp() const
 {
     return m_recordTimestamp;
 }
-void LookupTelemetry::setRecordTimestamp(quint64 v)
+void TelemetryRecords::setRecordTimestamp(quint64 v)
 {
     if (m_recordTimestamp == v)
         return;
     m_recordTimestamp = v;
     emit recordTimestampChanged();
 }
-QVariantMap LookupTelemetry::recordInfo() const
+QVariantMap TelemetryRecords::recordInfo() const
 {
     return m_recordInfo;
 }
-void LookupTelemetry::setRecordInfo(const QVariantMap &v)
+void TelemetryRecords::setRecordInfo(const QVariantMap &v)
 {
     //if(m_recordInfo==v)return;
     m_recordInfo = v;

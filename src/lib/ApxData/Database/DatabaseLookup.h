@@ -63,7 +63,7 @@ protected slots:
     virtual void loadItems();
 
 public slots:
-    virtual void defaultLookup();
+    virtual void defaultLookup() {}
     void loadQueryResults(DatabaseRequest::Records records);
     void triggerItem(QVariantMap modelData);
 

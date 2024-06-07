@@ -28,7 +28,7 @@
 #include <QtCore>
 
 #include "TelemetryReaderDataReq.h"
-class LookupTelemetry;
+class TelemetryRecords;
 
 class TelemetryReader : public Fact
 {
@@ -37,9 +37,9 @@ class TelemetryReader : public Fact
     Q_PROPERTY(quint64 totalTime READ totalTime NOTIFY totalTimeChanged)
 
 public:
-    explicit TelemetryReader(LookupTelemetry *lookup, Fact *parent);
+    explicit TelemetryReader(TelemetryRecords *records, Fact *parent);
 
-    LookupTelemetry *lookup;
+    TelemetryRecords *records;
 
     Fact *f_notes;
     Fact *f_reload;
