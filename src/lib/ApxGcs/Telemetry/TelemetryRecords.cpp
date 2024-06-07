@@ -39,6 +39,14 @@ TelemetryRecords::TelemetryRecords(Fact *parent)
     connect(this, &DatabaseLookup::itemTriggered, this, &TelemetryRecords::loadItem);
 
     //actions
+    f_restore = new Fact(this,
+                         "restore",
+                         tr("Restore"),
+                         tr("Show records from trash"),
+                         Action | Bool | IconOnly,
+                         "delete-restore");
+    connect(f_restore, &Fact::valueChanged, this, &TelemetryRecords::defaultLookup);
+
     f_latest = new Fact(this,
                         "latest",
                         tr("Latest"),
@@ -140,6 +148,9 @@ bool TelemetryRecords::fixItemDataThr(QVariantMap *item)
     if (t > 0)
         total = AppRoot::timeToString(t / 1000);
     QStringList descr;
+    if (item->value("trash").toBool())
+        descr << tr("deleted").toUpper();
+
     if (!comment.isEmpty())
         descr << comment;
     if (!notes.isEmpty())
@@ -169,12 +180,12 @@ QVariantList TelemetryRecords::filterValues() const
 }
 QString TelemetryRecords::filterTrash() const
 {
-    return "trash IS NULL";
+    return f_restore->value().toBool() ? "TRUE" : "trash IS NULL";
 }
 
 void TelemetryRecords::defaultLookup()
 {
-    qDebug() << filter();
+    // qDebug() << filter();
 
     query("SELECT * FROM Telemetry"
           " WHERE "
@@ -380,6 +391,7 @@ void TelemetryRecords::dbRemove()
     quint64 num = recordNum();
     if (num > 0)
         f_prev->trigger();
+
     QVariantMap info;
     info.insert("trash", 1);
     DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(key, info);

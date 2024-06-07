@@ -48,7 +48,7 @@ ToolButton {
     enabled: fact?fact.enabled:true
     visible: (fact?fact.visible:true) && (bShowDisabled || enabled)
 
-    property bool active: fact?fact.active:false
+    property bool active: fact?(fact.active||(fact.value?true:false)):false
     highlighted: activeFocus || active
 
     showText: !bIconOnly

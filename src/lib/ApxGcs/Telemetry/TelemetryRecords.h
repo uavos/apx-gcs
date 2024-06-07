@@ -37,6 +37,8 @@ class TelemetryRecords : public DatabaseLookup
 public:
     explicit TelemetryRecords(Fact *parent);
 
+    Fact *f_restore;
+
     Fact *f_latest;
     Fact *f_prev;
     Fact *f_next;

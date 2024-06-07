@@ -409,6 +409,10 @@ void Fact::trigger(QVariantMap opts)
     if (!enabled())
         return;
 
+    if (treeType() == Action && dataType() == Bool) {
+        setValue(!value().toBool());
+    }
+
     if (binding()) {
         if (binding()->treeType() == Action) {
             binding()->trigger(opts);
