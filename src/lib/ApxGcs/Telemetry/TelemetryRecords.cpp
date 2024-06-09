@@ -61,7 +61,7 @@ TelemetryRecords::TelemetryRecords(Fact *parent)
                          tr("Show records from trash"),
                          Action | Bool | IconOnly,
                          "delete-restore");
-    // connect(f_restore, &Fact::valueChanged, this, &TelemetryRecords::defaultLookup);
+    connect(f_restore, &Fact::valueChanged, this, &TelemetryRecords::dbRequestRecordsList);
 
     f_latest = new Fact(this,
                         "latest",
@@ -123,7 +123,9 @@ void TelemetryRecords::updateStatus()
 
 void TelemetryRecords::dbRequestRecordsList()
 {
-    auto filter = _dbmodel->getFilterExpression({"callsign", "notes", "comment", "file"});
+    QStringList fields = {"callsign", "notes", "comment", "file"};
+    auto extra_filter = f_restore->value().toBool() ? "" : QString("trash IS NULL");
+    auto filter = _dbmodel->getFilterExpression(fields, extra_filter);
     auto req = new DBReqTelemetryModelRecordsList(filter);
     connect(req,
             &DBReqTelemetryModelRecordsList::recordsList,
@@ -142,59 +144,11 @@ void TelemetryRecords::dbRequestRecordInfo(quint64 id)
     req->exec();
 }
 
-/*bool TelemetryRecords::fixItemDataThr(QVariantMap *item)
-{
-    QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
-                       .toString("yyyy MMM dd hh:mm:ss");
-    QString callsign = item->value("callsign").toString();
-    QString comment = item->value("comment").toString();
-    QString notes = item->value("notes").toString();
-    QString total;
-    quint64 t = item->value("totalTime").toULongLong();
-    if (t > 0)
-        total = AppRoot::timeToString(t / 1000);
-    QStringList descr;
-    if (item->value("trash").toBool())
-        descr << tr("deleted").toUpper();
-
-    if (!comment.isEmpty())
-        descr << comment;
-    if (!notes.isEmpty())
-        descr << notes;
-    QStringList value;
-    if (!callsign.isEmpty())
-        value << callsign;
-    if (!total.isEmpty())
-        value << total;
-
-    item->insert("title", time);
-    item->insert("descr", descr.join(" - "));
-    item->insert("value", value.join(' '));
-    //active current
-    item->insert("active", item->value("key").toULongLong() == _selectedRecordId);
-    return true;
-}*/
-
 void TelemetryRecords::setActiveRecordId(quint64 id)
 {
     if (id == _selectedRecordId)
         return;
     _selectedRecordId = id;
-}
-
-QString TelemetryRecords::filterQuery() const
-{
-    return "( callsign LIKE ? OR notes LIKE ? OR comment LIKE ? )";
-}
-QVariantList TelemetryRecords::filterValues() const
-{
-    // const QString sf = QString("%%%1%%").arg(filter());
-    // return QVariantList() << sf << sf << sf;
-    return {};
-}
-QString TelemetryRecords::filterTrash() const
-{
-    return f_restore->value().toBool() ? "TRUE" : "trash IS NULL";
 }
 
 /*void TelemetryRecords::defaultLookup()

@@ -47,7 +47,7 @@ public:
 
     QString filter() const { return _filter; }
     void setFilter(QString v);
-    QString getFilterExpression(QStringList fields) const;
+    QString getFilterExpression(QStringList fields, QString extra_filter = {}) const;
 
     void setActiveRecordId(quint64 id);
 

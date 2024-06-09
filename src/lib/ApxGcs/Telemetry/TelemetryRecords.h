@@ -43,19 +43,11 @@ public:
 
     void setActiveRecordId(quint64 id);
 
-    //DatabaseLookup override
-    // void defaultLookup() override;
-    // bool fixItemDataThr(QVariantMap *item) override;
-
 private:
     DatabaseModel *_dbmodel;
 
     quint64 _selectedRecordId{};
     quint64 _findNumId{};
-
-    QString filterQuery() const;
-    QVariantList filterValues() const;
-    QString filterTrash() const;
 
 private slots:
     void updateActions();

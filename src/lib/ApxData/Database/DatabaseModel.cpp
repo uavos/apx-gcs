@@ -136,14 +136,20 @@ void DatabaseModel::setFilter(QString v)
     emit requestRecordsList();
 }
 
-QString DatabaseModel::getFilterExpression(QStringList fields) const
+QString DatabaseModel::getFilterExpression(QStringList fields, QString extra_filter) const
 {
-    if (_filter.isEmpty())
-        return {};
-
     QStringList parts;
-    for (const auto &f : fields)
-        parts.append(f + " LIKE '%" + _filter + "%'");
+    if (!_filter.isEmpty()) {
+        for (const auto &f : fields)
+            parts.append(f + " LIKE '%" + _filter + "%'");
+    }
 
-    return "(" + parts.join(" OR ") + ")";
+    if (!extra_filter.isEmpty()) {
+        parts << extra_filter;
+    }
+
+    if (!parts.isEmpty())
+        return "(" + parts.join(" OR ") + ")";
+
+    return {};
 }
