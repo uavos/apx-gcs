@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Telemetry.h"
-#include "TelemetryFiles.h"
 #include "TelemetryPlayer.h"
 #include "TelemetryReader.h"
 #include "TelemetryRecorder.h"
@@ -49,15 +48,13 @@ Telemetry::Telemetry(Vehicle *parent)
     if (vehicle->isReplay()) {
         setOpt("pos", QPointF(1, 1));
 
-        // f_files = new TelemetryFiles(this);
-
         f_records = new TelemetryRecords(this);
         f_records->f_latest->createAction(this);
         f_records->f_prev->createAction(this);
         f_records->f_next->createAction(this);
-        connect(this, &Fact::triggered, f_records, &TelemetryRecords::defaultLookup);
+        // connect(this, &Fact::triggered, f_records, &TelemetryRecords::defaultLookup);
 
-        f_reader = new TelemetryReader(f_records, this);
+        f_reader = new TelemetryReader(this);
         connect(f_reader, &Fact::valueChanged, this, &Telemetry::updateStatus);
         connect(f_reader, &Fact::progressChanged, this, &Telemetry::updateProgress);
         connect(f_reader,
@@ -76,9 +73,9 @@ Telemetry::Telemetry(Vehicle *parent)
         bindProperty(f_player, "active", true);
 
         f_share = new TelemetryShare(this, this);
-        connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {
-            f_records->jumpToRecord(id);
-        });
+        // connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {
+        //     f_records->setActiveRecordId(id);
+        // });
         connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);
 
     } else {

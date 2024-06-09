@@ -20,32 +20,48 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryRecords.h"
+#include "TelemetryDBReq.h"
+
 #include <Database/Database.h>
 #include <Database/TelemetryDB.h>
+
 #include <Database/TelemetryReqRead.h>
 #include <Database/TelemetryReqWrite.h>
 
 #include <App/AppRoot.h>
 
 TelemetryRecords::TelemetryRecords(Fact *parent)
-    : DatabaseLookup(parent,
-                     "records",
-                     tr("Records"),
-                     tr("Database records"),
-                     Database::instance()->telemetry)
+    : Fact(parent, "records", tr("Records"), tr("Telemetry records"), FilterModel, "database-search")
 {
     setOpt("pos", QPointF(1, 1));
 
-    connect(this, &DatabaseLookup::itemTriggered, this, &TelemetryRecords::loadItem);
+    setOpt("page", "Menu/FactMenuPageLookupDB.qml");
+
+    _dbmodel = new DatabaseModel(this);
+    setModel(_dbmodel);
+
+    connect(_dbmodel,
+            &DatabaseModel::requestRecordsList,
+            this,
+            &TelemetryRecords::dbRequestRecordsList);
+    connect(_dbmodel,
+            &DatabaseModel::requestRecordInfo,
+            this,
+            &TelemetryRecords::dbRequestRecordInfo);
+    connect(_dbmodel, &DatabaseModel::countChanged, this, &TelemetryRecords::setRecordsCount);
+
+    connect(this, &Fact::triggered, this, &TelemetryRecords::dbRequestRecordsList);
+
+    // connect(this, &DatabaseLookup::itemTriggered, this, &TelemetryRecords::loadItem);
 
     //actions
     f_restore = new Fact(this,
-                         "restore",
+                         "undelete",
                          tr("Restore"),
                          tr("Show records from trash"),
                          Action | Bool | IconOnly,
                          "delete-restore");
-    connect(f_restore, &Fact::valueChanged, this, &TelemetryRecords::defaultLookup);
+    // connect(f_restore, &Fact::valueChanged, this, &TelemetryRecords::defaultLookup);
 
     f_latest = new Fact(this,
                         "latest",
@@ -83,20 +99,7 @@ TelemetryRecords::TelemetryRecords(Fact *parent)
     connect(this, &TelemetryRecords::recordsCountChanged, this, &TelemetryRecords::updateStatus);
     connect(this, &TelemetryRecords::recordNumChanged, this, &TelemetryRecords::updateStatus);
 
-    // active record highlight
-    connect(this,
-            &TelemetryRecords::recordIdChanged,
-            this,
-            &TelemetryRecords::reloadQueryResults,
-            Qt::QueuedConnection);
-    //connect(this,&TelemetryRecords::recordsCountChanged,this,&TelemetryRecords::dbLoadLatest);
-
-    connect(this, &TelemetryRecords::recordIdChanged, this, &TelemetryRecords::dbLoadInfo);
-    connect(this, &TelemetryRecords::recordIdChanged, this, &TelemetryRecords::dbFindNum);
-    connect(this, &TelemetryRecords::recordsCountChanged, this, &TelemetryRecords::dbFindNum);
-
     // actions update
-    connect(this, &TelemetryRecords::recordIdChanged, this, &TelemetryRecords::updateActions);
     connect(this, &TelemetryRecords::recordNumChanged, this, &TelemetryRecords::updateActions);
     connect(this, &TelemetryRecords::recordsCountChanged, this, &TelemetryRecords::updateActions);
     updateActions();
@@ -105,12 +108,11 @@ void TelemetryRecords::updateActions()
 {
     quint64 num = recordNum();
     quint64 cnt = recordsCount();
-    quint64 id = recordId();
     f_prev->setEnabled(num > 1);
     f_next->setEnabled(num && num < cnt);
-    f_remove->setEnabled(id);
+    f_remove->setEnabled(_selectedRecordId > 0);
     if (cnt == 0) {
-        setRecordId(0);
+        _selectedRecordId = 0;
         setRecordNum(0);
     }
 }
@@ -118,25 +120,29 @@ void TelemetryRecords::updateStatus()
 {
     setValue(QString("%1/%2").arg(recordNum()).arg(recordsCount()));
 }
-void TelemetryRecords::loadItem(QVariantMap modelData)
+
+void TelemetryRecords::dbRequestRecordsList()
 {
-    quint64 key = modelData.value("key", 0).toUInt();
-    if (!key)
-        return;
-    setRecordTimestamp(modelData.value("time").toULongLong());
-    setRecordId(key);
-    emit recordTriggered(recordId());
+    auto filter = _dbmodel->getFilterExpression({"callsign", "notes", "comment", "file"});
+    auto req = new DBReqTelemetryModelRecordsList(filter);
+    connect(req,
+            &DBReqTelemetryModelRecordsList::recordsList,
+            _dbmodel,
+            &DatabaseModel::setRecordsList);
+    req->exec();
 }
 
-void TelemetryRecords::jumpToRecord(quint64 v)
+void TelemetryRecords::dbRequestRecordInfo(quint64 id)
 {
-    quint64 id = recordId();
-    setRecordId(v);
-    if (id != recordId())
-        emit recordTriggered(recordId());
+    auto req = new DBReqTelemetryModelRecordInfo(id);
+    connect(req,
+            &DBReqTelemetryModelRecordInfo::recordInfo,
+            _dbmodel,
+            &DatabaseModel::setRecordInfo);
+    req->exec();
 }
 
-bool TelemetryRecords::fixItemDataThr(QVariantMap *item)
+/*bool TelemetryRecords::fixItemDataThr(QVariantMap *item)
 {
     QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
                        .toString("yyyy MMM dd hh:mm:ss");
@@ -165,8 +171,15 @@ bool TelemetryRecords::fixItemDataThr(QVariantMap *item)
     item->insert("descr", descr.join(" - "));
     item->insert("value", value.join(' '));
     //active current
-    item->insert("active", item->value("key").toULongLong() == recordId());
+    item->insert("active", item->value("key").toULongLong() == _selectedRecordId);
     return true;
+}*/
+
+void TelemetryRecords::setActiveRecordId(quint64 id)
+{
+    if (id == _selectedRecordId)
+        return;
+    _selectedRecordId = id;
 }
 
 QString TelemetryRecords::filterQuery() const
@@ -175,15 +188,16 @@ QString TelemetryRecords::filterQuery() const
 }
 QVariantList TelemetryRecords::filterValues() const
 {
-    const QString sf = QString("%%%1%%").arg(filter());
-    return QVariantList() << sf << sf << sf;
+    // const QString sf = QString("%%%1%%").arg(filter());
+    // return QVariantList() << sf << sf << sf;
+    return {};
 }
 QString TelemetryRecords::filterTrash() const
 {
     return f_restore->value().toBool() ? "TRUE" : "trash IS NULL";
 }
 
-void TelemetryRecords::defaultLookup()
+/*void TelemetryRecords::defaultLookup()
 {
     // qDebug() << filter();
 
@@ -193,50 +207,20 @@ void TelemetryRecords::defaultLookup()
               + " ORDER BY time DESC, key DESC",
           filter().isEmpty() ? QVariantList() : filterValues());
 
-    //find count
+    //find records count
     QString qs = "SELECT COUNT(*) FROM Telemetry"
                  " WHERE "
                  + filterTrash() + " AND " + filterQuery();
     DatabaseRequest *req = new DatabaseRequest(db, qs, filterValues());
-    connect(req, &DatabaseRequest::queryResults, this, &TelemetryRecords::dbResultsLookup);
+    connect(req, &DatabaseRequest::queryResults, this, [this]() {
+        setRecordsCount(records.values.isEmpty() ? 0 : records.values.first().first().toULongLong());
+    });
     req->exec();
-}
-void TelemetryRecords::dbResultsLookup(DatabaseRequest::Records records)
-{
-    setRecordsCount(records.values.isEmpty() ? 0 : records.values.first().first().toULongLong());
-}
-
-void TelemetryRecords::dbLoadInfo()
-{
-    quint64 key = recordId();
-    if (!key)
-        return;
-    QString qs = "SELECT * FROM Telemetry"
-                 " WHERE Telemetry.key=?";
-    DatabaseRequest *req = new DatabaseRequest(db, qs, QVariantList() << recordId());
-    connect(this, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
-    connect(req,
-            &DatabaseRequest::queryResults,
-            this,
-            &TelemetryRecords::dbResultsInfo,
-            Qt::QueuedConnection);
-    req->exec();
-}
-void TelemetryRecords::dbResultsInfo(DatabaseRequest::Records records)
-{
-    if (records.values.isEmpty())
-        return;
-    QVariantMap info = DatabaseRequest::queryRecord(records);
-    setRecordTimestamp(info.value("time").toULongLong());
-    jumpToRecord(info.value("key").toULongLong());
-    info.remove("key");
-    info.remove("telemetryID");
-    setRecordInfo(info);
-}
+}*/
 
 void TelemetryRecords::dbFindNum()
 {
-    quint64 key = recordId();
+    /*quint64 key = recordId();
     if (!key)
         return;
     QString qs = "SELECT ? AS key,COUNT(*) FROM Telemetry"
@@ -256,11 +240,11 @@ void TelemetryRecords::dbFindNum()
             this,
             &TelemetryRecords::dbResultsNum,
             Qt::QueuedConnection);
-    req->exec();
+    req->exec();*/
 }
 void TelemetryRecords::dbResultsNum(DatabaseRequest::Records records)
 {
-    if (records.values.isEmpty())
+    /*if (records.values.isEmpty())
         return;
     quint64 key = records.values.first().at(0).toULongLong();
     if (key != recordId())
@@ -287,14 +271,14 @@ void TelemetryRecords::dbResultsNum(DatabaseRequest::Records records)
             this,
             &TelemetryRecords::dbResultsNumNext,
             Qt::QueuedConnection);
-    req->exec();
+    req->exec();*/
 }
 void TelemetryRecords::dbResultsNumNext(DatabaseRequest::Records records)
 {
-    if (records.values.isEmpty())
+    /*if (records.values.isEmpty())
         return;
     quint64 key = records.values.first().at(0).toULongLong();
-    if (key != recordId())
+    if (key != _selectedRecordId)
         return;
     quint64 num = recordNum();
     for (int i = 0; i < records.values.size(); ++i) {
@@ -302,12 +286,12 @@ void TelemetryRecords::dbResultsNumNext(DatabaseRequest::Records records)
             break;
         num--;
     }
-    setRecordNum(num);
+    setRecordNum(num);*/
 }
 
 void TelemetryRecords::dbLoadLatest()
 {
-    emit discardRequests();
+    /*emit discardRequests();
     defaultLookup();
     QString qs = "SELECT * FROM Telemetry"
                  " WHERE "
@@ -317,27 +301,20 @@ void TelemetryRecords::dbLoadLatest()
                                                qs,
                                                filter().isEmpty() ? QVariantList() : filterValues());
     connect(this, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
-    connect(req,
-            &DatabaseRequest::queryResults,
-            this,
-            &TelemetryRecords::dbResultsLatest,
-            Qt::QueuedConnection);
-    req->exec();
-}
-void TelemetryRecords::dbResultsLatest(DatabaseRequest::Records records)
-{
-    if (records.values.isEmpty())
-        return;
-    const QStringList &n = records.names;
-    const QVariantList &r = records.values.first();
-    setRecordTimestamp(r.at(n.indexOf("time")).toULongLong());
-    setRecordId(r.at(0).toULongLong());
-    emit recordTriggered(recordId());
+    connect(req, &DatabaseRequest::queryResults, this, [this](DatabaseRequest::Records records) {
+        if (!records.values.isEmpty()) {
+            const QStringList &n = records.names;
+            const QVariantList &r = records.values.first();
+            setRecordId(r.at(0).toULongLong());
+            emit recordTriggered(recordId());
+        }
+    });
+    req->exec();*/
 }
 
 void TelemetryRecords::dbLoadPrev()
 {
-    emit discardRequests();
+    /*emit discardRequests();
     if (!recordId()) {
         dbLoadLatest();
         return;
@@ -357,11 +334,11 @@ void TelemetryRecords::dbLoadPrev()
             this,
             &TelemetryRecords::dbResultsPrevNext,
             Qt::QueuedConnection);
-    req->exec();
+    req->exec();*/
 }
 void TelemetryRecords::dbLoadNext()
 {
-    emit discardRequests();
+    /*emit discardRequests();
     if (!recordId()) {
         dbLoadLatest();
         return;
@@ -381,11 +358,11 @@ void TelemetryRecords::dbLoadNext()
             this,
             &TelemetryRecords::dbResultsPrevNext,
             Qt::QueuedConnection);
-    req->exec();
+    req->exec();*/
 }
 void TelemetryRecords::dbRemove()
 {
-    quint64 key = recordId();
+    /*quint64 key = recordId();
     if (!key)
         return;
     quint64 num = recordNum();
@@ -403,12 +380,12 @@ void TelemetryRecords::dbRemove()
             [this]() { f_latest->trigger(); },
             Qt::QueuedConnection);
     //else connect(req,&DBReqRemove::finished,this,&TelemetryReader::rescan,Qt::QueuedConnection);
-    req->exec();
+    req->exec();*/
 }
 
 void TelemetryRecords::dbResultsPrevNext(DatabaseRequest::Records records)
 {
-    if (records.values.isEmpty())
+    /*if (records.values.isEmpty())
         return;
     const QStringList &n = records.names;
     quint64 cur = recordId();
@@ -421,10 +398,9 @@ void TelemetryRecords::dbResultsPrevNext(DatabaseRequest::Records records)
         if (i == cnt)
             break;
         const QVariantList &r = records.values.at(i + 1);
-        setRecordTimestamp(r.at(n.indexOf("time")).toULongLong());
         jumpToRecord(r.at(0).toULongLong());
         return;
-    }
+    }*/
 }
 
 quint64 TelemetryRecords::recordsCount() const
@@ -448,41 +424,4 @@ void TelemetryRecords::setRecordNum(quint64 v)
         return;
     m_recordNum = v;
     emit recordNumChanged();
-}
-quint64 TelemetryRecords::recordId()
-{
-    QMutexLocker lock(&mutexRecordId);
-    return m_recordId;
-}
-void TelemetryRecords::setRecordId(quint64 v)
-{
-    mutexRecordId.lock();
-    if (m_recordId == v) {
-        mutexRecordId.unlock();
-        return;
-    }
-    m_recordId = v;
-    mutexRecordId.unlock();
-    emit recordIdChanged();
-}
-quint64 TelemetryRecords::recordTimestamp() const
-{
-    return m_recordTimestamp;
-}
-void TelemetryRecords::setRecordTimestamp(quint64 v)
-{
-    if (m_recordTimestamp == v)
-        return;
-    m_recordTimestamp = v;
-    emit recordTimestampChanged();
-}
-QVariantMap TelemetryRecords::recordInfo() const
-{
-    return m_recordInfo;
-}
-void TelemetryRecords::setRecordInfo(const QVariantMap &v)
-{
-    //if(m_recordInfo==v)return;
-    m_recordInfo = v;
-    emit recordInfoChanged();
 }

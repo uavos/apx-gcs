@@ -111,6 +111,7 @@ public slots:
     void discard();
 
 signals:
+    void discardRequested();
     void finished(DatabaseRequest::Status status);
 
     void queryResults(DatabaseRequest::Records records);

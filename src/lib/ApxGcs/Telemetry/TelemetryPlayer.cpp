@@ -75,7 +75,7 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, this, &TelemetryPlayer::next);
 
-    connect(telemetry->f_records, &TelemetryRecords::recordIdChanged, this, &TelemetryPlayer::reset);
+    // connect(telemetry->f_records, &TelemetryRecords::recordIdChanged, this, &TelemetryPlayer::reset);
     connect(telemetry->f_reader, &TelemetryReader::totalTimeChanged, this, [=]() {
         f_time->setMax(telemetry->f_reader->totalTime());
     });
@@ -151,8 +151,8 @@ void TelemetryPlayer::play()
 {
     if (active())
         return;
-    if (!telemetry->f_records->recordId())
-        return;
+    // if (!telemetry->f_records->recordId())
+    //     return;
     vehicle->f_select->trigger();
     setActive(true);
 

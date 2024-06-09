@@ -45,7 +45,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     player = telemetry->f_player;
     share = telemetry->f_share;
 
-    connect(records, &TelemetryRecords::recordIdChanged, this, &TelemetryFrame::resetPlot);
+    // connect(records, &TelemetryRecords::recordIdChanged, this, &TelemetryFrame::resetPlot);
     connect(records, &TelemetryRecords::valueChanged, this, &TelemetryFrame::updateStats);
 
     connect(reader, &TelemetryReader::statsAvailable, this, &TelemetryFrame::updateStats);

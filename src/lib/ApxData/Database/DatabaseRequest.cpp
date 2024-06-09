@@ -106,6 +106,7 @@ void DatabaseRequest::discard()
     if (m_discarded)
         return;
     m_discarded = true;
+    emit discardRequested();
 }
 
 bool DatabaseRequest::discarded()

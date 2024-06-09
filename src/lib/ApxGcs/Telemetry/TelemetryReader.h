@@ -37,9 +37,7 @@ class TelemetryReader : public Fact
     Q_PROPERTY(quint64 totalTime READ totalTime NOTIFY totalTimeChanged)
 
 public:
-    explicit TelemetryReader(TelemetryRecords *records, Fact *parent);
-
-    TelemetryRecords *records;
+    explicit TelemetryReader(Fact *parent);
 
     Fact *f_notes;
     Fact *f_reload;
@@ -60,8 +58,9 @@ public:
     QGeoPath geoPath;
 
 private:
+    quint64 _recordID{};
+
     bool blockNotesChange;
-    DelayedEvent loadEvent;
 
     void changeThread(Fact *fact, QThread *thread);
 
@@ -74,10 +73,7 @@ private slots:
 
     //Database
 private slots:
-    void dbLoadData();
-
-    void dbCacheFound(quint64 telemetryID);
-    void dbCacheNotFound(quint64 telemetryID);
+    void fileInfoLoaded(QJsonObject data);
 
     void dbResultsDataProc(quint64 telemetryID,
                            quint64 cacheID,
@@ -89,10 +85,7 @@ private slots:
                            Fact *f_events);
 
     void dbStatsFound(quint64 telemetryID, QVariantMap stats);
-    void dbStatsUpdated(quint64 telemetryID, QVariantMap stats);
     void dbProgress(quint64 telemetryID, int v);
-
-    void reloadTriggered();
 
 signals:
     void statsAvailable();

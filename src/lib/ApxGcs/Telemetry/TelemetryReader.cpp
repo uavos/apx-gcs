@@ -20,7 +20,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryReader.h"
+#include "TelemetryDBReq.h"
 #include "TelemetryRecords.h"
+
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
@@ -31,9 +33,8 @@
 
 #include <QGeoCoordinate>
 
-TelemetryReader::TelemetryReader(TelemetryRecords *records, Fact *parent)
+TelemetryReader::TelemetryReader(Fact *parent)
     : Fact(parent, "reader", "", "", Group, "progress-download")
-    , records(records)
     , blockNotesChange(false)
     , m_totalSize(0)
     , m_totalTime(0)
@@ -50,10 +51,9 @@ TelemetryReader::TelemetryReader(TelemetryRecords *records, Fact *parent)
                         Action | ShowDisabled,
                         "reload");
     f_reload->setEnabled(false);
-    connect(f_reload, &Fact::triggered, this, &TelemetryReader::reloadTriggered);
+    connect(f_reload, &Fact::triggered, this, &TelemetryReader::load);
 
     //info
-    connect(records, &TelemetryRecords::recordInfoChanged, this, &TelemetryReader::updateRecordInfo);
     connect(this, &TelemetryReader::totalTimeChanged, this, &TelemetryReader::updateStatus);
 
     //load sequence
@@ -62,11 +62,6 @@ TelemetryReader::TelemetryReader(TelemetryRecords *records, Fact *parent)
     qRegisterMetaType<times_t>("times_t");
     qRegisterMetaType<events_t>("events_t");
     qRegisterMetaType<FactList>("FactList");
-
-    connect(records, &TelemetryRecords::recordTriggered, this, &TelemetryReader::load);
-
-    connect(&loadEvent, &DelayedEvent::triggered, this, &TelemetryReader::dbLoadData);
-    loadEvent.setInterval(500);
 
     connect(this, &Fact::triggered, this, &TelemetryReader::loadCurrent);
 
@@ -81,13 +76,13 @@ void TelemetryReader::updateStatus()
 
 void TelemetryReader::loadCurrent()
 {
-    if (!records->recordId())
-        records->f_latest->trigger();
+    // if (!records->recordId())
+    //     records->f_latest->trigger();
 }
 
 void TelemetryReader::updateRecordInfo()
 {
-    QVariantMap info = records->recordInfo();
+    QVariantMap info; // = records->recordInfo();
     setTotalTime(info.value("totalTime").toULongLong());
     quint64 downlink = info.value("downlink").toULongLong();
     quint64 uplink = info.value("uplink").toULongLong();
@@ -130,79 +125,36 @@ void TelemetryReader::updateRecordInfo()
 void TelemetryReader::load()
 {
     f_reload->setEnabled(false);
-    quint64 key = records->recordId();
-    if (!key)
+
+    quint64 key = _recordID;
+    if (!_recordID)
         return;
+
     setTotalSize(0);
     setTotalTime(0);
     setProgress(0);
     deleteChildren();
-    DBReqTelemetryFindCache *req = new DBReqTelemetryFindCache(key);
-    connect(req,
-            &DBReqTelemetryFindCache::cacheFound,
-            this,
-            &TelemetryReader::dbCacheFound,
-            Qt::QueuedConnection);
-    connect(req,
-            &DBReqTelemetryFindCache::cacheNotFound,
-            this,
-            &TelemetryReader::dbCacheNotFound,
-            Qt::QueuedConnection);
+
+    auto req = new DBReqTelemetryLoadFile(key);
+    // connect(records, &TelemetryRecords::discardRequests, req, &DatabaseRequest::discard);
+    connect(req, &DatabaseRequest::finished, this, [this](DatabaseRequest::Status) {
+        setProgress(-1);
+    });
+    auto reader = req->reader();
+    connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
+    connect(reader, &TelemetryFileReader::infoUpdated, this, &TelemetryReader::fileInfoLoaded);
+
     req->exec();
 }
 
-void TelemetryReader::reloadTriggered()
+void TelemetryReader::fileInfoLoaded(QJsonObject data)
 {
-    quint64 key = records->recordId();
-    if (!key)
-        return;
-    Database::instance()->telemetry->markCacheInvalid(key);
-    load();
-}
-
-void TelemetryReader::dbCacheNotFound(quint64 telemetryID)
-{
-    if (telemetryID != records->recordId())
-        return;
-    loadEvent.schedule();
-}
-void TelemetryReader::dbCacheFound(quint64 telemetryID)
-{
-    if (telemetryID != records->recordId())
-        return;
-    dbLoadData();
-}
-void TelemetryReader::dbLoadData()
-{
-    quint64 telemetryID = records->recordId();
-    if (!telemetryID)
-        return;
-    setProgress(0);
-    //request data
-    {
-        DBReqTelemetryMakeStats *req = new DBReqTelemetryMakeStats(telemetryID);
-        connect(records,
-                &TelemetryRecords::discardRequests,
-                req,
-                &DatabaseRequest::discard,
-                Qt::QueuedConnection);
-        connect(req,
-                &DBReqTelemetryMakeStats::statsUpdated,
-                this,
-                &TelemetryReader::dbStatsUpdated,
-                Qt::QueuedConnection);
-        connect(req,
-                &DBReqTelemetryMakeStats::statsFound,
-                this,
-                &TelemetryReader::dbStatsFound,
-                Qt::QueuedConnection);
-        req->exec();
-    }
+    qDebug() << QJsonDocument(data).toJson(QJsonDocument::Indented);
 }
 
 void TelemetryReader::dbStatsFound(quint64 telemetryID, QVariantMap stats)
 {
-    Q_UNUSED(stats)
+    /*Q_UNUSED(stats)
     if (telemetryID != records->recordId())
         return;
     TelemetryReaderDataReq *req = new TelemetryReaderDataReq(telemetryID);
@@ -224,19 +176,7 @@ void TelemetryReader::dbStatsFound(quint64 telemetryID, QVariantMap stats)
     connect(req, &DatabaseRequest::finished, this, [this](DatabaseRequest::Status) {
         setProgress(-1);
     });
-    req->exec();
-}
-void TelemetryReader::dbStatsUpdated(quint64 telemetryID, QVariantMap stats)
-{
-    if (telemetryID != records->recordId())
-        return;
-    QVariantMap info = records->recordInfo();
-    foreach (QString key, stats.keys()) {
-        info[key] = stats.value(key);
-    }
-    records->setRecordInfo(info);
-    updateRecordInfo();
-    dbStatsFound(telemetryID, stats);
+    req->exec();*/
 }
 void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
                                         quint64 cacheID,
@@ -247,7 +187,7 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
                                         QGeoPath path,
                                         Fact *f_events)
 {
-    if (telemetryID != records->recordId())
+    /*if (telemetryID != records->recordId())
         return;
 
     deleteChildren();
@@ -275,13 +215,13 @@ void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
     setTotalTime(tMax);
 
     setProgress(-1);
-    emit dataAvailable(cacheID);
+    emit dataAvailable(cacheID);*/
 }
 void TelemetryReader::dbProgress(quint64 telemetryID, int v)
 {
-    if (telemetryID != records->recordId())
+    /*if (telemetryID != records->recordId())
         return;
-    setProgress(v);
+    setProgress(v);*/
 }
 void TelemetryReader::changeThread(Fact *fact, QThread *thread)
 {
@@ -292,7 +232,7 @@ void TelemetryReader::changeThread(Fact *fact, QThread *thread)
 
 void TelemetryReader::notesChanged()
 {
-    if (blockNotesChange)
+    /*if (blockNotesChange)
         return;
     if (!records->recordId())
         return;
@@ -305,7 +245,7 @@ void TelemetryReader::notesChanged()
         this,
         [this]() { apxMsg() << tr("Notes recorded").append(':') << title(); },
         Qt::QueuedConnection);
-    req->exec();
+    req->exec();*/
 }
 
 quint64 TelemetryReader::totalSize() const

@@ -71,10 +71,10 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     connect(f_stop, &Fact::triggered, qimp, &QueueJob::stop);
     connect(f_stop, &Fact::triggered, qexp, &QueueJob::stop);
 
-    connect(telemetry->f_records,
-            &TelemetryRecords::recordIdChanged,
-            this,
-            &TelemetryShare::updateActions);
+    // connect(telemetry->f_records,
+    //         &TelemetryRecords::recordIdChanged,
+    //         this,
+    //         &TelemetryShare::updateActions);
 
     descr_s = descr();
     updateProgress();
@@ -84,17 +84,19 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
 
 QString TelemetryShare::getDefaultTitle()
 {
-    QVariantMap info = _telemetry->f_records->recordInfo();
+    /*QVariantMap info = _telemetry->f_records->recordInfo();
     QString fname = QDateTime::fromMSecsSinceEpoch(_telemetry->f_records->recordTimestamp())
                         .toString("yyyy_MM_dd_hh_mm_ss_zzz");
     QString callsign = info.value("callsign").toString();
     if (!callsign.isEmpty())
         fname.append("-").append(callsign);
-    return fname;
+    return fname;*/
+
+    return {};
 }
 bool TelemetryShare::exportRequest(QString format, QString fileName)
 {
-    quint64 key = _telemetry->f_records->recordId();
+    /*quint64 key = _telemetry->f_records->recordId();
     if (!key) {
         apxMsgW() << tr("Missing data in database");
         return false;
@@ -108,7 +110,7 @@ bool TelemetryShare::exportRequest(QString format, QString fileName)
     auto title = fi.completeBaseName();
     Fact *f = new Fact(nullptr, title, title, fileName);
     f->setValue(key);
-    f->setParentFact(qexp);
+    f->setParentFact(qexp);*/
 
     return true;
 }
@@ -122,7 +124,7 @@ bool TelemetryShare::importRequest(QString format, QString fileName)
 
 void TelemetryShare::updateActions()
 {
-    f_export->setEnabled(_telemetry->f_records->recordId());
+    // f_export->setEnabled(_telemetry->f_records->recordId());
 }
 void TelemetryShare::updateProgress()
 {

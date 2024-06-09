@@ -21,14 +21,14 @@
  */
 #include "TelemetryRecorder.h"
 
+#include "TelemetryDBReq.h"
+
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Database/Database.h>
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
-#include <Vehicles/Vehicle.h>
-
 #include <Nodes/Nodes.h>
+#include <Vehicles/Vehicle.h>
 
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
@@ -97,12 +97,6 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     recStopTimer.setSingleShot(true);
     connect(&recStopTimer, &QTimer::timeout, this, [this]() { setRecording(false); });
 
-    //invalidate record ID after trash empty
-    connect(Database::instance()->telemetry,
-            &TelemetryDB::invalidateRecords,
-            this,
-            &TelemetryRecorder::restartRecording);
-
     updateStatus();
 
     connect(App::instance(), &App::appQuit, this, [this]() { disconnect(); });
@@ -143,7 +137,10 @@ void TelemetryRecorder::checkFileRecord()
     if (fileName.isEmpty())
         return;
 
-    _file.create(dir.absoluteFilePath(fileName), timestamp.toMSecsSinceEpoch(), prepareFileInfo());
+    auto info = prepareFileInfo();
+    auto time_utc = timestamp.toMSecsSinceEpoch();
+
+    _file.create(dir.absoluteFilePath(fileName), time_utc, info);
 
     // record initial mandala state
     for (auto f : _vehicle->f_mandala->valueFacts()) {
@@ -158,6 +155,10 @@ void TelemetryRecorder::checkFileRecord()
 
     if (!_vehicle->f_mission->empty())
         recordMission(false);
+
+    // create DB record
+    auto req = new DBReqTelemetryCreateRecord(time_utc, _file.name(), info, !recording());
+    req->exec();
 }
 
 QJsonObject TelemetryRecorder::prepareFileInfo()

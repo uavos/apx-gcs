@@ -53,10 +53,14 @@ public:
 
     QByteArray get_hash();
 
+    void abort() { _interrupted = true; } // abort reading (can be called from another thread)
+
 private:
     QJsonObject _info;
 
     telemetry::fhdr_s _fhdr;
+
+    std::atomic<bool> _interrupted{};
 
     // helpers
     telemetry::dspec_s _read_dspec();

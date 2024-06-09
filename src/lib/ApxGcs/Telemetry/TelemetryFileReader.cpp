@@ -273,6 +273,10 @@ bool TelemetryFileReader::parse_payload()
     bool ret = false;
     while (isOpen() && !atEnd()) {
         setProgress((pos() - pos_start) * 100 / (size() - pos_start));
+        if (_interrupted) {
+            qWarning() << "interrupted at" << pos();
+            break;
+        }
 
         auto dspec = _read_dspec();
         if (dspec._raw8 == 0) {
@@ -386,6 +390,7 @@ void TelemetryFileReader::_reset_data()
     _next_uplink = false;
 
     _counters = {};
+    _interrupted = false;
 
     _fields.clear();
     _meta_objects.clear();
