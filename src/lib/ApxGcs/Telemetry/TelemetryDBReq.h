@@ -89,13 +89,29 @@ signals:
     void recordInfo(quint64 id, QJsonObject info);
 };
 
+class DBReqTelemetryModelTrash : public DBReqTelemetry
+{
+    Q_OBJECT
+public:
+    explicit DBReqTelemetryModelTrash(quint64 id, bool trash = false)
+        : DBReqTelemetry()
+        , _id(id)
+        , _trash(trash)
+    {}
+
+protected:
+    quint64 _id;
+    bool _trash;
+    virtual bool run(QSqlQuery &query);
+};
+
 class DBReqTelemetryLoadFile : public DBReqTelemetry
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryLoadFile(quint64 telemetryID)
+    explicit DBReqTelemetryLoadFile(quint64 id)
         : DBReqTelemetry()
-        , _telemetryID(telemetryID)
+        , _id(id)
     {
         connect(this, &DBReqTelemetry::discardRequested, &_reader, &TelemetryFileReader::abort);
     }
@@ -103,7 +119,7 @@ public:
     auto reader() const { return &_reader; }
 
 protected:
-    quint64 _telemetryID;
+    quint64 _id;
     TelemetryFileReader _reader;
 
     virtual bool run(QSqlQuery &query);

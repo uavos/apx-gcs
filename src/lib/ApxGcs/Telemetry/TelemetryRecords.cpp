@@ -23,6 +23,7 @@
 #include "TelemetryDBReq.h"
 
 #include <App/AppRoot.h>
+#include <Database/Database.h>
 
 TelemetryRecords::TelemetryRecords(Fact *parent)
     : Fact(parent, "records", tr("Records"), tr("Telemetry records"), FilterModel, "database-search")
@@ -52,8 +53,10 @@ TelemetryRecords::TelemetryRecords(Fact *parent)
     });
 
     connect(this, &Fact::triggered, this, &TelemetryRecords::dbRequestRecordsList);
-
-    // connect(this, &DatabaseLookup::itemTriggered, this, &TelemetryRecords::loadItem);
+    // connect(Database::instance()->telemetry,
+    //         &DatabaseSession::modified,
+    //         this,
+    //         &TelemetryRecords::dbRequestRecordsList);
 
     //actions
     f_restore = new Fact(this,
@@ -188,25 +191,19 @@ void TelemetryRecords::dbLoadNext()
 }
 void TelemetryRecords::dbRemove()
 {
-    /*quint64 key = recordId();
-    if (!key)
-        return;
-    quint64 num = recordNum();
-    if (num > 0)
-        f_prev->trigger();
+    emit discardRequests();
 
-    QVariantMap info;
-    info.insert("trash", 1);
-    DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(key, info);
-    if (num <= 0)
-        connect(
-            req,
-            &DBReqTelemetryWriteInfo::finished,
-            this,
-            [this]() { f_latest->trigger(); },
-            Qt::QueuedConnection);
-    //else connect(req,&DBReqRemove::finished,this,&TelemetryReader::rescan,Qt::QueuedConnection);
-    req->exec();*/
+    auto id = _dbmodel->activeRecordId();
+    if (!id)
+        return;
+
+    dbLoadPrev();
+    auto req = new DBReqTelemetryModelTrash(id);
+    connect(req, &DBReqTelemetryModelTrash::finished, [this, id]() {
+        dbRequestRecordsList();
+        dbRequestRecordInfo(id);
+    });
+    req->exec();
 }
 
 quint64 TelemetryRecords::recordsCount() const

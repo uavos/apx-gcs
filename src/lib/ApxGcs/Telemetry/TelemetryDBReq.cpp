@@ -114,11 +114,39 @@ bool DBReqTelemetryModelRecordInfo::run(QSqlQuery &query)
     return true;
 }
 
+bool DBReqTelemetryModelTrash::run(QSqlQuery &query)
+{
+    // toggle trash flag
+    query.prepare("SELECT * FROM Telemetry WHERE key=?");
+    query.addBindValue(_id);
+    if (!query.exec())
+        return false;
+    if (!query.next())
+        return false;
+
+    auto trash = !query.value("trash").toBool();
+    if (trash) {
+        qDebug() << "Moving record to trash" << _id << query.value("file").toString();
+    } else {
+        qDebug() << "Restoring record from trash" << _id << query.value("file").toString();
+    }
+
+    query.prepare("UPDATE Telemetry SET trash=? WHERE key=?");
+    query.addBindValue(trash ? 1 : QVariant());
+    query.addBindValue(_id);
+    if (!query.exec())
+        return false;
+
+    emit dbModified();
+
+    return true;
+}
+
 bool DBReqTelemetryLoadFile::run(QSqlQuery &query)
 {
     //check for invalid cache (telemetry hash is null)
     query.prepare("SELECT * FROM Telemetry WHERE key=?");
-    query.addBindValue(_telemetryID);
+    query.addBindValue(_id);
     if (!query.exec())
         return false;
     if (!query.next())
@@ -129,6 +157,12 @@ bool DBReqTelemetryLoadFile::run(QSqlQuery &query)
         qWarning() << "empty file name";
         return false;
     }
+
+    // if (query.value("trash").toBool()) {
+    //     qDebug() << "Recovering record from trash";
+    //     auto req = new DBReqTelemetryModelTrash(_id, false);
+    //     req->exec(); // chain next
+    // }
 
     const auto trash = query.value("trash").toBool();
     auto dir = AppDirs::telemetry();
