@@ -23,7 +23,6 @@
 
 #include <Database/DatabaseModel.h>
 #include <Fact/Fact.h>
-#include <QtCore>
 
 class TelemetryRecords : public Fact
 {
@@ -35,19 +34,13 @@ public:
     explicit TelemetryRecords(Fact *parent);
 
     Fact *f_restore;
-
     Fact *f_latest;
     Fact *f_prev;
     Fact *f_next;
     Fact *f_remove;
 
-    void setActiveRecordId(quint64 id);
-
 private:
     DatabaseModel *_dbmodel;
-
-    quint64 _selectedRecordId{};
-    quint64 _findNumId{};
 
 private slots:
     void updateActions();
@@ -62,20 +55,15 @@ private slots:
     void dbRequestRecordsList();
     void dbRequestRecordInfo(quint64 id);
 
-    void dbFindNum();
-
     void dbLoadLatest();
+
     void dbLoadPrev();
     void dbLoadNext();
     void dbRemove();
 
-    void dbResultsPrevNext(DatabaseRequest::Records records);
-    void dbResultsNum(DatabaseRequest::Records records);
-    void dbResultsNumNext(DatabaseRequest::Records records);
-
 signals:
     void discardRequests(); //to stop loading on action
-    void recordTriggered(quint64 telemetryID);
+    void recordTriggered(quint64 id);
 
     //PROPERTIES
 public:

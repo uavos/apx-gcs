@@ -46,18 +46,25 @@ void DatabaseModel::setActiveRecordId(quint64 id)
         emit dataChanged(index(new_idx, 0), index(new_idx, 0), {ValuesRole});
 }
 
+void DatabaseModel::triggerItem(quint64 id)
+{
+    setActiveRecordId(id);
+    emit itemTriggered(id);
+}
+
 void DatabaseModel::setRecordsList(RecordsList recordsList)
 {
-    qDebug() << recordsList.size();
+    // qDebug() << recordsList.size();
     beginResetModel();
     _recordsList = recordsList;
     endResetModel();
     emit countChanged(count());
+    emit recordsListChanged();
 }
 
 void DatabaseModel::setRecordInfo(quint64 id, QJsonObject info)
 {
-    // qDebug() << info;
+    // qDebug() << id << info;
 
     if (!id)
         return;
@@ -96,6 +103,7 @@ QJsonObject DatabaseModel::get(int i) const
     auto id = _recordsList.at(i);
     if (_cache.contains(id)) {
         auto m = _cache.value(id);
+        m["id"] = (qint64) id;
         m["active"] = id == _activeRecordId;
         return m;
     }
@@ -142,14 +150,16 @@ QString DatabaseModel::getFilterExpression(QStringList fields, QString extra_fil
     if (!_filter.isEmpty()) {
         for (const auto &f : fields)
             parts.append(f + " LIKE '%" + _filter + "%'");
+        auto s = "(" + parts.join(" OR ") + ")";
+        parts.clear();
+        parts << s;
     }
 
-    if (!extra_filter.isEmpty()) {
+    if (!extra_filter.isEmpty())
         parts << extra_filter;
-    }
 
-    if (!parts.isEmpty())
-        return "(" + parts.join(" OR ") + ")";
+    if (parts.isEmpty())
+        return {};
 
-    return {};
+    return "(" + parts.join(") AND (") + ")";
 }

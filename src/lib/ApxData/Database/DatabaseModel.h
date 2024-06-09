@@ -49,7 +49,10 @@ public:
     void setFilter(QString v);
     QString getFilterExpression(QStringList fields, QString extra_filter = {}) const;
 
+    const RecordsList &recordsList() const { return _recordsList; }
+
     void setActiveRecordId(quint64 id);
+    auto activeRecordId() const { return _activeRecordId; }
 
     //ListModel override
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
@@ -71,9 +74,13 @@ public slots:
 
     void resetFilter() { setFilter({}); }
 
+    void triggerItem(quint64 id);
+
 signals:
     void countChanged(quint64 count);
+    void itemTriggered(quint64 id);
     void filterChanged();
+    void recordsListChanged();
 
     void requestRecordsList();
     void requestRecordInfo(quint64 id);

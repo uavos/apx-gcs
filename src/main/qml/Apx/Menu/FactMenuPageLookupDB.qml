@@ -50,7 +50,7 @@ FactMenuPageList {
                 active: d.active?d.active:false
                 showEditor: false
                 onTriggered: {
-                    parentFact.triggerItem(modelData)
+                    parentFact.model.triggerItem(d.id)
                 }
                 onPressAndHold: {
                     console.log(JSON.stringify(d,' ',2))
