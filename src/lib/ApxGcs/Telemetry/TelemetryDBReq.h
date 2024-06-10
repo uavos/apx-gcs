@@ -26,6 +26,7 @@
 #include <Fact/Fact.h>
 
 #include "TelemetryFileReader.h"
+#include "TelemetryFileWriter.h"
 
 class DBReqTelemetryCreateRecord : public DBReqTelemetry
 {
@@ -72,11 +73,11 @@ signals:
     void recordsList(DatabaseModel::RecordsList records);
 };
 
-class DBReqTelemetryModelRecordInfo : public DBReqTelemetry
+class DBReqTelemetryRecordInfo : public DBReqTelemetry
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryModelRecordInfo(quint64 id)
+    explicit DBReqTelemetryRecordInfo(quint64 id)
         : DBReqTelemetry()
         , _id(id)
     {}
@@ -86,6 +87,7 @@ protected:
     bool run(QSqlQuery &query);
 
 signals:
+    void recordModelInfo(quint64 id, QJsonObject info);
     void recordInfo(quint64 id, QJsonObject info);
 };
 
@@ -105,13 +107,12 @@ protected:
     virtual bool run(QSqlQuery &query);
 };
 
-class DBReqTelemetryLoadFile : public DBReqTelemetry
+class DBReqTelemetryLoadFile : public DBReqTelemetryRecordInfo
 {
     Q_OBJECT
 public:
     explicit DBReqTelemetryLoadFile(quint64 id)
-        : DBReqTelemetry()
-        , _id(id)
+        : DBReqTelemetryRecordInfo(id)
     {
         connect(this, &DBReqTelemetry::discardRequested, &_reader, &TelemetryFileReader::abort);
     }
@@ -119,7 +120,6 @@ public:
     auto reader() const { return &_reader; }
 
 protected:
-    quint64 _id;
     TelemetryFileReader _reader;
 
     virtual bool run(QSqlQuery &query);

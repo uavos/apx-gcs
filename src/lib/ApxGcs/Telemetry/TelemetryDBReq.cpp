@@ -69,7 +69,7 @@ bool DBReqTelemetryModelRecordsList::run(QSqlQuery &query)
     return true;
 }
 
-bool DBReqTelemetryModelRecordInfo::run(QSqlQuery &query)
+bool DBReqTelemetryRecordInfo::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM Telemetry WHERE key=?");
     query.addBindValue(_id);
@@ -80,6 +80,24 @@ bool DBReqTelemetryModelRecordInfo::run(QSqlQuery &query)
 
     auto r = query.record();
 
+    // provide raw info record
+    QJsonObject jraw;
+    for (auto i = 0; i < r.count(); i++) {
+        auto v = r.value(i);
+        if (v.isNull() || !v.isValid())
+            continue;
+        auto name = r.fieldName(i);
+
+        if (name == "info") {
+            jraw[name] = QJsonDocument::fromJson(v.toByteArray()).object();
+            continue;
+        }
+
+        jraw[name] = QJsonValue::fromVariant(v);
+    }
+    emit recordInfo(_id, jraw);
+
+    // prepare info for models
     QJsonObject j;
 
     QString time = QDateTime::fromMSecsSinceEpoch(r.value("time").toLongLong())
@@ -88,7 +106,7 @@ bool DBReqTelemetryModelRecordInfo::run(QSqlQuery &query)
     QString comment = r.value("comment").toString();
     QString notes = r.value("notes").toString();
     QString total;
-    quint64 t = r.value("totalTime").toULongLong();
+    quint64 t = r.value("duration").toULongLong();
     if (t > 0)
         total = AppRoot::timeToString(t / 1000);
     QStringList descr;
@@ -109,7 +127,7 @@ bool DBReqTelemetryModelRecordInfo::run(QSqlQuery &query)
     j["descr"] = descr.join(" - ");
     j["value"] = value.join(' ');
 
-    emit recordInfo(_id, j);
+    emit recordModelInfo(_id, j);
 
     return true;
 }
@@ -155,20 +173,17 @@ bool DBReqTelemetryLoadFile::run(QSqlQuery &query)
     const auto file = query.value("file").toString();
     if (file.isEmpty()) {
         qWarning() << "empty file name";
+        // TODO convert DB data to file
         return false;
     }
 
-    // if (query.value("trash").toBool()) {
-    //     qDebug() << "Recovering record from trash";
-    //     auto req = new DBReqTelemetryModelTrash(_id, false);
-    //     req->exec(); // chain next
-    // }
+    if (query.value("trash").toBool()) {
+        qDebug() << "Recovering record from trash";
+        auto req = new DBReqTelemetryModelTrash(_id, false);
+        req->exec(); // chain next
+    }
 
-    const auto trash = query.value("trash").toBool();
     auto dir = AppDirs::telemetry();
-    if (trash)
-        dir.cd("trash");
-
     auto filePath = dir.absoluteFilePath(file + '.' + telemetry::APXTLM_FTYPE);
 
     if (!_reader.open(filePath))
@@ -177,5 +192,26 @@ bool DBReqTelemetryLoadFile::run(QSqlQuery &query)
     if (!_reader.parse_payload())
         return false;
 
-    return true;
+    bool still_writing = _reader.is_still_writing();
+    if (still_writing) {
+        qDebug() << "File is still writing";
+    }
+
+    // update db record
+    const auto &rinfo = _reader.info();
+
+    QVariantMap q;
+    q["hash"] = rinfo["hash"].toString();
+    q["duration"] = rinfo["duration"].toInteger();
+    q["info"] = QJsonDocument(rinfo).toJson(QJsonDocument::Compact);
+
+    if (recordUpdateQuery(query, q, "Telemetry", "WHERE key=?")) {
+        query.addBindValue(_id);
+        if (!query.exec())
+            return false;
+
+        emit dbModified();
+    }
+
+    return DBReqTelemetryRecordInfo::run(query);
 }

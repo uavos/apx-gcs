@@ -42,6 +42,15 @@ TelemetryFileReader::TelemetryFileReader(QObject *parent)
     : QFile(parent)
 {}
 
+bool TelemetryFileReader::is_still_writing()
+{
+    auto lockFile = TelemetryFileWriter::get_lock_file(fileName());
+    if (!lockFile)
+        return true;
+    delete lockFile;
+    return false;
+}
+
 QByteArray TelemetryFileReader::get_hash()
 {
     if (!isOpen()) {

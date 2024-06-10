@@ -40,6 +40,8 @@ public:
 
     bool open(QString filePath);
 
+    bool is_still_writing();
+
     const auto &info() const { return _info; }
 
     bool parse_payload();

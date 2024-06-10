@@ -68,11 +68,11 @@ private slots:
     void notesChanged();
     void updateStatus();
 
-    void updateRecordInfo();
-    void load();
+    void parseRecordFile(quint64 id);
 
     //Database
-private slots:
+    void setRecordInfo(quint64 id, QJsonObject info);
+
     void fileInfoLoaded(QJsonObject data);
 
     void dbResultsDataProc(quint64 telemetryID,
@@ -88,13 +88,15 @@ private slots:
     void dbProgress(quint64 telemetryID, int v);
 
 signals:
+    void parsedRecordInfoAvailable(quint64 id, QJsonObject info);
+
     void statsAvailable();
     void dataAvailable(quint64 cacheID);
 
     void recordFactTriggered(Fact *f);
 
 public slots:
-    void loadCurrent();
+    void loadRecord(quint64 id);
 
     //PROPERTIES
 public:

@@ -50,6 +50,7 @@ private slots:
 public slots:
     void setRecordsCount(quint64 v);
     void setRecordNum(quint64 v);
+    void recordInfoUpdated(quint64 id) { emit dbRequestRecordInfo(id); }
 
 private slots:
     void dbRequestRecordsList();

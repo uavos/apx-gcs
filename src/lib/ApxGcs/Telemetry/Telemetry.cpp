@@ -52,9 +52,20 @@ Telemetry::Telemetry(Vehicle *parent)
         f_records->f_latest->createAction(this);
         f_records->f_prev->createAction(this);
         f_records->f_next->createAction(this);
+
         // connect(this, &Fact::triggered, f_records, &TelemetryRecords::defaultLookup);
 
         f_reader = new TelemetryReader(this);
+
+        connect(f_records,
+                &TelemetryRecords::recordTriggered,
+                f_reader,
+                &TelemetryReader::loadRecord);
+        connect(f_reader,
+                &TelemetryReader::parsedRecordInfoAvailable,
+                f_records,
+                &TelemetryRecords::recordInfoUpdated);
+
         connect(f_reader, &Fact::valueChanged, this, &Telemetry::updateStatus);
         connect(f_reader, &Fact::progressChanged, this, &Telemetry::updateProgress);
         connect(f_reader,
