@@ -308,7 +308,13 @@ void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool u
 
 void TelemetryRecorder::recordMission(bool uplink)
 {
-    _file.write_meta("mission", _vehicle->f_mission->toJsonDocument().object(), uplink);
+    const auto &data = _vehicle->f_mission->toJsonDocument().object();
+    _file.write_evt(getEventTimestamp(),
+                    "mission",
+                    data["title"].toString(),
+                    data["hash"].toString(),
+                    uplink);
+    _file.write_meta("mission", data, uplink);
 }
 void TelemetryRecorder::recordConfig()
 {

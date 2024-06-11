@@ -55,6 +55,38 @@ TelemetryReader::TelemetryReader(Fact *parent)
     //info
     connect(this, &TelemetryReader::totalTimeChanged, this, &TelemetryReader::updateStatus);
 
+    // create info evt facts
+    connect(this,
+            &TelemetryReader::rec_field,
+            this,
+            [this](QString name, QString title, QString units) {
+                _fields.append({name, title, units});
+            });
+
+    connect(this,
+            &TelemetryReader::rec_values,
+            this,
+            [this](quint64 timestamp_ms, Values data, bool uplink) {
+                if (uplink)
+                    for (auto [idx, value] : data.asKeyValueRange()) {
+                        const auto &f = _fields.value(idx);
+                        addEventFact(timestamp_ms, "uplink", f.title, f.name);
+                    }
+            });
+
+    connect(this,
+            &TelemetryReader::rec_evt,
+            this,
+            [this](quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink) {
+                addEventFact(timestamp_ms, name, value, uid);
+            });
+    // connect(this,
+    //         &TelemetryReader::rec_meta,
+    //         this,
+    //         [this](QString name, QJsonObject data, bool uplink) {
+    //             addEventFact(timestamp_ms, "msg", text, subsystem);
+    //         });
+
     //load sequence
     qRegisterMetaType<fieldData_t>("fieldData_t");
     qRegisterMetaType<fieldNames_t>("fieldNames_t");
@@ -76,32 +108,30 @@ void TelemetryReader::loadRecord(quint64 id)
     setTotalSize(0);
     setTotalTime(0);
     deleteChildren();
-
-    auto req = new DBReqTelemetryRecordInfo(id);
-    connect(req, &DBReqTelemetryRecordInfo::recordInfo, this, [this](quint64 id, QJsonObject info) {
-        if (info.value("parsed").toBool()) {
-            setRecordInfo(id, info);
-        } else {
-            parseRecordFile(id);
-        }
-    });
-    req->exec();
-}
-
-void TelemetryReader::parseRecordFile(quint64 id)
-{
-    qDebug() << id;
     setProgress(0);
 
+    _fields.clear();
+
     auto req = new DBReqTelemetryLoadFile(id);
-    connect(req, &DatabaseRequest::finished, this, [this]() { setProgress(-1); });
+    connect(req, &DatabaseRequest::finished, this, [this]() {
+        setProgress(-1);
+        emit parsingFinished();
+    });
     auto reader = req->reader();
     connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
     connect(req, &DBReqTelemetryRecordInfo::recordInfo, this, &TelemetryReader::setRecordInfo);
-    connect(req,
-            &DBReqTelemetryRecordInfo::recordInfo,
-            this,
-            &TelemetryReader::parsedRecordInfoAvailable);
+
+    // forward info to other facts (lists)
+    connect(req, &DBReqTelemetryRecordInfo::recordInfo, this, &TelemetryReader::recordInfoUpdated);
+    connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::rec_field);
+    connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::rec_values);
+    connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::rec_evt);
+    connect(reader, &TelemetryFileReader::msg, this, &TelemetryReader::rec_msg);
+    connect(reader, &TelemetryFileReader::meta, this, &TelemetryReader::rec_meta);
+    connect(reader, &TelemetryFileReader::raw, this, &TelemetryReader::rec_raw);
+
+    // start parsing
+    emit parsingStarted();
     req->exec();
 }
 
@@ -149,6 +179,59 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
 void TelemetryReader::fileInfoLoaded(QJsonObject data)
 {
     qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
+}
+
+void TelemetryReader::addEventFact(quint64 time,
+                                   const QString &name,
+                                   const QString &value,
+                                   const QString &uid)
+{
+    Fact *g = child(name);
+    if (!g) {
+        g = new Fact(this, name, "", "", Fact::Group | Fact::Count);
+    }
+
+    Fact *f = nullptr;
+    if (name == "uplink") {
+        f = g->child(uid);
+        if (!f) {
+            f = new Fact(g, uid, uid, value);
+            //qDebug() << name << value;
+            f->setValue(1);
+        } else {
+            f->setValue(f->value().toInt() + 1);
+        }
+    } else if (name == "serial") {
+        f = g->childByTitle(uid);
+        if (!f) {
+            f = new Fact(g, uid, uid, "");
+            //qDebug() << name << value;
+            f->setValue(1);
+        } else {
+            f->setValue(f->value().toInt() + 1);
+        }
+    } else {
+        QString title;
+        if (name == "xpdr")
+            title = name;
+        else
+            title = value;
+        QString descr = uid;
+        if (title.startsWith('[') && title.contains(']')) {
+            int i = title.indexOf(']');
+            QString s = title.mid(1, i - 1).trimmed();
+            title.remove(0, i + 1);
+            if (!s.isEmpty())
+                descr.prepend(QString("%1/").arg(s));
+        }
+        f = new Fact(g, name + "#", title, descr);
+        QString stime = QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz");
+        f->setValue(stime);
+    }
+
+    if (!f)
+        return;
+    f->setProperty("time", QVariant::fromValue(time));
 }
 
 void TelemetryReader::dbStatsFound(quint64 telemetryID, QVariantMap stats)
@@ -221,12 +304,6 @@ void TelemetryReader::dbProgress(quint64 telemetryID, int v)
     /*if (telemetryID != records->recordId())
         return;
     setProgress(v);*/
-}
-void TelemetryReader::changeThread(Fact *fact, QThread *thread)
-{
-    fact->moveToThread(thread);
-    for (auto i : fact->facts())
-        changeThread(i, thread);
 }
 
 void TelemetryReader::notesChanged()

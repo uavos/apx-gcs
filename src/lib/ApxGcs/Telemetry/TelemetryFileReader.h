@@ -35,6 +35,15 @@ class TelemetryFileReader : public QFile
     Q_OBJECT
 
 public:
+    // datatypes used in data signals
+    struct Field
+    {
+        QString name;
+        QString title;
+        QString units;
+    };
+    using Values = QHash<size_t, QVariant>;
+
     explicit TelemetryFileReader(QObject *parent = nullptr);
     explicit TelemetryFileReader(QString filePath, QObject *parent = nullptr);
 
@@ -115,16 +124,9 @@ private:
     } _counters;
 
     // fields data
-    struct Field
-    {
-        QString name;
-        QString title;
-        QString units;
-    };
     QList<Field> _fields; // used internally
 
     // values data
-    using Values = QHash<size_t, QVariant>;
     Values _downlink_values;
     Values _uplink_values;
     void _commit_values();

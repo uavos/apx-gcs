@@ -360,17 +360,28 @@ bool TelemetryFileReader::parse_payload()
     _info["parsed"] = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
     QJsonObject counters;
-    counters["records"] = _counters.records;
-    counters["fields"] = _counters.fields;
-    counters["uplink"] = _counters.uplink;
-    counters["downlink"] = _counters.downlink;
-    counters["evt"] = _counters.evt;
-    counters["msg"] = _counters.msg;
-    counters["meta"] = _counters.meta;
-    counters["raw"] = _counters.raw;
-    counters["mission"] = _counters.mission;
-    counters["nodes"] = _counters.nodes;
-    counters["conf"] = _counters.conf;
+    if (_counters.records)
+        counters["records"] = _counters.records;
+    if (_counters.fields)
+        counters["fields"] = _counters.fields;
+    if (_counters.uplink)
+        counters["uplink"] = _counters.uplink;
+    if (_counters.downlink)
+        counters["downlink"] = _counters.downlink;
+    if (_counters.evt)
+        counters["evt"] = _counters.evt;
+    if (_counters.msg)
+        counters["msg"] = _counters.msg;
+    if (_counters.meta)
+        counters["meta"] = _counters.meta;
+    if (_counters.raw)
+        counters["raw"] = _counters.raw;
+    if (_counters.mission)
+        counters["mission"] = _counters.mission;
+    if (_counters.nodes)
+        counters["nodes"] = _counters.nodes;
+    if (_counters.conf)
+        counters["conf"] = _counters.conf;
 
     _info["counters"] = counters;
 

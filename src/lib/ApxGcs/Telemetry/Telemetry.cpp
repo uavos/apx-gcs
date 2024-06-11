@@ -62,7 +62,7 @@ Telemetry::Telemetry(Vehicle *parent)
                 f_reader,
                 &TelemetryReader::loadRecord);
         connect(f_reader,
-                &TelemetryReader::parsedRecordInfoAvailable,
+                &TelemetryReader::recordInfoUpdated,
                 f_records,
                 &TelemetryRecords::recordInfoUpdated);
 

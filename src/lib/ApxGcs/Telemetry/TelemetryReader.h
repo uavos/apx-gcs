@@ -27,6 +27,8 @@
 #include <QGeoPath>
 #include <QtCore>
 
+#include "TelemetryFileReader.h"
+
 #include "TelemetryReaderDataReq.h"
 class TelemetryRecords;
 
@@ -57,18 +59,22 @@ public:
     events_t events;
     QGeoPath geoPath;
 
+    // datatypes for data signals
+    using Field = TelemetryFileReader::Field;
+    using Values = TelemetryFileReader::Values;
+
 private:
     quint64 _recordID{};
 
+    QList<Field> _fields;
+
     bool blockNotesChange;
 
-    void changeThread(Fact *fact, QThread *thread);
+    void addEventFact(quint64 time, const QString &name, const QString &value, const QString &uid);
 
 private slots:
     void notesChanged();
     void updateStatus();
-
-    void parseRecordFile(quint64 id);
 
     //Database
     void setRecordInfo(quint64 id, QJsonObject info);
@@ -88,11 +94,23 @@ private slots:
     void dbProgress(quint64 telemetryID, int v);
 
 signals:
-    void parsedRecordInfoAvailable(quint64 id, QJsonObject info);
+    // forwarded signals from file reader
+    void rec_field(QString name, QString title, QString units);
+    void rec_values(quint64 timestamp_ms, Values data, bool uplink);
+    void rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
+    void rec_msg(quint64 timestamp_ms, QString text, QString subsystem);
+    void rec_meta(QString name, QJsonObject data, bool uplink);
+    void rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
+
+    //
+    void parsingStarted();
+    void parsingFinished();
+
+    // called when file parsed and header info collected
+    void recordInfoUpdated(quint64 id, QJsonObject data);
 
     void statsAvailable();
     void dataAvailable(quint64 cacheID);
-
     void recordFactTriggered(Fact *f);
 
 public slots:
