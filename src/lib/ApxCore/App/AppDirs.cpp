@@ -20,10 +20,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "AppDirs.h"
-
 #include <app_def.h>
 
-QDir AppDirs::res()
+namespace AppDirs {
+
+QDir res()
 {
 #ifdef __ANDROID__
     const QString hpath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
@@ -49,7 +50,7 @@ QDir AppDirs::res()
 #endif
 }
 
-QDir AppDirs::user()
+QDir user()
 {
 #ifdef __ANDROID__
     return QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/.gcu");
@@ -59,7 +60,7 @@ QDir AppDirs::user()
 #endif
 }
 
-QDir AppDirs::libs()
+QDir libs()
 {
     QDir dir = QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_LIBS_PATH);
     if (dir.exists())
@@ -70,7 +71,7 @@ QDir AppDirs::libs()
     return QDir();
 }
 
-QDir AppDirs::plugins()
+QDir plugins()
 {
     QDir dir = QDir(QCoreApplication::applicationDirPath() + "/" + RELATIVE_PLUGINS_PATH);
     if (dir.exists())
@@ -81,122 +82,241 @@ QDir AppDirs::plugins()
     return QDir();
 }
 
-QDir AppDirs::userPlugins()
+QDir userPlugins()
 {
     return QDir(user().absoluteFilePath("Plugins"));
 }
 
-QDir AppDirs::firmware()
+QDir firmware()
 {
-    return QDir(AppDirs::user().absoluteFilePath("Firmware"));
+    return QDir(user().absoluteFilePath("Firmware"));
 }
 
-QDir AppDirs::prefs()
+QDir prefs()
 {
-    return QDir(AppDirs::user().absoluteFilePath("Preferences"));
+    return QDir(user().absoluteFilePath("Preferences"));
 }
 
-QDir AppDirs::missions()
+QDir missions()
 {
     return QDir(user().absoluteFilePath("Missions"));
 }
 
-QDir AppDirs::configs()
+QDir configs()
 {
     return QDir(user().absoluteFilePath("Configs"));
 }
 
-QDir AppDirs::scripts()
+QDir configBackups()
+{
+    return QDir(configs().absoluteFilePath(".backup"));
+}
+
+QDir scripts()
 {
     return QDir(user().absoluteFilePath("Scripts"));
 }
 
-QDir AppDirs::db()
+QDir db()
 {
     return QDir(user().absoluteFilePath("Data"));
 }
 
-QDir AppDirs::logs()
+QDir logs()
 {
     return QDir(user().absoluteFilePath("Logs"));
 }
 
-QDir AppDirs::video()
+QDir video()
 {
     return QDir(user().absoluteFilePath("Video"));
 }
 
-QDir AppDirs::images()
+QDir images()
 {
     return QDir(user().absoluteFilePath("Images"));
 }
 
 //-------------------------------------------
 //HELPERS
+namespace utils {
 
-bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
+QByteArray getFileHash(const QFileInfo &fileInfo)
 {
-    QFileInfo srcInfo(sourceDir);
-    QFileInfo destInfo(destinationDir);
-
-    if (srcInfo.isFile()) {
-        if (destInfo.isDir()) {
-            destInfo = QFileInfo(destInfo.dir().filePath(srcInfo.fileName()));
-        }
-        if (destInfo.exists()) {
-            if (destInfo.lastModified() == srcInfo.lastModified())
-                return false;
-            QFile::remove(destInfo.absoluteFilePath());
-        } else {
-            if (!destInfo.dir().exists()) {
-                destInfo.dir().mkpath(".");
-            }
-        }
-        QFile::copy(srcInfo.absoluteFilePath(), destInfo.absoluteFilePath());
-        return true;
-    }
-
-    bool rv = false;
-
-    QDir originDirectory(sourceDir);
-
-    if (!originDirectory.exists()) {
-        return rv;
-    }
-
-    QDir destinationDirectory(destinationDir);
-
-    /*if(destinationDirectory.exists() && overWriteDirectory)
-    {
-        destinationDirectory.removeRecursively();
-    }*/
-
-    if (!destinationDirectory.exists()) {
-        destinationDirectory.mkpath(".");
-        rv = true;
-    }
-
-    foreach (QString directoryName, originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-        QString destinationPath = destinationDir + "/" + directoryName;
-        //destinationDirectory.mkpath(directoryName);
-        copyPath(sourceDir + "/" + directoryName, destinationPath);
-    }
-
-    foreach (QString fileName, originDirectory.entryList(QDir::Files)) {
-        QFileInfo dest(destinationDir + "/" + fileName);
-        QFileInfo src(sourceDir + "/" + fileName);
-        if (dest.exists()) {
-            if (dest.lastModified() == src.lastModified())
-                continue;
-            QFile::remove(dest.absoluteFilePath());
-        }
-        rv = true;
-        QFile::copy(src.absoluteFilePath(), dest.absoluteFilePath());
-    }
-
-    /*! Possible race-condition mitigation? */
-    QDir finalDestination(destinationDir);
-    finalDestination.refresh();
-
-    return rv;
+    QFile file(fileInfo.absoluteFilePath());
+    file.open(QIODevice::ReadOnly);
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(&file);
+    return hash.result();
 }
+
+QFileInfo newerFile(const QFileInfo &info1, const QFileInfo &info2)
+{
+    return (info1.lastModified() < info2.lastModified() ? info2 : info1);
+}
+
+template<typename... Args>
+QFileInfo newerFile(const QFileInfo &firstInfo, Args &&...infos)
+{
+    return newerFile(firstInfo, newerFile(std::forward<Args>(infos)...));
+}
+
+template<typename... Args>
+bool isHashEqual(const QFileInfo &firstHash, Args &&...hashes)
+{
+    return (... && (getFileHash(std::forward<Args>(hashes)) == getFileHash(firstHash)));
+}
+
+bool backupFile(const QFileInfo &fileToBackupInfo, const QString &backupDirPath)
+{
+    QDir backupDir(backupDirPath);
+
+    if (!createDir(backupDir))
+        return false;
+
+    if (hasSomeHash(fileToBackupInfo, backupDir))
+        return true;
+
+    QStringList nameFilter;
+    nameFilter << fileToBackupInfo.baseName() + "." + fileToBackupInfo.completeSuffix() + ".*";
+    backupDir.setNameFilters(nameFilter);
+
+    QFileInfoList fileInfos = backupDir.entryInfoList(QDir::NoFilter, QDir::Name);
+    int index = 1;
+    if (!fileInfos.isEmpty()) {
+        QFileInfo lastBackup = fileInfos.back();
+        index = lastBackup.suffix().toInt() + 1;
+    }
+
+    QFileInfo backupPathInfo(backupDirPath + "/" + fileToBackupInfo.fileName() + "."
+                             + QString::number(index));
+
+    return simpleCopy(fileToBackupInfo, backupPathInfo, false);
+}
+
+bool simpleCopy(const QFileInfo &srcInfo, const QFileInfo &destInfo, const bool overwrite)
+{
+    if (overwrite && destInfo.exists())
+        QFile::remove(destInfo.absoluteFilePath());
+
+    if (QFile::copy(srcInfo.absoluteFilePath(), destInfo.absoluteFilePath()))
+        return true;
+    qDebug() << "Error in copying from " << srcInfo.absoluteFilePath() << " to "
+             << destInfo.absoluteFilePath();
+    return false;
+}
+
+bool createDir(const QDir &directory)
+{
+    if (!directory.exists() && !directory.mkpath(".")) {
+        qDebug() << "Can't create " << directory.path() << " directory";
+        return false;
+    }
+    return true;
+}
+
+bool isFileNeedOverwrite(const QFileInfo &srcInfo, const QFileInfo &destInfo)
+{
+    return (newerFile(srcInfo, destInfo) == srcInfo && !isHashEqual(srcInfo, destInfo));
+}
+
+bool hasSomeHash(const QFileInfo &sourceFileInfo, const QDir &targetDir)
+{
+    QStringList nameFilter(sourceFileInfo.fileName() + ".*");
+    QFileInfoList infoList = targetDir.entryInfoList(nameFilter);
+
+    QByteArray hash = getFileHash(sourceFileInfo);
+    return std::any_of(std::cbegin(infoList), std::cend(infoList), [&hash](const QFileInfo &info) {
+        return hash == getFileHash(info);
+    });
+};
+
+bool copyFile(QString sourceFilePath, QString destinationPath, QString backupDirPath)
+{
+    if (QFileInfo(destinationPath).isDir())
+        destinationPath = destinationPath + "/" + QFileInfo(sourceFilePath).fileName();
+
+    QFileInfo destinationFileInfo(destinationPath);
+
+    const bool isDestinationFileExist = destinationFileInfo.exists();
+
+    if (!isDestinationFileExist && !createDir(destinationFileInfo.absolutePath()))
+        return false;
+
+    const bool isBackupPathProvided = !backupDirPath.isEmpty();
+    const bool overwriteFile = isFileNeedOverwrite(sourceFilePath, destinationPath);
+
+    if (isBackupPathProvided && isDestinationFileExist && overwriteFile
+        && !backupFile(destinationPath, backupDirPath))
+        return false;
+
+    const bool isFileNeedCopy = !isDestinationFileExist
+                                || (isDestinationFileExist && overwriteFile);
+
+    return isFileNeedCopy && !simpleCopy(sourceFilePath, destinationPath) ? false : true;
+}
+
+bool copyDir(QString sourceDirPath,
+             QString destinationDirPath,
+             QString fileExtension,
+             QString backupDirPath)
+{
+    if (!utils::createDir(destinationDirPath))
+        return false;
+
+    const bool isBackupPathProvided = !backupDirPath.isEmpty();
+    if (isBackupPathProvided && !utils::createDir(backupDirPath))
+        return false;
+
+    QDirIterator it(sourceDirPath,
+                    QStringList() << "*." + fileExtension,
+                    QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot),
+                    QDirIterator::Subdirectories);
+
+    while (it.hasNext()) {
+        QString sourcefilePath = it.next();
+        QString fileRelativePath = sourcefilePath;
+
+        fileRelativePath.remove(sourceDirPath + "/");
+
+        QString destinationFilePath = destinationDirPath + "/" + fileRelativePath;
+        QFileInfo destinationFileInfo(destinationFilePath);
+
+        QString backupFilePath = backupDirPath + "/" + fileRelativePath;
+        QFileInfo backupFileInfo(backupFilePath);
+
+        if (!createDir(destinationFileInfo.absolutePath()))
+            continue;
+
+        copyFile(sourcefilePath,
+                 destinationFilePath,
+                 isBackupPathProvided ? backupFileInfo.absolutePath() : "");
+    }
+
+    return false;
+}
+
+} // namespace utils
+
+void copyPath(const QString &sourcePath,
+              const QString &destinationPath,
+              const QString &fileExtension,
+              const QString &backupDirPath)
+{
+    QFileInfo sourceInfo(sourcePath);
+
+    if (!sourceInfo.exists()) {
+        qDebug() << sourcePath << " path doesn't exist";
+        return;
+    }
+
+    if (sourceInfo.isFile()) {
+        utils::copyFile(sourcePath, destinationPath, backupDirPath);
+        return;
+    }
+
+    utils::copyDir(sourcePath, destinationPath, fileExtension, backupDirPath);
+    return;
+}
+
+} // namespace AppDirs
