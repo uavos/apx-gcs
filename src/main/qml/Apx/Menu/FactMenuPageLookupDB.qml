@@ -50,7 +50,11 @@ FactMenuPageList {
                 active: d.active?d.active:false
                 showEditor: false
                 onTriggered: {
-                    parentFact.model.triggerItem(d.id)
+                    if(parentFact && parentFact.opts.dbtool){
+                        parentFact.triggerItem(d)
+                    }else{
+                        parentFact.model.triggerItem(d.id)
+                    }
                 }
                 onPressAndHold: {
                     console.log(JSON.stringify(d,' ',2))

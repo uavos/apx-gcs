@@ -32,6 +32,7 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
     , db(db)
 {
     setOpt("page", "Menu/FactMenuPageLookupDB.qml");
+    setOpt("dbtool", true); // will use old signals on qml
 
     setModel(new DatabaseLookupModel(this));
 
