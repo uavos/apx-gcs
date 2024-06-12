@@ -43,10 +43,10 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
 {
     setIcon("play-circle-outline");
 
-    connect(telemetry->f_reader,
-            &TelemetryReader::dataAvailable,
-            this,
-            &TelemetryPlayer::setCacheId);
+    // connect(telemetry->f_reader,
+    //         &TelemetryReader::dataAvailable,
+    //         this,
+    //         &TelemetryPlayer::setCacheId);
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActive);
 
     f_time = new Fact(this, "time", tr("Time"), tr("Current postition"), Int);

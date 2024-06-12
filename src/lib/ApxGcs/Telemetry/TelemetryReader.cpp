@@ -51,6 +51,7 @@ TelemetryReader::TelemetryReader(Fact *parent)
                         Action | ShowDisabled,
                         "reload");
     f_reload->setEnabled(false);
+    connect(f_reload, &Fact::triggered, this, [this]() { loadRecord(_loadRecordID); });
 
     //info
     connect(this, &TelemetryReader::totalTimeChanged, this, &TelemetryReader::updateStatus);
@@ -111,15 +112,17 @@ void TelemetryReader::loadRecord(quint64 id)
     setProgress(0);
 
     _fields.clear();
+    _loadRecordID = id;
 
     auto req = new DBReqTelemetryLoadFile(id);
     connect(req, &DatabaseRequest::finished, this, [this]() {
         setProgress(-1);
-        emit parsingFinished();
+        emit rec_finished();
+        f_reload->setEnabled(true);
     });
     auto reader = req->reader();
     connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
-    connect(req, &DBReqTelemetryRecordInfo::recordInfo, this, &TelemetryReader::setRecordInfo);
+    connect(req, &DBReqTelemetryLoadFile::recordInfo, this, &TelemetryReader::setRecordInfo);
 
     // forward info to other facts (lists)
     connect(req, &DBReqTelemetryRecordInfo::recordInfo, this, &TelemetryReader::recordInfoUpdated);
@@ -131,34 +134,31 @@ void TelemetryReader::loadRecord(quint64 id)
     connect(reader, &TelemetryFileReader::raw, this, &TelemetryReader::rec_raw);
 
     // start parsing
-    emit parsingStarted();
+    emit rec_started();
     req->exec();
 }
 
 void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
 {
-    setTotalTime(info.value("duration").toInteger());
-    quint64 downlink = info.value("downlink").toInteger();
-    quint64 uplink = info.value("uplink").toInteger();
-    quint64 events = info.value("events").toInteger();
-    setTotalSize(downlink + uplink + events);
-    evtCountMap.clear();
-    foreach (QString s, info.value("evtDetails").toString().split(',')) {
-        if (s.isEmpty())
-            continue;
-        QString key = s.left(s.indexOf('='));
-        QString v = s.mid(s.indexOf('=') + 1);
-        evtCountMap.insert(key, v.toUInt());
-    }
-    if (uplink)
-        evtCountMap.insert("uplink", uplink);
+    _info = info;
+    const auto &m = info;
 
-    qint64 t = info.value("time").toInteger();
+    setTotalTime(m["duration"].toInteger());
+
+    const auto &cnt = m["info"]["counters"].toObject();
+
+    setTotalSize(cnt["records"].toInteger());
+
+    quint64 downlink = cnt["downlink"].toInteger();
+    quint64 uplink = cnt["uplink"].toInteger();
+    quint64 events = cnt["evt"].toInteger();
+
+    qint64 t = m["time"].toInteger();
     QString title = t > 0 ? QDateTime::fromMSecsSinceEpoch(t).toString("yyyy MMM dd hh:mm:ss")
                           : tr("Telemetry Data");
-    QString callsign = info.value("callsign").toString();
-    QString comment = info.value("comment").toString();
-    QString notes = info.value("notes").toString();
+    QString callsign = m["callsign"].toString();
+    QString comment = m["comment"].toString();
+    QString notes = m["notes"].toString();
     QString stime = AppRoot::timeToString(totalTime() / 1000, true);
 
     QStringList descr;
@@ -167,18 +167,18 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
     if (!comment.isEmpty() && comment != callsign)
         descr.append(comment);
 
+    descr.append(QString("%1/%2/%3").arg(downlink).arg(uplink).arg(events));
+
     setTitle(title);
     setDescr(descr.join(" | "));
+
     blockNotesChange = true;
     f_notes->setValue(notes);
     blockNotesChange = false;
 
-    emit statsAvailable();
-}
+    qDebug("%s", QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
 
-void TelemetryReader::fileInfoLoaded(QJsonObject data)
-{
-    qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
+    emit recordInfoChanged();
 }
 
 void TelemetryReader::addEventFact(quint64 time,
@@ -232,6 +232,7 @@ void TelemetryReader::addEventFact(quint64 time,
     if (!f)
         return;
     f->setProperty("time", QVariant::fromValue(time));
+    connect(f, &Fact::triggered, this, [this, f]() { emit statsFactTriggered(f); });
 }
 
 void TelemetryReader::dbStatsFound(quint64 telemetryID, QVariantMap stats)

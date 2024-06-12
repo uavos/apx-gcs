@@ -69,12 +69,12 @@ Telemetry::Telemetry(Vehicle *parent)
         connect(f_reader, &Fact::valueChanged, this, &Telemetry::updateStatus);
         connect(f_reader, &Fact::progressChanged, this, &Telemetry::updateProgress);
         connect(f_reader,
-                &TelemetryReader::recordFactTriggered,
+                &TelemetryReader::statsFactTriggered,
                 this,
-                &Telemetry::recordFactTriggered);
+                &Telemetry::statsFactTriggered);
 
         connect(f_reader,
-                &TelemetryReader::dataAvailable,
+                &TelemetryReader::rec_finished,
                 this,
                 &Telemetry::recordLoaded,
                 Qt::QueuedConnection);
@@ -130,7 +130,7 @@ void Telemetry::updateDescr()
         setDescr(descr_s);
 }
 
-void Telemetry::recordFactTriggered(Fact *f)
+void Telemetry::statsFactTriggered(Fact *f)
 {
     const QString &s = f->name();
     const QString &uid = f->descr();

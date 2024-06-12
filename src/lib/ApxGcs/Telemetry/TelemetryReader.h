@@ -64,9 +64,9 @@ public:
     using Values = TelemetryFileReader::Values;
 
 private:
-    quint64 _recordID{};
-
+    quint64 _loadRecordID{};
     QList<Field> _fields;
+    QJsonObject _info;
 
     bool blockNotesChange;
 
@@ -78,8 +78,6 @@ private slots:
 
     //Database
     void setRecordInfo(quint64 id, QJsonObject info);
-
-    void fileInfoLoaded(QJsonObject data);
 
     void dbResultsDataProc(quint64 telemetryID,
                            quint64 cacheID,
@@ -95,6 +93,8 @@ private slots:
 
 signals:
     // forwarded signals from file reader
+    void rec_started();
+    void rec_finished();
     void rec_field(QString name, QString title, QString units);
     void rec_values(quint64 timestamp_ms, Values data, bool uplink);
     void rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
@@ -102,16 +102,14 @@ signals:
     void rec_meta(QString name, QJsonObject data, bool uplink);
     void rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
-    //
-    void parsingStarted();
-    void parsingFinished();
-
     // called when file parsed and header info collected
     void recordInfoUpdated(quint64 id, QJsonObject data);
 
-    void statsAvailable();
-    void dataAvailable(quint64 cacheID);
-    void recordFactTriggered(Fact *f);
+    // stats text changed
+    void recordInfoChanged();
+
+    // user triggers event fact (child with stats)
+    void statsFactTriggered(Fact *f);
 
 public slots:
     void loadRecord(quint64 id);
