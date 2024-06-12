@@ -148,8 +148,11 @@ void TelemetryRecorder::checkFileRecord()
     }
 
     // record initial meta data
-    if (_vehicle->f_nodes->valid())
-        recordConfig();
+    if (_vehicle->f_nodes->valid()) {
+        auto hash = _configHash;
+        _configHash.clear();
+        recordConfig(hash, _vehicle->confTitle());
+    }
 
     if (!_vehicle->f_mission->empty())
         recordMission(false);
@@ -316,8 +319,14 @@ void TelemetryRecorder::recordMission(bool uplink)
                     uplink);
     _file.write_meta("mission", data, uplink);
 }
-void TelemetryRecorder::recordConfig()
+void TelemetryRecorder::recordConfig(QString hash, QString title)
 {
+    if (hash.isEmpty())
+        return;
+    if (_configHash == hash)
+        return;
+    _configHash = hash;
+    _file.write_evt(getEventTimestamp(), "nodes", title, hash, false);
     _file.write_meta("nodes", _vehicle->toJsonDocument().object(), false);
 }
 

@@ -65,7 +65,7 @@ private:
 
     quint64 getEventTimestamp();
 
-    QString confTitle;
+    QString _configHash;
 
 private slots:
     void updateStatus();
@@ -74,7 +74,7 @@ private slots:
 
     //internal flow
     void recordMission(bool uplink);
-    void recordConfig();
+    void recordConfig(QString hash, QString title);
 
 public slots:
     //exported slots for recording
