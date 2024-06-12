@@ -55,45 +55,6 @@ TelemetryReader::TelemetryReader(Fact *parent)
 
     //info
     connect(this, &TelemetryReader::totalTimeChanged, this, &TelemetryReader::updateStatus);
-
-    // create info evt facts
-    connect(this,
-            &TelemetryReader::rec_field,
-            this,
-            [this](QString name, QString title, QString units) {
-                _fields.append({name, title, units});
-            });
-
-    connect(this,
-            &TelemetryReader::rec_values,
-            this,
-            [this](quint64 timestamp_ms, Values data, bool uplink) {
-                if (uplink)
-                    for (auto [idx, value] : data.asKeyValueRange()) {
-                        const auto &f = _fields.value(idx);
-                        addEventFact(timestamp_ms, "uplink", f.title, f.name);
-                    }
-            });
-
-    connect(this,
-            &TelemetryReader::rec_evt,
-            this,
-            [this](quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink) {
-                addEventFact(timestamp_ms, name, value, uid);
-            });
-    // connect(this,
-    //         &TelemetryReader::rec_meta,
-    //         this,
-    //         [this](QString name, QJsonObject data, bool uplink) {
-    //             addEventFact(timestamp_ms, "msg", text, subsystem);
-    //         });
-
-    //load sequence
-    qRegisterMetaType<fieldData_t>("fieldData_t");
-    qRegisterMetaType<fieldNames_t>("fieldNames_t");
-    qRegisterMetaType<times_t>("times_t");
-    qRegisterMetaType<events_t>("events_t");
-    qRegisterMetaType<FactList>("FactList");
 }
 
 void TelemetryReader::updateStatus()
@@ -111,14 +72,22 @@ void TelemetryReader::loadRecord(quint64 id)
     deleteChildren();
     setProgress(0);
 
-    _fields.clear();
     _loadRecordID = id;
+    _fields.clear();
+    _geoPath = {};
+    _totalDistance = 0;
+    _fidx_lat = -1;
+    _fidx_lon = -1;
+    _fidx_hmsl = -1;
+    _geoPos = {};
 
     auto req = new DBReqTelemetryLoadFile(id);
     connect(req, &DatabaseRequest::finished, this, [this]() {
         setProgress(-1);
         emit rec_finished();
         f_reload->setEnabled(true);
+        emit geoPathCollected(_geoPath, _totalDistance);
+        _geoPath = {};
     });
     auto reader = req->reader();
     connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
@@ -133,9 +102,62 @@ void TelemetryReader::loadRecord(quint64 id)
     connect(reader, &TelemetryFileReader::meta, this, &TelemetryReader::rec_meta);
     connect(reader, &TelemetryFileReader::raw, this, &TelemetryReader::rec_raw);
 
+    // processed by reader
+    connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::do_rec_field);
+    connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::do_rec_values);
+    connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::do_rec_evt);
+
     // start parsing
     emit rec_started();
     req->exec();
+}
+
+void TelemetryReader::do_rec_field(QString name, QString title, QString units)
+{
+    _fields.append({name, title, units});
+
+    if (name == "est.pos.lat")
+        _fidx_lat = _fields.size() - 1;
+    else if (name == "est.pos.lon")
+        _fidx_lon = _fields.size() - 1;
+    else if (name == "est.pos.hmsl")
+        _fidx_hmsl = _fields.size() - 1;
+}
+void TelemetryReader::do_rec_values(quint64 timestamp_ms, Values data, bool uplink)
+{
+    if (uplink) {
+        for (auto [idx, value] : data.asKeyValueRange()) {
+            const auto &f = _fields.value(idx);
+            addEventFact(timestamp_ms, "uplink", f.title, f.name);
+        }
+        return;
+    }
+
+    // collect flight path
+    for (auto [idx, value] : data.asKeyValueRange()) {
+        if (idx == _fidx_lat)
+            _geoPos.setLatitude(value.toDouble());
+        else if (idx == _fidx_lon)
+            _geoPos.setLongitude(value.toDouble());
+        else if (idx == _fidx_hmsl)
+            _geoPos.setAltitude(value.toDouble());
+    }
+    if (_geoPos.isValid()) {
+        if (_geoPath.size() == 0)
+            _geoPath.addCoordinate(_geoPos);
+        else {
+            auto dist = _geoPath.coordinateAt(_geoPath.size() - 1).distanceTo(_geoPos);
+            _totalDistance += dist;
+            if (dist >= 10)
+                _geoPath.addCoordinate(_geoPos);
+        }
+        _geoPos = {};
+    }
+}
+void TelemetryReader::do_rec_evt(
+    quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink)
+{
+    addEventFact(timestamp_ms, name, value, uid);
 }
 
 void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
@@ -233,78 +255,6 @@ void TelemetryReader::addEventFact(quint64 time,
         return;
     f->setProperty("time", QVariant::fromValue(time));
     connect(f, &Fact::triggered, this, [this, f]() { emit statsFactTriggered(f); });
-}
-
-void TelemetryReader::dbStatsFound(quint64 telemetryID, QVariantMap stats)
-{
-    /*Q_UNUSED(stats)
-    if (telemetryID != records->recordId())
-        return;
-    TelemetryReaderDataReq *req = new TelemetryReaderDataReq(telemetryID);
-    connect(records,
-            &TelemetryRecords::discardRequests,
-            req,
-            &DatabaseRequest::discard,
-            Qt::QueuedConnection);
-    connect(req,
-            &TelemetryReaderDataReq::dataProcessed,
-            this,
-            &TelemetryReader::dbResultsDataProc,
-            Qt::QueuedConnection);
-    connect(req,
-            &DBReqTelemetryReadData::progress,
-            this,
-            &TelemetryReader::dbProgress,
-            Qt::QueuedConnection);
-    connect(req, &DatabaseRequest::finished, this, [this](DatabaseRequest::Status) {
-        setProgress(-1);
-    });
-    req->exec();*/
-}
-void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
-                                        quint64 cacheID,
-                                        fieldData_t fieldData,
-                                        fieldNames_t fieldNames,
-                                        times_t times,
-                                        events_t events,
-                                        QGeoPath path,
-                                        Fact *f_events)
-{
-    /*if (telemetryID != records->recordId())
-        return;
-
-    deleteChildren();
-    f_reload->setEnabled(true);
-
-    times.swap(this->times);
-    fieldNames.swap(this->fieldNames);
-    fieldData.swap(this->fieldData);
-    events.swap(this->events);
-    this->geoPath = path;
-
-    changeThread(f_events, thread());
-    f_events->setParentFact(this);
-    for (int i = 0; i < f_events->size(); ++i) {
-        Fact *g = f_events->child(i);
-        for (int j = 0; j < g->size(); ++j) {
-            Fact *f = g->child(j);
-            connect(f, &Fact::triggered, this, [this, f]() { emit recordFactTriggered(f); });
-        }
-    }
-
-    quint64 tMax = 0;
-    if (!this->times.isEmpty())
-        tMax = qRound(this->times.last() * 1000.0);
-    setTotalTime(tMax);
-
-    setProgress(-1);
-    emit dataAvailable(cacheID);*/
-}
-void TelemetryReader::dbProgress(quint64 telemetryID, int v)
-{
-    /*if (telemetryID != records->recordId())
-        return;
-    setProgress(v);*/
 }
 
 void TelemetryReader::notesChanged()

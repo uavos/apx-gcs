@@ -171,12 +171,12 @@ void TelemetryPlayer::play()
 
     //collect data samples for t0
     double t = _time / 1000.0;
-    for (auto fieldID : telemetry->f_reader->fieldData.keys()) {
+    /*for (auto fieldID : telemetry->f_reader->fieldData.keys()) {
         Fact *f = factByDBID.value(fieldID);
         if (!f)
             continue;
         f->setValue(sampleValue(fieldID, t));
-    }
+    }*/
     tNext = _time;
     dbRequestEvents(tNext);
 }
@@ -309,7 +309,7 @@ void TelemetryPlayer::next()
     if (tNext <= t) {
         quint64 tNextMin = tNext;
         //mandala data
-        for (const auto fieldID : telemetry->f_reader->fieldData.keys()) {
+        /*for (const auto fieldID : telemetry->f_reader->fieldData.keys()) {
             QVector<QPointF> *pts = telemetry->f_reader->fieldData.value(fieldID);
             if (!pts)
                 continue;
@@ -328,7 +328,7 @@ void TelemetryPlayer::next()
                         updCnt++;
                 }
             }
-        }
+        }*/
         //events
         const QStringList &n = events.names;
         for (; iEventRec < events.values.size(); ++iEventRec) {
@@ -434,7 +434,7 @@ void TelemetryPlayer::next()
 double TelemetryPlayer::sampleValue(quint64 fieldID, double t)
 {
     dataPosMap[fieldID] = 0;
-    QVector<QPointF> *pts = telemetry->f_reader->fieldData.value(fieldID);
+    QVector<QPointF> *pts = {}; //telemetry->f_reader->fieldData.value(fieldID);
     if (!pts)
         return 0;
 

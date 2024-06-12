@@ -394,6 +394,7 @@ void Vehicle::sendPositionFix(QGeoCoordinate c)
 void Vehicle::resetGeoPath()
 {
     setGeoPath(QGeoPath());
+    setTotalDistance(0);
 }
 
 QString Vehicle::fileTitle() const
@@ -559,16 +560,6 @@ void Vehicle::setGeoPath(const QGeoPath &v)
         return;
     m_geoPath = v;
     emit geoPathChanged();
-
-    //reset total distance
-    qreal dist = 0;
-    QGeoCoordinate c;
-    for (auto p : m_geoPath.path()) {
-        if (c.isValid() && p.isValid())
-            dist += c.distanceTo(p);
-        c = p;
-    }
-    setTotalDistance(static_cast<quint64>(dist));
 }
 quint64 Vehicle::totalDistance() const
 {

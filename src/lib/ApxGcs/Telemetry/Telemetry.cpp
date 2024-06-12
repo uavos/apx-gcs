@@ -78,6 +78,13 @@ Telemetry::Telemetry(Vehicle *parent)
                 this,
                 &Telemetry::recordLoaded,
                 Qt::QueuedConnection);
+        connect(f_reader,
+                &TelemetryReader::geoPathCollected,
+                this,
+                [this](const QGeoPath &path, quint64 totalDistance) {
+                    vehicle->setGeoPath(path);
+                    vehicle->setTotalDistance(totalDistance);
+                });
 
         f_player = new TelemetryPlayer(this, this);
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
@@ -149,21 +156,16 @@ void Telemetry::recordLoaded()
     if (!Vehicles::instance()->current()->isIdentified())
         vehicle->f_select->trigger();
 
-    vehicle->setGeoPath(f_reader->geoPath);
-
-    Fact *f_events = f_reader->child("events");
-    if (f_events) {
-        Fact *f = f_events->child("mission");
-        if (f && f->size() > 0) {
-            f = f->child(0);
-            if (f)
-                f->trigger();
-        }
-        f = f_events->child("nodes");
-        if (f && f->size() > 0) {
-            f = f->child(f->size() - 1);
-            if (f)
-                f->trigger();
-        }
+    Fact *f = f_reader->child("mission");
+    if (f && f->size() > 0) {
+        f = f->child(0);
+        if (f)
+            f->trigger();
+    }
+    f = f_reader->child("nodes");
+    if (f && f->size() > 0) {
+        f = f->child(f->size() - 1);
+        if (f)
+            f->trigger();
     }
 }

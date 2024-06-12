@@ -222,18 +222,9 @@ void TelemetryFrame::updateStats()
                                           : QString("%1").arg(recSize);
         s.append(QString("\t(%1 %2)").arg(srcnt).arg(tr("records")));
     }
-    //events stats
-    QString recStats;
-    QStringList st;
-    foreach (QString s, reader->evtCountMap.keys()) {
-        st.append(QString("%1: %2").arg(s).arg(reader->evtCountMap.value(s)));
-    }
-    recStats = st.join(" | ");
+
     //set label
-    lbTitle->setText(QString("%1    \t%2%3")
-                         .arg(records->value().toString())
-                         .arg(s)
-                         .arg(recStats.isEmpty() ? recStats : recStats.prepend("\n\t")));
+    lbTitle->setText(QString("%1    \t%2").arg(records->value().toString(), s));
     lbTitle->adjustSize();
     progressBar->move(2, 2 + lbTitle->geometry().height() + 5);
     updateStatus();

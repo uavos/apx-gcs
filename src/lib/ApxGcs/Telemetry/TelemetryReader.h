@@ -29,7 +29,6 @@
 
 #include "TelemetryFileReader.h"
 
-#include "TelemetryReaderDataReq.h"
 class TelemetryRecords;
 
 class TelemetryReader : public Fact
@@ -44,21 +43,6 @@ public:
     Fact *f_notes;
     Fact *f_reload;
 
-    //data from database
-    typedef TelemetryReaderDataReq::fieldData_t fieldData_t;
-    typedef TelemetryReaderDataReq::evtCountMap_t evtCountMap_t;
-    typedef TelemetryReaderDataReq::fieldNames_t fieldNames_t;
-    typedef TelemetryReaderDataReq::times_t times_t;
-    typedef TelemetryReaderDataReq::event_t event_t;
-    typedef TelemetryReaderDataReq::events_t events_t;
-
-    fieldData_t fieldData;
-    evtCountMap_t evtCountMap;
-    fieldNames_t fieldNames;
-    times_t times;
-    events_t events;
-    QGeoPath geoPath;
-
     // datatypes for data signals
     using Field = TelemetryFileReader::Field;
     using Values = TelemetryFileReader::Values;
@@ -68,6 +52,13 @@ private:
     QList<Field> _fields;
     QJsonObject _info;
 
+    QGeoPath _geoPath;
+    quint64 _totalDistance;
+    int _fidx_lat;
+    int _fidx_lon;
+    int _fidx_hmsl;
+    QGeoCoordinate _geoPos;
+
     bool blockNotesChange;
 
     void addEventFact(quint64 time, const QString &name, const QString &value, const QString &uid);
@@ -76,20 +67,11 @@ private slots:
     void notesChanged();
     void updateStatus();
 
-    //Database
     void setRecordInfo(quint64 id, QJsonObject info);
 
-    void dbResultsDataProc(quint64 telemetryID,
-                           quint64 cacheID,
-                           fieldData_t fieldData,
-                           fieldNames_t fieldNames,
-                           times_t times,
-                           events_t events,
-                           QGeoPath path,
-                           Fact *f_events);
-
-    void dbStatsFound(quint64 telemetryID, QVariantMap stats);
-    void dbProgress(quint64 telemetryID, int v);
+    void do_rec_field(QString name, QString title, QString units);
+    void do_rec_values(quint64 timestamp_ms, Values data, bool uplink);
+    void do_rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
 
 signals:
     // forwarded signals from file reader
@@ -104,6 +86,7 @@ signals:
 
     // called when file parsed and header info collected
     void recordInfoUpdated(quint64 id, QJsonObject data);
+    void geoPathCollected(QGeoPath path, quint64 totalDistance);
 
     // stats text changed
     void recordInfoChanged();
