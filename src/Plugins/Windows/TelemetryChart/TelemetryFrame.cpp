@@ -261,9 +261,21 @@ void TelemetryFrame::rec_started()
     resetPlot();
     _fields.clear();
     _samples.clear();
+    _timeMax = 0;
 }
 void TelemetryFrame::rec_finished()
 {
+    //final data tail at max time
+    for (auto &pts : _samples) {
+        if (pts.isEmpty()) {
+            pts.append(QPointF(0, 0));
+            //continue;
+        }
+        if (pts.last().x() >= _timeMax)
+            continue;
+        pts.append(QPointF(_timeMax, pts.last().y()));
+    }
+
     // sort fields by name
     QMap<QString, int> fieldOrder;
     for (const auto &i : _fields) {
@@ -326,7 +338,23 @@ void TelemetryFrame::rec_values(quint64 timestamp_ms, TelemetryReader::Values da
     for (const auto [idx, value] : data.asKeyValueRange()) {
         while (_samples.size() <= idx)
             _samples.append(QVector<QPointF>());
-        _samples[idx].append(QPointF(timestamp_ms, value.toDouble()));
+
+        auto tf = timestamp_ms / 1000.0;
+        if (tf > _timeMax)
+            _timeMax = tf;
+
+        auto v = value.toDouble();
+        auto &pts = _samples[idx];
+        if (pts.size() > 0 && (tf - pts.last().x()) > 0.5) {
+            //extrapolate unchanged value tail-1ms
+            pts.append(QPointF(tf, pts.last().y()));
+        }
+        if (pts.isEmpty() && v != 0.0 && timestamp_ms != 0) {
+            //extrapolate/predict initial value at start
+            pts.append(QPointF(0, 0));
+            pts.append(QPointF(tf, 0));
+        }
+        pts.append(QPointF(tf, v));
     }
 }
 void TelemetryFrame::rec_evt(

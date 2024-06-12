@@ -81,6 +81,7 @@ private:
 
     QList<TelemetryReader::Field> _fields;
     QList<QVector<QPointF>> _samples;
+    double _timeMax;
 
 private slots:
     void rec_started();
