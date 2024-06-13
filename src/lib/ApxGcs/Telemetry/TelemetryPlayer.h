@@ -26,13 +26,13 @@
 #include <QtCore>
 
 class Vehicle;
-class Telemetry;
+class TelemetryReader;
 
 class TelemetryPlayer : public Fact
 {
     Q_OBJECT
 public:
-    explicit TelemetryPlayer(Telemetry *telemetry, Fact *parent);
+    explicit TelemetryPlayer(TelemetryReader *reader, Fact *parent);
 
     Fact *f_record;
     Fact *f_filter;
@@ -44,10 +44,8 @@ public:
     Fact *f_rewind;
 
 private:
-    Telemetry *telemetry;
+    TelemetryReader *reader;
     Vehicle *vehicle;
-
-    quint64 cacheID;
 
     QTimer timer;
     quint64 playTime0;
@@ -77,7 +75,6 @@ private slots:
     void updateTime();
 
     void reset();
-    void setCacheId(quint64 v);
 
     void next();
 

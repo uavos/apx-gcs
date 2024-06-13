@@ -198,7 +198,14 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
     f_notes->setValue(notes);
     blockNotesChange = false;
 
-    qDebug("%s", QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
+    // qDebug("%s", QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
+
+    // create info fact with text
+    auto f = new Fact(this, "info", tr("Info"), "", Group);
+    f->move(0);
+    f->setIcon("information");
+    f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
+    f->setText(QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
 
     emit recordInfoChanged();
 }

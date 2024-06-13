@@ -33,17 +33,16 @@
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 
-TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
+TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Fact *parent)
     : Fact(parent, "player", tr("Player"), tr("Telemetry data player"), Group)
-    , telemetry(telemetry)
-    , vehicle(telemetry->vehicle)
-    , cacheID(0)
+    , reader(reader)
+    , vehicle(Vehicles::instance()->f_replay)
     , setTime0(0)
     , blockTimeChange(false)
 {
     setIcon("play-circle-outline");
 
-    // connect(telemetry->f_reader,
+    // connect(reader,
     //         &TelemetryReader::dataAvailable,
     //         this,
     //         &TelemetryPlayer::setCacheId);
@@ -76,8 +75,8 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
     connect(&timer, &QTimer::timeout, this, &TelemetryPlayer::next);
 
     // connect(telemetry->f_records, &TelemetryRecords::recordIdChanged, this, &TelemetryPlayer::reset);
-    connect(telemetry->f_reader, &TelemetryReader::totalTimeChanged, this, [=]() {
-        f_time->setMax(telemetry->f_reader->totalTime());
+    connect(reader, &TelemetryReader::totalTimeChanged, this, [=]() {
+        f_time->setMax(reader->totalTime());
     });
 
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActions);
@@ -93,7 +92,7 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
 
 void TelemetryPlayer::updateActions()
 {
-    bool enb = cacheID;
+    bool enb = true;
     bool playing = active();
     f_play->setEnabled(enb && (!playing));
     f_stop->setEnabled(enb && (playing));
@@ -110,14 +109,6 @@ void TelemetryPlayer::reset()
     stop();
     f_time->setValue(0);
     f_speed->setValue(1.0);
-    cacheID = 0;
-    updateActions();
-}
-void TelemetryPlayer::setCacheId(quint64 v)
-{
-    if (cacheID)
-        reset();
-    cacheID = v;
     updateActions();
 }
 
@@ -171,7 +162,7 @@ void TelemetryPlayer::play()
 
     //collect data samples for t0
     double t = _time / 1000.0;
-    /*for (auto fieldID : telemetry->f_reader->fieldData.keys()) {
+    /*for (auto fieldID : reader->fieldData.keys()) {
         Fact *f = factByDBID.value(fieldID);
         if (!f)
             continue;
@@ -201,7 +192,7 @@ void TelemetryPlayer::rewind()
 
 void TelemetryPlayer::dbRequestEvents(quint64 t)
 {
-    {
+    /*{
         DBReqTelemetryReadEvent *req = new DBReqTelemetryReadEvent(cacheID, t, "mission");
         connect(this, &TelemetryPlayer::discardRequests, req, &DatabaseRequest::discard);
         connect(req,
@@ -241,7 +232,7 @@ void TelemetryPlayer::dbRequestEvents(quint64 t)
                 &TelemetryPlayer::eventsLoaded,
                 Qt::QueuedConnection);
         req->exec();
-    }
+    }*/
 }
 void TelemetryPlayer::eventsLoaded(DatabaseRequest::Records records)
 {
@@ -309,8 +300,8 @@ void TelemetryPlayer::next()
     if (tNext <= t) {
         quint64 tNextMin = tNext;
         //mandala data
-        /*for (const auto fieldID : telemetry->f_reader->fieldData.keys()) {
-            QVector<QPointF> *pts = telemetry->f_reader->fieldData.value(fieldID);
+        /*for (const auto fieldID : reader->fieldData.keys()) {
+            QVector<QPointF> *pts = reader->fieldData.value(fieldID);
             if (!pts)
                 continue;
             for (int i = dataPosMap.value(fieldID); i < pts->size(); ++i) {
@@ -434,7 +425,7 @@ void TelemetryPlayer::next()
 double TelemetryPlayer::sampleValue(quint64 fieldID, double t)
 {
     dataPosMap[fieldID] = 0;
-    QVector<QPointF> *pts = {}; //telemetry->f_reader->fieldData.value(fieldID);
+    QVector<QPointF> *pts = {}; //reader->fieldData.value(fieldID);
     if (!pts)
         return 0;
 
