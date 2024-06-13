@@ -101,6 +101,7 @@ void TelemetryReader::loadRecord(quint64 id)
     connect(reader, &TelemetryFileReader::msg, this, &TelemetryReader::rec_msg);
     connect(reader, &TelemetryFileReader::meta, this, &TelemetryReader::rec_meta);
     connect(reader, &TelemetryFileReader::raw, this, &TelemetryReader::rec_raw);
+    connect(reader, &TelemetryFileReader::index, this, &TelemetryReader::rec_index);
 
     // processed by reader
     connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::do_rec_field);
@@ -201,11 +202,12 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
     // qDebug("%s", QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
 
     // create info fact with text
-    auto f = new Fact(this, "info", tr("Info"), "", Group);
+    auto f = new Fact(this, "info", tr("Info"), tr("Telemetry file metadata"), Group);
     f->move(0);
     f->setIcon("information");
+    f->setText("{}");
     f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
-    f->setText(QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
+    f->setOpt("info", QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
 
     emit recordInfoChanged();
 }

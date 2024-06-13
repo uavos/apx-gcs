@@ -42,10 +42,10 @@ TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Fact *parent)
 {
     setIcon("play-circle-outline");
 
-    // connect(reader,
-    //         &TelemetryReader::dataAvailable,
-    //         this,
-    //         &TelemetryPlayer::setCacheId);
+    connect(reader, &TelemetryReader::rec_started, this, &TelemetryPlayer::rec_started);
+    connect(reader, &TelemetryReader::rec_finished, this, &TelemetryPlayer::rec_finished);
+    connect(reader, &TelemetryReader::rec_index, this, &TelemetryPlayer::rec_index);
+
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActive);
 
     f_time = new Fact(this, "time", tr("Time"), tr("Current postition"), Int);
@@ -147,7 +147,7 @@ void TelemetryPlayer::play()
     vehicle->f_select->trigger();
     setActive(true);
 
-    //reste mandala
+    // restore mandala
     vehicle->f_mandala->restoreDefaults();
 
     playTime0 = _time;
@@ -188,6 +188,34 @@ void TelemetryPlayer::rewind()
         if (bPlaying)
             play();
     }
+}
+
+void TelemetryPlayer::rec_started()
+{
+    _file.close();
+    _index.clear();
+}
+
+void TelemetryPlayer::rec_finished()
+{
+    const auto &info = reader->info();
+    auto path = info["path"].toString();
+    if (path.isEmpty())
+        return;
+    _file.setFileName(path);
+
+    // fill fields map
+    _fieldsMap.clear();
+    int idx = 0;
+    for (const auto &i : reader->fields()) {
+        _fieldsMap.insert(idx, vehicle->f_mandala->fact(i.name, true));
+        idx++;
+    }
+}
+
+void TelemetryPlayer::rec_index(quint64 timestamp_ms, quint64 offset, TelemetryReader::Values values)
+{
+    _index.append({timestamp_ms, offset, values});
 }
 
 void TelemetryPlayer::dbRequestEvents(quint64 t)

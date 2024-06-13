@@ -23,7 +23,8 @@
 
 #include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
-#include <QtCore>
+
+#include "TelemetryReader.h"
 
 class Vehicle;
 class TelemetryReader;
@@ -47,6 +48,9 @@ private:
     TelemetryReader *reader;
     Vehicle *vehicle;
 
+    TelemetryFileReader _file;
+    QHash<int, MandalaFact *> _fieldsMap;
+
     QTimer timer;
     quint64 playTime0;
     QElapsedTimer playTime;
@@ -67,6 +71,14 @@ private:
 
     void loadConfValue(const QString &sn, QString s);
 
+    struct Index
+    {
+        quint64 timestamp_ms;
+        quint64 offset;
+        TelemetryReader::Values values;
+    };
+    QList<Index> _index;
+
 private slots:
     void updateActions();
     void updateStatus();
@@ -77,6 +89,11 @@ private slots:
     void reset();
 
     void next();
+
+    // file reader
+    void rec_started();
+    void rec_finished();
+    void rec_index(quint64 timestamp_ms, quint64 offset, TelemetryReader::Values values);
 
     //database
     void dbRequestEvents(quint64 t);

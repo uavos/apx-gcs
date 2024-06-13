@@ -104,6 +104,9 @@ private:
     QHash<QString, QJsonObject> _meta_objects;
     QStringList _evt_names;
 
+    qint64 _offset_s; // currewnt element file offset
+    quint32 _offset_ts_s;
+
     // data counters to be saved in metadata
     struct
     {
@@ -129,6 +132,7 @@ private:
     // values data
     Values _downlink_values;
     Values _uplink_values;
+    Values _index_values;
     void _commit_values();
 
     void _reset_data();
@@ -149,6 +153,9 @@ signals:
     void raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
     void parsed();
+
+    // signal for tlm player index
+    void index(quint64 timestamp_ms, quint64 offset, Values values);
 
     // called by parse_header
     void infoUpdated(QJsonObject data);

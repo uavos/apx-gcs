@@ -287,6 +287,8 @@ bool TelemetryFileReader::parse_payload()
             break;
         }
 
+        _offset_s = pos();
+
         auto dspec = _read_dspec();
         if (dspec._raw8 == 0) {
             qWarning() << "stream stop marker at" << pos();
@@ -323,6 +325,7 @@ bool TelemetryFileReader::parse_payload()
                 if (_downlink_values.contains(_widx))
                     qWarning() << "duplicate downlink value" << _fields.value(_widx).name;
                 _downlink_values[_widx] = v;
+                _index_values[_widx] = v;
             }
 
             ret = true;
@@ -340,6 +343,7 @@ bool TelemetryFileReader::parse_payload()
     }
 
     _commit_values(); // commit values (if any) collected for timestamp
+    _index_values.clear();
 
     setProgress(-1);
 
@@ -409,6 +413,9 @@ void TelemetryFileReader::_reset_data()
     _widx = 0;
     _next_uplink = false;
 
+    _offset_s = 0;
+    _offset_ts_s = 0;
+
     _counters = {};
     _interrupted = false;
 
@@ -417,10 +424,8 @@ void TelemetryFileReader::_reset_data()
     _evt_names.clear();
 
     _downlink_values.clear();
-    _downlink_values.clear();
-
     _uplink_values.clear();
-    _uplink_values.clear();
+    _index_values.clear();
 }
 
 dspec_s TelemetryFileReader::_read_dspec()
@@ -733,6 +738,13 @@ void TelemetryFileReader::_commit_values()
         emit values(_ts_s, _downlink_values, false);
         _downlink_values.clear();
         _counters.downlink++;
+
+        // emit index every 10 seconds
+        auto dt = _ts_s - _offset_ts_s;
+        if (dt >= 10000) {
+            _offset_ts_s = _ts_s;
+            emit index(_ts_s, _offset_s, _index_values);
+        }
     }
     if (!_uplink_values.empty()) {
         emit values(_ts_s, _uplink_values, true);

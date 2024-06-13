@@ -47,6 +47,9 @@ public:
     using Field = TelemetryFileReader::Field;
     using Values = TelemetryFileReader::Values;
 
+    const auto &info() const { return _info; }
+    const auto &fields() const { return _fields; }
+
 private:
     quint64 _loadRecordID{};
     QList<Field> _fields;
@@ -83,6 +86,8 @@ signals:
     void rec_msg(quint64 timestamp_ms, QString text, QString subsystem);
     void rec_meta(QString name, QJsonObject data, bool uplink);
     void rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
+
+    void rec_index(quint64 timestamp_ms, quint64 offset, Values values);
 
     // called when file parsed and header info collected
     void recordInfoUpdated(quint64 id, QJsonObject data);

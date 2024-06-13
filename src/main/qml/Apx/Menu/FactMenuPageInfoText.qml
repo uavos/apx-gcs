@@ -33,10 +33,9 @@ ScrollView {
         // width: parent.width
         selectByMouse: true
         selectByKeyboard: true
-        text: fact.text
+        text: fact.opts.info
         textFormat: TextEdit.AutoText
         wrapMode: TextEdit.NoWrap
-        // font.pixelSize: Style.fontSize
         font: apx.font_narrow(Style.fontSize)
         topInset: 0
         bottomInset: 0
@@ -46,6 +45,5 @@ ScrollView {
         bottomPadding: 3
         leftPadding: 3
         rightPadding: 3
-
     }
 }
