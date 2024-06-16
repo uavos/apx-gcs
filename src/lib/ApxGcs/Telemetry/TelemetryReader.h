@@ -87,8 +87,6 @@ signals:
     void rec_meta(QString name, QJsonObject data, bool uplink);
     void rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
-    void rec_index(quint64 timestamp_ms, quint64 offset, Values values);
-
     // called when file parsed and header info collected
     void recordInfoUpdated(quint64 id, QJsonObject data);
     void geoPathCollected(QGeoPath path, quint64 totalDistance);

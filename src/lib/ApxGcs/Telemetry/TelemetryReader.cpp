@@ -101,7 +101,6 @@ void TelemetryReader::loadRecord(quint64 id)
     connect(reader, &TelemetryFileReader::msg, this, &TelemetryReader::rec_msg);
     connect(reader, &TelemetryFileReader::meta, this, &TelemetryReader::rec_meta);
     connect(reader, &TelemetryFileReader::raw, this, &TelemetryReader::rec_raw);
-    connect(reader, &TelemetryFileReader::index, this, &TelemetryReader::rec_index);
 
     // processed by reader
     connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::do_rec_field);

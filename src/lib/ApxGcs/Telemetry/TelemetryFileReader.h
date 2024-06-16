@@ -48,13 +48,14 @@ public:
     explicit TelemetryFileReader(QString filePath, QObject *parent = nullptr);
 
     bool open(QString filePath);
+    bool open() { return open(fileName()); }
 
     bool is_still_writing();
 
     const auto &info() const { return _info; }
 
-    bool parse_payload();
     bool parse_header();
+    bool parse_payload();
 
     bool fix_name();
 
@@ -65,6 +66,11 @@ public:
     QByteArray get_hash();
 
     void abort() { _interrupted = true; } // abort reading (can be called from another thread)
+    bool interrupted() const { return _interrupted; }
+
+    // replay support
+    bool parse_next();
+    quint32 current_time() const { return _ts_s; }
 
 private:
     QJsonObject _info;
@@ -104,9 +110,6 @@ private:
     QHash<QString, QJsonObject> _meta_objects;
     QStringList _evt_names;
 
-    qint64 _offset_s; // currewnt element file offset
-    quint32 _offset_ts_s;
-
     // data counters to be saved in metadata
     struct
     {
@@ -132,7 +135,6 @@ private:
     // values data
     Values _downlink_values;
     Values _uplink_values;
-    Values _index_values;
     void _commit_values();
 
     void _reset_data();
@@ -153,9 +155,6 @@ signals:
     void raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
     void parsed();
-
-    // signal for tlm player index
-    void index(quint64 timestamp_ms, quint64 offset, Values values);
 
     // called by parse_header
     void infoUpdated(QJsonObject data);

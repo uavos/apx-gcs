@@ -287,54 +287,7 @@ bool TelemetryFileReader::parse_payload()
             break;
         }
 
-        _offset_s = pos();
-
-        auto dspec = _read_dspec();
-        if (dspec._raw8 == 0) {
-            qWarning() << "stream stop marker at" << pos();
-            seek(pos() - 1); // rollback to stop marker (begin of stats)
-            ret = true;
-            break;
-        }
-
-        _counters.records++;
-
-        bool is_uplink = _next_uplink;
-        _next_uplink = false;
-
-        // qDebug() << "@" + QString::number(QFile::pos(), 16) << QString::number(dspec._raw16, 16);
-
-        ret = false;
-        switch (dspec.spec8.dspec) {
-        default: {
-            _widx = dspec.spec8.opt8 ? (_widx + dspec.spec8.vidx_delta + 1) : (dspec.spec16.vidx);
-            if (_widx >= _fields.size()) {
-                qWarning() << "invalid field index" << _widx << _fields.size();
-                break;
-            }
-
-            auto v = _read_value(dspec.spec8.dspec);
-            if (v.isNull())
-                break;
-
-            if (is_uplink) {
-                if (_uplink_values.contains(_widx))
-                    qWarning() << "duplicate uplink value" << _fields.value(_widx).name;
-                _uplink_values[_widx] = v;
-            } else {
-                if (_downlink_values.contains(_widx))
-                    qWarning() << "duplicate downlink value" << _fields.value(_widx).name;
-                _downlink_values[_widx] = v;
-                _index_values[_widx] = v;
-            }
-
-            ret = true;
-            break;
-        }
-        case dspec_e::ext:
-            ret = _read_ext(dspec.spec_ext.extid, is_uplink);
-            break;
-        }
+        ret = parse_next();
 
         if (!ret) {
             qWarning() << "failed to read data at" << pos() << "0x" + QString::number(pos(), 16);
@@ -343,7 +296,6 @@ bool TelemetryFileReader::parse_payload()
     }
 
     _commit_values(); // commit values (if any) collected for timestamp
-    _index_values.clear();
 
     setProgress(-1);
 
@@ -407,14 +359,64 @@ bool TelemetryFileReader::parse_payload()
     return true;
 }
 
+bool TelemetryFileReader::parse_next()
+{
+    if (!isOpen()) {
+        qWarning() << "file not open";
+        return false;
+    }
+
+    auto dspec = _read_dspec();
+    if (dspec._raw8 == 0) {
+        qWarning() << "stream stop marker at" << pos();
+        seek(pos() - 1); // rollback to stop marker (begin of stats)
+        _interrupted = true;
+        return true;
+    }
+
+    _counters.records++;
+
+    bool is_uplink = _next_uplink;
+    _next_uplink = false;
+
+    // qDebug() << "@" + QString::number(QFile::pos(), 16) << QString::number(dspec._raw16, 16);
+
+    switch (dspec.spec8.dspec) {
+    default: {
+        _widx = dspec.spec8.opt8 ? (_widx + dspec.spec8.vidx_delta + 1) : (dspec.spec16.vidx);
+        if (_widx >= _fields.size()) {
+            qWarning() << "invalid field index" << _widx << _fields.size();
+            break;
+        }
+
+        auto v = _read_value(dspec.spec8.dspec);
+        if (v.isNull())
+            break;
+
+        if (is_uplink) {
+            if (_uplink_values.contains(_widx))
+                qWarning() << "duplicate uplink value" << _fields.value(_widx).name;
+            _uplink_values[_widx] = v;
+        } else {
+            if (_downlink_values.contains(_widx))
+                qWarning() << "duplicate downlink value" << _fields.value(_widx).name;
+            _downlink_values[_widx] = v;
+        }
+
+        return true;
+    }
+    case dspec_e::ext:
+        return _read_ext(dspec.spec_ext.extid, is_uplink);
+    }
+
+    return false;
+}
+
 void TelemetryFileReader::_reset_data()
 {
     _ts_s = 0;
     _widx = 0;
     _next_uplink = false;
-
-    _offset_s = 0;
-    _offset_ts_s = 0;
 
     _counters = {};
     _interrupted = false;
@@ -425,7 +427,6 @@ void TelemetryFileReader::_reset_data()
 
     _downlink_values.clear();
     _uplink_values.clear();
-    _index_values.clear();
 }
 
 dspec_s TelemetryFileReader::_read_dspec()
@@ -738,13 +739,6 @@ void TelemetryFileReader::_commit_values()
         emit values(_ts_s, _downlink_values, false);
         _downlink_values.clear();
         _counters.downlink++;
-
-        // emit index every 10 seconds
-        auto dt = _ts_s - _offset_ts_s;
-        if (dt >= 10000) {
-            _offset_ts_s = _ts_s;
-            emit index(_ts_s, _offset_s, _index_values);
-        }
     }
     if (!_uplink_values.empty()) {
         emit values(_ts_s, _uplink_values, true);

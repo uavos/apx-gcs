@@ -33,10 +33,8 @@ class TelemetryPlayer : public Fact
 {
     Q_OBJECT
 public:
-    explicit TelemetryPlayer(TelemetryReader *reader, Fact *parent);
+    explicit TelemetryPlayer(TelemetryReader *reader, Vehicle *vehicle, Fact *parent);
 
-    Fact *f_record;
-    Fact *f_filter;
     Fact *f_time;
     Fact *f_speed;
 
@@ -59,25 +57,14 @@ private:
     quint64 setTime0;
     double _speed;
     double _time;
+    bool _values_init;
 
     bool blockTimeChange;
 
-    QHash<quint64, Fact *> factByDBID;
-    DatabaseRequest::Records events;
-    int iEventRec;
-
-    QHash<quint64, int> dataPosMap;
-    double sampleValue(quint64 fieldID, double t);
-
     void loadConfValue(const QString &sn, QString s);
+    void loadLatestMeta(Fact *group, double time);
 
-    struct Index
-    {
-        quint64 timestamp_ms;
-        quint64 offset;
-        TelemetryReader::Values values;
-    };
-    QList<Index> _index;
+    TelemetryReader::Values _values;
 
 private slots:
     void updateActions();
@@ -93,14 +80,10 @@ private slots:
     // file reader
     void rec_started();
     void rec_finished();
-    void rec_index(quint64 timestamp_ms, quint64 offset, TelemetryReader::Values values);
 
-    //database
-    void dbRequestEvents(quint64 t);
-    void eventsLoaded(DatabaseRequest::Records records);
-    void missionDataLoaded(QString value, QString uid, bool uplink);
-    void nodesDataLoaded(QString value, QString uid, bool uplink);
-    void nodesConfUpdatesLoaded(DatabaseRequest::Records records);
+    void rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink);
+    void rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
+    void rec_msg(quint64 timestamp_ms, QString text, QString subsystem);
 
     void play();
     void stop();

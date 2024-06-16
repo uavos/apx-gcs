@@ -86,7 +86,7 @@ Telemetry::Telemetry(Vehicle *parent)
                     vehicle->setTotalDistance(totalDistance);
                 });
 
-        f_player = new TelemetryPlayer(f_reader, this);
+        f_player = new TelemetryPlayer(f_reader, vehicle, this);
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
         bindProperty(f_player, "active", true);
 
