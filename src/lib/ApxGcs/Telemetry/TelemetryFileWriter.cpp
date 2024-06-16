@@ -434,10 +434,12 @@ void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool u
     // uplink is always written
     if (!uplink) {
         // downlink is written only if value changed
+        auto d = value.toDouble();
         auto it = _values_s.find(uid);
         if (it != _values_s.end()) {
-            if (it->second.typeId() == value.typeId() && it->second == value)
+            if (it->second == d)
                 return;
+            it->second = d;
         } else {
             // value never posted before
             // initially - all values are assumed to be zero
@@ -448,9 +450,8 @@ void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool u
                 if (value.toFloat() == 0)
                     return;
             }
+            _values_s.insert({uid, d});
         }
-
-        _values_s[uid] = value;
     }
 
     // map value index by UID and write field descriptor when needed

@@ -96,7 +96,7 @@ private:
 
     // monitor changes and updates
     std::map<mandala::uid_t, uint16_t> _fields_map;
-    std::map<mandala::uid_t, QVariant> _values_s;
+    std::map<mandala::uid_t, double> _values_s;
     std::map<QString, QJsonObject> _meta_objects;
 
     std::map<mandala::uid_t, QSet<telemetry::dspec_e>> _stats_values;
