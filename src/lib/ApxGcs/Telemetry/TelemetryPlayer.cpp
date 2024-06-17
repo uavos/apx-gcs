@@ -150,6 +150,8 @@ void TelemetryPlayer::play()
     vehicle->f_select->trigger();
     setActive(true);
 
+    apxMsg() << tr("Replay started");
+
     vehicle->f_mandala->restoreDefaults();
 
     playTime0 = _time;

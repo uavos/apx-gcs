@@ -197,11 +197,11 @@ void TelemetryRecords::dbRemove()
     if (!id)
         return;
 
-    dbLoadPrev();
     auto req = new DBReqTelemetryModelTrash(id);
     connect(req, &DBReqTelemetryModelTrash::finished, [this, id]() {
         dbRequestRecordsList();
         dbRequestRecordInfo(id);
+        dbLoadNext();
     });
     req->exec();
 }
