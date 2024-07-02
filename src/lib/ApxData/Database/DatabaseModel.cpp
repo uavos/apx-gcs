@@ -62,14 +62,14 @@ void DatabaseModel::setRecordsList(RecordsList recordsList)
     emit recordsListChanged();
 }
 
-void DatabaseModel::setRecordInfo(quint64 id, QJsonObject info)
+void DatabaseModel::setRecordModelInfo(quint64 id, QJsonObject modelInfo)
 {
     // qDebug() << id << info;
 
     if (!id)
         return;
 
-    _cache[id] = info;
+    _cache[id] = modelInfo;
     _cacheQueue.enqueue(id);
 
     if (_cacheQueue.size() > CACHE_SIZE)

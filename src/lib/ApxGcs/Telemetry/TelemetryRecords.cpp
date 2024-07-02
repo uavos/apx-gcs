@@ -139,11 +139,8 @@ void TelemetryRecords::dbRequestRecordsList()
 
 void TelemetryRecords::dbRequestRecordInfo(quint64 id)
 {
-    auto req = new DBReqTelemetryRecordInfo(id);
-    connect(req,
-            &DBReqTelemetryRecordInfo::recordModelInfo,
-            _dbmodel,
-            &DatabaseModel::setRecordInfo);
+    auto req = new DBReqTelemetryLoadInfo(id);
+    connect(req, &DBReqTelemetryLoadInfo::modelInfo, _dbmodel, &DatabaseModel::setRecordModelInfo);
     req->exec();
 }
 

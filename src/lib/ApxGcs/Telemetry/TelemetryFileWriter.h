@@ -81,7 +81,7 @@ public:
 
     static QLockFile *get_lock_file(QString fileName);
 
-    static QJsonObject get_info_from_filename(const QString &fileName);
+    static QJsonObject get_info_from_filename(const QString &filePath);
 
 private:
     Fields _fields;

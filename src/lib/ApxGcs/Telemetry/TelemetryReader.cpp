@@ -31,6 +31,9 @@
 #include <Database/TelemetryReqRead.h>
 #include <Database/TelemetryReqWrite.h>
 
+#include <Database/MissionsDB.h>
+#include <Database/VehiclesReqVehicle.h>
+
 #include <QGeoCoordinate>
 
 TelemetryReader::TelemetryReader(Fact *parent)
@@ -69,7 +72,6 @@ void TelemetryReader::loadRecord(quint64 id)
 
     setTotalSize(0);
     setTotalTime(0);
-    deleteChildren();
     setProgress(0);
 
     _loadRecordID = id;
@@ -80,6 +82,10 @@ void TelemetryReader::loadRecord(quint64 id)
     _fidx_lon = -1;
     _fidx_hmsl = -1;
     _geoPos = {};
+
+    deleteChildren();
+    _recordInfo = {};
+    _notes = {};
 
     auto req = new DBReqTelemetryLoadFile(id);
     connect(req, &DatabaseRequest::finished, this, [this]() {
@@ -94,7 +100,7 @@ void TelemetryReader::loadRecord(quint64 id)
     connect(req, &DBReqTelemetryLoadFile::recordInfo, this, &TelemetryReader::setRecordInfo);
 
     // forward info to other facts (lists)
-    connect(req, &DBReqTelemetryRecordInfo::recordInfo, this, &TelemetryReader::recordInfoUpdated);
+    connect(req, &DBReqTelemetryLoadInfo::recordInfo, this, &TelemetryReader::recordInfoUpdated);
     connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::rec_field);
     connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::rec_values);
     connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::rec_evt);
@@ -106,6 +112,7 @@ void TelemetryReader::loadRecord(quint64 id)
     connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::do_rec_field);
     connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::do_rec_values);
     connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::do_rec_evt);
+    connect(reader, &TelemetryFileReader::meta, this, &TelemetryReader::do_rec_meta);
 
     // start parsing
     emit rec_started();
@@ -160,14 +167,29 @@ void TelemetryReader::do_rec_evt(
     addEventFact(timestamp_ms, name, value, uid);
 }
 
-void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
+void TelemetryReader::do_rec_meta(QString name, QJsonObject data, bool uplink)
 {
-    _info = info;
+    // save meta objects to databases
+    if (name == "mission") {
+        auto req = new DBReqMissionsSave(data.toVariantMap());
+        req->exec();
+    } else if (name == "nodes") {
+        auto req = new DBReqImportVehicleConfig(data.toVariantMap());
+        req->exec();
+        // qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
+    }
+}
+
+void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
+{
+    _recordInfo = info;
+    _notes = notes;
+
     const auto &m = info;
 
     setTotalTime(m["duration"].toInteger());
 
-    const auto &cnt = m["info"]["counters"].toObject();
+    const auto &cnt = m["counters"].toObject();
 
     setTotalSize(cnt["records"].toInteger());
 
@@ -175,12 +197,11 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
     quint64 uplink = cnt["uplink"].toInteger();
     quint64 events = cnt["evt"].toInteger();
 
-    qint64 t = m["time"].toInteger();
+    qint64 t = m["timestamp"].toInteger();
     QString title = t > 0 ? QDateTime::fromMSecsSinceEpoch(t).toString("yyyy MMM dd hh:mm:ss")
                           : tr("Telemetry Data");
-    QString callsign = m["callsign"].toString();
-    QString comment = m["comment"].toString();
-    QString notes = m["notes"].toString();
+    QString callsign = m["vehicle"]["callsign"].toString();
+    QString comment = m["conf"].toString();
     QString stime = AppRoot::timeToString(totalTime() / 1000, true);
 
     QStringList descr;
@@ -201,12 +222,12 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info)
     // qDebug("%s", QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
 
     // create info fact with text
-    auto f = new Fact(this, "info", tr("Info"), tr("Telemetry file metadata"), Group);
+    auto f = new Fact(this, "info", tr("Record Info"), tr("Telemetry record metadata"), Group);
     f->move(0);
     f->setIcon("information");
     f->setText("{}");
     f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
-    f->setOpt("info", QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
+    f->setOpt("info", QJsonDocument(_recordInfo).toJson(QJsonDocument::Indented).constData());
 
     emit recordInfoChanged();
 }
@@ -267,20 +288,20 @@ void TelemetryReader::addEventFact(quint64 time,
 
 void TelemetryReader::notesChanged()
 {
-    /*if (blockNotesChange)
+    if (blockNotesChange)
         return;
-    if (!records->recordId())
+    if (!_loadRecordID)
         return;
     QVariantMap info;
     info.insert("notes", f_notes->text());
-    DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(records->recordId(), info);
+    DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(_loadRecordID, info);
     connect(
         req,
         &DBReqTelemetryWriteInfo::finished,
         this,
         [this]() { apxMsg() << tr("Notes recorded").append(':') << title(); },
         Qt::QueuedConnection);
-    req->exec();*/
+    req->exec();
 }
 
 quint64 TelemetryReader::totalSize() const

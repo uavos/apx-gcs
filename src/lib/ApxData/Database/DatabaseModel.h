@@ -70,7 +70,7 @@ private:
 
 public slots:
     void setRecordsList(RecordsList recordsList);
-    void setRecordInfo(quint64 id, QJsonObject info);
+    void setRecordModelInfo(quint64 id, QJsonObject modelInfo);
 
     void resetFilter() { setFilter({}); }
 

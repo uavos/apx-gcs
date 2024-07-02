@@ -751,12 +751,12 @@ void TelemetryFileReader::_json_patch(const QJsonObject &orig,
                                       const QJsonObject &patch,
                                       QJsonObject &result)
 {
-    for (auto it = patch.begin(); it != patch.end(); ++it) {
+    for (auto it = orig.begin(); it != orig.end(); ++it) {
         auto key = it.key();
         auto value = it.value();
 
         if (value.isObject()) {
-            if (!orig.contains(key)) {
+            if (!patch.contains(key)) {
                 result[key] = value;
                 continue;
             }
@@ -765,23 +765,22 @@ void TelemetryFileReader::_json_patch(const QJsonObject &orig,
             if (!sub.isEmpty())
                 result[key] = sub;
         } else if (value.isArray()) {
-            if (!orig.contains(key)) {
+            if (!patch.contains(key)) {
                 result[key] = value;
                 continue;
             }
             auto orig_a = value.toArray();
             auto patch_a = patch[key].toArray();
             QJsonArray sub;
-            for (int i = 0; i < patch_a.size(); ++i) {
+            for (int i = 0; i < orig_a.size(); ++i) {
                 QJsonObject d;
                 _json_patch(orig_a.at(i).toObject(), patch_a.at(i).toObject(), d);
                 sub.append(d);
             }
             if (!sub.isEmpty())
                 result[key] = sub;
-        } else if (value.isNull()) {
-            result[key] = orig[key];
         } else {
+            // keep original value
             result[key] = value;
         }
     }

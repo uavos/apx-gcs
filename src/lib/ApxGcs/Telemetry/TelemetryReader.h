@@ -47,13 +47,16 @@ public:
     using Field = TelemetryFileReader::Field;
     using Values = TelemetryFileReader::Values;
 
-    const auto &info() const { return _info; }
+    const auto &recordInfo() const { return _recordInfo; }
+    const auto &notes() const { return _notes; }
+
     const auto &fields() const { return _fields; }
 
 private:
     quint64 _loadRecordID{};
     QList<Field> _fields;
-    QJsonObject _info;
+    QJsonObject _recordInfo;
+    QString _notes;
 
     QGeoPath _geoPath;
     quint64 _totalDistance;
@@ -70,11 +73,12 @@ private slots:
     void notesChanged();
     void updateStatus();
 
-    void setRecordInfo(quint64 id, QJsonObject info);
+    void setRecordInfo(quint64 id, QJsonObject info, QString notes);
 
     void do_rec_field(QString name, QString title, QString units);
     void do_rec_values(quint64 timestamp_ms, Values data, bool uplink);
     void do_rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
+    void do_rec_meta(QString name, QJsonObject data, bool uplink);
 
 signals:
     // forwarded signals from file reader
@@ -88,7 +92,7 @@ signals:
     void rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
     // called when file parsed and header info collected
-    void recordInfoUpdated(quint64 id, QJsonObject data);
+    void recordInfoUpdated(quint64 id, QJsonObject info);
     void geoPathCollected(QGeoPath path, quint64 totalDistance);
 
     // stats text changed

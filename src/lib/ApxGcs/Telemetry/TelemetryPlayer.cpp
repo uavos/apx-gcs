@@ -213,7 +213,7 @@ void TelemetryPlayer::rec_started()
 
 void TelemetryPlayer::rec_finished()
 {
-    const auto &info = reader->info();
+    const auto &info = reader->recordInfo();
     auto path = info["info"]["path"].toString();
     if (path.isEmpty())
         return;

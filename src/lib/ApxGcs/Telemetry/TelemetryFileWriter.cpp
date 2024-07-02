@@ -176,18 +176,18 @@ QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
     return fileName;
 }
 
-QJsonObject TelemetryFileWriter::get_info_from_filename(const QString &fileName)
+QJsonObject TelemetryFileWriter::get_info_from_filename(const QString &filePath)
 {
     QJsonObject info;
 
-    auto name = QFileInfo(fileName).completeBaseName();
+    auto name = QFileInfo(filePath).completeBaseName();
     info["name"] = name;
-    info["path"] = QFileInfo(fileName).absoluteFilePath();
+    info["path"] = QFileInfo(filePath).absoluteFilePath();
 
     auto ts_s = name.section('-', 0, 0);
     auto ts_parts = ts_s.split('_');
     if (ts_parts.size() != 3) {
-        qWarning() << "invalid file name" << fileName;
+        qWarning() << "invalid file name" << filePath;
         return {};
     }
 

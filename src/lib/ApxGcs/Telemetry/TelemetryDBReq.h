@@ -73,11 +73,11 @@ signals:
     void recordsList(DatabaseModel::RecordsList records);
 };
 
-class DBReqTelemetryRecordInfo : public DBReqTelemetry
+class DBReqTelemetryLoadInfo : public DBReqTelemetry
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryRecordInfo(quint64 id)
+    explicit DBReqTelemetryLoadInfo(quint64 id)
         : DBReqTelemetry()
         , _id(id)
     {}
@@ -87,8 +87,8 @@ protected:
     bool run(QSqlQuery &query);
 
 signals:
-    void recordModelInfo(quint64 id, QJsonObject info);
-    void recordInfo(quint64 id, QJsonObject info);
+    void modelInfo(quint64 id, QJsonObject modelInfo);
+    void recordInfo(quint64 id, QJsonObject info, QString notes);
 };
 
 class DBReqTelemetryModelTrash : public DBReqTelemetry
@@ -107,12 +107,12 @@ protected:
     virtual bool run(QSqlQuery &query);
 };
 
-class DBReqTelemetryLoadFile : public DBReqTelemetryRecordInfo
+class DBReqTelemetryLoadFile : public DBReqTelemetryLoadInfo
 {
     Q_OBJECT
 public:
     explicit DBReqTelemetryLoadFile(quint64 id)
-        : DBReqTelemetryRecordInfo(id)
+        : DBReqTelemetryLoadInfo(id)
     {
         connect(this, &DBReqTelemetry::discardRequested, &_reader, &TelemetryFileReader::abort);
     }
