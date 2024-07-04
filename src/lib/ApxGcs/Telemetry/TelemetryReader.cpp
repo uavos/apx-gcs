@@ -85,7 +85,6 @@ void TelemetryReader::loadRecord(quint64 id)
 
     deleteChildren();
     _recordInfo = {};
-    _notes = {};
 
     auto req = new DBReqTelemetryLoadFile(id);
     connect(req, &DatabaseRequest::finished, this, [this]() {
@@ -183,8 +182,6 @@ void TelemetryReader::do_rec_meta(QString name, QJsonObject data, bool uplink)
 void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
 {
     _recordInfo = info;
-    _notes = notes;
-
     const auto &m = info;
 
     setTotalTime(m["duration"].toInteger());

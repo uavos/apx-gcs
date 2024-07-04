@@ -48,7 +48,6 @@ public:
     using Values = TelemetryFileReader::Values;
 
     const auto &recordInfo() const { return _recordInfo; }
-    const auto &notes() const { return _notes; }
 
     const auto &fields() const { return _fields; }
 
@@ -56,7 +55,6 @@ private:
     quint64 _loadRecordID{};
     QList<Field> _fields;
     QJsonObject _recordInfo;
-    QString _notes;
 
     QGeoPath _geoPath;
     quint64 _totalDistance;
