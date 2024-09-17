@@ -65,7 +65,6 @@ private slots:
 public slots:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
     void valuesData(PBase::Values values);
-    void xpdrData(PBase::Values values);
 
     void resetCounters();
 

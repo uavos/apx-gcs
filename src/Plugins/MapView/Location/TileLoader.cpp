@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TileLoader.h"
-#include "GeoPlugin.h"
 #include "MapsDB.h"
 #include <App/AppLog.h>
 #include <App/AppSettings.h>
@@ -154,9 +153,7 @@ void TileLoader::download(quint64 uid)
                 QUrl(QString("http://%1%2.google.com/%3/v=%4&hl=%5&x=%6%7&y=%8&z=%9&s=%10")
                          .arg(server)
                          .arg(getServerNum(x, y, 4))
-                         .arg(req)
-                         .arg(versionGoogleMaps)
-                         .arg(language)
+                         .arg(req, versionGoogleMaps, language)
                          .arg(x)
                          .arg(sec1)
                          .arg(y)
@@ -321,22 +318,35 @@ void TileLoader::versionReplyFinished()
 #endif
 
     bool ok = false;
-    QRegExp reg("\"*https?://mt\\D?\\d..*/vt\\?lyrs=m@(\\d*)", Qt::CaseInsensitive);
-    if (reg.indexIn(html) != -1) {
-        QStringList gc = reg.capturedTexts();
-        //versions[GoogleMap] = QString("m@%1").arg(gc[1]);
+    static QRegularExpression re("\"*https?://mt\\D?\\d..*/vt\\?lyrs=m@(\\d*)",
+                                 QRegularExpression::CaseInsensitiveOption);
+    {
+        auto match = re.match(html);
+        if (match.hasMatch()) {
+            // QStringList gc = match.capturedTexts();
+            //versions[GoogleMap] = QString("m@%1").arg(gc[1]);
+        }
     }
-    reg = QRegExp("\"*https?://khm\\D?\\d.googleapis.com/kh\\?v=(\\d*)", Qt::CaseInsensitive);
-    if (reg.indexIn(html) != -1) {
-        QStringList gc = reg.capturedTexts();
-        versionGoogleMaps = gc[1];
-        ok = true;
+    {
+        static QRegularExpression re("\"*https?://khm\\D?\\d.googleapis.com/kh\\?v=(\\d*)",
+                                     QRegularExpression::CaseInsensitiveOption);
+        auto match = re.match(html);
+        if (match.hasMatch()) {
+            QStringList gc = match.capturedTexts();
+            versionGoogleMaps = gc[1];
+            ok = true;
+        }
     }
-    reg = QRegExp("\"*https?://mt\\D?\\d..*/vt\\?lyrs=t@(\\d*),r@(\\d*)", Qt::CaseInsensitive);
-    if (reg.indexIn(html) != -1) {
-        QStringList gc = reg.capturedTexts();
-        //_versionGoogleTerrain = QString("t@%1,r@%2").arg(gc[1]).arg(gc[2]);
+    {
+        static QRegularExpression re("\"*https?://mt\\D?\\d..*/vt\\?lyrs=t@(\\d*),r@(\\d*)",
+                                     QRegularExpression::CaseInsensitiveOption);
+        auto match = re.match(html);
+        if (match.hasMatch()) {
+            // QStringList gc = match.capturedTexts();
+            //_versionGoogleTerrain = QString("t@%1,r@%2").arg(gc[1]).arg(gc[2]);
+        }
     }
+
     if (!ok)
         return;
     if (versionGoogleMaps.isEmpty())

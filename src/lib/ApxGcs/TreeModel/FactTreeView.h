@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include <Fact/Fact.h>
 #include <QStyledItemDelegate>
 #include <QtCore>
 #include <QtWidgets>
@@ -34,6 +35,20 @@ public:
     FactTreeView(QWidget *parent = nullptr);
 
     QSize sizeHint() const override { return viewportSizeHint(); }
+
+    template<class T = Fact>
+    inline QList<T *> selectedItems() const
+    {
+        if (!selectionModel())
+            return {};
+        QList<T *> list;
+        for (auto index : selectionModel()->selectedRows()) {
+            auto t = qobject_cast<T *>(index.data(Fact::ModelDataRole).value<Fact *>());
+            if (t)
+                list.append(t);
+        }
+        return list;
+    }
 };
 
 class FactProxyModel : public QSortFilterProxyModel
@@ -93,4 +108,5 @@ public slots:
 
 signals:
     void treeReset();
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 };

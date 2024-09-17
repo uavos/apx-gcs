@@ -36,7 +36,6 @@ AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
     , f_enabled(nullptr)
     , interface(nullptr)
     , control(nullptr)
-    , loader(nullptr)
 {
     Fact *f = new Fact(plugins->f_enabled,
                        name.toLower(),
@@ -75,11 +74,13 @@ void AppPlugin::loadLib()
     QLibrary lib(fname);
     try {
         if (!lib.load()) {
-            apxMsgW() << "lib-load:" << lib.errorString() << "(" + fname + ")";
+            apxConsoleW() << "lib-load:" << lib.errorString() << "(" + fname + ")";
             return;
         }
-        loader = new QPluginLoader(fname);
-        instance = loader->instance();
+        auto ptr = reinterpret_cast<QtPluginInstanceFunction>(lib.resolve("qt_plugin_instance"));
+        if (ptr) {
+            instance = ptr();
+        }
     } catch (...) {
         apxMsgW() << "Plugin load error" << name << "(" + fname + ")";
         instance = nullptr;
@@ -94,9 +95,6 @@ void AppPlugin::loadLib()
             fileName = "qrc" + qrcFileName;
             loadQml();
             return;
-        }
-        if (loader) {
-            apxMsgW() << "loader:" << loader->errorString() << "(" + fname + ")";
         }
         return;
     }
@@ -209,7 +207,7 @@ void AppPlugin::loadQml()
 
 void AppPlugin::load()
 {
-    if (loader || control)
+    if (control)
         return;
     if (fileName.endsWith(".gcs") || fileName.endsWith(".so") || fileName.endsWith(".dylib")
         || fileName.endsWith(".bundle")) {

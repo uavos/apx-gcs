@@ -29,6 +29,7 @@ class FactTreeModel : public QAbstractItemModel
     Q_OBJECT
 public:
     explicit FactTreeModel(Fact *root, QObject *parent);
+    ~FactTreeModel();
 
     Fact *fact(const QModelIndex &index) const;
     QModelIndex factIndex(FactBase *item, int column = 0) const;
@@ -36,7 +37,7 @@ public:
     void recursiveDisconnect(Fact *fact);
     void checkConnections(Fact *fact) const;
 
-    FactList expandedFacts;
+    QList<QPointer<Fact>> expandedFacts;
 
     QHash<int, QByteArray> roleNames() const override;
 
@@ -63,7 +64,10 @@ private:
     QList<QPointer<Fact>> updateList;
     QMultiHash<Fact *, int> updateHash;
 
-    FactList conFactLayout;
+    QList<QPointer<Fact>> conFactLayout;
+
+    using FactIndexHash = QMap<QPointer<Fact>, std::array<QModelIndex, Fact::FACT_MODEL_COLUMN_CNT>>;
+    FactIndexHash indexHash;
 
 private slots:
     void itemToBeInserted(int row, FactBase *item);
@@ -84,4 +88,6 @@ private slots:
 
     void updateTimerTimeout();
     void itemDestroyed();
+
+    void indexHashCleanup();
 };

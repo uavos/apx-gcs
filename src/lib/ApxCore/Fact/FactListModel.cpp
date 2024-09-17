@@ -125,29 +125,18 @@ void FactListModel::populate(ItemsList *list, Fact *f)
         if (!item)
             continue;
         if (flt && item->treeType() != Fact::Group
-            && !item->showThis(QRegExp(filter(), Qt::CaseInsensitive)))
+            && !item->showThis(
+                QRegularExpression(filter(), QRegularExpression::CaseInsensitiveOption)))
             continue;
         if (!sect && !item->section().isEmpty())
             sect = true;
-        connect(item, &FactBase::destroyed, this, &FactListModel::scheduleSync, Qt::UniqueConnection);
+        connect(item, &FactBase::destroyed, this, &FactListModel::scheduleSync);
 
         if ((f->options() & Fact::FlatModel) && (item->options() & Fact::Section)) {
-            connect(item,
-                    &Fact::itemInserted,
-                    this,
-                    &FactListModel::scheduleSync,
-                    Qt::UniqueConnection);
-            connect(item,
-                    &Fact::itemRemoved,
-                    this,
-                    &FactListModel::scheduleSync,
-                    Qt::UniqueConnection);
-            connect(item, &Fact::itemMoved, this, &FactListModel::scheduleSync, Qt::UniqueConnection);
-            connect(item,
-                    &Fact::optionsChanged,
-                    this,
-                    &FactListModel::scheduleSync,
-                    Qt::UniqueConnection);
+            connect(item, &Fact::itemInserted, this, &FactListModel::scheduleSync);
+            connect(item, &Fact::itemRemoved, this, &FactListModel::scheduleSync);
+            connect(item, &Fact::itemMoved, this, &FactListModel::scheduleSync);
+            connect(item, &Fact::optionsChanged, this, &FactListModel::scheduleSync);
             populate(list, item);
             continue;
         }
@@ -161,7 +150,7 @@ void FactListModel::populate(ItemsList *list, Fact *f)
         //check for gaps in sections to sort
         QString s = "@/./";
         QStringList slist;
-        for (auto i : *list) {
+        for (auto &i : *list) {
             const QString &si = i->section();
             if (s == si)
                 continue;

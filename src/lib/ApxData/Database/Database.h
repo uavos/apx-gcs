@@ -34,6 +34,7 @@ class Database : public Fact
 
 public:
     explicit Database(Fact *parent);
+    ~Database();
 
     static Database *instance() { return _instance; }
 

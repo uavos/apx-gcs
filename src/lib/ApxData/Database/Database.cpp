@@ -46,3 +46,8 @@ Database::Database(Fact *parent)
     telemetry = new TelemetryDB(this, QStringLiteral("TelemetryDbSession"));
     missions = new MissionsDB(this, QStringLiteral("MissionsDbSession"));
 }
+
+Database::~Database()
+{
+    _instance = nullptr;
+}

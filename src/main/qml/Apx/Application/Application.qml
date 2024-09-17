@@ -19,13 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick
+import QtQuick.Controls
 
-import Apx.Menu 1.0
+import Apx.Menu
 
 Control {
-
     // load sequence
     Timer {
         interval: 1
@@ -45,10 +44,6 @@ Control {
             c.closed.connect(c.destroy)
             c.open()
         }
-        /*onClosing: {
-            loaderMain.visible=false
-            loaderMain.active=false
-        }*/
     }
 
     //load main layout
@@ -56,7 +51,7 @@ Control {
         id: loaderMain
         anchors.fill: parent
         active: false
-        asynchronous: true
+        asynchronous: false
         source: typeof(qmlMainFile)!='undefined'?qmlMainFile:"GroundControl.qml"
         visible: false //hide to show BG image
         onLoaded: {
@@ -65,7 +60,7 @@ Control {
             application.registerUiComponent(item, "main")
         }
         opacity: visible?1:0
-        Behavior on opacity { PropertyAnimation { duration: 2000; easing.type: Easing.InQuart; } }
+        Behavior on opacity { PropertyAnimation { duration: 1000; easing.type: Easing.InQuart; } }
     }
 
     //fact menu dispatcher
@@ -80,7 +75,9 @@ Control {
     //about dialog
     Component {
         id: c_about
-        AboutDialog { }
+        AboutDialog { 
+            z: 99999
+        }
     }
 
 

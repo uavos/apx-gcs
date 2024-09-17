@@ -26,9 +26,7 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
+#include <GithubReleases.h>
 
 class ScriptCompiler : public Fact
 {
@@ -45,7 +43,7 @@ public:
     Fact *f_llvm_path;
 
 private:
-    QNetworkAccessManager net;
+    GithubReleases _gh{"WebAssembly/wasi-sdk", this};
 
     bool lookup();
     bool lookup_llvm();
@@ -53,7 +51,7 @@ private:
 
     QString m_cc;
 
-    QString m_version;
+    QString m_tag;
     QString m_sdk;
 
     QDir m_dir;
@@ -70,9 +68,8 @@ private slots:
     void lookup_init();
 
     void download();
-
-    void responseDownload();
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void downloadFinished(QString assetName, QFile *data);
 
     void extractFinished(int exitCode, QProcess::ExitStatus exitStatus);
 

@@ -19,11 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.13
+import QtQuick
+import QtQuick.Effects
+import QtQuick.Controls
 
-import Apx.Common 1.0
+import Apx.Common
 
 Item {
     id: frame
@@ -65,15 +65,19 @@ Item {
 
     implicitWidth: plugin.implicitWidth
     implicitHeight: plugin.implicitHeight
-    DropShadow {
-        enabled: minimized && ui.effects>1
+
+    Rectangle {
+        id: maskRect
         anchors.fill: parent
-        source: content.background
-        samples: enabled?15:0
+        border.width: 0
         color: "#000"
-        cached: true
-        radius: samples/2
+        radius: minimized?5:0
+        layer.enabled: minimized && ui.effects>0
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+        }
     }
+
     Item {
         id: content
         anchors.fill: parent
@@ -81,12 +85,11 @@ Item {
         Rectangle {
             id: bgRect
             anchors.fill: parent
-            border.width: 0
+            border.width: 1
             color: "#000"
-            radius: minimized?5:0
+            radius: maskRect.radius
+            layer.enabled: true
         }
-        layer.enabled: minimized && ui.effects>0
-        layer.effect: OpacityMask { maskSource: bgRect }
         Loader {
             z: 9999
             anchors.left: parent.left
@@ -99,5 +102,12 @@ Item {
                 onTriggered: plugin.state="maximized"
             }
         }
+        layer.enabled: minimized && ui.effects>0
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskSource: bgRect
+        }
     }
+
+
 }

@@ -19,11 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.6
-import QtQuick.Controls 2.15
-import QtQuick.Controls.Material 2.2
-import QtQml 2.12
-import QtQuick.Layouts 1.3
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQml
+import QtQuick.Layouts
 
 
 import "../Button"
@@ -31,12 +31,16 @@ import "../Button"
 ComboBox {
     id: editor
 
+    popup.z: 1000
+
     spacing: 0
     topPadding: 0
     bottomPadding: 0
 
     topInset: 0
     bottomInset: 0
+    leftInset: 0
+    rightInset: 0
 
     padding: 0
     property real paddingScale: 0.8
@@ -53,7 +57,7 @@ ComboBox {
     model: fact.enumStrings
 
     Component.onCompleted: updateIndex()
-    onActivated: {
+    onActivated: (index) => {
         fact.setValue(textAt(index))
         factButton.forceActiveFocus();
     }

@@ -2,8 +2,6 @@ name: APX GCS CI
 
 on:
   push:
-    # branches:
-    #   - test-rel
     tags:
       - "release-*"
       - "test-*"
@@ -16,33 +14,34 @@ jobs:
     name: Build Linux
     runs-on: ubuntu-latest
     # if: "false"
+
     container:
       image: uavos/apx-gcs-linux:latest
       options: --privileged
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Fetch version tags
-        run: |
-          git config --global --add safe.directory `pwd`
-          git fetch --prune --unshallow --tags
+          fetch-tags: true
+          fetch-depth: 0
+      - run: git config --global --add safe.directory `pwd`
+
+      # - name: Setup vscode tunnel # https://code.visualstudio.com/docs/remote/tunnels
+      #   run: |
+      #     curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' --output vscode_cli.tar.gz
+      #     tar -xf vscode_cli.tar.gz
+      #     ./code tunnel --accept-server-license-terms
 
       - name: Build package
         run: make release-package
 
-      # - name: Build test
-      #   run: |
-      #     mkdir -p $BUILD_DIR/deploy
-      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.AppImage
-      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.AppImage.zsync
-
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: |
             ${{ env.BUILD_DIR }}/deploy/*.AppImage
-            ${{ env.BUILD_DIR }}/deploy/*.zsync
           name: apx-gcs-linux
           if-no-files-found: error
           retention-days: 1
@@ -51,50 +50,36 @@ jobs:
     name: Build MacOS
     runs-on: macos-latest
     env:
-      # VERSION_QT: 5.15.2
+      VERSION_QT: 6.7.1
+      VERSION_SDL: 2.30.3
       VERSION_GST: 1.22.5
-      VERSION_SDL: 2.28.3
-
-      VERSION_SPARKLE: 1.27.1
 
       # we replace system python with brew python
-      # PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
-      PYTHONPATH: /usr/local/lib/python3.12/site-packages
+      PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Fetch version tags
-        run: |
-          git config --global --add safe.directory `pwd`
-          git fetch --prune --unshallow --tags
+          fetch-tags: true
+          fetch-depth: 0
+      - run: git config --global --add safe.directory `pwd`
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
 
-      - name: Install Qt
-        # TODO migrate to Qt6 and use python https://github.com/miurahr/aqtinstall
-        #   run: |
-        #     curl -L https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh --output install-qt.sh
-        #     chmod +x install-qt.sh
-        #     ./install-qt.sh --version $VERSION_QT --directory Qt \
-        #         qtbase qtdeclarative qttools \
-        #         quickcontrols2 serialport multimedia speech svg location \
-        #         graphicaleffects qtcharts
-        #     echo "$(pwd)/Qt/$VERSION_QT/clang_64/bin" >> $GITHUB_PATH
-        run: |
-          find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
-          export HOMEBREW_NO_AUTO_UPDATE=1
-          export HOMEBREW_NO_INSTALL_CLEANUP=1
-          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew update
-          brew install qt@5
-          echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
-
       - name: Install Tools (python)
         run: |
-          pip3 install networkx simplejson jinja2 pyyaml dmgbuild --break-system-packages
+          pip3 install networkx simplejson jinja2 pyyaml dmgbuild aqtinstall --break-system-packages
+
+      - name: Install Qt
+        working-directory: /tmp
+        run: |
+          aqt install-qt mac desktop $VERSION_QT -m \
+            qtshadertools qt5compat qtcharts qtmultimedia \
+            qtspeech qtlocation qtpositioning qtserialport
+          echo "/tmp/$VERSION_QT/macos/bin" >> $GITHUB_PATH
 
       - name: Install SDL
         working-directory: /tmp
@@ -102,6 +87,8 @@ jobs:
           curl -L https://github.com/libsdl-org/SDL/releases/download/release-$VERSION_SDL/SDL2-$VERSION_SDL.dmg --output sdl.dmg
           hdiutil attach -noverify sdl.dmg
           sudo cp -a /Volumes/SDL2/SDL2.framework /Library/Frameworks/
+          hdiutil detach /Volumes/SDL2
+          rm -f sdl.dmg
 
       - name: Install GST
         working-directory: /tmp
@@ -112,14 +99,6 @@ jobs:
           sudo installer -package gst-devel.pkg -target /
           rm -f gst*.pkg
 
-      - name: Install Sparkle
-        working-directory: /tmp
-        run: |
-          curl -L https://github.com/sparkle-project/Sparkle/releases/download/$VERSION_SPARKLE/Sparkle-$VERSION_SPARKLE.tar.xz --output sparkle.tar.xz
-          gunzip -k -c sparkle.tar.xz | tar xopf -
-          sudo mv Sparkle.framework /Library/Frameworks/
-          echo "$(pwd)/bin" >> $GITHUB_PATH
-
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
 
@@ -127,8 +106,7 @@ jobs:
         env:
           KEYCHAIN: default.keychain
           KEYCHAIN_PASSWORD: uavos
-          SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
-          # base64 build_certificate.p12 | pbcopy
+          # base64 -i build_certificate.p12 | pbcopy
           SIGNING_CERTIFICATE_P12_DATA: ${{ secrets.SIGNING_CERTIFICATE_P12_DATA }}
           SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
           CODE_IDENTITY: ${{ secrets.CODE_IDENTITY }}
@@ -140,72 +118,25 @@ jobs:
           security list-keychains -s $KEYCHAIN
           security import <(echo $SIGNING_CERTIFICATE_P12_DATA | base64 --decode) -f pkcs12 -k $KEYCHAIN -P $SIGNING_CERTIFICATE_PASSWORD -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN
-          security add-generic-password -U -a 'ed25519' -D 'private key' -s 'https://sparkle-project.org' -w $SPARKLE_KEY -A $KEYCHAIN
-          security set-generic-password-partition-list -s 'https://sparkle-project.org' -S apple-tool:,apple:,security:,unsigned: -k $KEYCHAIN_PASSWORD $KEYCHAIN
           security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN
           security -v find-identity -s $CODE_IDENTITY
 
       - name: Build package
         env:
           CODE_IDENTITY: ${{ secrets.CODE_IDENTITY }}
+          QT_PATH: /tmp/$VERSION_QT/macos
+          LD_LIBRARY_PATH: $QT_PATH/lib
+          PKG_CONFIG_PATH: $QT_PATH/lib/pkgconfig
+          CMAKE_PREFIX_PATH: $QT_PATH/lib/cmake
+
         run: |
           make release-package
 
-      # - name: Build test
-      #   run: |
-      #     mkdir -p $BUILD_DIR/deploy
-      #     echo "${{ github.ref }}"> $BUILD_DIR/deploy/TEST.dmg
-      #     echo "${{ github.ref }}"> appcast.xml
-
-      - name: Download assets
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.CI_PAT}}
-          script: |
-            const cp = require('child_process');
-            const { repo: { owner, repo }, sha } = context;
-
-            let download = async function(uri, filename){
-                let command = `curl -o ${filename} -L '${uri}'`;
-                let result = cp.execSync(command);
-            };
-
-            let releases = await github.repos.listReleases({
-              owner, repo,
-              per_page: 3,
-            });
-
-            for (let release of releases.data) {
-              //console.log('downloading:', release.id);
-              let assets = await github.repos.listReleaseAssets({
-                owner, repo,
-                release_id: release.id,
-              });
-              //console.log('assets', assets);
-              for (let asset of assets.data) {
-                if(!asset.name.endsWith('.dmg'))
-                  continue;
-                console.log('downloading:', asset.name);
-                await download(asset.browser_download_url, process.env.BUILD_DIR + '/' + asset.name);
-                //console.log(await github.request(asset.url));
-              }
-            }
-
-      - name: Generate Sparkle appcast
-        run: |
-          mkdir -p $BUILD_DIR/sparkle
-          mv -f $BUILD_DIR/*.dmg $BUILD_DIR/sparkle/ || true
-          cp -f $BUILD_DIR/deploy/*.dmg $BUILD_DIR/sparkle/
-          ls -la $BUILD_DIR/sparkle/*.dmg
-          python tools/deploy/deploy_sparkle.py --assets=$BUILD_DIR/sparkle --key ${{ secrets.SPARKLE_KEY }}
-
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: |
             ${{ env.BUILD_DIR }}/deploy/*.dmg
-            ${{ env.BUILD_DIR }}/sparkle/*.delta
-            appcast.*
           name: apx-gcs-macos
           if-no-files-found: error
           retention-days: 1
@@ -217,7 +148,7 @@ jobs:
     if: ${{ !startsWith(github.event.ref, 'refs/tags/test-') }}
     # if: "false"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v2
         with:
           path: package
@@ -278,17 +209,3 @@ jobs:
               release_id: "${{ steps.create_release.outputs.id }}",
               draft: false
             });
-
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
-
-      - name: Update release branch
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git fetch origin release
-          git checkout release
-          mv -f package/appcast.xml docs/releases/
-          git add docs/releases/appcast.xml
-          git commit -am "Publish ${{ steps.package.outputs.version }}"
-          git push origin release

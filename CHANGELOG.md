@@ -1,3 +1,15 @@
+# [APX Ground Control v11.1.17](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.17) (05/30/24)
+
+> Branch: `main`\
+> Date: `05/30/24 17:03:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/145a2911defe7aa9dc23bb0fdfcf838eeda109d7...ab9f993f32a6139903d8342c29ccc2aef8448a99)
+
+## Bug Fixes
+* xplane plugin universal binary
+* XPDR protocol fix
+* Vehicle display in XPDR downlink mode
+* app loading ports enabling behavior
+
 # [APX Ground Control v11.1.16](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.16) (04/24/24)
 
 > Branch: `main`\

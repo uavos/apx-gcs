@@ -1,3 +1,6 @@
 apx_plugin(QT Multimedia TextToSpeech)
 
-apx_install_res(${APX_RESOURCES_DIR} audio templates/speech.json)
+apx_qrc(${MODULE} PREFIX audio BASE "${APX_RESOURCES_DIR}/audio" SRCS "**")
+
+apx_install_res(${APX_RESOURCES_DIR} templates/speech.json)
+

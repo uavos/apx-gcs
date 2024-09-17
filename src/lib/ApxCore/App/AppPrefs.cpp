@@ -68,32 +68,16 @@ void AppPrefs::saveValue(const QString &name, const QVariant &v, const QString &
 {
     if (loadValue(name, path) == v)
         return;
+
     QSettings *sx = m_settings;
     int grp = 0;
-    foreach (const QString &s, path.split('/', Qt::SkipEmptyParts)) {
+    for (auto &s : path.split('/', Qt::SkipEmptyParts)) {
         sx->beginGroup(s);
         grp++;
     }
-    if (v.canConvert(QMetaType::QVariantList)) {
-        const QVariantList &va = v.value<QVariantList>();
-        sx->remove(name);
-        sx->beginWriteArray(name, va.size());
-        for (int i = 0; i < va.size(); ++i) {
-            sx->setArrayIndex(i);
-            const QVariant &vi = va.at(i);
-            if (vi.canConvert(QMetaType::QVariantMap)) {
-                const QVariantMap &vm = vi.value<QVariantMap>();
-                foreach (QString key, vm.keys()) {
-                    sx->setValue(key, vm.value(key));
-                }
-            } else {
-                sx->setValue("value", vi);
-            }
-        }
-        sx->endArray();
-    } else {
-        sx->setValue(name, v);
-    }
+
+    sx->setValue(name, v);
+
     while (grp--)
         sx->endGroup();
 }
@@ -135,11 +119,7 @@ QVariant AppPrefs::loadValue(const QString &name, const QString &path, const QVa
             }
         }
         sx->endArray();
-        if (vlist.isEmpty() && defaultValue.canConvert(QMetaType::QVariantList)) {
-            v = defaultValue;
-        } else {
-            v = vlist;
-        }
+        v = vlist;
     } else {
         sx->endArray();
         v = sx->value(name, defaultValue);

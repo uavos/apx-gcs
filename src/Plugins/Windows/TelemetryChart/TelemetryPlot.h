@@ -36,6 +36,7 @@
 #include <qwt_plot_scaleitem.h>
 #include <qwt_plot_zoomer.h>
 #include <qwt_scale_engine.h>
+#include <qwt_scale_map.h>
 #include <qwt_scale_widget.h>
 #include <qwt_series_data.h>
 #include <qwt_symbol.h>
@@ -63,11 +64,9 @@ public:
 
     quint64 timeCursorValue();
 
-    void push_calc_curve(QwtPlotCurve *calc_curve) { 
-        calc_curves.insert(calc_curve, "");
-    };
-    
-    QMap<QwtPlotCurve*, QString> &get_calc_curves() { return calc_curves; };
+    void push_calc_curve(QwtPlotCurve *calc_curve) { calc_curves.insert(calc_curve, ""); };
+
+    QMap<QwtPlotCurve *, QString> &get_calc_curves() { return calc_curves; };
 
     void addEvent(double time, const QString &text, QColor color = QColor());
 
@@ -84,8 +83,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event);
 
 private:
-    QMap<QwtPlotCurve*, QString> calc_curves;
-    void refreshCalculated(QwtPlotCurve* curve_calc);
+    QMap<QwtPlotCurve *, QString> calc_curves;
+    void refreshCalculated(QwtPlotCurve *curve_calc);
 
     int m_progress;
     void setProgress(int v);

@@ -43,7 +43,6 @@ public:
     Fact *f_enabled;
     PluginInterface *interface;
     QObject *control;
-    QPluginLoader *loader;
     QStringList depends;
 
     QString section;

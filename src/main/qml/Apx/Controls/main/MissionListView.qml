@@ -19,18 +19,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.5;
-import QtQuick.Layouts 1.3
-import QtPositioning 5.6
+import QtQuick
+import QtQuick.Layouts
+import QtPositioning
 
-import QtQuick.Controls 2.2
-import QtQuick.Controls.Material 2.2
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
-import APX.Vehicles 1.0 as APX
-import APX.Mission 1.0
+import APX.Vehicles as APX
+import APX.Mission
 
-import Apx.Common 1.0
-import Apx.Controls 1.0
+import Apx.Common
+import Apx.Controls
 
 ColumnLayout {
     id: control
@@ -39,7 +39,7 @@ ColumnLayout {
     readonly property APX.Vehicle vehicle: apx.vehicles.current
     
     readonly property Mission mission: vehicle.mission
-    readonly property bool empty: mission?mission.empty:true
+    readonly property bool empty: mission.empty
 
     function focusOnMap(fact)
     {
@@ -50,17 +50,23 @@ ColumnLayout {
         id: missionListView
         Layout.fillHeight: true
         model: mission.listModel
-        implicitWidth: contentItem.childrenRect.width
+        implicitWidth: Math.max(Style.buttonSize, contentItem.childrenRect.width)
         orientation: ListView.Vertical
         spacing: Style.spacing/2
         clip: true
         snapMode: ListView.SnapToItem
         visible: !empty
 
+        delegate: Item{
+            implicitHeight: button.implicitHeight
+            implicitWidth: button.implicitWidth
+                +(activeIndicator.item?activeIndicator.item.implicitWidth:0)
 
-        delegate: RowLayout{
-            spacing: Style.spacing
             TextButton {
+                id: button
+                anchors.fill: parent
+                anchors.rightMargin: activeIndicator.item?activeIndicator.item.implicitWidth:0
+                
                 size: Style.buttonSize*0.7
 
                 toolTip: modelData?modelData.descr:""
@@ -99,8 +105,12 @@ ColumnLayout {
                 }
             }
             Loader {
+                id: activeIndicator
                 active: modelData.active
-                Layout.fillHeight: true
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+
                 sourceComponent: Component {
                     MaterialIcon {
                         verticalAlignment: Text.AlignVCenter

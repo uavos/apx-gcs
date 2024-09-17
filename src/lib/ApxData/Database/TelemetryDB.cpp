@@ -169,6 +169,10 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "TelemetryCacheData", "time", false);
     new DBReqMakeIndex(this, "TelemetryCacheData", "type", false);
 }
+TelemetryDB::~TelemetryDB()
+{
+    Database::instance()->telemetry = nullptr;
+}
 
 void TelemetryDB::updateFieldsMap(FieldsByUID byUID, FieldsByName byName)
 {

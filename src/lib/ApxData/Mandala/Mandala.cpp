@@ -207,24 +207,3 @@ void Mandala::recordSendValue(mandala::uid_t uid, QVariant value)
     rec_values.insert(uid, value);
     emit recordData(rec_values, true);
 }
-
-void Mandala::xpdrData(PBase::Values values)
-{
-    valuesData(values);
-
-    // guess some values
-    PBase::Values rec_values;
-
-    auto ref_hmsl = fact(mandala::est::nav::ref::hmsl::meta.uid)->value().toFloat();
-    auto hmsl = fact(mandala::est::nav::pos::hmsl::meta.uid)->value().toFloat();
-    auto altitude = fact(mandala::est::nav::pos::altitude::meta.uid);
-    altitude->setRawValueLocal(hmsl - ref_hmsl);
-    rec_values.insert(altitude->uid(), altitude->value());
-
-    auto bearing = fact(mandala::est::nav::pos::bearing::meta.uid)->value().toFloat();
-    auto yaw = fact(mandala::est::nav::att::yaw::meta.uid);
-    yaw->setRawValueLocal(bearing);
-    rec_values.insert(yaw->uid(), yaw->value());
-
-    emit recordData(rec_values, false);
-}

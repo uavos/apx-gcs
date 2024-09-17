@@ -28,7 +28,7 @@ MissionListModel::MissionListModel(VehicleMission *parent)
     , mission(parent)
 {
     QObject::setParent(parent);
-    foreach (Fact *f, mission->groups) {
+    for (auto f : mission->groups) {
         connectFact(f);
     }
     fact = mission;

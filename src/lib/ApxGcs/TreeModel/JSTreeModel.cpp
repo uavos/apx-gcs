@@ -389,7 +389,7 @@ bool JSTreeItem::lessThan(const JSTreeItem *i1, const JSTreeItem *i2)
     }
     return i1->name.toLower().localeAwareCompare(i2->name.toLower()) < 0;
 }
-bool JSTreeItem::showThis(const QRegExp &regexp)
+bool JSTreeItem::showThis(const QRegularExpression &regexp)
 {
     if (name == "prototype")
         return false;

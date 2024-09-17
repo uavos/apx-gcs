@@ -9,13 +9,13 @@ APX_PROJECT_TITLE := "APX Ground Control"
 all: configure build
 
 configure:
-	@$(CMAKE) -DCMAKE_BUILD_TYPE=Release -H. -B$(BUILD_DIR)
+	@$(CMAKE) -DCMAKE_BUILD_TYPE=Release -H. -B$(BUILD_DIR) -G "Unix Makefiles"
 
 build:
 	@$(CMAKE) --build $(BUILD_DIR)
 
 bundle:
-	$(CMAKE) --build $(BUILD_DIR) --target bundle
+	$(CMAKE) --build $(BUILD_DIR) --target deploy_bundle
 
 package:
 	$(CMAKE) --build $(BUILD_DIR) --target deploy_package

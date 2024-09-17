@@ -26,7 +26,11 @@
 class Fact;
 class FactPropertyBinding;
 
-typedef QList<Fact *> FactList;
+template<typename T>
+using FactListT = QList<T *>;
+// using FactListT = QList<std::unique_ptr<T>>;
+
+using FactList = FactListT<Fact>;
 
 class FactBase : public QObject
 {
@@ -63,7 +67,6 @@ public:
         DragChildren = 1 << 9, //child items are draggable to change order
 
         PersistentValue = 1 << 10, //save and restore value in QSettings
-        SystemSettings = 1 << 11,  //use default QSettings to store value
 
         FilterModel = 1 << 12,     //show search filter
         FilterSearchAll = 1 << 13, //search name/title/descr by filters
@@ -163,7 +166,7 @@ private:
 
     void updatePath();
 
-    QList<FactPropertyBinding *> _property_binds;
+    QList<QPointer<FactPropertyBinding>> _property_binds;
 
 public slots:
     void deleteFact();

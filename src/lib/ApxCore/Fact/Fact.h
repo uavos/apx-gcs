@@ -75,8 +75,8 @@ public:
     Q_INVOKABLE bool fromJsonDocument(QByteArray data);
     Q_INVOKABLE static QVariant parseJsonDocument(QByteArray data);
 
-    virtual bool lessThan(Fact *other) const; //sorting helper
-    virtual bool showThis(QRegExp re) const;  //filter helper
+    virtual bool lessThan(Fact *other) const;           //sorting helper
+    virtual bool showThis(QRegularExpression re) const; //filter helper
 
     //data model
     enum {
@@ -110,10 +110,10 @@ public:
     }
 
     template<class T>
-    QList<T *> findFacts() const
+    FactListT<T> findFacts() const
     {
-        QList<T *> list;
-        for (auto i : facts()) {
+        FactListT<T> list;
+        for (auto &i : facts()) {
             T *p = qobject_cast<T *>(i);
             if (p)
                 list.append(p);

@@ -58,7 +58,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
 
     vlayout = new QVBoxLayout(this);
     setLayout(vlayout);
-    vlayout->setMargin(0);
+    vlayout->setContentsMargins(0, 0, 0, 0);
     vlayout->setSpacing(0);
 
     toolBar = new QToolBar(this);
@@ -139,7 +139,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     toolBarSW = new QToolBar(this);
     toolBarSW->setObjectName("toolBarSW");
     toolBarSW->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toolBarSW->layout()->setMargin(0);
+    toolBarSW->layout()->setContentsMargins(0, 0, 0, 0);
     toolBar->addWidget(toolBarSW);
     avCLR = toolBarSW->addAction(tr("CLR"), this, &TelemetryFrame::avCLR_triggered);
     avSTD = toolBarSW->addAction(tr("STD"), this, &TelemetryFrame::avSTD_triggered);

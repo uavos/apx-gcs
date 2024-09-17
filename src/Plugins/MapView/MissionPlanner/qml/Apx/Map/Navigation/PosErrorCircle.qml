@@ -19,9 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.12
-import QtLocation 5.12
-import QtPositioning 5.12
+import QtQuick
+import QtLocation
+import QtPositioning
 
 MapCircle {
     id: circle
@@ -39,5 +39,9 @@ MapCircle {
     //calculate circle
     visible: eph>5
     center: QtPositioning.coordinate(lat,lon)
-    radius: eph
+    radius: eph<0
+        ? 0
+        : eph>1000000
+            ? 1000000
+            : eph
 }

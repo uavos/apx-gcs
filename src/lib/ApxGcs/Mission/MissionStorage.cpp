@@ -107,7 +107,7 @@ void MissionStorage::dbLoaded(QVariant var)
 {
     auto m = var.value<QVariantMap>();
     dbHash = m.value("hash").toString();
-    qDebug() << "mission load:" << dbHash;
+    // qDebug() << "mission load:" << dbHash;
 
     mission->fromVariant(var);
 

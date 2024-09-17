@@ -26,7 +26,7 @@
 #include <QQuickImageProvider>
 #include <QSvgRenderer>
 
-class SvgImageProvider : public QObject, public QQuickImageProvider
+class SvgImageProvider : public QQuickImageProvider
 {
     Q_OBJECT
 public:

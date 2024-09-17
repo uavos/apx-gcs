@@ -167,7 +167,7 @@ void NodeField::fromVariant(const QVariant &var)
 {
     if (size() > 0) {
         //expanded field - i.e. array
-        if (var.canConvert<QVariantList>()) {
+        if (var.typeId() == QMetaType::QVariantList) {
             QVariantList values = var.value<QVariantList>();
             for (int i = 0; i < values.size(); ++i) {
                 if (i >= size())

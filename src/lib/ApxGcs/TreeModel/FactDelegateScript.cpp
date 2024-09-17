@@ -52,7 +52,7 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     QWidget *w = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(w);
     w->setLayout(layout);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
     QSplitter *splitter = new QSplitter(Qt::Vertical, w);
@@ -192,12 +192,14 @@ void FactDelegateScript::updateLog()
 void FactDelegateScript::logView_itemClicked(QListWidgetItem *item)
 {
     QString s = item->text();
-    QRegExp exp("\\((.*)\\)");
-    if (exp.indexIn(s.left(s.indexOf(':'))) >= 0) {
+    static QRegularExpression exp("\\((.*)\\)");
+    auto match = exp.match(s.left(s.indexOf(':')));
+    if (match.hasMatch()) {
+        auto c = match.captured(1);
         bool ok;
-        int line = exp.cap(1).toInt(&ok);
-        if ((!ok) && exp.cap(1).contains("--"))
-            line = exp.cap(1).left(exp.cap(1).indexOf("--")).toInt(&ok);
+        int line = c.toInt(&ok);
+        if ((!ok) && c.contains("--"))
+            line = c.left(match.captured(1).indexOf("--")).toInt(&ok);
         if (ok && line >= 0) {
             QTextCursor text_cursor(editor->document()->findBlockByLineNumber(line - 1));
             text_cursor.select(QTextCursor::LineUnderCursor);
