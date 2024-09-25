@@ -16,7 +16,6 @@ public:
 
 private:
     Fact *f_ats_enabled;
-    Fact *f_ats_vcpid;
 
     QTimer _ats_timer;
 

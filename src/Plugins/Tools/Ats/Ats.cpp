@@ -9,18 +9,6 @@ Ats::Ats(Fact *parent)
            "antenna")
 {
     f_ats_enabled = new Fact(this, "enable", tr("Enable"), tr("Enable ATS"), Fact::Bool, "link");
-    f_ats_vcpid = new Fact(this,
-                           "vcpid",
-                           tr("VCP"),
-                           tr("Virtual Port Number (ID)"),
-                           Fact::Int | Fact::PersistentValue,
-                           "numeric");
-    f_ats_vcpid->setMin(0);
-    f_ats_vcpid->setMax(255);
-    f_ats_vcpid->setValue(QSettings().value("ats_vcpid"));
-    connect(f_ats_vcpid, &Fact::textChanged, this, [&]() {
-        QSettings().setValue("ats_vcpid", f_ats_vcpid->text());
-    });
 
     _ats_timer.setInterval(100);
     connect(&_ats_timer, &QTimer::timeout, this, &Ats::onAtsTimer);
@@ -50,26 +38,16 @@ void Ats::onAtsTimer()
         return;
     }
 
-    QGeoCoordinate uav_pos = current->coordinate();
     if (Vehicles::instance()->gcs()->protocol()) {
-        float lat = uav_pos.latitude();
-        float lon = uav_pos.longitude();
-        float hmsl = uav_pos.altitude();
-
-        QByteArray ba;
-        ba.append(reinterpret_cast<const char *>(&lat), sizeof(float));
-        ba.append(reinterpret_cast<const char *>(&lon), sizeof(float));
-        ba.append(reinterpret_cast<const char *>(&hmsl), sizeof(float));
-
         pdata = Vehicles::instance()->gcs()->protocol()->data();
         if (pdata) {
-            pdata->sendSerial(f_ats_vcpid->value().toInt(), ba);
+            QGeoCoordinate uav = current->coordinate();
+            QVariantList value;
+            value << uav.latitude();
+            value << uav.longitude();
+            value << uav.altitude();
+            pdata->sendValue(mandala::cmd::nav::ats::uid, value);
             pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_track);
         }
-
-        //test
-        //_pdata->sendValue(mandala::est::env::usrf::f1::uid, lat);
-        //_pdata->sendValue(mandala::est::env::usrf::f2::uid, lon);
-        //_pdata->sendValue(mandala::est::env::usrf::f3::uid, hmsl);
     }
 }
