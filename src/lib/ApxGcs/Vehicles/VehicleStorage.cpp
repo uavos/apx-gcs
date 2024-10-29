@@ -85,7 +85,13 @@ void VehicleStorage::loadVehicleConfig(QString hash)
 void VehicleStorage::configLoaded(QVariantMap config)
 {
     auto title = config.value("title").toString();
+
+    QElapsedTimer timer;
+    timer.start();
+
     _vehicle->fromVariant(config);
+
+    qDebug() << title << "loaded in" << timer.elapsed() << "ms";
     _vehicle->message(tr("Vehicle configuration loaded").append(": ").append(title));
 }
 

@@ -108,6 +108,9 @@ QStringList NodeStorage::get_names(Fact *f, QStringList path)
 }
 void NodeStorage::metaDataLoaded(QVariantMap meta)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     uint cnt = 0;
     for (auto name : meta.keys()) {
         auto f = _node->findChild(name);
@@ -146,5 +149,5 @@ void NodeStorage::metaDataLoaded(QVariantMap meta)
         //     nf->setPrecision(decimal.toInt());
     }
     if (cnt > 0)
-        qDebug() << "meta data loaded:" << cnt;
+        qDebug() << "meta data loaded:" << cnt << "fields in" << timer.elapsed() << "ms";
 }

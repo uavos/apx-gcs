@@ -300,23 +300,18 @@ QVariant Fact::findValue(const QString &namePath)
 
 Fact *Fact::findChild(const QString &factNamePath) const
 {
-    bool del = factNamePath.contains('.');
-    for (auto i : facts()) {
-        if (i->name() == factNamePath)
-            return i;
-        if (del && i->path().endsWith(factNamePath))
-            return i;
-    }
-    if (del) {
-        for (auto i : facts()) {
-            i = i->findChild(factNamePath);
-            if (i)
-                return i;
+    // search parts of the path in underlying levels
+    auto parts = factNamePath.split('.');
+    Fact *p = const_cast<Fact *>(this);
+    for (const auto &s : parts) {
+        auto f = p->child(s);
+        if (!f) {
+            apxConsoleW() << "Fact not found in" << path().append(':') << factNamePath;
+            return nullptr;
         }
+        p = f;
     }
-    if (!del)
-        apxConsoleW() << "Fact not found:" << factNamePath; //<<sender();
-    return nullptr;
+    return p;
 }
 
 Fact *Fact::childByTitle(const QString &factTitle) const

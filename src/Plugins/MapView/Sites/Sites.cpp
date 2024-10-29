@@ -46,7 +46,7 @@ void Sites::appLoaded()
 {
     //qDebug()<<"appLoaded";
     //add menus to map tools plugin
-    Fact *fMapAdd = AppRoot::instance()->findChild("apx.tools.missionplanner.add");
+    Fact *fMapAdd = AppRoot::instance()->findChild("tools.missionplanner.add");
     if (!fMapAdd)
         return;
     //create tool for map
