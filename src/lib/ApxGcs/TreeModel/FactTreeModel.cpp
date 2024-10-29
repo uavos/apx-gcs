@@ -223,10 +223,12 @@ void FactTreeModel::checkConnections(Fact *fact) const
 
     const_cast<QList<QPointer<Fact>> *>(&conFactLayout)->append(fact);
 
-    auto t = Qt::UniqueConnection;
+    Qt::ConnectionType t;
+    t = (Qt::ConnectionType)(Qt::UniqueConnection);
     connect(fact, &Fact::removed, this, &FactTreeModel::itemDestroyed, t);
     connect(fact, &Fact::destroyed, this, &FactTreeModel::itemDestroyed, t);
 
+    t = (Qt::ConnectionType)(Qt::UniqueConnection | Qt::QueuedConnection);
     connect(fact, &Fact::itemToBeInserted, this, &FactTreeModel::itemToBeInserted, t);
     connect(fact, &Fact::itemInserted, this, &FactTreeModel::itemInserted, t);
     connect(fact, &Fact::itemToBeRemoved, this, &FactTreeModel::itemToBeRemoved, t);
