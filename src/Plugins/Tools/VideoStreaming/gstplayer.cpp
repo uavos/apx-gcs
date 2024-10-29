@@ -206,28 +206,38 @@ GstPlayer::GstPlayer(Fact *parent)
 
     // controls menu
     f_tools = new Fact(f_tune, "tools", tr("Tools"), tr("Camera tools"), Action, "camera-plus");
-    new Fact(f_tools, "ctr.pwr.payload");
-    new Fact(f_tools, "cmd.gimbal.mode");
-    new Fact(f_tools, "cmd.gimbal.broll");
-    new Fact(f_tools, "cmd.gimbal.bpitch");
-    new Fact(f_tools, "cmd.gimbal.byaw");
-    new Fact(f_tools, "cmd.cam.ch");
-    new Fact(f_tools, "cmd.cam.zoom");
-    new Fact(f_tools, "cmd.cam.focus");
-    new Fact(f_tools, "cmd.cam.pf");
-    new Fact(f_tools, "cmd.cam.nir");
-    new Fact(f_tools, "cmd.cam.fm");
-    new Fact(f_tools, "cmd.cam.ft");
-    new Fact(f_tools, "cmd.cam.range");
-    new Fact(f_tools, "cmd.cam.mode");
-    new Fact(f_tools, "cmd.cam.dshot");
-    new Fact(f_tools, "cmd.cam.tshot");
-    new Fact(f_tools, "ctr.cam.rec");
-    new Fact(f_tools, "ctr.cam.shot");
-    new Fact(f_tools, "ctr.cam.arm");
-    new Fact(f_tools, "ctr.cam.zin");
-    new Fact(f_tools, "ctr.cam.zout");
-    new Fact(f_tools, "ctr.cam.aux");
+    QStringList tools = {
+        "ctr.pwr.payload",
+        //
+        "cmd.gimbal.mode",
+        "cmd.gimbal.broll",
+        "cmd.gimbal.bpitch",
+        "cmd.gimbal.byaw",
+        //
+        "cmd.cam.ch",
+        "cmd.cam.zoom",
+        "cmd.cam.focus",
+        "cmd.cam.pf",
+        "cmd.cam.nir",
+        "cmd.cam.fm",
+        "cmd.cam.ft",
+        "cmd.cam.range",
+        "cmd.cam.mode",
+        "cmd.cam.dshot",
+        "cmd.cam.tshot",
+        //
+        "ctr.cam.rec",
+        "ctr.cam.shot",
+        "ctr.cam.arm",
+        "ctr.cam.zin",
+        "ctr.cam.zout",
+        "ctr.cam.aux",
+    };
+
+    for (auto tool : tools) {
+        new Fact(f_tools, tool.replace('.', '_'));
+    }
+
     connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &GstPlayer::vehicleSelected);
     vehicleSelected(Vehicles::instance()->current());
 

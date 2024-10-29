@@ -395,11 +395,13 @@ bool TelemetryFileReader::parse_next()
 
         if (is_uplink) {
             if (_uplink_values.contains(_widx))
-                qWarning() << "duplicate uplink value" << _fields.value(_widx).name;
+                qWarning() << "duplicate uplink value" << _fields.value(_widx).name
+                           << _uplink_values[_widx] << v;
             _uplink_values[_widx] = v;
         } else {
             if (_downlink_values.contains(_widx))
-                qWarning() << "duplicate downlink value" << _fields.value(_widx).name;
+                qWarning() << "duplicate downlink value" << _fields.value(_widx).name
+                           << _downlink_values[_widx] << v;
             _downlink_values[_widx] = v;
         }
 

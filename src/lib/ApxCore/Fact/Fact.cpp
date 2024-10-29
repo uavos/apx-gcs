@@ -290,7 +290,7 @@ QVariant Fact::findValue(const QString &namePath)
 {
     Fact *f = findChild(namePath);
     if (!f) {
-        apxConsoleW() << "FactSystem fact not found:" << namePath;
+        apxConsoleW() << "fact not found:" << namePath;
         return QVariant();
     }
     if (dataType() == Enum)
@@ -298,17 +298,14 @@ QVariant Fact::findValue(const QString &namePath)
     return f->value();
 }
 
-Fact *Fact::findChild(const QString &factNamePath, bool exactMatch) const
+Fact *Fact::findChild(const QString &factNamePath) const
 {
-    FactList slist;
     bool del = factNamePath.contains('.');
     for (auto i : facts()) {
         if (i->name() == factNamePath)
             return i;
         if (del && i->path().endsWith(factNamePath))
             return i;
-        if ((!exactMatch) && i->name().startsWith(factNamePath))
-            slist.append(i);
     }
     if (del) {
         for (auto i : facts()) {
@@ -317,10 +314,7 @@ Fact *Fact::findChild(const QString &factNamePath, bool exactMatch) const
                 return i;
         }
     }
-    //qDebug()<<slist.size();
-    if (slist.size() == 1)
-        return slist.first();
-    if (exactMatch && (!del))
+    if (!del)
         apxConsoleW() << "Fact not found:" << factNamePath; //<<sender();
     return nullptr;
 }

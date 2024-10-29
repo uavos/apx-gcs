@@ -84,7 +84,7 @@ RUN pip3 install networkx simplejson jinja2 pyyaml
 RUN apt install -y --no-install-recommends \
     python3-dev && rm -Rf /var/cache/apt
 
-ARG VERSION_QT=6.7.1
+ARG VERSION_QT=6.8.0
 RUN pip install aqtinstall &&\
     aqt install-qt linux$(cat /arch_qt) desktop ${VERSION_QT} -m \
     qtshadertools qt5compat qtcharts qtmultimedia \

@@ -389,6 +389,11 @@ void FactBase::setName(QString s)
     if (name() == s)
         return;
 
+    if (s.contains('.')) {
+        qWarning() << "Fact name contains '.'" << s;
+        s.replace('.', '_');
+    }
+
     setObjectName(s);
     emit nameChanged();
 }

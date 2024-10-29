@@ -200,10 +200,8 @@ void ApxFw::makeFacts(Fact *fact, QDir dir)
         if (!f_hw)
             f_hw = new Fact(f_ng, st.at(1).toLower(), st.at(1), "", Group | Count | Section);
 
-        Fact *f = new Fact(f_hw,
-                           fi.completeBaseName().toLower(),
-                           fi.completeBaseName(),
-                           fi.lastModified().toString());
+        auto fact_name = fi.completeBaseName().toLower().replace('.', '_');
+        Fact *f = new Fact(f_hw, fact_name, fi.completeBaseName(), fi.lastModified().toString());
         f->setValue(v.toString());
     }
 }

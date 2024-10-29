@@ -59,7 +59,7 @@ public:
 
     Q_INVOKABLE QVariant findValue(const QString &namePath);
 
-    Q_INVOKABLE Fact *findChild(const QString &factName, bool exactMatch = true) const;
+    Q_INVOKABLE Fact *findChild(const QString &factName) const;
     Q_INVOKABLE Fact *childByTitle(const QString &factTitle) const;
 
     Q_INVOKABLE QString titlePath(const QChar pathDelimiter = QChar('/')) const;
