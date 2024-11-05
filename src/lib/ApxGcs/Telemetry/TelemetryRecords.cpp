@@ -59,6 +59,14 @@ TelemetryRecords::TelemetryRecords(Fact *parent)
     //         &TelemetryRecords::dbRequestRecordsList);
 
     //actions
+    f_remove = new Fact(this,
+                        "remove",
+                        tr("Remove"),
+                        tr("Remove current record"),
+                        Action | ShowDisabled | Remove | IconOnly,
+                        "delete");
+    connect(f_remove, &Fact::triggered, this, &TelemetryRecords::dbRemove);
+
     f_restore = new Fact(this,
                          "undelete",
                          tr("Restore"),
@@ -66,14 +74,6 @@ TelemetryRecords::TelemetryRecords(Fact *parent)
                          Action | Bool | IconOnly,
                          "delete-restore");
     connect(f_restore, &Fact::valueChanged, this, &TelemetryRecords::dbRequestRecordsList);
-
-    f_latest = new Fact(this,
-                        "latest",
-                        tr("Latest"),
-                        tr("Load latest"),
-                        Action | ShowDisabled | Apply | IconOnly,
-                        "fast-forward");
-    connect(f_latest, &Fact::triggered, this, &TelemetryRecords::dbLoadLatest);
 
     f_prev = new Fact(this,
                       "prev",
@@ -91,13 +91,13 @@ TelemetryRecords::TelemetryRecords(Fact *parent)
                       "chevron-right");
     connect(f_next, &Fact::triggered, this, &TelemetryRecords::dbLoadNext);
 
-    f_remove = new Fact(this,
-                        "remove",
-                        tr("Remove"),
-                        tr("Remove current record"),
-                        Action | ShowDisabled | Remove | IconOnly,
-                        "delete");
-    connect(f_remove, &Fact::triggered, this, &TelemetryRecords::dbRemove);
+    f_latest = new Fact(this,
+                        "latest",
+                        tr("Latest"),
+                        tr("Load latest"),
+                        Action | ShowDisabled | Apply | IconOnly,
+                        "fast-forward");
+    connect(f_latest, &Fact::triggered, this, &TelemetryRecords::dbLoadLatest);
 
     // status totals
     connect(this, &TelemetryRecords::recordsCountChanged, this, &TelemetryRecords::updateStatus);
@@ -112,8 +112,8 @@ void TelemetryRecords::updateActions()
 {
     quint64 num = recordNum();
     quint64 cnt = recordsCount();
-    f_prev->setEnabled(!num || num > 1);
-    f_next->setEnabled(!num || num < cnt);
+    f_next->setEnabled(!num || num > 1);
+    f_prev->setEnabled(!num || num < cnt);
     f_remove->setEnabled(num > 0 && cnt > 0);
     if (cnt == 0) {
         setRecordNum(0);
@@ -162,7 +162,7 @@ void TelemetryRecords::dbLoadLatest()
     }
 }
 
-void TelemetryRecords::dbLoadPrev()
+void TelemetryRecords::dbLoadNext()
 {
     emit discardRequests();
 
@@ -175,7 +175,7 @@ void TelemetryRecords::dbLoadPrev()
         num = 1;
     _dbmodel->triggerItem(recordsList.value(num - 1));
 }
-void TelemetryRecords::dbLoadNext()
+void TelemetryRecords::dbLoadPrev()
 {
     emit discardRequests();
 

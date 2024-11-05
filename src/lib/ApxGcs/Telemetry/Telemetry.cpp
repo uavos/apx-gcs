@@ -49,9 +49,6 @@ Telemetry::Telemetry(Vehicle *parent)
         setOpt("pos", QPointF(1, 1));
 
         f_records = new TelemetryRecords(this);
-        f_records->f_latest->createAction(this);
-        f_records->f_prev->createAction(this);
-        f_records->f_next->createAction(this);
 
         // connect(this, &Fact::triggered, f_records, &TelemetryRecords::defaultLookup);
 
@@ -95,6 +92,10 @@ Telemetry::Telemetry(Vehicle *parent)
         //     f_records->setActiveRecordId(id);
         // });
         connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);
+
+        f_records->f_prev->createAction(this);
+        f_records->f_next->createAction(this);
+        f_records->f_latest->createAction(this);
 
     } else {
         f_recorder = new TelemetryRecorder(vehicle, this);

@@ -142,6 +142,19 @@ void FactBase::removeChild(Fact *item)
 }
 void FactBase::moveChild(Fact *item, int n, bool safeMode)
 {
+    if (item->treeType() == Action) {
+        int i = m_actions.indexOf(item);
+        if (i < 0 || i == n)
+            return;
+        if (n > i)
+            n++;
+        m_actions.removeAt(i);
+        if (n > m_actions.size())
+            n = m_actions.size();
+        m_actions.insert(n, item);
+        return;
+    }
+
     int i = m_facts.indexOf(item);
     if (i < 0 || i == n)
         return;

@@ -170,15 +170,18 @@ Vehicle::Vehicle(Vehicles *vehicles, PVehicle *protocol)
     f_telemetry = new Telemetry(this);
 
     // path
-    Fact *f = new Fact(f_telemetry,
-                       "rpath",
-                       tr("Reset Path"),
-                       tr("Clear travelled path"),
-                       Action,
-                       "history");
-    connect(f, &Fact::triggered, this, &Vehicle::resetGeoPath);
-    connect(this, &Vehicle::geoPathChanged, f, [this, f]() { f->setEnabled(!geoPath().isEmpty()); });
-    f->setEnabled(false);
+    auto f_rpath = new Fact(f_telemetry,
+                            "rpath",
+                            tr("Reset Path"),
+                            tr("Clear travelled path"),
+                            Action,
+                            "history");
+    f_rpath->move(0);
+    connect(f_rpath, &Fact::triggered, this, &Vehicle::resetGeoPath);
+    connect(this, &Vehicle::geoPathChanged, f_rpath, [this, f_rpath]() {
+        f_rpath->setEnabled(!geoPath().isEmpty());
+    });
+    f_rpath->setEnabled(false);
 
     setOpt("VID", uid());
 
