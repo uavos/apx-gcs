@@ -63,6 +63,8 @@ private:
     int _fidx_hmsl;
     QGeoCoordinate _geoPos;
 
+    QSet<quint64> _importedMeta; // keep track of imported nodes and missions
+
     bool blockNotesChange;
 
     void addEventFact(quint64 time, const QString &name, const QString &value, const QString &uid);

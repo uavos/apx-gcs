@@ -168,6 +168,9 @@ void TelemetryReader::do_rec_evt(
 
 void TelemetryReader::do_rec_meta(QString name, QJsonObject data, bool uplink)
 {
+    if (_importedMeta.contains(_loadRecordID))
+        return;
+
     // save meta objects to databases
     if (name == "mission") {
         auto req = new DBReqMissionsSave(data.toVariantMap());
@@ -225,6 +228,8 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
     f->setText("{}");
     f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
     f->setOpt("info", QJsonDocument(_recordInfo).toJson(QJsonDocument::Indented).constData());
+
+    _importedMeta.insert(id);
 
     emit recordInfoChanged();
 }

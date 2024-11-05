@@ -148,6 +148,6 @@ void NodeStorage::metaDataLoaded(QVariantMap meta)
         // if (!decimal.isNull())
         //     nf->setPrecision(decimal.toInt());
     }
-    if (cnt > 0)
-        qDebug() << "meta data loaded:" << cnt << "fields in" << timer.elapsed() << "ms";
+    // if (cnt > 0)
+    //     qDebug() << "meta data loaded:" << cnt << "fields in" << timer.elapsed() << "ms";
 }
