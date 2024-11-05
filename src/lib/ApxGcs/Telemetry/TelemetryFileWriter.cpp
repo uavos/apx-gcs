@@ -230,7 +230,7 @@ void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)
 
     // qDebug() << timestamp_ms << _ts_s;
 
-    if (timestamp_ms <= _ts_s)
+    if (timestamp_ms == _ts_s)
         return; // don't write repetitive timestamps
     _ts_s = timestamp_ms;
 

@@ -394,14 +394,16 @@ bool TelemetryFileReader::parse_next()
             break;
 
         if (is_uplink) {
-            if (_uplink_values.contains(_widx))
+            if (_uplink_values.contains(_widx)) {
                 qWarning() << "duplicate uplink value" << _fields.value(_widx).name
                            << _uplink_values[_widx] << v;
+            }
             _uplink_values[_widx] = v;
         } else {
-            if (_downlink_values.contains(_widx))
+            if (_downlink_values.contains(_widx)) {
                 qWarning() << "duplicate downlink value" << _fields.value(_widx).name
                            << _downlink_values[_widx] << v;
+            }
             _downlink_values[_widx] = v;
         }
 
@@ -592,10 +594,9 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         auto ts = _read_raw<uint32_t>(&ok);
         if (!ok)
             break;
-        if (ts <= _ts_s) {
-            // must never happen
-            qWarning() << "invalid timestamp" << ts << _ts_s;
-            break;
+        if (ts == _ts_s) {
+            // should never happen
+            qWarning() << "duplicate timestamp" << ts;
         }
         _commit_values();
         _ts_s = ts;

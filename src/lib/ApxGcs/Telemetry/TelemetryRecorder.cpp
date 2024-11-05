@@ -233,11 +233,14 @@ quint64 TelemetryRecorder::getEventTimestamp()
 {
     if (!_tsElapsed.isValid()) {
         _tsElapsed.start();
+        qDebug() << _vehicle->title() << "0 PRE";
         return 0;
     }
 
-    quint64 t = _tsElapsed.elapsed();
-    t += _ts_t2;
+    quint64 elapsed = _tsElapsed.elapsed();
+    quint64 t = elapsed + _ts_t2;
+
+    // qDebug() << _vehicle->title() << t << elapsed << _ts_t2;
     return t;
 }
 
@@ -252,6 +255,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     checkFileRecord();
 
     if (_reset_timestamp) {
+        qDebug() << _vehicle->title() << "reset timestamp:" << t;
         _reset_timestamp = false;
         _ts_t0 = t;
         if (_tsElapsed.isValid()) {
@@ -265,6 +269,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     _tsElapsed.start();
     setTime(t / 1000);
 
+    // qDebug() << _vehicle->title() << t << values.size();
     _file.write_values(t, values, false);
 }
 void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
