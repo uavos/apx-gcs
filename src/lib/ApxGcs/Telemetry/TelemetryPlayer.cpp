@@ -167,22 +167,22 @@ void TelemetryPlayer::play()
     loadLatestMeta(reader->child("nodes"), _time);
 }
 
-void TelemetryPlayer::loadLatestMeta(Fact *group, double time)
+void TelemetryPlayer::loadLatestMeta(Fact *group, quint64 time)
 {
     if (!group)
         return;
 
-    Fact *f = nullptr;
+    Fact *f = group->child(0);
     for (auto i : group->facts()) {
-        double t = i->property("time").toULongLong() / 1000.0;
-        if (t > _time)
+        auto t = i->property("time").toULongLong();
+        if (t > time)
             break;
         f = i;
     }
     if (!f)
-        f = group->child(0);
-    if (f)
-        f->trigger();
+        return;
+
+    f->trigger();
 }
 
 void TelemetryPlayer::stop()
@@ -266,9 +266,11 @@ void TelemetryPlayer::rec_evt(
             }
         }
     } else if (name == "mission") {
-        vehicle->f_mission->storage->loadMission(uid);
+        if (_values_init)
+            vehicle->f_mission->storage->loadMission(uid);
     } else if (name == "nodes") {
-        vehicle->storage()->loadVehicleConfig(uid);
+        if (_values_init)
+            vehicle->storage()->loadVehicleConfig(uid);
     }
 
     if (!_values_init)

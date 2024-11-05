@@ -56,13 +56,13 @@ private:
 
     quint64 setTime0;
     double _speed;
-    double _time;
+    quint64 _time;
     bool _values_init;
 
     bool blockTimeChange;
 
     void loadConfValue(const QString &sn, QString s);
-    void loadLatestMeta(Fact *group, double time);
+    void loadLatestMeta(Fact *group, quint64 time);
 
     TelemetryReader::Values _values;
 
