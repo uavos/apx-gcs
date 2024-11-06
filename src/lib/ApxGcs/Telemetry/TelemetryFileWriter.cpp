@@ -206,7 +206,7 @@ QJsonObject TelemetryFileWriter::get_info_from_filename(const QString &filePath)
         auto offset_mins = s.mid(1).toInt();
         if (offset_mins <= 12)
             offset_mins *= 60;
-        timestamp.setOffsetFromUtc(offset_mins * 60 * utc_offset_sign);
+        timestamp.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(offset_mins * 60 * utc_offset_sign));
     } else {
         qWarning() << "invalid utc offset sign" << s;
     }

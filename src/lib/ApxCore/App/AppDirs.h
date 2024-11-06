@@ -38,10 +38,11 @@ public:
 
     static QDir prefs();
 
-    static QDir telemetry();
     static QDir missions();
     static QDir configs();
     static QDir scripts();
+
+    static QDir storage();
     static QDir db();
 
     static QDir logs();

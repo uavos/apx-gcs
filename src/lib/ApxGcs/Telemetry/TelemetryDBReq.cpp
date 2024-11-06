@@ -172,8 +172,8 @@ bool DBReqTelemetryLoadFile::run(QSqlQuery &query)
 
     const auto hash = query.value("hash").toString();
 
-    auto dir = AppDirs::telemetry();
-    auto filePath = dir.absoluteFilePath(file + '.' + telemetry::APXTLM_FTYPE);
+    auto filePath = AppDirs::storage().absoluteFilePath(telemetry::APXTLM_FTYPE);
+    filePath = QDir(filePath).absoluteFilePath(file + '.' + telemetry::APXTLM_FTYPE);
 
     if (!_reader.open(filePath))
         return false;

@@ -246,9 +246,10 @@ void TelemetryReader::addEventFact(quint64 time,
 
     Fact *f = nullptr;
     if (name == "uplink") {
-        f = g->child(uid);
+        auto suid = QString(uid).replace('.', '_');
+        f = g->child(suid);
         if (!f) {
-            f = new Fact(g, uid, uid, value);
+            f = new Fact(g, suid, uid, value);
             //qDebug() << name << value;
             f->setValue(1);
         } else {
@@ -277,7 +278,8 @@ void TelemetryReader::addEventFact(quint64 time,
             if (!s.isEmpty())
                 descr.prepend(QString("%1/").arg(s));
         }
-        f = new Fact(g, name + "#", title, descr);
+        auto sname = QString(name).replace('.', '_');
+        f = new Fact(g, sname + "#", title, descr);
         QString stime = QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz");
         f->setValue(stime);
     }

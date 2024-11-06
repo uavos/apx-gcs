@@ -11,8 +11,8 @@ namespace telemetry {
 
 static constexpr auto APXTLM_VERSION = 1;
 
-static constexpr auto APXTLM_FTYPE = "telemetry";
-static constexpr auto APXTLM_MAGIC = "APXTLM";
+static constexpr auto APXTLM_FTYPE = "apxtlm"; // used by filename and dirname
+static constexpr auto APXTLM_MAGIC = "APXTLM"; // first bytes of a file
 
 // file header
 struct fhdr_s

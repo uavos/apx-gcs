@@ -124,7 +124,7 @@ void TelemetryRecorder::checkFileRecord()
     // construct new file name
 
     auto timestamp = QDateTime::currentDateTime();
-    auto dir = AppDirs::telemetry();
+    auto dir = QDir(AppDirs::storage().absoluteFilePath(telemetry::APXTLM_FTYPE));
     dir.mkpath(".");
 
     QString callsign = _vehicle->title();

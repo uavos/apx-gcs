@@ -96,9 +96,9 @@ QDir AppDirs::prefs()
     return QDir(AppDirs::user().absoluteFilePath("Preferences"));
 }
 
-QDir AppDirs::telemetry()
+QDir AppDirs::storage()
 {
-    return QDir(user().absoluteFilePath("Telemetry"));
+    return QDir(user().absoluteFilePath("Storage"));
 }
 
 QDir AppDirs::missions()
