@@ -22,30 +22,17 @@
 #pragma once
 
 #include "DatabaseSession.h"
-#include <Fact/Fact.h>
 
-class StorageDB;
-
-class VehiclesDB;
-class TelemetryDB;
-class MissionsDB;
-
-class Database : public Fact
+class StorageDB : public DatabaseSession
 {
     Q_OBJECT
-
 public:
-    explicit Database(Fact *parent);
-    ~Database();
+    explicit StorageDB(QObject *parent, QString sessionName);
+};
 
-    static Database *instance() { return _instance; }
-
-    StorageDB *storage;
-
-    VehiclesDB *vehicles;
-    TelemetryDB *telemetry;
-    MissionsDB *missions;
-
-private:
-    static Database *_instance;
+class DBReqStorage : public DatabaseRequest
+{
+    Q_OBJECT
+public:
+    explicit DBReqStorage();
 };

@@ -20,6 +20,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Database.h"
+
+#include "StorageDB.h"
+
 #include "MissionsDB.h"
 #include "TelemetryDB.h"
 #include "VehiclesDB.h"
@@ -41,6 +44,8 @@ Database::Database(Fact *parent)
     qRegisterMetaType<DatabaseRequest::Records>("DatabaseRequest::Records");
     qRegisterMetaType<DatabaseRequest::Status>("DatabaseRequest::Status");
     qRegisterMetaType<QList<QSqlRecord>>("QList<QSqlRecord>");
+
+    storage = new StorageDB(this, QStringLiteral("StorageDbSession"));
 
     vehicles = new VehiclesDB(this, QStringLiteral("NodesDbSession"));
     telemetry = new TelemetryDB(this, QStringLiteral("TelemetryDbSession"));

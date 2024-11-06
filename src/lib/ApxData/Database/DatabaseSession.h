@@ -22,8 +22,10 @@
 #pragma once
 
 #include "DatabaseWorker.h"
+#include <App/AppDirs.h>
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
+
 #include <QMutex>
 #include <QtCore>
 #include <QtSql>
@@ -38,7 +40,8 @@ public:
     explicit DatabaseSession(QObject *parent,
                              const QString &name,
                              const QString &sessionName,
-                             QString version);
+                             QString version = {},
+                             QDir dir = AppDirs::db());
     ~DatabaseSession();
 
     Fact *f_vacuum;

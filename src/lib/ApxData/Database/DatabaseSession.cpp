@@ -28,10 +28,8 @@
 
 // TODO implement file names format without subfolders to include version number
 
-DatabaseSession::DatabaseSession(QObject *parent,
-                                 const QString &name,
-                                 const QString &sessionName,
-                                 QString version)
+DatabaseSession::DatabaseSession(
+    QObject *parent, const QString &name, const QString &sessionName, QString version, QDir dir)
     : Fact(Database::instance(), name, "", "", Group)
     , sessionName(sessionName)
     , inTransaction(false)
@@ -45,16 +43,15 @@ DatabaseSession::DatabaseSession(QObject *parent,
 
     setIcon("database");
 
+    // storage directory
+    if (!dir.exists())
+        dir.mkpath(".");
+
     // file name
-    // fileName = AppDirs::db().absoluteFilePath(version + QDir::separator() + name + ".db");
-    fileName = AppDirs::db().absoluteFilePath(name);
+    fileName = dir.absoluteFilePath(name);
     if (!version.isEmpty())
         fileName.append('.').append(version);
     fileName.append(".db");
-
-    QDir dir(QFileInfo(fileName).absoluteDir());
-    if (!dir.exists())
-        dir.mkpath(".");
 
     //QMutexLocker lock(&mutex);
     sql.setDatabaseName(fileName);
