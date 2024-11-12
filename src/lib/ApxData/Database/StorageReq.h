@@ -21,19 +21,21 @@
  */
 #pragma once
 
-#include <Database/DatabaseModel.h>
-#include <Database/TelemetryDB.h>
-#include <Fact/Fact.h>
+#include "DatabaseModel.h"
+#include "StorageSession.h"
 
 #include "TelemetryFileReader.h"
 #include "TelemetryFileWriter.h"
 
-class DBReqTelemetryCreateRecord : public DBReqTelemetry
+namespace db {
+namespace storage {
+
+class TelemetryCreateRecord : public Request
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryCreateRecord(qint64 t, QString fileName, QJsonObject info, bool trash)
-        : DBReqTelemetry()
+    explicit TelemetryCreateRecord(qint64 t, QString fileName, QJsonObject info, bool trash)
+        : Request()
         , _t(t)
         , _fileName(fileName)
         , _info(info)
@@ -56,12 +58,12 @@ signals:
     void recordCreated(quint64 telemetryID);
 };
 
-class DBReqTelemetryModelRecordsList : public DBReqTelemetry
+class TelemetryModelRecordsList : public Request
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryModelRecordsList(QString filter)
-        : DBReqTelemetry()
+    explicit TelemetryModelRecordsList(QString filter)
+        : Request()
         , _filter(filter)
     {}
 
@@ -73,12 +75,12 @@ signals:
     void recordsList(DatabaseModel::RecordsList records);
 };
 
-class DBReqTelemetryLoadInfo : public DBReqTelemetry
+class TelemetryLoadInfo : public Request
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryLoadInfo(quint64 id)
-        : DBReqTelemetry()
+    explicit TelemetryLoadInfo(quint64 id)
+        : Request()
         , _id(id)
     {}
 
@@ -91,12 +93,12 @@ signals:
     void recordInfo(quint64 id, QJsonObject info, QString notes);
 };
 
-class DBReqTelemetryModelTrash : public DBReqTelemetry
+class TelemetryModelTrash : public Request
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryModelTrash(quint64 id, bool trash = false)
-        : DBReqTelemetry()
+    explicit TelemetryModelTrash(quint64 id, bool trash = false)
+        : Request()
         , _id(id)
         , _trash(trash)
     {}
@@ -107,14 +109,14 @@ protected:
     virtual bool run(QSqlQuery &query);
 };
 
-class DBReqTelemetryLoadFile : public DBReqTelemetryLoadInfo
+class TelemetryLoadFile : public TelemetryLoadInfo
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryLoadFile(quint64 id)
-        : DBReqTelemetryLoadInfo(id)
+    explicit TelemetryLoadFile(quint64 id)
+        : TelemetryLoadInfo(id)
     {
-        connect(this, &DBReqTelemetry::discardRequested, &_reader, &TelemetryFileReader::abort);
+        connect(this, &Request::discardRequested, &_reader, &TelemetryFileReader::abort);
     }
 
     auto reader() const { return &_reader; }
@@ -124,3 +126,26 @@ protected:
 
     virtual bool run(QSqlQuery &query);
 };
+
+class TelemetryWriteInfo : public Request
+{
+    Q_OBJECT
+public:
+    explicit TelemetryWriteInfo(quint64 telemetryID, QVariantMap info, bool restore = false)
+        : Request()
+        , telemetryID(telemetryID)
+        , info(info)
+        , restore(restore)
+    {}
+
+private:
+    quint64 telemetryID;
+    QVariantMap info;
+    bool restore;
+
+protected:
+    bool run(QSqlQuery &query);
+};
+
+} // namespace storage
+} // namespace db

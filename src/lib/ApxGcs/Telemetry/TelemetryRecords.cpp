@@ -20,10 +20,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryRecords.h"
-#include "TelemetryDBReq.h"
 
-#include <App/AppRoot.h>
-#include <Database/Database.h>
+#include <Database/StorageReq.h>
 
 TelemetryRecords::TelemetryRecords(Fact *parent)
     : Fact(parent, "records", tr("Records"), tr("Telemetry records"), FilterModel, "database-search")
@@ -129,9 +127,9 @@ void TelemetryRecords::dbRequestRecordsList()
     QStringList fields = {"callsign", "notes", "comment", "file"};
     auto extra_filter = f_restore->value().toBool() ? "" : QString("trash IS NULL");
     auto filter = _dbmodel->getFilterExpression(fields, extra_filter);
-    auto req = new DBReqTelemetryModelRecordsList(filter);
+    auto req = new db::storage::TelemetryModelRecordsList(filter);
     connect(req,
-            &DBReqTelemetryModelRecordsList::recordsList,
+            &db::storage::TelemetryModelRecordsList::recordsList,
             _dbmodel,
             &DatabaseModel::setRecordsList);
     req->exec();
@@ -139,8 +137,11 @@ void TelemetryRecords::dbRequestRecordsList()
 
 void TelemetryRecords::dbRequestRecordInfo(quint64 id)
 {
-    auto req = new DBReqTelemetryLoadInfo(id);
-    connect(req, &DBReqTelemetryLoadInfo::modelInfo, _dbmodel, &DatabaseModel::setRecordModelInfo);
+    auto req = new db::storage::TelemetryLoadInfo(id);
+    connect(req,
+            &db::storage::TelemetryLoadInfo::modelInfo,
+            _dbmodel,
+            &DatabaseModel::setRecordModelInfo);
     req->exec();
 }
 
@@ -194,8 +195,8 @@ void TelemetryRecords::dbRemove()
     if (!id)
         return;
 
-    auto req = new DBReqTelemetryModelTrash(id);
-    connect(req, &DBReqTelemetryModelTrash::finished, [this, id]() {
+    auto req = new db::storage::TelemetryModelTrash(id);
+    connect(req, &db::storage::TelemetryModelTrash::finished, [this, id]() {
         dbRequestRecordsList();
         dbRequestRecordInfo(id);
         dbLoadNext();

@@ -21,33 +21,30 @@
  */
 #pragma once
 
-#include <App/AppLog.h>
-#include <Fact/Fact.h>
+#include "DatabaseSession.h"
 
-#include "NodesSession.h"
-#include "StorageSession.h"
+namespace db {
+namespace storage {
 
-class VehiclesDB;
-class TelemetryDB;
-class MissionsDB;
-
-class Database : public Fact
+class Session : public DatabaseSession
 {
-    Q_OBJECT
-
 public:
-    explicit Database(Fact *parent);
-    ~Database();
-
-    static Database *instance() { return _instance; }
-
-    QPointer<db::storage::Session> storage;
-    QPointer<db::nodes::Session> nodes;
-
-    QPointer<VehiclesDB> vehicles;
-    QPointer<TelemetryDB> telemetry;
-    QPointer<MissionsDB> missions;
+    explicit Session(QObject *parent, QString sessionName);
 
 private:
-    static Database *_instance;
+    Fact *f_trash;
+    Fact *f_stop;
+    Fact *f_cache;
+    Fact *f_stats;
+
+    void getStats();
 };
+
+class Request : public DatabaseRequest
+{
+public:
+    explicit Request();
+};
+
+} // namespace storage
+} // namespace db

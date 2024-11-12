@@ -19,24 +19,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "StorageDB.h"
+
+#include "StorageSession.h"
 #include "Database.h"
+
 #include <App/AppDirs.h>
 
-StorageDB::StorageDB(QObject *parent, QString sessionName)
+using namespace db::storage;
+
+Session::Session(QObject *parent, QString sessionName)
     : DatabaseSession(parent, "storage", sessionName, {}, AppDirs::storage())
 {
+    f_stats = new Fact(this, "stats", tr("Get statistics"), tr("Analyze totals"), NoFlags, "numeric");
+    connect(f_stats, &Fact::triggered, this, &Session::getStats);
+    connect(this, &Fact::triggered, f_stats, &Fact::trigger);
+
+    // create tables
+
     new DBReqMakeTable(this,
                        "Telemetry",
                        {
                            "key INTEGER PRIMARY KEY NOT NULL",
 
                            // fields written on file creation
-                           "time INTEGER",    // [ms since epoch] file creation time
-                           "vehicleUID TEXT", // vehicle UID from linked table
-                           "callsign TEXT",   // vehicle title or conf title
-                           "comment TEXT",    // conf name or comment
-                           "file TEXT",       // file name with data (no ext)
+                           "time INTEGER",  // [ms since epoch] file creation time
+                           "unitID TEXT",   // unit UID from linked table
+                           "unitName TEXT", // unit name (callsign)
+                           "confName TEXT", // conf name or comment
+                           "file TEXT",     // file name with data (no ext)
 
                            // info extracted from file
                            "size INTEGER",     // [bytes] file size
@@ -53,12 +63,27 @@ StorageDB::StorageDB(QObject *parent, QString sessionName)
                        });
 
     new DBReqMakeIndex(this, "Telemetry", "time", false);
-    new DBReqMakeIndex(this, "Telemetry", "vehicleUID", false);
-    new DBReqMakeIndex(this, "Telemetry", "callsign", false);
+    new DBReqMakeIndex(this, "Telemetry", "unitID", false);
+    new DBReqMakeIndex(this, "Telemetry", "unitName", false);
     new DBReqMakeIndex(this, "Telemetry", "file", true);
     new DBReqMakeIndex(this, "Telemetry", "trash", false);
 }
 
-DBReqStorage::DBReqStorage()
+Request::Request()
     : DatabaseRequest(Database::instance()->storage)
 {}
+
+void Session::getStats()
+{
+    // auto req = new DBReqTelemetryStats();
+    // connect(
+    //     req,
+    //     &DBReqTelemetryStats::totals,
+    //     this,
+    //     [this](quint64 total, quint64 trash) {
+    //         f_stats->setValue(
+    //             QString("%1 %2, %3 %4").arg(total).arg(tr("total")).arg(trash).arg(tr("trash")));
+    //     },
+    //     Qt::QueuedConnection);
+    // req->exec();
+}

@@ -100,37 +100,6 @@ Vehicles::Vehicles(Fact *parent, Protocols *protocols)
         App::instance()->engine()->jsProtectObjects(static_cast<MandalaFact *>(f)->mpath());
     }
 
-    //Database register fields
-    DatabaseRequest::Records recMandala;
-    recMandala.names << "id"
-                     << "name"
-                     << "title"
-                     << "units";
-    for (auto f : m->valueFacts()) {
-        QVariantList v;
-        v << f->meta().uid;
-        v << f->mpath();
-        v << f->meta().title;
-        if (f->dataType() == Enum)
-            v << f->enumStrings();
-        else
-            v << f->units();
-        recMandala.values.append(v);
-    }
-
-    DBReqTelemetryUpdateMandala *req = new DBReqTelemetryUpdateMandala(recMandala);
-    connect(
-        req,
-        &DBReqTelemetryUpdateMandala::progress,
-        this,
-        [](int v) {
-            AppRoot::instance()->setValue(
-                v < 0 ? QVariant()
-                      : tr("Telemetry DB maintenance - stand by").toUpper().append("..."));
-        },
-        Qt::QueuedConnection);
-    req->exec();
-
     selectVehicle(f_replay);
 
     //connect protocols

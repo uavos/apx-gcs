@@ -21,8 +21,6 @@
  */
 #include "TelemetryRecorder.h"
 
-#include "TelemetryDBReq.h"
-
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <Mission/MissionStorage.h>
@@ -158,7 +156,7 @@ void TelemetryRecorder::checkFileRecord()
         recordMission(false);
 
     // create DB record
-    auto req = new DBReqTelemetryCreateRecord(time_utc, _file.name(), info, !recording());
+    auto req = new db::storage::TelemetryCreateRecord(time_utc, _file.name(), info, !recording());
     req->exec();
 }
 

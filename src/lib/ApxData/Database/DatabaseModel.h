@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <Database/DatabaseRequest.h>
+#include "DatabaseRequest.h"
 
 #include <QtCore>
 

@@ -19,12 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "TelemetryDBReq.h"
+#include "StorageReq.h"
 
-#include <App/AppDirs.h>
-#include <App/AppRoot.h>
+using namespace db::storage;
 
-bool DBReqTelemetryCreateRecord::run(QSqlQuery &query)
+bool TelemetryCreateRecord::run(QSqlQuery &query)
 {
     // qDebug() << vehicleUID << callsign << t;
 
@@ -47,7 +46,7 @@ bool DBReqTelemetryCreateRecord::run(QSqlQuery &query)
     return true;
 }
 
-bool DBReqTelemetryModelRecordsList::run(QSqlQuery &query)
+bool TelemetryModelRecordsList::run(QSqlQuery &query)
 {
     QString s = "SELECT key, time FROM Telemetry";
     if (!_filter.isEmpty())
@@ -69,7 +68,7 @@ bool DBReqTelemetryModelRecordsList::run(QSqlQuery &query)
     return true;
 }
 
-bool DBReqTelemetryLoadInfo::run(QSqlQuery &query)
+bool TelemetryLoadInfo::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM Telemetry WHERE key=?");
     query.addBindValue(_id);
@@ -119,7 +118,7 @@ bool DBReqTelemetryLoadInfo::run(QSqlQuery &query)
     return true;
 }
 
-bool DBReqTelemetryModelTrash::run(QSqlQuery &query)
+bool TelemetryModelTrash::run(QSqlQuery &query)
 {
     // toggle trash flag
     query.prepare("SELECT * FROM Telemetry WHERE key=?");
@@ -147,7 +146,7 @@ bool DBReqTelemetryModelTrash::run(QSqlQuery &query)
     return true;
 }
 
-bool DBReqTelemetryLoadFile::run(QSqlQuery &query)
+bool TelemetryLoadFile::run(QSqlQuery &query)
 {
     //check for invalid cache (telemetry hash is null)
     query.prepare("SELECT * FROM Telemetry WHERE key=?");
@@ -166,7 +165,7 @@ bool DBReqTelemetryLoadFile::run(QSqlQuery &query)
 
     if (query.value("trash").toBool()) {
         qDebug() << "Recovering record from trash";
-        auto req = new DBReqTelemetryModelTrash(_id, false);
+        auto req = new TelemetryModelTrash(_id, false);
         req->exec(); // chain next
     }
 
@@ -219,5 +218,26 @@ bool DBReqTelemetryLoadFile::run(QSqlQuery &query)
     } while (0);
 
     // read record info
-    return DBReqTelemetryLoadInfo::run(query);
+    return TelemetryLoadInfo::run(query);
+}
+
+bool TelemetryWriteInfo::run(QSqlQuery &query)
+{
+    bool bMod = restore;
+    if (recordUpdateQuery(query, info, "Telemetry", "WHERE key=?")) {
+        query.addBindValue(telemetryID);
+        if (!query.exec())
+            return false;
+        bMod = true;
+    }
+    if (restore) {
+        query.prepare("UPDATE Telemetry SET trash=NULL WHERE key=?");
+        query.addBindValue(telemetryID);
+        if (!query.exec())
+            return false;
+    }
+    if (bMod) {
+        emit dbModified();
+    }
+    return true;
 }

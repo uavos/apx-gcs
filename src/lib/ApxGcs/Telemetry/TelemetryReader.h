@@ -22,12 +22,11 @@
 #pragma once
 
 #include <ApxMisc/DelayedEvent.h>
-#include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
 #include <QGeoPath>
 #include <QtCore>
 
-#include "TelemetryFileReader.h"
+#include <Database/TelemetryDBReq.h>
 
 class TelemetryRecords;
 

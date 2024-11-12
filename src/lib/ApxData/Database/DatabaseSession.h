@@ -22,7 +22,10 @@
 #pragma once
 
 #include "DatabaseWorker.h"
+
+#include <App/App.h>
 #include <App/AppDirs.h>
+
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 

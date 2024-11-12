@@ -21,8 +21,6 @@
  */
 #include "Database.h"
 
-#include "StorageDB.h"
-
 #include "MissionsDB.h"
 #include "TelemetryDB.h"
 #include "VehiclesDB.h"
@@ -45,9 +43,10 @@ Database::Database(Fact *parent)
     qRegisterMetaType<DatabaseRequest::Status>("DatabaseRequest::Status");
     qRegisterMetaType<QList<QSqlRecord>>("QList<QSqlRecord>");
 
-    storage = new StorageDB(this, QStringLiteral("StorageDbSession"));
+    storage = new db::storage::Session(this, QStringLiteral("StorageDbSession"));
+    nodes = new db::nodes::Session(this, QStringLiteral("NodesDbSession"));
 
-    vehicles = new VehiclesDB(this, QStringLiteral("NodesDbSession"));
+    vehicles = new VehiclesDB(this, QStringLiteral("VehiclesDbSession"));
     telemetry = new TelemetryDB(this, QStringLiteral("TelemetryDbSession"));
     missions = new MissionsDB(this, QStringLiteral("MissionsDbSession"));
 }

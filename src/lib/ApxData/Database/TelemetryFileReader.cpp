@@ -25,7 +25,6 @@
 
 #include <App/App.h>
 #include <App/AppDirs.h>
-#include <Vehicles/Vehicle.h>
 
 #include <TelemetryValuePack.h>
 #include <TelemetryValueUnpack.h>

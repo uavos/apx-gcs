@@ -20,16 +20,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryReader.h"
-#include "TelemetryDBReq.h"
 #include "TelemetryRecords.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
 
-#include <Database/Database.h>
-#include <Database/TelemetryReqRead.h>
-#include <Database/TelemetryReqWrite.h>
+#include <Database/StorageReq.h>
 
 #include <Database/MissionsDB.h>
 #include <Database/VehiclesReqVehicle.h>
@@ -86,7 +83,7 @@ void TelemetryReader::loadRecord(quint64 id)
     deleteChildren();
     _recordInfo = {};
 
-    auto req = new DBReqTelemetryLoadFile(id);
+    auto req = new db::storage::TelemetryLoadFile(id);
     connect(req, &DatabaseRequest::finished, this, [this]() {
         setProgress(-1);
         emit rec_finished();
@@ -96,10 +93,13 @@ void TelemetryReader::loadRecord(quint64 id)
     });
     auto reader = req->reader();
     connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
-    connect(req, &DBReqTelemetryLoadFile::recordInfo, this, &TelemetryReader::setRecordInfo);
+    connect(req, &db::storage::TelemetryLoadFile::recordInfo, this, &TelemetryReader::setRecordInfo);
 
     // forward info to other facts (lists)
-    connect(req, &DBReqTelemetryLoadInfo::recordInfo, this, &TelemetryReader::recordInfoUpdated);
+    connect(req,
+            &db::storage::TelemetryLoadInfo::recordInfo,
+            this,
+            &TelemetryReader::recordInfoUpdated);
     connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::rec_field);
     connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::rec_values);
     connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::rec_evt);
@@ -298,10 +298,10 @@ void TelemetryReader::notesChanged()
         return;
     QVariantMap info;
     info.insert("notes", f_notes->text());
-    DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(_loadRecordID, info);
+    auto req = new db::storage::TelemetryWriteInfo(_loadRecordID, info);
     connect(
         req,
-        &DBReqTelemetryWriteInfo::finished,
+        &db::storage::TelemetryWriteInfo::finished,
         this,
         [this]() { apxMsg() << tr("Notes recorded").append(':') << title(); },
         Qt::QueuedConnection);

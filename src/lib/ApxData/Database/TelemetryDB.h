@@ -21,8 +21,10 @@
  */
 #pragma once
 
-#include <Database/DatabaseSession.h>
+#include <Database/Database.h>
 #include <Mandala/Mandala.h>
+
+#include "TelemetryDBReq.h"
 
 class TelemetryDB : public DatabaseSession
 {
@@ -68,94 +70,4 @@ public slots:
 
 signals:
     void invalidateRecords(); //called after record del
-};
-
-class DBReqTelemetry : public DatabaseRequest
-{
-    Q_OBJECT
-public:
-    explicit DBReqTelemetry();
-
-protected:
-    virtual bool run(QSqlQuery &query);
-};
-
-class DBReqTelemetryUpdateMandala : public DBReqTelemetry
-{
-    Q_OBJECT
-public:
-    explicit DBReqTelemetryUpdateMandala(Records records)
-        : DBReqTelemetry()
-        , records(records)
-    {}
-
-protected:
-    bool run(QSqlQuery &query);
-
-private:
-    Records records;
-
-signals:
-    void progress(int v);
-};
-
-class DBReqTelemetryEmptyTrash : public DBReqTelemetry
-{
-    Q_OBJECT
-public:
-    explicit DBReqTelemetryEmptyTrash()
-        : DBReqTelemetry()
-    {}
-
-protected:
-    bool run(QSqlQuery &query);
-signals:
-    void progress(int v);
-};
-
-class DBReqTelemetryEmptyCache : public DBReqTelemetry
-{
-    Q_OBJECT
-public:
-    explicit DBReqTelemetryEmptyCache()
-        : DBReqTelemetry()
-    {}
-
-protected:
-    bool run(QSqlQuery &query);
-signals:
-    void progress(int v);
-};
-
-class DBReqTelemetryStats : public DBReqTelemetry
-{
-    Q_OBJECT
-public:
-    explicit DBReqTelemetryStats()
-        : DBReqTelemetry()
-    {}
-
-protected:
-    bool run(QSqlQuery &query);
-signals:
-    void totals(quint64 total, quint64 trash);
-};
-
-// check if telemetry is available in database and untrash it
-class DBReqTelemetryRecover : public DBReqTelemetry
-{
-    Q_OBJECT
-public:
-    explicit DBReqTelemetryRecover(QString hash)
-        : DBReqTelemetry()
-        , _hash(hash)
-    {}
-
-private:
-    QString _hash;
-    bool run(QSqlQuery &query);
-
-signals:
-    void available(quint64 telemetryID, QString hash);
-    void unavailable(QString hash);
 };

@@ -28,7 +28,6 @@
 
 #include "TelemetryFileFormat.h"
 
-class Vehicle;
 class XbusStreamWriter;
 
 class TelemetryFileWriter : public QFile

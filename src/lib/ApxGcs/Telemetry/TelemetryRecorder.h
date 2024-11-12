@@ -21,12 +21,11 @@
  */
 #pragma once
 
-#include <Database/TelemetryReqWrite.h>
+#include <Database/StorageReq.h>
+
 #include <Fact/Fact.h>
 #include <Vehicles/Vehicles.h>
 #include <QtCore>
-
-#include "TelemetryFileWriter.h"
 
 class Recorder;
 class NodeItem;

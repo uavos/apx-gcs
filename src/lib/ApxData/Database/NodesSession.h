@@ -23,16 +23,20 @@
 
 #include "DatabaseSession.h"
 
-class StorageDB : public DatabaseSession
+namespace db {
+namespace nodes {
+
+class Session : public DatabaseSession
 {
-    Q_OBJECT
 public:
-    explicit StorageDB(QObject *parent, QString sessionName);
+    explicit Session(QObject *parent, QString sessionName);
 };
 
-class DBReqStorage : public DatabaseRequest
+class Request : public DatabaseRequest
 {
-    Q_OBJECT
 public:
-    explicit DBReqStorage();
+    explicit Request();
 };
+
+} // namespace nodes
+} // namespace db
