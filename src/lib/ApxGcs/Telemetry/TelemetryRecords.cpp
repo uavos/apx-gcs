@@ -124,7 +124,7 @@ void TelemetryRecords::updateStatus()
 
 void TelemetryRecords::dbRequestRecordsList()
 {
-    QStringList fields = {"callsign", "notes", "comment", "file"};
+    QStringList fields = {"unitName", "unitType", "confName", "notes", "file"};
     auto extra_filter = f_restore->value().toBool() ? "" : QString("trash IS NULL");
     auto filter = _dbmodel->getFilterExpression(fields, extra_filter);
     auto req = new db::storage::TelemetryModelRecordsList(filter);

@@ -46,7 +46,7 @@ class PVehicle : public PTreeBase
 public:
     enum VehicleType {
         UAV = 0, // unmanned vehicle
-        GCS,     // Ground Control
+        GCS,     // Ground Control Station
     };
     Q_ENUM(VehicleType)
 

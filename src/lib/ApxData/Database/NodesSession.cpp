@@ -166,14 +166,14 @@ Session::Session(QObject *parent, QString sessionName)
                            "hash TEXT NOT NULL UNIQUE", //sha1
                            "time INTEGER DEFAULT 0",    //time of snapshot
                            "title TEXT",                //auto generated
-                           "unitID INTEGER NOT NULL",
+                           "unitUID INTEGER NOT NULL",
                            "notes TEXT",
-                           "FOREIGN KEY(unitID) REFERENCES Unit(key) ON DELETE CASCADE",
+                           "FOREIGN KEY(unitUID) REFERENCES Unit(key) ON DELETE CASCADE",
                        });
     new DBReqMakeIndex(this, "UnitConf", "hash", true);
     new DBReqMakeIndex(this, "UnitConf", "time", false);
     new DBReqMakeIndex(this, "UnitConf", "title", false);
-    new DBReqMakeIndex(this, "UnitConf", "unitID", false);
+    new DBReqMakeIndex(this, "UnitConf", "unitUID", false);
     new DBReqMakeIndex(this, "UnitConf", "notes", false);
 
     new DBReqMakeTable(this,

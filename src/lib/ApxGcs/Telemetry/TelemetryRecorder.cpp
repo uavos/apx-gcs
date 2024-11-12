@@ -125,11 +125,11 @@ void TelemetryRecorder::checkFileRecord()
     auto dir = QDir(AppDirs::storage().absoluteFilePath(telemetry::APXTLM_FTYPE));
     dir.mkpath(".");
 
-    QString callsign = _vehicle->title();
-    if (callsign.isEmpty())
-        callsign = _vehicle->confTitle();
+    QString unitName = _vehicle->title();
+    if (unitName.isEmpty())
+        unitName = _vehicle->confTitle();
 
-    auto fileName = TelemetryFileWriter::prepare_file_name(timestamp, callsign, dir.absolutePath());
+    auto fileName = TelemetryFileWriter::prepare_file_name(timestamp, unitName, dir.absolutePath());
     if (fileName.isEmpty())
         return;
 
@@ -164,7 +164,7 @@ QJsonObject TelemetryRecorder::prepareFileInfo()
 {
     QJsonObject info;
 
-    info["vehicle"] = _vehicle->get_info();
+    info["unit"] = _vehicle->get_info();
     info["conf"] = _vehicle->confTitle();
 
     QJsonObject sw;

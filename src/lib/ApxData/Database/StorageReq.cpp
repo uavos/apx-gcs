@@ -25,15 +25,14 @@ using namespace db::storage;
 
 bool TelemetryCreateRecord::run(QSqlQuery &query)
 {
-    // qDebug() << vehicleUID << callsign << t;
-
-    query.prepare("INSERT INTO Telemetry(time, file, vehicleUID, callsign, comment, trash) "
-                  "VALUES(?, ?, ?, ?, ?, ?)");
+    query.prepare("INSERT INTO Telemetry(time, file, unitUID, unitName, unitType, confName, trash) "
+                  "VALUES(?, ?, ?, ?, ?, ?, ?)");
     const auto &info = _info;
     query.addBindValue(_t);
     query.addBindValue(_fileName);
-    query.addBindValue(info["vehicle"]["uid"].toVariant());
-    query.addBindValue(info["vehicle"]["callsign"].toVariant());
+    query.addBindValue(info["unit"]["uid"].toVariant());
+    query.addBindValue(info["unit"]["name"].toVariant());
+    query.addBindValue(info["unit"]["type"].toVariant());
     query.addBindValue(info["conf"].toVariant());
     query.addBindValue(_trash ? 1 : QVariant());
     if (!query.exec())
@@ -84,8 +83,9 @@ bool TelemetryLoadInfo::run(QSqlQuery &query)
 
     QString stime = QDateTime::fromMSecsSinceEpoch(r.value("time").toLongLong())
                         .toString("yyyy MMM dd hh:mm:ss");
-    QString callsign = r.value("callsign").toString();
-    QString comment = r.value("comment").toString();
+    QString unitName = r.value("unitName").toString();
+    QString unitType = r.value("unitType").toString();
+    QString confName = r.value("confName").toString();
     QString notes = r.value("notes").toString();
     QString total;
     quint64 t = r.value("duration").toULongLong();
@@ -95,13 +95,15 @@ bool TelemetryLoadInfo::run(QSqlQuery &query)
     if (r.value("trash").toBool())
         descr << tr("deleted").toUpper();
 
-    if (!comment.isEmpty())
-        descr << comment;
+    if (!unitType.isEmpty() && unitType != unitName && unitType != "UAV")
+        descr << unitType;
+    if (!confName.isEmpty())
+        descr << confName;
     if (!notes.isEmpty())
         descr << notes;
     QStringList value;
-    if (!callsign.isEmpty())
-        value << callsign;
+    if (!unitName.isEmpty())
+        value << unitName;
     if (!total.isEmpty())
         value << total;
 

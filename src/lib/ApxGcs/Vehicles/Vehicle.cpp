@@ -223,8 +223,8 @@ QJsonObject Vehicle::get_info() const
 
     QJsonObject info;
     info.insert("uid", _protocol->uid());
-    info.insert("callsign", title());
-    info.insert("class", _protocol->vehicleTypeText());
+    info.insert("name", title());
+    info.insert("type", _protocol->vehicleTypeText());
     if (_lastSeenTime)
         info.insert("time", _lastSeenTime);
     return info;
@@ -234,7 +234,7 @@ QVariant Vehicle::toVariant()
     QVariantMap m;
 
     if (_protocol)
-        m.insert("vehicle", get_info().toVariantMap());
+        m.insert("unit", get_info().toVariantMap());
 
     m.insert("nodes", f_nodes->toVariant());
     m.insert("title", f_nodes->getConfigTitle());
@@ -262,7 +262,6 @@ void Vehicle::updateInfo()
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
     }
     QStringList st;
-    //st<<callsign();
     if (!isReplay()) {
         QString s;
         int alt = f_hmsl->value().toInt();

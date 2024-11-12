@@ -42,11 +42,14 @@ Session::Session(QObject *parent, QString sessionName)
                            "key INTEGER PRIMARY KEY NOT NULL",
 
                            // fields written on file creation
-                           "time INTEGER",  // [ms since epoch] file creation time
-                           "unitID TEXT",   // unit UID from linked table
-                           "unitName TEXT", // unit name (callsign)
+                           "time INTEGER", // [ms since epoch] file creation time
+                           "file TEXT",    // file name with data (no ext)
+
+                           // identity info
+                           "unitUID TEXT",  // unit UID from linked table
+                           "unitName TEXT", // unit name
+                           "unitType TEXT", // unit type (GCU, UAV, etc)
                            "confName TEXT", // conf name or comment
-                           "file TEXT",     // file name with data (no ext)
 
                            // info extracted from file
                            "size INTEGER",     // [bytes] file size
@@ -63,7 +66,7 @@ Session::Session(QObject *parent, QString sessionName)
                        });
 
     new DBReqMakeIndex(this, "Telemetry", "time", false);
-    new DBReqMakeIndex(this, "Telemetry", "unitID", false);
+    new DBReqMakeIndex(this, "Telemetry", "unitUID", false);
     new DBReqMakeIndex(this, "Telemetry", "unitName", false);
     new DBReqMakeIndex(this, "Telemetry", "file", true);
     new DBReqMakeIndex(this, "Telemetry", "trash", false);

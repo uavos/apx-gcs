@@ -74,7 +74,7 @@ public:
 
     // helpers
     static QString prepare_file_name(QDateTime timestamp,
-                                     const QString &callsign,
+                                     const QString &unitName,
                                      QString dirPath = {});
     static void json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff);
 

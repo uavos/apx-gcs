@@ -168,8 +168,8 @@ bool TelemetryFileReader::fix_name()
 {
     // fix rename if necessary
     auto time = QDateTime::fromMSecsSinceEpoch(timestamp(), QTimeZone(utc_offset()));
-    auto callsign = info()["vehicle"]["callsign"].toString();
-    auto fixedFileName = TelemetryFileWriter::prepare_file_name(time, callsign);
+    auto unitName = info()["unit"]["name"].toString();
+    auto fixedFileName = TelemetryFileWriter::prepare_file_name(time, unitName);
     auto fi = QFileInfo(fileName());
     if (fixedFileName != fi.fileName()) {
         auto newPath = fi.dir().absoluteFilePath(fixedFileName);
@@ -191,7 +191,7 @@ bool TelemetryFileReader::fix_name()
                 } else {
                     // rename with some name suffix
                     fixedFileName = TelemetryFileWriter::prepare_file_name(time,
-                                                                           callsign,
+                                                                           unitName,
                                                                            fi.dir().absolutePath());
                     newPath = fi.dir().absoluteFilePath(fixedFileName);
                     ok = rename(newPath);

@@ -200,14 +200,17 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
     qint64 t = m["timestamp"].toInteger();
     QString title = t > 0 ? QDateTime::fromMSecsSinceEpoch(t).toString("yyyy MMM dd hh:mm:ss")
                           : tr("Telemetry Data");
-    QString callsign = m["vehicle"]["callsign"].toString();
+    QString unitName = m["unit"]["name"].toString();
+    QString unitType = m["unit"]["type"].toString();
     QString comment = m["conf"].toString();
     QString stime = AppRoot::timeToString(totalTime() / 1000, true);
 
     QStringList descr;
-    if (!callsign.isEmpty())
-        descr.append(callsign);
-    if (!comment.isEmpty() && comment != callsign)
+    if (!unitType.isEmpty() && unitType != unitName && unitType != "UAV")
+        descr.append(unitType);
+    if (!unitName.isEmpty())
+        descr.append(unitName);
+    if (!comment.isEmpty() && comment != unitName)
         descr.append(comment);
 
     descr.append(QString("%1/%2/%3").arg(downlink).arg(uplink).arg(events));

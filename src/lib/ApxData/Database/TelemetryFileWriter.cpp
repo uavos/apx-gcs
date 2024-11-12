@@ -116,7 +116,7 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, QJsonObj
 }
 
 QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
-                                               const QString &callsign,
+                                               const QString &unitName,
                                                QString dirPath)
 {
     QString basename;
@@ -135,8 +135,8 @@ QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
     }
 
     {
-        // fix callsign style
-        auto cs = callsign.trimmed().toUpper().toUtf8();
+        // fix unitName style
+        auto cs = unitName.trimmed().toUpper().toUtf8();
         QString cs_fixed;
         for (auto s = cs.data(); *s; ++s) {
             auto c = *s;
@@ -214,9 +214,9 @@ QJsonObject TelemetryFileWriter::get_info_from_filename(const QString &filePath)
 
     auto cs = name.section('-', 1, 1);
     if (cs.isEmpty()) {
-        qWarning() << "invalid callsign" << name;
+        qWarning() << "invalid unitName" << name;
     } else {
-        info["callsign"] = cs.section('-', 0, 0);
+        info["unitName"] = cs.section('-', 0, 0);
     }
 
     return info;
