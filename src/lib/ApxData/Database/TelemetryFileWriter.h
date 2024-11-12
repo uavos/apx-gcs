@@ -73,14 +73,9 @@ public:
     void print_stats();
 
     // helpers
-    static QString prepare_file_name(QDateTime timestamp,
-                                     const QString &unitName,
-                                     QString dirPath = {});
     static void json_diff(const QJsonObject &prev, const QJsonObject &next, QJsonObject &diff);
 
     static QLockFile *get_lock_file(QString fileName);
-
-    static QJsonObject get_info_from_filename(const QString &filePath);
 
 private:
     Fields _fields;

@@ -102,8 +102,6 @@ bool TelemetryFileReader::parse_header()
     _info = {};
     _fhdr = {};
 
-    _info = TelemetryFileWriter::get_info_from_filename(fileName());
-
     if (!isOpen()) {
         qWarning() << "file not open";
         return false;
@@ -162,53 +160,6 @@ bool TelemetryFileReader::parse_header()
     _fhdr = {};
     _info = {};
     return false;
-}
-
-bool TelemetryFileReader::fix_name()
-{
-    // fix rename if necessary
-    auto time = QDateTime::fromMSecsSinceEpoch(timestamp(), QTimeZone(utc_offset()));
-    auto unitName = info()["unit"]["name"].toString();
-    auto fixedFileName = TelemetryFileWriter::prepare_file_name(time, unitName);
-    auto fi = QFileInfo(fileName());
-    if (fixedFileName != fi.fileName()) {
-        auto newPath = fi.dir().absoluteFilePath(fixedFileName);
-        // rename file
-        close();
-
-        bool ok = rename(newPath);
-        if (!ok) {
-            qWarning() << "Failed to rename" << fi.fileName() << "to" << fixedFileName;
-            if (QFile::exists(newPath)) {
-                qWarning() << "File" << newPath << "already exists";
-                // compare two files and remove the old one if equal
-                auto hash = get_hash();
-                auto newHash = TelemetryFileReader(newPath).get_hash();
-                if (hash == newHash) {
-                    qDebug() << "Removing duplicate" << fi.fileName();
-                    QFile::remove(newPath);
-                    ok = rename(newPath);
-                } else {
-                    // rename with some name suffix
-                    fixedFileName = TelemetryFileWriter::prepare_file_name(time,
-                                                                           unitName,
-                                                                           fi.dir().absolutePath());
-                    newPath = fi.dir().absoluteFilePath(fixedFileName);
-                    ok = rename(newPath);
-                    if (!ok) {
-                        qWarning() << "Failed to rename" << fi.fileName() << "to" << fixedFileName;
-                    }
-                }
-            }
-        }
-        if (ok) {
-            qDebug() << "Renamed" << fi.fileName() << "to" << fixedFileName;
-        }
-
-        if (!open(newPath))
-            return false;
-    }
-    return true;
 }
 
 QJsonObject TelemetryFileReader::_read_info()

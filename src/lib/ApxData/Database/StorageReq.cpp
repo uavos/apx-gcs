@@ -173,8 +173,7 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
 
     const auto hash = query.value("hash").toString();
 
-    auto filePath = AppDirs::storage().absoluteFilePath(telemetry::APXTLM_FTYPE);
-    filePath = QDir(filePath).absoluteFilePath(file + '.' + telemetry::APXTLM_FTYPE);
+    auto filePath = Session::telemetryFilePath(file);
 
     if (!_reader.open(filePath))
         return false;

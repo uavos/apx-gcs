@@ -31,19 +31,45 @@ class Session : public DatabaseSession
 public:
     explicit Session(QObject *parent, QString sessionName);
 
+    static QString telemetryFileBasename(QDateTime timestamp, QString unitName);
+    static QString telemetryFilePath(const QString &basename);
+    static QJsonObject getInfoFromFilename(const QString &filePath);
+
 private:
+    Fact *f_stats;
     Fact *f_trash;
     Fact *f_stop;
+
     Fact *f_cache;
-    Fact *f_stats;
 
     void getStats();
+    void emptyTrash();
 };
 
 class Request : public DatabaseRequest
 {
 public:
     explicit Request();
+};
+
+// DB maintenance helpers
+
+class TelemetryStats : public Request
+{
+    Q_OBJECT
+protected:
+    bool run(QSqlQuery &query);
+signals:
+    void totals(quint64 total, quint64 trash);
+};
+
+class TelemetryEmptyTrash : public Request
+{
+    Q_OBJECT
+protected:
+    bool run(QSqlQuery &query);
+signals:
+    void progress(int v);
 };
 
 } // namespace storage

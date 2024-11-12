@@ -82,6 +82,11 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, QJsonObj
     if (!_lock_file)
         return true;
 
+    // ensure folder exists
+    auto dir = QFileInfo(fileName()).absoluteDir();
+    if (!dir.exists())
+        dir.mkpath(".");
+
     // open file for writing
     if (!QFile::open(QIODevice::WriteOnly)) {
         qWarning() << "failed to open file" << fileName();
@@ -113,113 +118,6 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, QJsonObj
     _ts_s = 0;
 
     return true;
-}
-
-QString TelemetryFileWriter::prepare_file_name(QDateTime timestamp,
-                                               const QString &unitName,
-                                               QString dirPath)
-{
-    QString basename;
-    {
-        QStringList st;
-
-        // add human readable timestamp
-        auto ts = timestamp.toString("yyMMdd_HHmm_sszzz");
-        auto utc_offset = timestamp.offsetFromUtc();
-        ts.append(utc_offset > 0 ? 'E' : 'W');
-        auto offset_mins = std::abs(utc_offset) / 60;
-        ts.append(QString::number(offset_mins % 60 ? offset_mins : offset_mins / 60));
-        st.append(ts);
-
-        basename = st.join('_').toUpper();
-    }
-
-    {
-        // fix unitName style
-        auto cs = unitName.trimmed().toUpper().toUtf8();
-        QString cs_fixed;
-        for (auto s = cs.data(); *s; ++s) {
-            auto c = *s;
-            if (c >= '0' && c <= '9') { // allow any numbers
-                cs_fixed.append(c);
-            } else if (c >= 'A' && c <= 'Z') { // allow capital letters
-                cs_fixed.append(c);
-                continue;
-            }
-        }
-        basename.append('-').append(cs_fixed.isEmpty() ? "U" : cs_fixed);
-    }
-
-    if (dirPath.isEmpty()) {
-        return basename.append('.').append(telemetry::APXTLM_FTYPE);
-    }
-
-    QString fileName;
-    QDir dir(dirPath);
-    for (int i = 0; i < 100; ++i) {
-        QString s = basename;
-        if (i > 0)
-            s.append(QString("-%1").arg(i, 2, 10, QChar('0')));
-
-        s.append('.').append(telemetry::APXTLM_FTYPE);
-
-        if (!QFile::exists(dir.absoluteFilePath(s))) {
-            fileName = s;
-            break;
-        }
-    }
-    if (fileName.isEmpty()) {
-        qWarning() << "failed to create file name";
-        return {};
-    }
-    return fileName;
-}
-
-QJsonObject TelemetryFileWriter::get_info_from_filename(const QString &filePath)
-{
-    QJsonObject info;
-
-    auto name = QFileInfo(filePath).completeBaseName();
-    info["name"] = name;
-    info["path"] = QFileInfo(filePath).absoluteFilePath();
-
-    auto ts_s = name.section('-', 0, 0);
-    auto ts_parts = ts_s.split('_');
-    if (ts_parts.size() != 3) {
-        qWarning() << "invalid file name" << filePath;
-        return {};
-    }
-
-    // parse timestamp
-    auto ts_fmt = QString("yyMMdd_HHmm_sszzz");
-    auto s = ts_s.left(ts_fmt.size());
-    auto timestamp = QDateTime::fromString(s, ts_fmt);
-    if (!timestamp.isValid()) {
-        qWarning() << "invalid timestamp" << s;
-        return {};
-    }
-
-    s = ts_s.mid(ts_fmt.size());
-    auto utc_offset_sign = s.startsWith('E') ? 1 : s.startsWith('W') ? -1 : 0;
-    if (utc_offset_sign != 0) {
-        auto offset_mins = s.mid(1).toInt();
-        if (offset_mins <= 12)
-            offset_mins *= 60;
-        timestamp.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(offset_mins * 60 * utc_offset_sign));
-    } else {
-        qWarning() << "invalid utc offset sign" << s;
-    }
-    info["timestamp"] = timestamp.toMSecsSinceEpoch();
-    info["utc_offset"] = timestamp.offsetFromUtc();
-
-    auto cs = name.section('-', 1, 1);
-    if (cs.isEmpty()) {
-        qWarning() << "invalid unitName" << name;
-    } else {
-        info["unitName"] = cs.section('-', 0, 0);
-    }
-
-    return info;
 }
 
 void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)

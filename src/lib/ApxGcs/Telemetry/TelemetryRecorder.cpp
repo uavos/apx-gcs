@@ -122,21 +122,36 @@ void TelemetryRecorder::checkFileRecord()
     // construct new file name
 
     auto timestamp = QDateTime::currentDateTime();
-    auto dir = QDir(AppDirs::storage().absoluteFilePath(telemetry::APXTLM_FTYPE));
-    dir.mkpath(".");
 
     QString unitName = _vehicle->title();
     if (unitName.isEmpty())
         unitName = _vehicle->confTitle();
 
-    auto fileName = TelemetryFileWriter::prepare_file_name(timestamp, unitName, dir.absolutePath());
-    if (fileName.isEmpty())
-        return;
-
+    auto basename = db::storage::Session::telemetryFileBasename(timestamp, unitName);
     auto info = prepareFileInfo();
     auto time_utc = timestamp.toMSecsSinceEpoch();
 
-    _file.create(dir.absoluteFilePath(fileName), time_utc, info);
+    // create new file
+    QString filePath;
+    // find name (append-01, -02, etc if necessary)
+    for (int i = 0; i < 100; ++i) {
+        auto s = basename;
+        if (i > 0)
+            s.append(QString("-%1").arg(i, 2, 10, QChar('0')));
+
+        auto fpath = db::storage::Session::telemetryFilePath(s);
+        if (QFile::exists(fpath))
+            continue;
+
+        basename = s;
+        filePath = fpath;
+        break;
+    }
+
+    if (filePath.isEmpty())
+        return;
+
+    _file.create(filePath, time_utc, info);
 
     // record initial mandala state
     for (auto f : _vehicle->f_mandala->valueFacts()) {
@@ -156,7 +171,7 @@ void TelemetryRecorder::checkFileRecord()
         recordMission(false);
 
     // create DB record
-    auto req = new db::storage::TelemetryCreateRecord(time_utc, _file.name(), info, !recording());
+    auto req = new db::storage::TelemetryCreateRecord(time_utc, basename, info, !recording());
     req->exec();
 }
 

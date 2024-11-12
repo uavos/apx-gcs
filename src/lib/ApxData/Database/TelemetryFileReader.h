@@ -57,8 +57,6 @@ public:
     bool parse_header();
     bool parse_payload();
 
-    bool fix_name();
-
     auto timestamp() const { return _fhdr.timestamp; }
     auto utc_offset() const { return _fhdr.utc_offset; }
     auto is_parsed() const { return _info["parsed"].toBool(); }
