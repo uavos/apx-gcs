@@ -25,7 +25,7 @@
 #include <App/AppRoot.h>
 
 DBReqTelemetry::DBReqTelemetry()
-    : DatabaseRequest(Database::instance()->telemetry)
+    : DatabaseRequest(nullptr) //Database::instance()->telemetry)
 {}
 bool DBReqTelemetry::run(QSqlQuery &query)
 {

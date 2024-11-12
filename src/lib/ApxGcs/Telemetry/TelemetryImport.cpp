@@ -155,7 +155,7 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
         if (!ok)
             break;
 
-        TelemetryDB *db = Database::instance()->telemetry;
+        /*TelemetryDB *db = Database::instance()->telemetry;
 
         //construct fields sequence map for stream decoder, used for 'D' tag
         QList<mandala::uid_t> xml_uid_map;
@@ -235,7 +235,7 @@ quint64 TelemetryImport::read(QXmlStreamReader &xml)
             }
             qWarning() << "unknown tag" << tag;
             xml.skipCurrentElement();
-        } //read next tag
+        } //read next tag*/
         break;
     } //while ok
 

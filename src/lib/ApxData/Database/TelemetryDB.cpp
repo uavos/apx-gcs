@@ -176,7 +176,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
 }
 TelemetryDB::~TelemetryDB()
 {
-    Database::instance()->telemetry = nullptr;
+    //Database::instance()->telemetry = nullptr;
 }
 
 void TelemetryDB::updateFieldsMap(FieldsByUID byUID, FieldsByName byName)

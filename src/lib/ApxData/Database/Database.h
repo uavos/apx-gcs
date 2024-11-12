@@ -28,7 +28,6 @@
 #include "StorageSession.h"
 
 class VehiclesDB;
-class TelemetryDB;
 class MissionsDB;
 
 class Database : public Fact
@@ -45,7 +44,6 @@ public:
     QPointer<db::nodes::Session> nodes;
 
     QPointer<VehiclesDB> vehicles;
-    QPointer<TelemetryDB> telemetry;
     QPointer<MissionsDB> missions;
 
 private:
