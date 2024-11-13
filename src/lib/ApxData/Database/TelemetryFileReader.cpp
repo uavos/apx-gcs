@@ -34,12 +34,15 @@ using namespace telemetry;
 TelemetryFileReader::TelemetryFileReader(QString filePath, QObject *parent)
     : QFile(parent)
 {
+    _reset_data();
     setFileName(filePath);
 }
 
 TelemetryFileReader::TelemetryFileReader(QObject *parent)
     : QFile(parent)
-{}
+{
+    _reset_data();
+}
 
 bool TelemetryFileReader::is_still_writing()
 {

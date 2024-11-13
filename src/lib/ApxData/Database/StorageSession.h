@@ -33,17 +33,18 @@ public:
 
     static QString telemetryFileBasename(QDateTime timestamp, QString unitName);
     static QString telemetryFilePath(const QString &basename);
-    static QJsonObject getInfoFromFilename(const QString &filePath);
+    static QJsonObject telemetryFilenameParse(const QString &filePath);
 
 private:
     Fact *f_stats;
     Fact *f_trash;
-    Fact *f_stop;
+    Fact *f_sync;
 
-    Fact *f_cache;
+    Fact *f_stop;
 
     void getStats();
     void emptyTrash();
+    void syncFiles();
 };
 
 class Request : public DatabaseRequest
@@ -60,10 +61,19 @@ class TelemetryStats : public Request
 protected:
     bool run(QSqlQuery &query);
 signals:
-    void totals(quint64 total, quint64 trash);
+    void totals(quint64 total, quint64 trash, quint64 files);
 };
 
 class TelemetryEmptyTrash : public Request
+{
+    Q_OBJECT
+protected:
+    bool run(QSqlQuery &query);
+signals:
+    void progress(int v);
+};
+
+class TelemetrySyncFiles : public Request
 {
     Q_OBJECT
 protected:

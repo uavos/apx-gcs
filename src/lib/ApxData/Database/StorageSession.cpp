@@ -35,6 +35,11 @@ Request::Request()
 Session::Session(QObject *parent, QString sessionName)
     : DatabaseSession(parent, "storage", sessionName, {}, AppDirs::storage())
 {
+    f_sync
+        = new Fact(this, "sync", tr("Sync files"), tr("Sync files with database"), NoFlags, "sync");
+    connect(f_sync, &Fact::triggered, this, &Session::syncFiles);
+    connect(f_sync, &Fact::progressChanged, this, [this]() { setProgress(f_sync->progress()); });
+
     f_stats = new Fact(this, "stats", tr("Get statistics"), tr("Analyze totals"), NoFlags, "numeric");
     connect(f_stats, &Fact::triggered, this, &Session::getStats);
     connect(this, &Fact::triggered, f_stats, &Fact::trigger);
@@ -76,6 +81,7 @@ Session::Session(QObject *parent, QString sessionName)
 
                            // local record status and flags
                            "trash INTEGER",    // not null if record deleted
+                           "sync INTEGER",     // not null if record was ever synced with file
                            "src INTEGER",      // source of record: 0=record, i=import, 2=share
                            "imported INTEGER", // [ms since epoch] file import time
                            "parsed INTEGER",   // [ms since epoch] file parsing time
@@ -131,7 +137,7 @@ QString Session::telemetryFilePath(const QString &basename)
     return filePath;
 }
 
-QJsonObject Session::getInfoFromFilename(const QString &filePath)
+QJsonObject Session::telemetryFilenameParse(const QString &filePath)
 {
     QJsonObject info;
 
@@ -185,10 +191,11 @@ void Session::getStats()
         req,
         &TelemetryStats::totals,
         this,
-        [this](quint64 total, quint64 trash) {
+        [this](quint64 total, quint64 trash, quint64 files) {
             f_stats->setValue(
                 QString("%1 %2, %3 %4").arg(total).arg(tr("total")).arg(trash).arg(tr("trash")));
             f_trash->setEnabled(trash > 0);
+            f_sync->setValue(total == files ? tr("Synced") : QString("%1/%2").arg(files).arg(total));
         },
         Qt::QueuedConnection);
     req->exec();
@@ -209,10 +216,19 @@ bool TelemetryStats::run(QSqlQuery &query)
         return false;
     quint64 cntTrash = query.value(0).toULongLong();
 
+    // count files
+    auto fi = QFileInfo(Session::telemetryFilePath("*"));
+    auto files = fi.absoluteDir().entryList({fi.fileName()}, QDir::Files);
+    quint64 cntFiles = files.size();
+
+    // report stats
     apxMsg() << tr("Telemetry records").append(":") << cntTotal << tr("total").append(",")
              << cntTrash << tr("trash");
 
-    emit totals(cntTotal, cntTrash);
+    if (cntFiles != cntTotal)
+        apxMsgW() << tr("Telemetry files").append(":") << cntFiles << tr("of") << cntTotal;
+
+    emit totals(cntTotal, cntTrash, cntFiles);
     return true;
 }
 
@@ -289,3 +305,160 @@ bool TelemetryEmptyTrash::run(QSqlQuery &query)
     db->enable();
     return rv;
 }
+
+void Session::syncFiles()
+{
+    auto req = new TelemetrySyncFiles();
+    connect(
+        req,
+        &TelemetrySyncFiles::progress,
+        this,
+        [this](int v) { f_sync->setProgress(v); },
+        Qt::QueuedConnection);
+    connect(req, &TelemetrySyncFiles::finished, this, &Session::getStats, Qt::QueuedConnection);
+    connect(f_stop, &Fact::triggered, req, &DatabaseRequest::discard, Qt::QueuedConnection);
+    req->exec();
+}
+bool TelemetrySyncFiles::run(QSqlQuery &query)
+{
+    db->disable();
+    emit progress(0);
+
+    bool rv = false;
+    do {
+        // remove sync flag from db
+        query.prepare("UPDATE Telemetry SET sync=NULL");
+        if (!query.exec()) {
+            apxMsgW() << tr("Failed to clear sync flags");
+            break;
+        }
+
+        // fix file names
+        auto fi = QFileInfo(Session::telemetryFilePath("*"));
+        auto filesTotal = fi.absoluteDir().count();
+        auto filesCount = 0;
+        QDirIterator it(fi.absolutePath(), QDir::Files);
+        while (it.hasNext()) {
+            emit progress(filesCount++ * 100 / filesTotal);
+
+            auto fi = QFileInfo(it.next());
+            qDebug() << fi.fileName();
+
+            TelemetryFileReader reader(fi.absoluteFilePath());
+            if (!reader.open()) {
+                apxConsoleW() << tr("File error").append(':') << fi.fileName();
+                // QFile::moveToTrash(fi.absoluteFilePath());
+                continue;
+            }
+            // check file name
+            auto timestamp = QDateTime::fromMSecsSinceEpoch(reader.timestamp());
+            timestamp.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(reader.utc_offset()));
+            auto unitName = reader.info()["unit"]["name"].toString();
+            if (unitName.isEmpty()) {
+                auto info = Session::telemetryFilenameParse(fi.absoluteFilePath());
+                unitName = info["unitName"].toString();
+            }
+
+            auto basename = Session::telemetryFileBasename(timestamp, unitName);
+            auto filePath = Session::telemetryFilePath(basename);
+            if (fi.absoluteFilePath() != filePath) {
+                apxConsole() << tr("Rename %1 to %2")
+                                    .arg(fi.fileName(), QFileInfo(filePath).fileName());
+                // check if same file exists
+                /*if (QFile::exists(filePath)) {
+                    qWarning() << "File exists" << filePath;
+                    auto hash = reader.get_hash();
+                    auto hash2 = TelemetryFileReader(filePath).get_hash();
+                    if (hash == hash2) {
+                        qDebug() << "Removing duplicate" << fi.fileName();
+                        QFile::remove(filePath);
+                    } else {
+                        // rename with some name suffix
+                        fixedFileName
+                            = TelemetryFileWriter::prepare_file_name(time,
+                                                                     unitName,
+                                                                     fi.dir().absolutePath());
+                        newPath = fi.dir().absoluteFilePath(fixedFileName);
+                        ok = rename(newPath);
+                        if (!ok) {
+                            qWarning()
+                                << "Failed to rename" << fi.fileName() << "to" << fixedFileName;
+                        }
+                    }
+                }*/
+                /*if (!reader.rename(fi.absoluteFilePath(), filePath)) {
+                apxConsoleW() << tr("Failed to rename").append(':') << fi.fileName();
+                continue;
+            }*/
+            }
+            basename = fi.completeBaseName();
+
+            // find file in db
+            query.prepare("SELECT * FROM Telemetry WHERE file=?");
+            query.addBindValue(basename);
+            if (!query.exec())
+                break;
+            if (!query.next()) {
+                qWarning() << "File not found in db" << basename;
+            }
+        }
+
+        // success
+        rv = true;
+    } while (0);
+    emit progress(-1);
+    db->enable();
+    return rv;
+}
+
+/*
+
+
+bool TelemetryFileReader::fix_name()
+{
+    // fix rename if necessary
+    auto time = QDateTime::fromMSecsSinceEpoch(timestamp(), QTimeZone(utc_offset()));
+    auto unitName = info()["unit"]["name"].toString();
+    auto fixedFileName = TelemetryFileWriter::prepare_file_name(time, unitName);
+    auto fi = QFileInfo(fileName());
+    if (fixedFileName != fi.fileName()) {
+        auto newPath = fi.dir().absoluteFilePath(fixedFileName);
+        // rename file
+        close();
+
+        bool ok = rename(newPath);
+        if (!ok) {
+            qWarning() << "Failed to rename" << fi.fileName() << "to" << fixedFileName;
+            if (QFile::exists(newPath)) {
+                qWarning() << "File" << newPath << "already exists";
+                // compare two files and remove the old one if equal
+                auto hash = get_hash();
+                auto newHash = TelemetryFileReader(newPath).get_hash();
+                if (hash == newHash) {
+                    qDebug() << "Removing duplicate" << fi.fileName();
+                    QFile::remove(newPath);
+                    ok = rename(newPath);
+                } else {
+                    // rename with some name suffix
+                    fixedFileName = TelemetryFileWriter::prepare_file_name(time,
+                                                                           unitName,
+                                                                           fi.dir().absolutePath());
+                    newPath = fi.dir().absoluteFilePath(fixedFileName);
+                    ok = rename(newPath);
+                    if (!ok) {
+                        qWarning() << "Failed to rename" << fi.fileName() << "to" << fixedFileName;
+                    }
+                }
+            }
+        }
+        if (ok) {
+            qDebug() << "Renamed" << fi.fileName() << "to" << fixedFileName;
+        }
+
+        if (!open(newPath))
+            return false;
+    }
+    return true;
+}
+
+*/
