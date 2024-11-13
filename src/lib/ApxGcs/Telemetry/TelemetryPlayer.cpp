@@ -213,11 +213,8 @@ void TelemetryPlayer::rec_started()
 
 void TelemetryPlayer::rec_finished()
 {
-    const auto &info = reader->recordInfo();
-    auto path = info["path"].toString();
-    if (path.isEmpty())
-        return;
-    _file.setFileName(path);
+    const auto &filePath = reader->recordFilePath();
+    _file.setFileName(filePath);
 
     // fill fields map
     _fieldsMap.clear();

@@ -94,6 +94,9 @@ void TelemetryReader::loadRecord(quint64 id)
     auto reader = req->reader();
     connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
     connect(req, &db::storage::TelemetryLoadFile::recordInfo, this, &TelemetryReader::setRecordInfo);
+    connect(req, &db::storage::TelemetryLoadFile::fileOpened, this, [this](QString path) {
+        _recordFilePath = path;
+    });
 
     // forward info to other facts (lists)
     connect(req,

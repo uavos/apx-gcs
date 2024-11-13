@@ -33,6 +33,8 @@ public:
 
     static QString telemetryFileBasename(QDateTime timestamp, QString unitName);
     static QString telemetryFilePath(const QString &basename);
+    static QString telemetryFilePathUnique(const QString &basename);
+
     static QJsonObject telemetryFilenameParse(const QString &filePath);
 
 private:

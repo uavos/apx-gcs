@@ -178,6 +178,8 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
     if (!_reader.open(filePath))
         return false;
 
+    emit fileOpened(filePath);
+
     if (!_reader.parse_payload())
         return false;
 

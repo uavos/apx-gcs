@@ -127,27 +127,12 @@ void TelemetryRecorder::checkFileRecord()
     if (unitName.isEmpty())
         unitName = _vehicle->confTitle();
 
-    auto basename = db::storage::Session::telemetryFileBasename(timestamp, unitName);
     auto info = prepareFileInfo();
     auto time_utc = timestamp.toMSecsSinceEpoch();
 
     // create new file
-    QString filePath;
-    // find name (append-01, -02, etc if necessary)
-    for (int i = 0; i < 100; ++i) {
-        auto s = basename;
-        if (i > 0)
-            s.append(QString("-%1").arg(i, 2, 10, QChar('0')));
-
-        auto fpath = db::storage::Session::telemetryFilePath(s);
-        if (QFile::exists(fpath))
-            continue;
-
-        basename = s;
-        filePath = fpath;
-        break;
-    }
-
+    QString filePath = db::storage::Session::telemetryFilePathUnique(
+        db::storage::Session::telemetryFileBasename(timestamp, unitName));
     if (filePath.isEmpty())
         return;
 
@@ -171,7 +156,10 @@ void TelemetryRecorder::checkFileRecord()
         recordMission(false);
 
     // create DB record
-    auto req = new db::storage::TelemetryCreateRecord(time_utc, basename, info, !recording());
+    auto req = new db::storage::TelemetryCreateRecord(time_utc,
+                                                      QFileInfo(filePath).completeBaseName(),
+                                                      info,
+                                                      !recording());
     req->exec();
 }
 

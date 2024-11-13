@@ -136,6 +136,20 @@ QString Session::telemetryFilePath(const QString &basename)
     filePath = QDir(filePath).absoluteFilePath(basename + '.' + telemetry::APXTLM_FTYPE);
     return filePath;
 }
+QString Session::telemetryFilePathUnique(const QString &basename)
+{
+    // find name (append-01, -02, etc if necessary)
+    for (int i = 0; i < 100; ++i) {
+        auto s = basename;
+        if (i > 0)
+            s.append(QString("-%1").arg(i, 2, 10, QChar('0')));
+
+        auto fpath = db::storage::Session::telemetryFilePath(s);
+        if (!QFile::exists(fpath))
+            return fpath;
+    }
+    return {};
+}
 
 QJsonObject Session::telemetryFilenameParse(const QString &filePath)
 {

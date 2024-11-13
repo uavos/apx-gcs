@@ -125,6 +125,9 @@ protected:
     TelemetryFileReader _reader;
 
     virtual bool run(QSqlQuery &query);
+
+signals:
+    void fileOpened(QString filePath);
 };
 
 class TelemetryWriteInfo : public Request
