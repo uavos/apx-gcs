@@ -25,8 +25,8 @@ using namespace db::storage;
 
 bool TelemetryCreateRecord::run(QSqlQuery &query)
 {
-    query.prepare("INSERT INTO Telemetry(time, file, unitUID, unitName, unitType, confName, trash) "
-                  "VALUES(?, ?, ?, ?, ?, ?, ?)");
+    query.prepare("INSERT INTO Telemetry(time,file,unitUID,unitName,unitType,confName,trash,sync) "
+                  "VALUES(?,?,?,?,?,?,?,?)");
     const auto &info = _info;
     query.addBindValue(_t);
     query.addBindValue(_fileName);
@@ -35,6 +35,7 @@ bool TelemetryCreateRecord::run(QSqlQuery &query)
     query.addBindValue(info["unit"]["type"].toVariant());
     query.addBindValue(info["conf"].toVariant());
     query.addBindValue(_trash ? 1 : QVariant());
+    query.addBindValue(1); // sync status - file synced
     if (!query.exec())
         return false;
     _telemetryID = query.lastInsertId().toULongLong();
@@ -158,8 +159,8 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
     if (!query.next())
         return false;
 
-    const auto file = query.value("file").toString();
-    if (file.isEmpty()) {
+    const auto basename = query.value("file").toString();
+    if (basename.isEmpty()) {
         qWarning() << "empty file name";
         // TODO convert DB data to file
         return false;
@@ -173,15 +174,16 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
 
     const auto hash = query.value("hash").toString();
 
-    auto filePath = Session::telemetryFilePath(file);
+    auto filePath = Session::telemetryFilePath(basename);
 
     if (!_reader.open(filePath))
         return false;
 
     emit fileOpened(filePath);
 
-    if (!_reader.parse_payload())
-        return false;
+    if (!_reader.parse_payload()) {
+        qWarning() << "File corrputed:" << basename;
+    }
 
     bool still_writing = _reader.is_still_writing();
     if (still_writing) {
@@ -206,7 +208,10 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
         }
 
         q["duration"] = rinfo["duration"].toInteger();
+        q["size"] = rinfo["size"].toInteger();
         q["info"] = QJsonDocument(rinfo).toJson(QJsonDocument::Compact);
+        q["parsed"] = QDateTime::currentMSecsSinceEpoch();
+        q["sync"] = 2; // info synced
 
         // write changes to db
         if (recordUpdateQuery(query, q, "Telemetry", "WHERE key=?")) {
@@ -243,4 +248,245 @@ bool TelemetryWriteInfo::run(QSqlQuery &query)
         emit dbModified();
     }
     return true;
+}
+
+bool TelemetryStats::run(QSqlQuery &query)
+{
+    query.prepare("SELECT COUNT(*) FROM Telemetry");
+    if (!query.exec())
+        return false;
+    if (!query.next())
+        return false;
+    quint64 cntTotal = query.value(0).toULongLong();
+
+    query.prepare("SELECT COUNT(*) FROM Telemetry WHERE trash IS NOT NULL");
+    if (!query.exec())
+        return false;
+    if (!query.next())
+        return false;
+    quint64 cntTrash = query.value(0).toULongLong();
+
+    // count files
+    auto fi = QFileInfo(Session::telemetryFilePath("*"));
+    auto files = fi.absoluteDir().entryList({fi.fileName()}, QDir::Files);
+    quint64 cntFiles = files.size();
+
+    // report stats
+    apxMsg() << tr("Telemetry records").append(":") << cntTotal << tr("total").append(",")
+             << cntTrash << tr("trash");
+
+    if (cntFiles != cntTotal)
+        apxMsgW() << tr("Telemetry files").append(":") << cntFiles << tr("of") << cntTotal;
+
+    emit totals(cntTotal, cntTrash, cntFiles);
+    return true;
+}
+
+bool TelemetryEmptyTrash::run(QSqlQuery &query)
+{
+    db->disable();
+    emit progress(0);
+    bool rv = false;
+    do {
+        query.prepare("SELECT COUNT(*) FROM Telemetry WHERE trash IS NOT NULL");
+        if (!query.exec())
+            break;
+        if (!query.next())
+            break;
+
+        qint64 cnt = query.value(0).toLongLong();
+        qint64 dcnt = 0;
+        if (cnt > 0) {
+            apxMsg() << tr("Permanently deleting %1 records").arg(cnt).append("...");
+
+            while (dcnt < cnt) {
+                query.prepare("SELECT key,file FROM Telemetry WHERE trash IS NOT NULL ORDER BY "
+                              "time DESC LIMIT 1");
+                if (!query.exec())
+                    break;
+                if (!query.next())
+                    break;
+                quint64 key = query.value(0).toULongLong();
+                auto file = query.value("file").toString();
+
+                if (!db->transaction(query))
+                    break;
+                query.prepare("DELETE FROM Telemetry WHERE key=?");
+                query.addBindValue(key);
+                if (!query.exec())
+                    break;
+                if (!db->commit(query))
+                    break;
+
+                // remove file
+                auto filePath = Session::telemetryFilePath(file);
+                qDebug() << "Removing file" << filePath;
+                if (!QFile::moveToTrash(filePath)) {
+                    apxMsgW() << tr("Failed to remove file") << filePath;
+                }
+
+                dcnt++;
+                emit progress((dcnt * 100 / cnt));
+                if (discarded())
+                    break;
+            }
+        }
+        if (dcnt < cnt)
+            apxMsgW() << tr("Telemetry trash not empty") << cnt - dcnt;
+        else {
+            apxMsg() << tr("Telemetry trash is empty");
+            rv = true;
+        }
+    } while (0);
+    emit progress(-1);
+    db->enable();
+    return rv;
+}
+
+bool TelemetrySyncFiles::run(QSqlQuery &query)
+{
+    db->disable();
+    emit progress(0);
+
+    bool rv = false;
+    do {
+        // remove sync flag from db
+        query.prepare("UPDATE Telemetry SET sync=NULL");
+        if (!query.exec()) {
+            apxMsgW() << tr("Failed to clear sync flags");
+            break;
+        }
+
+        // fix file names
+        auto fi = QFileInfo(Session::telemetryFilePath("*"));
+        auto filesTotal = fi.absoluteDir().count();
+        auto filesCount = 0;
+        QDirIterator it(fi.absolutePath(), QDir::Files);
+        while (it.hasNext()) {
+            emit progress(filesCount++ * 100 / filesTotal);
+
+            auto fi = QFileInfo(it.next());
+            qDebug() << fi.fileName();
+
+            TelemetryFileReader reader(fi.absoluteFilePath());
+            if (!reader.open()) {
+                apxConsoleW() << tr("File error").append(':') << fi.fileName();
+                QFile::moveToTrash(fi.absoluteFilePath());
+                continue;
+            }
+            const auto hash = reader.get_hash();
+            const auto time_utc = reader.timestamp();
+            const auto utc_offset = reader.utc_offset();
+            const auto info = reader.info();
+
+            // check file name
+            auto timestamp = QDateTime::fromMSecsSinceEpoch(time_utc);
+            timestamp.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utc_offset));
+            auto unitName = info["unit"]["name"].toString();
+            if (unitName.isEmpty()) {
+                auto info = Session::telemetryFilenameParse(fi.absoluteFilePath());
+                unitName = info["unitName"].toString();
+            }
+
+            auto basename = Session::telemetryFileBasename(timestamp, unitName);
+            auto destFilePath = Session::telemetryFilePath(basename);
+            if (fi.absoluteFilePath() != destFilePath) {
+                apxConsole() << tr("Rename %1 to %2")
+                                    .arg(fi.fileName(), QFileInfo(destFilePath).fileName());
+                // check if same file exists
+                if (QFile::exists(destFilePath)) {
+                    qWarning() << "File exists" << destFilePath;
+                    auto hash2 = TelemetryFileReader(destFilePath).get_hash();
+                    if (hash == hash2) {
+                        qDebug() << "Removing duplicate" << fi.fileName();
+                        QFile::moveToTrash(fi.absoluteFilePath());
+                        destFilePath.clear();
+                        continue;
+                    } else {
+                        // different files with the same name
+                        // rename with some name suffix
+                        if (fi.completeBaseName().startsWith(basename)) {
+                            // don't rename if already renamed with suffix
+                            destFilePath.clear();
+                        } else {
+                            destFilePath = Session::telemetryFilePathUnique(basename);
+                        }
+                    }
+                }
+                if (!destFilePath.isEmpty()) {
+                    if (!QFile::rename(fi.absoluteFilePath(), destFilePath)) {
+                        apxMsgW() << tr("Failed to rename").append(':') << fi.fileName();
+                    } else {
+                        fi.setFile(destFilePath);
+                    }
+                }
+            }
+            basename = fi.completeBaseName();
+
+            // find file in db and check hash
+            bool parse = true;
+            quint64 key;
+            query.prepare("SELECT * FROM Telemetry WHERE file=?");
+            query.addBindValue(basename);
+            if (!query.exec())
+                break;
+
+            if (!query.next()) {
+                qWarning() << "Missing db record" << basename;
+                // create record
+                if (!TelemetryCreateRecord(time_utc, basename, info, false).run(query))
+                    break;
+
+                query.prepare("SELECT key FROM Telemetry WHERE file=?");
+                query.addBindValue(basename);
+                if (!query.exec() || !query.next())
+                    break;
+                key = query.value(0).toULongLong();
+
+            } else {
+                key = query.value("key").toULongLong();
+                // check hash, unit, conf etc
+                auto db_hash = query.value("hash").toString();
+                if (db_hash != hash) {
+                    qWarning() << "Hash mismatch" << basename;
+                } else {
+                    parse = false;
+                }
+            }
+
+            // update record if needed
+            if (parse) {
+                if (!TelemetryLoadFile(key).run(query)) {
+                    // file corrupted
+                    // continue;
+                }
+            }
+
+            // just set synced=parsed
+            query.prepare("UPDATE Telemetry SET sync=2 WHERE key=?");
+            query.addBindValue(key);
+            if (!query.exec())
+                break;
+        }
+
+        // find recods without files (sync is reset)
+        query.prepare("SELECT COUNT(*) FROM Telemetry WHERE sync IS NULL");
+        if (!query.exec() || !query.next())
+            break;
+        quint64 cnt = query.value(0).toULongLong();
+        if (cnt > 0) {
+            apxMsgW() << tr("Missing files").append(':') << cnt;
+            // remove records without files
+            query.prepare("DELETE FROM Telemetry WHERE sync IS NULL");
+            if (!query.exec())
+                break;
+        }
+
+        // success
+        apxMsg() << tr("Telemetry files synced");
+        rv = true;
+    } while (0);
+    emit progress(-1);
+    db->enable();
+    return rv;
 }

@@ -55,34 +55,5 @@ public:
     explicit Request();
 };
 
-// DB maintenance helpers
-
-class TelemetryStats : public Request
-{
-    Q_OBJECT
-protected:
-    bool run(QSqlQuery &query);
-signals:
-    void totals(quint64 total, quint64 trash, quint64 files);
-};
-
-class TelemetryEmptyTrash : public Request
-{
-    Q_OBJECT
-protected:
-    bool run(QSqlQuery &query);
-signals:
-    void progress(int v);
-};
-
-class TelemetrySyncFiles : public Request
-{
-    Q_OBJECT
-protected:
-    bool run(QSqlQuery &query);
-signals:
-    void progress(int v);
-};
-
 } // namespace storage
 } // namespace db

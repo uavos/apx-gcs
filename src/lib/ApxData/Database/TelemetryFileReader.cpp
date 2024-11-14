@@ -53,7 +53,7 @@ bool TelemetryFileReader::is_still_writing()
     return false;
 }
 
-QByteArray TelemetryFileReader::get_hash()
+QString TelemetryFileReader::get_hash()
 {
     if (!isOpen()) {
         // open file for reading
@@ -68,7 +68,7 @@ QByteArray TelemetryFileReader::get_hash()
 
     QCryptographicHash hash(QCryptographicHash::Sha1);
     hash.addData(this);
-    return hash.result();
+    return QString(hash.result().toHex().toUpper());
 }
 
 void TelemetryFileReader::setProgress(int value)
@@ -223,7 +223,7 @@ bool TelemetryFileReader::parse_payload()
         qWarning() << "failed to get file hash";
         return false;
     }
-    _info["hash"] = QString(hash.toHex().toUpper());
+    _info["hash"] = hash;
 
     if (!seek(_fhdr.payload_offset)) {
         qWarning() << "failed to seek to payload offset" << _fhdr.payload_offset;
@@ -250,16 +250,12 @@ bool TelemetryFileReader::parse_payload()
 
     _commit_values(); // commit values (if any) collected for timestamp
 
-    setProgress(-1);
-
     if (!ret || !isOpen()) {
         qWarning() << "failed to parse file at" << pos() << size();
-        return false;
+    } else {
+        // file read successfully
+        qDebug() << "file parsed" << _ts_s << _fields.size();
     }
-
-    // file read successfully
-
-    qDebug() << "file parsed" << _ts_s << _fields.size();
 
     setProgress(0);
 
@@ -308,8 +304,7 @@ bool TelemetryFileReader::parse_payload()
 
     // success
     setProgress(-1);
-    emit parsed();
-    return true;
+    return ret;
 }
 
 bool TelemetryFileReader::parse_next()
@@ -347,16 +342,16 @@ bool TelemetryFileReader::parse_next()
             break;
 
         if (is_uplink) {
-            if (_uplink_values.contains(_widx)) {
-                qWarning() << "duplicate uplink value" << _fields.value(_widx).name
-                           << _uplink_values[_widx] << v;
-            }
+            // if (_uplink_values.contains(_widx)) {
+            //     qWarning() << "duplicate uplink value" << _fields.value(_widx).name
+            //                << _uplink_values[_widx] << v;
+            // }
             _uplink_values[_widx] = v;
         } else {
-            if (_downlink_values.contains(_widx)) {
-                qWarning() << "duplicate downlink value" << _fields.value(_widx).name
-                           << _downlink_values[_widx] << v;
-            }
+            // if (_downlink_values.contains(_widx)) {
+            //     qWarning() << "duplicate downlink value" << _fields.value(_widx).name
+            //                << _downlink_values[_widx] << v;
+            // }
             _downlink_values[_widx] = v;
         }
 

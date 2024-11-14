@@ -61,7 +61,7 @@ public:
     auto utc_offset() const { return _fhdr.utc_offset; }
     auto is_parsed() const { return _info["parsed"].toBool(); }
 
-    QByteArray get_hash();
+    QString get_hash();
 
     void abort() { _interrupted = true; } // abort reading (can be called from another thread)
     bool interrupted() const { return _interrupted; }
@@ -151,8 +151,6 @@ signals:
     void msg(quint64 timestamp_ms, QString text, QString subsystem);
     void meta(QString name, QJsonObject data, bool uplink);
     void raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
-
-    void parsed();
 
     // called by parse_header
     void infoUpdated(QJsonObject data);
