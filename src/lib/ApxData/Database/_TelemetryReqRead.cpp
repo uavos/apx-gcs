@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "TelemetryReqRead.h"
 #include "Database.h"
+#include "TelemetryReqRead.h"
 #define MAX_CACHE_RECORDS 25000000
 
 bool DBReqTelemetryFindCache::run(QSqlQuery &query)

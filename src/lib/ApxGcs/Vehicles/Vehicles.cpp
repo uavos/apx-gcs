@@ -25,7 +25,6 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Database/TelemetryDB.h>
 #include <QQmlEngine>
 
 APX_LOGGING_CATEGORY(VehiclesLog, "core.vehicles")

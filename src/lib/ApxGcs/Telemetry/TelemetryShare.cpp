@@ -23,9 +23,6 @@
 #include "Telemetry.h"
 #include "TelemetryRecords.h"
 
-#include "TelemetryExport.h"
-#include "TelemetryImport.h"
-
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
@@ -46,7 +43,7 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
 
     _exportFormats << "csv";
 
-    QString sect = tr("Queue");
+    /*QString sect = tr("Queue");
     qimp = new QueueJob(this, "qimp", tr("Import queue"), "", new TelemetryImport());
     qimp->setIcon("import");
     qimp->setSection(sect);
@@ -69,7 +66,7 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
 
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop conversion"), Action | Stop);
     connect(f_stop, &Fact::triggered, qimp, &QueueJob::stop);
-    connect(f_stop, &Fact::triggered, qexp, &QueueJob::stop);
+    connect(f_stop, &Fact::triggered, qexp, &QueueJob::stop);*/
 
     // connect(telemetry->f_records,
     //         &TelemetryRecords::recordIdChanged,
@@ -118,7 +115,7 @@ bool TelemetryShare::importRequest(QString format, QString fileName)
 {
     //add to queue
     auto title = QFileInfo(fileName).completeBaseName();
-    new Fact(qimp, title, title, fileName);
+    //new Fact(qimp, title, title, fileName);
     return true;
 }
 
@@ -129,25 +126,25 @@ void TelemetryShare::updateActions()
 void TelemetryShare::updateProgress()
 {
     int v = -1;
-    if (qexp->size() > 0)
+    /*if (qexp->size() > 0)
         v = qexp->progress();
     else
-        v = qimp->progress();
+        v = qimp->progress();*/
     setProgress(v);
-    f_stop->setEnabled(v >= 0);
+    // f_stop->setEnabled(v >= 0);
     updateDescr();
 }
 void TelemetryShare::updateStatus()
 {
-    setValue(qimp->value());
+    //setValue(qimp->value());
 }
 void TelemetryShare::updateDescr()
 {
     QString s;
-    if (qimp->progress() >= 0)
+    /*if (qimp->progress() >= 0)
         s = tr("Importing");
     else if (qexp->progress() >= 0)
-        s = tr("Exporting");
+        s = tr("Exporting");*/
     if (s.isEmpty())
         setDescr(descr_s);
     else
@@ -160,7 +157,7 @@ void TelemetryShare::syncTemplates()
         return;
 
     // TODO parse xml file and cache hash in config
-    for (auto fi : _templatesDir.entryInfoList()) {
+    /*for (auto fi : _templatesDir.entryInfoList()) {
         auto hash = fi.completeBaseName();
         auto req = new DBReqTelemetryRecover(hash);
         connect(req,
@@ -169,7 +166,7 @@ void TelemetryShare::syncTemplates()
                 &TelemetryShare::syncTemplate,
                 Qt::QueuedConnection);
         req->exec();
-    }
+    }*/
 }
 
 void TelemetryShare::syncTemplate(QString hash)

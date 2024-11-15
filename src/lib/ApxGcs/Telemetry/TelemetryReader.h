@@ -26,7 +26,7 @@
 #include <QGeoPath>
 #include <QtCore>
 
-#include <Database/TelemetryDBReq.h>
+#include <Database/StorageReq.h>
 
 class TelemetryRecords;
 

@@ -23,6 +23,7 @@
 
 #include <Fact/Fact.h>
 #include <QtCore>
+
 class Vehicle;
 class TelemetryRecorder;
 class TelemetryRecords;

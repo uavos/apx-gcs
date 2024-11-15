@@ -26,8 +26,6 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Database/Database.h>
-#include <Database/TelemetryReqRead.h>
 
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>

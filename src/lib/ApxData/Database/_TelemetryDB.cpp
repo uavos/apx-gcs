@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "TelemetryDB.h"
 #include "Database.h"
+#include "TelemetryDB.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 
