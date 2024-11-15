@@ -517,11 +517,14 @@ bool TelemetryExport::run(QSqlQuery &query)
         if (_format == "csv") {
             QFile::remove(fiDest.absoluteFilePath());
 
+            int progress_div = 2, progress_offset = 0;
             TelemetryFileReader reader(fiSrc.absoluteFilePath());
             connect(&reader,
                     &TelemetryFileReader::progressChanged,
                     this,
-                    &TelemetryExport::progress);
+                    [this, &progress_div, &progress_offset](int v) {
+                        emit progress(v / progress_div + progress_offset);
+                    });
 
             if (!reader.open()) {
                 apxMsgW() << tr("Failed to open").append(':') << fiSrc.absoluteFilePath();
@@ -545,6 +548,7 @@ bool TelemetryExport::run(QSqlQuery &query)
             }
 
             // write output stream
+            progress_offset = 50;
             QFile file(fiDest.absoluteFilePath());
             if (!file.open(QFile::WriteOnly | QFile::Text)) {
                 apxMsgW() << tr("Failed to write").append(':') << fiDest.absoluteFilePath();
