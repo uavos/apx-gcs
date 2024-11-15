@@ -113,6 +113,7 @@ public slots:
 signals:
     void discardRequested();
     void finished(DatabaseRequest::Status status);
+    void success();
 
     void queryResults(DatabaseRequest::Records records);
     void dbModified();

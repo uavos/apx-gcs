@@ -151,6 +151,30 @@ protected:
     bool run(QSqlQuery &query);
 };
 
+// export-import helpers
+
+class TelemetryExport : public Request
+{
+    Q_OBJECT
+public:
+    explicit TelemetryExport(QString format, QString src, QString dst)
+        : Request()
+        , _format(format)
+        , _src(src)
+        , _dst(dst)
+    {}
+
+private:
+    QString _format;
+    QString _src;
+    QString _dst;
+
+protected:
+    bool run(QSqlQuery &query);
+signals:
+    void progress(int v);
+};
+
 // DB maintenance helpers
 
 class TelemetryStats : public Request

@@ -51,7 +51,7 @@ private:
 
 private slots:
     void updateActions();
-    void updateProgress();
+
     void updateStatus();
     void updateDescr();
 

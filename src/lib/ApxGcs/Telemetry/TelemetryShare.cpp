@@ -27,6 +27,8 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 
+using namespace db::storage;
+
 TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     : Share(parent,
             telemetry::APXTLM_FTYPE,
@@ -42,36 +44,6 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     }
 
     _exportFormats << "csv";
-
-    /*QString sect = tr("Queue");
-    qimp = new QueueJob(this, "qimp", tr("Import queue"), "", new TelemetryImport());
-    qimp->setIcon("import");
-    qimp->setSection(sect);
-    connect(qimp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
-    connect(qimp, &Fact::valueChanged, this, &TelemetryShare::updateStatus);
-
-    connect(qimp, &QueueJob::finished, this, [this](Fact *, QVariantMap result) {
-        if (result.value("key").toULongLong()) {
-            emit imported("", result.value("title").toString());
-        }
-    });
-    connect(qimp, &QueueJob::jobDone, this, [this](QVariantMap latestResult) {
-        emit importJobDone(latestResult.value("key").toULongLong());
-    });
-
-    qexp = new QueueJob(this, "qexp", tr("Export queue"), "", new TelemetryExport());
-    qexp->setIcon("export");
-    qexp->setSection(sect);
-    connect(qexp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
-
-    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop conversion"), Action | Stop);
-    connect(f_stop, &Fact::triggered, qimp, &QueueJob::stop);
-    connect(f_stop, &Fact::triggered, qexp, &QueueJob::stop);*/
-
-    // connect(telemetry->f_records,
-    //         &TelemetryRecords::recordIdChanged,
-    //         this,
-    //         &TelemetryShare::updateActions);
 
     f_export->setEnabled(false);
     connect(_telemetry->f_reader,
@@ -95,34 +67,10 @@ QString TelemetryShare::getDefaultTitle()
 
 bool TelemetryShare::exportRequest(QString format, QString fileName)
 {
-    auto fiSrc = QFileInfo(_telemetry->f_reader->recordFilePath());
-    auto fiDest = QFileInfo(fileName);
-    if (!fiSrc.exists()) {
-        apxMsgW() << tr("Missing data source").append(':') << fiSrc.absoluteFilePath();
-        return false;
-    }
-
-    do {
-        if (format == telemetry::APXTLM_FTYPE) {
-            if (fiDest.exists())
-                QFile::remove(fiDest.absoluteFilePath());
-
-            if (QFile::copy(fiSrc.absoluteFilePath(), fileName))
-                break;
-
-            apxMsgW() << tr("Failed to copy").append(':') << fiSrc.absoluteFilePath();
-            return false;
-        }
-
-        if (format == "csv") {
-        }
-
-        apxMsgW() << tr("Unsupported format").append(':') << format;
-        return false;
-    } while (0);
-
-    // export success
-    apxMsg() << tr("Exported").append(':') << fiDest.fileName();
+    auto req = new TelemetryExport(format, _telemetry->f_reader->recordFilePath(), fileName);
+    connect(req, &TelemetryExport::progress, this, &Fact::setProgress);
+    connect(req, &TelemetryExport::success, this, [this, fileName]() { _exported(fileName); });
+    req->exec();
     return true;
 }
 bool TelemetryShare::importRequest(QString format, QString fileName)
@@ -133,17 +81,6 @@ bool TelemetryShare::importRequest(QString format, QString fileName)
     return true;
 }
 
-void TelemetryShare::updateProgress()
-{
-    int v = -1;
-    /*if (qexp->size() > 0)
-        v = qexp->progress();
-    else
-        v = qimp->progress();*/
-    setProgress(v);
-    // f_stop->setEnabled(v >= 0);
-    updateDescr();
-}
 void TelemetryShare::updateStatus()
 {
     //setValue(qimp->value());

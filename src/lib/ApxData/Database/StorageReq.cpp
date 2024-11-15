@@ -490,3 +490,102 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
     db->enable();
     return rv;
 }
+
+bool TelemetryExport::run(QSqlQuery &query)
+{
+    auto fiSrc = QFileInfo(_src);
+    auto fiDest = QFileInfo(_dst);
+    if (!fiSrc.exists()) {
+        apxMsgW() << tr("Missing data source").append(':') << fiSrc.absoluteFilePath();
+        return false;
+    }
+
+    emit progress(0);
+    bool rv = false;
+
+    do {
+        if (_format == telemetry::APXTLM_FTYPE) {
+            QFile::remove(fiDest.absoluteFilePath());
+
+            rv = QFile::copy(fiSrc.absoluteFilePath(), fiDest.absoluteFilePath());
+            if (!rv) {
+                apxMsgW() << tr("Failed to copy").append(':') << fiSrc.absoluteFilePath();
+            }
+            break;
+        }
+
+        if (_format == "csv") {
+            QFile::remove(fiDest.absoluteFilePath());
+
+            TelemetryFileReader reader(fiSrc.absoluteFilePath());
+            connect(&reader,
+                    &TelemetryFileReader::progressChanged,
+                    this,
+                    &TelemetryExport::progress);
+
+            if (!reader.open()) {
+                apxMsgW() << tr("Failed to open").append(':') << fiSrc.absoluteFilePath();
+                break;
+            }
+
+            // get all fields
+            QStringList fields;
+            fields << "time";
+            fields << "uplink";
+            {
+                auto c = connect(&reader, &TelemetryFileReader::field, [&fields](QString name) {
+                    fields << name;
+                });
+                reader.parse_payload();
+                disconnect(c);
+            }
+            if (fields.size() <= 2) {
+                apxMsgW() << tr("No fields found");
+                break;
+            }
+
+            // write output stream
+            QFile file(fiDest.absoluteFilePath());
+            if (!file.open(QFile::WriteOnly | QFile::Text)) {
+                apxMsgW() << tr("Failed to write").append(':') << fiDest.absoluteFilePath();
+                break;
+            }
+            QTextStream out(&file);
+            out << fields.join(',') << '\n';
+
+            QStringList values;
+            for (auto const &field : fields) {
+                values << "0";
+            }
+
+            connect(&reader,
+                    &TelemetryFileReader::values,
+                    [&out,
+                     &values](quint64 timestamp_ms, TelemetryFileReader::Values data, bool uplink) {
+                        for (auto const &value : data.asKeyValueRange()) {
+                            auto index = value.first + 2;
+                            if (index >= values.size())
+                                continue;
+                            values[index] = value.second.toString();
+                        }
+                        values[0] = QString::number(timestamp_ms);
+                        values[1] = uplink ? "1" : "0";
+                        out << values.join(',') << '\n';
+                    });
+            reader.parse_payload();
+            rv = true;
+            break;
+        }
+
+        apxMsgW() << tr("Unsupported format").append(':') << _format;
+        break;
+    } while (0);
+
+    // export success
+    if (rv) {
+        apxMsg() << tr("Exported").append(':') << fiDest.fileName();
+    }
+
+    emit progress(-1);
+    return rv;
+}

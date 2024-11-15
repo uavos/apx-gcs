@@ -52,6 +52,11 @@ DatabaseRequest::DatabaseRequest(DatabaseSession *db,
             db,
             &DatabaseSession::modifiedNotify,
             Qt::QueuedConnection);
+
+    connect(this, &DatabaseRequest::finished, this, [this](Status status) {
+        if (status == Success)
+            emit success();
+    });
 }
 
 void DatabaseRequest::exec()
