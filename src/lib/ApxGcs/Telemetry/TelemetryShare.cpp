@@ -21,7 +21,7 @@
  */
 #include "TelemetryShare.h"
 #include "Telemetry.h"
-#include "TelemetryRecords.h"
+#include "TelemetryReader.h"
 
 #include <App/App.h>
 #include <App/AppDirs.h>
@@ -29,7 +29,7 @@
 
 TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     : Share(parent,
-            "telemetry",
+            telemetry::APXTLM_FTYPE,
             tr("Telemetry data"),
             QStandardPaths::writableLocation(QStandardPaths::DownloadLocation),
             flags)
@@ -73,42 +73,56 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     //         this,
     //         &TelemetryShare::updateActions);
 
+    f_export->setEnabled(false);
+    connect(_telemetry->f_reader,
+            &TelemetryReader::rec_finished,
+            this,
+            &TelemetryShare::updateActions);
+
     descr_s = descr();
-    updateProgress();
-    updateStatus();
     updateActions();
+}
+
+void TelemetryShare::updateActions()
+{
+    f_export->setEnabled(QFile::exists(_telemetry->f_reader->recordFilePath()));
 }
 
 QString TelemetryShare::getDefaultTitle()
 {
-    /*QVariantMap info = _telemetry->f_records->recordInfo();
-    QString fname = QDateTime::fromMSecsSinceEpoch(_telemetry->f_records->recordTimestamp())
-                        .toString("yyyy_MM_dd_hh_mm_ss_zzz");
-    QString callsign = info.value("callsign").toString();
-    if (!callsign.isEmpty())
-        fname.append("-").append(callsign);
-    return fname;*/
-
-    return {};
+    return QFileInfo(_telemetry->f_reader->recordFilePath()).completeBaseName();
 }
+
 bool TelemetryShare::exportRequest(QString format, QString fileName)
 {
-    /*quint64 key = _telemetry->f_records->recordId();
-    if (!key) {
-        apxMsgW() << tr("Missing data in database");
+    auto fiSrc = QFileInfo(_telemetry->f_reader->recordFilePath());
+    auto fiDest = QFileInfo(fileName);
+    if (!fiSrc.exists()) {
+        apxMsgW() << tr("Missing data source").append(':') << fiSrc.absoluteFilePath();
         return false;
     }
-    auto fi = QFileInfo(fileName);
 
-    QSettings().setValue(QString("ShareExportPath_%1").arg(_exportFormats.first()),
-                         fi.dir().absolutePath());
+    do {
+        if (format == telemetry::APXTLM_FTYPE) {
+            if (fiDest.exists())
+                QFile::remove(fiDest.absoluteFilePath());
 
-    //add to queue
-    auto title = fi.completeBaseName();
-    Fact *f = new Fact(nullptr, title, title, fileName);
-    f->setValue(key);
-    f->setParentFact(qexp);*/
+            if (QFile::copy(fiSrc.absoluteFilePath(), fileName))
+                break;
 
+            apxMsgW() << tr("Failed to copy").append(':') << fiSrc.absoluteFilePath();
+            return false;
+        }
+
+        if (format == "csv") {
+        }
+
+        apxMsgW() << tr("Unsupported format").append(':') << format;
+        return false;
+    } while (0);
+
+    // export success
+    apxMsg() << tr("Exported").append(':') << fiDest.fileName();
     return true;
 }
 bool TelemetryShare::importRequest(QString format, QString fileName)
@@ -119,10 +133,6 @@ bool TelemetryShare::importRequest(QString format, QString fileName)
     return true;
 }
 
-void TelemetryShare::updateActions()
-{
-    // f_export->setEnabled(_telemetry->f_records->recordId());
-}
 void TelemetryShare::updateProgress()
 {
     int v = -1;
