@@ -175,6 +175,25 @@ signals:
     void progress(int v);
 };
 
+class TelemetryImport : public Request
+{
+    Q_OBJECT
+public:
+    explicit TelemetryImport(QString src)
+        : Request()
+        , _src(src)
+    {}
+
+private:
+    QString _src;
+
+protected:
+    bool run(QSqlQuery &query);
+signals:
+    void progress(int v);
+    void recordAvailable(quint64 telemetryID);
+};
+
 // DB maintenance helpers
 
 class TelemetryStats : public Request
@@ -198,6 +217,9 @@ signals:
 class TelemetrySyncFiles : public Request
 {
     Q_OBJECT
+public:
+    static QString defaultBasename(TelemetryFileReader *reader);
+
 protected:
     bool run(QSqlQuery &query);
 signals:

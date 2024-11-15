@@ -29,10 +29,9 @@ class DatabaseRequest : public QObject
 {
     Q_OBJECT
 public:
-    explicit DatabaseRequest(DatabaseSession *db);
     explicit DatabaseRequest(DatabaseSession *db,
-                             const QString &queryString,
-                             const QVariantList &bindValues = QVariantList());
+                             const QString &queryString = {},
+                             const QVariantList &bindValues = {});
     enum Status {
         Success = 0,
         Error,

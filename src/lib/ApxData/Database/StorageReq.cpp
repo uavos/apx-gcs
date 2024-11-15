@@ -210,7 +210,7 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
         q["duration"] = rinfo["duration"].toInteger();
         q["size"] = rinfo["size"].toInteger();
         q["info"] = QJsonDocument(rinfo).toJson(QJsonDocument::Compact);
-        q["parsed"] = QDateTime::currentMSecsSinceEpoch();
+        q["parsed"] = rinfo["parsed"].toInteger();
         q["sync"] = 2; // info synced
 
         // write changes to db
@@ -376,19 +376,10 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
             }
             const auto hash = reader.get_hash();
             const auto time_utc = reader.timestamp();
-            const auto utc_offset = reader.utc_offset();
             const auto info = reader.info();
 
             // check file name
-            auto timestamp = QDateTime::fromMSecsSinceEpoch(time_utc);
-            timestamp.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utc_offset));
-            auto unitName = info["unit"]["name"].toString();
-            if (unitName.isEmpty()) {
-                auto info = Session::telemetryFilenameParse(fi.absoluteFilePath());
-                unitName = info["unitName"].toString();
-            }
-
-            auto basename = Session::telemetryFileBasename(timestamp, unitName);
+            auto basename = defaultBasename(&reader);
             auto destFilePath = Session::telemetryFilePath(basename);
             if (fi.absoluteFilePath() != destFilePath) {
                 apxConsole() << tr("Rename %1 to %2")
@@ -490,6 +481,26 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
     db->enable();
     return rv;
 }
+QString TelemetrySyncFiles::defaultBasename(TelemetryFileReader *reader)
+{
+    const auto time_utc = reader->timestamp();
+    if (time_utc == 0)
+        return {};
+
+    const auto utc_offset = reader->utc_offset();
+    const auto info = reader->info();
+
+    // check file name
+    auto timestamp = QDateTime::fromMSecsSinceEpoch(time_utc);
+    timestamp.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utc_offset));
+    auto unitName = info["unit"]["name"].toString();
+    if (unitName.isEmpty()) {
+        auto info = Session::telemetryFilenameParse(reader->fileName());
+        unitName = info["unitName"].toString();
+    }
+
+    return Session::telemetryFileBasename(timestamp, unitName);
+}
 
 bool TelemetryExport::run(QSqlQuery &query)
 {
@@ -502,6 +513,8 @@ bool TelemetryExport::run(QSqlQuery &query)
 
     emit progress(0);
     bool rv = false;
+
+    auto timestamp = QDateTime::currentDateTime();
 
     do {
         if (_format == telemetry::APXTLM_FTYPE) {
@@ -585,11 +598,101 @@ bool TelemetryExport::run(QSqlQuery &query)
         break;
     } while (0);
 
-    // export success
-    if (rv) {
-        apxMsg() << tr("Exported").append(':') << fiDest.fileName();
+    while (rv) {
+        // update database record export timestamp
+        query.prepare("SELECT key FROM Telemetry WHERE file=?");
+        query.addBindValue(fiSrc.baseName());
+        if (!query.exec() || !query.next())
+            break;
+        auto key = query.value(0).toULongLong();
+        query.prepare("UPDATE Telemetry SET exported=? WHERE key=?");
+        query.addBindValue(timestamp.toMSecsSinceEpoch());
+        query.addBindValue(key);
+        if (!query.exec())
+            break;
+        qDebug() << "Exported" << fiSrc.baseName() << "at" << timestamp.toString(Qt::TextDate);
+        break;
     }
 
+    // finished
+    emit progress(-1);
+    return rv;
+}
+
+bool TelemetryImport::run(QSqlQuery &query)
+{
+    auto fi = QFileInfo(_src);
+    if (!fi.exists()) {
+        apxMsgW() << tr("Missing data source").append(':') << fi.absoluteFilePath();
+        return false;
+    }
+
+    emit progress(0);
+    bool rv = false;
+
+    do {
+        if (fi.suffix() == telemetry::APXTLM_FTYPE) {
+            TelemetryFileReader reader(fi.absoluteFilePath());
+            if (!reader.open()) {
+                apxMsgW() << tr("Failed to open").append(':') << fi.absoluteFilePath();
+                break;
+            }
+            reader.parse_payload();
+            auto info = reader.info();
+
+            // check hash already in db
+            auto hash = info["hash"].toString();
+            if (hash.isEmpty()) {
+                apxMsgW() << tr("Failed to get telemetry file hash");
+                break;
+            }
+            query.prepare("SELECT key FROM Telemetry WHERE hash=?");
+            query.addBindValue(hash);
+            if (!query.exec())
+                break;
+            if (query.next()) {
+                auto key = query.value(0).toULongLong();
+                apxMsgW() << tr("File already exists").append(':') << fi.fileName();
+                // undelete
+                query.prepare("UPDATE Telemetry SET trash=NULL WHERE key=?");
+                query.addBindValue(key);
+                if (!query.exec())
+                    break;
+                emit recordAvailable(key);
+                rv = true;
+                break;
+            }
+            // copy file
+            auto basename = TelemetrySyncFiles::defaultBasename(&reader);
+            if (basename.isEmpty()) {
+                apxMsgW() << tr("Failed to get telemetry file name");
+                break;
+            }
+            rv = QFile::copy(fi.absoluteFilePath(), Session::telemetryFilePathUnique(basename));
+            if (!rv) {
+                apxMsgW() << tr("Failed to copy").append(':') << fi.absoluteFilePath();
+                break;
+            }
+            // create record
+            auto req = new TelemetryCreateRecord(reader.timestamp(), basename, info, false);
+            req->deleteLater();
+            connect(req,
+                    &TelemetryCreateRecord::recordCreated,
+                    this,
+                    &TelemetryImport::recordAvailable);
+            if (!req->run(query)) {
+                apxMsgW() << tr("Failed to create record");
+                break;
+            }
+
+            break;
+        }
+
+        apxMsgW() << tr("Unsupported format").append(':') << fi.fileName();
+        break;
+    } while (0);
+
+    // finished
     emit progress(-1);
     return rv;
 }

@@ -73,11 +73,21 @@ bool TelemetryShare::exportRequest(QString format, QString fileName)
     req->exec();
     return true;
 }
-bool TelemetryShare::importRequest(QString format, QString fileName)
+bool TelemetryShare::importRequest(QStringList fileNames)
 {
-    //add to queue
-    auto title = QFileInfo(fileName).completeBaseName();
-    //new Fact(qimp, title, title, fileName);
+    for (int i = 0; i < fileNames.size(); i++) {
+        auto fileName = fileNames.at(i);
+        auto req = new TelemetryImport(fileName);
+        connect(req, &TelemetryImport::progress, this, &Fact::setProgress);
+        connect(req, &TelemetryImport::success, this, [this, fileName]() { _imported(fileName); });
+        if (i == fileNames.size() - 1) {
+            connect(req,
+                    &TelemetryImport::recordAvailable,
+                    _telemetry->f_reader,
+                    &TelemetryReader::loadRecord);
+        }
+        req->exec();
+    }
     return true;
 }
 
@@ -120,5 +130,5 @@ void TelemetryShare::syncTemplate(QString hash)
 {
     auto fname = _templatesDir.absoluteFilePath(
         QString("%1.%2").arg(hash).arg(_importFormats.first()));
-    importRequest(_importFormats.first(), fname);
+    importRequest({fname});
 }

@@ -49,8 +49,9 @@ bool VehicleShare::exportRequest(QString format, QString fileName)
     _exported(fileName);
     return true;
 }
-bool VehicleShare::importRequest(QString format, QString fileName)
+bool VehicleShare::importRequest(QStringList fileNames)
 {
+    auto fileName = fileNames.first();
     auto var = parseJsonDocument(loadData(fileName));
     if (var.isNull())
         return false;
@@ -90,7 +91,7 @@ void VehicleShare::syncTemplates()
         }
 
         qDebug() << "template update:" << fi.fileName();
-        if (!importRequest(format, fi.absoluteFilePath()))
+        if (!importRequest({fi.absoluteFilePath()}))
             continue;
 
         importedFiles.insert(name, t_res);

@@ -83,6 +83,7 @@ Session::Session(QObject *parent, QString sessionName)
                            "sync INTEGER", // sync status: NULL=unsynced, 1=synced file, 2=synced info
                            "src INTEGER",      // source of record: NULL=record, 1=import, 2=share
                            "imported INTEGER", // [ms since epoch] file import time
+                           "exported INTEGER", // [ms since epoch] file export time
                            "parsed INTEGER",   // [ms since epoch] file parsing time
                            "notes TEXT",       // user notes or comments if any
                        });

@@ -22,18 +22,6 @@
 #include "DatabaseRequest.h"
 #include "DatabaseSession.h"
 
-DatabaseRequest::DatabaseRequest(DatabaseSession *db)
-    : QObject()
-    , isSynchronous(false)
-    , db(db)
-    , m_discarded(false)
-{
-    connect(this,
-            &DatabaseRequest::dbModified,
-            db,
-            &DatabaseSession::modifiedNotify,
-            Qt::QueuedConnection);
-}
 DatabaseRequest::DatabaseRequest(DatabaseSession *db,
                                  const QString &queryString,
                                  const QVariantList &bindValues)
@@ -44,19 +32,13 @@ DatabaseRequest::DatabaseRequest(DatabaseSession *db,
     , bindValues(bindValues)
     , m_discarded(false)
 {
-    if (!db)
-        return;
-
-    connect(this,
-            &DatabaseRequest::dbModified,
-            db,
-            &DatabaseSession::modifiedNotify,
-            Qt::QueuedConnection);
-
-    connect(this, &DatabaseRequest::finished, this, [this](Status status) {
-        if (status == Success)
-            emit success();
-    });
+    if (db) {
+        connect(this,
+                &DatabaseRequest::dbModified,
+                db,
+                &DatabaseSession::modifiedNotify,
+                Qt::QueuedConnection);
+    }
 }
 
 void DatabaseRequest::exec()
@@ -86,8 +68,10 @@ void DatabaseRequest::finish(bool error)
         emit finished(Discarded);
     else if (error)
         emit finished(Error);
-    else
+    else {
+        emit success();
         emit finished(Success);
+    }
 }
 
 bool DatabaseRequest::run(QSqlQuery &query)

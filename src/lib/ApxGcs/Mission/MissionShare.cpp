@@ -64,8 +64,9 @@ bool MissionShare::exportRequest(QString format, QString fileName)
     _exported(fileName);
     return true;
 }
-bool MissionShare::importRequest(QString format, QString fileName)
+bool MissionShare::importRequest(QStringList fileNames)
 {
+    auto fileName = fileNames.first();
     if (!_mission->fromJsonDocument(loadData(fileName)))
         return false;
     _imported(fileName, _mission->f_title->text());

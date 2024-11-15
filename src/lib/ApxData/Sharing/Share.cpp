@@ -96,17 +96,11 @@ void Share::exportTriggered()
 
     _defaultDir.setPath(dlg.directory().absolutePath());
 
-    fmt.clear();
-    for (auto i : _exportFormats) {
-        if (i != fi.suffix())
-            continue;
-        fmt = i;
-        break;
-    }
-    if (fmt.isEmpty() || !exportRequest(fmt, fi.filePath())) {
+    if (!exportRequest(fi.suffix(), fi.absoluteFilePath())) {
         apxMsg() << tr("Can't export").append(':') << fi.fileName();
         return;
     }
+
     emit menuBack();
 }
 void Share::_exported(QString fileName)
@@ -153,22 +147,8 @@ void Share::importTriggered()
     QSettings().setValue(QString("SharePath_%1").arg(fmt), dlg.directory().absolutePath());
     emit menuBack();
 
-    for (auto fileName : dlg.selectedFiles()) {
-        QFileInfo fi(fileName);
-        apxMsg() << tr("Importing")
-                 << QString("%1: %2...").arg(_dataTitle).arg(fi.completeBaseName());
-
-        fmt.clear();
-        for (auto i : _importFormats) {
-            if (i != fi.suffix())
-                continue;
-            fmt = i;
-            break;
-        }
-        if (fmt.isEmpty() || !importRequest(fmt, fi.filePath())) {
-            apxMsg() << tr("Can't import").append(':') << fi.fileName();
-            continue;
-        }
+    if (!importRequest(dlg.selectedFiles())) {
+        apxMsgW() << tr("%1 import error").arg(_dataTitle);
     }
 }
 void Share::_imported(QString fileName, QString title)
