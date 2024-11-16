@@ -56,11 +56,12 @@ bool TelemetryFileImport::import(QString srcFileName)
 
         // import native format
         if (fi.suffix() == telemetry::APXTLM_FTYPE) {
-            TelemetryFileReader reader(fi.absoluteFilePath());
-            if (!reader.open()) {
+            QFile rfile(fi.absoluteFilePath());
+            if (!rfile.open(QIODevice::ReadOnly)) {
                 apxMsgW() << tr("Failed to open").append(':') << fi.absoluteFilePath();
                 break;
             }
+            TelemetryFileReader reader(&rfile);
             reader.parse_payload();
             _info = reader.info();
 
@@ -78,8 +79,8 @@ bool TelemetryFileImport::import(QString srcFileName)
                 break;
             }
 
-            reader.seek(0);
-            write(reader.readAll());
+            rfile.seek(0);
+            write(rfile.readAll());
             flush();
             close();
 

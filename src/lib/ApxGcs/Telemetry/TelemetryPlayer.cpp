@@ -43,9 +43,9 @@ TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Vehicle *vehicle, Fact
     connect(reader, &TelemetryReader::rec_started, this, &TelemetryPlayer::rec_started);
     connect(reader, &TelemetryReader::rec_finished, this, &TelemetryPlayer::rec_finished);
 
-    connect(&_file, &TelemetryFileReader::values, this, &TelemetryPlayer::rec_values);
-    connect(&_file, &TelemetryFileReader::evt, this, &TelemetryPlayer::rec_evt);
-    connect(&_file, &TelemetryFileReader::msg, this, &TelemetryPlayer::rec_msg);
+    connect(&_stream, &TelemetryFileReader::values, this, &TelemetryPlayer::rec_values);
+    connect(&_stream, &TelemetryFileReader::evt, this, &TelemetryPlayer::rec_evt);
+    connect(&_stream, &TelemetryFileReader::msg, this, &TelemetryPlayer::rec_msg);
 
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActive);
 
@@ -157,7 +157,8 @@ void TelemetryPlayer::play()
 
     tNext = _time;
     timer.start(0);
-    _file.open();
+    _stream_file.open(QIODevice::ReadOnly);
+    _stream.init(&_stream_file, QFileInfo(_stream_file.fileName()).completeBaseName());
     _values_init = false;
 
     // load nearest meta
@@ -188,8 +189,9 @@ void TelemetryPlayer::stop()
     setActive(false);
     emit discardRequests();
     timer.stop();
-    _file.close();
     _values.clear();
+
+    _stream_file.close();
 }
 void TelemetryPlayer::rewind()
 {
@@ -206,13 +208,13 @@ void TelemetryPlayer::rewind()
 
 void TelemetryPlayer::rec_started()
 {
-    _file.close();
+    _stream_file.close();
 }
 
 void TelemetryPlayer::rec_finished()
 {
     const auto &filePath = reader->recordFilePath();
-    _file.setFileName(filePath);
+    _stream_file.setFileName(filePath);
 
     // fill fields map
     _fieldsMap.clear();
@@ -321,10 +323,10 @@ void TelemetryPlayer::next()
     bool updated = false;
     bool ok = true;
     while (tNext <= t) {
-        ok = _file.parse_next();
-        if (!ok || _file.atEnd())
+        ok = _stream.parse_next();
+        if (!ok || _stream.atEnd())
             break;
-        auto t1 = _file.current_time();
+        auto t1 = _stream.current_time();
         if (t1 != tNext) {
             tNext = t1;
             updated = true;

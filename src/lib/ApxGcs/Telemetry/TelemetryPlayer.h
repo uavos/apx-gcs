@@ -46,7 +46,8 @@ private:
     TelemetryReader *reader;
     Vehicle *vehicle;
 
-    TelemetryFileReader _file;
+    QFile _stream_file;
+    TelemetryFileReader _stream;
     QHash<int, MandalaFact *> _fieldsMap;
 
     QTimer timer;

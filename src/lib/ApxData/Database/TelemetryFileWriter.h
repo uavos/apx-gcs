@@ -53,7 +53,7 @@ public:
     bool init(QIODevice *d, const QString &name, quint64 time_utc, QJsonObject info);
     void close();
 
-    const QString &name() const { return _name; }
+    const auto &name() const { return _name; }
 
     void write_timestamp(quint32 timestamp_ms);
     void write_values(quint32 timestamp_ms, const Values &values, bool uplink = false);

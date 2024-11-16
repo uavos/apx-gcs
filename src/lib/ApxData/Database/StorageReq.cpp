@@ -176,8 +176,14 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
     const auto hash = query.value("hash").toString();
 
     auto filePath = Session::telemetryFilePath(basename);
+    QFile file(filePath);
 
-    if (!_reader.open(filePath))
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open file" << filePath;
+        return false;
+    }
+
+    if (!_reader.init(&file, basename))
         return false;
 
     emit fileOpened(filePath);
@@ -185,6 +191,7 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
     if (!_reader.parse_payload()) {
         qWarning() << "File corrputed:" << basename;
     }
+    file.close();
 
     bool still_writing = _reader.is_still_writing();
     if (still_writing) {
@@ -369,13 +376,16 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
             auto fi = QFileInfo(it.next());
             qDebug() << fi.fileName();
 
-            TelemetryFileReader reader(fi.absoluteFilePath());
-            if (!reader.open()) {
+            QFile rfile(fi.absoluteFilePath());
+            TelemetryFileReader reader;
+
+            if (!rfile.open(QIODevice::ReadOnly) || reader.init(&rfile, fi.completeBaseName())) {
                 apxConsoleW() << tr("File error").append(':') << fi.fileName();
                 QFile::moveToTrash(fi.absoluteFilePath());
                 continue;
             }
-            const auto hash = reader.get_hash();
+
+            const auto hash = TelemetryFileReader::get_hash(&rfile);
             const auto time_utc = reader.timestamp();
             const auto info = reader.info();
 
@@ -388,7 +398,7 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
                 // check if same file exists
                 if (QFile::exists(destFilePath)) {
                     qWarning() << "File exists" << destFilePath;
-                    auto hash2 = TelemetryFileReader(destFilePath).get_hash();
+                    auto hash2 = TelemetryFileReader::get_hash(destFilePath);
                     if (hash == hash2) {
                         qDebug() << "Removing duplicate" << fi.fileName();
                         QFile::moveToTrash(fi.absoluteFilePath());
@@ -525,7 +535,8 @@ bool TelemetryExport::run(QSqlQuery &query)
             QFile::remove(fiDest.absoluteFilePath());
 
             int progress_div = 2, progress_offset = 0;
-            TelemetryFileReader reader(fiSrc.absoluteFilePath());
+            QFile rfile(fiSrc.absoluteFilePath());
+            TelemetryFileReader reader;
             connect(&reader,
                     &TelemetryFileReader::progressChanged,
                     this,
@@ -533,7 +544,7 @@ bool TelemetryExport::run(QSqlQuery &query)
                         emit progress(v / progress_div + progress_offset);
                     });
 
-            if (!reader.open()) {
+            if (!reader.init(&rfile, fiSrc.completeBaseName())) {
                 apxMsgW() << tr("Failed to open").append(':') << fiSrc.absoluteFilePath();
                 break;
             }

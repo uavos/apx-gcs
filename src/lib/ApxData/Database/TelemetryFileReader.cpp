@@ -31,44 +31,42 @@
 
 using namespace telemetry;
 
-TelemetryFileReader::TelemetryFileReader(QString filePath, QObject *parent)
-    : QFile(parent)
+TelemetryFileReader::TelemetryFileReader(QIODevice *d, const QString &name)
+    : QObject()
 {
-    _reset_data();
-    setFileName(filePath);
-}
-
-TelemetryFileReader::TelemetryFileReader(QObject *parent)
-    : QFile(parent)
-{
-    _reset_data();
+    init(d, name);
 }
 
 bool TelemetryFileReader::is_still_writing()
 {
-    auto lockFile = TelemetryFileWriter::get_lock_file(fileName());
+    auto lockFile = TelemetryFileWriter::get_lock_file(name());
     if (!lockFile)
         return true;
     delete lockFile;
     return false;
 }
 
-QString TelemetryFileReader::get_hash()
+QString TelemetryFileReader::get_hash(QIODevice *d)
 {
-    if (!isOpen()) {
-        // open file for reading
-        if (!QFile::open(QIODevice::ReadOnly)) {
-            qWarning() << "failed to open file" << fileName();
-            return {};
-        }
-    }
+    if (!d || !d->isOpen())
+        return {};
 
-    if (!QFile::seek(0))
+    auto pos_s = d->pos();
+    if (!d->seek(0))
         return {};
 
     QCryptographicHash hash(QCryptographicHash::Sha1);
-    hash.addData(this);
+    hash.addData(d->readAll());
+    d->seek(pos_s);
     return QString(hash.result().toHex().toUpper());
+}
+
+QString TelemetryFileReader::get_hash(QString filePath)
+{
+    QFile f(filePath);
+    if (!f.open(QIODevice::ReadOnly))
+        return {};
+    return get_hash(&f);
 }
 
 void TelemetryFileReader::setProgress(int value)
@@ -79,24 +77,25 @@ void TelemetryFileReader::setProgress(int value)
     emit progressChanged(value);
 }
 
-bool TelemetryFileReader::open(QString filePath)
+bool TelemetryFileReader::init(QIODevice *d, const QString &name)
 {
+    setDevice(d);
     _reset_data();
+    _name = name;
 
-    if (isOpen()) {
-        qDebug() << "file break";
-        close();
-    }
+    if (!d)
+        return false;
 
-    QFile::setFileName(filePath);
-
-    // open file for reading
-    if (!QFile::open(QIODevice::ReadOnly)) {
-        qWarning() << "failed to open file" << fileName();
+    if (!isOpen()) {
+        qWarning() << "file not open" << name << d;
         return false;
     }
 
-    // qDebug() << "file opened" << fileName();
+    if (!seek(0)) {
+        qWarning() << "failed to seek to start";
+        return false;
+    }
+
     return parse_header();
 }
 
@@ -113,7 +112,7 @@ bool TelemetryFileReader::parse_header()
     do {
         // read file header
         auto &h = _fhdr;
-        if (read((char *) &h, sizeof(h)) != sizeof(h)) {
+        if (!read(&h, sizeof(h))) {
             qWarning() << "failed to read file header";
             break;
         }
@@ -158,7 +157,6 @@ bool TelemetryFileReader::parse_header()
     } while (0);
 
     // some error occured
-    close();
     _reset_data();
     _fhdr = {};
     _info = {};
@@ -218,7 +216,7 @@ bool TelemetryFileReader::parse_payload()
     }
 
     // get whole file hash
-    auto hash = get_hash();
+    auto hash = get_hash(device());
     if (hash.isEmpty()) {
         qWarning() << "failed to get file hash";
         return false;
@@ -383,11 +381,11 @@ void TelemetryFileReader::_reset_data()
 
 dspec_s TelemetryFileReader::_read_dspec()
 {
-    if (!isOpen() || QFile::atEnd())
+    if (!isOpen() || atEnd())
         return {}; // i.e. stream stop marker
 
     dspec_s dspec{};
-    if (QFile::read((char *) &dspec, 1) != 1) {
+    if (!read(&dspec, 1)) {
         qWarning() << "failed to read data spec";
         return {};
     }
@@ -396,7 +394,7 @@ dspec_s TelemetryFileReader::_read_dspec()
 
     // read high byte if necessary
     if (!dspec.spec8.opt8) {
-        if (QFile::read((char *) &dspec + 1, 1) != 1) {
+        if (!read((char *) &dspec + 1, 1)) {
             qWarning() << "failed to read data spec high byte";
             return {};
         }
@@ -407,13 +405,13 @@ dspec_s TelemetryFileReader::_read_dspec()
 QString TelemetryFileReader::_read_string(bool *ok)
 {
     *ok = false;
-    if (!isOpen() || QFile::atEnd())
+    if (!isOpen() || atEnd())
         return {};
 
     QByteArray ba;
     while (ba.size() < MAX_STRLEN) {
         char c;
-        if (QFile::read(&c, 1) != 1) {
+        if (!read(&c, 1)) {
             break;
         }
         if (c == 0) {
@@ -428,24 +426,24 @@ QString TelemetryFileReader::_read_string(bool *ok)
 
 QJsonObject TelemetryFileReader::_read_meta_data()
 {
-    if (!isOpen() || QFile::atEnd())
+    if (!isOpen() || atEnd())
         return {};
 
     uint32_t size;
-    if (QFile::read((char *) &size, sizeof(size)) != sizeof(size)) {
+    if (!read(&size, sizeof(size))) {
         qWarning() << "failed to read meta data size";
         return {};
     }
 
-    auto fsize = QFile::size() - QFile::pos();
+    auto fsize = this->size() - pos();
     if (size > fsize) {
         qWarning() << "invalid meta data size" << size << fsize;
         return {};
     }
 
-    auto zip_data = QFile::read(size);
-    if (zip_data.size() != size) {
-        qWarning() << "failed to read meta data" << zip_data.size() << size;
+    QByteArray zip_data(size, 0);
+    if (!read(zip_data.data(), size)) {
+        qWarning() << "failed to read meta data" << size;
         return {};
     }
 
@@ -467,7 +465,7 @@ QJsonObject TelemetryFileReader::_read_meta_data()
 
 QVariant TelemetryFileReader::_read_value(telemetry::dspec_e dspec)
 {
-    if (!isOpen() || QFile::atEnd())
+    if (!isOpen() || atEnd())
         return {};
 
     bool ok = false;
@@ -528,7 +526,7 @@ QVariant TelemetryFileReader::_read_value(telemetry::dspec_e dspec)
 
 bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
 {
-    if (!isOpen() || QFile::atEnd())
+    if (!isOpen() || atEnd())
         return {};
 
     bool ok = false;
@@ -617,7 +615,7 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
     }
 
     case extid_e::meta: { // [name,size(32),meta_zip(...)] (nodes,mission)
-        auto pos_s = QFile::pos();
+        auto pos_s = pos();
         auto name = _read_string(&ok);
         if (name.isEmpty() || !ok) {
             qWarning() << "failed to read meta data name";
@@ -659,14 +657,14 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         auto size = _read_raw<uint16_t>(&ok);
         if (!ok)
             break;
-        auto fsize = QFile::size() - QFile::pos();
+        auto fsize = this->size() - pos();
         if (size == 0 || size > fsize) {
             qWarning() << "invalid raw data size" << size << fsize;
             break;
         }
-        auto data = QFile::read(size);
-        if (data.size() != size) {
-            qWarning() << "failed to read raw data" << data.size() << size;
+        QByteArray data(size, 0);
+        if (!read(data.data(), size)) {
+            qWarning() << "failed to read raw data" << size;
             break;
         }
 

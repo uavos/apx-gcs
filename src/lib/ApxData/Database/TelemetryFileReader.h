@@ -30,7 +30,7 @@
 
 class XbusStreamReader;
 
-class TelemetryFileReader : public QFile
+class TelemetryFileReader : public QObject, private QDataStream
 {
     Q_OBJECT
 
@@ -44,14 +44,13 @@ public:
     };
     using Values = QHash<size_t, QVariant>;
 
-    explicit TelemetryFileReader(QObject *parent = nullptr);
-    explicit TelemetryFileReader(QString filePath, QObject *parent = nullptr);
+    explicit TelemetryFileReader(QIODevice *d = nullptr, const QString &name = {});
 
-    bool open(QString filePath);
-    bool open() { return open(fileName()); }
+    bool init(QIODevice *d, const QString &name);
 
     bool is_still_writing();
 
+    const auto &name() const { return _name; }
     const auto &info() const { return _info; }
 
     bool parse_header();
@@ -61,7 +60,8 @@ public:
     auto utc_offset() const { return _fhdr.utc_offset; }
     auto is_parsed() const { return _info["parsed"].toBool(); }
 
-    QString get_hash();
+    static QString get_hash(QIODevice *d);
+    static QString get_hash(QString filePath);
 
     void abort() { _interrupted = true; } // abort reading (can be called from another thread)
     bool interrupted() const { return _interrupted; }
@@ -70,12 +70,21 @@ public:
     bool parse_next();
     quint32 current_time() const { return _ts_s; }
 
+    using QDataStream::atEnd;
+
 private:
+    QString _name;
     QJsonObject _info;
 
     telemetry::fhdr_s _fhdr;
 
     std::atomic<bool> _interrupted{};
+
+    bool isOpen() const { return device() && device()->isOpen(); }
+    bool read(void *data, size_t len) { return readRawData((char *) data, len) == len; }
+    bool seek(qint64 pos) { return device()->seek(pos); }
+    qint64 pos() const { return device()->pos(); }
+    qint64 size() const { return device()->size(); }
 
     // helpers
     telemetry::dspec_s _read_dspec();
@@ -92,7 +101,7 @@ private:
     T _read_raw(bool *ok, size_t sz = sizeof(T))
     {
         T v{};
-        if (QFile::read((char *) &v, sz) != sz) {
+        if (!read(&v, sz)) {
             qWarning() << "failed to read value";
             *ok = false;
             return {};
