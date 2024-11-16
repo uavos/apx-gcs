@@ -40,7 +40,9 @@ public:
 
 private:
     Vehicle *_vehicle;
-    TelemetryFileWriter _file;
+
+    QFile _stream_file;
+    TelemetryFileWriter _stream;
 
     Fact *f_enable;
 

@@ -32,14 +32,15 @@
 
 using namespace telemetry;
 
-TelemetryFileWriter::TelemetryFileWriter(QObject *parent)
-    : QFile(parent)
+TelemetryFileWriter::TelemetryFileWriter()
+    : QDataStream()
 {}
 
-TelemetryFileWriter::TelemetryFileWriter(const Fields &fields, QObject *parent)
-    : QFile(parent)
-    , _fields(fields)
-{}
+TelemetryFileWriter::TelemetryFileWriter(const Fields &fields)
+    : TelemetryFileWriter()
+{
+    setFields(fields);
+}
 
 TelemetryFileWriter::~TelemetryFileWriter()
 {
@@ -47,52 +48,56 @@ TelemetryFileWriter::~TelemetryFileWriter()
         delete _lock_file;
 }
 
-QLockFile *TelemetryFileWriter::get_lock_file(QString fileName)
+QLockFile *TelemetryFileWriter::get_lock_file(QString name)
 {
-    fileName = QFileInfo(fileName).fileName();
-    auto lock_file = new QLockFile(QDir::temp().absoluteFilePath(fileName.append(".lock")));
+    auto lock_file = new QLockFile(QDir::temp().absoluteFilePath(name.append(".lock")));
     lock_file->setStaleLockTime(0);
     if (!lock_file->tryLock(10)) {
-        qWarning() << "failed to lock file" << fileName;
+        qWarning() << "failed to lock file" << name;
         delete lock_file;
         return nullptr;
     }
     return lock_file;
 }
 
+void TelemetryFileWriter::flush()
+{
+    if (!isOpen())
+        return;
+
+    auto f = qobject_cast<QFile *>(device());
+    if (f)
+        f->flush();
+}
+
 void TelemetryFileWriter::close()
 {
-    QFile::close();
+    if (!isOpen())
+        return;
+
+    auto f = qobject_cast<QFile *>(device());
+    if (f)
+        f->close();
+    setDevice(nullptr);
+
     if (_lock_file) {
         delete _lock_file;
         _lock_file = nullptr;
     }
 }
 
-bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, QJsonObject info)
+bool TelemetryFileWriter::init(QIODevice *d, const QString &name, quint64 time_utc, QJsonObject info)
 {
-    if (isOpen()) {
-        qDebug() << "file break";
-        close();
-    }
+    if (!d || !d->isOpen() || !d->isWritable())
+        return false;
 
-    setFileName(path);
-
-    _lock_file = get_lock_file(fileName());
+    _lock_file = get_lock_file(name);
     if (!_lock_file)
         return true;
+    _name = name;
 
-    // ensure folder exists
-    auto dir = QFileInfo(fileName()).absoluteDir();
-    if (!dir.exists())
-        dir.mkpath(".");
-
-    // open file for writing
-    if (!QFile::open(QIODevice::WriteOnly)) {
-        qWarning() << "failed to open file" << fileName();
-        close();
-        return false;
-    }
+    resetStatus();
+    setDevice(d);
 
     // write file header
     fhdr_s fhdr{};
@@ -101,10 +106,11 @@ bool TelemetryFileWriter::create(const QString &path, quint64 time_utc, QJsonObj
     fhdr.payload_offset = sizeof(fhdr);
     fhdr.timestamp = time_utc;
     fhdr.utc_offset = QDateTime::fromMSecsSinceEpoch(time_utc).offsetFromUtc();
-    write((const char *) &fhdr, sizeof(fhdr));
+    if (!write(&fhdr, sizeof(fhdr)))
+        return false;
 
     // write info
-    info["name_create"] = name(); // store original creation name
+    info["name_create"] = name; // store original creation name
     write_meta("info", info);
 
     flush();
@@ -132,9 +138,9 @@ void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)
     _ts_s = timestamp_ms;
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::ts};
-    QFile::write((const char *) &dspec, 1);
+    write(&dspec, 1);
 
-    QFile::write((const char *) &timestamp_ms, 4);
+    write(&timestamp_ms, 4);
 }
 
 void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &values, bool uplink)
@@ -147,6 +153,7 @@ void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &value
     for (auto [uid, value] : values) {
         write_value(uid, value, uplink);
     }
+
     flush();
 }
 
@@ -170,7 +177,7 @@ void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
         _write_uplink();
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::evt};
-    QFile::write((const char *) &dspec, 1);
+    write(&dspec, 1);
 
     _write_string(name.toUtf8());
     _write_string(value.toUtf8());
@@ -192,7 +199,7 @@ void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
     write_timestamp(timestamp_ms);
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::msg};
-    QFile::write((const char *) &dspec, 1);
+    write(&dspec, 1);
 
     _write_string(text.toUtf8());
     _write_string(subsystem.toUtf8());
@@ -235,14 +242,14 @@ void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &dat
     }
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::meta};
-    QFile::write((const char *) &dspec, 1);
+    write(&dspec, 1);
 
     _write_string(name.toUtf8());
 
     auto ba = qCompress(jdata, 9);
     uint32_t size = ba.size();
-    QFile::write((const char *) &size, 4);
-    QFile::write(ba.constData(), size);
+    write(&size, 4);
+    write(ba.constData(), size);
 }
 
 void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
@@ -259,13 +266,13 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
         _write_uplink();
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::raw};
-    QFile::write((const char *) &dspec, 1);
+    write(&dspec, 1);
 
-    QFile::write((const char *) &id, 2);
+    write(&id, 2);
 
     uint16_t size = data.size();
-    QFile::write((const char *) &size, 2);
-    QFile::write(data.constData(), data.size());
+    write(&size, 2);
+    write(data.constData(), data.size());
 }
 
 void TelemetryFileWriter::_write_string(const char *s)
@@ -273,11 +280,11 @@ void TelemetryFileWriter::_write_string(const char *s)
     auto sz = qstrlen(s) + 1;
     if (sz > MAX_STRLEN) {
         qWarning() << "string too long" << sz;
-        QFile::write(s, MAX_STRLEN - 1);
-        QFile::write("\0", 1);
+        write(s, MAX_STRLEN - 1);
+        write("\0", 1);
         return;
     }
-    QFile::write(s, sz);
+    write(s, sz);
 }
 
 void TelemetryFileWriter::_write_field(QString name, QString title, QString units)
@@ -286,7 +293,7 @@ void TelemetryFileWriter::_write_field(QString name, QString title, QString unit
 
     // write specifier
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::field};
-    QFile::write((const char *) &dspec, 1);
+    write(&dspec, 1);
 
     // write field data
     _write_string(name.toUtf8());
@@ -462,12 +469,12 @@ void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool u
         _write_uplink();
 
     // write specifier to file
-    QFile::write((const char *) &spec, spec.spec8.opt8 ? 1 : 2);
+    write(&spec, spec.spec8.opt8 ? 1 : 2);
     // dump("spec", &spec, spec.spec8.opt8 ? 1 : 2);
 
     // write payload (when not null)
     if (wcnt > 0) {
-        QFile::write((const char *) &wraw, wcnt);
+        write(&wraw, wcnt);
         // dump("data", &v, wcnt);
     }
 }
@@ -475,7 +482,7 @@ void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool u
 void TelemetryFileWriter::_write_uplink()
 {
     const dspec_s spec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::uplink};
-    QFile::write((const char *) &spec, 1);
+    write(&spec, 1);
 }
 
 void TelemetryFileWriter::json_diff(const QJsonObject &prev,

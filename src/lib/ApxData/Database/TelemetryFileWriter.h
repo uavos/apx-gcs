@@ -30,10 +30,8 @@
 
 class XbusStreamWriter;
 
-class TelemetryFileWriter : public QFile
+class TelemetryFileWriter : private QDataStream
 {
-    Q_OBJECT
-
 public:
     struct Field
     {
@@ -45,17 +43,17 @@ public:
     using Fields = QHash<mandala::uid_t, Field>;
     using Values = PBase::Values;
 
-    explicit TelemetryFileWriter(QObject *parent = nullptr);
-    explicit TelemetryFileWriter(const Fields &fields, QObject *parent = nullptr);
-    virtual ~TelemetryFileWriter() override;
+    explicit TelemetryFileWriter();
+    explicit TelemetryFileWriter(const Fields &fields);
+    virtual ~TelemetryFileWriter();
 
     void setFields(const Fields &fields) { _fields = fields; }
     const auto &fields() const { return _fields; }
 
-    bool create(const QString &path, quint64 time_utc, QJsonObject info);
-    virtual void close() override;
+    bool init(QIODevice *d, const QString &name, quint64 time_utc, QJsonObject info);
+    void close();
 
-    QString name() const { return QFileInfo(*this).completeBaseName(); }
+    const QString &name() const { return _name; }
 
     void write_timestamp(quint32 timestamp_ms);
     void write_values(quint32 timestamp_ms, const Values &values, bool uplink = false);
@@ -78,9 +76,14 @@ public:
     static QLockFile *get_lock_file(QString fileName);
 
 private:
+    QString _name;
     Fields _fields;
 
     QLockFile *_lock_file{};
+
+    bool isOpen() const { return device() && device()->isOpen() && device()->isWritable(); }
+    bool write(const void *src, int len) { return writeRawData((const char *) src, len) == len; }
+    void flush();
 
     // helpers
     void _write_string(const char *s);

@@ -615,12 +615,12 @@ bool TelemetryExport::run(QSqlQuery &query)
 
 bool TelemetryImport::run(QSqlQuery &query)
 {
-    emit progress(0);
     bool rv = false;
     quint64 recordID = 0;
 
     do {
         TelemetryFileImport import;
+        connect(&import, &TelemetryFileImport::progress, this, &TelemetryImport::progress);
         if (!import.import(_src))
             break;
 

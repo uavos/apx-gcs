@@ -42,6 +42,9 @@ private:
     QJsonObject _info;
     QString _src_hash;
 
+    bool import_xml_v10(QXmlStreamReader &xml);
+    bool import_xml_v9(QXmlStreamReader &xml);
+
 signals:
     void progress(int value);
 };

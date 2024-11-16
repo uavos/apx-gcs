@@ -87,7 +87,28 @@ bool TelemetryFileImport::import(QString srcFileName)
             break;
         }
 
-        // try to import older formats
+        // try to import XML formats
+        {
+            QFile src_file(srcFileName);
+            if (!src_file.open(QIODevice::ReadOnly)) {
+                qWarning() << "failed to open file" << fi.fileName();
+                break;
+            }
+            //check format
+            QXmlStreamReader xml(&src_file);
+            if (xml.readNextStartElement()) {
+                if (xml.name().compare("telemetry") == 0) {
+                    apxMsg() << tr("Importing v10 format").append(':') << fi.fileName();
+                    rv = import_xml_v10(xml);
+                } else if (xml.name().compare("telemetry.gcu.uavos.com") == 0) {
+                    apxMsg() << tr("Importing v9 format").append(':') << fi.fileName();
+                    rv = import_xml_v9(xml);
+                }
+
+                if (rv)
+                    break;
+            }
+        }
 
         apxMsgW() << tr("Unsupported format").append(':') << fi.fileName();
         break;
@@ -96,4 +117,14 @@ bool TelemetryFileImport::import(QString srcFileName)
     // finished
     emit progress(-1);
     return rv;
+}
+
+bool TelemetryFileImport::import_xml_v10(QXmlStreamReader &xml)
+{
+    return false;
+}
+
+bool TelemetryFileImport::import_xml_v9(QXmlStreamReader &xml)
+{
+    return false;
 }

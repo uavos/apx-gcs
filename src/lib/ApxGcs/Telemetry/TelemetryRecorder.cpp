@@ -31,7 +31,7 @@
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , _vehicle(vehicle)
-    , _file(prepareFieldsMap())
+    , _stream(prepareFieldsMap())
 {
     setIcon("record-rec");
 
@@ -114,7 +114,7 @@ void TelemetryRecorder::checkFileRecord()
 {
     checkAutoRecord();
 
-    if (_file.isOpen())
+    if (_stream_file.isOpen())
         return;
 
     apxConsole() << tr("Telemetry record request");
@@ -127,22 +127,27 @@ void TelemetryRecorder::checkFileRecord()
     if (unitName.isEmpty())
         unitName = _vehicle->confTitle();
 
-    auto info = prepareFileInfo();
-    auto time_utc = timestamp.toMSecsSinceEpoch();
+    const auto info = prepareFileInfo();
+    const auto time_utc = timestamp.toMSecsSinceEpoch();
 
     // create new file
-    QString filePath = db::storage::Session::telemetryFilePathUnique(
-        db::storage::Session::telemetryFileBasename(timestamp, unitName));
+    const auto basename = db::storage::Session::telemetryFileBasename(timestamp, unitName);
+    const auto filePath = db::storage::Session::telemetryFilePathUnique(basename);
     if (filePath.isEmpty())
         return;
 
-    _file.create(filePath, time_utc, info);
+    _stream_file.setFileName(filePath);
+    if (!_stream_file.open(QIODevice::WriteOnly)) {
+        apxMsgW() << tr("Failed to open file").append(':') << filePath;
+        return;
+    }
+    _stream.init(&_stream_file, basename, time_utc, info);
 
     // record initial mandala state
     for (auto f : _vehicle->f_mandala->valueFacts()) {
         if (!(f->everReceived() || f->everSent()))
             continue;
-        _file.write_value(f->uid(), f->value());
+        _stream.write_value(f->uid(), f->value());
     }
 
     // record initial meta data
@@ -271,7 +276,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     setTime(t / 1000);
 
     // qDebug() << _vehicle->title() << t << values.size();
-    _file.write_values(t, values, false);
+    _stream.write_values(t, values, false);
 }
 void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 {
@@ -279,7 +284,7 @@ void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 
     checkFileRecord();
 
-    _file.write_values(getEventTimestamp(), values, uplink);
+    _stream.write_values(getEventTimestamp(), values, uplink);
 }
 
 // write data slots
@@ -294,36 +299,36 @@ void TelemetryRecorder::recordNotification(QString msg,
     if (flags & AppNotify::FromVehicle)
         return;
 
-    _file.write_msg(getEventTimestamp(), msg, "gcs/" + subsystem);
+    _stream.write_msg(getEventTimestamp(), msg, "gcs/" + subsystem);
 }
 
 void TelemetryRecorder::recordMsg(QString msg, QString subsystem)
 {
     if (msg.isEmpty())
         return;
-    _file.write_msg(getEventTimestamp(), msg, subsystem);
+    _stream.write_msg(getEventTimestamp(), msg, subsystem);
 }
 
 void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString value)
 {
     value = QString("%1/%2=%3").arg(node->title()).arg(name).arg(value);
 
-    _file.write_evt(getEventTimestamp(), "conf", value, node->uid(), true);
+    _stream.write_evt(getEventTimestamp(), "conf", value, node->uid(), true);
 }
 void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool uplink)
 {
-    _file.write_raw(getEventTimestamp(), portNo, data, uplink);
+    _stream.write_raw(getEventTimestamp(), portNo, data, uplink);
 }
 
 void TelemetryRecorder::recordMission(bool uplink)
 {
     const auto &data = _vehicle->f_mission->toJsonDocument().object();
-    _file.write_evt(getEventTimestamp(),
-                    "mission",
-                    data["title"].toString(),
-                    data["hash"].toString(),
-                    uplink);
-    _file.write_meta("mission", data, uplink);
+    _stream.write_evt(getEventTimestamp(),
+                      "mission",
+                      data["title"].toString(),
+                      data["hash"].toString(),
+                      uplink);
+    _stream.write_meta("mission", data, uplink);
 }
 void TelemetryRecorder::recordConfig(QString hash, QString title)
 {
@@ -332,8 +337,8 @@ void TelemetryRecorder::recordConfig(QString hash, QString title)
     if (_configHash == hash)
         return;
     _configHash = hash;
-    _file.write_evt(getEventTimestamp(), "nodes", title, hash, false);
-    _file.write_meta("nodes", _vehicle->toJsonDocument().object(), false);
+    _stream.write_evt(getEventTimestamp(), "nodes", title, hash, false);
+    _stream.write_meta("nodes", _vehicle->toJsonDocument().object(), false);
 }
 
 bool TelemetryRecorder::checkAutoRecord(void)
@@ -368,7 +373,7 @@ void TelemetryRecorder::setRecording(bool v)
 }
 void TelemetryRecorder::reset(void)
 {
-    _file.close();
+    _stream.close();
 
     _reset_timestamp = true;
     _ts_t0 = _ts_t1 = _ts_t2 = 0;
