@@ -46,18 +46,9 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     _exportFormats << "csv";
 
     f_export->setEnabled(false);
-    connect(_telemetry->f_reader,
-            &TelemetryReader::rec_finished,
-            this,
-            &TelemetryShare::updateActions);
-
-    descr_s = descr();
-    updateActions();
-}
-
-void TelemetryShare::updateActions()
-{
-    f_export->setEnabled(QFile::exists(_telemetry->f_reader->recordFilePath()));
+    connect(_telemetry->f_reader, &TelemetryReader::rec_finished, this, [this]() {
+        f_export->setEnabled(QFile::exists(_telemetry->f_reader->recordFilePath()));
+    });
 }
 
 QString TelemetryShare::getDefaultTitle()
@@ -89,23 +80,6 @@ bool TelemetryShare::importRequest(QStringList fileNames)
         req->exec();
     }
     return true;
-}
-
-void TelemetryShare::updateStatus()
-{
-    //setValue(qimp->value());
-}
-void TelemetryShare::updateDescr()
-{
-    QString s;
-    /*if (qimp->progress() >= 0)
-        s = tr("Importing");
-    else if (qexp->progress() >= 0)
-        s = tr("Exporting");*/
-    if (s.isEmpty())
-        setDescr(descr_s);
-    else
-        setDescr(s.append(QString("... %1").arg(value().toString())));
 }
 
 void TelemetryShare::syncTemplates()

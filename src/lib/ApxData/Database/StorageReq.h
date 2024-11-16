@@ -42,6 +42,8 @@ public:
         , _trash(trash)
     {}
 
+    auto telemetryID() const { return _telemetryID; }
+
 private:
     qint64 _t;
     QString _fileName;
@@ -131,11 +133,11 @@ signals:
     void fileOpened(QString filePath);
 };
 
-class TelemetryWriteInfo : public Request
+class TelemetryWriteRecordFields : public Request
 {
     Q_OBJECT
 public:
-    explicit TelemetryWriteInfo(quint64 telemetryID, QVariantMap info, bool restore = false)
+    explicit TelemetryWriteRecordFields(quint64 telemetryID, QJsonObject info, bool restore = false)
         : Request()
         , telemetryID(telemetryID)
         , info(info)
@@ -144,10 +146,10 @@ public:
 
 private:
     quint64 telemetryID;
-    QVariantMap info;
+    QJsonObject info;
     bool restore;
 
-protected:
+public:
     bool run(QSqlQuery &query);
 };
 
@@ -218,7 +220,7 @@ class TelemetrySyncFiles : public Request
 {
     Q_OBJECT
 public:
-    static QString defaultBasename(TelemetryFileReader *reader);
+    static QString defaultBasename(const QJsonObject &info);
 
 protected:
     bool run(QSqlQuery &query);

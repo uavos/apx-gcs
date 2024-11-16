@@ -302,12 +302,12 @@ void TelemetryReader::notesChanged()
         return;
     if (!_loadRecordID)
         return;
-    QVariantMap info;
-    info.insert("notes", f_notes->text());
-    auto req = new db::storage::TelemetryWriteInfo(_loadRecordID, info);
+    QJsonObject recordInfo;
+    recordInfo["notes"] = f_notes->text();
+    auto req = new db::storage::TelemetryWriteRecordFields(_loadRecordID, recordInfo);
     connect(
         req,
-        &db::storage::TelemetryWriteInfo::finished,
+        &db::storage::TelemetryWriteRecordFields::finished,
         this,
         [this]() { apxMsg() << tr("Notes recorded").append(':') << title(); },
         Qt::QueuedConnection);

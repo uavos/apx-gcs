@@ -82,6 +82,7 @@ Session::Session(QObject *parent, QString sessionName)
                            "trash INTEGER", // not null if record deleted
                            "sync INTEGER", // sync status: NULL=unsynced, 1=synced file, 2=synced info
                            "src INTEGER",      // source of record: NULL=record, 1=import, 2=share
+                           "src_hash TEXT",    // source file hash
                            "imported INTEGER", // [ms since epoch] file import time
                            "exported INTEGER", // [ms since epoch] file export time
                            "parsed INTEGER",   // [ms since epoch] file parsing time

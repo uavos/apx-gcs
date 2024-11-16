@@ -21,35 +21,27 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
-#include <Sharing/Share.h>
 #include <QtCore>
 
-class Telemetry;
+#include <Mandala/Mandala.h>
+#include <Mandala/MandalaContainers.h>
 
-class TelemetryShare : public Share
+class TelemetryFileImport : public QTemporaryFile
 {
     Q_OBJECT
 
 public:
-    explicit TelemetryShare(Telemetry *telemetry,
-                            Fact *parent,
-                            FactBase::Flags flags = FactBase::Flags(Action | IconOnly));
+    explicit TelemetryFileImport(QObject *parent = nullptr);
 
-    Fact *f_stop;
+    bool import(QString srcFileName);
+
+    const QJsonObject &info() const { return _info; }
+    const QString &src_hash() const { return _src_hash; }
 
 private:
-    Telemetry *_telemetry;
-
-    QString getDefaultTitle() override;
-    bool exportRequest(QString format, QString fileName) override;
-    bool importRequest(QStringList fileNames) override;
-
-    void syncTemplates() override;
-
-private slots:
-    void syncTemplate(QString hash);
+    QJsonObject _info;
+    QString _src_hash;
 
 signals:
-    void importJobDone(quint64 id);
+    void progress(int value);
 };

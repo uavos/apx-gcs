@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "StorageReq.h"
+#include "TelemetryFileImport.h"
 
 using namespace db::storage;
 
@@ -229,10 +230,10 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
     return TelemetryLoadInfo::run(query);
 }
 
-bool TelemetryWriteInfo::run(QSqlQuery &query)
+bool TelemetryWriteRecordFields::run(QSqlQuery &query)
 {
     bool bMod = restore;
-    if (recordUpdateQuery(query, info, "Telemetry", "WHERE key=?")) {
+    if (recordUpdateQuery(query, info.toVariantMap(), "Telemetry", "WHERE key=?")) {
         query.addBindValue(telemetryID);
         if (!query.exec())
             return false;
@@ -379,7 +380,7 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
             const auto info = reader.info();
 
             // check file name
-            auto basename = defaultBasename(&reader);
+            auto basename = defaultBasename(info);
             auto destFilePath = Session::telemetryFilePath(basename);
             if (fi.absoluteFilePath() != destFilePath) {
                 apxConsole() << tr("Rename %1 to %2")
@@ -481,24 +482,17 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
     db->enable();
     return rv;
 }
-QString TelemetrySyncFiles::defaultBasename(TelemetryFileReader *reader)
+QString TelemetrySyncFiles::defaultBasename(const QJsonObject &info)
 {
-    const auto time_utc = reader->timestamp();
+    const auto time_utc = info["timestamp"].toInteger();
     if (time_utc == 0)
         return {};
-
-    const auto utc_offset = reader->utc_offset();
-    const auto info = reader->info();
+    const auto utc_offset = info["utc_offset"].toInt();
 
     // check file name
     auto timestamp = QDateTime::fromMSecsSinceEpoch(time_utc);
     timestamp.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utc_offset));
     auto unitName = info["unit"]["name"].toString();
-    if (unitName.isEmpty()) {
-        auto info = Session::telemetryFilenameParse(reader->fileName());
-        unitName = info["unitName"].toString();
-    }
-
     return Session::telemetryFileBasename(timestamp, unitName);
 }
 
@@ -621,78 +615,82 @@ bool TelemetryExport::run(QSqlQuery &query)
 
 bool TelemetryImport::run(QSqlQuery &query)
 {
-    auto fi = QFileInfo(_src);
-    if (!fi.exists()) {
-        apxMsgW() << tr("Missing data source").append(':') << fi.absoluteFilePath();
-        return false;
-    }
-
     emit progress(0);
     bool rv = false;
+    quint64 recordID = 0;
 
     do {
-        if (fi.suffix() == telemetry::APXTLM_FTYPE) {
-            TelemetryFileReader reader(fi.absoluteFilePath());
-            if (!reader.open()) {
-                apxMsgW() << tr("Failed to open").append(':') << fi.absoluteFilePath();
-                break;
-            }
-            reader.parse_payload();
-            auto info = reader.info();
+        TelemetryFileImport import;
+        if (!import.import(_src))
+            break;
 
-            // check hash already in db
-            auto hash = info["hash"].toString();
-            if (hash.isEmpty()) {
-                apxMsgW() << tr("Failed to get telemetry file hash");
+        const auto srcFileName = QFileInfo(_src).fileName();
+        const auto &info = import.info();
+        const auto timestamp = import.info()["timestamp"].toInteger();
+        const auto hash = info["hash"].toString();
+
+        // check hash already in db
+        query.prepare("SELECT * FROM Telemetry WHERE hash=?");
+        query.addBindValue(hash);
+        if (!query.exec())
+            break;
+        if (query.next()) {
+            auto key = query.value("key").toULongLong();
+            apxMsgW() << tr("File exists").append(':') << srcFileName;
+            auto src_hash = query.value("src_hash").toString();
+            if (!src_hash.isEmpty() && hash != src_hash) {
+                qDebug() << "Hash mismatch" << hash << src_hash;
+                apxMsgW() << tr("Existing source hash mismatch");
                 break;
             }
-            query.prepare("SELECT key FROM Telemetry WHERE hash=?");
-            query.addBindValue(hash);
+            // undelete
+            query.prepare("UPDATE Telemetry SET trash=NULL WHERE key=?");
+            query.addBindValue(key);
             if (!query.exec())
                 break;
-            if (query.next()) {
-                auto key = query.value(0).toULongLong();
-                apxMsgW() << tr("File already exists").append(':') << fi.fileName();
-                // undelete
-                query.prepare("UPDATE Telemetry SET trash=NULL WHERE key=?");
-                query.addBindValue(key);
-                if (!query.exec())
-                    break;
-                emit recordAvailable(key);
-                rv = true;
-                break;
-            }
-            // copy file
-            auto basename = TelemetrySyncFiles::defaultBasename(&reader);
-            if (basename.isEmpty()) {
-                apxMsgW() << tr("Failed to get telemetry file name");
-                break;
-            }
-            rv = QFile::copy(fi.absoluteFilePath(), Session::telemetryFilePathUnique(basename));
-            if (!rv) {
-                apxMsgW() << tr("Failed to copy").append(':') << fi.absoluteFilePath();
-                break;
-            }
-            // create record
-            auto req = new TelemetryCreateRecord(reader.timestamp(), basename, info, false);
-            req->deleteLater();
-            connect(req,
-                    &TelemetryCreateRecord::recordCreated,
-                    this,
-                    &TelemetryImport::recordAvailable);
-            if (!req->run(query)) {
-                apxMsgW() << tr("Failed to create record");
-                break;
-            }
-
+            recordID = key;
+            rv = true;
+            break;
+        }
+        // copy tmp file to db
+        auto basename = TelemetrySyncFiles::defaultBasename(info);
+        if (basename.isEmpty()) {
+            apxMsgW() << tr("Failed to get telemetry file name");
             break;
         }
 
-        apxMsgW() << tr("Unsupported format").append(':') << fi.fileName();
-        break;
+        rv = import.copy(Session::telemetryFilePathUnique(basename));
+        if (!rv) {
+            apxMsgW() << tr("Failed to copy").append(':') << basename;
+            break;
+        }
+        // create record
+        auto req = new TelemetryCreateRecord(timestamp, basename, info, false);
+        req->deleteLater();
+        if (!req->run(query)) {
+            apxMsgW() << tr("Failed to create record");
+            break;
+        }
+        const auto key = req->telemetryID();
+        // update record info
+        QJsonObject recordInfo;
+        recordInfo["imported"] = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        recordInfo["src"] = 1; // imported
+        recordInfo["src_hash"] = import.src_hash();
+
+        // qDebug() << info;
+        if (!TelemetryWriteRecordFields(key, recordInfo, false).run(query)) {
+            apxMsgW() << tr("Failed to update record info");
+            break;
+        }
+        recordID = key;
+
     } while (0);
 
     // finished
+    if (rv && recordID)
+        emit recordAvailable(recordID);
+
     emit progress(-1);
     return rv;
 }
