@@ -379,7 +379,7 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
             QFile rfile(fi.absoluteFilePath());
             TelemetryFileReader reader;
 
-            if (!rfile.open(QIODevice::ReadOnly) || reader.init(&rfile, fi.completeBaseName())) {
+            if (!rfile.open(QIODevice::ReadOnly) || !reader.init(&rfile, fi.completeBaseName())) {
                 apxConsoleW() << tr("File error").append(':') << fi.fileName();
                 QFile::moveToTrash(fi.absoluteFilePath());
                 continue;
@@ -647,7 +647,7 @@ bool TelemetryImport::run(QSqlQuery &query)
             break;
         if (query.next()) {
             auto key = query.value("key").toULongLong();
-            apxMsgW() << tr("File exists").append(':') << srcFileName;
+            apxMsg() << tr("File exists").append(':') << srcFileName;
             auto src_hash = query.value("src_hash").toString();
             if (!src_hash.isEmpty() && hash != src_hash) {
                 qDebug() << "Hash mismatch" << hash << src_hash;
@@ -663,6 +663,7 @@ bool TelemetryImport::run(QSqlQuery &query)
             rv = true;
             break;
         }
+
         // copy tmp file to db
         auto basename = TelemetrySyncFiles::defaultBasename(info);
         if (basename.isEmpty()) {
@@ -670,7 +671,10 @@ bool TelemetryImport::run(QSqlQuery &query)
             break;
         }
 
-        rv = import.copy(Session::telemetryFilePathUnique(basename));
+        auto destFilePath = Session::telemetryFilePathUnique(basename);
+        basename = QFileInfo(destFilePath).baseName();
+
+        rv = import.copy(destFilePath);
         if (!rv) {
             apxMsgW() << tr("Failed to copy").append(':') << basename;
             break;

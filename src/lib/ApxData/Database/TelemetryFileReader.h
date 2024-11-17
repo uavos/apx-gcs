@@ -23,9 +23,6 @@
 
 #include <QtCore>
 
-#include <Mandala/Mandala.h>
-#include <Mandala/MandalaContainers.h>
-
 #include "TelemetryFileFormat.h"
 
 class XbusStreamReader;

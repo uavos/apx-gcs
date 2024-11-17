@@ -253,8 +253,8 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
         if (v.size() != 2)
             break;
         sendBundleT<mandala::bundle::pos_ll_s>(uid,
-                                               {mandala::to_gps(v.at(0).toDouble()),
-                                                mandala::to_gps(v.at(1).toDouble())});
+                                               {mandala::deg_to_a32(v.at(0).toDouble()),
+                                                mandala::deg_to_a32(v.at(1).toDouble())});
         return;
     }
     case mandala::cmd::nav::ats::uid: {
@@ -262,8 +262,8 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
         if (v.size() != 3)
             break;
         sendBundleT<mandala::bundle::pos_llh_s>(uid,
-                                                {mandala::to_gps(v.at(0).toDouble()),
-                                                 mandala::to_gps(v.at(1).toDouble()),
+                                                {mandala::deg_to_a32(v.at(0).toDouble()),
+                                                 mandala::deg_to_a32(v.at(1).toDouble()),
                                                  v.at(2).toFloat()});
         return;
     }

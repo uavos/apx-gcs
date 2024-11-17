@@ -21,6 +21,8 @@
  */
 #include "MandalaFact.h"
 #include "Mandala.h"
+#include "MandalaConverter.h"
+
 #include <App/AppLog.h>
 #include <MandalaMeta.h>
 #include <QColor>
@@ -63,21 +65,21 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
             case mandala::type_real:
                 setDataType(Float);
                 if (units().startsWith("rad")) {
-                    _convert_value = true;
-                    _conversion_factor = qRadiansToDegrees(1.);
-                    setUnits(units().replace("rad", "deg"));
-                    //TODO make universal conversion vs telemetry DB, widgets and charts
+                    new MandalaConverter(this, {"rad", "deg"}, qRadiansToDegrees(1.));
                     setOpt("meta_units", meta.units);
                 }
                 setPrecision(getPrecision());
                 setDefaultValue(0.f);
                 break;
             case mandala::type_dword:
-                if (units() == "gps") {
+                if (m_fmt.fmt == mandala::fmt_a32) {
                     setDataType(Float);
-                    _convert_value = true;
-                    _convert_gps = true;
-                    setUnits("deg");
+                    new MandalaConverter(
+                        this,
+                        {"deg"},
+                        [this](const QVariant &v) { return mandala::a32_to_deg(v.toUInt()); },
+                        [this](const QVariant &v) { return mandala::deg_to_a32(v.toDouble()); });
+
                     setOpt("meta_units", meta.units);
                     setPrecision(getPrecision());
                     setDefaultValue(0.f);
@@ -155,25 +157,19 @@ void MandalaFact::setValueFromStream(const QVariant &v)
     setRawValueLocal(convertFromStream(v));
     increment_rx_cnt();
 }
-QVariant MandalaFact::convertFromStream(const QVariant &v) const
+QVariant MandalaFact::convertFromStream(QVariant v) const
 {
-    if (!_convert_value)
-        return v;
-
-    if (_convert_gps)
-        return mandala::from_gps(v.toUInt());
-
-    return QVariant::fromValue(v.toDouble() * _conversion_factor);
+    for (auto c : _converters) {
+        v = c->from_orig(v);
+    }
+    return v;
 }
-QVariant MandalaFact::convertForStream(const QVariant &v) const
+QVariant MandalaFact::convertForStream(QVariant v) const
 {
-    if (!_convert_value)
-        return v;
-
-    if (_convert_gps)
-        return mandala::to_gps(v.toDouble());
-
-    return v.toDouble() / _conversion_factor;
+    for (auto c : _converters) {
+        v = c->to_orig(v);
+    }
+    return v;
 }
 
 bool MandalaFact::setRawValueLocal(QVariant v)

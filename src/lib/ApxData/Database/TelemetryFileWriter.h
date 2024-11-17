@@ -23,9 +23,6 @@
 
 #include <QtCore>
 
-#include <Mandala/Mandala.h>
-#include <Mandala/MandalaContainers.h>
-
 #include "TelemetryFileFormat.h"
 
 class XbusStreamWriter;
@@ -40,8 +37,8 @@ public:
         QString units;
         telemetry::dspec_e dspec;
     };
-    using Fields = QHash<mandala::uid_t, Field>;
-    using Values = PBase::Values;
+    using Fields = std::vector<Field>;
+    using Values = std::vector<std::pair<size_t, QVariant>>;
 
     explicit TelemetryFileWriter();
     explicit TelemetryFileWriter(const Fields &fields);
@@ -57,7 +54,7 @@ public:
 
     void write_timestamp(quint32 timestamp_ms);
     void write_values(quint32 timestamp_ms, const Values &values, bool uplink = false);
-    void write_value(mandala::uid_t uid, QVariant value, bool uplink = false);
+    void write_value(size_t field_index, QVariant value, bool uplink = false);
 
     void write_evt(quint32 timestamp_ms,
                    const QString &name,
@@ -92,11 +89,11 @@ private:
     void _write_field(QString name, QString title, QString units);
 
     // monitor changes and updates
-    std::map<mandala::uid_t, uint16_t> _fields_map;
-    std::map<mandala::uid_t, double> _values_s;
+    std::vector<size_t> _fields_file;   // field indexes in file
+    std::map<size_t, double> _values_s; // last values by field index
     std::map<QString, QJsonObject> _meta_objects;
 
-    std::map<mandala::uid_t, QSet<telemetry::dspec_e>> _stats_values;
+    std::map<size_t, QSet<telemetry::dspec_e>> _stats_values;
 
     quint32 _ts_s{};
     uint16_t _widx{};

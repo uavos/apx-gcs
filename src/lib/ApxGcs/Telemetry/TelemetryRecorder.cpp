@@ -23,6 +23,7 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
+#include <Database/TelemetryFieldAliases.h>
 #include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
@@ -31,8 +32,9 @@
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , _vehicle(vehicle)
-    , _stream(prepareFieldsMap())
 {
+    _stream.setFields(prepareFieldsMap());
+
     setIcon("record-rec");
 
     f_enable = new Fact(parent,
@@ -147,7 +149,9 @@ void TelemetryRecorder::checkFileRecord()
     for (auto f : _vehicle->f_mandala->valueFacts()) {
         if (!(f->everReceived() || f->everSent()))
             continue;
-        _stream.write_value(f->uid(), f->value());
+        auto field_index = _fields_map.indexOf(f->uid());
+        if (field_index >= 0)
+            _stream.write_value(field_index, f->value());
     }
 
     // record initial meta data
@@ -193,46 +197,27 @@ TelemetryFileWriter::Fields TelemetryRecorder::prepareFieldsMap()
 {
     TelemetryFileWriter::Fields fields;
     for (auto f : _vehicle->f_mandala->valueFacts()) {
-        // guess field storage format
-        telemetry::dspec_e dspec;
-        do {
-            if (f->dataType() != Fact::Float) {
-                // recorder will truncate uint size if necessary
-                dspec = telemetry::dspec_e::u32;
-                break;
-            }
-            // guess float types
-            if (f->is_gps_converted()) {
-                dspec = telemetry::dspec_e::a32;
-                break;
-            }
-            switch (f->fmt().fmt) {
-            default:
-                dspec = telemetry::dspec_e::f32;
-                break;
-            case mandala::fmt_s16_rad:
-            case mandala::fmt_s16_rad2:
-                dspec = telemetry::dspec_e::a16;
-                break;
-            case mandala::fmt_f16:
-            case mandala::fmt_s8:
-            case mandala::fmt_s8_10:
-            case mandala::fmt_u8_10:
-            case mandala::fmt_s8_01:
-            case mandala::fmt_s8_001:
-            case mandala::fmt_u8_01:
-            case mandala::fmt_u8_001:
-            case mandala::fmt_u8_u:
-            case mandala::fmt_s8_u:
-            case mandala::fmt_s8_rad:
-                dspec = telemetry::dspec_e::f16;
-                break;
-            }
-        } while (0);
-        // prepare field map for telemetry file writer
-        fields[f->uid()] = {f->mpath(), f->title(), f->units(), dspec};
+        // guess best field storage format
+        auto dspec = mandala::dspec_for_uid(f->uid());
+        fields.push_back({f->mpath(), f->title(), f->units(), dspec});
+
+        // uid to field index in file fields
+        _fields_map.push_back(f->uid());
     }
     return fields;
+}
+TelemetryFileWriter::Values TelemetryRecorder::prepareValues(const PBase::Values &values) const
+{
+    TelemetryFileWriter::Values vlist;
+    for (auto const [uid, value] : values) {
+        auto field_index = _fields_map.indexOf(uid);
+        if (field_index < 0) {
+            qWarning() << "field not found" << uid << value << _fields_map.size();
+            continue;
+        }
+        vlist.push_back({field_index, value});
+    }
+    return vlist;
 }
 
 quint64 TelemetryRecorder::getEventTimestamp()
@@ -276,7 +261,8 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     setTime(t / 1000);
 
     // qDebug() << _vehicle->title() << t << values.size();
-    _stream.write_values(t, values, false);
+
+    _stream.write_values(t, prepareValues(values), false);
 }
 void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 {
@@ -284,7 +270,7 @@ void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 
     checkFileRecord();
 
-    _stream.write_values(getEventTimestamp(), values, uplink);
+    _stream.write_values(getEventTimestamp(), prepareValues(values), uplink);
 }
 
 // write data slots

@@ -26,6 +26,7 @@
 #include <Fact/Fact.h>
 
 class Mandala;
+class MandalaConverter;
 
 class MandalaFact : public Fact
 {
@@ -34,6 +35,9 @@ class MandalaFact : public Fact
 
 public:
     explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta);
+
+    void addConverter(MandalaConverter *c) { _converters.append(c); }
+    void removeConverter(MandalaConverter *c) { _converters.removeAll(c); }
 
     // send value to uplink when set
     bool setValue(const QVariant &v) override;
@@ -63,7 +67,6 @@ public:
 
     inline const mandala::meta_s &meta() const { return m_meta; }
     inline const mandala::fmt_s &fmt() const { return m_fmt; }
-    inline bool is_gps_converted() const { return _convert_gps; }
 
 public:
     bool isSystem() const;
@@ -79,9 +82,7 @@ private:
     const mandala::meta_s &m_meta;
     const mandala::fmt_s &m_fmt;
 
-    bool _convert_value{};
-    qreal _conversion_factor{1.};
-    bool _convert_gps{};
+    QList<MandalaConverter *> _converters;
 
     QElapsedTimer sendTime;
     QTimer sendTimer;
@@ -97,6 +98,6 @@ private:
 
     void updateCounters();
 
-    QVariant convertFromStream(const QVariant &v) const;
-    QVariant convertForStream(const QVariant &v) const;
+    QVariant convertFromStream(QVariant v) const;
+    QVariant convertForStream(QVariant v) const;
 };

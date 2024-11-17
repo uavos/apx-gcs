@@ -41,9 +41,14 @@ public:
 private:
     QJsonObject _info;
     QString _src_hash;
+    QString _srcFileName;
 
-    bool import_xml_v10(QXmlStreamReader &xml);
+    bool import_xml_v11(QXmlStreamReader &xml, QString format);
     bool import_xml_v9(QXmlStreamReader &xml);
+
+    // helpers
+    QJsonObject readObject(QXmlStreamReader &xml);
+    QByteArray readXmlPart(QXmlStreamReader &xml);
 
 signals:
     void progress(int value);

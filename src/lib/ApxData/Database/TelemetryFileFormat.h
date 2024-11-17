@@ -3,7 +3,8 @@
 #include <cinttypes>
 #include <sys/types.h>
 
-#include "MandalaMetaBase.h"
+#include <MandalaMeta.h>
+#include <MandalaPack.h>
 
 namespace telemetry {
 

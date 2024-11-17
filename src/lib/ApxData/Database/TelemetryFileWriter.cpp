@@ -117,7 +117,7 @@ bool TelemetryFileWriter::init(QIODevice *d, const QString &name, quint64 time_u
 
     // reset stream counters
     _widx = 0;
-    _fields_map.clear();
+    _fields_file.clear();
     _values_s.clear();
     _stats_values.clear();
     _meta_objects.clear();
@@ -150,8 +150,8 @@ void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &value
 
     write_timestamp(timestamp_ms);
 
-    for (auto [uid, value] : values) {
-        write_value(uid, value, uplink);
+    for (const auto [field_index, value] : values) {
+        write_value(field_index, value, uplink);
     }
 
     flush();
@@ -301,15 +301,14 @@ void TelemetryFileWriter::_write_field(QString name, QString title, QString unit
     _write_string(units.toUtf8());
 }
 
-void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool uplink)
+void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool uplink)
 {
     // map mandala fact
-    auto f_it = _fields.find(uid);
-    if (f_it == _fields.end()) {
-        qWarning() << "unknown field" << uid;
+    if (field_index >= _fields.size()) {
+        qWarning() << "unknown field" << field_index << _fields.size();
         return;
     }
-    const auto &field = f_it.value();
+    const auto &field = _fields[field_index];
 
     // determine data type
     bool is_uint = field.dspec <= dspec_e::u64 || value.isNull();
@@ -339,7 +338,7 @@ void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool u
     if (!uplink) {
         // downlink is written only if value changed
         auto d = value.toDouble();
-        auto it = _values_s.find(uid);
+        auto it = _values_s.find(field_index);
         if (it != _values_s.end()) {
             if (it->second == d)
                 return;
@@ -354,23 +353,24 @@ void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool u
                 if (value.toFloat() == 0)
                     return;
             }
-            _values_s.insert({uid, d});
+            _values_s.insert({field_index, d});
         }
     }
 
-    // map value index by UID and write field descriptor when needed
+    // map value index by field index and write field descriptor when needed
     uint16_t vidx;
-    auto it = _fields_map.find(uid);
-    if (it == _fields_map.end()) {
-        if (_fields_map.size() >= 0x7FF) { // 11 bits
+    auto it = std::find(_fields_file.begin(), _fields_file.end(), field_index);
+    if (it == _fields_file.end()) {
+        // add new field to file
+        if (_fields_file.size() >= 0x7FF) { // 11 bits
             // too many fields;
             return;
         }
-        vidx = _fields_map.size();
-        _fields_map[uid] = vidx;
+        vidx = _fields_file.size();
+        _fields_file.push_back(field_index);
         _write_field(field.name, field.title, field.units);
     } else {
-        vidx = it->second;
+        vidx = std::distance(_fields_file.begin(), it);
     }
 
     // prepare specifier
@@ -452,7 +452,7 @@ void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool u
             break;
         case telemetry::dspec_e::a32:
             wcnt = 4;
-            wraw = mandala::to_gps(value.toDouble());
+            wraw = xbus::telemetry::deg_to_a32(value.toDouble());
             break;
         }
     }
@@ -462,7 +462,7 @@ void TelemetryFileWriter::write_value(mandala::uid_t uid, QVariant value, bool u
     }
 
     // collect stats
-    _stats_values[uid].insert(spec.spec8.dspec);
+    _stats_values[field_index].insert(spec.spec8.dspec);
 
     // prepend uplink wrap when needed
     if (uplink)
@@ -523,8 +523,8 @@ void TelemetryFileWriter::print_stats()
     if (_stats_values.empty())
         return;
 
-    for (auto [uid, dspec] : _stats_values) {
-        const auto &field = _fields[uid];
+    for (auto [field_index, dspec] : _stats_values) {
+        const auto &field = _fields[field_index];
         QStringList sl;
         for (auto i : dspec)
             sl.append(telemetry::dspec_names[(uint) i]);

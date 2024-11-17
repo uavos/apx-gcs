@@ -510,7 +510,7 @@ QVariant TelemetryFileReader::_read_value(telemetry::dspec_e dspec)
         v = xbus::telemetry::float_from_angle(_read_raw<int16_t>(&ok), 180.f);
         break;
     case dspec_e::a32:
-        v = mandala::from_gps(_read_raw<uint32_t>(&ok));
+        v = mandala::a32_to_deg(_read_raw<uint32_t>(&ok));
         break;
     }
 
