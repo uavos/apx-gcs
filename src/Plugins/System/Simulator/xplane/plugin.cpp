@@ -28,7 +28,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-//---------------
 
 #include <MandalaBundles.h>
 #include <MandalaMetaTree.h>
@@ -70,10 +69,12 @@ static struct
     XPLMDataRef room_temp;
     XPLMDataRef slip;
     //output
-    /*XPLMDataRef ail,elv,thr,rud,flap,brakes;
-  //display
-  XPLMDataRef dsp;
-  XPLMDataRef x,y,z;*/
+    /*
+    XPLMDataRef ail,elv,thr,rud,flap,brakes;
+    //display
+    XPLMDataRef dsp;
+    XPLMDataRef x,y,z;
+    */
 
 } xp;
 
@@ -82,14 +83,95 @@ static mandala::bundle::sim_s sim_bundle{};
 static xbus::pid_s sim_pid{mandala::cmd::env::sim::sns::uid, xbus::pri_final, 0};
 static xbus::pid_s cfg_pid{mandala::cmd::env::sim::cfg::uid, xbus::pri_request, 0};
 
-static uint8_t xpl_channels{0};                        //assigned controls cnt
-static constexpr const uint8_t xpl_channels_max{16};   //assigned controls cnt
-static xbus::node::conf::text_t xpl[xpl_channels_max]; //var names per PWM channel
+static xbus::pid_s usr_pid_f{mandala::cmd::env::sim::usr::uid, xbus::pri_final, 0};
+static xbus::pid_s usr_pid_r{mandala::cmd::env::sim::usr::uid, xbus::pri_request, 0};
+struct XplChannel
+{
+    xbus::node::conf::text_t xpl;
+    uint idx;
+    bool is_array;
+    XPLMDataRef ref;
+    XPLMDataTypeID type;
 
-static bool xpl_is_array[xpl_channels_max];
-static uint xpl_array_idx[xpl_channels_max];
-static XPLMDataRef xpl_ref[xpl_channels_max];
-static XPLMDataTypeID xpl_type[xpl_channels_max];
+    void clear()
+    {
+        idx = 0;
+        is_array = false;
+        ref = nullptr;
+        type = 0;
+    }
+
+    void set_data(float val)
+    {
+        if (!ref) {
+            return;
+        }
+
+        if (is_array) {
+            XPLMSetDatavf(ref, &val, idx, 1);
+        } else {
+            XPLMSetDataf(ref, val);
+        }
+    }
+
+    float get_data()
+    {
+        if (!ref) {
+            return 0.f;
+        }
+
+        float val = 0.f;
+
+        switch (type) {
+        case xplmType_Int: {
+            val = XPLMGetDatai(ref);
+        } break;
+        case xplmType_Float: {
+            val = XPLMGetDataf(ref);
+        } break;
+        case xplmType_Double: {
+            val = (float) XPLMGetDatad(ref);
+        } break;
+        case xplmType_FloatArray: {
+            XPLMGetDatavf(ref, &val, idx, 1);
+        } break;
+        case xplmType_IntArray: {
+            int v = 0;
+            XPLMGetDatavi(ref, &v, idx, 1);
+            val = (float) v;
+        } break;
+        default:
+            break;
+        }
+
+        return val;
+    }
+};
+struct XplChannels
+{
+    XplChannel *channels = nullptr;
+    uint8_t count_channels;
+    uint8_t count_valid{0};
+
+    explicit XplChannels(uint8_t count)
+        : count_channels(count)
+    {
+        channels = new XplChannel[count_channels];
+    }
+
+    void clear()
+    {
+        for (uint8_t i = 0; i < count_channels; ++i) {
+            channels[i].clear();
+        }
+    }
+};
+
+//commands
+static XplChannels xpl_channels{16};
+
+//user data
+static XplChannels xpl_users{24};
 
 static uint8_t packet_buf[xbus::size_packet_max];
 
@@ -102,23 +184,34 @@ static void send_packet(XbusStreamWriter *stream)
     udp.write(_tx_encoder.data(), cnt);
 }
 
-static void send_bundle()
+static void request(xbus::pid_s &_pid)
+{
+    XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
+    _pid.write(&stream);
+    send_packet(&stream);
+    _pid.seq++;
+}
+
+static void send_sns_bundle()
 {
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
     sim_pid.write(&stream);
     stream.write(&sim_bundle, sizeof(sim_bundle));
-
     send_packet(&stream);
-
     sim_pid.seq++;
 }
 
-static void request_controls()
+static void send_users_bundle()
 {
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
-    cfg_pid.write(&stream);
+    usr_pid_f.write(&stream);
+    stream << xpl_users.count_valid;
+    for (uint8_t i = 0; i < xpl_users.count_valid; ++i) {
+        float val = xpl_users.channels[i].get_data();
+        stream << val;
+    }
     send_packet(&stream);
-    cfg_pid.seq++;
+    usr_pid_f.seq++;
 }
 
 void parse_sensors(void)
@@ -167,6 +260,55 @@ void parse_sensors(void)
     sim_bundle.slip = XPLMGetDataf(xp.slip);
 }
 
+static void process_xpl_channels(XbusStreamReader *stream, XplChannels *data)
+{
+    uint8_t count = data->count_channels;
+    uint8_t &ch = data->count_valid;
+
+    for (ch = 0; ch < count; ++ch) {
+        uint8_t cp_size = sizeof(data->channels[0].xpl);
+        const char *s = stream->read_string(cp_size);
+        if (!s) {
+            break;
+        }
+        strncpy(data->channels[ch].xpl, s, cp_size);
+    }
+
+    printf("X-Plane controls updated (%u)\n", data->count_valid);
+
+    data->clear();
+
+    if (!data->count_valid) {
+        return;
+    }
+
+    for (uint8_t i = 0; i < data->count_valid; ++i) {
+        xbus::node::conf::text_t &s = data->channels[i].xpl;
+        if (s[0] == 0)
+            continue;
+        char *it1 = strchr(s, '[');
+        if (it1) {
+            *it1++ = 0;
+            char *it2 = strchr(it1, ']');
+            if (!it2)
+                continue;
+            if (*(it2 + 1) != 0)
+                continue;
+            *it2 = 0;
+            uint idx;
+            if (sscanf(it1, "%u", &idx) != 1)
+                continue;
+            data->channels[i].idx = idx;
+            data->channels[i].is_array = true;
+        }
+        XPLMDataRef ref = XPLMFindDataRef(s);
+        if (!ref)
+            continue;
+        data->channels[i].type = XPLMGetDataRefTypes(ref);
+        data->channels[i].ref = ref;
+    }
+}
+
 static void parse_rx(const void *data, size_t size)
 {
     XbusStreamReader stream(data, size);
@@ -183,76 +325,22 @@ static void parse_rx(const void *data, size_t size)
     case mandala::cmd::env::sim::ctr::uid: {
         if (pid.pri != xbus::pri_final)
             break;
-        if (!xpl_channels)
+        if (!xpl_channels.count_valid)
             break;
-        for (uint8_t i = 0; i < xpl_channels; i++) {
+        for (uint8_t i = 0; i < xpl_channels.count_valid; i++) {
             float v = stream.read<float>();
-            if (!xpl_ref[i])
-                continue;
-            //printf("set: %s=%f\n",(char*)xpl[i],(pwm_ch[i]));
-            if (xpl_is_array[i]) {
-                XPLMSetDatavf(xpl_ref[i], &v, xpl_array_idx[i], 1);
-                //                    if (xpl_type[i] & xplmType_FloatArray)
-                //                        XPLMSetDatavf(xpl_ref[i], &(pwm_ch[i]), xpl_array_idx[i], 1);
-                //                    else if (xpl_type[i] & xplmType_IntArray) {
-                //                        int v = pwm_ch[i];
-                //                        XPLMSetDatavi(xpl_ref[i], &v, xpl_array_idx[i], 1);
-                //                    }
-                continue;
-            }
-            XPLMSetDataf(xpl_ref[i], v);
-            //                if (xpl_type[i] & xplmType_Float)
-            //                    XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
-            //                else if (xpl_type[i] & xplmType_Double)
-            //                    XPLMSetDatad(xpl_ref[i], pwm_ch[i]);
-            //                else if (xpl_type[i] & xplmType_Int)
-            //                    XPLMSetDatai(xpl_ref[i], pwm_ch[i]);
-            //                else
-            //                    XPLMSetDataf(xpl_ref[i], pwm_ch[i]);
+            xpl_channels.channels[i].set_data(v);
         }
     } break;
     case mandala::cmd::env::sim::cfg::uid: {
         if (pid.pri != xbus::pri_response)
             break;
-        for (xpl_channels = 0; xpl_channels < xpl_channels_max; ++xpl_channels) {
-            const char *s = stream.read_string(sizeof(xpl[0]));
-            if (!s)
-                break;
-            strncpy(xpl[xpl_channels], s, sizeof(xpl[0]));
-        }
-        printf("X-Plane controls updated (%u)\n", xpl_channels);
-        memset(&xpl_ref, 0, sizeof(xpl_ref));
-        memset(&xpl_is_array, 0, sizeof(xpl_is_array));
-        memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
-        if (!xpl_channels)
+        process_xpl_channels(&stream, &xpl_channels);
+    } break;
+    case mandala::cmd::env::sim::usr::uid: {
+        if (pid.pri != xbus::pri_response)
             break;
-        for (uint8_t i = 0; i < xpl_channels; ++i) {
-            xbus::node::conf::text_t &s = xpl[i];
-            if (s[0] == 0)
-                continue;
-            char *it1 = strchr(s, '[');
-            if (it1) {
-                *it1++ = 0;
-                char *it2 = strchr(it1, ']');
-                if (!it2)
-                    continue;
-                if (*(it2 + 1) != 0)
-                    continue;
-                *it2 = 0;
-                uint aidx;
-                if (sscanf(it1, "%u", &aidx) != 1)
-                    continue;
-                //if(!(XPLMGetDataRefTypes(sref)&(xplmType_FloatArray|xplmType_IntArray)))continue;
-                xpl_array_idx[i] = aidx;
-                xpl_is_array[i] = true;
-            }
-            XPLMDataRef ref = XPLMFindDataRef(s);
-            if (!ref)
-                continue;
-            xpl_type[i] = XPLMGetDataRefTypes(s);
-            xpl_ref[i] = ref;
-            printf("DataRef: %s\n", s);
-        }
+        process_xpl_channels(&stream, &xpl_users);
     } break;
     }
 }
@@ -274,10 +362,8 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     strcpy(outDesc, "Exchange data with autopilot for SIL/HIL simulation (v" VERSION ").");
     fflush(stdout);
 
-    memset(&xpl, 0, sizeof(xpl));
-    memset(&xpl_ref, 0, sizeof(xpl_ref));
-    memset(&xpl_is_array, 0, sizeof(xpl_is_array));
-    memset(&xpl_array_idx, 0, sizeof(xpl_array_idx));
+    xpl_channels.clear();
+    xpl_users.clear();
 
     xp.roll = XPLMFindDataRef("sim/flightmodel/position/phi");
     xp.pitch = XPLMFindDataRef("sim/flightmodel/position/theta");
@@ -316,13 +402,13 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     xp.rho = XPLMFindDataRef("sim/weather/rho");
     xp.air_temp = XPLMFindDataRef("sim/weather/temperature_ambient_c");
 
-    // xp.slip = XPLMFindDataRef("sim/flightmodel/misc/slip");
+    //xp.slip = XPLMFindDataRef("sim/flightmodel/misc/slip");
     xp.slip = XPLMFindDataRef("sim/cockpit2/gauges/indicators/sideslip_degrees");
 
-    //  xp.dsp = XPLMFindDataRef("sim/operation/override/override_planepath");
-    //  xp.x = XPLMFindDataRef("sim/flightmodel/position/local_x");
-    //  xp.y = XPLMFindDataRef("sim/flightmodel/position/local_y");
-    //  xp.z = XPLMFindDataRef("sim/flightmodel/position/local_z");
+    //xp.dsp = XPLMFindDataRef("sim/operation/override/override_planepath");
+    //xp.x = XPLMFindDataRef("sim/flightmodel/position/local_x");
+    //xp.y = XPLMFindDataRef("sim/flightmodel/position/local_y");
+    //xp.z = XPLMFindDataRef("sim/flightmodel/position/local_z");
 
     XPLMRegisterFlightLoopCallback(flightLoopCallback, 1.0, nullptr);
     return 1;
@@ -333,17 +419,21 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
                                 int inCounter,
                                 void *inRefcon)
 {
+    float now = XPLMGetElapsedTime();
+    static float channels_timeout = 0.f;
+    static float users_timeout = 0.f;
+    static float users_pub_timeout = 0.f;
     static uint ap_link_timeout = 0;
 
-    ap_link_timeout++;
-
-    if (ap_link_timeout > 3) {
+    if (ap_link_timeout++ > 3) {
         ap_link_timeout = 0;
-        xpl_channels = 0; // reset channels assignments
+        xpl_channels.count_valid = 0; // reset channels assignments
+        xpl_users.count_valid = 0;
     }
 
     if (!(enabled && udp.is_connected())) {
-        xpl_channels = 0;
+        xpl_channels.count_valid = 0;
+        xpl_users.count_valid = 0;
         ap_link_timeout = 0;
         return 1.f;
     }
@@ -389,43 +479,60 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
             }
         }
 
-        if (!xpl_channels) {
+        if (now - channels_timeout > 2.f && !xpl_channels.count_valid) {
+            channels_timeout = now;
             printf("X-Plane controls request\n");
-            //xpl_channels = 1;
-            request_controls();
-            return 2.5f;
+            request(cfg_pid);
+        }
+
+        if (now - users_timeout > 3.f && !xpl_users.count_valid) {
+            users_timeout = now;
+            printf("X-Plane user data request\n");
+            request(usr_pid_r);
         }
 
     } while (0);
 
-    parse_sensors();
-    send_bundle();
+    float loop = 2.f;
+    if (xpl_channels.count_valid) {
+        parse_sensors();
+        send_sns_bundle();
+        loop = -1.f;
+    }
 
-    return -1.f; //call me next loop
+    //10Hz
+    if (now - users_pub_timeout > 0.1f && xpl_users.count_valid) {
+        users_pub_timeout = now;
+        send_users_bundle();
+        loop = -1.f;
+    }
+
+    return loop; //call me next loop
 }
 
 PLUGIN_API void XPluginStop(void)
 {
     udp.close();
-
     enabled = false;
 }
+
 PLUGIN_API void XPluginDisable(void)
 {
     printf("X-Plane plugin disabled\n");
 
     udp.close();
 
-    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 0);
-    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 0);
-    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 0);
-    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"), 0);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 0);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 0);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 0);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"), 0);
 
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 0);
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 0);
 
     enabled = false;
 }
+
 PLUGIN_API int XPluginEnable(void)
 {
     printf("X-Plane plugin enabled\n");
@@ -435,10 +542,10 @@ PLUGIN_API int XPluginEnable(void)
         udp.bind(UDP_PORT_SIM_CTR);
     }
 
-    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 1);
-    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 1);
-    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 1);
-    //    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"), 1);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_flightcontrol"), 1);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_roll"), 1);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_pitch"), 1);
+    //XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick_heading"), 1);
 
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_throttles"), 1);
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 1);
