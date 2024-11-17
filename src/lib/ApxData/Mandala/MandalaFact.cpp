@@ -184,7 +184,10 @@ bool MandalaFact::setRawValueLocal(QVariant v)
 void MandalaFact::increment_rx_cnt()
 {
     _rx_cnt++;
-    _everReceived = true;
+    if (!_everReceived) {
+        _everReceived = true;
+        emit everReceivedChanged();
+    }
     if (isSystem()) {
         Fact::setValue(QVariant::fromValue(_rx_cnt));
     } else {
@@ -203,6 +206,14 @@ void MandalaFact::updateCounters()
     if (!mod) {
         _rx_cnt = 0;
     }
+}
+void MandalaFact::resetCounters()
+{
+    _rx_cnt = 0;
+    _tx_cnt = 0;
+    _everReceived = false;
+    _everSent = false;
+    setModified(false);
 }
 
 mandala::uid_t MandalaFact::uid() const

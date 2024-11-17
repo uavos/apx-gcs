@@ -33,7 +33,7 @@ TelemetryFileImport::TelemetryFileImport(QObject *parent)
     : QTemporaryFile(parent)
 {}
 
-bool TelemetryFileImport::import(QString srcFileName)
+bool TelemetryFileImport::import_telemetry(QString srcFileName)
 {
     auto fi = QFileInfo(srcFileName);
     if (!fi.exists() || fi.size() == 0) {
@@ -105,9 +105,9 @@ bool TelemetryFileImport::import(QString srcFileName)
                     auto format = xml.attributes().value("format").toString();
                     if (format.isEmpty())
                         format = "old";
-                    rv = import_xml_v11(xml, format);
+                    rv = import_telemetry_v11(xml, format);
                 } else if (xml.name().compare("telemetry.gcu.uavos.com") == 0) {
-                    rv = import_xml_v9(xml);
+                    rv = import_telemetry_v9(xml);
                 }
 
                 if (rv)
@@ -155,7 +155,7 @@ QByteArray TelemetryFileImport::readXmlPart(QXmlStreamReader &xml)
     return xmlPart;
 }
 
-bool TelemetryFileImport::import_xml_v11(QXmlStreamReader &xml, QString format)
+bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString format)
 {
     apxMsg() << tr("Importing v10 format").append(':') << QFileInfo(_srcFileName).fileName()
              << format;
@@ -167,8 +167,8 @@ bool TelemetryFileImport::import_xml_v11(QXmlStreamReader &xml, QString format)
         _info = {};
         QJsonObject &info = _info;
 
-        QHash<QString, QJsonObject> missions;
-        QHash<QString, QJsonObject> configs;
+        std::map<QString, QJsonObject> missions;
+        std::map<QString, QJsonObject> configs;
         QStringList fields;
 
         // some default values
@@ -232,27 +232,27 @@ bool TelemetryFileImport::import_xml_v11(QXmlStreamReader &xml, QString format)
                 continue;
             }
 
-            if (tag == "packages") {
+            if (tag == "packages") { // 11 only
                 while (xml.readNextStartElement()) {
                     auto tag = xml.name().toString();
-                    auto data = xml.readElementText().toUtf8();
                     auto hash = xml.attributes().value("hash").toString();
+                    auto data = xml.readElementText().toUtf8();
                     if (hash.isEmpty()) {
-                        qWarning() << "pkg hash empty";
+                        qWarning() << "pkg hash empty" << tag;
                         continue;
                     }
                     if (data.isEmpty()) {
-                        qWarning() << "pkg empty";
+                        qWarning() << "pkg empty" << tag;
                         continue;
                     }
                     data = QByteArray::fromBase64(data);
                     if (data.isEmpty()) {
-                        qWarning() << "pkg base64 decode error";
+                        qWarning() << "pkg base64 decode error" << tag;
                         continue;
                     }
                     data = qUncompress(data);
                     if (data.isEmpty()) {
-                        qWarning() << "pkg uncompress error";
+                        qWarning() << "pkg uncompress error" << tag;
                         continue;
                     }
                     QJsonParseError err;
@@ -263,10 +263,10 @@ bool TelemetryFileImport::import_xml_v11(QXmlStreamReader &xml, QString format)
                     }
                     if (tag == "vehicle") {
                         // unit nodes config
-                        configs.insert(hash, jso);
+                        configs[hash] = jso;
                     } else if (tag == "mission") {
                         // mission data
-                        missions.insert(hash, jso);
+                        missions[hash] = jso;
                     }
                 }
                 continue;
@@ -342,35 +342,33 @@ bool TelemetryFileImport::import_xml_v11(QXmlStreamReader &xml, QString format)
             auto it = mandala::ALIAS_MAP.find(f.toStdString());
             if (it != mandala::ALIAS_MAP.end()) {
                 auto uid = it->second;
-                qDebug() << f << uid;
                 for (auto &m : mandala::meta) {
-                    if (m.uid == uid) {
-                        auto path = QString(m.path).split('.');
-                        path.remove(1, 1);
-                        auto name = path.join('.');
-                        qDebug() << f << name << m.title << m.units;
-                        telemetry::dspec_e dspec = telemetry::dspec_e::f32;
-                        fields_stream.push_back({name, m.title, m.units, dspec});
-                        f.clear();
-                        break;
-                    }
+                    if (m.uid != uid)
+                        continue;
+                    auto path = QString(m.path).split('.');
+                    path.remove(1, 1);
+                    auto name = path.join('.');
+                    auto dspec = mandala::dspec_for_uid(uid);
+                    fields_stream.push_back({name, m.title, m.units, dspec});
+                    // qDebug() << f << name << m.title << m.units << (uint) dspec;
+                    f.clear();
+                    break;
                 }
                 if (f.isEmpty())
                     continue;
             }
 
-            fields_stream.push_back({f, {}, {}});
+            // qDebug() << f;
+            fields_stream.push_back({f, {}, {}, telemetry::dspec_e::f32});
         }
         TelemetryFileWriter stream(fields_stream);
         stream.init(this, jso_import["name"].toString() + "-import", timestamp, info);
 
-        // init values array to monitor changes
-        // std::vector<QVariant> values_s;
-        // values_s.resize(fields.size());
-
-        //read <data>
-        int progress_s = 0;
-        size_t record_count = 0;
+        // -------------------------------------------
+        // read <data>
+        int progress_s = 0;      // to don't update unchanged
+        size_t record_count = 0; // just stats at the end
+        uint32_t time_tag = 0;   // current timestamp [ms]
         while (xml.readNextStartElement()) {
             //progress
             int progress_v = xml.device()->pos() * 100 / xml.device()->size();
@@ -383,8 +381,11 @@ bool TelemetryFileImport::import_xml_v11(QXmlStreamReader &xml, QString format)
                 break;
 
             //read tag
-            auto tag = xml.name().toString();
-            auto t_tag = xml.attributes().value("t").toUInt();
+            const auto tag = xml.name().toString();
+            if (xml.attributes().hasAttribute("t"))
+                time_tag = xml.attributes().value("t").toUInt();
+
+            // downlink data
             if (tag == "D") {
                 TelemetryFileWriter::Values values;
                 size_t i = 0;
@@ -405,48 +406,79 @@ bool TelemetryFileImport::import_xml_v11(QXmlStreamReader &xml, QString format)
                     if (std::isnan(v) || std::isinf(v))
                         continue;
 
-                    // auto vprev = values_s[field_index];
-                    // auto vprev_d = vprev.toDouble();
-                    // if (vprev.isValid()) {
-                    //     if (vprev_d == v)
-                    //         continue;
-                    // } else if (v == 0) {
-                    //     continue;
-                    // }
-                    // values_s[field_index] = v;
-
                     values.push_back({field_index, v});
                 }
 
                 if (values.empty())
                     continue;
 
-                stream.write_values(t_tag, values, false);
+                stream.write_values(time_tag, values, false);
                 record_count++;
                 continue;
             }
-            //qDebug()<<tag<<t;
-            /*if (tag == "E") {
-                QString name = xml.attributes().value("name").toString();
-                QString uid = xml.attributes().value("uid").toString();
-                bool uplink = xml.attributes().value("uplink").toUInt();
-                QString value = xml.readElementText();
-                dbSaveEvent(t, name, value, uid, uplink);
+
+            // uplink data
+            if (tag == "U") {
+                const auto name = xml.attributes().value("name").toString();
+                // find field index by name
+                int field_index = -1;
+                for (auto const &f : fields) {
+                    field_index++;
+                    if (f == name)
+                        break;
+                }
+                if (field_index < 0) {
+                    qWarning() << "ignored field" << name;
+                    continue;
+                }
+                TelemetryFileWriter::Values values;
+                values.push_back({field_index, (float) xml.readElementText().toDouble()});
+                stream.write_values(time_tag, values, true);
+                record_count++;
                 continue;
             }
 
-            if (tag == "U") {
-                QString name = xml.attributes().value("name").toString();
-                auto uid = db->mandala_uid(name);
-                if (uid) {
-                    PBase::Values values;
-                    values.push_back({uid, (float) xml.readElementText().toDouble()});
-                    dbSaveData(t, values, true);
-                } else {
-                    qWarning() << "ignored field" << name;
+            // event
+            if (tag == "E") {
+                const auto name = xml.attributes().value("name").toString();
+                const auto uid = xml.attributes().value("uid").toString();
+                bool uplink = xml.attributes().value("uplink").toUInt();
+                const auto value = xml.readElementText();
+                if (name.isEmpty() || value.isEmpty()) {
+                    qWarning() << "empty event" << name << value;
+                    continue;
                 }
+                // qDebug() << "event" << name << value << uid;
+                if (name == "msg") {
+                    stream.write_msg(time_tag, value, uid);
+                    continue;
+                }
+                if (name == "mission") {
+                    auto it = missions.find(uid);
+                    if (it != missions.end()) {
+                        QJsonObject jso;
+                        jso["import"] = jso_import;
+                        jso["mission"] = it->second;     // encapsulate content
+                        jso["time"] = info["timestamp"]; // from xml file
+                        // qDebug() << value << jso;
+                        stream.write_meta(name, jso, uplink);
+                    }
+                    continue;
+                }
+                if (name == "nodes") {
+                    auto it = configs.find(uid);
+                    if (it != configs.end()) {
+                        QJsonObject jso = it->second;
+                        jso["import"] = jso_import;
+                        // qDebug() << value << jso;
+                        stream.write_meta(name, jso, uplink);
+                    }
+                    continue;
+                }
+
                 continue;
-            }*/
+            }
+
             // qWarning() << "unknown tag" << tag;
             xml.skipCurrentElement();
         } //read next tag
@@ -459,7 +491,7 @@ bool TelemetryFileImport::import_xml_v11(QXmlStreamReader &xml, QString format)
     return ok;
 }
 
-bool TelemetryFileImport::import_xml_v9(QXmlStreamReader &xml)
+bool TelemetryFileImport::import_telemetry_v9(QXmlStreamReader &xml)
 {
     apxMsg() << tr("Importing v9 format").append(':') << QFileInfo(_srcFileName).fileName();
     return false;

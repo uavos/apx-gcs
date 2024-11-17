@@ -219,7 +219,7 @@ const std::map<std::string, mandala::uid_t> ALIAS_MAP = {
     malias<mandala::cmd::nav::proc::mode>("mode"),
 
     // malias<mandala::cmd::nav::rc::mode>("status_rc"),
-    malias<mandala::est::nav::pos::status>("status_gps"),
+    malias<mandala::est::nav::pos::valid>("status_gps"),
     malias<mandala::est::nav::ref::status>("status_home"),
     malias<mandala::sns::nav::agl::status>("status_agl"),
     malias<mandala::sns::env::com::status>("status_modem"),

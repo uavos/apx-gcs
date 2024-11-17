@@ -33,7 +33,7 @@ class TelemetryFileImport : public QTemporaryFile
 public:
     explicit TelemetryFileImport(QObject *parent = nullptr);
 
-    bool import(QString srcFileName);
+    bool import_telemetry(QString srcFileName);
 
     const QJsonObject &info() const { return _info; }
     const QString &src_hash() const { return _src_hash; }
@@ -43,8 +43,8 @@ private:
     QString _src_hash;
     QString _srcFileName;
 
-    bool import_xml_v11(QXmlStreamReader &xml, QString format);
-    bool import_xml_v9(QXmlStreamReader &xml);
+    bool import_telemetry_v11(QXmlStreamReader &xml, QString format);
+    bool import_telemetry_v9(QXmlStreamReader &xml);
 
     // helpers
     QJsonObject readObject(QXmlStreamReader &xml);

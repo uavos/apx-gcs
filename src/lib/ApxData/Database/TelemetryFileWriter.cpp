@@ -148,7 +148,8 @@ void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &value
     if (!isOpen())
         return;
 
-    write_timestamp(timestamp_ms);
+    if (timestamp_ms > 0)
+        write_timestamp(timestamp_ms);
 
     for (const auto [field_index, value] : values) {
         write_value(field_index, value, uplink);
@@ -171,7 +172,8 @@ void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
         return;
     }
 
-    write_timestamp(timestamp_ms);
+    if (timestamp_ms > 0)
+        write_timestamp(timestamp_ms);
 
     if (uplink)
         _write_uplink();
@@ -196,7 +198,8 @@ void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
         return;
     }
 
-    write_timestamp(timestamp_ms);
+    if (timestamp_ms > 0)
+        write_timestamp(timestamp_ms);
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::msg};
     write(&dspec, 1);
@@ -260,7 +263,8 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     if (!isOpen())
         return;
 
-    write_timestamp(timestamp_ms);
+    if (timestamp_ms > 0)
+        write_timestamp(timestamp_ms);
 
     if (uplink)
         _write_uplink();

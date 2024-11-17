@@ -32,6 +32,7 @@ class MandalaFact : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(uint uid READ uid CONSTANT)
+    Q_PROPERTY(bool everReceived READ everReceived NOTIFY everReceivedChanged)
 
 public:
     explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta);
@@ -60,6 +61,7 @@ public:
     void increment_rx_cnt();
     auto rx_cnt() const { return _rx_cnt; }
     auto everReceived() const { return _everReceived; }
+    void resetCounters();
 
     void increment_tx_cnt();
     auto tx_cnt() const { return _tx_cnt; }
@@ -100,4 +102,7 @@ private:
 
     QVariant convertFromStream(QVariant v) const;
     QVariant convertForStream(QVariant v) const;
+
+signals:
+    void everReceivedChanged();
 };

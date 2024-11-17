@@ -334,6 +334,7 @@ Item {
 
                     readonly property int src: f_gps_src.value
                     readonly property int fix: f_gps_fix.value
+                    readonly property int fix_valid: f_gps_fix.everReceived
                     readonly property int su: f_gps_su.value
                     readonly property int sv: f_gps_sv.value
                     readonly property bool ref: f_ref_status.value === ref_status_initialized
@@ -341,8 +342,8 @@ Item {
                     readonly property bool blocked: f_ahrs_nogps.value > 0
 
                     readonly property bool isOff: (!avail) && (!ref)
-                    readonly property bool isErr: ref && (!avail)
-                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && fix >= gps_fix_3D
+                    readonly property bool isErr: ref && (!avail) && fix_valid
+                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && (fix >= gps_fix_3D || !fix_valid)
 
                     show: isValid || su>0 || sv>0 || fix>0 || src>0
 

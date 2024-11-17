@@ -103,7 +103,7 @@ void Mandala::updateStatus()
 void Mandala::resetCounters()
 {
     for (auto f : _valueFacts)
-        f->setModified(false);
+        f->resetCounters();
 }
 
 MandalaFact *Mandala::fact(mandala::uid_t uid) const

@@ -632,7 +632,7 @@ bool TelemetryImport::run(QSqlQuery &query)
     do {
         TelemetryFileImport import;
         connect(&import, &TelemetryFileImport::progress, this, &TelemetryImport::progress);
-        if (!import.import(_src))
+        if (!import.import_telemetry(_src))
             break;
 
         const auto srcFileName = QFileInfo(_src).fileName();

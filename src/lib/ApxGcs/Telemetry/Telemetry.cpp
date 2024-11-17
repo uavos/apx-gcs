@@ -157,6 +157,10 @@ void Telemetry::recordLoaded()
     if (!Vehicles::instance()->current()->isIdentified())
         vehicle->f_select->trigger();
 
+    // reset mandala counters on file reload
+    vehicle->f_mandala->resetCounters();
+
+    // load mission and config
     Fact *f = f_reader->child("mission");
     if (f && f->size() > 0) {
         f = f->child(0);
