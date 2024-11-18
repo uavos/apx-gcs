@@ -298,7 +298,6 @@ void TelemetryRecorder::recordMsg(QString msg, QString subsystem)
 void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString value)
 {
     value = QString("%1/%2=%3").arg(node->title()).arg(name).arg(value);
-
     _stream.write_evt(getEventTimestamp(), "conf", value, node->uid(), true);
 }
 void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool uplink)
@@ -308,13 +307,15 @@ void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool u
 
 void TelemetryRecorder::recordMission(bool uplink)
 {
-    const auto &data = _vehicle->f_mission->toJsonDocument().object();
-    _stream.write_evt(getEventTimestamp(),
-                      "mission",
-                      data["title"].toString(),
-                      data["hash"].toString(),
-                      uplink);
-    _stream.write_meta("mission", data, uplink);
+    if (_vehicle->f_mission->empty())
+        return;
+    auto mission = _vehicle->f_mission->toJsonDocument().object();
+    auto title = mission["title"].toString();
+    auto hash = mission["hash"].toString();
+    // write event
+    _stream.write_evt(getEventTimestamp(), "mission", title, hash, uplink);
+    // write mission data as meta record
+    _stream.write_meta("mission", mission, uplink);
 }
 void TelemetryRecorder::recordConfig(QString hash, QString title)
 {
@@ -323,7 +324,8 @@ void TelemetryRecorder::recordConfig(QString hash, QString title)
     if (_configHash == hash)
         return;
     _configHash = hash;
-    _stream.write_evt(getEventTimestamp(), "nodes", title, hash, false);
+
+    _stream.write_timestamp(getEventTimestamp());
     _stream.write_meta("nodes", _vehicle->toJsonDocument().object(), false);
 }
 

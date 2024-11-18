@@ -94,16 +94,18 @@ enum class extid_e : uint8_t { // 4 bits (part of dspec)
     // core services
     stop = 0, // [dspec==0] stop reading/writing stream (stats are written after this)
     ts,       // [ms] u32 timestamp update relative to file
-    uplink,   // [dspec,data] uplink data (marks next dspec)
+    dir,      // direction marker for next dspec (uplink)
     field,    // [name,title,units] strings of used fields sequence
+    evtid,    // [name,size] used event names (255 max), size is number od strings
 
     // special data types, strings separated by 0 and list terminated by another 0
-    evt = 8, // [name,value,uid] generic event (conf update)
+    evt = 8, // [evtid,value,uid] generic event (conf update)
     msg,     // [text,subsystem] text message
     meta,    // [name,size(32),meta_zip(...)] json full or diff (nodes,mission)
     raw,     // [id(16),size(16),data(...)] raw data (serial vcp)
 };
 
+static constexpr const auto MIN_ZCOMP = 64;    // minimum size to use zlib compression
 static constexpr const auto MAX_STRLEN = 4096; // including null terminator
 
 // data specifier (1 or 2 bytes)

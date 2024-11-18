@@ -155,7 +155,7 @@ signals:
     void values(quint64 timestamp_ms, Values data, bool uplink);
     void evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
     void msg(quint64 timestamp_ms, QString text, QString subsystem);
-    void meta(QString name, QJsonObject data, bool uplink);
+    void meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
     void raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
     // called by parse_header

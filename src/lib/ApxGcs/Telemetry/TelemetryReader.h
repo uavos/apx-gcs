@@ -67,7 +67,11 @@ private:
 
     bool blockNotesChange;
 
-    void addEventFact(quint64 time, const QString &name, const QString &value, const QString &uid);
+    void addEventFact(quint64 time,
+                      const QString &name,
+                      const QString &value,
+                      const QString &uid,
+                      const QVariant &data = {});
 
 private slots:
     void notesChanged();
@@ -78,7 +82,7 @@ private slots:
     void do_rec_field(QString name, QString title, QString units);
     void do_rec_values(quint64 timestamp_ms, Values data, bool uplink);
     void do_rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
-    void do_rec_meta(QString name, QJsonObject data, bool uplink);
+    void do_rec_meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
 
 signals:
     // forwarded signals from file reader
@@ -88,7 +92,7 @@ signals:
     void rec_values(quint64 timestamp_ms, Values data, bool uplink);
     void rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
     void rec_msg(quint64 timestamp_ms, QString text, QString subsystem);
-    void rec_meta(QString name, QJsonObject data, bool uplink);
+    void rec_meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
     void rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
     // called when file parsed and header info collected

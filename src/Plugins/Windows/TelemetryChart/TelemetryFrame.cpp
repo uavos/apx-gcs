@@ -359,7 +359,7 @@ void TelemetryFrame::rec_evt(
     plot->addEvent(timestamp_ms / 1000.0, QString("%1: %2").arg(name, value), c);
 }
 void TelemetryFrame::rec_msg(quint64 timestamp_ms, QString text, QString subsystem) {}
-void TelemetryFrame::rec_meta(QString name, QJsonObject data, bool uplink) {}
+void TelemetryFrame::rec_meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink) {}
 void TelemetryFrame::rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink) {}
 
 void TelemetryFrame::resetPlot()

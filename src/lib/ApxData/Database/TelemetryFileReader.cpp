@@ -548,7 +548,7 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         _ts_s = ts;
         return true;
     }
-    case extid_e::uplink:
+    case extid_e::dir:
         _next_uplink = true;
         return true;
 
@@ -646,7 +646,7 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         }
 
         // qDebug() << "meta" << name << data.size() << is_uplink;
-        emit meta(name, data, is_uplink);
+        emit meta(_ts_s, name, data, is_uplink);
         return true;
     }
 

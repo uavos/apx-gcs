@@ -143,7 +143,7 @@ void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)
     write(&timestamp_ms, 4);
 }
 
-void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &values, bool uplink)
+void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &values, bool dir)
 {
     if (!isOpen())
         return;
@@ -152,17 +152,14 @@ void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &value
         write_timestamp(timestamp_ms);
 
     for (const auto [field_index, value] : values) {
-        write_value(field_index, value, uplink);
+        write_value(field_index, value, dir);
     }
 
     flush();
 }
 
-void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
-                                    const QString &name,
-                                    const QString &value,
-                                    const QString &uid,
-                                    bool uplink)
+void TelemetryFileWriter::write_evt(
+    quint32 timestamp_ms, const QString &name, const QString &value, const QString &uid, bool dir)
 {
     if (!isOpen())
         return;
@@ -175,8 +172,8 @@ void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
     if (timestamp_ms > 0)
         write_timestamp(timestamp_ms);
 
-    if (uplink)
-        _write_uplink();
+    if (dir)
+        _write_dir();
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::evt};
     write(&dspec, 1);
@@ -208,7 +205,7 @@ void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
     _write_string(subsystem.toUtf8());
 }
 
-void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &data, bool uplink)
+void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &data, bool dir)
 {
     if (!isOpen())
         return;
@@ -221,8 +218,8 @@ void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &dat
         return;
     }
 
-    if (uplink)
-        _write_uplink();
+    if (dir)
+        _write_dir();
 
     QByteArray jdata;
 
@@ -258,7 +255,7 @@ void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &dat
 void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
                                     uint16_t id,
                                     const QByteArray &data,
-                                    bool uplink)
+                                    bool dir)
 {
     if (!isOpen())
         return;
@@ -266,8 +263,8 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     if (timestamp_ms > 0)
         write_timestamp(timestamp_ms);
 
-    if (uplink)
-        _write_uplink();
+    if (dir)
+        _write_dir();
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::raw};
     write(&dspec, 1);
@@ -305,7 +302,7 @@ void TelemetryFileWriter::_write_field(QString name, QString title, QString unit
     _write_string(units.toUtf8());
 }
 
-void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool uplink)
+void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool dir)
 {
     // map mandala fact
     if (field_index >= _fields.size()) {
@@ -339,7 +336,7 @@ void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool u
     }
 
     // uplink is always written
-    if (!uplink) {
+    if (!dir) {
         // downlink is written only if value changed
         auto d = value.toDouble();
         auto it = _values_s.find(field_index);
@@ -468,9 +465,9 @@ void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool u
     // collect stats
     _stats_values[field_index].insert(spec.spec8.dspec);
 
-    // prepend uplink wrap when needed
-    if (uplink)
-        _write_uplink();
+    // prepend dir wrap when needed
+    if (dir)
+        _write_dir();
 
     // write specifier to file
     write(&spec, spec.spec8.opt8 ? 1 : 2);
@@ -483,9 +480,9 @@ void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool u
     }
 }
 
-void TelemetryFileWriter::_write_uplink()
+void TelemetryFileWriter::_write_dir()
 {
-    const dspec_s spec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::uplink};
+    const dspec_s spec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::dir};
     write(&spec, 1);
 }
 

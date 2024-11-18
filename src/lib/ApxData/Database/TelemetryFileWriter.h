@@ -53,17 +53,17 @@ public:
     const auto &name() const { return _name; }
 
     void write_timestamp(quint32 timestamp_ms);
-    void write_values(quint32 timestamp_ms, const Values &values, bool uplink = false);
-    void write_value(size_t field_index, QVariant value, bool uplink = false);
+    void write_values(quint32 timestamp_ms, const Values &values, bool dir = false);
+    void write_value(size_t field_index, QVariant value, bool dir = false);
 
     void write_evt(quint32 timestamp_ms,
                    const QString &name,
                    const QString &value,
                    const QString &uid,
-                   bool uplink = false);
+                   bool dir = false);
     void write_msg(quint32 timestamp_ms, const QString &text, const QString &subsystem);
-    void write_meta(const QString &name, const QJsonObject &data, bool uplink = false);
-    void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool uplink = false);
+    void write_meta(const QString &name, const QJsonObject &data, bool dir = false);
+    void write_raw(quint32 timestamp_ms, uint16_t id, const QByteArray &data, bool dir = false);
 
     void print_stats();
 
@@ -84,7 +84,7 @@ private:
 
     // helpers
     void _write_string(const char *s);
-    void _write_uplink();
+    void _write_dir();
 
     void _write_field(QString name, QString title, QString units);
 

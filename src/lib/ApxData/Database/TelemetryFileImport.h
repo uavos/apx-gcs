@@ -46,9 +46,14 @@ private:
     bool import_telemetry_v11(QXmlStreamReader &xml, QString format);
     bool import_telemetry_v9(QXmlStreamReader &xml);
 
+    QJsonObject import_mission(QXmlStreamReader &xml);
+
     // helpers
     QJsonObject readObject(QXmlStreamReader &xml);
-    QByteArray readXmlPart(QXmlStreamReader &xml);
+    QJsonObject renameFields(QJsonObject jso, const QHash<QString, QString> &map);
+    QJsonObject mergeFields(QJsonObject jso, const QJsonObject &jso_add);
+    QJsonObject filterFields(QJsonObject jso, const QStringList &fields = {}, bool recursive = true);
+    QJsonObject fixNumbers(QJsonObject jso, const QStringList &fields = {}, bool recursive = true);
 
 signals:
     void progress(int value);

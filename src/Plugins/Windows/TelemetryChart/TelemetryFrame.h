@@ -90,7 +90,7 @@ private slots:
     void rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink);
     void rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
     void rec_msg(quint64 timestamp_ms, QString text, QString subsystem);
-    void rec_meta(QString name, QJsonObject data, bool uplink);
+    void rec_meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
     void rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
 
     void updateStats();

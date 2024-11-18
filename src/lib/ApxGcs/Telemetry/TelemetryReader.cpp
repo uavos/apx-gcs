@@ -169,18 +169,19 @@ void TelemetryReader::do_rec_evt(
     addEventFact(timestamp_ms, name, value, uid);
 }
 
-void TelemetryReader::do_rec_meta(QString name, QJsonObject data, bool uplink)
+void TelemetryReader::do_rec_meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
 {
     if (_importedMeta.contains(_loadRecordID))
         return;
 
     // save meta objects to databases
     if (name == "mission") {
-        auto req = new DBReqMissionsSave(data.toVariantMap());
-        req->exec();
+        // addEventFact(timestamp_ms, name, data["name"].toString(), data["uid"].toString(), data);
+        // auto req = new DBReqMissionsSave(data.toVariantMap());
+        // req->exec();
     } else if (name == "nodes") {
-        auto req = new DBReqImportVehicleConfig(data.toVariantMap());
-        req->exec();
+        // auto req = new DBReqImportVehicleConfig(data.toVariantMap());
+        // req->exec();
         // qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
     }
 }
@@ -243,7 +244,8 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
 void TelemetryReader::addEventFact(quint64 time,
                                    const QString &name,
                                    const QString &value,
-                                   const QString &uid)
+                                   const QString &uid,
+                                   const QVariant &data)
 {
     Fact *g = child(name);
     if (!g) {
