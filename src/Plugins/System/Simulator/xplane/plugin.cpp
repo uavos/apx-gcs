@@ -89,14 +89,12 @@ struct XplChannel
 {
     xbus::node::conf::text_t xpl;
     uint idx;
-    bool is_array;
     XPLMDataRef ref;
     XPLMDataTypeID type;
 
     void clear()
     {
         idx = 0;
-        is_array = false;
         ref = nullptr;
         type = 0;
     }
@@ -107,10 +105,25 @@ struct XplChannel
             return;
         }
 
-        if (is_array) {
-            XPLMSetDatavf(ref, &val, idx, 1);
-        } else {
+        switch (type) {
+        case xplmType_Int: {
+            XPLMSetDatai(ref, (int) val);
+        } break;
+        case xplmType_Float: {
             XPLMSetDataf(ref, val);
+        } break;
+        case xplmType_Double: {
+            XPLMSetDatad(ref, (double) val);
+        } break;
+        case xplmType_FloatArray: {
+            XPLMSetDatavf(ref, &val, idx, 1);
+        } break;
+        case xplmType_IntArray: {
+            int v = (int) val;
+            XPLMSetDatavi(ref, &v, idx, 1);
+        } break;
+        default:
+            break;
         }
     }
 
@@ -299,12 +312,14 @@ static void process_xpl_channels(XbusStreamReader *stream, XplChannels *data)
             if (sscanf(it1, "%u", &idx) != 1)
                 continue;
             data->channels[i].idx = idx;
-            data->channels[i].is_array = true;
         }
         XPLMDataRef ref = XPLMFindDataRef(s);
         if (!ref)
             continue;
         data->channels[i].type = XPLMGetDataRefTypes(ref);
+
+        printf("X-Plane:(%s) (%u)\n", s, data->channels[i].type);
+
         data->channels[i].ref = ref;
     }
 }
