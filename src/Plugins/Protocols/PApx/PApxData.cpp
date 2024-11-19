@@ -48,8 +48,8 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
                 MandalaFact *lon = qobject_cast<MandalaFact *>(
                     mandalaInstance->findChild(factNamePath + ".lon"));
                 if (lat && lon) {
-                    lat->setRawValueLocal(mandala::from_gps(bundlePos.lat));
-                    lon->setRawValueLocal(mandala::from_gps(bundlePos.lon));
+                    lat->setRawValueLocal(mandala::a32_to_deg(bundlePos.lat));
+                    lon->setRawValueLocal(mandala::a32_to_deg(bundlePos.lon));
                 }
                 return true;
             }
@@ -242,8 +242,8 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
         if (v.size() != 2)
             break;
         sendBundleT<mandala::bundle::pos_ll_s>(uid,
-                                               {mandala::to_gps(v.at(0).toDouble()),
-                                                mandala::to_gps(v.at(1).toDouble())});
+                                               {mandala::deg_to_a32(v.at(0).toDouble()),
+                                                mandala::deg_to_a32(v.at(1).toDouble())});
         return;
     }
     case mandala::cmd::nav::ats::uid: {
@@ -251,8 +251,8 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
         if (v.size() != 3)
             break;
         sendBundleT<mandala::bundle::pos_llh_s>(uid,
-                                                {mandala::to_gps(v.at(0).toDouble()),
-                                                 mandala::to_gps(v.at(1).toDouble()),
+                                                {mandala::deg_to_a32(v.at(0).toDouble()),
+                                                 mandala::deg_to_a32(v.at(1).toDouble()),
                                                  v.at(2).toFloat()});
         return;
     }
