@@ -70,6 +70,11 @@ void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &v)
     setElevation(elevation);
 }
 
+double ElevationMap::getElevationByCoordinate(const QGeoCoordinate &v)
+{
+    return m_elevationDB->getElevation(v.latitude(), v.longitude());
+}
+
 void ElevationMap::createElevationDatabase()
 {
     auto path = f_path->value().toString();

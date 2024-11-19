@@ -49,6 +49,7 @@ public:
     // void setClickCoordinate(const QGeoCoordinate &v);
 
     Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &v);
+    Q_INVOKABLE double getElevationByCoordinate(const QGeoCoordinate &v);
 
 protected:
     double m_elevation;

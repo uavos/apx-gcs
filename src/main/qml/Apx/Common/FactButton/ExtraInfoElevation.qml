@@ -28,7 +28,9 @@ import Apx.Common
 Item {
     id: item
     visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
-    property var elevation: visible ? apx.tools.elevationmap.elevation : NaN   // Temporary stub
+    property var map: apx.tools.elevationmap
+    property var coordinate: fact.parentFact.coordinate
+    property var elevation: NaN
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32" 
 
     anchors.fill: parent
@@ -54,4 +56,5 @@ Item {
         color: item.color
         text: isNaN(item.elevation) ? "NO" : item.elevation + "m"
     }
+    Component.onCompleted: elevation = map.getElevationByCoordinate(coordinate)
 }
