@@ -183,7 +183,6 @@ RowLayout {
         }
     }
 
-
     Item {
         id: elevationItem
         visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
@@ -211,12 +210,11 @@ RowLayout {
             verticalAlignment: Text.AlignVCenter
             font: apx.font_narrow(Style.fontSize)
             color: elevationItem.color
-            text: isNaN(elevationItem.elevation) ? "NO" : elevationItem.elevation
+            text: isNaN(elevationItem.elevation) ? "NO" : elevationItem.elevation + "m"
         }
         ToolTipArea {
             text: qsTr("Point elevation above sea level")
             cursorShape: Qt.PointingHandCursor
-            // onClicked: console.log("Stub") // apx.vehicles.current.telemetry.rpath.trigger()
         }
     }
 
