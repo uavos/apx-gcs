@@ -159,7 +159,7 @@ QVariant MandalaFact::convertFromStream(const QVariant &v) const
         return v;
 
     if (_convert_gps)
-        return mandala::from_gps(v.toUInt());
+        return mandala::a32_to_deg(v.toUInt());
 
     return QVariant::fromValue(v.toDouble() * _conversion_factor);
 }
@@ -169,7 +169,7 @@ QVariant MandalaFact::convertForStream(const QVariant &v) const
         return v;
 
     if (_convert_gps)
-        return mandala::to_gps(v.toDouble());
+        return mandala::deg_to_a32(v.toDouble());
 
     return v.toDouble() / _conversion_factor;
 }
