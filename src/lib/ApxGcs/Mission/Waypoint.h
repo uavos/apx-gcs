@@ -38,6 +38,7 @@ public:
     explicit Waypoint(MissionGroup *parent);
 
     Fact *f_altitude;
+    Fact *f_agl;
     Fact *f_type;
 
     WaypointActions *f_actions;

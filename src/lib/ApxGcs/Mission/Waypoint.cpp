@@ -30,13 +30,17 @@ Waypoint::Waypoint(MissionGroup *parent)
     , m_reachable(false)
     , m_warning(false)
 {
-    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);
+    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above home"), Int);
     f_altitude->setUnits("m");
+
+    f_agl = new MissionField(this, "agl", tr("AGL"), tr("Altitude above ground level"), Int);
+    f_agl->setUnits("m");
+    f_agl->setDefaultValue(0);
+    f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
 
     f_type = new MissionField(this, "type", tr("Type"), tr("Maneuver type"), Enum);
     f_type->setEnumStrings(QStringList() << "direct"
                                          << "track");
-
     //actions
     f_actions = new WaypointActions(this);
 

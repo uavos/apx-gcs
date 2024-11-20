@@ -1,6 +1,6 @@
 {
     "editor.formatOnType": true,
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
     "files.insertFinalNewline": true,
     "cmake.buildDirectory": "${workspaceFolder}/build",
     // "cmake.buildTask": true,
