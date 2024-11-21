@@ -27,19 +27,47 @@ import Apx.Common
 
 Item {
     id: item
+    visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
+
     property var map: apx.tools.elevationmap
     property var agl: fact.parentFact.child("agl").value
     property var coordinate: fact.parentFact.coordinate
     property var elevation: NaN
     property var checked: fact.parentFact.isAgl
     property var homeHmsl: mandala.est.ref.hmsl.value
+    property var color: "#dcdcdc"
+
+    anchors.fill: parent
+    anchors.verticalCenter: parent.verticalCenter
+    implicitHeight: parent.height
+    implicitWidth: Math.max(icon.width+text.implicitWidth, height*4)
+        
+    MaterialIcon {
+        id: icon
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        name: "home-map-marker"
+        color: item.color
+        size: text.contentHeight
+        verticalAlignment: Text.AlignVCenter
+    }
+    Text {
+        id: text
+        anchors.left: icon.right
+        anchors.verticalCenter: parent.verticalCenter
+        verticalAlignment: Text.AlignVCenter
+        font: apx.font_narrow(Style.fontSize)
+        color: item.color
+        text: homeHmsl + "m"
+    }
 
     onAglChanged: altitudeProcessing()
     onCheckedChanged: _editor.enabled = !checked
     
     Component.onCompleted: {
         _editor.enabled = !checked
-        elevation = map.getElevationByCoordinate(coordinate)
+        if(visible)
+            elevation = map.getElevationByCoordinate(coordinate)
     }
 
     function altitudeProcessing() 

@@ -69,7 +69,8 @@ Item {
     
     Component.onCompleted: {
         _editor.enabled = checked
-        elevation = map.getElevationByCoordinate(coordinate)
+        if(visible)
+            elevation = map.getElevationByCoordinate(coordinate)
         aglProcessing() 
     }
 
