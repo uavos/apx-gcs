@@ -33,6 +33,11 @@ Item {
     property var coordinate: fact.parentFact.coordinate
     property var elevation: NaN
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
+    property var checked: fact.parentFact.isAgl
+
+    // These parameters are not absolute, discussion is possible
+    readonly property var altLimit: 100 // Suggested by the CEO
+    property var homeHmsl: mandala.est.ref.hmsl.value
 
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter
@@ -58,19 +63,25 @@ Item {
         text: isNaN(item.elevation) ? "NO" : item.elevation + "m"
     }
 
-    onAltitudeChanged: aglProcessing() 
+    onAltitudeChanged: aglProcessing()
+    onCheckedChanged: _editor.enabled = checked
+    onVisibleChanged: fact.parentFact.isAgl = false
     
     Component.onCompleted: {
-        _editor.enabled = false
+        _editor.enabled = checked
         elevation = map.getElevationByCoordinate(coordinate)
         aglProcessing() 
     }
 
     function aglProcessing() 
     {   
-        if(isNaN(item.elevation))
-            fact.value = 0;
-        fact.value = altitude - elevation;
-        factButton.color = fact.value < altitude * 0.1 ? Material.color(Material.Red) : action_color()
+        if(isNaN(elevation)) {
+            fact.value = 0
+            return
+        }
+
+        fact.value = homeHmsl + altitude - elevation;
+        factButton.color = fact.value < altLimit ? Material.color(Material.Red) : action_color()
+        // factButton.color = fact.value < altitude * 0.1 ? Material.color(Material.Red) : action_color()
     }
 }

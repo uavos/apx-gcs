@@ -29,14 +29,18 @@ Waypoint::Waypoint(MissionGroup *parent)
     , m_bearing(0)
     , m_reachable(false)
     , m_warning(false)
+    , m_isAgl(false)
 {
     f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above home"), Int);
     f_altitude->setUnits("m");
+    f_altitude->setOpt("extrainfo", "ExtraInfoAltitude.qml");
+    connect(f_altitude, &Fact::triggered, this, [this]() { this->setIsAgl(false); });
 
     f_agl = new MissionField(this, "agl", tr("AGL"), tr("Altitude above ground level"), Int);
     f_agl->setUnits("m");
     f_agl->setDefaultValue(0);
     f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
+    connect(f_agl, &Fact::triggered, this, [this]() { this->setIsAgl(true); });
 
     f_type = new MissionField(this, "type", tr("Type"), tr("Maneuver type"), Enum);
     f_type->setEnumStrings(QStringList() << "direct"
@@ -215,4 +219,17 @@ void Waypoint::setWarning(bool v)
         return;
     m_warning = v;
     emit warningChanged();
+}
+
+bool Waypoint::isAgl()
+{
+    return m_isAgl;
+}
+
+void Waypoint::setIsAgl(bool v) 
+{
+    if(m_isAgl == v)
+        return;
+    m_isAgl = v;
+    emit isAglChanged();
 }

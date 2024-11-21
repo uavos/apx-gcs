@@ -33,6 +33,7 @@ class Waypoint : public MissionItem
 
     Q_PROPERTY(bool reachable READ reachable WRITE setReachable NOTIFY reachableChanged)
     Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
+    Q_PROPERTY(bool isAgl READ isAgl WRITE setIsAgl NOTIFY isAglChanged)
 
 public:
     explicit Waypoint(MissionGroup *parent);
@@ -62,11 +63,16 @@ public:
     bool warning() const;
     void setWarning(bool v);
 
+    bool isAgl();
+    void setIsAgl(bool v);
+
 protected:
     bool m_reachable;
     bool m_warning;
+    bool m_isAgl;
 
 signals:
     void reachableChanged();
     void warningChanged();
+    void isAglChanged();
 };
