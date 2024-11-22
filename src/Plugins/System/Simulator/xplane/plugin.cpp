@@ -265,6 +265,7 @@ void parse_sensors(void)
 
     // Airdata
     sim_bundle.airspeed = 0.51444f * (float) XPLMGetDataf(xp.airspeed); //knots to mps
+    sim_bundle.air_temp = XPLMGetDataf(xp.air_temp);
 
     float rho = (float) XPLMGetDataf(xp.rho);
     float at = (float) XPLMGetDataf(xp.air_temp);
@@ -409,13 +410,14 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     xp.vz = XPLMFindDataRef("sim/flightmodel/position/local_vz");
 
     xp.airspeed = XPLMFindDataRef("sim/flightmodel/position/indicated_airspeed");
+    xp.air_temp = XPLMFindDataRef("sim/weather/temperature_ambient_c");
+
     xp.agl = XPLMFindDataRef("sim/flightmodel/position/y_agl");
 
     xp.rpm = XPLMFindDataRef("sim/flightmodel/engine/ENGN_tacrad");
 
     xp.altitude = XPLMFindDataRef("sim/flightmodel/misc/h_ind2");
     xp.rho = XPLMFindDataRef("sim/weather/rho");
-    xp.air_temp = XPLMFindDataRef("sim/weather/temperature_ambient_c");
 
     //xp.slip = XPLMFindDataRef("sim/flightmodel/misc/slip");
     xp.slip = XPLMFindDataRef("sim/cockpit2/gauges/indicators/sideslip_degrees");
