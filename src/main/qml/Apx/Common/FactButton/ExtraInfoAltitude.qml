@@ -24,6 +24,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import Apx.Common
+import APX.Mission
 
 Item {
     id: item
@@ -31,11 +32,12 @@ Item {
 
     property var map: apx.tools.elevationmap
     property var agl: fact.parentFact.child("agl").value
+    property var hmsl: fact.parentFact.child("hmsl").value
     property var coordinate: fact.parentFact.coordinate
-    property var elevation: NaN
-    property var checked: fact.parentFact.isAgl
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var color: "#dcdcdc"
+    property var elevation: NaN
+    property bool chosen: fact.parentFact.chosen == Waypoint.ALT
 
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter
@@ -61,11 +63,12 @@ Item {
         text: homeHmsl + "m"
     }
 
+    onChosenChanged: _editor.enabled = chosen
     onAglChanged: altitudeProcessing()
-    onCheckedChanged: _editor.enabled = !checked
+    onHmslChanged: altitudeProcessing()
     
     Component.onCompleted: {
-        _editor.enabled = !checked
+        _editor.enabled = chosen
         if(visible)
             elevation = map.getElevationByCoordinate(coordinate)
     }
@@ -74,10 +77,11 @@ Item {
     {   
         if(isNaN(elevation))
             return
-
-        if(!checked)
+        if(chosen)
             return
-
-        fact.value = elevation + agl - homeHmsl;
+        if (fact.parentFact.chosen == Waypoint.AGL)
+            fact.value = elevation + agl - homeHmsl
+        if (fact.parentFact.chosen == Waypoint.HMSL) 
+            fact.value = hmsl - homeHmsl
     }
 }

@@ -33,13 +33,22 @@ class Waypoint : public MissionItem
 
     Q_PROPERTY(bool reachable READ reachable WRITE setReachable NOTIFY reachableChanged)
     Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
-    Q_PROPERTY(bool isAgl READ isAgl WRITE setIsAgl NOTIFY isAglChanged)
+    Q_PROPERTY(ChosenFact chosen READ chosen WRITE setChosen NOTIFY chosenChanged)
+    Q_PROPERTY(int unsafeAgl READ unsafeAgl CONSTANT)
 
 public:
+    enum ChosenFact {
+        ALT = 0,
+        AGL,
+        HMSL,
+    };
+    Q_ENUM(ChosenFact)
+
     explicit Waypoint(MissionGroup *parent);
 
     Fact *f_altitude;
     Fact *f_agl;
+    Fact *f_hmsl;
     Fact *f_type;
 
     WaypointActions *f_actions;
@@ -63,16 +72,19 @@ public:
     bool warning() const;
     void setWarning(bool v);
 
-    bool isAgl();
-    void setIsAgl(bool v);
+    ChosenFact chosen() const;
+    void setChosen(ChosenFact v);
+
+    int unsafeAgl() const;
 
 protected:
+    static const int UNSAFE_AGL = 100; // Suggested by the CEO
+    ChosenFact m_chosen;
     bool m_reachable;
     bool m_warning;
-    bool m_isAgl;
 
 signals:
     void reachableChanged();
     void warningChanged();
-    void isAglChanged();
+    void chosenChanged();
 };

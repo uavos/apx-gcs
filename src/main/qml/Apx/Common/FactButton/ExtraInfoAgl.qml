@@ -24,20 +24,18 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import Apx.Common
+import APX.Mission
 
 Item {
     id: item
     visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
     property var map: apx.tools.elevationmap
     property var altitude: fact.parentFact.child("altitude").value
+    property var homeHmsl: mandala.est.ref.hmsl.value
     property var coordinate: fact.parentFact.coordinate
     property var elevation: NaN
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
-    property var checked: fact.parentFact.isAgl
-
-    // These parameters are not absolute, discussion is possible
-    readonly property var altLimit: 100 // Suggested by the CEO
-    property var homeHmsl: mandala.est.ref.hmsl.value
+    property bool chosen: fact.parentFact.chosen == Waypoint.AGL
 
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter
@@ -63,12 +61,12 @@ Item {
         text: isNaN(item.elevation) ? "NO" : item.elevation + "m"
     }
 
+    onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
+    onChosenChanged: _editor.enabled = chosen
     onAltitudeChanged: aglProcessing()
-    onCheckedChanged: _editor.enabled = checked
-    onVisibleChanged: fact.parentFact.isAgl = false
     
     Component.onCompleted: {
-        _editor.enabled = checked
+        _editor.enabled = chosen
         if(visible)
             elevation = map.getElevationByCoordinate(coordinate)
         aglProcessing() 
@@ -80,9 +78,7 @@ Item {
             fact.value = 0
             return
         }
-
         fact.value = homeHmsl + altitude - elevation;
-        factButton.color = fact.value < altLimit ? Material.color(Material.Red) : action_color()
-        // factButton.color = fact.value < altitude * 0.1 ? Material.color(Material.Red) : action_color()
+        factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
     }
 }

@@ -30,6 +30,7 @@ MapQuickItem {  //to be used inside MapComponent only
     property bool interactive: visibleOnMap
     property bool draggable: true
     property bool shadow: true
+    property bool alarmed: false
 
     property int implicitZ: 0
 
@@ -149,6 +150,24 @@ MapQuickItem {  //to be used inside MapComponent only
     Item {
         width: textItem.width
         height: textItem.height
+        Loader {
+            anchors.centerIn: textItem
+            active: alarmed
+            // asynchronous: true
+            sourceComponent: Component {
+                Rectangle {
+                    id: alarm
+                    width: textItem.width*textItem.scale+10
+                    height: textItem.height*textItem.scale+10
+                    antialiasing: true
+                    border.width: 2
+                    opacity: 0.8
+                    border.color: "#FF0000"
+                    radius: shadow?height/10:0
+                    color: "#FF0000"
+                }
+            }
+        }
         Loader {
             anchors.centerIn: textItem
             active: selected
