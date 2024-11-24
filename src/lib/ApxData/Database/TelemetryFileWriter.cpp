@@ -28,6 +28,8 @@
 #include <TelemetryValuePack.h>
 #include <TelemetryValueUnpack.h>
 
+#include <ApxMisc/JsonHelpers.h>
+
 #define dump(s, p, n) qDebug() << s << QByteArray((const char *) p, n).toHex().toUpper()
 
 using namespace telemetry;
@@ -35,12 +37,6 @@ using namespace telemetry;
 TelemetryFileWriter::TelemetryFileWriter()
     : QDataStream()
 {}
-
-TelemetryFileWriter::TelemetryFileWriter(const Fields &fields)
-    : TelemetryFileWriter()
-{
-    setFields(fields);
-}
 
 TelemetryFileWriter::~TelemetryFileWriter()
 {
@@ -110,17 +106,18 @@ bool TelemetryFileWriter::init(QIODevice *d, const QString &name, quint64 time_u
         return false;
 
     // write info
-    info["name_create"] = name; // store original creation name
-    write_meta("info", info);
+    info["title"] = name; // store original creation name
+    write_jso(0, "info", info);
 
     flush();
 
     // reset stream counters
     _widx = 0;
-    _fields_file.clear();
+    _field_index.clear();
+    _evt_index.clear();
     _values_s.clear();
     _stats_values.clear();
-    _meta_objects.clear();
+    _jso_s.clear();
     _ts_s = 0;
 
     return true;
@@ -151,24 +148,44 @@ void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &value
     if (timestamp_ms > 0)
         write_timestamp(timestamp_ms);
 
-    for (const auto [field_index, value] : values) {
-        write_value(field_index, value, dir);
+    for (const auto [field, value] : values) {
+        write_value(field, value, dir);
     }
 
     flush();
 }
 
-void TelemetryFileWriter::write_evt(
-    quint32 timestamp_ms, const QString &name, const QString &value, const QString &uid, bool dir)
+void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
+                                    const Event *evt,
+                                    const QStringList &values,
+                                    bool dir)
 {
     if (!isOpen())
         return;
 
-    if (name.size() >= MAX_STRLEN || value.size() >= MAX_STRLEN || uid.size() >= MAX_STRLEN) {
-        qWarning() << "string too long";
+    // register evtid if not done yet
+    if (values.size() > evt->info.size()) {
+        qWarning() << "values size is greater than names size";
         return;
     }
 
+    size_t evt_index;
+    auto it = _evt_index.find(evt);
+    if (it == _evt_index.end()) {
+        // register new evt
+        evt_index = _evt_index.size();
+        if (evt_index >= 255) {
+            qWarning() << "too many event ids";
+            return;
+        }
+        _evt_index.insert({evt, evt_index});
+        _write_reg(extid_e::evtid, evt->name, evt->info);
+    } else {
+        // evt is already registered
+        evt_index = it->second;
+    }
+
+    // write event
     if (timestamp_ms > 0)
         write_timestamp(timestamp_ms);
 
@@ -177,35 +194,17 @@ void TelemetryFileWriter::write_evt(
 
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::evt};
     write(&dspec, 1);
-
-    _write_string(name.toUtf8());
-    _write_string(value.toUtf8());
-    _write_string(uid.toUtf8());
-}
-
-void TelemetryFileWriter::write_msg(quint32 timestamp_ms,
-                                    const QString &text,
-                                    const QString &subsystem)
-{
-    if (!isOpen())
-        return;
-
-    if (text.size() >= MAX_STRLEN || subsystem.size() >= MAX_STRLEN) {
-        qWarning() << "string too long";
-        return;
+    write(&evt_index, 1);
+    for (int i = 0; i < evt->info.size(); ++i) {
+        auto value = i < values.size() ? values.at(i) : QString();
+        _write_string(value.toUtf8());
     }
-
-    if (timestamp_ms > 0)
-        write_timestamp(timestamp_ms);
-
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::msg};
-    write(&dspec, 1);
-
-    _write_string(text.toUtf8());
-    _write_string(subsystem.toUtf8());
 }
 
-void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &data, bool dir)
+void TelemetryFileWriter::write_jso(quint32 timestamp_ms,
+                                    const QString &name,
+                                    const QJsonObject &data,
+                                    bool dir)
 {
     if (!isOpen())
         return;
@@ -218,30 +217,32 @@ void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &dat
         return;
     }
 
-    if (dir)
-        _write_dir();
-
     QByteArray jdata;
 
     // check if file already written
-    auto it = _meta_objects.find(name);
-    if (it != _meta_objects.end()) {
-        QJsonObject diff;
-        json_diff(it->second, data, diff);
+    auto it = _jso_s.find(name);
+    if (it != _jso_s.end()) {
+        auto diff = json::diff(it->second, data);
         if (diff.isEmpty()) {
             qDebug() << name << "json diff is empty";
             return;
         }
-        _meta_objects[name] = data;
+        _jso_s[name] = data;
         jdata = QJsonDocument(diff).toJson(QJsonDocument::Compact);
         // qDebug() << name << "json diff:" << diff;
     } else {
-        _meta_objects[name] = data;
+        _jso_s[name] = data;
         jdata = QJsonDocument(data).toJson(QJsonDocument::Compact);
         // qDebug() << name << "json:" << data;
     }
 
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::meta};
+    if (timestamp_ms > 0)
+        write_timestamp(timestamp_ms);
+
+    if (dir)
+        _write_dir();
+
+    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::jso};
     write(&dspec, 1);
 
     _write_string(name.toUtf8());
@@ -253,12 +254,25 @@ void TelemetryFileWriter::write_meta(const QString &name, const QJsonObject &dat
 }
 
 void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
-                                    uint16_t id,
+                                    const QString &name,
                                     const QByteArray &data,
                                     bool dir)
 {
     if (!isOpen())
         return;
+
+    size_t size = data.size();
+    bool zip = size >= MIN_ZCOMP;
+
+    QByteArray zip_data;
+    if (zip) {
+        zip_data = qCompress(data, 9);
+        size = zip_data.size();
+        if (size > std::numeric_limits<uint16_t>::max()) {
+            qWarning() << "compressed data too long" << size;
+            return;
+        }
+    }
 
     if (timestamp_ms > 0)
         write_timestamp(timestamp_ms);
@@ -266,14 +280,19 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     if (dir)
         _write_dir();
 
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::raw};
-    write(&dspec, 1);
-
-    write(&id, 2);
-
-    uint16_t size = data.size();
-    write(&size, 2);
-    write(data.constData(), data.size());
+    if (zip) {
+        const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::zip};
+        write(&dspec, 1);
+        _write_string(name.toUtf8());
+        write(&size, 4);
+        write(zip_data.constData(), size);
+    } else {
+        const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::zip};
+        write(&dspec, 1);
+        _write_string(name.toUtf8());
+        write(&size, 2);
+        write(data.constData(), size);
+    }
 }
 
 void TelemetryFileWriter::_write_string(const char *s)
@@ -288,32 +307,36 @@ void TelemetryFileWriter::_write_string(const char *s)
     write(s, sz);
 }
 
-void TelemetryFileWriter::_write_field(QString name, QString title, QString units)
+void TelemetryFileWriter::_write_reg(extid_e extid, QString name, QStringList stings)
 {
-    // qDebug() << name << title << units;
+    // qDebug() << name << strings;
 
     // write specifier
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::field};
+    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid};
     write(&dspec, 1);
 
     // write field data
     _write_string(name.toUtf8());
-    _write_string(title.toUtf8());
-    _write_string(units.toUtf8());
+
+    size_t N = stings.size();
+    write(&N, 1);
+    for (auto &s : stings)
+        _write_string(s.toUtf8());
 }
 
-void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool dir)
+void TelemetryFileWriter::write_value(const Field *field, const QVariant &value, bool dir)
 {
-    // map mandala fact
-    if (field_index >= _fields.size()) {
-        qWarning() << "unknown field" << field_index << _fields.size();
-        return;
-    }
-    const auto &field = _fields[field_index];
-
     // determine data type
-    bool is_uint = field.dspec <= dspec_e::u64 || value.isNull();
-    bool is_conv = !is_uint && (field.dspec == dspec_e::a16 || field.dspec == dspec_e::a32);
+    auto dspec = field->dspec;
+    bool is_uint = dspec <= dspec_e::u64 || value.isNull();
+    bool is_conv = !is_uint && (dspec == dspec_e::a16 || dspec == dspec_e::a32);
+
+    double value_d = value.toDouble();
+    uint64_t value_u; // will be set if value is integer (is_uint)
+
+    if (is_uint) {
+        value_u = value.toULongLong();
+    }
 
     if (!is_uint && !is_conv) {
         auto t = value.typeId();
@@ -321,15 +344,15 @@ void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool d
 
         if (!is_uint) {
             // try check if float is integer
-            auto vf = value.toDouble();
-            if (std::isnan(vf) || std::isinf(vf) || vf == 0.) {
+            if (std::isnan(value_d) || std::isinf(value_d) || value_d == 0.) {
                 is_uint = true;
-                value = 0;
-            } else if (vf > 0) {
-                auto vfc = std::ceil(vf);
-                if (vfc == vf) {
+                value_u = 0;
+                value_d = 0;
+            } else if (value_d > 0) {
+                auto vfc = std::ceil(value_d);
+                if (vfc == value_d) {
                     is_uint = true;
-                    value = vfc;
+                    value_u = vfc;
                 }
             }
         }
@@ -338,12 +361,11 @@ void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool d
     // uplink is always written
     if (!dir) {
         // downlink is written only if value changed
-        auto d = value.toDouble();
-        auto it = _values_s.find(field_index);
+        auto it = _values_s.find(field);
         if (it != _values_s.end()) {
-            if (it->second == d)
+            if (it->second == value_d)
                 return;
-            it->second = d;
+            it->second = value_d;
         } else {
             // value never posted before
             // initially - all values are assumed to be zero
@@ -354,45 +376,46 @@ void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool d
                 if (value.toFloat() == 0)
                     return;
             }
-            _values_s.insert({field_index, d});
+            _values_s.insert({field, value_d});
         }
     }
 
     // map value index by field index and write field descriptor when needed
-    uint16_t vidx;
-    auto it = std::find(_fields_file.begin(), _fields_file.end(), field_index);
-    if (it == _fields_file.end()) {
+    size_t field_index;
+    auto it = _field_index.find(field);
+    if (it == _field_index.end()) {
         // add new field to file
-        if (_fields_file.size() >= 0x7FF) { // 11 bits
-            // too many fields;
+        field_index = _field_index.size();
+        if (field_index >= 0x7FF) { // 11 bits
+            qWarning() << "too many fields";
             return;
         }
-        vidx = _fields_file.size();
-        _fields_file.push_back(field_index);
-        _write_field(field.name, field.title, field.units);
+        _field_index.insert({field, field_index});
+        _write_reg(extid_e::field, field->name, field->info);
     } else {
-        vidx = std::distance(_fields_file.begin(), it);
+        field_index = it->second;
     }
 
     // prepare specifier
     dspec_s spec{};
-    if (vidx > _widx && (vidx - _widx) <= 8) {
+    const uint16_t widx = field_index;
+    if (widx > _widx && (widx - _widx) <= 8) {
         // use short form 8 bits specifier
         spec.spec8.opt8 = 1;
-        spec.spec8.vidx_delta = (vidx - _widx) - 1;
+        spec.spec8.vidx_delta = (widx - _widx) - 1;
 
     } else {
         // use 16 bits for specifier
-        spec.spec16.vidx = vidx;
+        spec.spec16.vidx = widx;
     }
-    _widx = vidx;
+    _widx = widx;
 
     // prepare value according to format
     uint64_t wraw = 0;
     size_t wcnt = 0;
 
     if (is_uint) {
-        wraw = value.toULongLong();
+        wraw = value_u;
         // qDebug() << "uint" << v;
 
         if (wraw > 0xFFFFFFFF) {
@@ -414,19 +437,19 @@ void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool d
     } else {
         // float types
         // qDebug() << "float" << value;
-        spec.spec8.dspec = field.dspec;
+        spec.spec8.dspec = dspec;
 
-        switch (field.dspec) {
+        switch (dspec) {
         default:
             break;
 
         case telemetry::dspec_e::f16:
             wcnt = 2;
-            wraw = xbus::telemetry::float_to_f16(value.toFloat());
+            wraw = xbus::telemetry::float_to_f16(value_d);
             break;
         case telemetry::dspec_e::f32: {
             // check if f16 is enough
-            const float vf = value.toFloat();
+            const float vf = value_d;
             uint16_t f16 = xbus::telemetry::float_to_f16(vf);
             if (xbus::telemetry::float_from_f16(f16) == vf) {
                 spec.spec8.dspec = dspec_e::f16;
@@ -443,17 +466,16 @@ void TelemetryFileWriter::write_value(size_t field_index, QVariant value, bool d
         }
         case telemetry::dspec_e::f64: {
             wcnt = 8;
-            double d = value.toDouble();
-            memcpy(&wraw, &d, 8);
+            memcpy(&wraw, &value_d, 8);
             break;
         }
         case telemetry::dspec_e::a16:
             wcnt = 2;
-            wraw = (uint16_t) xbus::telemetry::float_to_angle(value.toFloat(), 180.f);
+            wraw = (uint16_t) xbus::telemetry::float_to_angle(value_d, 180.f);
             break;
         case telemetry::dspec_e::a32:
             wcnt = 4;
-            wraw = xbus::telemetry::deg_to_a32(value.toDouble());
+            wraw = xbus::telemetry::deg_to_a32(value_d);
             break;
         }
     }
@@ -484,52 +506,4 @@ void TelemetryFileWriter::_write_dir()
 {
     const dspec_s spec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::dir};
     write(&spec, 1);
-}
-
-void TelemetryFileWriter::json_diff(const QJsonObject &prev,
-                                    const QJsonObject &next,
-                                    QJsonObject &diff)
-{
-    for (auto it = next.begin(); it != next.end(); ++it) {
-        auto pit = prev.find(it.key());
-        if (pit == prev.end()) {
-            // new key added
-            diff[it.key()] = it.value();
-            // qDebug() << "new key" << it.key() << it.value();
-        } else if (pit.value() != it.value()) {
-            // qDebug() << "value diff" << it.key() << pit.value() << it.value();
-            if (pit.value().isObject() && it.value().isObject()) {
-                QJsonObject d;
-                json_diff(pit.value().toObject(), it.value().toObject(), d);
-                diff[it.key()] = d;
-            } else if (pit.value().isArray() && it.value().isArray()) {
-                QJsonArray da;
-                auto pa = pit.value().toArray();
-                auto na = it.value().toArray();
-                for (int i = 0; i < na.size(); ++i) {
-                    QJsonObject d;
-                    json_diff(pa.at(i).toObject(), na.at(i).toObject(), d);
-                    da.append(d);
-                }
-                diff[it.key()] = da;
-            } else {
-                diff[it.key()] = it.value();
-            }
-        }
-    }
-}
-
-void TelemetryFileWriter::print_stats()
-{
-    if (_stats_values.empty())
-        return;
-
-    for (auto [field_index, dspec] : _stats_values) {
-        const auto &field = _fields[field_index];
-        QStringList sl;
-        for (auto i : dspec)
-            sl.append(telemetry::dspec_names[(uint) i]);
-
-        qDebug() << field.name + ":" << sl.join(',');
-    }
 }

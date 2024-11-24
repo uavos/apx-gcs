@@ -48,7 +48,9 @@ private:
 
     QFile _stream_file;
     TelemetryFileReader _stream;
-    QHash<int, MandalaFact *> _fieldsMap;
+
+    std::vector<MandalaFact *> _facts_by_index;
+    TelemetryReader::Values _values;
 
     QTimer timer;
     quint64 playTime0;
@@ -62,10 +64,10 @@ private:
 
     bool blockTimeChange;
 
-    void loadConfValue(const QString &sn, QString s);
+    void loadConfValue(QString uid, QString param, QString value);
     void loadLatestMeta(Fact *group, quint64 time);
 
-    TelemetryReader::Values _values;
+    MandalaFact *updateMandalaFact(size_t index, const QVariant &value);
 
 private slots:
     void updateActions();
@@ -82,9 +84,9 @@ private slots:
     void rec_started();
     void rec_finished();
 
+    void rec_field(TelemetryReader::Field field);
     void rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink);
-    void rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
-    void rec_msg(quint64 timestamp_ms, QString text, QString subsystem);
+    void rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
 
     void play();
     void stop();

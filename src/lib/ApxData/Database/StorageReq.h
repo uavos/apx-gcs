@@ -24,6 +24,7 @@
 #include "DatabaseModel.h"
 #include "StorageSession.h"
 
+#include "TelemetryFileEvents.h"
 #include "TelemetryFileReader.h"
 #include "TelemetryFileWriter.h"
 

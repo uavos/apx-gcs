@@ -46,10 +46,9 @@ private:
 
     Fact *f_enable;
 
-    //data file
+    // data file
     QJsonObject prepareFileInfo();
-    TelemetryFileWriter::Fields prepareFieldsMap();
-    QList<mandala::uid_t> _fields_map; // uid to field index in file fields
+    std::map<mandala::uid_t, TelemetryFileWriter::Field> _fields_map; // uid to field in file
     TelemetryFileWriter::Values prepareValues(const PBase::Values &values) const;
 
     void checkFileRecord();

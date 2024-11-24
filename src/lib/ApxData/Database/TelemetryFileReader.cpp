@@ -29,6 +29,8 @@
 #include <TelemetryValuePack.h>
 #include <TelemetryValueUnpack.h>
 
+#include <ApxMisc/JsonHelpers.h>
+
 using namespace telemetry;
 
 TelemetryFileReader::TelemetryFileReader(QIODevice *d, const QString &name)
@@ -178,7 +180,7 @@ QJsonObject TelemetryFileReader::_read_info()
     do {
         // try read info data at payload offset
         auto dspec = _read_dspec();
-        if (dspec.spec_ext.dspec != dspec_e::ext || dspec.spec_ext.extid != extid_e::meta) {
+        if (dspec.spec_ext.dspec != dspec_e::ext || dspec.spec_ext.extid != extid_e::jso) {
             qWarning() << "invalid info spec";
             break;
         }
@@ -189,13 +191,13 @@ QJsonObject TelemetryFileReader::_read_info()
             qWarning() << "failed to read info data name";
             break;
         }
-        auto data = _read_meta_data();
-        if (data.isEmpty()) {
+        auto jso = _read_jso_content();
+        if (jso.isEmpty()) {
             qWarning() << "failed to read info data";
             break;
         }
         // info data read, file at telemetry data start
-        return data;
+        return jso;
     } while (0);
 
     qWarning() << "failed to read info data" << pos_s << pos();
@@ -252,7 +254,7 @@ bool TelemetryFileReader::parse_payload()
         qWarning() << "failed to parse file at" << pos() << size();
     } else {
         // file read successfully
-        qDebug() << "file parsed" << _ts_s << _fields.size();
+        qDebug() << "file parsed" << _ts_s << _field_index.size();
     }
 
     setProgress(0);
@@ -263,40 +265,65 @@ bool TelemetryFileReader::parse_payload()
     _info["parsed"] = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
     QJsonObject counters;
-    if (_counters.records)
+
+    if (_counters.records > 0)
         counters["records"] = _counters.records;
-    if (_counters.fields)
-        counters["fields"] = _counters.fields;
-    if (_counters.uplink)
+
+    if (_counters.uplink > 0)
         counters["uplink"] = _counters.uplink;
-    if (_counters.downlink)
+
+    if (_counters.downlink > 0)
         counters["downlink"] = _counters.downlink;
-    if (_counters.evt)
-        counters["evt"] = _counters.evt;
-    if (_counters.msg)
-        counters["msg"] = _counters.msg;
-    if (_counters.meta)
-        counters["meta"] = _counters.meta;
-    if (_counters.raw)
-        counters["raw"] = _counters.raw;
-    if (_counters.mission)
-        counters["mission"] = _counters.mission;
-    if (_counters.nodes)
-        counters["nodes"] = _counters.nodes;
-    if (_counters.conf)
-        counters["conf"] = _counters.conf;
+
+    if (_counters.ts > 0)
+        counters["ts"] = _counters.ts;
+
+    if (_counters.dir > 0)
+        counters["dir"] = _counters.dir;
+
+    if (_counters.field > 0)
+        counters["field"] = _counters.field;
+
+    if (_counters.evtid > 0)
+        counters["evtid"] = _counters.evtid;
+
+    int evt_total = 0;
+    for (auto [key, value] : _counters.evt_by_name) {
+        counters[key] = value;
+        evt_total += value;
+    }
+    if (evt_total > 0)
+        counters["evt"] = evt_total;
+
+    int jso_total = 0;
+    for (auto [key, value] : _counters.jso_by_name) {
+        counters[key] = value;
+        jso_total += value;
+    }
+    if (jso_total > 0)
+        counters["jso"] = jso_total;
+
+    int raw_total = 0;
+    for (auto [key, value] : _counters.raw_by_name) {
+        counters[key] = value;
+        raw_total += value;
+    }
+    if (raw_total > 0)
+        counters["raw"] = raw_total;
 
     _info["counters"] = counters;
 
-    QJsonArray meta_names;
-    for (auto i : _meta_objects.keys())
-        meta_names.append(i);
-    _info["meta_names"] = meta_names;
+    QJsonArray jso_names;
+    for (auto i : _jso_s.keys())
+        jso_names.append(i);
+    _info["jso_names"] = jso_names;
 
     QJsonArray evt_names;
-    for (auto i : _evt_names)
-        evt_names.append(i);
+    for (const auto &i : _evt_index)
+        evt_names.append(i.name);
     _info["evt_names"] = evt_names;
+
+    _info = json::filter_names(json::fix_numbers(_info));
 
     emit infoUpdated(_info);
 
@@ -330,8 +357,8 @@ bool TelemetryFileReader::parse_next()
     switch (dspec.spec8.dspec) {
     default: {
         _widx = dspec.spec8.opt8 ? (_widx + dspec.spec8.vidx_delta + 1) : (dspec.spec16.vidx);
-        if (_widx >= _fields.size()) {
-            qWarning() << "invalid field index" << _widx << _fields.size();
+        if (_widx >= _field_index.size()) {
+            qWarning() << "invalid field index" << _widx << _field_index.size();
             break;
         }
 
@@ -371,12 +398,13 @@ void TelemetryFileReader::_reset_data()
     _counters = {};
     _interrupted = false;
 
-    _fields.clear();
-    _meta_objects.clear();
-    _evt_names.clear();
-
     _downlink_values.clear();
     _uplink_values.clear();
+
+    _field_index.clear();
+    _evt_index.clear();
+
+    _jso_s.clear();
 }
 
 dspec_s TelemetryFileReader::_read_dspec()
@@ -424,39 +452,39 @@ QString TelemetryFileReader::_read_string(bool *ok)
     return {};
 }
 
-QJsonObject TelemetryFileReader::_read_meta_data()
+QJsonObject TelemetryFileReader::_read_jso_content()
 {
     if (!isOpen() || atEnd())
         return {};
 
     uint32_t size;
     if (!read(&size, sizeof(size))) {
-        qWarning() << "failed to read meta data size";
+        qWarning() << "failed to read jso data size";
         return {};
     }
 
     auto fsize = this->size() - pos();
     if (size > fsize) {
-        qWarning() << "invalid meta data size" << size << fsize;
+        qWarning() << "invalid jso data size" << size << fsize;
         return {};
     }
 
     QByteArray zip_data(size, 0);
     if (!read(zip_data.data(), size)) {
-        qWarning() << "failed to read meta data" << size;
+        qWarning() << "failed to read jso data" << size;
         return {};
     }
 
     auto data = qUncompress(zip_data);
     if (data.isEmpty()) {
-        qWarning() << "failed to uncompress meta data";
+        qWarning() << "failed to uncompress jso data";
         return {};
     }
 
     QJsonParseError error;
     auto obj = QJsonDocument::fromJson(data, &error).object();
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "failed to parse meta data" << error.errorString();
+        qWarning() << "failed to parse jso data" << error.errorString();
         return {};
     }
 
@@ -546,115 +574,108 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         }
         _commit_values();
         _ts_s = ts;
+        _counters.ts++;
         return true;
     }
     case extid_e::dir:
         _next_uplink = true;
+        _counters.dir++;
         return true;
 
-    case extid_e::field: { // [name,title,units] strings of used fields sequence
+    case extid_e::field: { // [name,N,str1,...strN] field defs
         if (is_uplink)
             break;
-        auto name = _read_string(&ok);
-        if (name.isEmpty() || !ok)
-            break;
-        auto title = _read_string(&ok);
-        if (!ok)
-            break;
-        auto units = _read_string(&ok);
-        if (!ok)
+        auto info = _read_reg();
+        if (info.isEmpty())
             break;
 
-        _fields.append({name, title, units});
-        _counters.fields++;
+        _counters.field++;
+        auto name = info.takeFirst();
 
-        emit field(name, title, units);
+        Field f{name, info};
+        _field_index.push_back(f);
+        emit field(f);
         return true;
     }
-
-    case extid_e::evt: { // [name,value,uid] event data
-        auto name = _read_string(&ok);
-        if (name.isEmpty() || !ok)
-            break;
-        auto value = _read_string(&ok);
-        if (!ok)
-            break;
-        auto uid = _read_string(&ok);
-        if (!ok)
-            break;
-
-        _counters.evt++;
-
-        if (!_evt_names.contains(name))
-            _evt_names.append(name);
-
-        if (name == "conf")
-            _counters.conf++;
-
-        // qDebug() << "evt" << name << value << uid << is_uplink;
-        emit evt(_ts_s, name, value, uid, is_uplink);
-        return true;
-    }
-
-    case extid_e::msg: { // [text,subsystem] message data
+    case extid_e::evtid: {
         if (is_uplink)
             break;
-
-        auto text = _read_string(&ok);
-        if (!ok)
+        auto info = _read_reg();
+        if (info.isEmpty())
             break;
-        auto subsystem = _read_string(&ok);
-        if (!ok)
-            break;
-
-        _counters.msg++;
-
-        // qDebug() << "msg" << text << subsystem;
-        emit msg(_ts_s, text, subsystem);
+        auto name = info.takeFirst();
+        _evt_index.push_back({name, info});
+        _counters.evtid++;
         return true;
     }
 
-    case extid_e::meta: { // [name,size(32),meta_zip(...)] (nodes,mission)
-        auto pos_s = pos();
-        auto name = _read_string(&ok);
-        if (name.isEmpty() || !ok) {
-            qWarning() << "failed to read meta data name";
+    case extid_e::evt: { // [evtid,str1,...strN] event data
+        // find eventid
+        auto evt_index = _read_raw<uint8_t>(&ok);
+        if (!ok)
+            break;
+        if (evt_index >= _evt_index.size()) {
+            qWarning() << "invalid event index" << evt_index << _evt_index.size();
             break;
         }
-        auto data = _read_meta_data();
-        if (data.isEmpty()) {
-            qWarning() << "failed to read meta data";
+        const auto &evtid = _evt_index[evt_index];
+        auto name = evtid.name;
+        // read values
+        QJsonObject jso;
+        for (int i = 0; i < evtid.info.size(); ++i) {
+            auto value = _read_string(&ok);
+            if (!ok)
+                break;
+            jso[evtid.info[i]] = value;
+        }
+
+        _counters.evt_by_name[name]++;
+
+        // qDebug() << "evt" << name << value << uid << is_uplink;
+        emit evt(_ts_s, name, jso, is_uplink);
+        return true;
+    }
+
+    case extid_e::jso: { // [name,size(32),jso_zip(...)] (nodes,mission)
+        auto name = _read_string(&ok);
+        if (name.isEmpty() || !ok) {
+            qWarning() << "failed to read jso data name";
+            break;
+        }
+        auto jso_data = _read_jso_content();
+        if (jso_data.isEmpty()) {
+            qWarning() << "failed to read jso data";
             break;
         }
         // merge with previous data
-        if (_meta_objects.contains(name)) {
-            QJsonObject result;
-            _json_patch(_meta_objects[name], data, result);
-            if (result.isEmpty()) {
-                qWarning() << "failed to patch meta data";
+        if (_jso_s.contains(name)) {
+            auto jso_merged = json::patch(_jso_s[name], jso_data);
+            if (jso_merged.isEmpty()) {
+                qWarning() << "failed to patch jso data";
                 break;
             }
-            data.swap(result);
+            jso_data.swap(jso_merged);
         }
-        _meta_objects[name] = data;
+        _jso_s[name] = jso_data;
 
-        _counters.meta++;
-        if (name == "nodes") {
-            _counters.nodes++;
-        } else if (name == "mission") {
-            _counters.mission++;
-        }
+        _counters.jso_by_name[name]++;
 
-        // qDebug() << "meta" << name << data.size() << is_uplink;
-        emit meta(_ts_s, name, data, is_uplink);
+        // qDebug() << "jso" << name << data.size() << is_uplink;
+        emit jso(_ts_s, name, jso_data, is_uplink);
         return true;
     }
 
-    case extid_e::raw: { // [id(16),size(16),data(...)] raw data (serial vcp)
-        auto id = _read_raw<uint16_t>(&ok);
-        if (!ok)
+    case extid_e::raw:
+    case extid_e::zip: { // [id(16),size(16),data(...)] raw data (serial vcp)
+        const auto name = _read_string(&ok);
+        if (name.isEmpty() || !ok) {
+            qWarning() << "failed to read jso data name";
             break;
-        auto size = _read_raw<uint16_t>(&ok);
+        }
+
+        bool zip = extid == extid_e::zip;
+
+        auto size = zip ? _read_raw<uint32_t>(&ok) : _read_raw<uint16_t>(&ok);
         if (!ok)
             break;
         auto fsize = this->size() - pos();
@@ -667,11 +688,18 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
             qWarning() << "failed to read raw data" << size;
             break;
         }
+        if (zip) {
+            data = qUncompress(data);
+            if (data.isEmpty()) {
+                qWarning() << "failed to uncompress raw data";
+                break;
+            }
+        }
 
-        _counters.raw++;
+        _counters.raw_by_name[name]++;
 
         // qDebug() << "raw" << id << size << is_uplink;
-        emit raw(_ts_s, id, data, is_uplink);
+        emit raw(_ts_s, name, data, is_uplink);
         return true;
     }
 
@@ -696,41 +724,19 @@ void TelemetryFileReader::_commit_values()
     }
 }
 
-void TelemetryFileReader::_json_patch(const QJsonObject &orig,
-                                      const QJsonObject &patch,
-                                      QJsonObject &result)
+QStringList TelemetryFileReader::_read_reg()
 {
-    for (auto it = orig.begin(); it != orig.end(); ++it) {
-        auto key = it.key();
-        auto value = it.value();
+    bool ok = false;
+    auto name = _read_string(&ok);
+    if (name.isEmpty() || !ok)
+        return {};
 
-        if (value.isObject()) {
-            if (!patch.contains(key)) {
-                result[key] = value;
-                continue;
-            }
-            QJsonObject sub;
-            _json_patch(orig[key].toObject(), value.toObject(), sub);
-            if (!sub.isEmpty())
-                result[key] = sub;
-        } else if (value.isArray()) {
-            if (!patch.contains(key)) {
-                result[key] = value;
-                continue;
-            }
-            auto orig_a = value.toArray();
-            auto patch_a = patch[key].toArray();
-            QJsonArray sub;
-            for (int i = 0; i < orig_a.size(); ++i) {
-                QJsonObject d;
-                _json_patch(orig_a.at(i).toObject(), patch_a.at(i).toObject(), d);
-                sub.append(d);
-            }
-            if (!sub.isEmpty())
-                result[key] = sub;
-        } else {
-            // keep original value
-            result[key] = value;
-        }
+    QStringList strings{{name}};
+    size_t N = _read_raw<uint8_t>(&ok);
+    while (ok && N--) {
+        strings.append(_read_string(&ok));
     }
+    if (!ok)
+        return {};
+    return strings;
 }

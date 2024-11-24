@@ -33,8 +33,6 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , _vehicle(vehicle)
 {
-    _stream.setFields(prepareFieldsMap());
-
     setIcon("record-rec");
 
     f_enable = new Fact(parent,
@@ -44,6 +42,14 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
                         Bool);
     connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::recordingChanged);
     connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::restartRecording);
+
+    // prepare fields map
+    for (auto f : _vehicle->f_mandala->valueFacts()) {
+        // guess best field storage format
+        auto uid = f->uid();
+        auto dspec = mandala::dspec_for_uid(uid);
+        _fields_map[uid] = {f->mpath(), {f->title(), f->units()}, dspec};
+    }
 
     // record doenlink/uplink
     connect(vehicle->f_mandala,
@@ -138,6 +144,10 @@ void TelemetryRecorder::checkFileRecord()
     if (filePath.isEmpty())
         return;
 
+    auto fileDir = QFileInfo(filePath).absoluteDir();
+    if (!fileDir.exists())
+        fileDir.mkpath(".");
+
     _stream_file.setFileName(filePath);
     if (!_stream_file.open(QIODevice::WriteOnly)) {
         apxMsgW() << tr("Failed to open file").append(':') << filePath;
@@ -149,9 +159,8 @@ void TelemetryRecorder::checkFileRecord()
     for (auto f : _vehicle->f_mandala->valueFacts()) {
         if (!(f->everReceived() || f->everSent()))
             continue;
-        auto field_index = _fields_map.indexOf(f->uid());
-        if (field_index >= 0)
-            _stream.write_value(field_index, f->value());
+        const auto &field = _fields_map[f->uid()];
+        _stream.write_value(&field, f->value());
     }
 
     // record initial meta data
@@ -193,29 +202,16 @@ QJsonObject TelemetryRecorder::prepareFileInfo()
     return info;
 }
 
-TelemetryFileWriter::Fields TelemetryRecorder::prepareFieldsMap()
-{
-    TelemetryFileWriter::Fields fields;
-    for (auto f : _vehicle->f_mandala->valueFacts()) {
-        // guess best field storage format
-        auto dspec = mandala::dspec_for_uid(f->uid());
-        fields.push_back({f->mpath(), f->title(), f->units(), dspec});
-
-        // uid to field index in file fields
-        _fields_map.push_back(f->uid());
-    }
-    return fields;
-}
 TelemetryFileWriter::Values TelemetryRecorder::prepareValues(const PBase::Values &values) const
 {
     TelemetryFileWriter::Values vlist;
     for (auto const [uid, value] : values) {
-        auto field_index = _fields_map.indexOf(uid);
-        if (field_index < 0) {
+        auto it = _fields_map.find(uid);
+        if (it == _fields_map.end()) {
             qWarning() << "field not found" << uid << value << _fields_map.size();
             continue;
         }
-        vlist.push_back({field_index, value});
+        vlist[&it->second] = value;
     }
     return vlist;
 }
@@ -285,24 +281,27 @@ void TelemetryRecorder::recordNotification(QString msg,
     if (flags & AppNotify::FromVehicle)
         return;
 
-    _stream.write_msg(getEventTimestamp(), msg, "gcs/" + subsystem);
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {msg, "gcs/" + subsystem});
 }
 
 void TelemetryRecorder::recordMsg(QString msg, QString subsystem)
 {
     if (msg.isEmpty())
         return;
-    _stream.write_msg(getEventTimestamp(), msg, subsystem);
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {msg, subsystem});
 }
 
 void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString value)
 {
-    value = QString("%1/%2=%3").arg(node->title()).arg(name).arg(value);
-    _stream.write_evt(getEventTimestamp(), "conf", value, node->uid(), true);
+    name = QString("%1/%2").arg(node->title()).arg(name);
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_CONF, {name, value, node->uid()}, true);
 }
 void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool uplink)
 {
-    _stream.write_raw(getEventTimestamp(), portNo, data, uplink);
+    QByteArray d;
+    d.append((char) portNo, 2);
+    d.append(data);
+    _stream.write_raw(getEventTimestamp(), "vcp", d, uplink);
 }
 
 void TelemetryRecorder::recordMission(bool uplink)
@@ -312,10 +311,8 @@ void TelemetryRecorder::recordMission(bool uplink)
     auto mission = _vehicle->f_mission->toJsonDocument().object();
     auto title = mission["title"].toString();
     auto hash = mission["hash"].toString();
-    // write event
-    _stream.write_evt(getEventTimestamp(), "mission", title, hash, uplink);
-    // write mission data as meta record
-    _stream.write_meta("mission", mission, uplink);
+
+    _stream.write_jso(getEventTimestamp(), "mission", mission, uplink);
 }
 void TelemetryRecorder::recordConfig(QString hash, QString title)
 {
@@ -325,8 +322,7 @@ void TelemetryRecorder::recordConfig(QString hash, QString title)
         return;
     _configHash = hash;
 
-    _stream.write_timestamp(getEventTimestamp());
-    _stream.write_meta("nodes", _vehicle->toJsonDocument().object(), false);
+    _stream.write_jso(getEventTimestamp(), "nodes", _vehicle->toJsonDocument().object(), false);
 }
 
 bool TelemetryRecorder::checkAutoRecord(void)

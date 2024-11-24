@@ -24,6 +24,7 @@
 #include <QtCore>
 
 #include "TelemetryFileFormat.h"
+#include "TelemetryFileWriter.h"
 
 class XbusStreamReader;
 
@@ -33,13 +34,9 @@ class TelemetryFileReader : public QObject, private QDataStream
 
 public:
     // datatypes used in data signals
-    struct Field
-    {
-        QString name;
-        QString title;
-        QString units;
-    };
-    using Values = QHash<size_t, QVariant>;
+    using Field = TelemetryFileWriter::FieldBase;
+    using Values = std::map<size_t, QVariant>;
+    using Event = TelemetryFileWriter::Event;
 
     explicit TelemetryFileReader(QIODevice *d = nullptr, const QString &name = {});
 
@@ -86,13 +83,13 @@ private:
     // helpers
     telemetry::dspec_s _read_dspec();
     QString _read_string(bool *ok);
-    QJsonObject _read_meta_data();
-
+    QJsonObject _read_jso_content();
     QJsonObject _read_info();
+    QStringList _read_reg();
 
     QVariant _read_value(telemetry::dspec_e dspec);
     bool _read_ext(telemetry::extid_e extid, bool is_uplink);
-    std::pair<QString, QJsonObject> _read_meta();
+    std::pair<QString, QJsonObject> _read_jso();
 
     template<typename T>
     T _read_raw(bool *ok, size_t sz = sizeof(T))
@@ -111,30 +108,31 @@ private:
     quint32 _ts_s;
     uint16_t _widx;
     bool _next_uplink;
-    QHash<QString, QJsonObject> _meta_objects;
-    QStringList _evt_names;
+    QHash<QString, QJsonObject> _jso_s;
 
     // data counters to be saved in metadata
     struct
     {
-        qint64 records;
-        qint64 fields;
+        qint64 records; // total number of records in file
 
-        qint64 uplink;
-        qint64 downlink;
+        qint64 uplink;   // uplink records
+        qint64 downlink; // downlink records
 
-        qint64 evt;
-        qint64 msg;
-        qint64 meta;
-        qint64 raw;
+        // each record type counter
+        qint64 ts;
+        qint64 dir;
+        qint64 field;
+        qint64 evtid;
 
-        qint64 mission;
-        qint64 nodes;
-        qint64 conf;
+        std::map<QString, qint64> jso_by_name;
+        std::map<QString, qint64> evt_by_name;
+        std::map<QString, qint64> raw_by_name;
+
     } _counters;
 
     // fields data
-    QList<Field> _fields; // used internally
+    std::vector<Field> _field_index; // used internally
+    std::vector<Event> _evt_index;   // used internally
 
     // values data
     Values _downlink_values;
@@ -142,7 +140,6 @@ private:
     void _commit_values();
 
     void _reset_data();
-    void _json_patch(const QJsonObject &orig, const QJsonObject &patch, QJsonObject &result);
 
     void setProgress(int value);
     int _progress{-1};
@@ -151,12 +148,11 @@ signals:
     void progressChanged(int value);
 
     // called by parse_payload
-    void field(QString name, QString title, QString units);
+    void field(Field field);
     void values(quint64 timestamp_ms, Values data, bool uplink);
-    void evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
-    void msg(quint64 timestamp_ms, QString text, QString subsystem);
-    void meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
-    void raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
+    void evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void raw(quint64 timestamp_ms, QString name, QByteArray data, bool uplink);
 
     // called by parse_header
     void infoUpdated(QJsonObject data);

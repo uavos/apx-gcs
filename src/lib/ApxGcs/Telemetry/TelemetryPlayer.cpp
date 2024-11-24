@@ -43,9 +43,9 @@ TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Vehicle *vehicle, Fact
     connect(reader, &TelemetryReader::rec_started, this, &TelemetryPlayer::rec_started);
     connect(reader, &TelemetryReader::rec_finished, this, &TelemetryPlayer::rec_finished);
 
+    connect(&_stream, &TelemetryFileReader::field, this, &TelemetryPlayer::rec_field);
     connect(&_stream, &TelemetryFileReader::values, this, &TelemetryPlayer::rec_values);
     connect(&_stream, &TelemetryFileReader::evt, this, &TelemetryPlayer::rec_evt);
-    connect(&_stream, &TelemetryFileReader::msg, this, &TelemetryPlayer::rec_msg);
 
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActive);
 
@@ -215,99 +215,113 @@ void TelemetryPlayer::rec_finished()
 {
     const auto &filePath = reader->recordFilePath();
     _stream_file.setFileName(filePath);
-
-    // fill fields map
-    _fieldsMap.clear();
-    int idx = 0;
-    for (const auto &i : reader->fields()) {
-        _fieldsMap.insert(idx, vehicle->f_mandala->fact(i.name, true));
-        idx++;
-    }
 }
 
+void TelemetryPlayer::rec_field(TelemetryReader::Field field)
+{
+    if (!active())
+        return;
+
+    auto f = vehicle->f_mandala->fact(field.name, true);
+    _facts_by_index.push_back(f);
+}
 void TelemetryPlayer::rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink)
 {
     if (!active())
         return;
 
-    for (auto [idx, value] : data.asKeyValueRange()) {
-        _values.insert(idx, value);
+    // just store values to update later
+    for (const auto &[index, value] : data) {
+        _values[index] = value;
+    }
 
-        if (uplink && _values_init) {
-            auto f = _fieldsMap.value(idx);
-            if (!f)
-                continue;
-            const QString &s = f->mpath();
+    // report uplink values
+    if (!uplink || !_values_init)
+        return;
+
+    for (const auto &[index, value] : data) {
+        auto f = updateMandalaFact(index, value);
+        if (f) {
+            auto s = f->mpath();
             if (s.startsWith("cmd.rc."))
                 continue;
             if (s.startsWith("cmd.gimbal."))
                 continue;
-            f->setValue(value);
-            vehicle->message(QString("%1: %2 = %3").arg(">").arg(f->title()).arg(f->text()),
-                             AppNotify::Important);
+            vehicle->message(QString(">%1=%2").arg(f->title(), f->text()), AppNotify::Important);
+            continue;
         }
+        // field not found in current mandala
+        auto s = reader->fields().value(index).name;
+        if (s.isEmpty())
+            continue;
+        if (s.startsWith("rc_"))
+            continue;
+        vehicle->message(QString(">%1").arg(s), AppNotify::Important);
     }
 }
-void TelemetryPlayer::rec_evt(
-    quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink)
+void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
 {
     if (!active())
         return;
 
-    if (name == "conf") {
-        loadConfValue(uid, value);
-        if (_values_init) {
-            QString fn = value.left(value.indexOf('='));
-            if (value.size() > (fn.size() + 32) || value.contains('\n')) {
-                value = fn + "=<data>";
-            }
-        }
-    } else if (name == "mission") {
+    QString subsystem;
+
+    if (name == telemetry::EVT_MSG.name) {
+        name = data["txt"].toString();
+        subsystem = data["src"].toString();
+
+    } else if (name == telemetry::EVT_CONF.name) {
+        auto uid = data["uid"].toString();
+        auto param = data["param"].toString();
+        auto value = data["value"].toString();
+        loadConfValue(uid, param, value);
+
+        if (value.size() > (param.size() + 32) || value.contains('\n'))
+            value = "<data>";
+        name = QString("%1=%2").arg(param).arg(value);
+    }
+
+    /*else if (name == "mission") {
         if (_values_init)
             vehicle->f_mission->storage->loadMission(uid);
     } else if (name == "nodes") {
         if (_values_init)
             vehicle->storage()->loadVehicleConfig(uid);
-    }
+    }*/
 
-    if (!_values_init)
+    if (!_values_init || name.isEmpty() || !active())
         return;
 
     AppNotify::NotifyFlags flags = AppNotify::Important;
     if (!uplink)
         flags |= AppNotify::FromVehicle;
-    QString s = QString("%1: %2").arg(uplink ? ">" : "<").arg(name);
-    if (!value.isEmpty())
-        s.append(QString(" (%1)").arg(value));
-    vehicle->message(s, flags);
-}
-void TelemetryPlayer::rec_msg(quint64 timestamp_ms, QString text, QString subsystem)
-{
-    if (!active() || !_values_init)
-        return;
-    vehicle->message(QString("<: %1").arg(text),
-                     AppNotify::FromVehicle | AppNotify::Important,
-                     subsystem);
-    App::sound(text);
+    auto s = QString("%1: %2").arg(uplink ? ">" : "<").arg(name);
+    vehicle->message(s, flags, subsystem);
 }
 
-void TelemetryPlayer::loadConfValue(const QString &sn, QString s)
+MandalaFact *TelemetryPlayer::updateMandalaFact(size_t index, const QVariant &value)
 {
-    NodeItem *node = vehicle->f_nodes->node(sn);
+    if (index >= _facts_by_index.size())
+        return {}; // should never happen
+
+    auto f = _facts_by_index[index];
+    if (f)
+        f->setValue(value);
+    return f;
+}
+
+void TelemetryPlayer::loadConfValue(QString uid, QString param, QString value)
+{
+    auto node = vehicle->f_nodes->node(uid);
     if (!node) {
-        qWarning() << "missing node" << sn;
+        qWarning() << "missing node" << uid;
         return;
     }
-    int del = s.indexOf('=');
-    if (del < 0)
+    if (param.startsWith(node->title()))
+        param.remove(0, node->title().size() + 1);
+    if (param.isEmpty())
         return;
-    QString spath = s.left(del).trimmed();
-    QString sv = s.mid(del + 1);
-    if (spath.startsWith(node->title()))
-        spath.remove(0, node->title().size() + 1);
-    if (spath.isEmpty())
-        return;
-    node->loadConfigValue(spath, sv);
+    node->loadConfigValue(param, value);
 }
 
 void TelemetryPlayer::next()
@@ -340,11 +354,10 @@ void TelemetryPlayer::next()
         blockTimeChange = false;
     }
 
+    // update data values
     if (updated || !ok) {
-        for (auto [idx, value] : _values.asKeyValueRange()) {
-            auto f = _fieldsMap.value(idx);
-            if (f)
-                f->setValue(value);
+        for (const auto &[index, value] : _values) {
+            updateMandalaFact(index, value);
         }
         _values.clear();
         vehicle->f_mandala->telemetryDecoded();

@@ -75,9 +75,9 @@ void TelemetryReader::loadRecord(quint64 id)
     _fields.clear();
     _geoPath = {};
     _totalDistance = 0;
-    _fidx_lat = -1;
-    _fidx_lon = -1;
-    _fidx_hmsl = -1;
+    _index_lat = -1;
+    _index_lon = -1;
+    _index_hmsl = -1;
     _geoPos = {};
 
     deleteChildren();
@@ -103,52 +103,59 @@ void TelemetryReader::loadRecord(quint64 id)
             &db::storage::TelemetryLoadInfo::recordInfo,
             this,
             &TelemetryReader::recordInfoUpdated);
+
     connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::rec_field);
     connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::rec_values);
     connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::rec_evt);
-    connect(reader, &TelemetryFileReader::msg, this, &TelemetryReader::rec_msg);
-    connect(reader, &TelemetryFileReader::meta, this, &TelemetryReader::rec_meta);
+    connect(reader, &TelemetryFileReader::jso, this, &TelemetryReader::rec_jso);
     connect(reader, &TelemetryFileReader::raw, this, &TelemetryReader::rec_raw);
 
     // processed by reader
     connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::do_rec_field);
     connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::do_rec_values);
     connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::do_rec_evt);
-    connect(reader, &TelemetryFileReader::meta, this, &TelemetryReader::do_rec_meta);
+    connect(reader, &TelemetryFileReader::jso, this, &TelemetryReader::do_rec_jso);
 
     // start parsing
     emit rec_started();
     req->exec();
 }
 
-void TelemetryReader::do_rec_field(QString name, QString title, QString units)
+void TelemetryReader::do_rec_field(Field field)
 {
-    _fields.append({name, title, units});
+    _fields.append(field);
+    auto name = field.name;
+    auto index = _fields.size() - 1;
 
     if (name == "est.pos.lat")
-        _fidx_lat = _fields.size() - 1;
+        _index_lat = index;
     else if (name == "est.pos.lon")
-        _fidx_lon = _fields.size() - 1;
+        _index_lon = index;
     else if (name == "est.pos.hmsl")
-        _fidx_hmsl = _fields.size() - 1;
+        _index_hmsl = index;
 }
 void TelemetryReader::do_rec_values(quint64 timestamp_ms, Values data, bool uplink)
 {
     if (uplink) {
-        for (auto [idx, value] : data.asKeyValueRange()) {
-            const auto &f = _fields.value(idx);
-            addEventFact(timestamp_ms, "uplink", f.title, f.name);
+        for (auto [index, value] : data) {
+            const auto &field = _fields[index];
+            QJsonObject jso;
+            jso["path"] = field.name;
+            jso["title"] = field.info.value(0);
+            jso["value"] = QJsonValue::fromVariant(value);
+            addEventFact(timestamp_ms, "uplink", jso, uplink);
         }
         return;
     }
 
     // collect flight path
-    for (auto [idx, value] : data.asKeyValueRange()) {
-        if (idx == _fidx_lat)
+    for (auto [index, value] : data) {
+        // normally all three components should be present in one record
+        if (index == _index_lat)
             _geoPos.setLatitude(value.toDouble());
-        else if (idx == _fidx_lon)
+        else if (index == _index_lon)
             _geoPos.setLongitude(value.toDouble());
-        else if (idx == _fidx_hmsl)
+        else if (index == _index_hmsl)
             _geoPos.setAltitude(value.toDouble());
     }
     if (_geoPos.isValid()) {
@@ -163,14 +170,15 @@ void TelemetryReader::do_rec_values(quint64 timestamp_ms, Values data, bool upli
         _geoPos = {};
     }
 }
-void TelemetryReader::do_rec_evt(
-    quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink)
+void TelemetryReader::do_rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
 {
-    addEventFact(timestamp_ms, name, value, uid);
+    addEventFact(timestamp_ms, name, data, uplink);
 }
 
-void TelemetryReader::do_rec_meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
+void TelemetryReader::do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
 {
+    addEventFact(timestamp_ms, name, data, uplink);
+
     if (_importedMeta.contains(_loadRecordID))
         return;
 
@@ -241,59 +249,65 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
     emit recordInfoChanged();
 }
 
-void TelemetryReader::addEventFact(quint64 time,
-                                   const QString &name,
-                                   const QString &value,
-                                   const QString &uid,
-                                   const QVariant &data)
+void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data, bool uplink)
 {
     Fact *g = child(name);
     if (!g) {
         g = new Fact(this, name, "", "", Fact::Group | Fact::Count);
     }
 
+    name.replace('.', '_');
+
     Fact *f = nullptr;
     if (name == "uplink") {
-        auto suid = QString(uid).replace('.', '_');
-        f = g->child(suid);
+        auto path = data.value("path").toString();
+        auto title = data.value("title").toString();
+        auto value = data.value("value").toString();
+        f = g->child(path);
         if (!f) {
-            f = new Fact(g, suid, uid, value);
+            f = new Fact(g, path, title, path);
             //qDebug() << name << value;
             f->setValue(1);
         } else {
             f->setValue(f->value().toInt() + 1);
         }
-    } else if (name == "serial") {
-        f = g->childByTitle(uid);
+    } else if (name == "vcp") {
+        auto id = data.value("id").toString();
+        f = g->childByTitle(id);
         if (!f) {
-            f = new Fact(g, uid, uid, "");
+            f = new Fact(g, id, id, uplink ? "TX" : "RX");
             //qDebug() << name << value;
             f->setValue(1);
         } else {
             f->setValue(f->value().toInt() + 1);
         }
+    } else if (name == telemetry::EVT_MSG.name) {
+        auto msg = data.value("txt").toString();
+        auto src = data.value("src").toString();
+        f = new Fact(g, name + "#", msg, src);
+    } else if (name == telemetry::EVT_CONF.name) {
+        auto param = data.value("param").toString();
+        auto value = data.value("value").toString();
+        auto uid = data.value("uid").toString();
+        auto title = QString("%1=%2").arg(param).arg(value);
+        f = new Fact(g, name + "#", title, uid);
     } else {
-        QString title;
-        if (name == "xpdr")
-            title = name;
-        else
-            title = value;
-        QString descr = uid;
-        if (title.startsWith('[') && title.contains(']')) {
-            int i = title.indexOf(']');
-            QString s = title.mid(1, i - 1).trimmed();
-            title.remove(0, i + 1);
-            if (!s.isEmpty())
-                descr.prepend(QString("%1/").arg(s));
-        }
-        auto sname = QString(name).replace('.', '_');
-        f = new Fact(g, sname + "#", title, descr);
-        QString stime = QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz");
-        f->setValue(stime);
+        static const QHash<QString, QString> title_keys = {
+            // {"info", "name_create"},
+        };
+        auto key = title_keys.value(name, "title");
+        auto title = data.value(key).toString();
+        f = new Fact(g, name + "#", title, {});
+        f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
+        f->setOpt("info", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
     }
 
     if (!f)
         return;
+
+    if (f->value().isNull())
+        f->setValue(QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz"));
+
     f->setProperty("time", QVariant::fromValue(time));
     connect(f, &Fact::triggered, this, [this, f]() { emit statsFactTriggered(f); });
 }

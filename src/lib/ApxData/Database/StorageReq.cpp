@@ -554,9 +554,11 @@ bool TelemetryExport::run(QSqlQuery &query)
             fields << "time";
             fields << "uplink";
             {
-                auto c = connect(&reader, &TelemetryFileReader::field, [&fields](QString name) {
-                    fields << name;
-                });
+                auto c = connect(&reader,
+                                 &TelemetryFileReader::field,
+                                 [&fields](TelemetryFileReader::Field field) {
+                                     fields << field.name;
+                                 });
                 reader.parse_payload();
                 disconnect(c);
             }
@@ -582,13 +584,11 @@ bool TelemetryExport::run(QSqlQuery &query)
 
             connect(&reader,
                     &TelemetryFileReader::values,
-                    [&out,
-                     &values](quint64 timestamp_ms, TelemetryFileReader::Values data, bool uplink) {
-                        for (auto const &value : data.asKeyValueRange()) {
-                            auto index = value.first + 2;
-                            if (index >= values.size())
-                                continue;
-                            values[index] = value.second.toString();
+                    [&out, &values, &fields](quint64 timestamp_ms,
+                                             TelemetryFileReader::Values data,
+                                             bool uplink) {
+                        for (const auto &[index, value] : data) {
+                            values[index + 2] = value.toString();
                         }
                         values[0] = QString::number(timestamp_ms);
                         values[1] = uplink ? "1" : "0";

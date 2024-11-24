@@ -92,17 +92,17 @@ static constexpr const char *dspec_names[] = {
 // special non-value data formats
 enum class extid_e : uint8_t { // 4 bits (part of dspec)
     // core services
-    stop = 0, // [dspec==0] stop reading/writing stream (stats are written after this)
-    ts,       // [ms] u32 timestamp update relative to file
-    dir,      // direction marker for next dspec (uplink)
-    field,    // [name,title,units] strings of used fields sequence
-    evtid,    // [name,size] used event names (255 max), size is number od strings
+    stop = 0, // dspec==0, stop reading/writing stream (stats are written after this)
+    ts,       // <u32> [ms] timestamp update relative to file
+    dir,      // direction marker for next dspec (i.e. uplink)
+    field,    // <name><u8 N><str1><str2>...<strN> fields defs (name,title,descr,...)
+    evtid,    // <name><u8 N><str1><str2>...<strN> event defs (name,value,uid,...)
 
-    // special data types, strings separated by 0 and list terminated by another 0
-    evt = 8, // [evtid,value,uid] generic event (conf update)
-    msg,     // [text,subsystem] text message
-    meta,    // [name,size(32),meta_zip(...)] json full or diff (nodes,mission)
-    raw,     // [id(16),size(16),data(...)] raw data (serial vcp)
+    // special data types, strings separated by 0
+    evt = 8, // <u8 evtid><str1><str2>...<strN> generic event
+    jso,     // <name><u32 size><zip[size]> json object, full or diff (i.e. config, mission)
+    raw,     // <name><u16 size><data[size]> raw binary data (i.e. serial, vcp)
+    zip,     // <name><u32 size><zip[size]> compressed raw binary data
 };
 
 static constexpr const auto MIN_ZCOMP = 64;    // minimum size to use zlib compression

@@ -161,7 +161,7 @@ void Telemetry::recordLoaded()
     vehicle->f_mandala->resetCounters();
 
     // load mission and config
-    Fact *f = f_reader->child("mission");
+    /*Fact *f = f_reader->child("mission");
     if (f && f->size() > 0) {
         f = f->child(0);
         if (f)
@@ -172,5 +172,5 @@ void Telemetry::recordLoaded()
         f = f->child(f->size() - 1);
         if (f)
             f->trigger();
-    }
+    }*/
 }

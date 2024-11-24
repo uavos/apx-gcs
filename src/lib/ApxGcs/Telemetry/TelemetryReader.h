@@ -52,26 +52,23 @@ public:
 
 private:
     quint64 _loadRecordID{};
-    QList<Field> _fields;
+    QList<Field> _fields; // store read fields copy
     QJsonObject _recordInfo;
     QString _recordFilePath;
 
+    // geo path calculation
     QGeoPath _geoPath;
     quint64 _totalDistance;
-    int _fidx_lat;
-    int _fidx_lon;
-    int _fidx_hmsl;
+    int _index_lat;
+    int _index_lon;
+    int _index_hmsl;
     QGeoCoordinate _geoPos;
 
     QSet<quint64> _importedMeta; // keep track of imported nodes and missions
 
     bool blockNotesChange;
 
-    void addEventFact(quint64 time,
-                      const QString &name,
-                      const QString &value,
-                      const QString &uid,
-                      const QVariant &data = {});
+    void addEventFact(quint64 time, QString name, QJsonObject data, bool uplink);
 
 private slots:
     void notesChanged();
@@ -79,21 +76,21 @@ private slots:
 
     void setRecordInfo(quint64 id, QJsonObject info, QString notes);
 
-    void do_rec_field(QString name, QString title, QString units);
+    void do_rec_field(Field field);
     void do_rec_values(quint64 timestamp_ms, Values data, bool uplink);
-    void do_rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
-    void do_rec_meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void do_rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
 
 signals:
     // forwarded signals from file reader
     void rec_started();
     void rec_finished();
-    void rec_field(QString name, QString title, QString units);
+
+    void rec_field(Field field);
     void rec_values(quint64 timestamp_ms, Values data, bool uplink);
-    void rec_evt(quint64 timestamp_ms, QString name, QString value, QString uid, bool uplink);
-    void rec_msg(quint64 timestamp_ms, QString text, QString subsystem);
-    void rec_meta(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
-    void rec_raw(quint64 timestamp_ms, uint16_t id, QByteArray data, bool uplink);
+    void rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void rec_raw(quint64 timestamp_ms, QString name, QByteArray data, bool uplink);
 
     // called when file parsed and header info collected
     void recordInfoUpdated(quint64 id, QJsonObject info);

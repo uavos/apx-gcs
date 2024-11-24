@@ -23,34 +23,15 @@
 
 #include <QtCore>
 
-#include <Mandala/Mandala.h>
-#include <Mandala/MandalaContainers.h>
+namespace json {
 
-class TelemetryFileImport : public QTemporaryFile
-{
-    Q_OBJECT
+QJsonObject add_content(QJsonObject jso, const QJsonObject &jso_add);
+QJsonObject filter_names(QJsonObject jso, const QStringList &names = {}, bool recursive = true);
+QJsonObject fix_numbers(QJsonObject jso, const QStringList &names = {}, bool recursive = true);
 
-public:
-    explicit TelemetryFileImport(QObject *parent = nullptr);
+QJsonObject rename(QJsonObject jso, const QHash<QString, QString> &map);
 
-    bool import_telemetry(QString srcFileName);
+QJsonObject patch(const QJsonObject &orig, const QJsonObject &patch);
+QJsonObject diff(const QJsonObject &prev, const QJsonObject &next);
 
-    const QJsonObject &info() const { return _info; }
-    const QString &src_hash() const { return _src_hash; }
-
-private:
-    QJsonObject _info;
-    QString _src_hash;
-    QString _srcFileName;
-
-    bool import_telemetry_v11(QXmlStreamReader &xml, QString format);
-    bool import_telemetry_v9(QXmlStreamReader &xml);
-
-    QJsonObject import_mission(QXmlStreamReader &xml);
-
-    // helpers
-    QJsonObject readObject(QXmlStreamReader &xml);
-
-signals:
-    void progress(int value);
-};
+} // namespace json
