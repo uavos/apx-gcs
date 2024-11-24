@@ -475,7 +475,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
                 auto jso = import_mission(xml);
                 if (jso.isEmpty())
                     continue;
-                jso["import"] = json::add_content(jso["import"].toObject(), jso_import);
+                jso["import"] = json::merge(jso["import"].toObject(), jso_import);
                 qDebug() << tag << jso;
                 stream.write_jso(time_tag, tag, jso, false);
                 continue;

@@ -25,13 +25,19 @@
 
 namespace json {
 
-QJsonObject add_content(QJsonObject jso, const QJsonObject &jso_add);
+void save(QString fileName, const QJsonObject &jso);
+
 QJsonObject filter_names(QJsonObject jso, const QStringList &names = {}, bool recursive = true);
+
 QJsonObject fix_numbers(QJsonObject jso, const QStringList &names = {}, bool recursive = true);
+QJsonArray fix_numbers(QJsonArray jsa, const QStringList &names = {}, bool recursive = true);
 
 QJsonObject rename(QJsonObject jso, const QHash<QString, QString> &map);
 
-QJsonObject patch(const QJsonObject &orig, const QJsonObject &patch);
 QJsonObject diff(const QJsonObject &prev, const QJsonObject &next);
+QJsonArray diff(const QJsonArray &prev, const QJsonArray &next);
+
+QJsonObject merge(QJsonObject orig, const QJsonObject &patch);
+QJsonArray merge(QJsonArray orig, const QJsonArray &patch);
 
 } // namespace json

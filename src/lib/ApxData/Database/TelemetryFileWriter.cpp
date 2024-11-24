@@ -222,18 +222,21 @@ void TelemetryFileWriter::write_jso(quint32 timestamp_ms,
     // check if file already written
     auto it = _jso_s.find(name);
     if (it != _jso_s.end()) {
-        auto diff = json::diff(it->second, data);
+        auto prev = it->second;
+        auto diff = json::diff(prev, data);
         if (diff.isEmpty()) {
             qDebug() << name << "json diff is empty";
             return;
         }
         _jso_s[name] = data;
         jdata = QJsonDocument(diff).toJson(QJsonDocument::Compact);
-        // qDebug() << name << "json diff:" << diff;
+        // json::save(name + "-diff", diff);
+        // json::save(name + "-data", data);
+        // json::save(name + "-test", json::merge(prev, diff));
     } else {
         _jso_s[name] = data;
         jdata = QJsonDocument(data).toJson(QJsonDocument::Compact);
-        // qDebug() << name << "json:" << data;
+        // json::save(name + "-orig", data);
     }
 
     if (timestamp_ms > 0)

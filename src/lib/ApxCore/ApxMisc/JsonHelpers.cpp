@@ -21,22 +21,25 @@
  */
 #include "JsonHelpers.h"
 
-QJsonObject json::add_content(QJsonObject jso, const QJsonObject &jso_add)
+void json::save(QString fileName, const QJsonObject &jso)
 {
-    // add missing fields to jso
-    for (auto it = jso_add.begin(); it != jso_add.end(); ++it) {
-        auto key = it.key();
-        auto value = it.value();
-
-        if (value.isNull() || value.isUndefined() || value.toString().isEmpty())
-            continue; // skip empty values
-
-        if (jso.contains(key))
-            continue; // skip existing fields
-
-        jso[key] = value;
+    // default to downloads folder
+    auto fi = QFileInfo(fileName);
+    if (fi.suffix() != "json") {
+        fileName = fileName + ".json";
+        fi = QFileInfo(fileName);
     }
-    return jso;
+
+    if (fi.isRelative()) {
+        fileName = QDir(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
+                       .absoluteFilePath(fi.fileName());
+    }
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << "failed to open file" << fileName;
+        return;
+    }
+    file.write(QJsonDocument(jso).toJson(QJsonDocument::Indented).constData());
 }
 
 QJsonObject json::filter_names(QJsonObject jso, const QStringList &names, bool recursive)
@@ -80,57 +83,63 @@ QJsonObject json::filter_names(QJsonObject jso, const QStringList &names, bool r
     return jso;
 }
 
+static QJsonValueRef _fix_number(QJsonValueRef value,
+                                 const QStringList &names = {},
+                                 bool recursive = true)
+{
+    if (recursive) {
+        if (value.isObject()) {
+            value = json::fix_numbers(value.toObject(), names, recursive);
+            return value;
+        } else if (value.isArray()) {
+            value = json::fix_numbers(value.toArray(), names, recursive);
+            return value;
+        }
+    }
+
+    if (!value.isString())
+        return value;
+
+    auto s = value.toString();
+    bool ok = false;
+    if (s.contains('.')) {
+        auto d = s.toDouble(&ok);
+        if (ok)
+            value = d;
+    } else if (s.contains(':')) {
+        auto t = QTime::fromString(s, "hh:mm:ss");
+        if (t.isValid())
+            value = t.msecsSinceStartOfDay();
+    } else if (QStringList({"true", "false", "yes", "no"}).contains(s.toLower())) {
+        value = (s == "true" || s == "yes");
+    } else {
+        auto d = s.toLongLong(&ok);
+        if (ok)
+            value = d;
+    }
+    return value;
+}
+
 QJsonObject json::fix_numbers(QJsonObject jso, const QStringList &names, bool recursive)
 {
     // convert string numbers to numbers for keys in fields
     for (auto it = jso.begin(); it != jso.end(); ++it) {
         auto key = it.key();
-        auto value = it.value();
 
-        if (value.isString()) {
-            if (!names.isEmpty() && !names.contains(key))
-                continue;
-
-            auto s = value.toString();
-            bool ok = false;
-            if (s.contains('.')) {
-                auto d = s.toDouble(&ok);
-                if (ok)
-                    jso[key] = d;
-            } else if (s.contains(':')) {
-                auto t = QTime::fromString(s, "hh:mm:ss");
-                if (t.isValid())
-                    jso[key] = t.msecsSinceStartOfDay();
-            } else if (QStringList({"true", "false", "yes", "no"}).contains(s)) {
-                jso[key] = (s == "true" || s == "yes");
-            } else {
-                auto d = s.toLongLong(&ok);
-                if (ok)
-                    jso[key] = d;
-            }
-            continue;
-        }
-
-        if (!recursive)
+        if (!names.isEmpty() && !names.contains(key))
             continue;
 
-        if (value.isObject()) {
-            jso[key] = json::fix_numbers(value.toObject(), names, recursive);
-            // qDebug() << key << jso[key];
-        }
-        if (value.isArray()) {
-            QJsonArray arr;
-            for (auto v : value.toArray()) {
-                if (v.isObject()) {
-                    arr.append(json::fix_numbers(v.toObject(), names, recursive));
-                } else {
-                    arr.append(v);
-                }
-            }
-            jso[key] = arr;
-        }
+        _fix_number(it.value(), names, recursive);
     }
     return jso;
+}
+QJsonArray json::fix_numbers(QJsonArray jsa, const QStringList &names, bool recursive)
+{
+    // convert string numbers to numbers for keys in fields
+    for (auto v : jsa) {
+        _fix_number(v, names, recursive);
+    }
+    return jsa;
 }
 
 QJsonObject json::rename(QJsonObject jso, const QHash<QString, QString> &map)
@@ -148,68 +157,118 @@ QJsonObject json::rename(QJsonObject jso, const QHash<QString, QString> &map)
     return jso;
 }
 
-QJsonObject json::patch(const QJsonObject &orig, const QJsonObject &patch)
+static QJsonValue _diff(QJsonValue prev, QJsonValue next)
 {
-    QJsonObject result;
-    for (auto it = orig.begin(); it != orig.end(); ++it) {
-        auto key = it.key();
-        auto value = it.value();
-
-        if (value.isObject()) {
-            if (!patch.contains(key)) {
-                result[key] = value;
-                continue;
-            }
-            auto sub = json::patch(orig[key].toObject(), value.toObject());
-            if (!sub.isEmpty())
-                result[key] = sub;
-        } else if (value.isArray()) {
-            if (!patch.contains(key)) {
-                result[key] = value;
-                continue;
-            }
-            auto orig_a = value.toArray();
-            auto patch_a = patch[key].toArray();
-            QJsonArray sub;
-            for (int i = 0; i < orig_a.size(); ++i) {
-                auto d = json::patch(orig_a.at(i).toObject(), patch_a.at(i).toObject());
-                sub.append(d);
-            }
-            if (!sub.isEmpty())
-                result[key] = sub;
-        } else {
-            // keep original value
-            result[key] = value;
-        }
+    if (prev.isObject()) {
+        auto jso = json::diff(prev.toObject(), next.toObject());
+        return jso.isEmpty() ? QJsonValue() : jso;
     }
-    return result;
+    if (prev.isArray()) {
+        auto jsa = json::diff(prev.toArray(), next.toArray());
+        return jsa.isEmpty() ? QJsonValue() : jsa;
+    }
+
+    if (next.isNull() || next.isUndefined() || prev == next)
+        return QJsonValue();
+
+    if (prev.isNull() || prev.isUndefined()) {
+        return next; // not null or undefined or empty
+    }
+
+    return next;
 }
 
 QJsonObject json::diff(const QJsonObject &prev, const QJsonObject &next)
 {
     QJsonObject diff;
-    for (auto it = next.begin(); it != next.end(); ++it) {
-        auto pit = prev.find(it.key());
-        if (pit == prev.end()) {
-            // new key added
-            diff[it.key()] = it.value();
-            // qDebug() << "new key" << it.key() << it.value();
-        } else if (pit.value() != it.value()) {
-            // qDebug() << "value diff" << it.key() << pit.value() << it.value();
-            if (pit.value().isObject() && it.value().isObject()) {
-                diff[it.key()] = json::diff(pit.value().toObject(), it.value().toObject());
-            } else if (pit.value().isArray() && it.value().isArray()) {
-                QJsonArray da;
-                auto pa = pit.value().toArray();
-                auto na = it.value().toArray();
-                for (int i = 0; i < na.size(); ++i) {
-                    da.append(json::diff(pa.at(i).toObject(), na.at(i).toObject()));
-                }
-                diff[it.key()] = da;
-            } else {
-                diff[it.key()] = it.value();
-            }
-        }
+    for (auto next_it = next.begin(); next_it != next.end(); ++next_it) {
+        const auto key = next_it.key();
+
+        auto v = _diff(prev.value(key), next_it.value());
+        if (v.isNull())
+            continue;
+
+        diff[key] = v;
     }
     return diff;
+}
+
+QJsonArray json::diff(const QJsonArray &prev, const QJsonArray &next)
+{
+    QJsonArray diff;
+    for (int i = 0; i < next.size(); ++i) {
+        auto value = next.at(i);
+        auto v = _diff(i < prev.size() ? prev.at(i) : QJsonValue(), value);
+        diff.append(v);
+    }
+    // remove null values from tail
+    while (!diff.isEmpty() && diff.last().isNull())
+        diff.removeLast();
+    return diff;
+}
+
+static QJsonValue _merge(QJsonValue orig, const QJsonValue patch)
+{
+    if (orig.isObject()) {
+        auto jso = json::merge(orig.toObject(), patch.toObject());
+        return jso.isEmpty() ? QJsonValue() : jso;
+    }
+    if (orig.isArray()) {
+        auto jsa = json::merge(orig.toArray(), patch.toArray());
+        return jsa.isEmpty() ? QJsonValue() : jsa;
+    }
+
+    // filter out empty values from original object
+    // will add them from patch on next iteration
+    bool is_orig_missing = orig.isNull() || orig.isUndefined()
+                           || (orig.isObject() && orig.toObject().isEmpty())
+                           || (orig.isArray() && orig.toArray().isEmpty());
+
+    bool is_patch_missing = patch.isNull() || patch.isUndefined()
+                            || (patch.isObject() && patch.toObject().isEmpty())
+                            || (patch.isArray() && patch.toArray().isEmpty());
+
+    if (is_orig_missing) {
+        if (is_patch_missing)
+            return QJsonValue();
+        return patch;
+    }
+    // orig is not empty
+    if (is_patch_missing) {
+        return orig;
+    }
+    // replace value with patch
+    return patch;
+}
+
+QJsonObject json::merge(QJsonObject orig, const QJsonObject &patch)
+{
+    QJsonObject result;
+    for (auto it = orig.begin(); it != orig.end(); ++it) {
+        const auto key = it.key();
+        const auto v = _merge(it.value(), patch.value(key));
+        if (v.isNull() || v.isUndefined())
+            continue;
+        result[key] = v;
+    }
+    return result;
+}
+
+QJsonArray json::merge(QJsonArray orig, const QJsonArray &patch)
+{
+    // add missing array elements
+    while (patch.size() > orig.size())
+        orig.append(patch.at(orig.size()));
+
+    QJsonArray result;
+    int idx = 0;
+    for (auto value : orig) {
+        auto t = value.type();
+        auto v = _merge(value, patch.at(idx++));
+        if (v.isNull() || v.isUndefined())
+            v = QJsonValue(t); // keep original type
+        result.append(v);      // always keep original array length
+    }
+
+    return result;
 }

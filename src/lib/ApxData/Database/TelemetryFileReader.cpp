@@ -649,7 +649,7 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         }
         // merge with previous data
         if (_jso_s.contains(name)) {
-            auto jso_merged = json::patch(_jso_s[name], jso_data);
+            auto jso_merged = json::merge(_jso_s[name], jso_data);
             if (jso_merged.isEmpty()) {
                 qWarning() << "failed to patch jso data";
                 break;

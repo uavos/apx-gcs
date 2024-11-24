@@ -29,6 +29,8 @@
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicle.h>
 
+#include <ApxMisc/JsonHelpers.h>
+
 TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
     , _vehicle(vehicle)
