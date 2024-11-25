@@ -44,7 +44,7 @@ double OfflineElevationDB::getElevationASTER(double latitude, double longitude)
     if (!QFile::exists(fileName)) {
         return elevation;
     }
-    qDebug() << "Opening file\n\n\n" << fileName;
+    // qDebug() << "Opening file\n\n\n" << fileName;
 
     elevation = getElevationFromGeoFile(fileName, latitude, longitude);
     return elevation;
@@ -69,11 +69,11 @@ double OfflineElevationDB::getElevation(double latitude, double longitude)
     return getElevationASTER(latitude, longitude);
 }
 
-double OfflineElevationDB::getElevationFromGeoFile(QString &fileName,
+double OfflineElevationDB::getElevationFromGeoFile(QString fileName,
                                                    double latitude,
                                                    double longitude)
 {
-    const char *srcFilename = nullptr;
+    // const char *srcFilename = nullptr;
     char *srcSRS = nullptr;
     std::vector<int> anBandList;
     double elevation{NAN};
@@ -86,9 +86,10 @@ double OfflineElevationDB::getElevationFromGeoFile(QString &fileName,
     if (!srcSRS)
         return NAN;
 
-    srcFilename = fileName.toUtf8().constData();
+    auto str = fileName.toStdString();
+    auto srcFilename = str.c_str();
 
-    qDebug() << "Opening file" << srcFilename;
+    // qDebug() << "########### Opening file:" << srcFilename;
 
     // Open source file
     GDALDatasetH hSrcDS = GDALOpenEx(srcFilename,
