@@ -32,7 +32,7 @@ auto constexpr dspec_for_uid(const mandala::uid_t uid)
     mandala::type_id_e type_id = {};
 
     bool ok = false;
-    for (auto &m : mandala::meta) {
+    for (const auto &m : mandala::meta) {
         if (m.uid != uid)
             continue;
 

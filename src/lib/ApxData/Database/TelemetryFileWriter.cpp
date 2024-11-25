@@ -334,12 +334,8 @@ void TelemetryFileWriter::write_value(const Field *field, const QVariant &value,
     bool is_uint = dspec <= dspec_e::u64 || value.isNull();
     bool is_conv = !is_uint && (dspec == dspec_e::a16 || dspec == dspec_e::a32);
 
-    double value_d = value.toDouble();
-    uint64_t value_u; // will be set if value is integer (is_uint)
-
-    if (is_uint) {
-        value_u = value.toULongLong();
-    }
+    auto value_d = value.toDouble();
+    auto value_u = value.toULongLong();
 
     if (!is_uint && !is_conv) {
         auto t = value.typeId();
@@ -373,10 +369,10 @@ void TelemetryFileWriter::write_value(const Field *field, const QVariant &value,
             // value never posted before
             // initially - all values are assumed to be zero
             if (is_uint) {
-                if (value.toULongLong() == 0)
+                if (value_u == 0)
                     return;
             } else {
-                if (value.toFloat() == 0)
+                if (value_d == 0)
                     return;
             }
             _values_s.insert({field, value_d});
