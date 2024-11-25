@@ -124,11 +124,8 @@ QJsonObject json::fix_numbers(QJsonObject jso, const QStringList &names, bool re
 {
     // convert string numbers to numbers for keys in fields
     for (auto it = jso.begin(); it != jso.end(); ++it) {
-        auto key = it.key();
-
-        if (!names.isEmpty() && !names.contains(key))
+        if (!names.isEmpty() && !names.contains(it.key()))
             continue;
-
         _fix_number(it.value(), names, recursive);
     }
     return jso;

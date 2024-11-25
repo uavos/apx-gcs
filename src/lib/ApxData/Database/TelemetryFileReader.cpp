@@ -323,7 +323,7 @@ bool TelemetryFileReader::parse_payload()
         evt_names.append(i.name);
     _info["evt_names"] = evt_names;
 
-    _info = json::filter_names(json::fix_numbers(_info));
+    _info = json::fix_numbers(json::filter_names(_info));
 
     emit infoUpdated(_info);
 

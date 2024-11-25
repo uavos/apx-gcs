@@ -263,9 +263,10 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
         auto path = data.value("path").toString();
         auto title = data.value("title").toString();
         auto value = data.value("value").toString();
-        f = g->child(path);
+        name = QString(path).replace('.', '_');
+        f = g->child(name);
         if (!f) {
-            f = new Fact(g, path, title, path);
+            f = new Fact(g, name, title, path);
             //qDebug() << name << value;
             f->setValue(1);
         } else {
