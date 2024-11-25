@@ -44,6 +44,7 @@ double OfflineElevationDB::getElevationASTER(double latitude, double longitude)
     if (!QFile::exists(fileName)) {
         return elevation;
     }
+    qDebug() << "Opening file\n\n\n" << fileName;
 
     elevation = getElevationFromGeoFile(fileName, latitude, longitude);
     return elevation;
@@ -86,6 +87,8 @@ double OfflineElevationDB::getElevationFromGeoFile(QString &fileName,
         return NAN;
 
     srcFilename = fileName.toUtf8().constData();
+
+    qDebug() << "Opening file" << srcFilename;
 
     // Open source file
     GDALDatasetH hSrcDS = GDALOpenEx(srcFilename,
