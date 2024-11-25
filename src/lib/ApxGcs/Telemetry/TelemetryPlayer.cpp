@@ -162,8 +162,8 @@ void TelemetryPlayer::play()
     _values_init = false;
 
     // load nearest meta
-    loadLatestMeta(reader->child("mission"), _time);
-    loadLatestMeta(reader->child("nodes"), _time);
+    // loadLatestMeta(reader->child("mission"), _time);
+    // loadLatestMeta(reader->child("nodes"), _time);
 }
 
 void TelemetryPlayer::loadLatestMeta(Fact *group, quint64 time)

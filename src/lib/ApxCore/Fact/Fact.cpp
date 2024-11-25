@@ -27,6 +27,8 @@
 #include <App/AppLog.h>
 #include <App/AppNotify.h>
 
+#include <ApxMisc/JsonHelpers.h>
+
 #include <QColor>
 #include <QFont>
 #include <QFontDatabase>
@@ -492,7 +494,10 @@ void Fact::setValues(const QVariantMap &values)
 }
 QJsonDocument Fact::toJsonDocument()
 {
-    return QJsonDocument::fromVariant(toVariant());
+    auto jso = json::fix_numbers(
+        json::filter_names(QJsonObject::fromVariantMap(toVariant().toMap())));
+    return QJsonDocument(jso);
+    // return QJsonDocument::fromVariant(toVariant());
 }
 bool Fact::fromJsonDocument(QByteArray data)
 {
