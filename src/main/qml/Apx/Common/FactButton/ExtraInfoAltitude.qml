@@ -71,6 +71,15 @@ Item {
         _editor.enabled = chosen
         if(visible)
             elevation = map.getElevationByCoordinate(coordinate)
+        
+        // Proposal to ON/OFF AGL and HTML when elevation map is disabled
+        // if(!visible){
+        //     fact.parentFact.child("agl").visible = false
+        //     fact.parentFact.child("hmsl").visible = false
+        // } else {
+        //     fact.parentFact.child("agl").visible = true
+        //     fact.parentFact.child("hmsl").visible = true
+        // }    
     }
 
     function altitudeProcessing() 
