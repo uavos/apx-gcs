@@ -59,7 +59,8 @@ ComboBox {
     Component.onCompleted: updateIndex()
     onActivated: (index) => {
         fact.setValue(textAt(index))
-        factButton.forceActiveFocus();
+        if(editor.activeFocus)
+            factButton.forceActiveFocus();
     }
     property string value: fact.text
     onValueChanged: updateIndex()

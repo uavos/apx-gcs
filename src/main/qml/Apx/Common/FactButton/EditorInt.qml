@@ -91,7 +91,8 @@ SpinBox {
             selectByMouse: true
             onEditingFinished: {
                 fact.setValue(text);
-                factButton.forceActiveFocus();
+                if(textInput.activeFocus)
+                    factButton.forceActiveFocus();
             }
             onActiveFocusChanged: {
                 if(activeFocus){
