@@ -21,7 +21,6 @@
  */
 #include "Database.h"
 
-#include "MissionsDB.h"
 #include "VehiclesDB.h"
 
 #include <App/App.h>
@@ -46,7 +45,6 @@ Database::Database(Fact *parent)
     nodes = new db::nodes::Session(this, QStringLiteral("NodesDbSession"));
 
     vehicles = new VehiclesDB(this, QStringLiteral("VehiclesDbSession"));
-    missions = new MissionsDB(this, QStringLiteral("MissionsDbSession"));
 }
 
 Database::~Database()

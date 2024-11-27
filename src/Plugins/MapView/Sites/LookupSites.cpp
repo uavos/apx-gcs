@@ -22,7 +22,6 @@
 #include "LookupSites.h"
 #include "Sites.h"
 #include <Database/Database.h>
-#include <Database/MissionsDB.h>
 
 #include <App/AppRoot.h>
 
@@ -31,7 +30,7 @@ LookupSites::LookupSites(Sites *sites)
                      "lookup",
                      tr("Nearest sites"),
                      tr("Database lookup"),
-                     Database::instance()->missions)
+                     Database::instance()->storage)
     , sites(sites)
 {
     setOption(FilterModel, false);

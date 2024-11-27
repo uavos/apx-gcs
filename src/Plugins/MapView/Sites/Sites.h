@@ -27,6 +27,10 @@
 #include <QtCore>
 #include <QtLocation>
 
+#include <ApxMisc/DelayedEvent.h>
+
+class Vehicle;
+
 class Sites : public Fact
 {
     Q_OBJECT
@@ -47,6 +51,8 @@ private:
     SiteEdit *f_add;
     SiteEdit *f_edit;
 
+    DelayedEvent evtUpdateMissionSite;
+
 private slots:
     void appLoaded();
     void syncEditorFromModel();
@@ -54,4 +60,5 @@ private slots:
     void dbAddSite(QVariantMap item);
     void dbRemoveSite(QVariantMap item);
     void dbUpdateSite(QVariantMap item);
+    void dbFindSite();
 };

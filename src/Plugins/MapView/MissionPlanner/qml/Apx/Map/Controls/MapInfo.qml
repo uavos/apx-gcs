@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick          2.12
-import QtQuick.Layouts  1.12
+import QtQuick
+import QtQuick.Layouts
 import QtQuick.Controls
 
 import Apx.Common
@@ -56,9 +56,11 @@ RowLayout {
             Component {
                 id: siteC
                 Text {
-                    font: apx.font_narrow(Style.fontSize)
+                    readonly property string site_text: apx.vehicles.current.mission.site
                     color: "#fff"
-                    text: apx.vehicles.current.mission.site
+                    text: site_text?site_text:application.materialIconChar("web")
+                    font: site_text?apx.font_narrow(Style.fontSize):apx.font_icons(Style.fontSize)
+
                 }
             }
         }

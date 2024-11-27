@@ -22,7 +22,6 @@
 #pragma once
 
 #include <ApxMisc/DelayedEvent.h>
-#include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QtCore>
@@ -30,7 +29,6 @@
 class VehicleMission;
 class Vehicle;
 class MissionGroup;
-class LookupMissions;
 
 class MissionStorage : public QObject
 {
@@ -41,7 +39,6 @@ public:
     explicit MissionStorage(VehicleMission *mission);
 
     VehicleMission *mission;
-    QString dbHash;
 
 private:
     DelayedEvent evtUpdateSite;

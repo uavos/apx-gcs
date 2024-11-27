@@ -44,7 +44,6 @@ public:
     QPointer<db::nodes::Session> nodes;
 
     QPointer<VehiclesDB> vehicles;
-    QPointer<MissionsDB> missions;
 
 private:
     static Database *_instance;

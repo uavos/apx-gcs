@@ -27,7 +27,6 @@
 #include "TelemetryShare.h"
 
 #include <App/App.h>
-#include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicles.h>
@@ -143,9 +142,9 @@ void Telemetry::statsFactTriggered(Fact *f)
     const QString &s = f->name();
     const QString &uid = f->descr();
     if (s.startsWith("nodes")) {
-        vehicle->storage()->loadVehicleConfig(uid);
+        // vehicle->storage()->loadVehicleConfig(uid);
     } else if (s.startsWith("mission")) {
-        vehicle->f_mission->storage->loadMission(uid);
+        // vehicle->f_mission->loadMission(uid);
     } else {
         if (f_player)
             f_player->f_time->setValue(f->property("time").toULongLong() - 1);

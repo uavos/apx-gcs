@@ -27,7 +27,6 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <Mission/MissionStorage.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 

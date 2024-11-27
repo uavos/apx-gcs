@@ -22,7 +22,6 @@
 #pragma once
 
 #include <Fact/Fact.h>
-#include <Mission/LookupMissions.h>
 #include <QtCore>
 #include <QtLocation>
 class LookupMissions;
@@ -48,8 +47,6 @@ public:
     Fact *a_add;
     Fact *a_remove;
 
-    LookupMissions *f_missions;
-
     QVariantMap modelData;
     void setModelData(QVariantMap v);
 
@@ -58,7 +55,6 @@ private:
 
 private slots:
     void saveToModelData();
-    void lookupMissions();
 
 public slots:
     void reset();

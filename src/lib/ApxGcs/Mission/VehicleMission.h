@@ -129,6 +129,9 @@ public slots:
     void uploadMission();
     void downloadMission();
 
+    void saveMission(); // save to a file
+    void loadMission(); // load from a file
+
     void test(int n = 50);
 
 signals:
@@ -137,6 +140,8 @@ signals:
 
     void missionDownloaded();
     void missionUploaded();
+    void missionLoaded();
+    void missionSaved();
 
     //protocols
 private slots:

@@ -20,8 +20,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Sites.h"
+#include "SitesReq.h"
+
 #include <App/App.h>
-#include <Database/MissionsDB.h>
+
+#include <Database/Database.h>
+#include <Mission/VehicleMission.h>
+#include <Vehicles/Vehicles.h>
 
 Sites::Sites(Fact *parent)
     : Fact(parent, QString(PLUGIN_NAME).toLower(), tr("Sites"), tr("Geographic objects"), Group)
@@ -30,14 +35,34 @@ Sites::Sites(Fact *parent)
     setIcon("city");
     connect(App::instance(), &App::loadingFinished, this, &Sites::appLoaded);
 
+    // current site lookup
+    connect(&evtUpdateMissionSite, &DelayedEvent::triggered, this, &Sites::dbFindSite);
+    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [this](Vehicle *vehicle) {
+        connect(vehicle->f_mission,
+                &VehicleMission::coordinateChanged,
+                &evtUpdateMissionSite,
+                &DelayedEvent::schedule);
+    });
+
+    // create/update database table
+    auto db = Database::instance()->storage;
+    new DBReqMakeTable(db,
+                       "Sites",
+                       {
+                           "key INTEGER PRIMARY KEY NOT NULL",
+                           "title TEXT NOT NULL",
+                           "lat REAL NOT NULL",
+                           "lon REAL NOT NULL",
+                       });
+    new DBReqMakeIndex(db, "Sites", "title", true);
+    new DBReqMakeIndex(db, "Sites", "lat,lon", true);
+
     f_lookup = new LookupSites(this);
 
     //facts
     f_add = new SiteEdit(this, "add", tr("Add new site"), tr("Create new named area"), QVariantMap());
     f_add->setIcon("plus-circle");
     connect(f_add, &SiteEdit::addTriggered, this, &Sites::dbAddSite);
-
-    //App::jsync(this);
 
     loadQml("qrc:/" PLUGIN_NAME "/SitesPlugin.qml");
 }
@@ -97,9 +122,9 @@ void Sites::syncEditorFromModel()
 void Sites::dbAddSite(QVariantMap item)
 {
     //qDebug()<<item;
-    DBReqMissionsSaveSite *req = new DBReqMissionsSaveSite(item.value("title").toString(),
-                                                           item.value("lat").toDouble(),
-                                                           item.value("lon").toDouble());
+    auto req = new db::storage::SitesSave(item.value("title").toString(),
+                                          item.value("lat").toDouble(),
+                                          item.value("lon").toDouble());
     connect(req,
             &DatabaseRequest::finished,
             f_lookup,
@@ -107,7 +132,7 @@ void Sites::dbAddSite(QVariantMap item)
             Qt::QueuedConnection);
     connect(
         req,
-        &DBReqMissionsSaveSite::siteAdded,
+        &db::storage::SitesSave::siteAdded,
         this,
         [](QString title) { apxMsg() << tr("Site added").append(':') << title; },
         Qt::QueuedConnection);
@@ -121,7 +146,7 @@ void Sites::dbRemoveSite(QVariantMap item)
     quint64 key = item.value("key").toULongLong();
     if (!key)
         return;
-    DBReqMissionsRemoveSite *req = new DBReqMissionsRemoveSite(key);
+    auto req = new db::storage::SitesRemove(key);
     connect(req,
             &DatabaseRequest::finished,
             f_lookup,
@@ -129,7 +154,7 @@ void Sites::dbRemoveSite(QVariantMap item)
             Qt::QueuedConnection);
     connect(
         req,
-        &DBReqMissionsRemoveSite::siteRemoved,
+        &db::storage::SitesRemove::siteRemoved,
         this,
         []() { apxMsg() << tr("Site removed"); },
         Qt::QueuedConnection);
@@ -142,10 +167,10 @@ void Sites::dbUpdateSite(QVariantMap item)
     quint64 key = item.value("key").toULongLong();
     if (!key)
         return;
-    DBReqMissionsSaveSite *req = new DBReqMissionsSaveSite(item.value("title").toString(),
-                                                           item.value("lat").toDouble(),
-                                                           item.value("lon").toDouble(),
-                                                           key);
+    auto req = new db::storage::SitesSave(item.value("title").toString(),
+                                          item.value("lat").toDouble(),
+                                          item.value("lon").toDouble(),
+                                          key);
     connect(req,
             &DatabaseRequest::finished,
             f_lookup,
@@ -153,9 +178,27 @@ void Sites::dbUpdateSite(QVariantMap item)
             Qt::QueuedConnection);
     connect(
         req,
-        &DBReqMissionsSaveSite::siteModified,
+        &db::storage::SitesSave::siteModified,
         this,
         [](QString title) { apxMsg() << tr("Site updated").append(':') << title; },
+        Qt::QueuedConnection);
+    req->exec();
+}
+
+void Sites::dbFindSite()
+{
+    auto mission = Vehicles::instance()->current()->f_mission;
+    QGeoCoordinate c(mission->coordinate());
+    if (!c.isValid()) {
+        mission->setSite("");
+        return;
+    }
+    auto req = new db::storage::SitesFind(c.latitude(), c.longitude());
+    connect(
+        req,
+        &db::storage::SitesFind::siteFound,
+        mission,
+        [mission](quint64 siteID, QString site) { mission->setSite(site); },
         Qt::QueuedConnection);
     req->exec();
 }

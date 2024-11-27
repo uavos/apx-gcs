@@ -19,16 +19,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "MissionStorage.h"
 #include "LookupMissions.h"
+#include "MissionStorage.h"
 #include "Poi.h"
 #include "Runway.h"
 #include "Taxiway.h"
 #include "VehicleMission.h"
 #include "Waypoint.h"
+
 #include <App/AppLog.h>
-#include <Database/Database.h>
-#include <Database/MissionsDB.h>
 #include <Vehicles/VehicleSelect.h>
 #include <Vehicles/Vehicles.h>
 
@@ -42,7 +41,12 @@ MissionStorage::MissionStorage(VehicleMission *mission)
 
 void MissionStorage::saveMission()
 {
-    dbHash.clear();
+    if (mission->empty()) {
+        mission->vehicle->message(tr("Mission is empty"));
+        return;
+    }
+
+    /*dbHash.clear();
     DBReqMissionsSave *req = new DBReqMissionsSave(mission->toVariant());
     connect(req,
             &DBReqMissionsSave::missionHash,
@@ -54,7 +58,7 @@ void MissionStorage::saveMission()
             this,
             &MissionStorage::dbSiteFound,
             Qt::QueuedConnection);
-    req->exec();
+    req->exec();*/
 }
 void MissionStorage::dbSaved(QString hash)
 {

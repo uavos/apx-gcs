@@ -20,12 +20,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "VehicleMission.h"
-#include "LookupMissions.h"
 #include "MissionField.h"
 #include "MissionGroup.h"
 #include "MissionListModel.h"
-#include "MissionShare.h"
-#include "MissionStorage.h"
 #include "MissionTools.h"
 
 #include "Area.h"
@@ -55,12 +52,6 @@ VehicleMission::VehicleMission(Vehicle *parent)
     , m_selectedItem(nullptr)
 {
     setOpt("pos", QPointF(0, 1));
-
-    storage = new MissionStorage(this);
-    connect(storage, &MissionStorage::loaded, this, [this]() {
-        if (!empty())
-            emit missionAvailable();
-    });
 
     f_title = new MissionField(this, "mission_title", tr("Title"), tr("Mission title"), Text);
     f_title->setIcon("square-edit-outline");
@@ -111,10 +102,6 @@ VehicleMission::VehicleMission(Vehicle *parent)
     f_clear = new Fact(this, "clear", tr("Clear"), tr("Clear mission"), Action | Remove | IconOnly);
     connect(f_clear, &Fact::triggered, this, &VehicleMission::clearMission);
 
-    f_lookup = new LookupMissions(this, this, Action | IconOnly);
-
-    f_share = new MissionShare(this, this, Action | IconOnly);
-
     //tools actions
     f_tools = new MissionTools(this, Action | IconOnly);
 
@@ -124,8 +111,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
                       tr("Save mission to database"),
                       Action | Apply | IconOnly,
                       "content-save");
-    connect(f_save, &Fact::triggered, storage, &MissionStorage::saveMission);
-    connect(f_share->f_export, &Fact::triggered, f_save, &Fact::trigger);
+    connect(f_save, &Fact::triggered, this, &VehicleMission::saveMission);
 
     //App::jsync(f_tools);
 
@@ -160,15 +146,15 @@ VehicleMission::VehicleMission(Vehicle *parent)
             setSaved(true);
         }
     });
-    connect(this, &VehicleMission::missionAvailable, this, [=]() {
+    connect(this, &VehicleMission::missionAvailable, this, [this]() {
         setSynced(true);
         setSaved(false);
     });
-    connect(storage, &MissionStorage::loaded, this, [this]() {
+    connect(this, &VehicleMission::missionLoaded, this, [this]() {
         setSynced(false);
         setSaved(true);
     });
-    connect(storage, &MissionStorage::saved, this, [this]() {
+    connect(this, &VehicleMission::missionSaved, this, [this]() {
         setSaved(true);
         backup();
     });
@@ -221,8 +207,7 @@ void VehicleMission::updateActions()
     bool bEmpty = empty();
     f_upload->setEnabled(!bEmpty);
     f_clear->setEnabled(!bEmpty);
-    f_save->setEnabled((!bEmpty) && (!saved()));
-    f_share->f_export->setEnabled(!bEmpty);
+    f_save->setEnabled(!bEmpty);
 }
 void VehicleMission::updateSize()
 {
@@ -376,6 +361,44 @@ void VehicleMission::test(int n)
     }
 }
 
+void VehicleMission::loadMission()
+{
+    //
+    /*QFileDialog dlg(nullptr, f_import->descr(), dir.canonicalPath());
+    dlg.setAcceptMode(QFileDialog::AcceptOpen);
+    dlg.setFileMode(QFileDialog::ExistingFiles);
+    dlg.setViewMode(QFileDialog::Detail);
+    QStringList filters;
+    filters << _dataTitle + " " + tr("files") + " (*." + fmt + ")";
+    for (auto i : _importFormats.mid(1)) {
+        filters << i.toUpper() + " " + tr("format") + " (*." + i + ")";
+    }
+    dlg.setDefaultSuffix(fmt);
+
+    QString ftitle = getDefaultTitle();
+    if (!ftitle.isEmpty()) {
+        dlg.selectFile(_defaultDir.filePath(ftitle + "." + fmt));
+    }
+    filters << tr("Any files") + " (*)";
+    dlg.setNameFilters(filters);
+
+    if (!(dlg.exec() && dlg.selectedFiles().size() >= 1))
+        return;
+    QSettings().setValue(QString("SharePath_%1").arg(fmt), dlg.directory().absolutePath());
+*/
+    // mission successfully loaded
+    emit missionLoaded();
+    if (!empty())
+        emit missionAvailable();
+}
+void VehicleMission::saveMission()
+{
+    //
+
+    // mission successfully saved
+    emit missionSaved();
+}
+
 void VehicleMission::missionReceived(QVariant var)
 {
     clearMission();
@@ -388,7 +411,7 @@ void VehicleMission::missionReceived(QVariant var)
     } else {
         emit missionAvailable();
         emit missionDownloaded();
-        storage->saveMission();
+        saveMission();
         QString s = QString("%1: %2").arg(tr("Mission received")).arg(text());
         auto node_uid = var.value<QVariantMap>().value("node_uid").toString();
         if (!node_uid.isEmpty()) {
