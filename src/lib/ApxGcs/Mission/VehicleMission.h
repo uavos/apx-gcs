@@ -59,7 +59,6 @@ class VehicleMission : public Fact
     Q_PROPERTY(QString site READ site WRITE setSite NOTIFY siteChanged)
 
     Q_PROPERTY(bool synced READ synced NOTIFY syncedChanged)
-    Q_PROPERTY(bool saved READ saved NOTIFY savedChanged)
 
     Q_PROPERTY(Fact *selectedItem READ selectedItem WRITE setSelectedItem NOTIFY selectedItemChanged)
 public:
@@ -98,7 +97,6 @@ public:
     Fact *f_upload;
 
     LookupMissions *f_lookup;
-    Fact *f_save;
     MissionShare *f_share;
 
     MissionTools *f_tools;
@@ -129,9 +127,6 @@ public slots:
     void uploadMission();
     void downloadMission();
 
-    void saveMission(); // save to a file
-    void loadMission(); // load from a file
-
     void test(int n = 50);
 
 signals:
@@ -140,8 +135,6 @@ signals:
 
     void missionDownloaded();
     void missionUploaded();
-    void missionLoaded();
-    void missionSaved();
 
     //protocols
 private slots:
@@ -176,9 +169,6 @@ public:
     bool synced() const;
     void setSynced(const bool v);
 
-    bool saved() const;
-    void setSaved(const bool v);
-
     Fact *selectedItem() const;
     void setSelectedItem(Fact *v);
 
@@ -209,6 +199,5 @@ signals:
     void coordinateChanged();
     void siteChanged();
     void syncedChanged();
-    void savedChanged();
     void selectedItemChanged();
 };

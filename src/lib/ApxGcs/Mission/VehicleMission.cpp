@@ -23,6 +23,7 @@
 #include "MissionField.h"
 #include "MissionGroup.h"
 #include "MissionListModel.h"
+#include "MissionShare.h"
 #include "MissionTools.h"
 
 #include "Area.h"
@@ -105,13 +106,15 @@ VehicleMission::VehicleMission(Vehicle *parent)
     //tools actions
     f_tools = new MissionTools(this, Action | IconOnly);
 
-    f_save = new Fact(f_tools,
-                      "save",
-                      tr("Save"),
-                      tr("Save mission to database"),
-                      Action | Apply | IconOnly,
-                      "content-save");
-    connect(f_save, &Fact::triggered, this, &VehicleMission::saveMission);
+    f_share = new MissionShare(this, f_tools);
+    connect(f_share, &Share::imported, this, [this]() {
+        emit missionAvailable();
+        setSynced(false);
+    });
+    connect(f_share, &Share::exported, this, [this]() { backup(); });
+
+    // tools [...] is the last item in list
+    f_tools->move(size() - 1);
 
     //App::jsync(f_tools);
 
@@ -126,7 +129,6 @@ VehicleMission::VehicleMission(Vehicle *parent)
     m_listModel = new MissionListModel(this);
 
     connect(this, &VehicleMission::emptyChanged, this, &VehicleMission::updateActions);
-    connect(this, &VehicleMission::savedChanged, this, &VehicleMission::updateActions);
     connect(this, &VehicleMission::syncedChanged, this, &VehicleMission::updateActions);
 
     connect(this, &VehicleMission::startPointChanged, this, &VehicleMission::updateStartPath);
@@ -137,26 +139,16 @@ VehicleMission::VehicleMission(Vehicle *parent)
     connect(this, &Fact::modifiedChanged, this, [this]() {
         if (modified()) {
             setSynced(false);
-            setSaved(false);
         }
     });
     connect(this, &VehicleMission::emptyChanged, this, [this]() {
         if (empty()) {
             setSynced(false);
-            setSaved(true);
         }
     });
-    connect(this, &VehicleMission::missionAvailable, this, [this]() {
-        setSynced(true);
-        setSaved(false);
-    });
-    connect(this, &VehicleMission::missionLoaded, this, [this]() {
-        setSynced(false);
-        setSaved(true);
-    });
-    connect(this, &VehicleMission::missionSaved, this, [this]() {
-        setSaved(true);
+    connect(this, &VehicleMission::missionUploaded, this, [this]() {
         backup();
+        setSynced(true);
     });
 
     //protocols
@@ -207,7 +199,6 @@ void VehicleMission::updateActions()
     bool bEmpty = empty();
     f_upload->setEnabled(!bEmpty);
     f_clear->setEnabled(!bEmpty);
-    f_save->setEnabled(!bEmpty);
 }
 void VehicleMission::updateSize()
 {
@@ -361,44 +352,6 @@ void VehicleMission::test(int n)
     }
 }
 
-void VehicleMission::loadMission()
-{
-    //
-    /*QFileDialog dlg(nullptr, f_import->descr(), dir.canonicalPath());
-    dlg.setAcceptMode(QFileDialog::AcceptOpen);
-    dlg.setFileMode(QFileDialog::ExistingFiles);
-    dlg.setViewMode(QFileDialog::Detail);
-    QStringList filters;
-    filters << _dataTitle + " " + tr("files") + " (*." + fmt + ")";
-    for (auto i : _importFormats.mid(1)) {
-        filters << i.toUpper() + " " + tr("format") + " (*." + i + ")";
-    }
-    dlg.setDefaultSuffix(fmt);
-
-    QString ftitle = getDefaultTitle();
-    if (!ftitle.isEmpty()) {
-        dlg.selectFile(_defaultDir.filePath(ftitle + "." + fmt));
-    }
-    filters << tr("Any files") + " (*)";
-    dlg.setNameFilters(filters);
-
-    if (!(dlg.exec() && dlg.selectedFiles().size() >= 1))
-        return;
-    QSettings().setValue(QString("SharePath_%1").arg(fmt), dlg.directory().absolutePath());
-*/
-    // mission successfully loaded
-    emit missionLoaded();
-    if (!empty())
-        emit missionAvailable();
-}
-void VehicleMission::saveMission()
-{
-    //
-
-    // mission successfully saved
-    emit missionSaved();
-}
-
 void VehicleMission::missionReceived(QVariant var)
 {
     clearMission();
@@ -411,7 +364,6 @@ void VehicleMission::missionReceived(QVariant var)
     } else {
         emit missionAvailable();
         emit missionDownloaded();
-        saveMission();
         QString s = QString("%1: %2").arg(tr("Mission received")).arg(text());
         auto node_uid = var.value<QVariantMap>().value("node_uid").toString();
         if (!node_uid.isEmpty()) {
@@ -422,6 +374,7 @@ void VehicleMission::missionReceived(QVariant var)
         }
         vehicle->message(s, AppNotify::Important);
     }
+    setSynced(true);
     backup();
 }
 
@@ -431,7 +384,6 @@ void VehicleMission::uploadMission()
         return;
     vehicle->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
     vehicle->protocol()->mission()->updateMission(toVariant());
-    f_save->trigger();
 }
 void VehicleMission::downloadMission()
 {
@@ -533,17 +485,6 @@ void VehicleMission::setSynced(const bool v)
         return;
     m_synced = v;
     emit syncedChanged();
-}
-bool VehicleMission::saved() const
-{
-    return m_saved;
-}
-void VehicleMission::setSaved(const bool v)
-{
-    if (m_saved == v)
-        return;
-    m_saved = v;
-    emit savedChanged();
 }
 Fact *VehicleMission::selectedItem() const
 {

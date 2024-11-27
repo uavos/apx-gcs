@@ -128,7 +128,7 @@ public:
     virtual void hashData(QCryptographicHash *h) const;
 
     //create action fact that opens this fact, or binded to this action
-    Q_INVOKABLE Fact *createAction(Fact *parent);
+    Q_INVOKABLE Fact *createAction(Fact *parent, FactBase::Flags flags = {});
 
     //forward to app instance with fact opts
     Q_INVOKABLE QObject *loadQml(const QString &qmlFile);

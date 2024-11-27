@@ -64,12 +64,7 @@ Row {
         visible: (!mission.synced) && (!mission.empty)
     }
     ActionButton {
-        fact: mission.tools.save
-        showText: false
-        visible: (!mission.saved) && (!mission.empty)
-    }
-    ActionButton {
-        fact: mission.load
+        fact: mission.tools.share.imp
         showText: false
         visible: (mission.empty)
     }

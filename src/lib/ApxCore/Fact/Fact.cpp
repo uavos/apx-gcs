@@ -477,9 +477,9 @@ void Fact::updateBinding(Fact *src)
     }
 }
 
-Fact *Fact::createAction(Fact *parent)
+Fact *Fact::createAction(Fact *parent, FactBase::Flags flags)
 {
-    Fact *f = new Fact(parent, name(), "", "", Action | dataType() | options(), icon());
+    Fact *f = new Fact(parent, name(), "", "", flags | Action | dataType() | options(), icon());
     f->setBinding(this);
     return f;
 }
