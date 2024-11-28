@@ -55,6 +55,7 @@ private:
     QList<Field> _fields; // store read fields copy
     QJsonObject _recordInfo;
     QString _recordFilePath;
+    QHash<Fact *, QJsonObject> _jsoData; // store jso data for event facts
 
     // geo path calculation
     QGeoPath _geoPath;
@@ -81,6 +82,8 @@ private slots:
     void do_rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
     void do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
 
+    void do_rec_finished();
+
 signals:
     // forwarded signals from file reader
     void rec_started();
@@ -100,7 +103,7 @@ signals:
     void recordInfoChanged();
 
     // user triggers event fact (child with stats)
-    void statsFactTriggered(Fact *f);
+    void statsFactTriggered(Fact *f, QJsonObject jso);
 
 public slots:
     void loadRecord(quint64 id);

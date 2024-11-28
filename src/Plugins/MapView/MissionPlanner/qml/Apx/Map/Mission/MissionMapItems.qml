@@ -39,15 +39,13 @@ MapItemGroup {
 
     visible: !mission.empty
 
-    Connections {
-        enabled: !map.follow
-        target: mission
-        function onMissionAvailable(){ showRegion() }
+    onVisibleChanged: {
+        if(visible && !map.follow)
+            showRegion()
     }
 
     function showRegion()
     {
-        //if(mission.empty) return
         var r=mission.boundingGeoRectangle().united(vehicle.geoPathRect())
 
         if(!map.visibleRegion.boundingGeoRectangle().intersects(r))

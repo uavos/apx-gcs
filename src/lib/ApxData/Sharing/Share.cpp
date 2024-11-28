@@ -100,8 +100,6 @@ void Share::exportTriggered()
         apxMsg() << tr("Can't export").append(':') << fi.fileName();
         return;
     }
-
-    emit menuBack();
 }
 void Share::_exported(QString fileName)
 {
@@ -145,7 +143,6 @@ void Share::importTriggered()
     if (!(dlg.exec() && dlg.selectedFiles().size() >= 1))
         return;
     QSettings().setValue(QString("SharePath_%1").arg(fmt), dlg.directory().absolutePath());
-    emit menuBack();
 
     if (!importRequest(dlg.selectedFiles())) {
         apxMsgW() << tr("%1 import error").arg(_dataTitle);

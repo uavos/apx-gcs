@@ -520,6 +520,11 @@ QVariant Fact::parseJsonDocument(QByteArray data)
     }
     return {};
 }
+void Fact::fromJsonObject(const QJsonObject &jso)
+{
+    // TODO move from QVariantMap to QJsonObject
+    fromVariant(jso.toVariantMap());
+}
 
 QVariant Fact::toVariant()
 {

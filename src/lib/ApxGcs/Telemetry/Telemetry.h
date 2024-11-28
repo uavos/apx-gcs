@@ -55,7 +55,7 @@ private slots:
     void updateProgress();
     void updateDescr();
 
-    void statsFactTriggered(Fact *f);
+    void statsFactTriggered(Fact *f, QJsonObject jso);
 
     void recordLoaded();
 };

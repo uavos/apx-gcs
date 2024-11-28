@@ -48,9 +48,6 @@ Telemetry::Telemetry(Vehicle *parent)
         setOpt("pos", QPointF(1, 1));
 
         f_records = new TelemetryRecords(this);
-
-        // connect(this, &Fact::triggered, f_records, &TelemetryRecords::defaultLookup);
-
         f_reader = new TelemetryReader(this);
 
         connect(f_records,
@@ -87,9 +84,6 @@ Telemetry::Telemetry(Vehicle *parent)
         bindProperty(f_player, "active", true);
 
         f_share = new TelemetryShare(this, this);
-        // connect(f_share, &TelemetryShare::importJobDone, this, [this](quint64 id) {
-        //     f_records->setActiveRecordId(id);
-        // });
         connect(f_share, &Fact::progressChanged, this, &Telemetry::updateProgress);
 
         f_records->f_prev->createAction(this);
@@ -137,14 +131,14 @@ void Telemetry::updateDescr()
         setDescr(descr_s);
 }
 
-void Telemetry::statsFactTriggered(Fact *f)
+void Telemetry::statsFactTriggered(Fact *f, QJsonObject jso)
 {
     const QString &s = f->name();
     const QString &uid = f->descr();
     if (s.startsWith("nodes")) {
         // vehicle->storage()->loadVehicleConfig(uid);
     } else if (s.startsWith("mission")) {
-        // vehicle->f_mission->loadMission(uid);
+        vehicle->f_mission->fromJsonObject(jso);
     } else {
         if (f_player)
             f_player->f_time->setValue(f->property("time").toULongLong() - 1);
@@ -159,17 +153,19 @@ void Telemetry::recordLoaded()
     // reset mandala counters on file reload
     vehicle->f_mandala->resetCounters();
 
-    // load mission and config
-    /*Fact *f = f_reader->child("mission");
+    // load latest mission
+    Fact *f = f_reader->child("mission");
     if (f && f->size() > 0) {
         f = f->child(0);
         if (f)
             f->trigger();
     }
+
+    // load latest config
     f = f_reader->child("nodes");
     if (f && f->size() > 0) {
         f = f->child(f->size() - 1);
         if (f)
             f->trigger();
-    }*/
+    }
 }

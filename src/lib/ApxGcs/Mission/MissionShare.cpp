@@ -30,12 +30,6 @@ MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
     : Share(parent, "mission", tr("Mission"), AppDirs::missions(), flags)
     , _mission(mission)
 {
-    // connect(this,
-    //         &Share::imported,
-    //         mission->storage,
-    //         &MissionStorage::saveMission,
-    //         Qt::QueuedConnection);
-
     connect(mission, &VehicleMission::emptyChanged, this, &MissionShare::updateActions);
     updateActions();
 }

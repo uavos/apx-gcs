@@ -278,12 +278,10 @@ void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject da
         if (value.size() > (param.size() + 32) || value.contains('\n'))
             value = "<data>";
         name = QString("%1=%2").arg(param).arg(value);
-    }
-
-    /*else if (name == "mission") {
+    } else if (name == "mission") {
         if (_values_init)
-            vehicle->f_mission->storage->loadMission(uid);
-    } else if (name == "nodes") {
+            vehicle->f_mission->fromJsonObject(data);
+    } /* else if (name == "nodes") {
         if (_values_init)
             vehicle->storage()->loadVehicleConfig(uid);
     }*/

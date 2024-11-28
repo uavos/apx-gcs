@@ -130,7 +130,6 @@ public slots:
     void test(int n = 50);
 
 signals:
-    void missionAvailable();
     void actionsUpdated();
 
     void missionDownloaded();

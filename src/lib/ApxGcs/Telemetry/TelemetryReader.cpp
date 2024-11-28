@@ -81,17 +81,12 @@ void TelemetryReader::loadRecord(quint64 id)
 
     deleteChildren();
     _recordInfo = {};
+    _jsoData.clear();
 
     auto req = new db::storage::TelemetryLoadFile(id);
-    connect(req, &DatabaseRequest::finished, this, [this]() {
-        setProgress(-1);
-        emit rec_finished();
-        f_reload->setEnabled(true);
-        emit geoPathCollected(_geoPath, _totalDistance);
-        _geoPath = {};
-    });
     auto reader = req->reader();
     connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
+    connect(req, &DatabaseRequest::finished, this, &TelemetryReader::do_rec_finished);
     connect(req, &db::storage::TelemetryLoadFile::recordInfo, this, &TelemetryReader::setRecordInfo);
     connect(req, &db::storage::TelemetryLoadFile::fileOpened, this, [this](QString path) {
         _recordFilePath = path;
@@ -178,19 +173,24 @@ void TelemetryReader::do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject
 {
     addEventFact(timestamp_ms, name, data, uplink);
 
+    // save meta objects to databases
     if (_importedMeta.contains(_loadRecordID))
         return;
 
-    // save meta objects to databases
-    if (name == "mission") {
-        // addEventFact(timestamp_ms, name, data["name"].toString(), data["uid"].toString(), data);
-        // auto req = new DBReqMissionsSave(data.toVariantMap());
-        // req->exec();
-    } else if (name == "nodes") {
+    if (name == "nodes") {
         // auto req = new DBReqImportVehicleConfig(data.toVariantMap());
         // req->exec();
         // qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
     }
+}
+
+void TelemetryReader::do_rec_finished()
+{
+    emit rec_finished();
+    emit geoPathCollected(_geoPath, _totalDistance);
+    _geoPath = {};
+    f_reload->setEnabled(true);
+    setProgress(-1);
 }
 
 void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
@@ -298,8 +298,14 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
         auto key = title_keys.value(name, "title");
         auto title = data.value(key).toString();
         f = new Fact(g, name + "#", title, {});
-        f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
-        f->setOpt("info", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
+        // loadable data vs shown as page
+        if (name == "nodes" || name == "mission") {
+            _jsoData.insert(f, data);
+
+        } else {
+            f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
+            f->setOpt("info", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
+        }
     }
 
     if (!f)
@@ -309,7 +315,9 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
         f->setValue(QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz"));
 
     f->setProperty("time", QVariant::fromValue(time));
-    connect(f, &Fact::triggered, this, [this, f]() { emit statsFactTriggered(f); });
+    connect(f, &Fact::triggered, this, [this, f]() {
+        emit statsFactTriggered(f, _jsoData.value(f));
+    });
 }
 
 void TelemetryReader::notesChanged()

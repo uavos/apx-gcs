@@ -322,8 +322,11 @@ void TelemetryFrame::rec_values(quint64 timestamp_ms, TelemetryReader::Values da
         for (const auto &[index, value] : data) {
             const auto &field = reader->fields().value(index);
             auto name = field.name;
+            if (name.contains(".rc."))
+                continue;
+
             plot->addEvent(timestamp_ms / 1000.0,
-                           QString("%1: %2").arg(name, value.toString()),
+                           QString(">%1").arg(name), //, value.toString()),
                            Qt::darkCyan);
         }
         return;
@@ -353,6 +356,13 @@ void TelemetryFrame::rec_values(quint64 timestamp_ms, TelemetryReader::Values da
 }
 void TelemetryFrame::rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
 {
+    // filter some names
+    if (name.contains(".rc."))
+        return;
+
+    if (name == "msg" || name == "vcp")
+        return;
+
     QColor c;
     if (name == "mission")
         c = QColor(50, 50, 100);

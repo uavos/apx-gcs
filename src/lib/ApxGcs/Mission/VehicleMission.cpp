@@ -107,10 +107,7 @@ VehicleMission::VehicleMission(Vehicle *parent)
     f_tools = new MissionTools(this, Action | IconOnly);
 
     f_share = new MissionShare(this, f_tools);
-    connect(f_share, &Share::imported, this, [this]() {
-        emit missionAvailable();
-        setSynced(false);
-    });
+    connect(f_share, &Share::imported, this, [this]() { setSynced(false); });
     connect(f_share, &Share::exported, this, [this]() { backup(); });
 
     // tools [...] is the last item in list
@@ -362,7 +359,6 @@ void VehicleMission::missionReceived(QVariant var)
     if (empty()) {
         vehicle->message(tr("Empty mission received from vehicle"), AppNotify::Warning);
     } else {
-        emit missionAvailable();
         emit missionDownloaded();
         QString s = QString("%1: %2").arg(tr("Mission received")).arg(text());
         auto node_uid = var.value<QVariantMap>().value("node_uid").toString();
