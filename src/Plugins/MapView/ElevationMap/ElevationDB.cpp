@@ -72,7 +72,6 @@ double OfflineElevationDB::getElevationFromGeoFile(QString &fileName,
                                                    double latitude,
                                                    double longitude)
 {
-    const char *srcFilename = nullptr;
     char *srcSRS = nullptr;
     std::vector<int> anBandList;
     double elevation{NAN};
@@ -85,7 +84,8 @@ double OfflineElevationDB::getElevationFromGeoFile(QString &fileName,
     if (!srcSRS)
         return NAN;
 
-    srcFilename = fileName.toUtf8().constData();
+    auto src = fileName.toStdString();
+    auto srcFilename = src.c_str();
 
     // Open source file
     GDALDatasetH hSrcDS = GDALOpenEx(srcFilename,
