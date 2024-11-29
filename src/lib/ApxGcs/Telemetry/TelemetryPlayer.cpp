@@ -45,6 +45,7 @@ TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Vehicle *vehicle, Fact
     connect(&_stream, &TelemetryFileReader::field, this, &TelemetryPlayer::rec_field);
     connect(&_stream, &TelemetryFileReader::values, this, &TelemetryPlayer::rec_values);
     connect(&_stream, &TelemetryFileReader::evt, this, &TelemetryPlayer::rec_evt);
+    connect(&_stream, &TelemetryFileReader::jso, this, &TelemetryPlayer::rec_jso);
 
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActive);
 
@@ -278,13 +279,7 @@ void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject da
         if (value.size() > (param.size() + 32) || value.contains('\n'))
             value = "<data>";
         name = QString("%1=%2").arg(param).arg(value);
-    } else if (name == "mission") {
-        if (_values_init)
-            vehicle->f_mission->fromJsonObject(data);
-    } /* else if (name == "nodes") {
-        if (_values_init)
-            vehicle->storage()->loadVehicleConfig(uid);
-    }*/
+    }
 
     if (!_values_init || name.isEmpty() || !active())
         return;
@@ -294,6 +289,19 @@ void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject da
         flags |= AppNotify::FromVehicle;
     auto s = QString("%1: %2").arg(uplink ? ">" : "<").arg(name);
     vehicle->message(s, flags, subsystem);
+}
+void TelemetryPlayer::rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
+{
+    if (!active())
+        return;
+
+    if (name == "mission") {
+        if (_values_init)
+            vehicle->f_mission->fromJsonObject(data);
+    } else if (name == "nodes") {
+        if (_values_init)
+            vehicle->f_nodes->fromJsonObject(data);
+    }
 }
 
 MandalaFact *TelemetryPlayer::updateMandalaFact(size_t index, const QVariant &value)

@@ -87,6 +87,7 @@ private slots:
     void rec_field(TelemetryReader::Field field);
     void rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink);
     void rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
 
     void play();
     void stop();
