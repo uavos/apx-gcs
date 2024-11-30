@@ -55,6 +55,8 @@ public:
     Q_INVOKABLE static QString bundlePath() { return _instance->m_bundlePath; }
     Q_INVOKABLE static bool install();
 
+    Q_INVOKABLE static bool debug() { return _instance->m_debug; }
+
     Q_INVOKABLE static bool multipleInstances() { return _instance->m_multipleInstances; }
 
 private:
@@ -75,6 +77,8 @@ private:
     bool m_installed{};
     QString m_installDir;
     QString m_bundlePath;
+
+    bool m_debug{};
 
     RunGuard _guard{"instance.app.gcs.uavos.com"};
     bool m_multipleInstances{};

@@ -337,13 +337,13 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
     if (!f)
         return;
 
-    if (f->value().isNull())
-        f->setValue(QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz"));
-
     f->setProperty("time", QVariant::fromValue(time));
 
     if (f->opts().contains("page"))
         return;
+
+    if (f->value().isNull())
+        f->setValue(QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz"));
 
     connect(f, &Fact::triggered, this, [this, f]() {
         emit statsFactTriggered(f, _jsoData.value(f));

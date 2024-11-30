@@ -366,17 +366,19 @@ bool TelemetryFileReader::parse_next()
         if (v.isNull())
             break;
 
+        bool silent = !App::debug();
+
         if (is_uplink) {
-            // if (_uplink_values.contains(_widx)) {
-            //     qWarning() << "duplicate uplink value" << _fields.value(_widx).name
-            //                << _uplink_values[_widx] << v;
-            // }
+            if (_uplink_values.find(_widx) != _uplink_values.end() && !silent) {
+                qWarning() << "duplicate uplink value" << _field_index[_widx].name
+                           << _uplink_values[_widx] << v;
+            }
             _uplink_values[_widx] = v;
         } else {
-            // if (_downlink_values.contains(_widx)) {
-            //     qWarning() << "duplicate downlink value" << _fields.value(_widx).name
-            //                << _downlink_values[_widx] << v;
-            // }
+            if (_downlink_values.find(_widx) != _downlink_values.end() && !silent) {
+                qWarning() << "duplicate downlink value" << _field_index[_widx].name
+                           << _downlink_values[_widx] << v;
+            }
             _downlink_values[_widx] = v;
         }
 

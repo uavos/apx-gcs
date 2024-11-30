@@ -107,6 +107,11 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
         QSettings().setValue("segfault", version());
     });
 
+// check debug
+#ifdef QT_DEBUG
+    m_debug = true;
+#endif
+
     // check installation
     m_installed = false;
     m_bundle = false;
@@ -157,7 +162,9 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
             }
         }
     }
-
+    if (m_debug) {
+        apxConsoleW() << tr("Debug build");
+    }
     if (!m_bundle) {
         apxConsoleW() << tr("Application is not a bundle");
     }
