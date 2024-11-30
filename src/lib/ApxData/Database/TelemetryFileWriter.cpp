@@ -56,6 +56,58 @@ QLockFile *TelemetryFileWriter::get_lock_file(QString name)
     return lock_file;
 }
 
+telemetry::dspec_e TelemetryFileWriter::dspec_for_uid(const mandala::uid_t uid)
+{
+    mandala::type_id_e type_id = {};
+
+    bool ok = false;
+    for (const auto &m : mandala::meta) {
+        if (m.uid != uid)
+            continue;
+
+        type_id = m.type_id;
+        ok = true;
+        break;
+    }
+    if (!ok)
+        return telemetry::dspec_e::f32;
+
+    // guess float types
+    switch (mandala::fmt(uid).fmt) {
+    default:
+        break;
+    case mandala::fmt_a32:
+        return telemetry::dspec_e::a32;
+    case mandala::fmt_s16_rad:
+    case mandala::fmt_s16_rad2:
+        return telemetry::dspec_e::a16;
+    case mandala::fmt_f16:
+    case mandala::fmt_s8:
+    case mandala::fmt_s8_10:
+    case mandala::fmt_u8_10:
+    case mandala::fmt_s8_01:
+    case mandala::fmt_s8_001:
+    case mandala::fmt_u8_01:
+    case mandala::fmt_u8_001:
+    case mandala::fmt_u8_u:
+    case mandala::fmt_s8_u:
+    case mandala::fmt_s8_rad:
+        return telemetry::dspec_e::f16;
+    }
+
+    switch (type_id) {
+    default:
+        break;
+    case mandala::type_byte:
+    case mandala::type_word:
+    case mandala::type_dword:
+        // uint types will be truncated by stream writer when needed
+        return telemetry::dspec_e::u32;
+    }
+
+    return telemetry::dspec_e::f32;
+}
+
 void TelemetryFileWriter::flush()
 {
     if (!isOpen())

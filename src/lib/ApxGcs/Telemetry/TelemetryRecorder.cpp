@@ -23,7 +23,6 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Database/TelemetryFieldAliases.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 #include <Vehicles/Vehicle.h>
@@ -48,7 +47,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     for (auto f : _vehicle->f_mandala->valueFacts()) {
         // guess best field storage format
         auto uid = f->uid();
-        auto dspec = mandala::dspec_for_uid(uid);
+        auto dspec = TelemetryFileWriter::dspec_for_uid(uid);
         _fields_map[uid] = {f->mpath(), {f->title(), f->units()}, dspec};
     }
 

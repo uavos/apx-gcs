@@ -27,6 +27,7 @@
 #include <QtCore>
 
 #include <Database/StorageReq.h>
+#include <Mandala/Mandala.h>
 
 class TelemetryRecords;
 
@@ -49,6 +50,9 @@ public:
     const auto &recordInfo() const { return _recordInfo; }
     const auto &fields() const { return _fields; }
     const auto &recordFilePath() const { return _recordFilePath; }
+
+    static MandalaFact *fieldFact(const Field &field);
+    MandalaFact *fieldFact(size_t field_index) const { return fieldFact(_fields.at(field_index)); }
 
 private:
     quint64 _loadRecordID{};

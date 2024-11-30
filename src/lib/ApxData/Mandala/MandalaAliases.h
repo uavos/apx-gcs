@@ -21,63 +21,10 @@
  */
 #pragma once
 
-#include <Mandala/Mandala.h>
-
-#include "TelemetryFileFormat.h"
+#include <MandalaMetaTree.h>
+#include <map>
 
 namespace mandala {
-
-auto constexpr dspec_for_uid(const mandala::uid_t uid)
-{
-    mandala::type_id_e type_id = {};
-
-    bool ok = false;
-    for (const auto &m : mandala::meta) {
-        if (m.uid != uid)
-            continue;
-
-        type_id = m.type_id;
-        ok = true;
-        break;
-    }
-    if (!ok)
-        return telemetry::dspec_e::f32;
-
-    // guess float types
-    switch (mandala::fmt(uid).fmt) {
-    default:
-        break;
-    case mandala::fmt_a32:
-        return telemetry::dspec_e::a32;
-    case mandala::fmt_s16_rad:
-    case mandala::fmt_s16_rad2:
-        return telemetry::dspec_e::a16;
-    case mandala::fmt_f16:
-    case mandala::fmt_s8:
-    case mandala::fmt_s8_10:
-    case mandala::fmt_u8_10:
-    case mandala::fmt_s8_01:
-    case mandala::fmt_s8_001:
-    case mandala::fmt_u8_01:
-    case mandala::fmt_u8_001:
-    case mandala::fmt_u8_u:
-    case mandala::fmt_s8_u:
-    case mandala::fmt_s8_rad:
-        return telemetry::dspec_e::f16;
-    }
-
-    switch (type_id) {
-    default:
-        break;
-    case mandala::type_byte:
-    case mandala::type_word:
-    case mandala::type_dword:
-        // uint types will be truncated by stream writer when needed
-        return telemetry::dspec_e::u32;
-    }
-
-    return telemetry::dspec_e::f32;
-}
 
 // Mandala fields mapping for old field names
 // roll,pitch,yaw,Ax,Ay,Az,p,q,r,Hx,Hy,Hz,altitude,airspeed,vspeed,course,rpm,agl,slip,attack,venergy,ldratio,buoyancy,ctr_ailerons,ctr_elevator,ctr_throttle,ctr_rudder,ctr_collective,ctr_steering,ctr_airbrk,ctr_flaps,ctr_brake,ctr_mixture,ctr_engine,ctr_sweep,ctr_buoyancy,ctrb_ers,ctrb_rel,ctrb_drp,ctrb_pump,ctrb_starter,ctrb_horn,ctrb_rev,ctrb_gear,ctr_brakeL,ctr_brakeR,cmd_roll,cmd_pitch,cmd_yaw,cmd_north,cmd_east,cmd_course,cmd_rpm,cmd_altitude,cmd_airspeed,cmd_vspeed,cmd_slip,gps_lat,gps_lon,gps_hmsl,gps_Vnorth,gps_Veast,gps_Vdown,gps_time,fuel,frate,RSS,Ve,Vs,Vp,Vm,Ie,Is,Ip,Im,AT,RT,MT,ET,EGT,OT,OP,ilsb_armed,ilsb_approach,ilsb_offset,ilsb_platform,ils_IR,ils_RF,ils_HDG,ils_DME,ils_heading,ils_altitude,platform_lat,platform_lon,platform_hmsl,platform_Vnorth,platform_Veast,platform_Vdown,platform_hdg,range,radar_Vx,radar_Vy,radar_Vz,radar_dx,radar_dy,radar_dz,stage,mode,status_rc,status_gps,status_home,status_agl,status_modem,status_landed,status_touch,error_power,error_cas,error_pstatic,error_gyro,error_rpm,cmode_dlhd,cmode_thrcut,cmode_throvr,cmode_hover,cmode_hyaw,cmode_ahrs,cmode_nomag,power_ap,power_servo,power_ignition,power_payload,power_agl,power_xpdr,sw_starter,sw_lights,sw_taxi,sw_ice,sw_sw1,sw_sw2,sw_sw3,sw_sw4,sb_shutdown,sb_ers_err,sb_ers_disarm,sb_eng_err,sb_bat_err,sb_gen_err,wpidx,rwidx,twidx,piidx,midx,tgHDG,turnR,delta,loops,ETA,mtype,windSpd,windHdg,cas2tas,rwAdj,gps_SV,gps_SU,gps_jcw,gps_jstate,home_lat,home_lon,home_hmsl,altps_gnd,errcode,stab,cam_roll,cam_pitch,cam_yaw,turret_pitch,turret_heading,turret_armed,turret_shoot,turret_reload,turret_sw1,turret_sw2,turret_sw3,turret_sw4,userb_1,userb_2,userb_3,userb_4,userb_5,userb_6,userb_7,userb_8,user1,user2,user3,user4,user5,user6,ls_roll,ls_pitch,ls_cp,ls_spd,ls_ail,rs_roll,rs_pitch,rs_cp,rs_spd,rs_ail,vshape,cmd_vshape,lrs_croll,local,pos_north,pos_east,vel_north,vel_east,homeHDG,dHome,dWPT,Vx,Vy,dx,dy,gSpeed,wpHDG,rwDelta,rwDV,dl_period,dl_timestamp,altps,vario,vcas,denergy,rc_override,rc_roll,rc_pitch,rc_throttle,rc_yaw,cam_ch,cam_mode,camcmd_roll,camcmd_pitch,camcmd_yaw,cam_zoom,cam_focus,cambias_roll,cambias_pitch,cambias_yaw,cam_opt_PF,cam_opt_NIR,cam_opt_DSP,cam_opt_FMI,cam_opt_FM,cam_opt_laser,cam_src,cam_lat,cam_lon,cam_hmsl,camctr_roll,camctr_pitch,camctr_yaw,cams,cam_ctrb_shtr,cam_ctrb_arm,cam_ctrb_rec,cam_ctrb_zin,cam_ctrb_zout,cam_ctrb_aux,cam_tperiod,cam_timestamp,turretcmd_pitch,turretcmd_yaw,turretctr_roll,turretctr_pitch,turretctr_yaw,turret_mode,turretenc_pitch,turretenc_yaw,atscmd_pitch,atscmd_yaw,atsctr_pitch,atsctr_yaw,atsenc_pitch,atsenc_yaw,ats_mode,gcu_RSS,gcu_Ve,gcu_MT,VM1,VM2,VM3,VM4,VM5,VM6,VM7,VM8,VM9,VM10,VM11,VM12,VM13,VM14,VM15,VM16,VM17,VM18,VM19,VM20,VM21,VM22,VM23,VM24,VM25,VM26,VM27,VM28,VM29,VM30,VM31,VM32

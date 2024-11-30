@@ -27,10 +27,12 @@
 #include <App/AppRoot.h>
 
 #include <Database/StorageReq.h>
-
 #include <Database/VehiclesReqVehicle.h>
 
 #include <QGeoCoordinate>
+
+#include <Mandala/MandalaAliases.h>
+#include <Vehicles/Vehicles.h>
 
 TelemetryReader::TelemetryReader(Fact *parent)
     : Fact(parent, "reader", "", "", Group, "progress-download")
@@ -98,7 +100,7 @@ void TelemetryReader::loadRecord(quint64 id)
             this,
             &TelemetryReader::recordInfoUpdated);
 
-    connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::rec_field);
+    // forward as-is
     connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::rec_values);
     connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::rec_evt);
     connect(reader, &TelemetryFileReader::jso, this, &TelemetryReader::rec_jso);
@@ -115,8 +117,29 @@ void TelemetryReader::loadRecord(quint64 id)
     req->exec();
 }
 
+MandalaFact *TelemetryReader::fieldFact(const Field &field)
+{
+    auto it = mandala::ALIAS_MAP.find(field.name.toStdString());
+    if (it != mandala::ALIAS_MAP.end()) {
+        auto uid = it->second;
+        return Vehicles::replay()->f_mandala->fact(uid);
+    }
+    return Vehicles::replay()->f_mandala->fact(field.name, true);
+}
+
 void TelemetryReader::do_rec_field(Field field)
 {
+    auto f = fieldFact(field);
+    if (f) {
+        // update field to match latest mandala info
+        auto name = f->mpath();
+        auto title = f->title();
+        auto units = f->units();
+        if (name != field.name)
+            title = QString("%1 (%2)").arg(title, field.name);
+        field = {name, {title, units}};
+    }
+
     _fields.append(field);
     auto name = field.name;
     auto index = _fields.size() - 1;
@@ -127,6 +150,8 @@ void TelemetryReader::do_rec_field(Field field)
         _index_lon = index;
     else if (name == "est.pos.hmsl")
         _index_hmsl = index;
+
+    emit rec_field(field);
 }
 void TelemetryReader::do_rec_values(quint64 timestamp_ms, Values data, bool uplink)
 {

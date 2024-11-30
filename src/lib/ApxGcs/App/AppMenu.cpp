@@ -68,10 +68,10 @@ AppMenu::AppMenu(Fact *parent)
 
     f = new Fact(file, "telemetry");
     f->setOpt("shortcut", QKeySequence::Open);
-    f->setBinding(Vehicles::instance()->f_replay->f_telemetry->f_share->f_import);
+    f->setBinding(Vehicles::replay()->f_telemetry->f_share->f_import);
 
     f = new Fact(file, "nodes");
-    f->setBinding(Vehicles::instance()->f_replay->f_share->f_import);
+    f->setBinding(Vehicles::replay()->f_share->f_import);
 
     f = new Fact(file, "datalink");
     f->setBinding(AppGcs::instance()->f_datalink);
@@ -86,12 +86,12 @@ AppMenu::AppMenu(Fact *parent)
             &AppMenu::updateVehicleTools,
             Qt::QueuedConnection);
     updateVehicleTools();
-    connect(Vehicles::instance()->f_select,
+    connect(Vehicles::select(),
             &Fact::itemInserted,
             this,
             &AppMenu::updateVehicleSelect,
             Qt::QueuedConnection);
-    connect(Vehicles::instance()->f_select,
+    connect(Vehicles::select(),
             &Fact::itemRemoved,
             this,
             &AppMenu::updateVehicleSelect,
@@ -146,7 +146,7 @@ void AppMenu::updateVehicleTools()
 }
 void AppMenu::updateVehicleSelect()
 {
-    Fact *v = Vehicles::instance()->f_select;
+    Fact *v = Vehicles::select();
     vehicleSelect->deleteChildren();
     for (int i = 0; i < v->size(); ++i) {
         Fact *f = v->child(i);

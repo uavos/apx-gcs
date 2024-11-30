@@ -27,6 +27,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
+#include <Mandala/MandalaAliases.h>
 #include <Mission/VehicleMission.h>
 #include <Nodes/Nodes.h>
 
@@ -151,6 +152,7 @@ void TelemetryPlayer::play()
     apxMsg() << tr("Replay started");
 
     vehicle->f_mandala->restoreDefaults();
+    _facts_by_index.clear();
 
     playTime0 = _time;
     playTime.start();
@@ -219,11 +221,10 @@ void TelemetryPlayer::rec_finished()
 
 void TelemetryPlayer::rec_field(TelemetryReader::Field field)
 {
-    if (!active())
-        return;
+    // if (!active())
+    //     return;
 
-    auto f = vehicle->f_mandala->fact(field.name, true);
-    _facts_by_index.push_back(f);
+    // _facts_by_index.push_back(TelemetryReader::fieldFact(field));
 }
 void TelemetryPlayer::rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink)
 {
@@ -281,7 +282,7 @@ void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject da
         name = QString("%1=%2").arg(param).arg(value);
     }
 
-    if (!_values_init || name.isEmpty() || !active())
+    if (!_values_init || name.isEmpty())
         return;
 
     message(name, uplink, subsystem);
@@ -299,13 +300,18 @@ void TelemetryPlayer::rec_jso(quint64 timestamp_ms, QString name, QJsonObject da
             vehicle->f_nodes->fromJsonObject(data);
     }
 
+    if (!_values_init || name.isEmpty())
+        return;
+
     message(name, uplink, {});
 }
 
 MandalaFact *TelemetryPlayer::updateMandalaFact(size_t index, const QVariant &value)
 {
-    if (index >= _facts_by_index.size())
-        return {}; // should never happen
+    // find facts by name cache
+    while (_facts_by_index.size() <= index) {
+        _facts_by_index.push_back(reader->fieldFact(index));
+    }
 
     auto f = _facts_by_index[index];
     if (f)

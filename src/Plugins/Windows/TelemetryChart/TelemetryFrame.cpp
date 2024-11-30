@@ -39,7 +39,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     //setWindowTitle(tr("Telemetry"));
     //setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
 
-    auto vehicle = Vehicles::instance()->f_replay;
+    auto vehicle = Vehicles::replay();
     mandala = vehicle->f_mandala;
     telemetry = vehicle->f_telemetry;
     records = telemetry->f_records;

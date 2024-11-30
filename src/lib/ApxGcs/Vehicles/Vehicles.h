@@ -42,10 +42,10 @@ public:
 
     static Vehicles *instance() { return _instance; }
 
-    static constexpr const int list_padding = 2;
-    Vehicle *f_replay;
+    static auto replay() { return instance()->f_replay; }
+    static auto select() { return instance()->f_select; }
 
-    VehicleSelect *f_select;
+    static constexpr const int list_padding = 2;
 
 public:
     Vehicle *current(void) const { return m_current; }
@@ -57,6 +57,8 @@ protected:
 
 private:
     static Vehicles *_instance;
+    Vehicle *f_replay;
+    VehicleSelect *f_select;
 
     void _jsSyncMandalaAccess(Fact *fact, QJSValue parent);
 

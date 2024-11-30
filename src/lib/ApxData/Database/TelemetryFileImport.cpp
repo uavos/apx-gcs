@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryFileImport.h"
-#include "TelemetryFieldAliases.h"
 #include "TelemetryFileEvents.h"
 #include "TelemetryFileReader.h"
 #include "TelemetryFileWriter.h"
@@ -29,7 +28,8 @@
 #include <App/AppDirs.h>
 
 #include <ApxMisc/JsonHelpers.h>
-#include <MandalaMetaTree.h>
+
+#include <Mandala/MandalaAliases.h>
 
 TelemetryFileImport::TelemetryFileImport(QObject *parent)
     : QTemporaryFile(parent)
@@ -320,7 +320,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
         // qDebug() << info;
         // qDebug() << fields;
 
-        // init stream writer
+        // map fields to current mandala for dspec config
         std::vector<TelemetryFileWriter::Field> fields_stream;
         for (auto f : fields) {
             auto it = mandala::ALIAS_MAP.find(f.toStdString());
@@ -329,11 +329,12 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
                 for (auto &m : mandala::meta) {
                     if (m.uid != uid)
                         continue;
-                    auto path = QString(m.path).split('.');
-                    path.remove(1, 1);
-                    auto name = path.join('.');
-                    auto dspec = mandala::dspec_for_uid(uid);
-                    fields_stream.push_back({name, {m.title, m.units}, dspec});
+                    auto dspec = TelemetryFileWriter::dspec_for_uid(uid);
+                    fields_stream.push_back({f, {}, dspec});
+                    // auto path = QString(m.path).split('.');
+                    // path.remove(1, 1);
+                    // auto name = path.join('.');
+                    // fields_stream.push_back({name, {m.title, m.units}, dspec});
                     // qDebug() << f << name << m.title << m.units << (uint) dspec;
                     f.clear();
                     break;
@@ -345,6 +346,8 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
             // push field as-is (old flat format)
             fields_stream.push_back({f, {}, telemetry::dspec_e::f32});
         }
+
+        // init stream writer
         TelemetryFileWriter stream;
         stream.init(this, jso_import["name"].toString() + "-import", timestamp, info);
 
