@@ -328,7 +328,6 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
         // loadable data vs shown as page
         if (name == "nodes" || name == "mission") {
             _jsoData.insert(f, data);
-
         } else {
             f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
             f->setOpt("info", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
@@ -342,6 +341,10 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
         f->setValue(QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz"));
 
     f->setProperty("time", QVariant::fromValue(time));
+
+    if (f->opts().contains("page"))
+        return;
+
     connect(f, &Fact::triggered, this, [this, f]() {
         emit statsFactTriggered(f, _jsoData.value(f));
     });
