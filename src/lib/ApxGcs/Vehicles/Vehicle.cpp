@@ -450,7 +450,7 @@ QString Vehicle::confTitle() const
     return anyName;
 }
 
-void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsystem)
+void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsystem, QString src_uid)
 {
     if (subsystem.isEmpty())
         subsystem = title();
@@ -491,7 +491,7 @@ void Vehicle::message(QString msg, AppNotify::NotifyFlags flags, QString subsyst
     }
     AppNotify::instance()->report(msg, flags, subsystem);
 
-    emit messageReported(msg, subsystem);
+    emit messageReported(msg, subsystem, src_uid);
 
     if (fType == AppNotify::Error) {
         f_warnings->error(msg);

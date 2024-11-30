@@ -309,7 +309,9 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
     } else if (name == telemetry::EVT_MSG.name) {
         auto msg = data.value("txt").toString();
         auto src = data.value("src").toString();
-        f = new Fact(g, name + "#", msg, src);
+        auto uid = data.value("uid").toString();
+        auto descr = uid.isEmpty() ? src : (src + " | " + uid);
+        f = new Fact(g, name + "#", msg, descr);
     } else if (name == telemetry::EVT_CONF.name) {
         auto param = data.value("param").toString();
         auto value = data.value("value").toString();

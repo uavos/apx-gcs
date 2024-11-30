@@ -775,8 +775,7 @@ void NodeItem::message(QString msg, AppNotify::NotifyFlags flags)
     if (!valueText().isEmpty()) {
         s.append(QString("/%1").arg(valueText()));
     }
-    _nodes->vehicle->message(msg, flags, s);
-    //_nodes->vehicle->recordNodeMessage(s, msg, protocol()->sn());
+    _nodes->vehicle->message(msg, flags, s, uid());
 }
 void NodeItem::statusReceived(const xbus::node::status::status_s &status)
 {

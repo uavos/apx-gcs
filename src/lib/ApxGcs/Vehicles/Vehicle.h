@@ -182,7 +182,8 @@ public slots:
 
     void message(QString msg,
                  AppNotify::NotifyFlags flags = AppNotify::FromApp | AppNotify::Info,
-                 QString subsystem = QString());
+                 QString subsystem = QString(),
+                 QString src_uid = QString());
 
 signals:
     void selected();
@@ -191,7 +192,7 @@ signals:
     void geoPathAppend(QGeoCoordinate p);
     void deleteVehicle();
 
-    void messageReported(QString msg, QString subsystem);
+    void messageReported(QString msg, QString subsystem, QString src_uid);
 
     void infoChanged();
     void followChanged();

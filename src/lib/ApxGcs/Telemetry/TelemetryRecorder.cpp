@@ -281,14 +281,16 @@ void TelemetryRecorder::recordNotification(QString msg,
     if (flags & AppNotify::FromVehicle)
         return;
 
-    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {msg, "gcs/" + subsystem});
+    auto uid = fact ? fact->path() : QString();
+    auto src = "gcs" + (subsystem.isEmpty() ? "" : ("/" + subsystem));
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {msg, src, uid});
 }
 
-void TelemetryRecorder::recordMsg(QString msg, QString subsystem)
+void TelemetryRecorder::recordMsg(QString msg, QString subsystem, QString src_uid)
 {
     if (msg.isEmpty())
         return;
-    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {msg, subsystem});
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {msg, subsystem, src_uid});
 }
 
 void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString value)

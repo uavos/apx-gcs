@@ -439,7 +439,15 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
                 }
                 // qDebug() << "event" << evt_name << value << uid;
                 if (evt_name == "msg") {
-                    stream.write_evt(time_tag, &telemetry::EVT_MSG, {value, uid});
+                    auto msg = value;
+                    auto src = QString();
+                    if (msg.contains('[') && msg.contains(']')) {
+                        auto i1 = msg.indexOf('[');
+                        auto i2 = msg.indexOf(']');
+                        src = msg.mid(i1 + 1, i2 - i1 - 1);
+                        msg.remove(i1, i2 - i1 + 1);
+                    }
+                    stream.write_evt(time_tag, &telemetry::EVT_MSG, {msg, src, uid});
                     continue;
                 }
                 if (evt_name == "mission") {

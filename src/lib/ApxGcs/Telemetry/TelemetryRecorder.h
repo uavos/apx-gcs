@@ -90,7 +90,7 @@ public slots:
                             QString subsystem,
                             AppNotify::NotifyFlags flags,
                             Fact *fact);
-    void recordMsg(QString msg, QString subsystem);
+    void recordMsg(QString msg, QString subsystem, QString src_uid);
 
     //PROPERTIES
 public:
