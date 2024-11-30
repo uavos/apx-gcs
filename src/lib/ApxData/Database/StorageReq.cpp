@@ -544,8 +544,13 @@ bool TelemetryExport::run(QSqlQuery &query)
                         emit progress(v / progress_div + progress_offset);
                     });
 
+            if (!rfile.open(QIODevice::ReadOnly)) {
+                apxMsgW() << tr("Failed to open file for reading").append(':')
+                          << fiSrc.absoluteFilePath();
+                break;
+            }
             if (!reader.init(&rfile, fiSrc.completeBaseName())) {
-                apxMsgW() << tr("Failed to open").append(':') << fiSrc.absoluteFilePath();
+                apxMsgW() << tr("Failed to read").append(':') << fiSrc.absoluteFilePath();
                 break;
             }
 
