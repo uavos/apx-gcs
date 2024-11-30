@@ -68,6 +68,7 @@ private:
     void loadLatestMeta(Fact *group, quint64 time);
 
     MandalaFact *updateMandalaFact(size_t index, const QVariant &value);
+    void message(QString msg, bool uplink, QString subsystem);
 
 private slots:
     void updateActions();
