@@ -136,8 +136,10 @@ void Telemetry::statsFactTriggered(Fact *f, QJsonObject jso)
     const QString &s = f->name();
     const QString &uid = f->descr();
     if (s.startsWith("nodes")) {
-        // vehicle->storage()->loadVehicleConfig(uid);
+        qDebug() << "load telemetry nodes";
+        vehicle->fromJsonObject(jso);
     } else if (s.startsWith("mission")) {
+        qDebug() << "load telemetry mission";
         vehicle->f_mission->fromJsonObject(jso);
     } else {
         if (f_player)
