@@ -38,6 +38,9 @@ public:
     const QJsonObject &info() const { return _info; }
     const QString &src_hash() const { return _src_hash; }
 
+    static QJsonObject import_mission(QXmlStreamReader &xml);
+    static QJsonObject import_nodes(QXmlStreamReader &xml);
+
 private:
     QJsonObject _info;
     QString _src_hash;
@@ -46,10 +49,8 @@ private:
     bool import_telemetry_v11(QXmlStreamReader &xml, QString format);
     bool import_telemetry_v9(QXmlStreamReader &xml);
 
-    QJsonObject import_mission(QXmlStreamReader &xml);
-
     // helpers
-    QJsonObject readObject(QXmlStreamReader &xml);
+    static QJsonObject readObject(QXmlStreamReader &xml);
 
 signals:
     void progress(int value);
