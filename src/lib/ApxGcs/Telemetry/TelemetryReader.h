@@ -59,7 +59,7 @@ private:
     QList<Field> _fields; // store read fields copy
     QJsonObject _recordInfo;
     QString _recordFilePath;
-    QHash<Fact *, QJsonObject> _jsoData; // store jso data for event facts
+    QHash<Fact *, QByteArray> _jsoData; // store jso data for event facts
 
     // geo path calculation
     QGeoPath _geoPath;

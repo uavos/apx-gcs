@@ -623,8 +623,8 @@ QJsonObject TelemetryFileImport::import_mission(QXmlStreamReader &xml)
     }
 
     mission = json::fix_numbers(json::filter_names(mission));
-    json::save("mission-conv", mission);
-    json::save("mission-orig", imp);
+    // json::save("mission-conv", mission);
+    // json::save("mission-orig", imp);
 
     return mission;
 }
