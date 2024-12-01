@@ -50,7 +50,13 @@ private:
     bool import_telemetry_v9(QXmlStreamReader &xml);
 
     // helpers
-    static QJsonObject readObject(QXmlStreamReader &xml);
+    static QJsonValue import_js(QXmlStreamReader &xml,
+                                const QStringList &object_tags = {},
+                                const QStringList &array_tags = {});
+    static QJsonArray import_node_fields(QXmlStreamReader &xml,
+                                         QStringList *groups,
+                                         QString name_prefix = {});
+    static QString import_mandala_bind(QString bind);
 
 signals:
     void progress(int value);
