@@ -100,8 +100,12 @@ void Joysticks::watcherFinished()
 {
     if (!f_enabled->value().toBool())
         return;
-    if (watcher.result() == 1)
-        update();
+
+    //if (watcher.result() == 1) {
+    //    update();
+    //}
+
+    update();
     waitEvent();
     //qDebug()<<watcher.result();
 }
@@ -123,8 +127,9 @@ void Joysticks::processEvent(const SDL_Event &event)
     switch (event.type) {
     case SDL_JOYDEVICEADDED: {
         scan();
-        //qDebug()<<event.jdevice.which;
-        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(event.jdevice.which);
+        int index = event.jdevice.which;
+
+        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(index);
         QString uid = QByteArray(reinterpret_cast<const char *>(guid.data), sizeof(guid.data))
                           .toHex()
                           .toUpper();
@@ -135,12 +140,25 @@ void Joysticks::processEvent(const SDL_Event &event)
             j->updateDevice(true);
             break;
         }
+        SDL_JoystickID InstanceID = SDL_JoystickGetDeviceInstanceID(index);
+        if (map.contains(InstanceID)) {
+            apxMsg() << QString("%1 (js%2)")
+                            .arg(map.value(InstanceID)->devName)
+                            .arg(map.value(InstanceID)->device_index);
+        }
+
     } break;
     case SDL_JOYDEVICEREMOVED: {
-        //qDebug()<<event.jdevice.which;
-        map.remove(event.jdevice.which);
-        //SDL_JoystickGUID guid = SDL_JoystickGetGUID(SDL_JoystickFromInstanceID(event.jdevice.which));
-        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(event.jdevice.which);
+        int InstanceID = event.jdevice.which;
+        if (map.contains(InstanceID)) {
+            apxMsgW() << QString("%1 (js%2)")
+                             .arg(map.value(InstanceID)->devName)
+                             .arg(map.value(InstanceID)->device_index);
+            map.remove(InstanceID);
+        }
+
+        SDL_JoystickGUID guid = SDL_JoystickGetGUID(SDL_JoystickFromInstanceID(InstanceID));
+        //SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(ID);
         QString uid = QByteArray(reinterpret_cast<const char *>(guid.data), sizeof(guid.data))
                           .toHex()
                           .toUpper();
