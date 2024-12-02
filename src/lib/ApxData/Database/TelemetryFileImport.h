@@ -53,8 +53,10 @@ private:
     static QJsonValue import_js(QXmlStreamReader &xml,
                                 const QStringList &object_tags = {},
                                 const QStringList &array_tags = {});
-    static QJsonArray import_node_fields(QXmlStreamReader &xml,
-                                         QStringList *groups,
+
+    static QJsonArray import_node_fields(const QJsonArray &src,
+                                         QJsonObject *values,
+                                         QStringList *groups_index,
                                          QString name_prefix = {});
     static QString import_mandala_bind(QString bind);
 

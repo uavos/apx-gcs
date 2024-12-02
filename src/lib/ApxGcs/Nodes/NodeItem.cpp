@@ -706,7 +706,7 @@ void NodeItem::confReceived(QVariantMap values)
     for (auto f : m_fields) {
         QString fpath = f->fpath();
         if (!values.contains(fpath)) {
-            //qWarning() << "missing data for:" << fpath;
+            // qWarning() << "missing data for:" << fpath;
             continue;
         }
         fields.append(fpath);
@@ -724,10 +724,12 @@ void NodeItem::confReceived(QVariantMap values)
             qWarning() << "missing field for:" << key;
         }
     }
-    if (fields.size() != m_fields.size()) {
-        apxMsgW() << tr("Inconsistent parameters");
-        return;
-    }
+
+    // if (fields.size() != m_fields.size()) {
+    //     apxMsgW() << tr("Inconsistent parameters");
+    //     qDebug() << fields.size() << m_fields.size();
+    //     return;
+    // }
 
     validateData();
     setEnabled(true);

@@ -637,289 +637,242 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
         return {};
     }
 
-    auto jso = import_js(xml,
-                         {"dictionary",
-                          "config",
-                          "user",
-                          "commands",
-                          "fields",
-                          "info",
-                          "vehicle",
-                          "ident"},
-                         {"node", "command", "field"})
-                   .toObject();
-
-    json::save("nodes", jso);
-    return jso;
-
-    /*
-    auto format = xml.attributes().value("format").toString();
-
-    QJsonObject jso_import;
-    jso_import["format"] = format.isEmpty() ? "old" : format;
-    jso_import["title"] = xml.attributes().value("title").toString();
-    jso_import["version"] = xml.attributes().value("version").toString();
+    const auto imp = import_js(xml,
+                               {"dictionary",
+                                "config",
+                                "user",
+                                "commands",
+                                "fields",
+                                "info",
+                                "vehicle",
+                                "ident"},
+                               {"node", "command", "field"})
+                         .toObject();
 
     QJsonObject nodes;
+
+    nodes["title"] = imp["info"]["title"];
+    nodes["time"] = imp["info"]["time"];
+
+    {
+        QJsonObject jso;
+        auto format = imp["format"].toString();
+        jso["format"] = format.isEmpty() ? "old" : format;
+        jso["title"] = imp["title"];
+        jso["version"] = imp["version"];
+        jso["timestamp"] = imp["timestamp"];
+        jso["exported"] = imp["exported"];
+        nodes["import"] = jso;
+    }
+    {
+        QJsonObject jso;
+        const auto ident = imp[imp.contains("vehicle") ? "vehicle" : "ident"].toObject();
+        jso["uid"] = ident["uid"];
+        jso["name"] = ident["callsign"];
+        jso["type"] = ident["class"];
+        jso["time"] = ident["time"];
+        nodes["unit"] = jso;
+    }
+
+    // nodes items
     QJsonArray nodes_array;
+    for (const auto jsv : imp["node"].toArray()) {
+        const auto imp_node = jsv.toObject();
+        QJsonObject node;
+        QJsonObject node_info;
+        QJsonObject node_dict;
 
-    qDebug() << "import nodes" << jso_import["format"] << jso_import["title"];
+        node_info["uid"] = imp_node["sn"];
+        node_info["name"] = imp_node["name"];
 
-    while (xml.readNextStartElement()) {
-        auto tag = xml.name().toString();
-        if (tag == "title") {
-            if (jso_import["title"].toString().isEmpty())
-                jso_import["title"] = xml.readElementText();
-            continue;
-        }
-        if (tag == "timestamp") {
-            jso_import["timestamp"] = xml.readElementText();
-            continue;
-        }
-        if (tag == "exported") {
-            jso_import["exported"] = xml.readElementText();
-            continue;
-        }
-        if (tag == "version") {
-            jso_import["version"] = xml.readElementText();
-            continue;
-        }
-        if (tag == "info") {
-            auto jso = import_js(xml).toObject();
-            nodes["title"] = jso["title"];
-            nodes["time"] = jso["time"];
-            continue;
-        }
-        if (tag == "vehicle" || tag == "ident") {
-            auto jso = import_js(xml).toObject();
-            QJsonObject unit;
-            unit["uid"] = jso["uid"];
-            unit["name"] = jso["callsign"];
-            unit["type"] = jso["class"];
-            unit["time"] = jso["time"];
-            nodes["unit"] = unit;
-            continue;
+        if (imp_node.contains("info")) {
+            const auto jso = imp_node["info"].toObject();
+            node_info["version"] = jso["version"];
+            node_info["hardware"] = jso["hardware"];
+        } else if (imp_node.contains("dictionary")) {
+            const auto jso = imp_node["dictionary"].toObject();
+            node_info["version"] = jso["version"];
+            node_info["hardware"] = jso["hardware"];
+            node_dict["time"] = jso["time"];
+        } else {
+            node_info["version"] = imp["version"];
+            node_info["hardware"] = imp["hardware"];
         }
 
-        // nodes items
-        if (tag == "node") {
-            QJsonObject node;
-            QJsonObject node_info;
-            QJsonObject node_dict;
-            QJsonObject node_values;
-            QJsonArray node_fields;
+        if (imp_node.contains("config")) {
+            const auto jso = imp_node["config"].toObject();
+            node["time"] = jso["time"];
+            node["title"] = jso["title"];
+        }
 
-            node_info["uid"] = xml.attributes().value("sn").toString();
-            node_info["name"] = xml.attributes().value("name").toString();
+        if (imp_node.contains("user")) {
+            const auto jso = imp_node["user"].toObject();
+            QJsonObject host;
+            host["hostname"] = jso["hostname"];
+            host["username"] = jso["username"];
+            host["uid"] = jso["machineUID"];
+            node_info["host"] = host;
+        }
 
-            auto jso = import_js(xml,
-                                 {"dictionary", "config", "user", "commands", "fields"},
-                                 {"command", "field"})
-                           .toObject();
+        QJsonArray node_fields;
+        QJsonObject node_values;
 
-            json::save("node-" + node_info["name"].toString(), jso);
+        // node commands
+        const auto commands = imp_node.contains("commands")
+                                  ? imp_node["commands"]["command"].toArray()
+                                  : imp_node["command"].toArray();
 
-            while (xml.readNextStartElement()) {
-                tag = xml.name().toString();
-                if (tag == "info") {
-                    auto jso = import_js(xml).toObject();
-                    node_info["version"] = jso["version"];
-                    node_info["hardware"] = jso["hardware"];
-                    continue;
-                }
-                if (tag == "dictionary") {
-                    auto jso = import_js(xml).toObject();
-                    node_info["version"] = jso["version"];
-                    node_info["hardware"] = jso["hardware"];
-                    node_dict["time"] = jso["time"];
-                    continue;
-                }
-                if (tag == "config") {
-                    auto jso = import_js(xml).toObject();
-                    node["time"] = jso["time"];
-                    node["title"] = jso["title"];
-                    continue;
-                }
-                if (tag == "user") {
-                    auto jso = import_js(xml).toObject();
-                    QJsonObject host;
-                    host["hostname"] = jso["hostname"].toString();
-                    host["username"] = jso["username"].toString();
-                    host["uid"] = jso["machineUID"].toString();
-                    node_info["host"] = host;
-                    continue;
-                }
-                if (tag == "commands") {
-                    auto cnt = xml.attributes().value("cnt").toInt();
-                    while (xml.readNextStartElement()) {
-                        if (xml.name().toString() == "command") {
-                            auto name = xml.attributes().value("name").toString();
-                            auto jso = import_js(xml).toObject();
-                            QJsonObject field;
-                            field["name"] = name;
-                            field["title"] = jso["descr"];
-                            field["type"] = "command";
-                            node_fields.push_back(field);
-                            cnt--;
-                            continue;
-                        }
-                        xml.skipCurrentElement();
-                    }
-                    if (cnt != 0) {
-                        qWarning() << "commands count mismatch" << cnt;
-                    }
-                    continue;
-                }
-                if (tag == "command") { // v9
-                    auto jso = import_js(xml).toObject();
-                    QJsonObject field;
-                    field["name"] = jso["name"];
-                    field["title"] = jso["descr"];
-                    field["type"] = "command";
-                    node_fields.push_back(field);
-                }
-                if (tag == "fields") {
-                    auto cnt = xml.attributes().value("cnt").toInt();
-                    QStringList groups;
-                    node_fields = import_node_fields(xml, &groups);
-                    continue;
-                }
+        for (const auto &jsv : commands) {
+            const auto jso = jsv.toObject();
+            QJsonObject field;
+            field["name"] = jso["name"];
+            field["title"] = jso["descr"];
+            field["type"] = "command";
+            node_fields.push_back(field);
+        }
 
-                xml.skipCurrentElement();
-            }
+        // node fields
+        QStringList groups_index; // just to keep order
+        node_fields = import_node_fields(imp_node["fields"]["field"].toArray(),
+                                         &node_values,
+                                         &groups_index,
+                                         {});
 
-            if (node_fields.isEmpty()) {
-                qWarning() << "empty node" << node;
-                continue;
-            }
-
-            // combine node parts
-            node["info"] = node_info;
-            node_dict["fields"] = node_fields;
-            node["dict"] = node_dict;
-            node["values"] = node_values;
-
-            nodes_array.push_back(node);
+        if (node_fields.isEmpty()) {
+            qWarning() << "empty node" << node;
             continue;
         }
 
-        xml.skipCurrentElement();
+        // combine node parts
+        node["info"] = node_info;
+        node_dict["fields"] = node_fields;
+        node["dict"] = node_dict;
+        node["values"] = node_values;
+
+        nodes_array.push_back(node);
     }
 
     if (nodes_array.isEmpty()) {
-        qWarning() << "empty nodes" << jso_import;
+        qWarning() << "empty nodes" << imp;
         return {};
     }
+    nodes["nodes"] = nodes_array;
 
-    nodes["import"] = jso_import;
+    // clean up and return object
+    nodes = json::fix_numbers(json::filter_names(nodes));
+    json::save("nodes-conv", nodes);
+    json::save("nodes-orig", imp);
 
-    return json::fix_numbers(json::filter_names(nodes));*/
+    return nodes;
 }
 
-QJsonArray TelemetryFileImport::import_node_fields(QXmlStreamReader &xml,
-                                                   QStringList *groups,
+QJsonArray TelemetryFileImport::import_node_fields(const QJsonArray &src,
+                                                   QJsonObject *values,
+                                                   QStringList *groups_index,
                                                    QString name_prefix)
 {
     QJsonArray node_fields;
 
-    while (xml.readNextStartElement()) {
-        if (xml.name().toString() == "field") {
-            auto name = xml.attributes().value("name").toString();
-            auto jso = import_js(xml).toObject();
-            // grouping
-            auto sect = jso["sect"].toString();
-            if (!sect.isEmpty()) {
-                auto path_title = sect.split('/');
-                auto path = path_title;
-                for (auto &i : path) {
-                    i = i.toLower().replace(' ', '_').replace('-', '_').replace('.', '_');
-                }
-                // create missing group fields
-                for (int i = 0; i < path.size(); i++) {
-                    auto group = path.mid(0, i + 1).join('.');
-                    if (groups->contains(group))
-                        continue;
-                    groups->push_back(group);
-                    QJsonObject group_field;
-                    group_field["name"] = group;
-                    group_field["title"] = path_title.at(i);
-                    group_field["type"] = "group";
-                    node_fields.push_back(group_field);
-                }
-                sect = path.join('.') + '.';
-            }
+    for (const auto &i : src) {
+        const auto imp = i.toObject();
 
-            // read field descriptor
-            QJsonObject field;
-            field["name"] = name_prefix + sect + name;
-            field["title"] = jso["title"];
-            field["descr"] = jso["descr"];
-            auto value = jso["value"].toString();
-            auto type = jso["type"].toString();
-            static const QHash<QString, xbus::node::conf::type_e> type_map{
-                {"Float", xbus::node::conf::real},
-                {"Byte", xbus::node::conf::byte},
-                {"UInt", xbus::node::conf::dword},
-                {"Option", xbus::node::conf::option},
-                {"String", xbus::node::conf::string},
-                {"StringL", xbus::node::conf::text},
-                {"MandalaID", xbus::node::conf::bind},
-
-                // {"Vector", xbus::node::conf::group},
-                // {"Script", xbus::node::conf::script},
-                // {"Hash", xbus::node::conf::dword},
-                // {"Array", xbus::node::conf::group},
-
-            };
-            if (type_map.contains(type)) {
-                auto type_id = type_map.value(type);
-                field["type"] = QString(xbus::node::conf::type_to_str(type_id));
-                if (type_id == xbus::node::conf::option) {
-                    field["units"] = jso["opts"];
-                } else if (type_id == xbus::node::conf::bind) {
-                    value = import_mandala_bind(value);
-                } else {
-                    field["units"] = jso["units"];
-                }
-                field["value"] = value;
-                node_fields.push_back(field);
-                continue;
+        // grouping
+        auto sect = imp["sect"].toString();
+        if (!sect.isEmpty()) {
+            auto path_title = sect.split('/');
+            auto path = path_title;
+            for (auto &i : path) {
+                i = i.toLower().replace(' ', '_').replace('-', '_').replace('.', '_');
             }
-            if (type == "Vector" || type == "Hash") {
-                field["type"] = "group";
-                auto group = field["name"].toString();
-                groups->push_back(group);
-                node_fields.push_back(field);
-                for (auto i : import_node_fields(xml, groups, group + '.'))
-                    node_fields.push_back(i.toObject());
-                continue;
+            // create missing group fields
+            for (int i = 0; i < path.size(); i++) {
+                auto group = path.mid(0, i + 1).join('.');
+                if (groups_index->contains(group))
+                    continue;
+                groups_index->push_back(group);
+                QJsonObject group_field;
+                group_field["name"] = group;
+                group_field["title"] = path_title.at(i);
+                group_field["type"] = "group";
+                node_fields.push_back(group_field);
             }
-            if (type == "Array") {
-                field["type"] = "group";
-                auto group = field["name"].toString();
-                groups->push_back(group);
-                node_fields.push_back(field);
-                auto cnt = jso["cnt"].toInt();
-                for (int i = 0; i < cnt; i++) {
-                    auto name = QString("%1[%2]").arg(group).arg(i);
-                    auto jso = import_js(xml).toObject();
-                    QJsonObject array_field;
-                    array_field["name"] = name;
-                    array_field["title"] = jso["title"];
-                    array_field["descr"] = jso["descr"];
-                    array_field["type"] = jso["type"];
-                    array_field["value"] = jso["value"];
-                    array_field["units"] = jso["units"];
-                    node_fields.push_back(array_field);
-                }
-                continue;
-            }
+            sect = path.join('.') + '.';
+        }
 
+        QJsonObject field;
+        field["name"] = name_prefix + sect + imp["name"].toString();
+        field["title"] = imp["title"];
+        field["descr"] = imp["descr"];
+
+        auto value = imp["value"].toString();
+        auto type = imp["type"].toString();
+
+        static const QHash<QString, xbus::node::conf::type_e> type_map{
+            {"Float", xbus::node::conf::real},
+            {"Byte", xbus::node::conf::byte},
+            {"UInt", xbus::node::conf::dword},
+            {"Option", xbus::node::conf::option},
+            {"String", xbus::node::conf::string},
+            {"StringL", xbus::node::conf::text},
+            {"MandalaID", xbus::node::conf::bind},
+            {"Script", xbus::node::conf::script},
+            // {"Vector", xbus::node::conf::group},
+            // {"Hash", xbus::node::conf::dword},
+            // {"Array", xbus::node::conf::group},
+        };
+
+        if (type == "Array") {
+            // first type of child field
+            const auto jsa = imp["field"].toArray();
+            type = jsa.first().toObject()["type"].toString();
+            auto type_id = type_map.value(type);
+            field["array"] = jsa.size();
+            value.clear();
+            QJsonArray jsa_values;
+            for (const auto i : jsa) {
+                auto v = i.toObject()["value"].toString();
+                if (v.isEmpty())
+                    continue;
+                if (type_id == xbus::node::conf::bind)
+                    v = import_mandala_bind(v);
+                jsa_values.push_back(v);
+            }
+            if (!jsa_values.isEmpty())
+                values->insert(field["name"].toString(), jsa_values);
+        }
+
+        if (type_map.contains(type)) {
+            auto type_id = type_map.value(type);
+            field["type"] = QString(xbus::node::conf::type_to_str(type_id));
+            if (type_id == xbus::node::conf::option) {
+                field["units"] = imp["opts"];
+            } else if (type_id == xbus::node::conf::bind) {
+                value = import_mandala_bind(value);
+            } else {
+                field["units"] = imp["units"];
+            }
+            node_fields.push_back(field);
+            if (values && !value.isEmpty())
+                values->insert(field["name"].toString(), value);
             continue;
-        } // field tag
-        xml.skipCurrentElement();
+        }
+        if (type == "Vector" || type == "Hash") {
+            field["type"] = "group";
+            auto group = field["name"].toString();
+            groups_index->push_back(group);
+            node_fields.push_back(field);
+            const auto sub = import_node_fields(imp["field"].toArray(),
+                                                values,
+                                                groups_index,
+                                                group + '.');
+            for (auto i : sub)
+                node_fields.push_back(i.toObject());
+            continue;
+        }
+        if (type == "Script") {
+            continue;
+        }
     }
-
     return node_fields;
 }
 
