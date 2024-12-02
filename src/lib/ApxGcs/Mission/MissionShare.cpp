@@ -20,17 +20,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MissionShare.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
-#include <Vehicles/Vehicle.h>
+#include <Fleet/Unit.h>
 
-MissionShare::MissionShare(VehicleMission *mission, Fact *parent, Flags flags)
+MissionShare::MissionShare(UnitMission *mission, Fact *parent, Flags flags)
     : Share(parent, "mission", tr("Mission"), AppDirs::missions(), flags)
     , _mission(mission)
 {
-    connect(mission, &VehicleMission::emptyChanged, this, &MissionShare::updateActions);
+    connect(mission, &UnitMission::emptyChanged, this, &MissionShare::updateActions);
     updateActions();
 }
 
@@ -39,7 +39,7 @@ QString MissionShare::getDefaultTitle()
     QString s = _mission->site().replace(" ", "");
     if (!s.isEmpty())
         s.append("-");
-    s.append(_mission->vehicle->title());
+    s.append(_mission->unit->title());
     QString subj = _mission->f_title->text().simplified();
     if (!subj.isEmpty())
         s.append(QString("-%1").arg(subj));

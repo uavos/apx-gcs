@@ -45,22 +45,22 @@ bound.info = "wrap angle -180..+180";
 
 // system console
 function req(n) {
-    apx.vehicles.current.mandala.fact(n).request();
+    apx.fleet.current.mandala.fact(n).request();
 }
 req.info = "request var n from UAV";
 
 function send(n) {
-    apx.vehicles.current.mandala.fact(n).send();
+    apx.fleet.current.mandala.fact(n).send();
 }
 send.info = "send var n to UAV";
 
 function serial(p, v) {
-    apx.vehicles.current.protocol.data.sendSerial(p, v);
+    apx.fleet.current.protocol.data.sendSerial(p, v);
 }
 serial.info = "send data v to serial port ID p";
 
 function vmexec(f) {
-    apx.vehicles.current.requestScript(f);
+    apx.fleet.current.requestScript(f);
 }
 vmexec.info = "execute function of onboard scripts";
 
@@ -70,14 +70,14 @@ function sleep(n) {
 sleep.info = "sleep n milliseconds";
 
 function next() {
-    apx.vehicles.selectNext();
+    apx.fleet.selectNext();
 }
-next.info = "switch to next vehicle";
+next.info = "switch to next unit";
 
 function prev() {
-    apx.vehicles.selectPrev();
+    apx.fleet.selectPrev();
 }
-prev.info = "switch to previous vehicle";
+prev.info = "switch to previous unit";
 
 // objects tree helper functions
 function ls(a, b) {
@@ -135,7 +135,7 @@ function zrc() {
 zrc.info = "reset pilot controls";
 
 function flyTo(lat, lon) {
-    apx.vehicles.current.flyHere(apx.coordinate(lat, lon))
+    apx.fleet.current.flyHere(apx.coordinate(lat, lon))
 }
 flyTo.info = "Set commanded position";
 
@@ -147,7 +147,7 @@ function inair(v) {
 inair.info = "Set in-air status";
 
 function sh(clist) {
-    apx.vehicles.current.nodes.shell(clist)
+    apx.fleet.current.nodes.shell(clist)
 }
 sh.info = "Node shell commands";
 

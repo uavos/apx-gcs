@@ -29,7 +29,7 @@ namespace Ui {
 class SerialForm;
 }
 
-class Vehicle;
+class Unit;
 class SerialForm : public QWidget
 {
     Q_OBJECT
@@ -50,7 +50,7 @@ private:
     QList<QMetaObject::Connection> clist;
 
 private slots:
-    void vehicleSelected(Vehicle *vehicle);
+    void unitSelected(Unit *unit);
 
     void btnReset();
     void btnSend();

@@ -22,7 +22,7 @@
 import QtQuick
 import QtLocation
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 import APX.Mission as APX
 
 
@@ -34,8 +34,8 @@ MapItemGroup {
         map.addMapItemGroup(group)
     }
 
-    property APX.Vehicle vehicle: apx.vehicles.current
-    property APX.Mission mission: vehicle.mission
+    property APX.Unit unit: apx.fleet.current
+    property APX.Mission mission: unit.mission
 
     visible: !mission.empty
 
@@ -46,7 +46,7 @@ MapItemGroup {
 
     function showRegion()
     {
-        var r=mission.boundingGeoRectangle().united(vehicle.geoPathRect())
+        var r=mission.boundingGeoRectangle().united(unit.geoPathRect())
 
         if(!map.visibleRegion.boundingGeoRectangle().intersects(r))
             map.showRegion(r)

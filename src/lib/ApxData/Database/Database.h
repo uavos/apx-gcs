@@ -27,7 +27,7 @@
 #include "NodesSession.h"
 #include "StorageSession.h"
 
-class VehiclesDB;
+class FleetDB;
 class MissionsDB;
 
 class Database : public Fact
@@ -43,7 +43,7 @@ public:
     QPointer<db::storage::Session> storage;
     QPointer<db::nodes::Session> nodes;
 
-    QPointer<VehiclesDB> vehicles;
+    QPointer<FleetDB> fleet;
 
 private:
     static Database *_instance;

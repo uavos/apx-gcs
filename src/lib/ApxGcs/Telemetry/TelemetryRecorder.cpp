@@ -23,15 +23,15 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Mission/VehicleMission.h>
+#include <Fleet/Unit.h>
+#include <Mission/UnitMission.h>
 #include <Nodes/Nodes.h>
-#include <Vehicles/Vehicle.h>
 
 #include <ApxMisc/JsonHelpers.h>
 
-TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
+TelemetryRecorder::TelemetryRecorder(Unit *unit, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
-    , _vehicle(vehicle)
+    , _unit(unit)
 {
     setIcon("record-rec");
 
@@ -44,7 +44,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::restartRecording);
 
     // prepare fields map
-    for (auto f : _vehicle->f_mandala->valueFacts()) {
+    for (auto f : _unit->f_mandala->valueFacts()) {
         // guess best field storage format
         auto uid = f->uid();
         auto dspec = TelemetryFileWriter::dspec_for_uid(uid);
@@ -52,44 +52,33 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     }
 
     // record doenlink/uplink
-    connect(vehicle->f_mandala,
-            &Mandala::recordTelemetry,
-            this,
-            &TelemetryRecorder::recordTelemetry);
-    connect(vehicle->f_mandala, &Mandala::recordData, this, &TelemetryRecorder::recordData);
+    connect(unit->f_mandala, &Mandala::recordTelemetry, this, &TelemetryRecorder::recordTelemetry);
+    connect(unit->f_mandala, &Mandala::recordData, this, &TelemetryRecorder::recordData);
 
     // record serial port data
-    connect(vehicle->protocol()->data(),
+    connect(unit->protocol()->data(),
             &PData::serialData,
             this,
             [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, false); });
 
     // record config on each upload or save
-    connect(vehicle->storage(),
-            &VehicleStorage::configSaved,
-            this,
-            &TelemetryRecorder::recordConfig);
+    connect(unit->storage(), &UnitStorage::configSaved, this, &TelemetryRecorder::recordConfig);
 
     // record text messages
-    connect(vehicle->f_nodes,
-            &Nodes::fieldUploadReport,
-            this,
-            &TelemetryRecorder::recordConfigUpdate);
+    connect(unit->f_nodes, &Nodes::fieldUploadReport, this, &TelemetryRecorder::recordConfigUpdate);
 
     connect(AppNotify::instance(),
             &AppNotify::notification,
             this,
             &TelemetryRecorder::recordNotification);
 
-    connect(vehicle, &Vehicle::messageReported, this, &TelemetryRecorder::recordMsg);
+    connect(unit, &Unit::messageReported, this, &TelemetryRecorder::recordMsg);
 
     // record mission on each upload or download
-    connect(vehicle->f_mission, &VehicleMission::missionDownloaded, this, [this]() {
+    connect(unit->f_mission, &UnitMission::missionDownloaded, this, [this]() {
         recordMission(false);
     });
-    connect(vehicle->f_mission, &VehicleMission::missionUploaded, this, [this]() {
-        recordMission(true);
-    });
+    connect(unit->f_mission, &UnitMission::missionUploaded, this, [this]() { recordMission(true); });
 
     // display
     connect(this, &TelemetryRecorder::timeChanged, this, &TelemetryRecorder::updateStatus);
@@ -99,7 +88,7 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(&timeUpdateTimer, &QTimer::timeout, this, &TelemetryRecorder::timeUpdate);
 
     // auto recorder
-    flightState_s = Vehicle::FS_UNKNOWN;
+    flightState_s = Unit::FS_UNKNOWN;
     recStopTimer.setSingleShot(true);
     connect(&recStopTimer, &QTimer::timeout, this, [this]() { setRecording(false); });
 
@@ -131,9 +120,9 @@ void TelemetryRecorder::checkFileRecord()
 
     auto timestamp = QDateTime::currentDateTime();
 
-    QString unitName = _vehicle->title();
+    QString unitName = _unit->title();
     if (unitName.isEmpty())
-        unitName = _vehicle->confTitle();
+        unitName = _unit->confTitle();
 
     const auto info = prepareFileInfo();
     const auto time_utc = timestamp.toMSecsSinceEpoch();
@@ -156,7 +145,7 @@ void TelemetryRecorder::checkFileRecord()
     _stream.init(&_stream_file, basename, time_utc, info);
 
     // record initial mandala state
-    for (auto f : _vehicle->f_mandala->valueFacts()) {
+    for (auto f : _unit->f_mandala->valueFacts()) {
         if (!(f->everReceived() || f->everSent()))
             continue;
         const auto &field = _fields_map[f->uid()];
@@ -164,13 +153,13 @@ void TelemetryRecorder::checkFileRecord()
     }
 
     // record initial meta data
-    if (_vehicle->f_nodes->valid()) {
+    if (_unit->f_nodes->valid()) {
         auto hash = _configHash;
         _configHash.clear();
-        recordConfig(hash, _vehicle->confTitle());
+        recordConfig(hash, _unit->confTitle());
     }
 
-    if (!_vehicle->f_mission->empty())
+    if (!_unit->f_mission->empty())
         recordMission(false);
 
     // create DB record
@@ -185,8 +174,8 @@ QJsonObject TelemetryRecorder::prepareFileInfo()
 {
     QJsonObject info;
 
-    info["unit"] = _vehicle->get_info();
-    info["conf"] = _vehicle->confTitle();
+    info["unit"] = _unit->get_info();
+    info["conf"] = _unit->confTitle();
 
     QJsonObject sw;
     sw["version"] = QCoreApplication::applicationVersion();
@@ -220,14 +209,14 @@ quint64 TelemetryRecorder::getEventTimestamp()
 {
     if (!_tsElapsed.isValid()) {
         _tsElapsed.start();
-        qDebug() << _vehicle->title() << "0 PRE";
+        qDebug() << _unit->title() << "0 PRE";
         return 0;
     }
 
     quint64 elapsed = _tsElapsed.elapsed();
     quint64 t = elapsed + _ts_t2;
 
-    // qDebug() << _vehicle->title() << t << elapsed << _ts_t2;
+    // qDebug() << _unit->title() << t << elapsed << _ts_t2;
     return t;
 }
 
@@ -242,7 +231,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     checkFileRecord();
 
     if (_reset_timestamp) {
-        qDebug() << _vehicle->title() << "reset timestamp:" << t;
+        qDebug() << _unit->title() << "reset timestamp:" << t;
         _reset_timestamp = false;
         _ts_t0 = t;
         if (_tsElapsed.isValid()) {
@@ -256,7 +245,7 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     _tsElapsed.start();
     setTime(t / 1000);
 
-    // qDebug() << _vehicle->title() << t << values.size();
+    // qDebug() << _unit->title() << t << values.size();
 
     _stream.write_values(t, prepareValues(values), false);
 }
@@ -278,7 +267,7 @@ void TelemetryRecorder::recordNotification(QString msg,
 {
     if (msg.isEmpty())
         return;
-    if (flags & AppNotify::FromVehicle)
+    if (flags & AppNotify::FromUnit)
         return;
 
     auto uid = fact ? fact->path() : QString();
@@ -308,9 +297,9 @@ void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool u
 
 void TelemetryRecorder::recordMission(bool uplink)
 {
-    if (_vehicle->f_mission->empty())
+    if (_unit->f_mission->empty())
         return;
-    auto mission = _vehicle->f_mission->toJsonDocument().object();
+    auto mission = _unit->f_mission->toJsonDocument().object();
     auto title = mission["title"].toString();
     auto hash = mission["hash"].toString();
 
@@ -324,24 +313,24 @@ void TelemetryRecorder::recordConfig(QString hash, QString title)
         return;
     _configHash = hash;
 
-    _stream.write_jso(getEventTimestamp(), "nodes", _vehicle->toJsonDocument().object(), false);
+    _stream.write_jso(getEventTimestamp(), "nodes", _unit->toJsonDocument().object(), false);
 }
 
 bool TelemetryRecorder::checkAutoRecord(void)
 {
-    if (_vehicle->streamType() != PVehicle::TELEMETRY)
+    if (_unit->streamType() != PUnit::TELEMETRY)
         return recording();
 
-    Vehicle::FlightState fs = _vehicle->flightState();
+    Unit::FlightState fs = _unit->flightState();
     if (flightState_s != fs) {
         flightState_s = fs; //only once
 
         // stop recording when landed
-        if (fs == Vehicle::FS_LANDED && recording() && !recStopTimer.isActive())
+        if (fs == Unit::FS_LANDED && recording() && !recStopTimer.isActive())
             recStopTimer.start(2000);
 
         // start or restart when starts flying
-        if (fs == Vehicle::FS_TAKEOFF) {
+        if (fs == Unit::FS_TAKEOFF) {
             reset(); //restart
             setRecording(true);
         }

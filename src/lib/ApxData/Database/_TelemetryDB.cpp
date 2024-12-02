@@ -62,7 +62,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
                        QStringList() << "key INTEGER PRIMARY KEY NOT NULL"
                                      << "trash INTEGER"
                                      << "time INTEGER" //[ms since epoch]
-                                     << "vehicleUID TEXT"
+                                     << "unitUID TEXT"
                                      << "callsign TEXT"
                                      << "notes TEXT"
                                      << "comment TEXT"
@@ -79,7 +79,7 @@ TelemetryDB::TelemetryDB(QObject *parent, QString sessionName)
 
     new DBReqMakeIndex(this, "Telemetry", "trash", false);
     new DBReqMakeIndex(this, "Telemetry", "time", false);
-    new DBReqMakeIndex(this, "Telemetry", "vehicleUID", false);
+    new DBReqMakeIndex(this, "Telemetry", "unitUID", false);
     new DBReqMakeIndex(this, "Telemetry", "callsign", false);
     new DBReqMakeIndex(this, "Telemetry", "file", true);
 

@@ -24,15 +24,15 @@
 #include "PApxNode.h"
 #include "PApxNodeFile.h"
 #include "PApxNodes.h"
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
 #include <App/App.h>
 
 #include <XbusMission.h>
 
-PApxMission::PApxMission(PApxVehicle *parent)
+PApxMission::PApxMission(PApxUnit *parent)
     : PMission(parent)
-    , _vehicle(parent)
+    , _unit(parent)
 {
     // notify mission available on ident update if files found
     connect(parent->nodes(), &PNodes::node_available, this, [this](PNode *node) {
@@ -86,7 +86,7 @@ void PApxMission::parseMissionData(PApxNode *_node,
 
 PApxNodeFile *PApxMission::_file() const
 {
-    for (auto node : static_cast<PApxNodes *>(_vehicle->nodes())->nodes()) {
+    for (auto node : static_cast<PApxNodes *>(_unit->nodes())->nodes()) {
         auto f = node->file(file_name);
         if (f)
             return f;

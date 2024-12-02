@@ -28,13 +28,13 @@
 #include <App/AppLog.h>
 
 #include <Mandala/MandalaAliases.h>
-#include <Mission/VehicleMission.h>
+#include <Mission/UnitMission.h>
 #include <Nodes/Nodes.h>
 
-TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Vehicle *vehicle, Fact *parent)
+TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Unit *unit, Fact *parent)
     : Fact(parent, "player", tr("Player"), tr("Telemetry data player"), Group)
     , reader(reader)
-    , vehicle(vehicle)
+    , unit(unit)
     , setTime0(0)
     , blockTimeChange(false)
 {
@@ -83,8 +83,8 @@ TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Vehicle *vehicle, Fact
 
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActions);
 
-    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [this](Vehicle *v) {
-        if (v != this->vehicle)
+    connect(Fleet::instance(), &Fleet::unitSelected, this, [this](Unit *unit) {
+        if (unit != this->unit)
             stop();
     });
     updateSpeed();
@@ -146,12 +146,12 @@ void TelemetryPlayer::play()
         return;
     if (!reader->totalTime())
         return;
-    vehicle->f_select->trigger();
+    unit->f_select->trigger();
     setActive(true);
 
     apxMsg() << tr("Replay started");
 
-    vehicle->f_mandala->restoreDefaults();
+    unit->f_mandala->restoreDefaults();
     _facts_by_index.clear();
 
     playTime0 = _time;
@@ -248,7 +248,7 @@ void TelemetryPlayer::rec_values(quint64 timestamp_ms, TelemetryReader::Values d
                 continue;
             if (s.startsWith("cmd.gimbal."))
                 continue;
-            vehicle->message(QString(">%1=%2").arg(f->title(), f->text()), AppNotify::Important);
+            unit->message(QString(">%1=%2").arg(f->title(), f->text()), AppNotify::Important);
             continue;
         }
         // field not found in current mandala
@@ -257,7 +257,7 @@ void TelemetryPlayer::rec_values(quint64 timestamp_ms, TelemetryReader::Values d
             continue;
         if (s.startsWith("rc_"))
             continue;
-        vehicle->message(QString(">%1").arg(s), AppNotify::Important);
+        unit->message(QString(">%1").arg(s), AppNotify::Important);
     }
 }
 void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
@@ -294,10 +294,10 @@ void TelemetryPlayer::rec_jso(quint64 timestamp_ms, QString name, QJsonObject da
 
     if (name == "mission") {
         if (_values_init)
-            vehicle->f_mission->fromJsonObject(data);
+            unit->f_mission->fromJsonObject(data);
     } else if (name == "nodes") {
         if (_values_init)
-            vehicle->f_nodes->fromJsonObject(data);
+            unit->f_nodes->fromJsonObject(data);
     }
 
     if (!_values_init || name.isEmpty())
@@ -323,14 +323,14 @@ void TelemetryPlayer::message(QString msg, bool uplink, QString subsystem)
 {
     AppNotify::NotifyFlags flags = AppNotify::Important;
     if (!uplink)
-        flags |= AppNotify::FromVehicle;
+        flags |= AppNotify::FromUnit;
     auto s = QString("%1: %2").arg(uplink ? ">" : "<").arg(msg);
-    vehicle->message(s, flags, subsystem);
+    unit->message(s, flags, subsystem);
 }
 
 void TelemetryPlayer::loadConfValue(QString uid, QString param, QString value)
 {
-    auto node = vehicle->f_nodes->node(uid);
+    auto node = unit->f_nodes->node(uid);
     if (!node) {
         qWarning() << "missing node" << uid;
         return;
@@ -378,7 +378,7 @@ void TelemetryPlayer::next()
             updateMandalaFact(index, value);
         }
         _values.clear();
-        vehicle->f_mandala->telemetryDecoded();
+        unit->f_mandala->telemetryDecoded();
         _values_init = true;
     }
 

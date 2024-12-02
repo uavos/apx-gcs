@@ -22,9 +22,9 @@
 #pragma once
 
 #include "PApxNodeRequest.h"
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
-class PApxVehicle;
+class PApxUnit;
 class PApxNodes;
 class PApxNodeFile;
 

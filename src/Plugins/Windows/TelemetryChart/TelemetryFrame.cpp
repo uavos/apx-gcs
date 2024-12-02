@@ -24,10 +24,10 @@
 #include <App/AppDirs.h>
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
 #include <Telemetry/TelemetryRecords.h>
 #include <Telemetry/TelemetryShare.h>
-#include <Vehicles/Vehicle.h>
-#include <Vehicles/Vehicles.h>
 #include <QColor>
 #include <QtGui>
 #include <QtNetwork>
@@ -39,9 +39,9 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     //setWindowTitle(tr("Telemetry"));
     //setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
 
-    auto vehicle = Vehicles::replay();
-    mandala = vehicle->f_mandala;
-    telemetry = vehicle->f_telemetry;
+    auto unit = Fleet::replay();
+    mandala = unit->f_mandala;
+    telemetry = unit->f_telemetry;
     records = telemetry->f_records;
     reader = telemetry->f_reader;
     player = telemetry->f_player;

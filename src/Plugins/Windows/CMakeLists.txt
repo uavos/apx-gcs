@@ -1,4 +1,4 @@
-add_subdirectory("VehicleConfiguration")
+add_subdirectory("Parameters")
 add_subdirectory("TelemetryChart")
 
 add_subdirectory("CompassCalibration")

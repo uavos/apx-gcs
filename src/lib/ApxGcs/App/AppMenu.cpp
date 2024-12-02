@@ -31,9 +31,9 @@
 #include <tcp_ports.h>
 
 #include <Datalink/Datalink.h>
+#include <Fleet/Fleet.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryShare.h>
-#include <Vehicles/Vehicles.h>
 
 #include <QDesktopServices>
 
@@ -68,35 +68,35 @@ AppMenu::AppMenu(Fact *parent)
 
     f = new Fact(file, "telemetry");
     f->setOpt("shortcut", QKeySequence::Open);
-    f->setBinding(Vehicles::replay()->f_telemetry->f_share->f_import);
+    f->setBinding(Fleet::replay()->f_telemetry->f_share->f_import);
 
     f = new Fact(file, "nodes");
-    f->setBinding(Vehicles::replay()->f_share->f_import);
+    f->setBinding(Fleet::replay()->f_share->f_import);
 
     f = new Fact(file, "datalink");
     f->setBinding(AppGcs::instance()->f_datalink);
     f->setSection(tr("Communication"));
 
-    vehicles = new Fact(this, "vehicles", tr("Vehicles"), "", Group | FlatModel, "airplane");
-    vehicleSelect = new Fact(vehicles, "select", tr("Select vehicle"), "", Group | Section);
-    vehicleTools = new Fact(vehicles, "vehicle", tr("Current vehicle"), "", Group | Section);
-    connect(Vehicles::instance(),
-            &Vehicles::currentChanged,
+    fleet = new Fact(this, "fleet", tr("Fleet"), "", Group | FlatModel, "airplane");
+    unitSelect = new Fact(fleet, "select", tr("Select unit"), "", Group | Section);
+    unitTools = new Fact(fleet, "unit", tr("Current unit"), "", Group | Section);
+    connect(Fleet::instance(),
+            &Fleet::currentChanged,
             this,
-            &AppMenu::updateVehicleTools,
+            &AppMenu::updateUnitTools,
             Qt::QueuedConnection);
-    updateVehicleTools();
-    connect(Vehicles::select(),
+    updateUnitTools();
+    connect(Fleet::select(),
             &Fact::itemInserted,
             this,
-            &AppMenu::updateVehicleSelect,
+            &AppMenu::updateUnitSelect,
             Qt::QueuedConnection);
-    connect(Vehicles::select(),
+    connect(Fleet::select(),
             &Fact::itemRemoved,
             this,
-            &AppMenu::updateVehicleSelect,
+            &AppMenu::updateUnitSelect,
             Qt::QueuedConnection);
-    updateVehicleSelect();
+    updateUnitSelect();
 
     tools = new Fact(this, "tools", "", "", Group);
     tools->setBinding(AppRoot::instance()->f_tools);
@@ -131,26 +131,26 @@ AppMenu::AppMenu(Fact *parent)
             Qt::QueuedConnection);
 }
 
-void AppMenu::updateVehicleTools()
+void AppMenu::updateUnitTools()
 {
-    Vehicle *v = Vehicles::instance()->current();
+    auto v = Fleet::instance()->current();
     if (!v)
         return;
-    vehicleTools->deleteChildren();
+    unitTools->deleteChildren();
     for (int i = 0; i < v->size(); ++i) {
         Fact *f = v->child(i);
-        Fact *a = new Fact(vehicleTools, f->name());
+        Fact *a = new Fact(unitTools, f->name());
         a->setBinding(f);
     }
-    updateMenu(vehicleTools->parentFact());
+    updateMenu(unitTools->parentFact());
 }
-void AppMenu::updateVehicleSelect()
+void AppMenu::updateUnitSelect()
 {
-    Fact *v = Vehicles::select();
-    vehicleSelect->deleteChildren();
+    auto v = Fleet::select();
+    unitSelect->deleteChildren();
     for (int i = 0; i < v->size(); ++i) {
         Fact *f = v->child(i);
-        Fact *a = new Fact(vehicleSelect, f->name(), f->title(), f->descr(), Bool);
+        Fact *a = new Fact(unitSelect, f->name(), f->title(), f->descr(), Bool);
         a->setIcon(f->icon());
         a->setValue(f->active());
         connect(f, &Fact::activeChanged, a, [a, f]() { a->setValue(f->active()); });

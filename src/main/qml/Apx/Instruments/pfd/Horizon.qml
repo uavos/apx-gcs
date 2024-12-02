@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
-import APX.Vehicles as APX
+import APX.Fleet as APX
 import "../common"
 import "."
 
@@ -32,7 +32,7 @@ Item {
     anchors.centerIn: parent
 
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
+    readonly property APX.Unit unit: apx.fleet.current
 
     readonly property real m_roll: mandala.est.att.roll.value
     readonly property real m_pitch: mandala.est.att.pitch.value

@@ -23,7 +23,7 @@
 
 #include <Mandala/Mandala.h>
 
-PApxData::PApxData(PApxVehicle *parent)
+PApxData::PApxData(PApxUnit *parent)
     : PData(parent)
     , _req(parent)
 {}
@@ -101,7 +101,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     trace()->block("ERR:");
     trace()->data(stream.payload());
 
-    _vehicle->incErrcnt();
+    _unit->incErrcnt();
     return true;
 }
 

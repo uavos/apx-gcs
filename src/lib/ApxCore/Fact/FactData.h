@@ -69,7 +69,7 @@ public:
     bool isDefault() const;
 
     //Mandala support - must override in derived classes
-    // to collect dict ids from vehicle mandala
+    // to collect dict ids from unit mandala
     // default impl searches for parent facts and
     // returns the first nonzero data found
 public:

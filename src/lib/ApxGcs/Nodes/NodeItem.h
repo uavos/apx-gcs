@@ -31,6 +31,7 @@
 #include "NodeStorage.h"
 
 class Nodes;
+class Unit;
 
 class NodeItem : public Fact
 {
@@ -61,7 +62,7 @@ public:
     bool loadConfigValue(const QString &name, const QString &value);
 
     Q_INVOKABLE void message(QString msg,
-                             AppNotify::NotifyFlags flags = AppNotify::FromVehicle
+                             AppNotify::NotifyFlags flags = AppNotify::FromUnit
                                                             | AppNotify::Important);
 
     // variant conversions
@@ -83,6 +84,7 @@ protected:
 
 private:
     Nodes *_nodes;
+    Unit *_unit;
     PNode *_protocol;
 
     QVariantMap _ident;

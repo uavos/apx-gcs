@@ -22,7 +22,7 @@
 #include "NodeStorage.h"
 #include "NodeItem.h"
 
-#include <Database/VehiclesReqNode.h>
+#include <Database/FleetReqNode.h>
 
 NodeStorage::NodeStorage(NodeItem *node)
     : QObject(node)
@@ -53,7 +53,7 @@ void NodeStorage::saveNodeDict()
 
 void NodeStorage::saveNodeConfig()
 {
-    _configID = 0; // invalidate for vehicle config
+    _configID = 0; // invalidate for unit config
     auto hash = _node->get_dict().value("hash").toString();
     if (hash.isEmpty()) {
         qWarning() << "no dict hash";

@@ -25,19 +25,19 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Vehicles/Vehicle.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
 
 #include <algorithm>
 
-Nodes::Nodes(Vehicle *vehicle)
-    : Fact(vehicle,
+Nodes::Nodes(Unit *unit)
+    : Fact(unit,
            "nodes",
            tr("Nodes"),
-           tr("Vehicle components"),
+           tr("Unit components"),
            Group | FlatModel | ModifiedGroup | ProgressTrack)
-    , vehicle(vehicle)
-    , _protocol(vehicle->protocol() ? vehicle->protocol()->nodes() : nullptr)
+    , unit(unit)
+    , _protocol(unit->protocol() ? unit->protocol()->nodes() : nullptr)
 {
     setIcon("puzzle");
 
@@ -49,8 +49,7 @@ Nodes::Nodes(Vehicle *vehicle)
                         "upload");
     connect(f_upload, &Fact::triggered, this, &Nodes::upload);
 
-    f_search
-        = new Fact(this, "search", tr("Search"), tr("Download from vehicle"), Action, "download");
+    f_search = new Fact(this, "search", tr("Search"), tr("Download from unit"), Action, "download");
     connect(f_search, &Fact::triggered, this, &Nodes::search);
 
     f_reload = new Fact(this, "reload", tr("Reload"), tr("Clear and download all"), Action, "reload");
@@ -96,7 +95,7 @@ Nodes::Nodes(Vehicle *vehicle)
 
     connect(this, &Fact::triggered, this, &Nodes::search);
 
-    if (vehicle->isIdentified())
+    if (unit->isIdentified())
         _protocol->requestSearch();
 }
 
@@ -119,10 +118,7 @@ void Nodes::node_available(PNode *node)
     m_nodes.append(f);
 
     connect(f, &NodeItem::validChanged, this, &Nodes::updateValid);
-    connect(f->storage,
-            &NodeStorage::configSaved,
-            vehicle->storage(),
-            &VehicleStorage::saveVehicleConfig);
+    connect(f->storage, &NodeStorage::configSaved, unit->storage(), &UnitStorage::saveUnitConfig);
 
     updateValid();
     updateActions();
@@ -177,7 +173,7 @@ void Nodes::updateValid()
 
     if (!m_valid)
         return;
-    qDebug() << "nodes valid" << vehicle->title();
+    qDebug() << "nodes valid" << unit->title();
 }
 
 void Nodes::search()
@@ -213,7 +209,7 @@ void Nodes::clear()
 
 void Nodes::reload()
 {
-    if (vehicle->isReplay())
+    if (unit->isReplay())
         return;
 
     if (upgrading()) {
@@ -321,7 +317,7 @@ void Nodes::fromVariant(const QVariant &var)
         return;
     }
 
-    if (vehicle->isReplay()) {
+    if (unit->isReplay()) {
         // check if nodes set is the same
         size_t match_cnt = 0;
         for (auto i : nodes) {

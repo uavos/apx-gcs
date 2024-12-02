@@ -23,7 +23,7 @@
 
 #include "PBase.h"
 
-class PVehicle;
+class PUnit;
 class PNode;
 
 class PNodes : public PTreeBase
@@ -32,7 +32,7 @@ class PNodes : public PTreeBase
     Q_PROPERTY(bool upgrading READ upgrading NOTIFY upgradingChanged)
 
 public:
-    explicit PNodes(PVehicle *parent);
+    explicit PNodes(PUnit *parent);
 
     // set to true if any child node is upgrading
     auto upgrading() const { return m_upgrading; }

@@ -24,7 +24,7 @@
 #include <Database/StorageReq.h>
 
 #include <Fact/Fact.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 #include <QtCore>
 
 class Recorder;
@@ -36,10 +36,10 @@ class TelemetryRecorder : public Fact
     Q_PROPERTY(bool recording READ recording WRITE setRecording NOTIFY recordingChanged)
 
 public:
-    explicit TelemetryRecorder(Vehicle *vehicle, Fact *parent);
+    explicit TelemetryRecorder(Unit *unit, Fact *parent);
 
 private:
-    Vehicle *_vehicle;
+    Unit *_unit;
 
     QFile _stream_file;
     TelemetryFileWriter _stream;
@@ -55,7 +55,7 @@ private:
 
     //auto recorder
     bool checkAutoRecord(void);
-    Vehicle::FlightState flightState_s;
+    Unit::FlightState flightState_s;
     QTimer timeUpdateTimer, recStopTimer;
 
     //timestamp

@@ -24,8 +24,8 @@
 
 #include "gstplayer.h"
 
-#include <Vehicles/Vehicle.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
 
 #include <App/App.h>
 #include <App/AppDirs.h>
@@ -238,8 +238,8 @@ GstPlayer::GstPlayer(Fact *parent)
         new Fact(f_tools, tool.replace('.', '_'));
     }
 
-    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &GstPlayer::vehicleSelected);
-    vehicleSelected(Vehicles::instance()->current());
+    connect(Fleet::instance(), &Fleet::unitSelected, this, &GstPlayer::unitSelected);
+    unitSelected(Fleet::instance()->current());
 
     connect(&m_videoThread, &VideoThread::frameReceived, this, &GstPlayer::onFrameReceived);
     connect(&m_videoThread, &VideoThread::errorOccured, this, &GstPlayer::onErrorOccured);
@@ -277,9 +277,9 @@ GstPlayer::~GstPlayer()
     }
 }
 
-void GstPlayer::vehicleSelected(Vehicle *vehicle)
+void GstPlayer::unitSelected(Unit *unit)
 {
-    Mandala *m = vehicle->f_mandala;
+    auto m = unit->f_mandala;
     for (int i = 0; i < f_tools->size(); ++i) {
         Fact *f = f_tools->child(i);
         f->setBinding(m->fact(f->name().replace('_', '.')));

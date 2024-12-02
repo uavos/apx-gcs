@@ -45,7 +45,7 @@ Item {
     }
 
     Connections {
-        target: apx.vehicles.current.mandala
+        target: apx.fleet.current.mandala
         function onTelemetryDecoded(){ chartView.appendData() }
     }
 

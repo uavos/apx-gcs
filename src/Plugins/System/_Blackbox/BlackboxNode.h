@@ -24,7 +24,7 @@
 #include "BlackboxItem.h"
 #include <Fact/Fact.h>
 class NodeItem;
-class Vehicle;
+class Unit;
 
 class BlackboxNode : public BlackboxItem
 {

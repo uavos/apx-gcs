@@ -26,13 +26,14 @@
 #include "Nodes.h"
 
 #include <App/AppGcs.h>
-#include <Vehicles/VehicleWarnings.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/UnitWarnings.h>
 #include <QFontDatabase>
 
 NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     : Fact(parent, "node#")
     , _nodes(nodes)
+    , _unit(nodes->unit)
     , _protocol(protocol)
 {
     setIcon("sitemap");
@@ -79,7 +80,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     // models decorations update
     connect(this, &NodeItem::aliveChanged, this, &Fact::enabledChanged);
 
-    if (protocol && !_nodes->upgrading() && !_nodes->vehicle->isLocal())
+    if (protocol && !_nodes->upgrading() && !_unit->isLocal())
         protocol->requestIdent();
 }
 
@@ -113,12 +114,12 @@ void NodeItem::updateStatus()
 void NodeItem::updateUpgrading()
 {
     if (_protocol->upgrading()) {
-        //qDebug() << "UPGRADING:" << title() << _nodes->vehicle->title();
+        //qDebug() << "UPGRADING:" << title() << _unit->title();
         clear();
         return;
     }
-    //qDebug() << "UPGRADING FINISHED:" << title() << _nodes->vehicle->title();
-    if (!_nodes->vehicle->isLocal()) {
+    //qDebug() << "UPGRADING FINISHED:" << title() << _unit->title();
+    if (!_unit->isLocal()) {
         _protocol->requestIdent();
     }
 }
@@ -564,7 +565,7 @@ void NodeItem::identReceived(QVariantMap ident)
     if (_ident == ident && valid())
         return;
 
-    qWarning() << "ident updated" << title() << _nodes->vehicle->title();
+    qWarning() << "ident updated" << title() << _unit->title();
 
     _ident = ident;
     clear();
@@ -576,7 +577,7 @@ void NodeItem::identReceived(QVariantMap ident)
 
         // try to request dict automatically
         do {
-            if (_nodes->vehicle->isLocal() && !_nodes->vehicle->active())
+            if (_unit->isLocal() && !_unit->active())
                 break;
             if (_nodes->upgrading())
                 break;
@@ -661,7 +662,7 @@ void NodeItem::dictReceived(QVariantMap dict)
     if (_protocol) {
         if (!_dict.value("cached").toBool())
             storage->saveNodeDict();
-        if (!_nodes->vehicle->isLocal() || _nodes->vehicle->active())
+        if (!_unit->isLocal() || _unit->active())
             _protocol->requestConf();
     }
 }
@@ -752,7 +753,7 @@ void NodeItem::confUpdated(QVariantMap values)
 
 void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)
 {
-    AppNotify::NotifyFlags flags = AppNotify::FromVehicle | AppNotify::Important;
+    AppNotify::NotifyFlags flags = AppNotify::FromUnit | AppNotify::Important;
     switch (type) {
     default:
         break;
@@ -771,7 +772,7 @@ void NodeItem::message(QString msg, AppNotify::NotifyFlags flags)
     if (!valueText().isEmpty()) {
         s.append(QString("/%1").arg(valueText()));
     }
-    _nodes->vehicle->message(msg, flags, s, uid());
+    _unit->message(msg, flags, s, uid());
 }
 void NodeItem::statusReceived(const xbus::node::status::status_s &status)
 {

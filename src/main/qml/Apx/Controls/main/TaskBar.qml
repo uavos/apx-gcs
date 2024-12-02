@@ -25,12 +25,12 @@ import QtQuick.Layouts
 import QtQml.Models
 
 import Apx.Common
-import APX.Vehicles as APX
+import APX.Fleet as APX
 
 RowLayout {
     id: control
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
+    readonly property APX.Unit unit: apx.fleet.current
 
     spacing: Style.spacing*2
 
@@ -101,7 +101,7 @@ RowLayout {
     //simulator
     Loader {
         Layout.fillHeight: true
-        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (vehicle.isLocal || apx.tools.simulator.stop.enabled || vehicle.title==="SIM")
+        active: typeof(apx.tools)!=='undefined' && typeof(apx.tools.simulator)!=='undefined' && (unit.isLocal || apx.tools.simulator.stop.enabled || unit.title==="SIM")
         sourceComponent: Component {
             IconButton {
                 iconName: apx.tools.simulator.icon
@@ -121,7 +121,7 @@ RowLayout {
 
     Loader {
         Layout.alignment: Qt.AlignRight|Qt.AlignTop
-        active: vehicle.isReplay
+        active: unit.isReplay
         visible: active
         sourceComponent: Component { TelemetryReader { } }
     }

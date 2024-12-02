@@ -27,24 +27,24 @@
 #include "TelemetryShare.h"
 
 #include <App/App.h>
-#include <Mission/VehicleMission.h>
+#include <Fleet/Fleet.h>
+#include <Mission/UnitMission.h>
 #include <Nodes/Nodes.h>
-#include <Vehicles/Vehicles.h>
 
-Telemetry::Telemetry(Vehicle *parent)
+Telemetry::Telemetry(Unit *parent)
     : Fact(parent,
            "telemetry",
            tr("Telemetry"),
            tr("Telemetry data recorder"),
            Group,
            "inbox-arrow-down")
-    , vehicle(parent)
+    , unit(parent)
     , f_recorder(nullptr)
     , f_records(nullptr)
     , f_reader(nullptr)
     , f_share(nullptr)
 {
-    if (vehicle->isReplay()) {
+    if (unit->isReplay()) {
         setOpt("pos", QPointF(1, 1));
 
         f_records = new TelemetryRecords(this);
@@ -75,11 +75,11 @@ Telemetry::Telemetry(Vehicle *parent)
                 &TelemetryReader::geoPathCollected,
                 this,
                 [this](const QGeoPath &path, quint64 totalDistance) {
-                    vehicle->setGeoPath(path);
-                    vehicle->setTotalDistance(totalDistance);
+                    unit->setGeoPath(path);
+                    unit->setTotalDistance(totalDistance);
                 });
 
-        f_player = new TelemetryPlayer(f_reader, vehicle, this);
+        f_player = new TelemetryPlayer(f_reader, unit, this);
         connect(f_player, &Fact::valueChanged, this, &Telemetry::updateStatus);
         bindProperty(f_player, "active", true);
 
@@ -91,7 +91,7 @@ Telemetry::Telemetry(Vehicle *parent)
         f_records->f_latest->createAction(this);
 
     } else {
-        f_recorder = new TelemetryRecorder(vehicle, this);
+        f_recorder = new TelemetryRecorder(unit, this);
         connect(f_recorder, &TelemetryRecorder::recordingChanged, this, [this]() {
             setActive(f_recorder->recording());
         });
@@ -137,10 +137,10 @@ void Telemetry::statsFactTriggered(Fact *f, QJsonObject jso)
     const QString &uid = f->descr();
     if (s.startsWith("nodes")) {
         qDebug() << "load telemetry nodes";
-        vehicle->fromJsonObject(jso);
+        unit->fromJsonObject(jso);
     } else if (s.startsWith("mission")) {
         qDebug() << "load telemetry mission";
-        vehicle->f_mission->fromJsonObject(jso);
+        unit->f_mission->fromJsonObject(jso);
     } else {
         if (f_player)
             f_player->f_time->setValue(f->property("time").toULongLong() - 1);
@@ -149,11 +149,11 @@ void Telemetry::statsFactTriggered(Fact *f, QJsonObject jso)
 
 void Telemetry::recordLoaded()
 {
-    if (!Vehicles::instance()->current()->isIdentified())
-        vehicle->f_select->trigger();
+    if (!Fleet::instance()->current()->isIdentified())
+        unit->f_select->trigger();
 
     // reset mandala counters on file reload
-    vehicle->f_mandala->resetCounters();
+    unit->f_mandala->resetCounters();
 
     // load latest mission
     Fact *f = f_reader->child("mission");

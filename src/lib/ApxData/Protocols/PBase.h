@@ -33,7 +33,7 @@
 #include <map>
 #include <variant>
 
-class PVehicle;
+class PUnit;
 class PFirmware;
 class PTrace;
 
@@ -67,8 +67,8 @@ public slots:
 signals:
     void tx_data(QByteArray packet); //connect tx interface
 
-    // signaled when a new vehicle is identified to provide interface
-    void vehicle_available(PVehicle *vehicle);
+    // signaled when a new unit is identified to provide interface
+    void unit_available(PUnit *unit);
 
     // central signal to cancel all requests
     void cancelRequests();

@@ -24,7 +24,7 @@ import QtQuick.Layouts
 
 import Apx.Common
 //import Apx.Menu 1.0
-import APX.Vehicles
+import APX.Fleet
 
 FactButton {
     id: control
@@ -36,7 +36,7 @@ FactButton {
 
     enabled: fact.size
 
-    fact: apx.vehicles.current.warnings
+    fact: apx.fleet.current.warnings
     readonly property int showTimeout: 5000
     readonly property int showTimes: 3
 
@@ -143,8 +143,8 @@ FactButton {
     {
         var sicon=""
         switch(msgType){
-            case VehicleWarnings.ERROR: sicon="alert-circle"; break;
-            case VehicleWarnings.WARNING: sicon="alert-circle-outline"; break;
+            case UnitWarnings.ERROR: sicon="alert-circle"; break;
+            case UnitWarnings.WARNING: sicon="alert-circle-outline"; break;
         }
         var stitle=msg
         var sdescr=""
@@ -153,7 +153,7 @@ FactButton {
             sdescr=msg.slice(i+1).trim()
             stitle=msg.slice(0,i).trim()
         }
-        stitle = apx.vehicles.current.title+": "+stitle
+        stitle = apx.fleet.current.title+": "+stitle
         model.add(msg, {"title": stitle, "descr": sdescr, "icon": sicon})
     }
 

@@ -45,7 +45,7 @@ Datalink::Datalink(Fact *parent)
     f_hbeat = new Fact(this,
                        "hbeat",
                        tr("Send heartbeat"),
-                       tr("Vehicle datalink available status"),
+                       tr("Datalink available status"),
                        Bool | PersistentValue,
                        "heart-circle-outline");
     f_hbeat->setDefaultValue(true);

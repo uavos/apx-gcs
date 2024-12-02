@@ -42,7 +42,7 @@ RowLayout {
 
     readonly property color color: {
 
-        var cImportant = (source==AppNotify.FromVehicle)?"#aff":"#afa"
+        var cImportant = (source==AppNotify.FromUnit)?"#aff":"#afa"
         var cInfo = (source==AppNotify.FromInput)?"#ccc":"#aaa"
 
         switch(type){

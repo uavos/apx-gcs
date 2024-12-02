@@ -45,7 +45,7 @@ private:
 
     QVariantMap recordInfo;
     QVariantMap userInfo;
-    QVariantMap nodesVehicleInfo;
+    QVariantMap nodesUnitInfo;
 
     quint64 read(QString fileName);
     quint64 read(QXmlStreamReader &xml);

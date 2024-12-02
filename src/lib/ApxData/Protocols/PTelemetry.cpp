@@ -21,16 +21,14 @@
  */
 #include "PTelemetry.h"
 
-#include "PVehicle.h"
+#include "PUnit.h"
 
-PTelemetry::PTelemetry(PVehicle *parent)
+PTelemetry::PTelemetry(PUnit *parent)
     : PTreeBase(parent, "telemetry", tr("Telemetry"), tr("Downlink stream decoder"))
-    , _vehicle(parent)
+    , _unit(parent)
 {
     connect(this, &PTelemetry::telemetryData, this, [this]() {
-        _vehicle->setStreamType(PVehicle::TELEMETRY);
+        _unit->setStreamType(PUnit::TELEMETRY);
     });
-    connect(this, &PTelemetry::xpdrData, this, [this]() {
-        _vehicle->setStreamType(PVehicle::XPDR);
-    });
+    connect(this, &PTelemetry::xpdrData, this, [this]() { _unit->setStreamType(PUnit::XPDR); });
 }

@@ -28,7 +28,7 @@
 // TODO PLUGIN: real-time visualization of Mandala state:
 // See: https://youtu.be/NjUuAuBcoqs
 // See: https://doc.qt.io/qt-5/qtwidgets-graphicsview-elasticnodes-example.html
-// Intended to monitor by human mind the current state of the vehicle and its behavior in real-time.
+// Intended to monitor by human mind the current state of the system and its behavior in real-time.
 // Inspiration could be found on shaders workbench here:
 //   http://regis.toile-libre.org/fractals/MYOS/
 //   or here https://youtu.be/qMIS2BaDilY
@@ -38,7 +38,7 @@ Mandala::Mandala(Fact *parent)
     : Fact(parent,
            "mandala",
            "Mandala",
-           tr("Vehicle data tree"),
+           tr("System data tree"),
            Group | FilterModel | ModifiedGroup,
            "hexagon-multiple")
 {

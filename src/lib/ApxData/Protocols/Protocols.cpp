@@ -81,7 +81,7 @@ void Protocols::updateProtocol()
 
     // connect protocol interface
     connect(_protocol, &PBase::tx_data, this, &Protocols::tx_data);
-    connect(_protocol, &PBase::vehicle_available, this, &Protocols::vehicle_available);
+    connect(_protocol, &PBase::unit_available, this, &Protocols::unit_available);
     connect(_protocol->trace(), &PTrace::packet, this, &Protocols::trace_packet);
 }
 

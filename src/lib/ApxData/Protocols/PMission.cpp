@@ -21,8 +21,8 @@
  */
 #include "PMission.h"
 
-#include "PVehicle.h"
+#include "PUnit.h"
 
-PMission::PMission(PVehicle *parent)
+PMission::PMission(PUnit *parent)
     : PTreeBase(parent, "mission", tr("Mission"), tr("Mission interface"))
 {}

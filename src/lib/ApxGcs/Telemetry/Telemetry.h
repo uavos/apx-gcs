@@ -24,7 +24,7 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
-class Vehicle;
+class Unit;
 class TelemetryRecorder;
 class TelemetryRecords;
 class TelemetryReader;
@@ -35,9 +35,9 @@ class Telemetry : public Fact
 {
     Q_OBJECT
 public:
-    explicit Telemetry(Vehicle *parent);
+    explicit Telemetry(Unit *parent);
 
-    Vehicle *vehicle;
+    Unit *unit;
 
     TelemetryRecorder *f_recorder;
 

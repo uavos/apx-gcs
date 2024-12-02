@@ -22,21 +22,21 @@
 #pragma once
 
 #include "PApxNodeFile.h"
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
 #include <XbusNode.h>
 
-class PApxVehicle;
+class PApxUnit;
 
 class PApxMission : public PMission
 {
     Q_OBJECT
 
 public:
-    explicit PApxMission(PApxVehicle *parent);
+    explicit PApxMission(PApxUnit *parent);
 
 private:
-    PApxVehicle *_vehicle;
+    PApxUnit *_unit;
 
     static constexpr const auto file_name{"mission"};
 

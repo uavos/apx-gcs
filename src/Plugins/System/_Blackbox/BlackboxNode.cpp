@@ -25,8 +25,8 @@
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
 
-#include <Vehicles/Vehicle.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
 
 #include <Nodes/NodeItem.h>
 #include <Nodes/Nodes.h>
@@ -45,8 +45,8 @@ BlackboxNode::BlackboxNode(Fact *parent, NodeItem *node)
     bind(node);
     connect(node, &Fact::removed, this, &Fact::remove);
 
-    if (!node->nodes->vehicle->isLocal() && node->nodes->vehicle->vehicleClass() != Vehicle::GCU) {
-        f_callsign->setValue(node->nodes->vehicle->callsign());
+    if (!node->nodes->unit->isLocal() && node->nodes->unit->unitClass() != Unit::GCU) {
+        f_callsign->setValue(node->nodes->unit->callsign());
     }
 
     connect(this, &Fact::progressChanged, node, [this]() { this->node->setProgress(progress()); });
@@ -141,8 +141,8 @@ void BlackboxNode::download()
 
     BlackboxItem::download();
 
-    //disable current vehicle
-    node->nodes->vehicle->setActive(false);
+    //disable current unit
+    node->nodes->unit->setActive(false);
 
     request(req_begin);
 }
@@ -152,7 +152,7 @@ void BlackboxNode::stop()
     BlackboxItem::stop();
     op = op_idle;
     node->acknowledgeRequest(bb_read);
-    Vehicles::instance()->selectVehicle(node->nodes->vehicle);
+    Fleet::instance()->selectUnit(node->nodes->unit);
 }
 
 void BlackboxNode::serviceDataReceived(quint16 cmd, QByteArray data)

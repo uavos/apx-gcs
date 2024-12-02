@@ -28,7 +28,7 @@ class DBReqTelemetryNewRecord : public DBReqTelemetry
 {
     Q_OBJECT
 public:
-    explicit DBReqTelemetryNewRecord(QString vehicleUID,
+    explicit DBReqTelemetryNewRecord(QString unitUID,
                                      QString callsign,
                                      QString comment,
                                      bool recording,
@@ -36,7 +36,7 @@ public:
                                      QString fileName)
         : DBReqTelemetry()
         , telemetryID(0)
-        , vehicleUID(vehicleUID)
+        , unitUID(unitUID)
         , callsign(callsign)
         , comment(comment)
         , recording(recording)
@@ -47,7 +47,7 @@ public:
     quint64 telemetryID;
 
 private:
-    QString vehicleUID;
+    QString unitUID;
     QString callsign;
     QString comment;
     bool recording;

@@ -23,8 +23,8 @@
 
 #include <Fact/Fact.h>
 #include <uart/EscDecoder.h>
-class Vehicle;
-class ProtocolVehicle;
+class Unit;
+class ProtocolUnit;
 
 class BlackboxReader : public Fact
 {
@@ -36,8 +36,8 @@ public:
     void processData(QByteArray data);
 
 private:
-    ProtocolVehicle *protocol;
-    Vehicle *vehicle;
+    ProtocolUnit *protocol;
+    Unit *unit;
     quint32 dataCnt;
 
     EscDecoder<1024 * 8> esc_reader;

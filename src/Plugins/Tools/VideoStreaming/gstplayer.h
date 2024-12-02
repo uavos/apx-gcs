@@ -33,7 +33,7 @@
 
 #include <Fact/Fact.h>
 
-class Vehicle;
+class Unit;
 class GstPlayer : public Fact
 {
     Q_OBJECT
@@ -111,7 +111,7 @@ private slots:
     void onErrorOccured(const QString &error) const;
     void onReconnectTimerTimeout();
 
-    void vehicleSelected(Vehicle *vehicle);
+    void unitSelected(Unit *unit);
 
 signals:
     void connectionStateChanged();

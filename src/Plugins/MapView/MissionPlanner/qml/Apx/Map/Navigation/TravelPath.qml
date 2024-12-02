@@ -25,53 +25,53 @@ import QtPositioning
 
 import Apx.Map.Common
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 
 MapPolyline {
     opacity: ui.effects?0.8:1
     line.width: replay?1.5:1.5
     line.color: replay
                 ? Style.cBlue
-                : vehicle.telemetry.active
+                : unit.telemetry.active
                   ? Style.cLineGreen
                   : Style.cBlue
 
-    property APX.Vehicle vehicle: apx.vehicles.current
+    property APX.Unit unit: apx.fleet.current
 
-    property bool replay: vehicle.isReplay
+    property bool replay: unit.isReplay
 
-    onVehicleChanged: updatePath()
+    onUnitChanged: updatePath()
 
     Connections {
-        target: vehicle
+        target: unit
         function onGeoPathAppend(p){ addCoordinate(p) }
     }
     Connections {
         enabled: replay
-        target: vehicle
+        target: unit
         function onGeoPathChanged(){ updatePath() }
     }
     Connections {
-        target: vehicle.telemetry.rpath
+        target: unit.telemetry.rpath
         function onTriggered(){ setPath(QtPositioning.path()) }
     }
 
     function updatePath()
     {
-        setPath(vehicle.geoPath)
+        setPath(unit.geoPath)
     }
 
     function showRegion()
     {
         if(path.length>0){
-            map.showRegion(vehicle.geoPathRect())
+            map.showRegion(unit.geoPathRect())
         }
     }
 
 
     Connections {
         enabled: replay
-        target: apx.vehicles.replay.telemetry.reader
+        target: apx.fleet.replay.telemetry.reader
         function onTriggered(){ showRegion() }
     }
     Component.onCompleted: updatePath()

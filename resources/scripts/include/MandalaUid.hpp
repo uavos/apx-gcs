@@ -1486,7 +1486,7 @@ namespace cmd
     };
     namespace env
     {
-        namespace vehicle
+        namespace unit
         {
             enum { ident = 0x701 };
             enum { downlink = 0x702 };

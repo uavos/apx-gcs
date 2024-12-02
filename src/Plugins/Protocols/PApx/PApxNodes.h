@@ -21,9 +21,9 @@
  */
 #pragma once
 
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
-class PApxVehicle;
+class PApxUnit;
 class PApxNode;
 class PApxNodeRequest;
 
@@ -32,7 +32,7 @@ class PApxNodes : public PNodes
     Q_OBJECT
 
 public:
-    explicit PApxNodes(PApxVehicle *parent);
+    explicit PApxNodes(PApxUnit *parent);
 
     bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 

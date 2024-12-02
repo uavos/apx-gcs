@@ -22,11 +22,11 @@
 #pragma once
 
 #include <ApxMisc/DelayedEvent.h>
-#include <Vehicles/Vehicle.h>
+#include <Fleet/Unit.h>
 
 #include "NodeItem.h"
 
-class Vehicle;
+class Unit;
 class LookupConfigs;
 
 class Nodes : public Fact
@@ -35,9 +35,9 @@ class Nodes : public Fact
     Q_PROPERTY(bool valid READ valid NOTIFY validChanged)
 
 public:
-    explicit Nodes(Vehicle *vehicle);
+    explicit Nodes(Unit *unit);
 
-    Vehicle *vehicle;
+    Unit *unit;
 
     Fact *f_upload;
     Fact *f_search;

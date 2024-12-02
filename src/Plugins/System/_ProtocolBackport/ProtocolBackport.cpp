@@ -23,7 +23,7 @@
 #include "ProtocolV9.h"
 
 #include <App/AppGcs.h>
-#include <Protocols/ProtocolVehicles.h>
+#include <Protocols/ProtocolFleet.h>
 
 ProtocolBackport::ProtocolBackport(Fact *parent)
     : Fact(parent,
@@ -54,7 +54,7 @@ void ProtocolBackport::install()
         return;
     m_converter = new ProtocolV9(this);
 
-    ProtocolVehicles *protocol = AppGcs::instance()->protocol;
+    ProtocolFleet *protocol = AppGcs::instance()->protocol;
     protocol->setConverter(m_converter);
 }
 
@@ -65,6 +65,6 @@ void ProtocolBackport::uninstall()
         return;
     delete m_converter;
     m_converter = nullptr;
-    ProtocolVehicles *protocol = AppGcs::instance()->protocol;
+    ProtocolFleet *protocol = AppGcs::instance()->protocol;
     protocol->setConverter(nullptr);
 }

@@ -26,7 +26,7 @@
 
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 
 NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent)
     : Fact(parent)

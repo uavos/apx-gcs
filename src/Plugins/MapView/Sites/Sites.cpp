@@ -25,8 +25,8 @@
 #include <App/App.h>
 
 #include <Database/Database.h>
-#include <Mission/VehicleMission.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Mission/UnitMission.h>
 
 Sites::Sites(Fact *parent)
     : Fact(parent, QString(PLUGIN_NAME).toLower(), tr("Sites"), tr("Geographic objects"), Group)
@@ -37,9 +37,9 @@ Sites::Sites(Fact *parent)
 
     // current site lookup
     connect(&evtUpdateMissionSite, &DelayedEvent::triggered, this, &Sites::dbFindSite);
-    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [this](Vehicle *vehicle) {
-        connect(vehicle->f_mission,
-                &VehicleMission::coordinateChanged,
+    connect(Fleet::instance(), &Fleet::unitSelected, this, [this](Unit *unit) {
+        connect(unit->f_mission,
+                &UnitMission::coordinateChanged,
                 &evtUpdateMissionSite,
                 &DelayedEvent::schedule);
     });
@@ -187,7 +187,7 @@ void Sites::dbUpdateSite(QVariantMap item)
 
 void Sites::dbFindSite()
 {
-    auto mission = Vehicles::instance()->current()->f_mission;
+    auto mission = Fleet::instance()->current()->f_mission;
     QGeoCoordinate c(mission->coordinate());
     if (!c.isValid()) {
         mission->setSite("");

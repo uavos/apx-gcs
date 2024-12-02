@@ -22,11 +22,11 @@
 #include "MissionGroup.h"
 #include "MissionItem.h"
 #include "MissionMapItemsModel.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 
 #include <App/AppRoot.h>
 
-MissionGroup::MissionGroup(VehicleMission *parent,
+MissionGroup::MissionGroup(UnitMission *parent,
                            const QString &name,
                            const QString &title,
                            const QString &descr,

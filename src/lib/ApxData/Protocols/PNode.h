@@ -23,7 +23,7 @@
 
 #include "PBase.h"
 
-class PVehicle;
+class PUnit;
 class PNode;
 class PNodes;
 

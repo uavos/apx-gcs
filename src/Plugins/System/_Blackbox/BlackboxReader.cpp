@@ -23,23 +23,23 @@
 
 #include <App/AppLog.h>
 
-#include <Protocols/ProtocolVehicle.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
+#include <Protocols/ProtocolUnit.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryRecorder.h>
-#include <Vehicles/Vehicle.h>
-#include <Vehicles/Vehicles.h>
 
 BlackboxReader::BlackboxReader(Fact *parent, QString callsign, QString uid)
     : Fact(parent, "reader")
     , protocol(nullptr)
-    , vehicle(nullptr)
+    , unit(nullptr)
     , dataCnt(0)
 {
     //setEnabled(false);
-    //create tmp vehicle
-    ProtocolVehicles::IdentData ident;
+    //create tmp unit
+    ProtocolFleet::IdentData ident;
     ident.uid = uid;
-    ident.vclass = Vehicle::TEMPORARY;
+    ident.vclass = Unit::TEMPORARY;
     QStringList st;
     QString s = callsign;
     if (!s.isEmpty())
@@ -47,10 +47,10 @@ BlackboxReader::BlackboxReader(Fact *parent, QString callsign, QString uid)
     st << "BLACKBOX";
     ident.callsign = st.join('-');
 
-    protocol = new ProtocolVehicle(0, ident, nullptr);
-    vehicle = Vehicles::instance()->createVehicle(protocol);
-    vehicle->setParentFact(this);
-    bind(vehicle);
+    protocol = new ProtocolUnit(0, ident, nullptr);
+    unit = Fleet::instance()->createUnit(protocol);
+    unit->setParentFact(this);
+    bind(unit);
 }
 
 void BlackboxReader::processData(QByteArray data)
@@ -73,7 +73,7 @@ void BlackboxReader::processData(QByteArray data)
         size_t cnt = esc_reader.read_packet(packet.data(), static_cast<size_t>(packet.size()));
         if (!cnt)
             break;
-        vehicle->f_telemetry->f_recorder->setRecording(true);
+        unit->f_telemetry->f_recorder->setRecording(true);
         protocol->downlinkData(packet.left(static_cast<int>(cnt)));
     }
 }

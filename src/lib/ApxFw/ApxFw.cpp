@@ -26,7 +26,7 @@
 
 #include "quazip/JlCompress.h"
 
-#include <Database/VehiclesReqNode.h>
+#include <Database/FleetReqNode.h>
 
 // TODO collect and display changelog based on minimum node version
 // see https://doc.qt.io/qt-5/qtwebengine-webenginewidgets-markdowneditor-example.html

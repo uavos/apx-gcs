@@ -35,7 +35,7 @@ BlackboxItem::BlackboxItem(Fact *parent,
     , uid(uid)
     , totalSize(0)
 {
-    f_callsign = new Fact(this, "callsign", tr("Callsign"), tr("Vehicle identity"), Text);
+    f_callsign = new Fact(this, "callsign", tr("Callsign"), tr("Unit identity"), Text);
 
     f_stats = new Fact(this, "stats", "", "");
     connect(f_stats, &Fact::triggered, this, &BlackboxItem::getStats);

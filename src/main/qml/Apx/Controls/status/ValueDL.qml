@@ -23,7 +23,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 import Apx.Common
 
 ValueButton {
@@ -44,10 +44,10 @@ ValueButton {
     property bool light: active||warning
 
     enabled: true
-    onPressAndHold: if(vehicle.protocol)vehicle.protocol.errcnt=0
+    onPressAndHold: if(unit.protocol)unit.protocol.errcnt=0
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
-    readonly property int errcnt: vehicle.protocol?vehicle.protocol.errcnt:0
+    readonly property APX.Unit unit: apx.fleet.current
+    readonly property int errcnt: unit.protocol?unit.protocol.errcnt:0
 
     readonly property color cGreen: light?Material.color(Material.Yellow):Material.color(Material.LightGreen)
     readonly property color cRed: light?Material.color(Material.Yellow):Material.color(Material.DeepOrange)
@@ -88,7 +88,7 @@ ValueButton {
                 font: apx.font_narrow(valueSize)
                 verticalAlignment: Text.AlignVCenter
                 text: "0%1".arg(apx.datalink.stats.dnlink.cnt.value%100).slice(-2)+" "
-                color: apx.datalink.online?(vehicle.streamType===APX.PVehicle.TELEMETRY?cGreen:cCyan):cRed
+                color: apx.datalink.online?(unit.streamType===APX.PUnit.TELEMETRY?cGreen:cCyan):cRed
             }
         }
     }

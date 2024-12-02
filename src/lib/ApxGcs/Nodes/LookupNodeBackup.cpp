@@ -22,7 +22,7 @@
 #include "LookupNodeBackup.h"
 
 #include <Database/Database.h>
-#include <Database/VehiclesDB.h>
+#include <Database/FleetDB.h>
 
 #include "NodeItem.h"
 #include "NodeStorage.h"
@@ -32,7 +32,7 @@ LookupNodeBackup::LookupNodeBackup(NodeItem *node, Fact *parent)
                      "backups",
                      tr("Backups"),
                      tr("Restore parameters from backup"),
-                     Database::instance()->vehicles)
+                     Database::instance()->fleet)
     , _node(node)
 {
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupNodeBackup::loadItem);

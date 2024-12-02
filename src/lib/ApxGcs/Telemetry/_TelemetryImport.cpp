@@ -28,7 +28,7 @@
 #include <Database/MissionsDB.h>
 #include <Database/TelemetryReqRead.h>
 #include <Database/TelemetryReqWrite.h>
-#include <Database/VehiclesReqVehicle.h>
+#include <Database/UnitsReqUnit.h>
 
 TelemetryImport::TelemetryImport()
     : QueueWorker()
@@ -40,7 +40,7 @@ void TelemetryImport::exec(Fact *f)
     _fileName = f->descr();
     recordInfo.clear();
     userInfo.clear();
-    nodesVehicleInfo.clear();
+    nodesUnitInfo.clear();
     sharedHash.clear();
     notes.clear();
     telemetryID = 0;
@@ -301,7 +301,7 @@ void TelemetryImport::readPackages(QXmlStreamReader &xml)
             continue;
         }
         if (tag == "vehicle") {
-            DBReqImportVehicleConfig req(var.value<QVariantMap>());
+            DBReqImportUnitConfig req(var.value<QVariantMap>());
             req.execSynchronous();
         } else if (tag == "mission") {
             DBReqMissionsSave req(var.value<QVariantMap>());
@@ -386,8 +386,8 @@ bool TelemetryImport::dbCommitRecord()
         {
             QVariantMap info;
             if (recordInfo.isEmpty()) {
-                info["callsign"] = nodesVehicleInfo.value("callsign");
-                info["vehicleUID"] = nodesVehicleInfo.value("uid");
+                info["callsign"] = nodesUnitInfo.value("callsign");
+                info["vehicleUID"] = nodesUnitInfo.value("uid");
                 info = DatabaseRequest::filterNullValues(info);
             } else {
                 info = recordInfo;

@@ -22,10 +22,10 @@
 #include "PNodes.h"
 
 #include "PNode.h"
-#include "PVehicle.h"
+#include "PUnit.h"
 
-PNodes::PNodes(PVehicle *parent)
-    : PTreeBase(parent, "nodes", tr("Nodes"), tr("Vehicle devices"), Group | Count)
+PNodes::PNodes(PUnit *parent)
+    : PTreeBase(parent, "nodes", tr("Nodes"), tr("Unit devices"), Group | Count)
 {
     connect(this, &PNodes::node_available, this, [this](PNode *node) {
         connect(node, &PNode::upgradingChanged, this, &PNodes::updateUpgrading);

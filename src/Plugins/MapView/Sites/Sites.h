@@ -29,7 +29,7 @@
 
 #include <ApxMisc/DelayedEvent.h>
 
-class Vehicle;
+class Unit;
 
 class Sites : public Fact
 {

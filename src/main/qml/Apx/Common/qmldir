@@ -13,8 +13,8 @@ ActionButton    1.0 Button/ActionButton.qml
 ValueButton     1.0 Button/ValueButton.qml
 
 SvgImage        1.0 SvgImage.qml
-VehicleButton   1.0 VehicleButton.qml
-VehicleLabel    1.0 VehicleLabel.qml
+UnitButton      1.0 UnitButton.qml
+UnitLabel       1.0 UnitLabel.qml
 ClockLabel      1.0 ClockLabel.qml
 RecLabel        1.0 RecLabel.qml
 BoundingRect    1.0 BoundingRect.qml

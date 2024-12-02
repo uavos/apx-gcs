@@ -28,7 +28,7 @@
 
 // TODO cache datasets in DB
 
-PApxTelemetry::PApxTelemetry(PApxVehicle *parent)
+PApxTelemetry::PApxTelemetry(PApxUnit *parent)
     : PTelemetry(parent)
     , _req(parent)
 {
@@ -125,14 +125,14 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
         if (unpack(pid, stream))
             return true;
 
-        _vehicle->setStreamType(PVehicle::DATA);
+        _unit->setStreamType(PUnit::DATA);
         break;
     }
     //error
     trace()->block("ERR:");
     trace()->data(stream.payload());
 
-    _vehicle->incErrcnt();
+    _unit->incErrcnt();
     return true;
 
     //qDebug() << decoder.fmt_cnt() << QString::number(stream.ptr()[3], 16) << cobs.size();

@@ -23,7 +23,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 
 import Apx.Common
 
@@ -31,12 +31,12 @@ Item {
     id: control
     implicitWidth: textItem.implicitWidth+5+5
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
-    readonly property var fact: vehicle.telemetry
+    readonly property APX.Unit unit: apx.fleet.current
+    readonly property var fact: unit.telemetry
 
     readonly property alias color: textItem.color
     readonly property bool active: fact.active
-    readonly property bool replay: vehicle.isReplay
+    readonly property bool replay: unit.isReplay
 
     property bool hovered: mouseArea.containsMouse
 

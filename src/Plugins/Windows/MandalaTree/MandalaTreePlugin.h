@@ -26,8 +26,8 @@
 #include <TreeModel/FactTreeView.h>
 #include <QtCore>
 
+#include <Fleet/Fleet.h>
 #include <Mandala/Mandala.h>
-#include <Vehicles/Vehicles.h>
 
 class MandalaTreePlugin : public PluginInterface
 {
@@ -37,12 +37,10 @@ class MandalaTreePlugin : public PluginInterface
 public:
     QObject *createControl()
     {
-        FactTreeWidget *w = new FactTreeWidget(Vehicles::instance()->current()->f_mandala,
-                                               true,
-                                               false);
+        FactTreeWidget *w = new FactTreeWidget(Fleet::instance()->current()->f_mandala, true, false);
         w->tree->expandToDepth(0);
-        connect(Vehicles::instance(), &Vehicles::vehicleSelected, w, [w](Vehicle *v) {
-            w->setRoot(v->f_mandala);
+        connect(Fleet::instance(), &Fleet::unitSelected, w, [w](Unit *unit) {
+            w->setRoot(unit->f_mandala);
             w->tree->expandToDepth(0);
         });
         return w;

@@ -35,7 +35,7 @@ bool DBReqTelemetry::run(QSqlQuery &query)
 
 bool DBReqTelemetryUpdateMandala::run(QSqlQuery &query)
 {
-    // called by LOCAL vehicle with 'records' initialized to current mandala fields
+    // called by LOCAL unit with 'records' initialized to current mandala fields
     connect(
         this,
         &DBReqTelemetryUpdateMandala::progress,
@@ -322,15 +322,15 @@ bool DBReqTelemetryRecover::run(QSqlQuery &query)
 
 bool DBReqTelemetryCreateRecord::run(QSqlQuery &query)
 {
-    // qDebug() << vehicleUID << callsign << t;
+    // qDebug() << unitUID << callsign << t;
 
-    query.prepare("INSERT INTO Telemetry(time, file, vehicleUID, callsign, comment, trash) "
+    query.prepare("INSERT INTO Telemetry(time, file, unitUID, callsign, comment, trash) "
                   "VALUES(?, ?, ?, ?, ?, ?)");
     const auto &info = _info;
     query.addBindValue(_t);
     query.addBindValue(_fileName);
-    query.addBindValue(info["vehicle"]["uid"].toVariant());
-    query.addBindValue(info["vehicle"]["callsign"].toVariant());
+    query.addBindValue(info["unit"]["uid"].toVariant());
+    query.addBindValue(info["unit"]["callsign"].toVariant());
     query.addBindValue(info["conf"].toVariant());
     query.addBindValue(_trash ? 1 : QVariant());
     if (!query.exec())

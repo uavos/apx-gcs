@@ -26,13 +26,13 @@
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
 
+#include <Database/FleetReqUnit.h>
 #include <Database/StorageReq.h>
-#include <Database/VehiclesReqVehicle.h>
 
 #include <QGeoCoordinate>
 
+#include <Fleet/Fleet.h>
 #include <Mandala/MandalaAliases.h>
-#include <Vehicles/Vehicles.h>
 
 TelemetryReader::TelemetryReader(Fact *parent)
     : Fact(parent, "reader", "", "", Group, "progress-download")
@@ -122,9 +122,9 @@ MandalaFact *TelemetryReader::fieldFact(const Field &field)
     auto it = mandala::ALIAS_MAP.find(field.name.toStdString());
     if (it != mandala::ALIAS_MAP.end()) {
         auto uid = it->second;
-        return Vehicles::replay()->f_mandala->fact(uid);
+        return Fleet::replay()->f_mandala->fact(uid);
     }
-    return Vehicles::replay()->f_mandala->fact(field.name, true);
+    return Fleet::replay()->f_mandala->fact(field.name, true);
 }
 
 void TelemetryReader::do_rec_field(Field field)
@@ -203,7 +203,7 @@ void TelemetryReader::do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject
         return;
 
     if (name == "nodes") {
-        // auto req = new DBReqImportVehicleConfig(data.toVariantMap());
+        // auto req = new DBReqImportUnitConfig(data.toVariantMap());
         // req->exec();
         // qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
     }

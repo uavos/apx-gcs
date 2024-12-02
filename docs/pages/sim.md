@@ -23,8 +23,8 @@ To get started with **Software in the loop simulation** (no hardware) you can fo
   - Select the airport `KSEA`;
   - Select runway `RWY - 1 6 L`;
   - Choose aircraft `S1B`
-- Switch to GCS window, wait until `SIM` vehicle is recognized, select it if needed in the `Vehicle` menu;
-  - Open the `Vehicle parameters` window and make sure you have updated and uploaded configuration;
+- Switch to GCS window, wait until `SIM` unit is recognized, select it if needed in the `Fleet` menu;
+  - Open `Unit parameters` window and make sure you have updated and uploaded configuration;
   - When there is no mission downloaded from vehicle exists - i.e. mission label on the map does not show any mission:
     - Press mission button to open dialog, then `Load mission` button, to load applicable mission, then click `Upload` button to sync mission with the vehicle;
     - Alternatively, create a new mission and upload to the vehicle;

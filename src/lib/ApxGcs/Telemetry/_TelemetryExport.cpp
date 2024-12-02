@@ -27,7 +27,7 @@
 #include <Database/Database.h>
 #include <Database/MissionsDB.h>
 #include <Database/TelemetryReqRead.h>
-#include <Database/VehiclesReqVehicle.h>
+#include <Database/UnitsReqUnit.h>
 
 TelemetryExport::TelemetryExport()
     : QueueWorker()
@@ -175,7 +175,7 @@ bool TelemetryExport::writeXml(QFile *file_p,
     }
     stream.writeStartElement("packages");
     for (auto const &hash : configs) {
-        DBReqLoadVehicleConfig req(hash);
+        DBReqLoadUnitConfig req(hash);
         if (!req.execSynchronous()) {
             apxMsgW() << tr("Can't export config") << hash;
             continue;

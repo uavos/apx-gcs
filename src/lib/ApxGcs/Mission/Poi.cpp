@@ -21,7 +21,7 @@
  */
 #include "Poi.h"
 #include "MissionField.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 #include <App/App.h>
 #include <QGeoCircle>
 

@@ -22,8 +22,8 @@
 #include "MissionPlanner.h"
 #include "MapPrefs.h"
 #include <App/App.h>
-#include <Mission/VehicleMission.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Mission/UnitMission.h>
 
 MissionPlanner::MissionPlanner(Fact *parent)
     : Fact(parent,
@@ -35,8 +35,7 @@ MissionPlanner::MissionPlanner(Fact *parent)
 {
     f_add = new Fact(this, "add", tr("Add object"), tr("Add new map object"), Section, "plus-circle");
 
-    f_vehicle
-        = new Fact(this, "vehicle", tr("Vehicle"), tr("Send vehicle command"), Section, "drone");
+    f_unit = new Fact(this, "unit", tr("Unit"), tr("Send unit command"), Section, "drone");
 
     Fact *f;
 
@@ -52,30 +51,30 @@ MissionPlanner::MissionPlanner(Fact *parent)
     f = new Fact(f_add, "taxiway", tr("Taxiway"), "", CloseOnTrigger, "vector-polyline");
     connect(f, &Fact::triggered, this, [=]() { mission()->f_taxiways->add(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "fly_here", tr("Fly here"), "", CloseOnTrigger, "airplane");
-    connect(f, &Fact::triggered, this, [=]() { vehicle()->flyHere(clickCoordinate()); });
+    f = new Fact(f_unit, "fly_here", tr("Fly here"), "", CloseOnTrigger, "airplane");
+    connect(f, &Fact::triggered, this, [=]() { unit()->flyHere(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "look_here", tr("Look here"), "", CloseOnTrigger, "eye");
-    connect(f, &Fact::triggered, this, [=]() { vehicle()->lookHere(clickCoordinate()); });
+    f = new Fact(f_unit, "look_here", tr("Look here"), "", CloseOnTrigger, "eye");
+    connect(f, &Fact::triggered, this, [=]() { unit()->lookHere(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "home_here", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
-    connect(f, &Fact::triggered, this, [=]() { vehicle()->setHomePoint(clickCoordinate()); });
+    f = new Fact(f_unit, "home_here", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
+    connect(f, &Fact::triggered, this, [=]() { unit()->setHomePoint(clickCoordinate()); });
 
-    f = new Fact(f_vehicle, "pos_here", tr("Fix position"), "", CloseOnTrigger, "crosshairs-gps");
-    connect(f, &Fact::triggered, this, [=]() { vehicle()->sendPositionFix(clickCoordinate()); });
+    f = new Fact(f_unit, "pos_here", tr("Fix position"), "", CloseOnTrigger, "crosshairs-gps");
+    connect(f, &Fact::triggered, this, [=]() { unit()->sendPositionFix(clickCoordinate()); });
 
     new MapPrefs(this);
 
     qml = loadQml("qrc:/MissionPlannerPlugin.qml");
 }
 
-Vehicle *MissionPlanner::vehicle() const
+Unit *MissionPlanner::unit() const
 {
-    return Vehicles::instance()->current();
+    return Fleet::instance()->current();
 }
-VehicleMission *MissionPlanner::mission() const
+UnitMission *MissionPlanner::mission() const
 {
-    return vehicle()->f_mission;
+    return unit()->f_mission;
 }
 
 QGeoCoordinate MissionPlanner::clickCoordinate() const

@@ -6,7 +6,7 @@ NodesState        1.0 status/NodesState.qml
 
 MissionListView   1.0 main/MissionListView.qml
 MissionTools      1.0 main/MissionTools.qml
-VehiclesListView  1.0 main/VehiclesListView.qml
+FleetListView     1.0 main/FleetListView.qml
 TaskBar           1.0 main/TaskBar.qml
 TelemetryReader   1.0 main/TelemetryReader.qml
 

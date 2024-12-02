@@ -21,7 +21,7 @@ void Ats::onAtsTimer()
         return;
     }
 
-    Vehicle *current = Vehicles::instance()->current();
+    auto current = Fleet::instance()->current();
     if (!current) {
         return;
     }
@@ -38,8 +38,8 @@ void Ats::onAtsTimer()
         return;
     }
 
-    if (Vehicles::instance()->gcs()->protocol()) {
-        pdata = Vehicles::instance()->gcs()->protocol()->data();
+    if (Fleet::instance()->gcs()->protocol()) {
+        pdata = Fleet::instance()->gcs()->protocol()->data();
         if (pdata) {
             QGeoCoordinate uav = current->coordinate();
             QVariantList value;

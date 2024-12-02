@@ -23,17 +23,17 @@
 
 #include "PBase.h"
 
-class PVehicle;
+class PUnit;
 
 class PTelemetry : public PTreeBase
 {
     Q_OBJECT
 
 public:
-    explicit PTelemetry(PVehicle *parent);
+    explicit PTelemetry(PUnit *parent);
 
 protected:
-    PVehicle *_vehicle;
+    PUnit *_unit;
 
 public slots:
     virtual void requestTelemetry() { _nimp(__FUNCTION__); }

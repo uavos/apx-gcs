@@ -21,16 +21,16 @@
  */
 #pragma once
 
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
-class PApxVehicle;
+class PApxUnit;
 
 class PApxData : public PData
 {
     Q_OBJECT
 
 public:
-    explicit PApxData(PApxVehicle *parent);
+    explicit PApxData(PApxUnit *parent);
 
     bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 

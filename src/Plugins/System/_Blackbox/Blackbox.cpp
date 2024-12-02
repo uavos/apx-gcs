@@ -26,8 +26,8 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <Fact/Fact.h>
+#include <Fleet/Fleet.h>
 #include <Nodes/NodeItem.h>
-#include <Vehicles/Vehicles.h>
 
 Blackbox::Blackbox(Fact *parent)
     : Fact(parent,
@@ -37,7 +37,7 @@ Blackbox::Blackbox(Fact *parent)
            Group,
            "dropbox")
 {
-    connect(Vehicles::instance(), &Vehicles::nodeNotify, this, &Blackbox::nodeNotify);
+    connect(Fleet::instance(), &Fleet::nodeNotify, this, &Blackbox::nodeNotify);
 
     f_import = new BlackboxFile(this);
 }

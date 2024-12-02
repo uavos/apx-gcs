@@ -22,20 +22,20 @@
 
 #include <apx.h>
 
-using m_f1 = Mandala<mandala::est::env::usrf::f1>;      //vehicle lat
-using m_f2 = Mandala<mandala::est::env::usrf::f2>;      //vehicle lon
-using m_f3 = Mandala<mandala::est::env::usrf::f3>;      //vehicle hmsl
+using m_f1 = Mandala<mandala::est::env::usrf::f1>; //unit lat
+using m_f2 = Mandala<mandala::est::env::usrf::f2>; //unit lon
+using m_f3 = Mandala<mandala::est::env::usrf::f3>; //unit hmsl
 
 using m_ats_mode = Mandala<mandala::cmd::nav::ats::mode>;
 
 static constexpr const port_id_t port_id{5};
 
-float vehicle_pos[3] = {};
+float unit_pos[3] = {};
 bool new_data = {};
 
 int main()
 {
-    task("on_vehicle_pos", 20);      // 50 Hz
+    task("on_unit_pos", 20); // 50 Hz
     receive(port_id, "on_ats");
 
     m_f1();
@@ -47,25 +47,25 @@ int main()
     return 0;
 }
 
-EXPORT void on_vehicle_pos()
+EXPORT void on_unit_pos()
 {
     if (!new_data) {
         return;
     }
 
-    m_f1::publish(vehicle_pos[0]);
-    m_f2::publish(vehicle_pos[1]);
-    m_f3::publish(vehicle_pos[2]);
+    m_f1::publish(unit_pos[0]);
+    m_f2::publish(unit_pos[1]);
+    m_f3::publish(unit_pos[2]);
 
     new_data = false;
 }
 
 EXPORT void on_ats(const uint8_t *data, size_t size)
 {
-    if (size != sizeof(vehicle_pos)) {
+    if (size != sizeof(unit_pos)) {
         return;
     }
 
-    memcpy(vehicle_pos, data, size);
+    memcpy(unit_pos, data, size);
     new_data = true;
 }

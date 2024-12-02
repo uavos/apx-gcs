@@ -21,7 +21,7 @@
  */
 #include "MissionItem.h"
 #include "MissionField.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 
 #include <App/AppRoot.h>
 #include <QGeoCircle>
@@ -89,10 +89,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(this, &Fact::numChanged, this, &MissionItem::updatePath, Qt::QueuedConnection);
 
     //selection support
-    connect(group->mission,
-            &VehicleMission::selectedItemChanged,
-            this,
-            &MissionItem::updateSelected);
+    connect(group->mission, &UnitMission::selectedItemChanged, this, &MissionItem::updateSelected);
 
     //title
     connect(this, &Fact::numChanged, this, &MissionItem::updateTitle);

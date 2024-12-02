@@ -56,7 +56,7 @@ RowLayout {
             Component {
                 id: siteC
                 Text {
-                    readonly property string site_text: apx.vehicles.current.mission.site
+                    readonly property string site_text: apx.fleet.current.mission.site
                     color: "#fff"
                     text: site_text?site_text:application.materialIconChar("web")
                     font: site_text?apx.font_narrow(Style.fontSize):apx.font_icons(Style.fontSize)
@@ -157,8 +157,8 @@ RowLayout {
         implicitHeight: control.size
         implicitWidth: Math.max(icon.width+textItem.implicitWidth, height*4)
 
-        opacity: apx.vehicles.current.totalDistance>0?1:0.5
-        property string text: apx.distanceToString(apx.vehicles.current.totalDistance)
+        opacity: apx.fleet.current.totalDistance>0?1:0.5
+        property string text: apx.distanceToString(apx.fleet.current.totalDistance)
         MaterialIcon {
             id: icon
             anchors.left: parent.left
@@ -181,7 +181,7 @@ RowLayout {
         ToolTipArea {
             text: qsTr("Distance travelled")
             cursorShape: Qt.PointingHandCursor
-            onClicked: apx.vehicles.current.telemetry.rpath.trigger()
+            onClicked: apx.fleet.current.telemetry.rpath.trigger()
         }
     }
 

@@ -52,12 +52,12 @@
 				<string>public.text</string>
 			</array>
 			<key>UTTypeIdentifier</key>
-			<string>com.uavos.telemetry</string>
+			<string>com.uavos.apxtlm</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>telemetry</string>
+					<string>apxtlm</string>
 				</array>
 			</dict>
 		</dict>
@@ -71,12 +71,12 @@
 				<string>public.text</string>
 			</array>
 			<key>UTTypeIdentifier</key>
-			<string>com.uavos.vehicle</string>
+			<string>com.uavos.nodes</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>vehicle</string>
+					<string>nodes</string>
 				</array>
 			</dict>
 		</dict>
@@ -109,8 +109,8 @@
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.uavos.telemetry</string>
-				<string>com.uavos.vehicle</string>
+				<string>com.uavos.apxtlm</string>
+				<string>com.uavos.nodes</string>
 				<string>com.uavos.apxfw</string>
 			</array>
 		</dict>

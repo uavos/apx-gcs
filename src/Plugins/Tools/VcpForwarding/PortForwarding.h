@@ -1,7 +1,7 @@
 #pragma once
 
 #include <App/AppGcs.h>
-#include <Vehicles/Vehicle.h>
+#include <Fleet/Unit.h>
 
 class PortForwarding : public Fact
 {
@@ -23,7 +23,7 @@ protected:
     virtual bool forwardToPHY(QByteArray data) = 0;
 
 private slots:
-    void onCurrentVehicleChanged();
+    void onCurrentUnitChanged();
     void onPdataSerialData(quint8 portID, QByteArray data);
     void updateStatus();
 };

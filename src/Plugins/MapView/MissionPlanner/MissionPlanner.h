@@ -26,8 +26,8 @@
 #include <QGeoShape>
 #include <QQmlComponent>
 #include <QtCore>
-class Vehicle;
-class VehicleMission;
+class Unit;
+class UnitMission;
 
 class MissionPlanner : public Fact
 {
@@ -40,11 +40,11 @@ public:
     explicit MissionPlanner(Fact *parent = nullptr);
 
     Fact *f_add;
-    Fact *f_vehicle;
+    Fact *f_unit;
 
 private:
-    Vehicle *vehicle() const;
-    VehicleMission *mission() const;
+    Unit *unit() const;
+    UnitMission *mission() const;
     QObject *qml;
 
     //---------------------------------------

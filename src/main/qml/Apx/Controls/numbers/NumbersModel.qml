@@ -87,7 +87,7 @@ ObjectModel {
 
             var f=null
             if(!(n.bind.match(/[\(\+!*]/) || n.bind.includes(".value")))
-                f=apx.vehicles.current.mandala.fact(n.bind, true)
+                f=apx.fleet.current.mandala.fact(n.bind, true)
             if(f){
                 s+="fact: mandala."+f.mpath()+";"
                 s+="property var v: fact?fact.value:undefined"+";"

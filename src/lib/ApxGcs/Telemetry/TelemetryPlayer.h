@@ -26,14 +26,14 @@
 
 #include "TelemetryReader.h"
 
-class Vehicle;
+class Unit;
 class TelemetryReader;
 
 class TelemetryPlayer : public Fact
 {
     Q_OBJECT
 public:
-    explicit TelemetryPlayer(TelemetryReader *reader, Vehicle *vehicle, Fact *parent);
+    explicit TelemetryPlayer(TelemetryReader *reader, Unit *unit, Fact *parent);
 
     Fact *f_time;
     Fact *f_speed;
@@ -44,7 +44,7 @@ public:
 
 private:
     TelemetryReader *reader;
-    Vehicle *vehicle;
+    Unit *unit;
 
     QFile _stream_file;
     TelemetryFileReader _stream;

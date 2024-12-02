@@ -23,13 +23,13 @@
 #include "Poi.h"
 #include "Runway.h"
 #include "Taxiway.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 #include "Waypoint.h"
 
-#include <Vehicles/VehicleSelect.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/UnitSelect.h>
 
-MissionTools::MissionTools(VehicleMission *mission, Flags flags)
+MissionTools::MissionTools(UnitMission *mission, Flags flags)
     : Fact(mission, "tools", tr("Tools"), tr("Mission edit tools"), flags)
     , mission(mission)
 {
@@ -75,10 +75,10 @@ MissionTools::MissionTools(VehicleMission *mission, Flags flags)
     f_altsetApply->setEnabled(false);
     connect(f_altsetApply, &Fact::triggered, this, &MissionTools::altsetTriggered);
 
-    VehicleSelect *fvs = new VehicleSelect(this, "copy", tr("Copy"), tr("Copy to vehicle"));
+    auto fvs = new UnitSelect(this, "copy", tr("Copy"), tr("Copy to unit"));
     f_copy = fvs;
     f_copy->setIcon("content-copy");
-    connect(fvs, &VehicleSelect::vehicleSelected, this, &MissionTools::copyVehicleSelected);
+    connect(fvs, &UnitSelect::unitSelected, this, &MissionTools::copyUnitSelected);
 }
 
 void MissionTools::altadjustTriggered()
@@ -115,10 +115,10 @@ void MissionTools::updateMaxAltitude()
         f_altset->setValue(alt);
 }
 
-void MissionTools::copyVehicleSelected(Vehicle *vehicle)
+void MissionTools::copyUnitSelected(Unit *unit)
 {
-    if (vehicle == mission->vehicle)
+    if (unit == mission->unit)
         return;
-    vehicle->f_mission->fromVariant(mission->toVariant());
-    Vehicles::instance()->selectVehicle(vehicle);
+    unit->f_mission->fromVariant(mission->toVariant());
+    Fleet::instance()->selectUnit(unit);
 }

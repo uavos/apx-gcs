@@ -23,14 +23,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 import "."
 import "../common"
 
 Item {
     id: pfd
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
+    readonly property APX.Unit unit: apx.fleet.current
 
     readonly property var f_mode: mandala.cmd.proc.mode
 
@@ -114,7 +114,7 @@ Item {
 
     readonly property bool isValid: f_att_status.value > 0
 
-    opacity: ui.effects?((apx.datalink.valid && !(vehicle.streamType===APX.PVehicle.XPDR||vehicle.streamType===APX.PVehicle.TELEMETRY))?0.7:1):1
+    opacity: ui.effects?((apx.datalink.valid && !(unit.streamType===APX.PUnit.XPDR||unit.streamType===APX.PUnit.TELEMETRY))?0.7:1):1
 
     clip: true
 
@@ -647,7 +647,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
             text: qsTr("DISCONNECTED")
-            visible: !vehicle.isReplay && !apx.datalink.online
+            visible: !unit.isReplay && !apx.datalink.online
             font: apx.font_narrow(apx.datalink.valid?(parent.height*0.5*0.35):10,true)
         }
         Text {
@@ -655,15 +655,15 @@ Item {
             anchors.top: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
-            text: vehicle.text
-            visible: !vehicle.isReplay && apx.datalink.valid && (vehicle.streamType!==APX.PVehicle.TELEMETRY)
+            text: unit.text
+            visible: !unit.isReplay && apx.datalink.valid && (unit.streamType!==APX.PUnit.TELEMETRY)
             horizontalAlignment: Text.AlignHCenter
             font: apx.font_narrow(parent.height*0.5*0.25,true)
             Text {
                 color: "#70000000"
                 anchors.top: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: vehicle.protocol?vehicle.protocol.telemetry.text:""
+                text: unit.protocol?unit.protocol.telemetry.text:""
                 font: apx.font_narrow(parent.font.pixelSize*0.5,true)
             }
         }
