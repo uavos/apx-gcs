@@ -725,12 +725,6 @@ void NodeItem::confReceived(QVariantMap values)
         }
     }
 
-    // if (fields.size() != m_fields.size()) {
-    //     apxMsgW() << tr("Inconsistent parameters");
-    //     qDebug() << fields.size() << m_fields.size();
-    //     return;
-    // }
-
     validateData();
     setEnabled(true);
 

@@ -760,8 +760,8 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
 
     // clean up and return object
     nodes = json::fix_numbers(json::filter_names(nodes));
-    json::save("nodes-conv", nodes);
-    json::save("nodes-orig", imp);
+    // json::save("nodes-conv", nodes);
+    // json::save("nodes-orig", imp);
 
     return nodes;
 }
@@ -824,9 +824,11 @@ QJsonArray TelemetryFileImport::import_node_fields(const QJsonArray &src,
         if (type == "Array") {
             // first type of child field
             const auto jsa = imp["field"].toArray();
-            type = jsa.first().toObject()["type"].toString();
+            const auto jso_item = jsa.first().toObject();
+            type = jso_item["type"].toString();
             auto type_id = type_map.value(type);
             field["array"] = jsa.size();
+            field["units"] = jso_item[type_id == xbus::node::conf::option ? "opts" : "units"];
             value.clear();
             QJsonArray jsa_values;
             for (const auto i : jsa) {
@@ -845,7 +847,8 @@ QJsonArray TelemetryFileImport::import_node_fields(const QJsonArray &src,
             auto type_id = type_map.value(type);
             field["type"] = QString(xbus::node::conf::type_to_str(type_id));
             if (type_id == xbus::node::conf::option) {
-                field["units"] = imp["opts"];
+                if (!imp["opts"].toString().isEmpty())
+                    field["units"] = imp["opts"];
             } else if (type_id == xbus::node::conf::bind) {
                 value = import_mandala_bind(value);
             } else {
