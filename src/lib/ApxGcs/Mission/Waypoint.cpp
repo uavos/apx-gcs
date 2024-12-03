@@ -42,11 +42,11 @@ Waypoint::Waypoint(MissionGroup *parent)
     f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
 
-    f_hmsl = new MissionField(this, "hmsl", tr("HMSL"), tr("Altitude above sea level"), Int);
-    f_hmsl->setUnits("m");
-    f_hmsl->setDefaultValue(0);
-    f_hmsl->setOpt("extrainfo", "ExtraInfoHmsl.qml");
-    connect(f_hmsl, &Fact::triggered, this, [this]() { this->setChosen(HMSL); });
+    f_amsl = new MissionField(this, "amsl", tr("AMSL"), tr("Altitude above sea level"), Int);
+    f_amsl->setUnits("m");
+    f_amsl->setDefaultValue(0);
+    f_amsl->setOpt("extrainfo", "ExtraInfoAmsl.qml");
+    connect(f_amsl, &Fact::triggered, this, [this]() { this->setChosen(AMSL); });
 
     f_type = new MissionField(this, "type", tr("Type"), tr("Maneuver type"), Enum);
     f_type->setEnumStrings(QStringList() << "direct"

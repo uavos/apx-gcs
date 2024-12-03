@@ -68,7 +68,7 @@ double OfflineElevationDB::getElevation(double latitude, double longitude)
     return getElevationASTER(latitude, longitude);
 }
 
-double OfflineElevationDB::getElevationFromGeoFile(QString &fileName,
+double OfflineElevationDB::getElevationFromGeoFile(QString fileName,
                                                    double latitude,
                                                    double longitude)
 {

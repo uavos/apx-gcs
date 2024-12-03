@@ -47,6 +47,6 @@ private:
     QString m_dbPath;
 
     QString createASTERFileName(double latitude, double longitude);
-    double getElevationFromGeoFile(QString &fileName, double latitude, double longitude);
+    double getElevationFromGeoFile(QString fileName, double latitude, double longitude);
     char *SanitizeSRS(const char *userInput);
 };

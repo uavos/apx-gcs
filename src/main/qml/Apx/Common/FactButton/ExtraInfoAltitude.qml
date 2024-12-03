@@ -32,7 +32,7 @@ Item {
 
     property var map: apx.tools.elevationmap
     property var agl: fact.parentFact.child("agl").value
-    property var hmsl: fact.parentFact.child("hmsl").value
+    property var amsl: fact.parentFact.child("amsl").value
     property var coordinate: fact.parentFact.coordinate
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var color: "#dcdcdc"
@@ -65,7 +65,7 @@ Item {
 
     onChosenChanged: _editor.enabled = chosen
     onAglChanged: altitudeProcessing()
-    onHmslChanged: altitudeProcessing()
+    onAmslChanged: altitudeProcessing()
     onHomeHmslChanged: altitudeProcessing()
     
     Component.onCompleted: {
@@ -76,10 +76,10 @@ Item {
         // Proposal to ON/OFF AGL and HTML when elevation map is disabled
         if(!visible){
             fact.parentFact.child("agl").visible = false
-            fact.parentFact.child("hmsl").visible = false
+            fact.parentFact.child("amsl").visible = false
         } else {
             fact.parentFact.child("agl").visible = true
-            fact.parentFact.child("hmsl").visible = true
+            fact.parentFact.child("amsl").visible = true
         }    
     }
 
@@ -91,7 +91,7 @@ Item {
             return
         if (fact.parentFact.chosen == Waypoint.AGL)
             fact.value = elevation + agl - homeHmsl
-        if (fact.parentFact.chosen == Waypoint.HMSL) 
-            fact.value = hmsl - homeHmsl
+        if (fact.parentFact.chosen == Waypoint.AMSL) 
+            fact.value = amsl - homeHmsl
     }
 }

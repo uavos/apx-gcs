@@ -40,7 +40,7 @@ public:
     enum ChosenFact {
         ALT = 0,
         AGL,
-        HMSL,
+        AMSL,
     };
     Q_ENUM(ChosenFact)
 
@@ -48,7 +48,7 @@ public:
 
     Fact *f_altitude;
     Fact *f_agl;
-    Fact *f_hmsl;
+    Fact *f_amsl;
     Fact *f_type;
 
     WaypointActions *f_actions;

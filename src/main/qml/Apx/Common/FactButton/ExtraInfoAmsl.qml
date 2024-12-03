@@ -30,7 +30,7 @@ Item {
     id: item
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var altitude: fact.parentFact.child("altitude").value
-    property bool chosen: fact.parentFact.chosen == Waypoint.HMSL
+    property bool chosen: fact.parentFact.chosen == Waypoint.AMSL
         
     onChosenChanged: _editor.enabled = chosen
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT

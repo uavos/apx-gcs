@@ -37,13 +37,8 @@ ElevationMap::ElevationMap(Fact *parent)
     f_use = new Fact(this, "use", tr("Use elevation map"), "", Fact::Bool, "check");
     f_use->setValue(true);
 
-    f_path = new Fact(this,
-                      "open",
-                      tr("Path"),
-                      tr("Elevation files path"),
-                      Text | PersistentValue,
-                      "import");
-    f_path->setDefaultValue(path);
+    f_path = new Fact(this, "open", tr("Path"), tr("Elevation files path"), Text, "import");
+    f_path->setValue(path);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
 
     createElevationDatabase();
