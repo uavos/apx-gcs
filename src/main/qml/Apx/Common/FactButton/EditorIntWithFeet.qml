@@ -100,7 +100,6 @@ SpinBox {
                 opts.ft = text
                 fact.opts = opts
                 fact.setValue(ft2m(text))
-                console.log("onEditingFinished - isFeet", text, "-", fact.opts.ft)
                 factButton.forceActiveFocus();
             }
             onActiveFocusChanged: {
@@ -128,7 +127,8 @@ SpinBox {
         TextInput {
             id: textInput
             visible: !textInputFt.visible
- 
+            property var factValue: fact.value
+
             anchors.centerIn: parent
             font: editor.font
 
@@ -143,8 +143,6 @@ SpinBox {
                 fact.setValue(text)
                 opts.ft = m2ft(fact.value)
                 fact.opts = opts;
-                console.log("onEditingFinished - isFeet", text, "-", fact.opts.ft)
-
                 factButton.forceActiveFocus();
             }
             onActiveFocusChanged: {
@@ -154,6 +152,11 @@ SpinBox {
                 }else{
                     text=Qt.binding(function(){return fact.text})
                 }
+            }
+            onFactValueChanged:{
+                if(!isFeet)
+                    opts.ft = m2ft(fact.value)
+                    fact.opts = opts;
             }
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
@@ -194,9 +197,6 @@ SpinBox {
         var v=value
         v -= v % stepSize
         v /= div
-
-        console.log("2. onValueModified - ", v)
-
         if(!isFeet) {
             fact.setValue(v)
             opts.ft = m2ft(v)
@@ -206,13 +206,28 @@ SpinBox {
             fact.opts = opts
             fact.setValue(ft2m(v))
         }
-
-        value=Qt.binding(function(){return Math.round(!isFeet ? fact.value*div : opts.ft*div)})
-
-        console.log("3. onValueModified - ", value)
-
+        value=Qt.binding(function(){return Math.round(!isFeet ? fact.value*div : opts.ft*div)})   
         // accelerate
         elapsed = startTime>0?(new Date().getTime()-startTime)/1000:0
+    }
+
+    onOptsChanged: setParentTitle()
+    onIsFeetChanged: setParentTitle()
+    function setParentTitle() {
+        // This is a temporary solution for a prototype.
+        const names = ["altitude", "approach", "radius"];
+        if(!names.includes(fact.name))
+            return
+
+        var factTitle = fact.parentFact.title
+        var array = factTitle.split(' ');
+
+        if(isFeet)
+            array[array.length-1] = opts.ft+"ft"
+        else
+            array[array.length-1] = fact.value+"m"   
+
+        fact.parentFact.title = array.join(" ")
     }
 
     ToolTip {
@@ -229,6 +244,5 @@ SpinBox {
             border.color: "#d3d3d3"
             radius: height/10
         }
-        onVisibleChanged: console.log(height,"-",implicitHeight,"-",implicitBackgroundHeight,"-",implicitContentHeight,)
     }
 }

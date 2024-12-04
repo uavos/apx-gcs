@@ -54,7 +54,14 @@ Item {
         verticalAlignment: Text.AlignVCenter
         font: apx.font_narrow(Style.fontSize)
         color: item.color
-        text: isNaN(item.elevation) ? "NO" : item.elevation + "m"
+        text: isNaN(item.elevation) ? "NO" : getElevation()
     }
     Component.onCompleted: elevation = map.getElevationByCoordinate(coordinate)
+
+    function getElevation()
+    {
+        if(fact.parentFact.isFeet)
+            return m2ft(item.elevation) + "ft"
+        return item.elevation + "m"
+    }
 }

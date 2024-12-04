@@ -33,24 +33,31 @@ Waypoint::Waypoint(MissionGroup *parent)
 {
     f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above home"), Int);
     f_altitude->setUnits("m");
+    f_altitude->setOpt("editor", "EditorIntWithFeet.qml");
     f_altitude->setOpt("extrainfo", "ExtraInfoAltitude.qml");
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
 
     f_agl = new MissionField(this, "agl", tr("AGL"), tr("Altitude above ground level"), Int);
     f_agl->setUnits("m");
     f_agl->setDefaultValue(0);
+    f_agl->setOpt("editor", "EditorIntWithFeet.qml");
     f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
 
     f_amsl = new MissionField(this, "amsl", tr("AMSL"), tr("Altitude above sea level"), Int);
     f_amsl->setUnits("m");
     f_amsl->setDefaultValue(0);
+    f_amsl->setOpt("editor", "EditorIntWithFeet.qml");
     f_amsl->setOpt("extrainfo", "ExtraInfoAmsl.qml");
     connect(f_amsl, &Fact::triggered, this, [this]() { this->setChosen(AMSL); });
 
     f_type = new MissionField(this, "type", tr("Type"), tr("Maneuver type"), Enum);
     f_type->setEnumStrings(QStringList() << "direct"
                                          << "track");
+
+    //switch ft/m on
+    f_feet->setVisible(true);
+
     //actions
     f_actions = new WaypointActions(this);
 
@@ -60,6 +67,18 @@ Waypoint::Waypoint(MissionGroup *parent)
         f_altitude->setValue(f0->f_altitude->value());
     else
         f_altitude->setValue(200);
+
+    // Add feets options
+    // 3.2808 - conversion coefficient feets to meters
+    const float coef = 3.2808;
+    auto ft = std::round(f_altitude->value().toInt() * coef);
+    f_altitude->setOpt("ft", ft);
+
+    ft = std::round(f_agl->value().toInt() * coef);
+    f_agl->setOpt("ft", ft);
+
+    ft = std::round(f_amsl->value().toInt() * coef);
+    f_amsl->setOpt("ft", ft);
 
     connect(f_type, &Fact::valueChanged, this, &Waypoint::updatePath);
 
@@ -75,6 +94,9 @@ Waypoint::Waypoint(MissionGroup *parent)
 
 void Waypoint::updateTitle()
 {
+    if(m_isFeet)
+        return;
+
     QStringList st;
     st.append(QString::number(num() + 1));
     st.append(f_type->valueText().left(1).toUpper());

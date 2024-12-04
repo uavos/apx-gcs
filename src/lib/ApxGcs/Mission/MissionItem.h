@@ -46,6 +46,7 @@ class MissionItem : public Fact
     Q_PROPERTY(uint totalTime READ totalTime NOTIFY totalTimeChanged)
 
     Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectedChanged)
+    Q_PROPERTY(bool isFeet READ isFeet WRITE setIsFeet NOTIFY isFeetChanged)
 
 public:
     explicit MissionItem(MissionGroup *parent,
@@ -61,6 +62,7 @@ public:
     Fact *f_longitude;
 
     Fact *f_remove;
+    Fact *f_feet;
 
     Q_INVOKABLE virtual QGeoRectangle boundingGeoRectangle() const;
 
@@ -119,6 +121,11 @@ public:
     bool selected() const;
     void setSelected(bool v);
 
+    bool isFeet() const;
+    void setIsFeet(bool v);
+
+    void changeFeetMeters();
+
 protected:
     QGeoCoordinate m_coordinate;
     QGeoPath m_geoPath;
@@ -130,6 +137,7 @@ protected:
     uint m_totalTime;
 
     bool m_selected;
+    bool m_isFeet;
 
 signals:
     void coordinateChanged();
@@ -142,4 +150,5 @@ signals:
     void totalTimeChanged();
 
     void selectedChanged();
+    void isFeetChanged();
 };

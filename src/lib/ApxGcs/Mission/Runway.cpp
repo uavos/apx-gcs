@@ -64,6 +64,9 @@ Runway::Runway(MissionGroup *parent)
     f_dN->setValue(100);
     f_dE->setValue(300);
 
+    //switch ft/m on
+    f_feet->setVisible(true);
+
     //title
     connect(f_type, &Fact::valueChanged, this, &Runway::updateTitle);
     connect(f_approach, &Fact::valueChanged, this, &Runway::updateTitle);

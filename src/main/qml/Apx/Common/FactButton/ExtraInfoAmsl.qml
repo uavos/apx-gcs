@@ -47,4 +47,16 @@ Item {
             return
         fact.value = altitude + homeHmsl
     }
+
+    // Feets processing
+    property var altOpts: fact.parentFact.child("altitude").opts
+    property var opts: fact.opts
+    onAltOptsChanged:  altitudeFtProcessing()
+    
+    function altitudeFtProcessing() {
+        if(chosen)
+            return
+        opts.ft = parseInt(altOpts.ft) + m2ft(homeHmsl)
+        fact.opts = opts
+    }
 }

@@ -58,7 +58,7 @@ Item {
         verticalAlignment: Text.AlignVCenter
         font: apx.font_narrow(Style.fontSize)
         color: item.color
-        text: isNaN(item.elevation) ? "NO" : item.elevation + "m"
+        text: isNaN(item.elevation) ? "NO" : getElevation()
     }
 
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
@@ -69,7 +69,10 @@ Item {
         _editor.enabled = chosen
         if(visible)
             elevation = map.getElevationByCoordinate(coordinate)
-        aglProcessing() 
+        aglProcessing()
+        
+        // Feets processing
+        aglFtProcessing()
     }
 
     function aglProcessing() 
@@ -80,5 +83,28 @@ Item {
         }
         fact.value = homeHmsl + altitude - elevation;
         factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
+    }
+
+    function getElevation()
+    {
+        if(fact.parentFact.isFeet)
+            return m2ft(item.elevation) + "ft"
+        return item.elevation + "m"     
+    }
+
+    // Feets processing
+    property var altOpts: fact.parentFact.child("altitude").opts
+    property var opts: fact.opts
+    onAltOptsChanged: aglFtProcessing()
+
+    function aglFtProcessing() {
+        if(isNaN(elevation)) {
+            opts.ft = 0
+            fact.opts = opts
+            return
+        }
+
+        opts.ft = parseInt(altOpts.ft) + m2ft(homeHmsl - elevation)
+        fact.opts = opts
     }
 }

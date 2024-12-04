@@ -50,6 +50,9 @@ Poi::Poi(MissionGroup *parent)
     f_time->setMin(0);
     f_time->setMax(0xFFFF);
 
+    //switch ft/m on
+    f_feet->setVisible(true);
+
     //conversions
     connect(this, &MissionItem::coordinateChanged, this, &Poi::radiusPointChanged);
     connect(f_radius, &Fact::valueChanged, this, &Poi::radiusPointChanged);

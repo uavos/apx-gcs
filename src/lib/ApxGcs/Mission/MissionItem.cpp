@@ -39,6 +39,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     , m_totalDistance(0)
     , m_totalTime(0)
     , m_selected(false)
+    , m_isFeet(false)
 {
     setOpt("pos", QPointF(0.25, 0.5));
 
@@ -61,6 +62,17 @@ MissionItem::MissionItem(MissionGroup *parent,
                                    tr("Global position longitude"),
                                    Float);
     f_longitude->setUnits("lon");
+
+    // This is a temporary solution until the feet-meters conversion of gcs is completed.
+    f_feet = new Fact(this,
+                      "ft_m",
+                      tr("ft"),
+                      tr("switch between feet and meters"),
+                      Action,"swap-vertical");
+    f_feet->setOpt("alignleft", true);
+    f_feet->setVisible(false);
+
+    connect(f_feet, &Fact::triggered, this, &MissionItem::changeFeetMeters);
 
     f_remove = new Fact(this, "remove", tr("Remove"), tr("Remove mission item"), Action | Remove);
     connect(f_remove, &Fact::triggered, this, &Fact::deleteFact);
@@ -323,4 +335,26 @@ void MissionItem::setSelected(bool v)
         group->mission->setSelectedItem(this);
     else if (group->mission->selectedItem() == this)
         group->mission->setSelectedItem(nullptr);
+}
+
+bool MissionItem::isFeet() const
+{
+    return m_isFeet;
+}
+
+void MissionItem::setIsFeet(bool v)
+{
+    if (m_isFeet == v)
+        return;
+    m_isFeet = v;
+    emit isFeetChanged();
+}
+
+void MissionItem::changeFeetMeters()
+{
+    setIsFeet(!m_isFeet);
+    if(m_isFeet)
+        f_feet->setTitle("m");
+    else
+        f_feet->setTitle("ft");
 }

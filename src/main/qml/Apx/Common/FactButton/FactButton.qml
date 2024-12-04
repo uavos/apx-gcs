@@ -370,6 +370,24 @@ ActionButton {
         }
     }
 
+    Component.onCompleted: {
+        if(!fact.opts.alignleft)
+             return;
+
+        anchor.left = parent.left
+        concole.log("move left")
+    }
+
+    // Feets / meters conversion
+    property var coef: 3.2808
+
+    function m2ft(value) {
+        return Math.round(value * coef)
+    }
+
+    function ft2m(value) {
+        return Math.round(value / coef)
+    }
 }
 
 

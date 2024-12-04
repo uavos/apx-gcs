@@ -60,7 +60,7 @@ Item {
         verticalAlignment: Text.AlignVCenter
         font: apx.font_narrow(Style.fontSize)
         color: item.color
-        text: homeHmsl + "m"
+        text: getHomeHmsl()
     }
 
     onChosenChanged: _editor.enabled = chosen
@@ -93,5 +93,34 @@ Item {
             fact.value = elevation + agl - homeHmsl
         if (fact.parentFact.chosen == Waypoint.AMSL) 
             fact.value = amsl - homeHmsl
+    }
+
+    function getHomeHmsl()
+    {
+        if(fact.parentFact.isFeet)
+            return m2ft(homeHmsl) + "ft"
+        return homeHmsl + "m"     
+    }
+
+    // Feets processing
+    property var aglOpts: fact.parentFact.child("agl").opts
+    property var amslOpts: fact.parentFact.child("amsl").opts
+    property var opts: fact.opts
+    onAglOptsChanged: altitudeFtProcessing()
+    onAmslOptsChanged: altitudeFtProcessing()
+
+    function altitudeFtProcessing() {
+        if(isNaN(elevation))
+            return
+        if(chosen)
+            return
+        if (fact.parentFact.chosen == Waypoint.AGL) {
+            opts.ft = parseInt(aglOpts.ft) + m2ft(elevation - homeHmsl)
+            fact.opts = opts
+        }
+        if (fact.parentFact.chosen == Waypoint.AMSL) {
+            opts.ft = parseInt(amslOpts.ft) - m2ft(homeHmsl)
+            fact.opts = opts
+        }
     }
 }
