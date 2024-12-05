@@ -646,6 +646,7 @@ enum constants_e : uint8_t {
     // cmd.nav.ahrs.inair
     ahrs_inair_no = 0,
     ahrs_inair_yes = 1,
+    ahrs_inair_hover = 2,
 
     // cmd.nav.ahrs.nogps
     ahrs_nogps_no = 0,

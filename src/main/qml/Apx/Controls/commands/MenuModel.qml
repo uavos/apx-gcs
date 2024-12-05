@@ -91,7 +91,7 @@ Fact {
             Fact { enabled: false }
             Fact { title: qsTr("Reset AHRS filter"); descr: "ahrs()"; onTriggered: application.jsexec(descr); }
             Fact { enabled: false }
-            Fact { binding: mandala.cmd.ahrs.inair; flags: Fact.Bool; }
+            Fact { binding: mandala.cmd.ahrs.inair }
             Fact { binding: mandala.cmd.ahrs.nogps; flags: Fact.Bool; }
             Fact { binding: mandala.cmd.ahrs.nomag; flags: Fact.Bool; }
             Fact { binding: mandala.cmd.ahrs.hsel }

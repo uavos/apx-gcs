@@ -554,8 +554,9 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_ahrs_inair
                 text: qsTr("AIR")
-                show: ui.test || ( fact.value <= 0 && isValid)
+                show: ui.test || ( fact.value != ahrs_inair_yes && isValid)
                 status_reset: ahrs_inair_yes
+                status_warning: ahrs_inair_hover
             }
         }
 
