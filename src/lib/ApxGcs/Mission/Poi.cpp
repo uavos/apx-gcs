@@ -38,6 +38,7 @@ Poi::Poi(MissionGroup *parent)
     f_radius->setMin(-10000);
     f_radius->setMax(10000);
     f_radius->setValue(800);
+    f_radius->setOpt("editor", "EditorIntWithFeet.qml");
 
     f_loops = new MissionField(this, "loops", tr("Loops"), tr("Loiter loops limit"), Int);
     f_loops->setEnumStrings(QStringList() << "default");
@@ -49,6 +50,16 @@ Poi::Poi(MissionGroup *parent)
     f_time->setUnits("min");
     f_time->setMin(0);
     f_time->setMax(0xFFFF);
+
+    // Add feets option
+    // 3.2808 - conversion coefficient feets to meters
+    f_hmsl->setOpt("editor", "EditorIntWithFeet.qml");
+    f_radius->setOpt("editor", "EditorIntWithFeet.qml");
+
+    const float coef = 3.2808;
+    auto ft = std::round(f_radius->value().toInt() * coef);
+    f_radius->setOpt("ft", ft);
+    f_hmsl->setOpt("ft", 0);
 
     //switch ft/m on
     f_feet->setVisible(true);

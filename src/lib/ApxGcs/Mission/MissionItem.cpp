@@ -69,7 +69,6 @@ MissionItem::MissionItem(MissionGroup *parent,
                       tr("ft"),
                       tr("switch between feet and meters"),
                       Action,"swap-vertical");
-    f_feet->setOpt("alignleft", true);
     f_feet->setVisible(false);
 
     connect(f_feet, &Fact::triggered, this, &MissionItem::changeFeetMeters);

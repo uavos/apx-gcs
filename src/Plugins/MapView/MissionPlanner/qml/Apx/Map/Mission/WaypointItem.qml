@@ -125,6 +125,7 @@ MissionObject {
             // Feets 
             property var isFeet: fact?fact.isFeet:false
             property var opts: fact?fact.child("altitude").opts:""
+            
             active: (!dragging) && (hover||selected)?1:0
             // asynchronous: true
             sourceComponent: Component {
