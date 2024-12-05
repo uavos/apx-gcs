@@ -79,7 +79,12 @@ void Joysticks::updateEnabled()
 {
     if (f_enabled->value().toBool()) {
         qDebug() << "SDL init...";
-        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
+
+        uint32_t SUB_SYSTEM = SDL_INIT_JOYSTICK;
+#if defined(Q_OS_MAC)
+        SUB_SYSTEM |= SDL_INIT_VIDEO;
+#endif
+        if (SDL_InitSubSystem(SUB_SYSTEM)) {
             qDebug() << "Cannot initialize SDL:" << SDL_GetError();
             return;
         }
@@ -113,6 +118,7 @@ void Joysticks::watcherFinished()
 void Joysticks::update()
 {
     SDL_Event event;
+    //SDL_PumpEvents();
     while (SDL_PollEvent(&event)) {
         processEvent(event);
     }
