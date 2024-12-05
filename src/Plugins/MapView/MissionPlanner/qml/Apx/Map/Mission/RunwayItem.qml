@@ -169,6 +169,24 @@ MissionObject {
 
     //handles
     Loader {
+        // Feets
+        property var opts: fact?fact.approach.opts:0
+        property bool isFeet: fact?fact.isFeet:false
+        property int approach: runwayItem.f_approach
+        property var rwObjTitle: getTitle()
+
+        onIsFeetChanged: rwObjTitle=getTitle()
+        onOptsChanged: rwObjTitle=getTitle()
+        onApproachChanged: rwObjTitle=getTitle()
+
+        function getTitle() {
+            if(isFeet)
+                return opts.ft>0?(opts.ft + "ft"):"H----"
+            else
+                return f_approach>0?(apx.distanceToString(f_approach)):"H----"
+        }
+
+
         //appPoint
         // asynchronous: true
         active: fact
@@ -182,7 +200,8 @@ MissionObject {
                 visible: runwayItem.visible && showDetailsApp
                 color: "white"
                 textColor: "black"
-                title: f_approach>0?(apx.distanceToString(f_approach)):"H----"
+                // title: f_approach>0?(apx.distanceToString(f_approach)):"H----"
+                title: rwObjTitle
                 property double r: runwayItem.f_heading-90;
                 rotation: f_approach>0?apx.angle90(r):apx.angle(r);
                 implicitCoordinate: appPointCoordinate
@@ -223,7 +242,7 @@ MissionObject {
                 ]
             }
         }
-    }
+     }
 
 
     //paths

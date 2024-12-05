@@ -82,6 +82,9 @@ Poi::Poi(MissionGroup *parent)
 
 void Poi::updateTitle()
 {
+    if (m_isFeet)
+        return;
+
     QStringList st;
     st.append(QString::number(num() + 1));
     int r = f_radius->value().toInt();

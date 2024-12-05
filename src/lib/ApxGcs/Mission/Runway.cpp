@@ -64,6 +64,22 @@ Runway::Runway(MissionGroup *parent)
     f_dN->setValue(100);
     f_dE->setValue(300);
 
+    // Add feets option
+    // 3.2808 - conversion coefficient feets to meters
+    f_approach->setOpt("editor", "EditorIntWithFeet.qml");
+    f_hmsl->setOpt("editor", "EditorIntWithFeet.qml");
+    f_dN->setOpt("editor", "EditorIntWithFeet.qml");
+    f_dE->setOpt("editor", "EditorIntWithFeet.qml");
+
+    const float coef = 3.2808;
+    auto ft = std::round(f_approach->value().toInt() * coef);
+    f_approach->setOpt("ft", ft);
+    ft = std::round(f_dN->value().toInt() * coef);
+    f_dN->setOpt("ft", ft);
+    ft = std::round(f_dE->value().toInt() * coef);
+    f_dE->setOpt("ft", ft);
+    f_hmsl->setOpt("ft", 0);
+
     //switch ft/m on
     f_feet->setVisible(true);
 
@@ -107,6 +123,9 @@ Runway::Runway(MissionGroup *parent)
 
 void Runway::updateTitle()
 {
+    if (m_isFeet)
+        return;
+
     setValue(
         f_type->valueText().left(1).toUpper()
         + QString("%1").arg((int) AppRoot::angle360(round(AppRoot::angle360(heading()) / 10.0) * 10)
