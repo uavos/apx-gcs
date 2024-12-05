@@ -453,24 +453,24 @@ enum constants_e : uint8_t {
     air_stall_warning = 2,
     air_stall_critical = 3,
 
-    // est.nav.ahrs.rest
-    ahrs_rest_no = 0,
-    ahrs_rest_yes = 1,
+    // est.nav.ins.rest
+    ins_rest_no = 0,
+    ins_rest_yes = 1,
 
-    // est.nav.ahrs.mag
-    ahrs_mag_unknown = 0,
-    ahrs_mag_3D = 1,
-    ahrs_mag_HDG = 2,
-    ahrs_mag_blocked = 3,
-    ahrs_mag_warning = 4,
-    ahrs_mag_failure = 5,
+    // est.nav.ins.mag
+    ins_mag_unknown = 0,
+    ins_mag_3D = 1,
+    ins_mag_HDG = 2,
+    ins_mag_blocked = 3,
+    ins_mag_warning = 4,
+    ins_mag_failure = 5,
 
-    // est.nav.ahrs.href
-    ahrs_href_none = 0,
-    ahrs_href_baro = 1,
-    ahrs_href_gps = 2,
-    ahrs_href_range = 3,
-    ahrs_href_vision = 4,
+    // est.nav.ins.href
+    ins_href_none = 0,
+    ins_href_baro = 1,
+    ins_href_gps = 2,
+    ins_href_range = 3,
+    ins_href_vision = 4,
 
     // est.nav.wind.status
     wind_status_unknown = 0,
@@ -639,32 +639,32 @@ enum constants_e : uint8_t {
     reg_airbrk_off = 0,
     reg_airbrk_on = 1,
 
-    // cmd.nav.ahrs
-    nav_ahrs_no = 0,
-    nav_ahrs_yes = 1,
+    // cmd.nav.ins
+    nav_ins_no = 0,
+    nav_ins_yes = 1,
 
-    // cmd.nav.ahrs.inair
-    ahrs_inair_no = 0,
-    ahrs_inair_yes = 1,
-    ahrs_inair_hover = 2,
+    // cmd.nav.ins.inair
+    ins_inair_no = 0,
+    ins_inair_yes = 1,
+    ins_inair_hover = 2,
 
-    // cmd.nav.ahrs.nogps
-    ahrs_nogps_no = 0,
-    ahrs_nogps_yes = 1,
+    // cmd.nav.ins.nogps
+    ins_nogps_no = 0,
+    ins_nogps_yes = 1,
 
-    // cmd.nav.ahrs.nomag
-    ahrs_nomag_no = 0,
-    ahrs_nomag_yes = 1,
+    // cmd.nav.ins.nomag
+    ins_nomag_no = 0,
+    ins_nomag_yes = 1,
 
-    // cmd.nav.ahrs.hsel
-    ahrs_hsel_baro = 0,
-    ahrs_hsel_gps = 1,
-    ahrs_hsel_range = 2,
-    ahrs_hsel_vision = 3,
+    // cmd.nav.ins.hsel
+    ins_hsel_baro = 0,
+    ins_hsel_gps = 1,
+    ins_hsel_range = 2,
+    ins_hsel_vision = 3,
 
-    // cmd.nav.ahrs.hagl
-    ahrs_hagl_no = 0,
-    ahrs_hagl_yes = 1,
+    // cmd.nav.ins.hagl
+    ins_hagl_no = 0,
+    ins_hagl_yes = 1,
 
     // cmd.nav.eng.mode
     eng_mode_auto = 0,
@@ -1178,7 +1178,7 @@ namespace est
             enum { stab = 0x469 };
             enum { stall = 0x46a };
         };
-        namespace ahrs
+        namespace ins
         {
             enum { rest = 0x471 };
             enum { mag = 0x472 };
@@ -1401,7 +1401,7 @@ namespace cmd
             enum { flaps = 0x61a };
             enum { airbrk = 0x61b };
         };
-        namespace ahrs
+        namespace ins
         {
             enum { inair = 0x621 };
             enum { nogps = 0x622 };

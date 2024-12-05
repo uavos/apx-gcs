@@ -262,7 +262,7 @@ void Simulator::launchShiva()
         /*QStringList args;
     if (f_oDLHD->value().toBool())
         args << "-a";
-    if (f_oAHRS->value().toBool())
+    if (f_oINS->value().toBool())
         args << "-i";
     if (f_oNoise->value().toBool())
         args << "-n";

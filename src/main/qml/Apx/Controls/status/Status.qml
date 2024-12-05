@@ -45,11 +45,11 @@ Rectangle {
     readonly property int m_agl_src: mandala.sns.agl.src.value
     readonly property bool m_agl_status: mandala.sns.agl.status.value
     readonly property bool m_pwr_agl: mandala.ctr.pwr.agl.value
-    readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
+    readonly property bool m_ins_hagl: mandala.cmd.ins.hagl.value
 
-    readonly property bool m_agl_show: (m_agl_status || m_ahrs_hagl || m_pwr_agl || m_agl_src)
+    readonly property bool m_agl_show: (m_agl_status || m_ins_hagl || m_pwr_agl || m_agl_src)
     readonly property bool m_agl_ready: m_agl_status
-    readonly property bool m_agl_warning: m_ahrs_hagl && !m_agl_status
+    readonly property bool m_agl_warning: m_ins_hagl && !m_agl_status
     readonly property bool m_agl_failure: m_pwr_agl && !m_agl_src
 
     readonly property real m_cmd_lat: mandala.cmd.pos.lat.value

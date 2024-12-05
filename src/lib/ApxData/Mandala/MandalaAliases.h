@@ -171,7 +171,7 @@ const std::map<std::string, mandala::uid_t> ALIAS_MAP = {
     malias<mandala::sns::nav::agl::status>("status_agl"),
     malias<mandala::sns::env::com::status>("status_modem"),
 
-    // malias<mandala::est::nav::ahrs::rest>("status_landed"),
+    // malias<mandala::est::nav::ins::rest>("status_landed"),
     // malias<mandala::sns::env::aux::fgear>("status_touch"),
 
     // malias<mandala::sns::env::pwr::error>("error_power"),
@@ -185,8 +185,8 @@ const std::map<std::string, mandala::uid_t> ALIAS_MAP = {
     malias<mandala::cmd::nav::eng::ovr>("cmode_throvr"),
     // malias<mandala::cmd::nav::proc::hover>("cmode_hover"),
     // malias<mandala::cmd::nav::proc::yaw>("cmode_hyaw"),
-    malias<mandala::cmd::nav::ahrs::nogps>("cmode_ahrs"),
-    malias<mandala::cmd::nav::ahrs::nomag>("cmode_nomag"),
+    malias<mandala::cmd::nav::ins::nogps>("cmode_ahrs"),
+    malias<mandala::cmd::nav::ins::nomag>("cmode_nomag"),
 
     malias<mandala::ctr::env::pwr::ap>("power_ap"),
     malias<mandala::ctr::env::pwr::servo>("power_servo"),

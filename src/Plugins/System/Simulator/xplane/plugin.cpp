@@ -128,7 +128,7 @@ void parse_sensors(void)
     float dt = elapsed - elapsed_s;
     elapsed_s = elapsed;
 
-    // AHRS
+    // INS
     sim_bundle.att_deg[0] = XPLMGetDataf(xp.roll);
     sim_bundle.att_deg[1] = XPLMGetDataf(xp.pitch);
     sim_bundle.att_deg[2] = XPLMGetDataf(xp.yaw);

@@ -22,7 +22,7 @@ The navigation module communicates with the APX Autopilot via a set of predefine
 - **Bank Angle Hold**: Maintain a fixed bank angle, such as a specific roll.
 - **Line Path Following**: Follow a linear path based on a point and azimuth.
 
-This fundamental command set can be extended to meet unique operational needs. All commands adhere to safety protocols managed by the APX Autopilot and GCS operator. The onboard scripting engine also allows custom control loops to run at AHRS loop frequency (>100Hz), enabling more complex navigation algorithms to be implemented and executed flexibly.
+This fundamental command set can be extended to meet unique operational needs. All commands adhere to safety protocols managed by the APX Autopilot and GCS operator. The onboard scripting engine also allows custom control loops to run at INS loop frequency (>100Hz), enabling more complex navigation algorithms to be implemented and executed flexibly.
 
 ### Safety and Direct Control Limitations
 

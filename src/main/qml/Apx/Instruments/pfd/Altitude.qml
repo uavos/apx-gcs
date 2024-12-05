@@ -30,14 +30,14 @@ ControlArea {
     readonly property var f_altitude: mandala.est.pos.altitude
     readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
-    readonly property var f_ahrs_dh: mandala.est.ahrs.dh
+    readonly property var f_ins_dh: mandala.est.ins.dh
 
     readonly property var f_agl: mandala.est.pos.agl
-    readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
+    readonly property bool m_ins_hagl: mandala.cmd.ins.hagl.value
 
     readonly property int m_agl_status: mandala.sns.agl.status.value
 
-    readonly property bool m_agl_valid: m_ahrs_hagl
+    readonly property bool m_agl_valid: m_ins_hagl
 
 
 
@@ -194,7 +194,7 @@ ControlArea {
     PfdImage {
         id: altitude_triangle
 
-        readonly property real v: f_ahrs_dh.value
+        readonly property real v: f_ins_dh.value
 
         elementName: "altitude-triangle"
         visible: ui.test || apx.datalink.valid
@@ -216,7 +216,7 @@ ControlArea {
             verticalAlignment: Text.AlignVCenter
             font: apx.font_narrow(parent.height)
         }
-        ToolTipArea {text: f_ahrs_dh.descr}
+        ToolTipArea {text: f_ins_dh.descr}
     }
 
     PfdImage {
