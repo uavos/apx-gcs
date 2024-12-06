@@ -30,8 +30,8 @@ import APX.Mission as APX
 
 MissionObject {
     id: waypointItem
-    color: visibleOnMap?Style.cWaypoint:"yellow"
-    textColor: "black"
+    color: visibleOnMap?(alarmed?"#ffdead":Style.cWaypoint):"yellow"
+    textColor: alarmed?"#ff0000":"black"
     fact: modelData
     implicitZ: 50
 
@@ -61,6 +61,32 @@ MissionObject {
 
 
     property bool showDetails: interacting || active || f_distance===0 || (map.metersToPixelsFactor*f_distance)>150
+
+    // Unsafe AGL alarm
+    property var alarmOn: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
+    property var coordinate: fact?fact.coordinate:0
+    property var altitude: fact?fact.child("altitude").value:0
+    property var homeHmsl: mandala.est.ref.hmsl.value
+    property var agl: fact?fact.child("agl").value:0
+    property var elevation: NaN
+
+    onCoordinateChanged: alarmed = alarm()
+    onAltitudeChanged: alarmed = alarm()
+    onHomeHmslChanged: alarmed = alarm()
+    onAlarmOnChanged: alarmed = alarm()
+    
+    function alarm() 
+    {   
+        if(!fact)
+            return false
+        if(!alarmOn)
+            return false
+        elevation = apx.tools.elevationmap.getElevationByCoordinate(coordinate)
+        if(isNaN(elevation))
+            return false
+        agl = homeHmsl + altitude - elevation
+        return agl < fact.unsafeAgl
+    }
 
     //property bool pathVisibleOnMap: true
     //property Item pathItem

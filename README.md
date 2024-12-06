@@ -29,6 +29,7 @@ GCS project uses [APX Shared Library](https://github.com/uavos/apx-lib) submodul
 - [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
 - [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
 - [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
+- [GDAL](https://gdal.org) - required for elevation map files processing;
 - [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation in [Dockerfile](https://github.com/uavos/apx-gcs/blob/main/Dockerfile);
 
 ### CMAKE build

@@ -48,6 +48,7 @@ Runway::Runway(MissionGroup *parent)
                               Int);
     f_hmsl->setUnits("m");
     f_hmsl->setEnumStrings(QStringList() << "default");
+    f_hmsl->setOpt("extrainfo", "ExtraInfoElevation.qml");
 
     f_dN = new MissionField(this, "dN", tr("Delta North"), tr("Runway direction point (north)"), Int);
     f_dN->setUnits("m");
