@@ -467,7 +467,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
 
         //write values
         int dcnt = 0;
-        for (auto const &key : _values.keys()) {
+        for (const auto &key : _values.keys()) {
             quint64 fieldID = fieldsMap.value(key, 0);
             if (!fieldID) {
                 qWarning() << "missing field" << key;
@@ -476,7 +476,7 @@ bool DBReqSaveNodeConfig::run(QSqlQuery &query)
             const QVariant &v = _values.value(key);
             if (v.typeId() == QMetaType::QVariantList) {
                 int subidx = 0;
-                for (auto const &i : v.value<QVariantList>()) {
+                for (const auto &i : v.value<QVariantList>()) {
                     quint64 valueID = getValueID(query, i);
                     if (!valueID)
                         return false;

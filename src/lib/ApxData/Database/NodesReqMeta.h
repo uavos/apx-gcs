@@ -21,39 +21,41 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
-#include <QtCore>
+#include "NodesReq.h"
 
-class NodeItem;
+namespace db {
+namespace nodes {
 
-class NodeStorage : public QObject
+class SaveFieldMeta : public Request
 {
     Q_OBJECT
 public:
-    explicit NodeStorage(NodeItem *node);
+    explicit SaveFieldMeta(const QJsonObject &jso)
+        : _jso(jso)
+    {}
 
-    auto configID() const { return _configID; }
+    bool run(QSqlQuery &query);
 
 private:
-    NodeItem *_node;
-    quint64 _configID{};
+    const QJsonObject _jso;
+};
+class LoadFieldMeta : public Request
+{
+    Q_OBJECT
+public:
+    explicit LoadFieldMeta(QStringList names)
+        : _names(names)
+    {}
 
-    QStringList get_names(Fact *f, QStringList path = QStringList());
+    bool run(QSqlQuery &query);
 
-private slots:
-    void dictMetaLoaded(QJsonObject jso);
-
-public slots:
-    void saveNodeInfo();
-    void saveNodeDict();
-    void saveNodeConfig();
-
-    void loadNodeConfig(QString hash = QString()); // will load most recent by default
-
-    void updateConfigID(quint64 configID);
-
-    void loadNodeMeta();
+private:
+    QJsonObject _jso;
+    QStringList _names;
 
 signals:
-    void configSaved();
+    void dictMetaLoaded(QJsonObject jso);
 };
+
+} // namespace nodes
+} // namespace db

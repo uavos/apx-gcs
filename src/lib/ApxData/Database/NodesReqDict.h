@@ -21,39 +21,54 @@
  */
 #pragma once
 
-#include <Fact/Fact.h>
-#include <QtCore>
+#include "NodesReq.h"
 
-class NodeItem;
+namespace db {
+namespace nodes {
 
-class NodeStorage : public QObject
+class NodeSaveDict : public RequestNode
 {
     Q_OBJECT
 public:
-    explicit NodeStorage(NodeItem *node);
+    explicit NodeSaveDict(const QString &uid, const QJsonObject &dict)
+        : RequestNode(uid)
+        , _dict(dict)
+    {}
 
-    auto configID() const { return _configID; }
+    bool run(QSqlQuery &query);
 
 private:
-    NodeItem *_node;
-    quint64 _configID{};
+    const QJsonObject _dict;
+};
 
-    QStringList get_names(Fact *f, QStringList path = QStringList());
+class NodeLoadDict : public RequestNode
+{
+    Q_OBJECT
+public:
+    explicit NodeLoadDict(const QString &uid, const QString &hash)
+        : RequestNode(uid)
+        , _hash(hash)
+    {}
 
-private slots:
-    void dictMetaLoaded(QJsonObject jso);
+    explicit NodeLoadDict(quint64 dictID)
+        : RequestNode(QString())
+        , _dictID(dictID)
+    {}
 
-public slots:
-    void saveNodeInfo();
-    void saveNodeDict();
-    void saveNodeConfig();
+    bool run(QSqlQuery &query);
 
-    void loadNodeConfig(QString hash = QString()); // will load most recent by default
+    const auto &dict() const { return _dict; }
 
-    void updateConfigID(quint64 configID);
+private:
+    QString _hash;
+    quint64 _dictID{};
 
-    void loadNodeMeta();
+    QJsonObject _dict;
 
 signals:
-    void configSaved();
+    void dictLoaded(QJsonObject dict);
+    void dictMissing(QString hash);
 };
+
+} // namespace nodes
+} // namespace db

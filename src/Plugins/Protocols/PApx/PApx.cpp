@@ -81,8 +81,8 @@ void PApx::process_downlink(QByteArray packet)
             return;
         if (stream.available() <= sizeof(xbus::unit::squawk_t))
             return;
-        auto const squawk = stream.read<xbus::unit::squawk_t>();
-        auto const squawkText = PApx::squawkText(squawk);
+        const auto squawk = stream.read<xbus::unit::squawk_t>();
+        const auto squawkText = PApx::squawkText(squawk);
 
         trace()->block(squawkText);
 
@@ -195,7 +195,7 @@ void PApx::process_downlink(QByteArray packet)
             return;
         }
 
-        auto *v = _squawk_map.value(squawk);
+        auto v = _squawk_map.value(squawk);
         if (v) {
             if (!check_vuid(v, vuid_n, pid.seq))
                 return;
@@ -235,7 +235,7 @@ void PApx::process_downlink(QByteArray packet)
         if (stream.available() <= xbus::pid_s::psize())
             return;
 
-        auto *v = _squawk_map.value(squawk);
+        auto v = _squawk_map.value(squawk);
         if (!v)
             return;
 

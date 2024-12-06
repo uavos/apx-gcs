@@ -252,13 +252,18 @@ QString NodeItem::toolTip() const
     if (!_ident.isEmpty()) {
         st << "";
         st << "[ident]";
-        for (const auto [key, value] : _ident.asKeyValueRange()) {
-            QString s(value.toString().trimmed());
-            if (s.isEmpty())
-                s = QJsonDocument::fromVariant(value).toJson();
+        for (auto it = _ident.begin(); it != _ident.end(); ++it) {
+            const auto value = it.value();
+            QString s;
+            if (value.isObject())
+                s = QJsonDocument(value.toObject()).toJson(QJsonDocument::Compact);
+            else if (value.isArray())
+                s = QJsonDocument(value.toArray()).toJson(QJsonDocument::Compact);
+            else
+                s = value.toVariant().toString().trimmed();
             if (s.isEmpty())
                 continue;
-            st.append(QString("%1: %2").arg(key, s));
+            st.append(QString("%1: %2").arg(it.key(), s));
         }
     }
     return st.join('\n');
@@ -439,18 +444,6 @@ void NodeItem::linkGroupValues(Fact *f)
     }
 }
 
-QVariantMap NodeItem::get_info() const
-{
-    QVariantMap m;
-    m.insert("uid", _ident.value("uid"));
-    m.insert("name", _ident.value("name"));
-    m.insert("version", _ident.value("version"));
-    m.insert("hardware", _ident.value("hardware"));
-    m.insert("user", _ident.value("user"));
-    if (_lastSeenTime)
-        m.insert("time", _lastSeenTime);
-    return m;
-}
 QVariantMap NodeItem::get_dict() const
 {
     return _dict;
@@ -466,7 +459,7 @@ QVariantMap NodeItem::get_values() const
 QVariant NodeItem::toVariant()
 {
     QVariantMap m;
-    m.insert("info", get_info());
+    m.insert("info", _ident.toVariantMap());
     m.insert("dict", get_dict());
     m.insert("values", get_values());
     m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
@@ -478,12 +471,13 @@ void NodeItem::fromVariant(const QVariant &var)
     if (m.isEmpty())
         return;
 
-    auto info = m.value("info").value<QVariantMap>();
-    auto dict = m.value("dict").value<QVariantMap>();
     auto values = m.value("values").value<QVariantMap>();
 
     if (!valid()) {
         // construct the whole node
+        auto info = QJsonObject::fromVariantMap(m.value("info").value<QVariantMap>());
+        auto dict = m.value("dict").value<QVariantMap>();
+
         identReceived(info);
         dictReceived(dict);
         confReceived(values);
@@ -549,18 +543,13 @@ NodeField *NodeItem::field(QString name) const
 
 // Protocols connection
 
-void NodeItem::identReceived(QVariantMap ident)
+void NodeItem::identReceived(QJsonObject ident)
 {
     if (ident.isEmpty())
         return;
 
-    if (!ident.contains("user")) {
-        QVariantMap user;
-        user.insert("machineUID", App::machineUID());
-        user.insert("username", App::username());
-        user.insert("hostname", App::hostname());
-        ident.insert("user", user);
-    }
+    if (!ident.contains("host"))
+        ident["host"] = App::host();
 
     if (_ident == ident && valid())
         return;
@@ -614,7 +603,7 @@ void NodeItem::dictReceived(QVariantMap dict)
     auto fields = dict.value("fields").value<QVariantList>();
 
     xbus::node::usr::cmd_t cmd_cnt = 0;
-    for (auto const &i : fields) {
+    for (const auto &i : fields) {
         auto field = i.value<QVariantMap>();
         QString name = field.value("name").toString();
         QString title = field.value("title").toString();

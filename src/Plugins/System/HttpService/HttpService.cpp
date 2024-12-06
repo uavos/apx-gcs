@@ -192,7 +192,7 @@ QString HttpService::reply_mandala(const QString &req)
 
     // collect requested facts
     QList<MandalaFact *> facts;
-    for (auto const &s : rlist) {
+    for (const auto &s : rlist) {
         MandalaFact *f = nullptr;
         if (s.startsWith("descr")) {
             doDescr = true;

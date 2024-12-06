@@ -21,12 +21,14 @@
  */
 #pragma once
 
+#include "DatabaseRequest.h"
 #include "DatabaseWorker.h"
 
 #include <App/App.h>
 #include <App/AppDirs.h>
 
 #include <ApxMisc/DelayedEvent.h>
+#include <ApxMisc/JsonHelpers.h>
 #include <Fact/Fact.h>
 
 #include <QMutex>

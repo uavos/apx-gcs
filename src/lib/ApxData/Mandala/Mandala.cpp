@@ -133,7 +133,7 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
 
 mandala::uid_t Mandala::uid(const QString &mpath) // static
 {
-    for (auto const &d : mandala::meta) {
+    for (const auto &d : mandala::meta) {
         if (d.path == mpath)
             return d.uid;
     }
@@ -161,7 +161,7 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
 
 const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
 {
-    for (auto const &d : mandala::meta) {
+    for (const auto &d : mandala::meta) {
         if (d.uid == uid)
             return d;
     }
@@ -171,7 +171,7 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
 void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 {
     PBase::Values rec_values;
-    for (auto const [uid, v] : values) {
+    for (const auto [uid, v] : values) {
         MandalaFact *f = fact(uid);
         if (!f)
             continue;
@@ -185,7 +185,7 @@ void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 void Mandala::valuesData(PBase::Values values)
 {
     PBase::Values rec_values;
-    for (auto const [uid, v] : values) {
+    for (const auto [uid, v] : values) {
         MandalaFact *f = fact(uid);
         if (!f)
             continue;

@@ -37,7 +37,7 @@ void UnitStorage::saveUnitInfo()
     if (m.isEmpty())
         return;
 
-    auto *req = new DBReqSaveUnitInfo(m.toVariantMap());
+    auto req = new DBReqSaveUnitInfo(m.toVariantMap());
     req->exec();
 }
 
@@ -63,7 +63,7 @@ void UnitStorage::saveUnitConfig()
     auto vuid = _unit->uid();
     auto title = nodes->getConfigTitle();
 
-    auto *req = new DBReqSaveUnitConfig(vuid, nconfIDs, title);
+    auto req = new DBReqSaveUnitConfig(vuid, nconfIDs, title);
     connect(req,
             &DBReqSaveUnitConfig::configSaved,
             this,
@@ -74,7 +74,7 @@ void UnitStorage::saveUnitConfig()
 
 void UnitStorage::loadUnitConfig(QString hash)
 {
-    auto *req = new DBReqLoadUnitConfig(hash);
+    auto req = new DBReqLoadUnitConfig(hash);
     connect(req,
             &DBReqLoadUnitConfig::configLoaded,
             this,
@@ -97,6 +97,6 @@ void UnitStorage::configLoaded(QVariantMap config)
 
 void UnitStorage::importUnitConfig(QVariantMap config)
 {
-    auto *req = new DBReqImportUnitConfig(config);
+    auto req = new DBReqImportUnitConfig(config);
     req->exec();
 }

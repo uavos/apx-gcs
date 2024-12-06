@@ -45,7 +45,7 @@ public:
 
     static QString uidText(const xbus::unit::uid_t *uid_raw);
 
-    auto const &vuid() const { return _vuid; }
+    const auto &vuid() const { return _vuid; }
     bool check_vuid(uint8_t n, uint8_t seq) const;
 
 private:

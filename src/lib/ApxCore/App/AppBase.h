@@ -23,6 +23,7 @@
 #pragma once
 
 #include <QApplication>
+#include <QtCore>
 
 #include "RunGuard.h"
 
@@ -45,6 +46,7 @@ public:
     Q_INVOKABLE static QString machineUID() { return _instance->m_machineUID; }
     Q_INVOKABLE static QString hostname() { return _instance->m_hostname; }
     Q_INVOKABLE static QString username() { return _instance->m_username; }
+    Q_INVOKABLE static const auto &host() { return _instance->m_host; }
 
     Q_INVOKABLE static bool dryRun() { return _instance->m_dryRun; }
     Q_INVOKABLE static bool segfault() { return _instance->m_segfault; }
@@ -72,6 +74,8 @@ private:
     QString m_machineUID;
     QString m_hostname;
     QString m_username;
+
+    QJsonObject m_host;
 
     bool m_bundle{};
     bool m_installed{};

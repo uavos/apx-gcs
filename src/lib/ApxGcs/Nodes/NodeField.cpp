@@ -60,7 +60,7 @@ NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, Nod
             item.insert("name", QString("%1_%2").arg(_fpath).arg(s.toLower()));
             item.insert("title", s);
             item.insert("array", i);
-            auto *f = new NodeField(this, node, item, id, this);
+            auto f = new NodeField(this, node, item, id, this);
             connect(f,
                     &Fact::valueChanged,
                     this,

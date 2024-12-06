@@ -80,7 +80,7 @@ signals:
     void messageReceived(PNode::msg_type_e type, QString msg);
 
     // hash of node identity, title, version, hardware, etc
-    void identReceived(QVariantMap ident);
+    void identReceived(QJsonObject ident);
 
     // list of QVariantMap describing fields {name, type, array, etc}
     void dictReceived(QVariantMap dict);

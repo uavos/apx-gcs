@@ -38,12 +38,12 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
     , _req(this)
 {
     // store ident to parse dict
-    connect(this, &PNode::identReceived, this, [this](QVariantMap ident) {
+    connect(this, &PNode::identReceived, this, [this](QJsonObject ident) {
         _dict_hash = ident.value("hash").toString();
     });
 
     // get node info guess from cache
-    auto *req = new DBReqLoadNodeInfo(uid);
+    auto req = new DBReqLoadNodeInfo(uid);
     connect(req,
             &DBReqLoadNodeInfo::infoLoaded,
             this,
@@ -341,7 +341,7 @@ void PApxNode::requestDict()
         return;
     }
 
-    auto *req = new DBReqLoadNodeDict(uid(), _dict_hash);
+    auto req = new DBReqLoadNodeDict(uid(), _dict_hash);
     connect(req,
             &DBReqLoadNodeDict::dictLoaded,
             this,

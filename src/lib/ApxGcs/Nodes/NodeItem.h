@@ -51,11 +51,11 @@ public:
     auto uid() const { return _protocol ? _protocol->uid() : _ident.value("uid").toString(); }
     auto protocol() const { return _protocol; }
 
-    auto const &fields() const { return m_fields; }
+    const auto &fields() const { return m_fields; }
     NodeField *field(QString name) const;
 
-    auto nodes() const { return _nodes; }
-    auto ident() const { return _ident; }
+    const auto &nodes() const { return _nodes; }
+    const auto &ident() const { return _ident; }
 
     QString label() const { return _status_field ? _status_field->valueText().trimmed() : ""; }
 
@@ -66,7 +66,6 @@ public:
                                                             | AppNotify::Important);
 
     // variant conversions
-    QVariantMap get_info() const;
     QVariantMap get_dict() const;
     QVariantMap get_values() const;
 
@@ -87,7 +86,7 @@ private:
     Unit *_unit;
     PNode *_protocol;
 
-    QVariantMap _ident;
+    QJsonObject _ident;
     QVariantMap _dict;
 
     QList<NodeField *> m_fields;
@@ -120,7 +119,7 @@ public slots:
     void importValues(QVariantMap values);
 
     //protocols:
-    void identReceived(QVariantMap ident);
+    void identReceived(QJsonObject ident);
     void dictReceived(QVariantMap dict);
     void confReceived(QVariantMap values);
     void confUpdated(QVariantMap values);

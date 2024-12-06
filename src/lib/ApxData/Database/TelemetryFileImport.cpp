@@ -137,7 +137,7 @@ QJsonValue TelemetryFileImport::import_js(QXmlStreamReader &xml,
     QHash<QString, QJsonArray> arrays;
     QJsonObject jso;
     // read attributes
-    for (auto const &attr : xml.attributes()) {
+    for (const auto &attr : xml.attributes()) {
         jso[attr.name().toString()] = attr.value().toString();
     }
 
@@ -395,7 +395,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
             if (tag == "D") {
                 TelemetryFileWriter::Values values;
                 size_t i = 0;
-                for (auto const &s : xml.readElementText().split(',', Qt::KeepEmptyParts)) {
+                for (const auto &s : xml.readElementText().split(',', Qt::KeepEmptyParts)) {
                     if (s.isEmpty()) {
                         i++;
                         continue;
@@ -429,7 +429,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
                 const auto name = xml.attributes().value("name").toString();
                 // find field index by name
                 int field_index = -1;
-                for (auto const &f : fields) {
+                for (const auto &f : fields) {
                     field_index++;
                     if (f == name)
                         break;

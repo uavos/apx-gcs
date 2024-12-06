@@ -182,11 +182,7 @@ QJsonObject TelemetryRecorder::prepareFileInfo()
     sw["hash"] = App::git_hash();
     info["sw"] = sw;
 
-    QJsonObject host;
-    host["hostname"] = App::hostname();
-    host["username"] = App::username();
-    host["uid"] = App::machineUID();
-    info["host"] = host;
+    info["host"] = App::host();
 
     return info;
 }
@@ -194,7 +190,7 @@ QJsonObject TelemetryRecorder::prepareFileInfo()
 TelemetryFileWriter::Values TelemetryRecorder::prepareValues(const PBase::Values &values) const
 {
     TelemetryFileWriter::Values vlist;
-    for (auto const [uid, value] : values) {
+    for (const auto [uid, value] : values) {
         auto it = _fields_map.find(uid);
         if (it == _fields_map.end()) {
             qWarning() << "field not found" << uid << value << _fields_map.size();

@@ -94,12 +94,16 @@ protected:
                            const QString &tail = QString()) const;
 
     static QStringList fieldNames(QSqlQuery &query);
+
     static QVariantList values(QSqlQuery &query, const QStringList &names);
+    static QJsonObject record_to_json(const QSqlRecord &record, const QStringList &names);
+
     Records queryRecords(QSqlQuery &query) const;
     QVariantMap queryRecord(QSqlQuery &query, QVariantMap info = QVariantMap()) const;
 
     void getHash(QCryptographicHash &h, const Records &records) const;
     void getHash(QCryptographicHash &h, const QVariantMap &map) const;
+    void getHash(QCryptographicHash &h, const QJsonValue &jsv) const;
     void getHash(QCryptographicHash &h, QSqlQuery &query) const;
 
 private:

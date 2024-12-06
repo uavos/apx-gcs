@@ -213,7 +213,7 @@ void Simulator::launchXplane()
             if (dir.isEmpty())
                 apxMsgW() << tr("XPL Plugin not found");
 
-            for (auto const &fiSource : dir.entryInfoList()) {
+            for (const auto &fiSource : dir.entryInfoList()) {
                 QString destPath = d.absoluteFilePath(fiSource.fileName());
                 QFileInfo fiDest(destPath);
 

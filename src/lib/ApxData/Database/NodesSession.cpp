@@ -87,20 +87,15 @@ Session::Session(QObject *parent, QString sessionName)
     new DBReqMakeIndex(this, "NodeDictStruct", "fieldIndex", false);
 
     new DBReqMakeTable(this,
-                       "NodeMeta",
+                       "NodeFieldMeta",
                        {
                            // fields metadata cache
                            "key INTEGER PRIMARY KEY NOT NULL",
-                           "name TEXT NOT NULL",
-                           "version TEXT",
-                           "descr TEXT",
-                           "def TEXT",
-                           "decimal INTEGER",
-                           "min REAL",
-                           "max REAL",
-                           "increment REAL",
+                           "name TEXT NOT NULL", // unique
+                           "version INTEGER NOT NULL",
+                           "meta TEXT NOT NULL",
                        });
-    new DBReqMakeIndex(this, "NodeMeta", "name", true);
+    new DBReqMakeIndex(this, "NodeFieldMeta", "name", true);
 
     //Node parameters
     new DBReqMakeTable(this,
@@ -191,5 +186,5 @@ Session::Session(QObject *parent, QString sessionName)
 }
 
 Request::Request()
-    : DatabaseRequest(Database::instance()->storage)
+    : DatabaseRequest(Database::instance()->nodes)
 {}

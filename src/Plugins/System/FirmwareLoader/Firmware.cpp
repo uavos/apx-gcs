@@ -168,7 +168,7 @@ void Firmware::requestUpgrade(QString uid, QString name, QString hw, QString typ
 {
     qDebug() << uid << type << name;
 
-    auto *f = queued(f_available, uid);
+    auto f = queued(f_available, uid);
     if (f)
         f->deleteFact();
 

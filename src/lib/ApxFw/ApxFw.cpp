@@ -26,7 +26,8 @@
 
 #include "quazip/JlCompress.h"
 
-#include <Database/FleetReqNode.h>
+#include <ApxMisc/JsonHelpers.h>
+#include <Database/NodesReqMeta.h>
 
 // TODO collect and display changelog based on minimum node version
 // see https://doc.qt.io/qt-5/qtwebengine-webenginewidgets-markdowneditor-example.html
@@ -696,7 +697,7 @@ QJsonArray ApxFw::loadParameters(QString nodeName, QString hw)
 
 void ApxFw::updateNodesMeta(QDir dir)
 {
-    QVariantMap meta;
+    QJsonObject meta;
 
     for (auto fi : dir.entryInfoList(QStringList() << "*.apxfw", QDir::Files)) {
         if (fi.suffix() != "apxfw")
@@ -738,24 +739,29 @@ void ApxFw::updateNodesMeta(QDir dir)
         if (!json.isArray())
             continue;
 
-        for (auto i : json.array()) {
-            updateNodesMeta(meta, version, i, QStringList());
+        for (const auto &i : json.array()) {
+            updateNodesMeta(&meta, version, i, QStringList());
         }
     }
+
+    meta = json::filter_names(meta);
     if (meta.isEmpty())
         return;
 
     // push to DB
-    auto *req = new DBReqSaveNodeMeta(meta);
+    auto req = new db::nodes::SaveFieldMeta(meta);
     req->exec();
 }
 
-void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json, QStringList path)
+void ApxFw::updateNodesMeta(QJsonObject *meta,
+                            QString version,
+                            const QJsonValue &jsv,
+                            QStringList path)
 {
-    if (!json.isObject())
+    if (!jsv.isObject())
         return;
 
-    auto jso = json.toObject();
+    const auto jso = jsv.toObject();
     if (!jso.contains("name"))
         return;
     auto name = jso.value("name").toString();
@@ -766,19 +772,19 @@ void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json,
 
     bool is_group = jso.contains("content");
 
-    auto m = meta.value(name).value<QVariantMap>();
+    auto m = (*meta)[name].toObject();
 
     do {
         if (m.contains("version")) {
             auto mver = QVersionNumber::fromString(m.value("version").toString());
             auto nver = QVersionNumber::fromString(version);
             if (nver < mver)
-                break;
-            m.clear();
+                break; // downgrade not allowed
+            m = {};
         }
 
-        auto descr = jso.value("descr").toString();
-        auto title = jso.value("title").toString();
+        auto descr = jso["descr"].toString();
+        auto title = jso["title"].toString();
 
         if (!is_group) {
             if (descr.isEmpty()) {
@@ -791,43 +797,38 @@ void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json,
         descr = descr.trimmed();
 
         if (descr.isEmpty())
-            descr = m.value("descr").toString();
+            descr = m["descr"].toString();
 
-        m.insert("version", version);
-        m.insert("descr", descr);
+        m["version"] = version;
+        m["descr"] = descr;
 
         // default values
         if (jso.contains("default")) {
-            auto def = jso.value("default");
+            auto def = jso["default"];
             if (def.isObject()) {
-                auto jsdef = def.toObject();
-                for (auto key : jsdef.keys()) {
-                    auto kname = name + "." + key;
-                    auto km = meta.value(kname).value<QVariantMap>();
-                    auto v = jsdef.value(key).toVariant();
-                    km.insert("def", v);
-                    meta.insert(kname, km);
+                // expand object defaults to separate sub fields
+                const auto jsdef = def.toObject();
+                for (auto it = jsdef.begin(); it != jsdef.end(); ++it) {
+                    auto s = name + "." + it.key();
+                    (*meta)[s] = (*meta)[s].toObject()["def"] = it.value();
                 }
             } else {
-                auto v = def.toVariant();
-                m.insert("def", v);
+                m["def"] = def;
             }
         }
 
         for (auto n : {"min", "max", "increment", "decimal"}) {
-            if (jso.contains(n)) {
-                m.insert(n, jso.value(n).toVariant());
-            }
+            m[n] = jso[n];
         }
 
-        meta.insert(name, m);
+        (*meta)[name] = m;
     } while (0);
 
     // parse child objects
     if (!is_group)
         return;
 
-    for (auto v : jso.value("content").toArray()) {
+    for (const auto &v : jso["content"].toArray()) {
         updateNodesMeta(meta, version, v, path);
     }
 }

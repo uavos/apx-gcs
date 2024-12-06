@@ -24,6 +24,11 @@
 
 #include <Database/FleetReqNode.h>
 
+#include <Database/NodesReqConf.h>
+#include <Database/NodesReqDict.h>
+#include <Database/NodesReqMeta.h>
+#include <Database/NodesReqUnit.h>
+
 NodeStorage::NodeStorage(NodeItem *node)
     : QObject(node)
     , _node(node)
@@ -31,11 +36,13 @@ NodeStorage::NodeStorage(NodeItem *node)
 
 void NodeStorage::saveNodeInfo()
 {
-    auto info = _node->get_info();
+    auto info = _node->ident();
     if (info.isEmpty())
         return;
 
-    auto *req = new DBReqSaveNodeInfo(info);
+    info["time"] = QDateTime::currentDateTime().toMSecsSinceEpoch();
+
+    auto req = new db::nodes::NodeSaveInfo(info);
     req->exec();
 }
 
@@ -47,7 +54,7 @@ void NodeStorage::saveNodeDict()
         return;
     }
 
-    auto *req = new DBReqSaveNodeDict(_node->uid(), dict);
+    auto req = new DBReqSaveNodeDict(_node->uid(), dict);
     req->exec();
 }
 
@@ -59,7 +66,7 @@ void NodeStorage::saveNodeConfig()
         qWarning() << "no dict hash";
         return;
     }
-    auto *req = new DBReqSaveNodeConfig(_node->uid(), hash, _node->get_values());
+    auto req = new DBReqSaveNodeConfig(_node->uid(), hash, _node->get_values());
     connect(req,
             &DBReqSaveNodeConfig::configSaved,
             this,
@@ -76,7 +83,7 @@ void NodeStorage::updateConfigID(quint64 configID)
 
 void NodeStorage::loadNodeConfig(QString hash)
 {
-    auto *req = new DBReqLoadNodeConfig(_node->uid(), hash);
+    auto req = new DBReqLoadNodeConfig(_node->uid(), hash);
     connect(req,
             &DBReqLoadNodeConfig::configLoaded,
             _node,
@@ -87,11 +94,11 @@ void NodeStorage::loadNodeConfig(QString hash)
 
 void NodeStorage::loadNodeMeta()
 {
-    auto *req = new DBReqLoadNodeMeta(get_names(_node));
+    auto req = new db::nodes::LoadFieldMeta(get_names(_node));
     connect(req,
-            &DBReqLoadNodeMeta::metaDataLoaded,
+            &db::nodes::LoadFieldMeta::dictMetaLoaded,
             this,
-            &NodeStorage::metaDataLoaded,
+            &NodeStorage::dictMetaLoaded,
             Qt::QueuedConnection);
     req->exec();
 }
@@ -106,21 +113,23 @@ QStringList NodeStorage::get_names(Fact *f, QStringList path)
     }
     return names;
 }
-void NodeStorage::metaDataLoaded(QVariantMap meta)
+void NodeStorage::dictMetaLoaded(QJsonObject jso)
 {
     QElapsedTimer timer;
     timer.start();
 
     uint cnt = 0;
-    for (auto name : meta.keys()) {
+    for (auto it = jso.begin(); it != jso.end(); ++it) {
+        const auto name = it.key();
+        const auto meta = it.value().toObject();
+
         auto f = _node->findChild(name);
         if (!f)
             continue;
 
         cnt++;
 
-        auto m = meta.value(name).value<QVariantMap>();
-        auto descr = m.value("descr").toString();
+        auto descr = meta["descr"].toString();
 
         descr = descr.left(descr.indexOf('\n'));
         descr = descr.left(descr.indexOf('.'));
@@ -131,11 +140,11 @@ void NodeStorage::metaDataLoaded(QVariantMap meta)
         if (!nf)
             continue;
 
-        auto def = m.value("def");
-        auto min = m.value("min");
-        auto max = m.value("max");
-        auto increment = m.value("increment");
-        auto decimal = m.value("decimal");
+        auto def = meta["def"];
+        auto min = meta["min"];
+        auto max = meta["max"];
+        auto increment = meta["increment"];
+        auto decimal = meta["decimal"];
 
         if (!def.isNull())
             nf->setDefaultValue(def);

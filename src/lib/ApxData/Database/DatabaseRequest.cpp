@@ -225,10 +225,21 @@ QStringList DatabaseRequest::fieldNames(QSqlQuery &query)
 QVariantList DatabaseRequest::values(QSqlQuery &query, const QStringList &names)
 {
     QVariantList v;
-    for (auto const &n : names) {
+    for (const auto &n : names) {
         v.append(query.value(n));
     }
     return v;
+}
+QJsonObject DatabaseRequest::record_to_json(const QSqlRecord &record, const QStringList &names)
+{
+    QJsonObject jso;
+    for (auto i = 0; i < record.count(); ++i) {
+        auto n = record.fieldName(i);
+        if (!names.isEmpty() && !names.contains(n))
+            continue;
+        jso[n] = QJsonValue::fromVariant(record.value(i));
+    }
+    return jso;
 }
 
 DatabaseRequest::Records DatabaseRequest::queryRecords(QSqlQuery &query) const
@@ -277,19 +288,39 @@ void DatabaseRequest::getHash(QCryptographicHash &h, const Records &records) con
         }
     }
 }
+
 void DatabaseRequest::getHash(QCryptographicHash &h, const QVariantMap &map) const
 {
     foreach (QString s, map.keys()) {
         h.addData(s.toUtf8());
         const QVariant &v = map.value(s);
         if (v.typeId() == QMetaType::QVariantList) {
-            for (auto const &i : v.value<QVariantList>())
+            for (const auto &i : v.value<QVariantList>())
                 h.addData(i.toString().toUtf8());
         } else {
             h.addData(v.toString().toUtf8());
         }
     }
 }
+
+void DatabaseRequest::getHash(QCryptographicHash &h, const QJsonValue &jsv) const
+{
+    if (jsv.isObject()) {
+        auto jso = jsv.toObject();
+        for (auto i = jso.begin(); i != jso.end(); ++i) {
+            h.addData(i.key().toUtf8());
+            getHash(h, i.value());
+        }
+    } else if (jsv.isArray()) {
+        auto jsa = jsv.toArray();
+        for (auto i = 0; i < jsa.size(); ++i) {
+            getHash(h, jsa.at(i));
+        }
+    } else {
+        h.addData(jsv.toString().toUtf8());
+    }
+}
+
 void DatabaseRequest::getHash(QCryptographicHash &h, QSqlQuery &query) const
 {
     if (!query.next())

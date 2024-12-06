@@ -226,8 +226,8 @@ bool PApxTelemetry::unpack(const xbus::pid_s &pid, PStreamReader &stream)
         if (!flags.upd)
             continue;
         flags.upd = false;
-        auto const &f = decoder.dec_slots().fields[i];
-        auto const &value = decoder.dec_slots().value[i];
+        const auto &f = decoder.dec_slots().fields[i];
+        const auto &value = decoder.dec_slots().value[i];
         values.push_back({f.pid.uid, raw_value(&value, flags.type)});
     }
 

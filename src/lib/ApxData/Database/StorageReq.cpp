@@ -583,7 +583,7 @@ bool TelemetryExport::run(QSqlQuery &query)
             out << fields.join(',') << '\n';
 
             QStringList values;
-            for (auto const &field : fields) {
+            for (const auto &field : fields) {
                 values << "0";
             }
 

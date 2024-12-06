@@ -36,8 +36,7 @@ class TelemetryCreateRecord : public Request
     Q_OBJECT
 public:
     explicit TelemetryCreateRecord(qint64 t, QString fileName, QJsonObject info, bool trash)
-        : Request()
-        , _t(t)
+        : _t(t)
         , _fileName(fileName)
         , _info(info)
         , _trash(trash)
@@ -66,8 +65,7 @@ class TelemetryModelRecordsList : public Request
     Q_OBJECT
 public:
     explicit TelemetryModelRecordsList(QString filter)
-        : Request()
-        , _filter(filter)
+        : _filter(filter)
     {}
 
 protected:
@@ -83,8 +81,7 @@ class TelemetryLoadInfo : public Request
     Q_OBJECT
 public:
     explicit TelemetryLoadInfo(quint64 id)
-        : Request()
-        , _id(id)
+        : _id(id)
     {}
 
 protected:
@@ -101,8 +98,7 @@ class TelemetryModelTrash : public Request
     Q_OBJECT
 public:
     explicit TelemetryModelTrash(quint64 id, bool trash = false)
-        : Request()
-        , _id(id)
+        : _id(id)
         , _trash(trash)
     {}
 
@@ -139,8 +135,7 @@ class TelemetryWriteRecordFields : public Request
     Q_OBJECT
 public:
     explicit TelemetryWriteRecordFields(quint64 telemetryID, QJsonObject info, bool restore = false)
-        : Request()
-        , telemetryID(telemetryID)
+        : telemetryID(telemetryID)
         , info(info)
         , restore(restore)
     {}
@@ -161,8 +156,7 @@ class TelemetryExport : public Request
     Q_OBJECT
 public:
     explicit TelemetryExport(QString format, QString src, QString dst)
-        : Request()
-        , _format(format)
+        : _format(format)
         , _src(src)
         , _dst(dst)
     {}
@@ -183,8 +177,7 @@ class TelemetryImport : public Request
     Q_OBJECT
 public:
     explicit TelemetryImport(QString src)
-        : Request()
-        , _src(src)
+        : _src(src)
     {}
 
 private:

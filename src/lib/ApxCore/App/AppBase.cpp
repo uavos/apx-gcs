@@ -82,6 +82,12 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     }
     m_username = sname;
 
+    m_host = {
+        {"uid", m_machineUID},
+        {"username", m_username},
+        {"hostname", m_hostname},
+    };
+
     // check dry run
     QSettings sx;
     QString lastVer = sx.value("version").toString();

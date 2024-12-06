@@ -826,7 +826,7 @@ void Fact::trackProgress()
 {
     int ncnt = 0, v = 0;
     if (options() & ProgressTrack) {
-        for (auto const f : facts()) {
+        for (const auto f : facts()) {
             int np = f->progress();
             if (np < 0)
                 continue;
