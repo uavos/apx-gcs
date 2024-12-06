@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TileLoader.h"
-#include "MapsDB.h"
 #include <App/AppLog.h>
 #include <App/AppSettings.h>
 #include <Database/Database.h>
@@ -46,11 +45,6 @@ TileLoader::TileLoader(Fact *parent)
                          tr("Disable tiles download"),
                          Bool | PersistentValue,
                          "wifi-off");
-
-    db = new MapsDB(this, QLatin1String("LocationPluginDbSession"));
-
-    connect(db, &MapsDB::tileLoaded, this, &TileLoader::tileLoaded);
-    connect(db, &MapsDB::tileNotExists, this, &TileLoader::download);
 
     net = new QNetworkAccessManager(this);
 
@@ -88,9 +82,61 @@ void TileLoader::updateStatus()
 
 void TileLoader::loadTile(quint64 uid)
 {
-    (new DBReqLoadTile(db, type(uid), dbHash(uid), uid))->exec();
-    //db->reqLoadTile(type(uid),dbHash(uid),uid);
+    //qDebug()<<"Load: "<<uid;
+    if (downloads.contains(uid))
+        return;
+
+    do {
+        auto path = basePath(uid);
+        QMap<int, QString> versions;
+        for (auto i : QDir(path).entryList(QDir::Dirs))
+            versions[i.toInt()] = i;
+        if (versions.isEmpty())
+            break;
+
+        auto level = QString::number(TileLoader::level(uid));
+        auto fileName = TileLoader::basename(uid) + ".jpg";
+        for (auto version : versions) {
+            auto filePath = QStringList({path, version, level, fileName}).join('/');
+            if (!QFile::exists(filePath))
+                continue;
+
+            QFile file(filePath);
+            if (!file.open(QIODevice::ReadOnly))
+                continue;
+
+            auto data = file.readAll();
+            file.close();
+            // qDebug() << "Load tile" << filePath;
+            emit tileLoaded(uid, data);
+            return;
+        }
+
+    } while (0);
+    // file not exists - download
+    emit download(uid);
 }
+void TileLoader::saveTile(quint64 uid, uint version, const QByteArray &data)
+{
+    // create filename
+    QStringList pathList;
+    pathList << basePath(uid);
+    pathList << QString::number(version);
+    pathList << QString::number(level(uid));
+    auto dir = QDir(pathList.join('/'));
+    if (!dir.exists())
+        dir.mkpath(".");
+
+    auto fileName = dir.absoluteFilePath(basename(uid) + ".jpg");
+    QFile file(fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(data);
+        file.close();
+    }
+
+    // qDebug() << "Save tile" << fileName;
+}
+
 void TileLoader::loadCancel(quint64 uid)
 {
     Q_UNUSED(uid)
@@ -266,8 +312,10 @@ void TileLoader::networkReplyFinished()
     if (!checkImage(data)) {
         apxConsoleW() << "Error downloading map (not an image)";
     } else {
-        //db->reqSaveTile(type(uid),dbHash(uid),data);
-        (new DBReqSaveTile(db, type(uid), dbHash(uid), versionGoogleMaps.toUInt(), data))->exec();
+        qDebug() << versionGoogleMaps << data.size()
+                 << reply->header(QNetworkRequest::ContentTypeHeader).toString();
+
+        saveTile(uid, versionGoogleMaps.toUInt(), data);
     }
 
     //qDebug()<<"downloaded"<<uid;

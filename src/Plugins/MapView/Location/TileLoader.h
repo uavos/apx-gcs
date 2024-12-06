@@ -21,10 +21,11 @@
  */
 #pragma once
 
-#include "MapsDB.h"
-#include <Fact/Fact.h>
 #include <QtCore>
 #include <QtNetwork>
+
+#include <App/AppDirs.h>
+#include <Fact/Fact.h>
 
 class TileLoader : public Fact
 {
@@ -57,12 +58,26 @@ public:
     static inline quint32 y(quint64 uid) { return uid & (((quint64) 1 << 24) - 1); }
     static inline quint64 dbHash(quint64 uid) { return uid & (((quint64) 1 << 56) - 1); }
 
+    static auto basename(quint64 uid)
+    {
+        return QString("%1%2")
+            .arg(x(uid), 6, 16, QChar('0'))
+            .arg(y(uid), 6, 16, QChar('0'))
+            .toUpper();
+    }
+    static auto basePath(quint64 uid)
+    {
+        return AppDirs::storage().absoluteFilePath(
+            QStringList(
+                {"maps", "google", QString(QMetaEnum::fromType<MapID>().valueToKey(type(uid)))})
+                .join('/'));
+    }
+
 protected:
     void updateStatus();
 
 private:
     static TileLoader *_instance;
-    MapsDB *db;
 
     //downloader
     QNetworkAccessManager *net;
@@ -83,6 +98,8 @@ private:
 
     int requestCount() { return reqMap.size(); }
 
+    QString getFileName(quint64 uid);
+
 private slots:
     void download(quint64 uid);
 
@@ -92,6 +109,7 @@ private slots:
 
 public slots:
     void loadTile(quint64 uid);
+    void saveTile(quint64 uid, uint version, const QByteArray &data);
     void loadCancel(quint64 uid);
     void abort();
 
