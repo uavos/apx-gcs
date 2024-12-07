@@ -285,7 +285,7 @@ bool PApxNodeRequestUpdate::request(PApxRequest &req)
     trace()->block(QString::number(_fid >> 8));
     trace()->block(QString::number(_fid & 0xFF));
 
-    QVariant value = _values.value(name);
+    QJsonValue value = _values.value(name);
     if (type == xbus::node::conf::option)
         value = _node->textToOption(value, _fid >> 8);
     else if (type == xbus::node::conf::bind)

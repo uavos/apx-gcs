@@ -810,7 +810,7 @@ void ApxFw::updateNodesMeta(QJsonObject *meta,
                 const auto jsdef = def.toObject();
                 for (auto it = jsdef.begin(); it != jsdef.end(); ++it) {
                     auto s = name + "." + it.key();
-                    (*meta)[s] = (*meta)[s].toObject()["def"] = it.value();
+                    (*meta)[s] = (*meta)[s].toObject().value("def") = it.value();
                 }
             } else {
                 m["def"] = def;

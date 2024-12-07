@@ -134,13 +134,13 @@ public:
 class PApxNodeRequestUpdate : public PApxNodeRequest
 {
 public:
-    explicit PApxNodeRequestUpdate(PApxNode *node, QVariantMap values)
+    explicit PApxNodeRequestUpdate(PApxNode *node, const QJsonObject &values)
         : PApxNodeRequest(node, mandala::cmd::env::nmt::upd::uid)
         , _values(values)
     {}
 
 private:
-    QVariantMap _values;
+    const QJsonObject _values;
     size_t _index{};
     xbus::node::conf::fid_t _fid{};
 

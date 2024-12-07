@@ -58,8 +58,13 @@ bool MissionShare::exportRequest(QString format, QString fileName)
 bool MissionShare::importRequest(QStringList fileNames)
 {
     auto fileName = fileNames.first();
-    if (!_mission->fromJsonDocument(loadData(fileName)))
+
+    const auto jsv = Fact::parseJsonData(loadData(fileName));
+    if (jsv.isNull())
         return false;
+
+    _mission->fromJson(jsv);
+
     _imported(fileName, _mission->f_title->text());
     return true;
 }

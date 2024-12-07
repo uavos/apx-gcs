@@ -294,10 +294,10 @@ void TelemetryPlayer::rec_jso(quint64 timestamp_ms, QString name, QJsonObject da
 
     if (name == "mission") {
         if (_values_init)
-            unit->f_mission->fromJsonObject(data);
+            unit->f_mission->fromJson(data);
     } else if (name == "nodes") {
         if (_values_init)
-            unit->f_nodes->fromJsonObject(data);
+            unit->f_nodes->fromJson(data);
     }
 
     if (!_values_init || name.isEmpty())

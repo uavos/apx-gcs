@@ -57,8 +57,8 @@ public:
     QString getConfigTitle();
 
     //Fact override
-    QVariant toVariant() override;
-    void fromVariant(const QVariant &var) override;
+    QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
 
 private:
     PNodes *_protocol;

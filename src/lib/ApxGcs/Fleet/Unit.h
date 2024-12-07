@@ -98,8 +98,8 @@ public:
     QJsonObject get_info() const;
 
     //Fact override
-    QVariant toVariant() override;
-    void fromVariant(const QVariant &var) override;
+    QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
 
 public:
     QString toolTip() const override;

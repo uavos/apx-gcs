@@ -137,10 +137,10 @@ void Telemetry::statsFactTriggered(Fact *f, QJsonObject jso)
     const QString &uid = f->descr();
     if (s.startsWith("nodes")) {
         qDebug() << "load telemetry nodes";
-        unit->fromJsonObject(jso);
+        unit->fromJson(jso);
     } else if (s.startsWith("mission")) {
         qDebug() << "load telemetry mission";
-        unit->f_mission->fromJsonObject(jso);
+        unit->f_mission->fromJson(jso);
     } else {
         if (f_player)
             f_player->f_time->setValue(f->property("time").toULongLong() - 1);

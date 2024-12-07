@@ -89,14 +89,14 @@ void UnitStorage::configLoaded(QVariantMap config)
     QElapsedTimer timer;
     timer.start();
 
-    _unit->fromVariant(config);
+    _unit->fromJson(QJsonObject::fromVariantMap(config));
 
     qDebug() << title << "loaded in" << timer.elapsed() << "ms";
     _unit->message(tr("Unit configuration loaded").append(": ").append(title));
 }
 
-void UnitStorage::importUnitConfig(QVariantMap config)
+void UnitStorage::importUnitConf(QJsonObject conf)
 {
-    auto req = new DBReqImportUnitConfig(config);
+    auto req = new DBReqImportUnitConfig(conf.toVariantMap());
     req->exec();
 }

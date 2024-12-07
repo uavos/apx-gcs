@@ -145,7 +145,7 @@ void NodeItem::clear()
     }
 
     storage->updateConfigID(0);
-    _dict.clear();
+    _dict = {};
     _status_field = nullptr;
     tools->clearCommands();
     m_fields.clear();
@@ -179,9 +179,9 @@ void NodeItem::upload()
         fields.append(static_cast<NodeField *>(i));
     }
 
-    QVariantMap values;
+    QJsonObject values;
     for (auto i : fields) {
-        values.insert(i->fpath(), i->toVariant());
+        values.insert(i->fpath(), i->toJson());
         emit _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
     }
     _protocol->requestUpdate(values);
@@ -444,39 +444,35 @@ void NodeItem::linkGroupValues(Fact *f)
     }
 }
 
-QVariantMap NodeItem::get_dict() const
+QJsonObject NodeItem::get_values() const
 {
-    return _dict;
-}
-QVariantMap NodeItem::get_values() const
-{
-    QVariantMap m;
+    QJsonObject jso;
     for (auto f : m_fields) {
-        m.insert(f->fpath(), f->toVariant());
+        jso[f->fpath()] = f->toJson();
     }
-    return m;
+    return jso;
 }
-QVariant NodeItem::toVariant()
+QJsonValue NodeItem::toJson()
 {
-    QVariantMap m;
-    m.insert("info", _ident.toVariantMap());
-    m.insert("dict", get_dict());
-    m.insert("values", get_values());
-    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
-    return m;
+    QJsonObject jso;
+    jso.insert("info", _ident);
+    jso.insert("dict", _dict);
+    jso.insert("values", get_values());
+    jso.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    return jso;
 }
-void NodeItem::fromVariant(const QVariant &var)
+void NodeItem::fromJson(const QJsonValue &jsv)
 {
-    QVariantMap m = var.value<QVariantMap>();
-    if (m.isEmpty())
+    const auto jso = jsv.toObject();
+    if (jso.isEmpty())
         return;
 
-    auto values = m.value("values").value<QVariantMap>();
+    auto values = jso.value("values").toObject();
 
     if (!valid()) {
         // construct the whole node
-        auto info = QJsonObject::fromVariantMap(m.value("info").value<QVariantMap>());
-        auto dict = m.value("dict").value<QVariantMap>();
+        const auto info = jso["info"].toObject();
+        const auto dict = jso["dict"].toObject();
 
         identReceived(info);
         dictReceived(dict);
@@ -487,14 +483,14 @@ void NodeItem::fromVariant(const QVariant &var)
     importValues(values);
 }
 
-void NodeItem::importValues(QVariantMap values)
+void NodeItem::importValues(QJsonObject values)
 {
     QStringList st = values.keys();
     for (auto f : m_fields) {
         QString fpath = f->fpath();
         if (!values.contains(fpath))
             continue;
-        f->fromVariant(values.value(fpath));
+        f->fromJson(values.value(fpath));
         st.removeOne(fpath);
     }
     if (st.size() > 0) {
@@ -584,7 +580,7 @@ void NodeItem::identReceived(QJsonObject ident)
     setDescr(descr.join(' '));
 }
 
-void NodeItem::dictReceived(QVariantMap dict)
+void NodeItem::dictReceived(QJsonObject dict)
 {
     if (dict.isEmpty())
         return;
@@ -596,15 +592,15 @@ void NodeItem::dictReceived(QVariantMap dict)
     _dict = dict;
     _dict.remove("cached");
 
-    if (!_dict.value("time").toULongLong()) {
+    if (!_dict.value("time").toInteger()) {
         _dict.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
     }
 
-    auto fields = dict.value("fields").value<QVariantList>();
+    const auto fields = dict.value("fields").toArray();
 
     xbus::node::usr::cmd_t cmd_cnt = 0;
     for (const auto &i : fields) {
-        auto field = i.value<QVariantMap>();
+        auto field = i.toObject();
         QString name = field.value("name").toString();
         QString title = field.value("title").toString();
         QString type = field.value("type").toString();
@@ -656,36 +652,18 @@ void NodeItem::dictReceived(QVariantMap dict)
     }
 }
 
-static QVariant jsonToVariant(QJsonValue json)
-{
-    switch (json.type()) {
-    default:
-        break;
-    case QJsonValue::Double:
-        return QString::number(json.toVariant().toFloat());
-    case QJsonValue::Array: {
-        QVariantList list;
-        const auto a = json.toArray();
-        for (auto v : a)
-            list.append(jsonToVariant(v));
-        return list;
-    }
-    }
-    return json.toVariant();
-}
-
 bool NodeItem::loadConfigValue(const QString &name, const QString &value)
 {
     for (auto f : m_fields) {
         if (f->fpath() != name)
             continue;
-        f->fromVariant(value);
+        f->fromJson(value);
         return true;
     }
     return false;
 }
 
-void NodeItem::confReceived(QVariantMap values)
+void NodeItem::confReceived(QJsonObject values)
 {
     if (m_fields.isEmpty()) {
         qWarning() << "missing dict:" << title();
@@ -700,7 +678,7 @@ void NodeItem::confReceived(QVariantMap values)
             continue;
         }
         fields.append(fpath);
-        f->fromVariant(values.value(fpath));
+        f->fromJson(values.value(fpath));
     }
 
     if (valid()) {
@@ -709,7 +687,7 @@ void NodeItem::confReceived(QVariantMap values)
     }
 
     // report missing fields
-    for (const auto [key, value] : values.asKeyValueRange()) {
+    for (const auto &key : values.keys()) {
         if (!fields.contains(key)) {
             qWarning() << "missing field for:" << key;
         }
@@ -721,7 +699,7 @@ void NodeItem::confReceived(QVariantMap values)
     if (_protocol && !_ident.value("reconf").toBool())
         storage->saveNodeConfig();
 }
-void NodeItem::confUpdated(QVariantMap values)
+void NodeItem::confUpdated(QJsonObject values)
 {
     // updated from another GCS instance
     if (!valid())
@@ -730,7 +708,7 @@ void NodeItem::confUpdated(QVariantMap values)
         auto f = field(name);
         if (!f)
             continue;
-        f->fromVariant(values.take(name));
+        f->fromJson(values.take(name));
         f->backup();
         apxMsg() << tr("Updated").append(':') << f->name() + ':' << f->text();
     }

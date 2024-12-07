@@ -28,7 +28,8 @@
 #include <App/AppRoot.h>
 #include <Fleet/Fleet.h>
 
-NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent)
+NodeField::NodeField(
+    Fact *parent, NodeItem *node, const QJsonObject &m, size_t id, NodeField *arrayParent)
     : Fact(parent)
     , _node(node)
     , _type(m.value("type").toString())
@@ -144,46 +145,46 @@ QString NodeField::toText(const QVariant &v) const
     return Fact::toText(v);
 }
 
-QVariant NodeField::toVariant()
+QJsonValue NodeField::toJson()
 {
     if (size() > 0) {
         //expanded field
-        QVariantList list;
+        QJsonArray jsa;
         for (auto i : facts()) {
-            list.append(static_cast<NodeField *>(i)->toVariant());
+            jsa.append(static_cast<NodeField *>(i)->toJson());
         }
-        return list;
+        return jsa;
     }
 
     if (_type == "script")
-        return value();
+        return QJsonValue::fromVariant(value());
 
-    if (_type == "real")
+    if (_type == "real") // use floats as-is (not text)
         return QString::number(value().toFloat());
 
     return valueText();
 }
-void NodeField::fromVariant(const QVariant &var)
+void NodeField::fromJson(const QJsonValue &jsv)
 {
     if (size() > 0) {
-        //expanded field - i.e. array
-        if (var.typeId() == QMetaType::QVariantList) {
-            QVariantList values = var.value<QVariantList>();
-            for (int i = 0; i < values.size(); ++i) {
-                if (i >= size())
-                    break;
-                child(i)->fromVariant(values.at(i));
-            }
+        //expanded field
+        if (!jsv.isArray()) {
+            qWarning() << "Array expected" << path();
             return;
         }
-        qWarning() << path() << var;
+        auto values = jsv.toArray();
+        for (int i = 0; i < values.size(); ++i) {
+            if (i >= size())
+                break;
+            child(i)->fromJson(values.at(i));
+        }
         return;
     }
 
     if (_type == "real") {
-        setValue(QString::number(var.toFloat()));
+        setValue(QString::number(jsv.toDouble()));
         return;
     }
 
-    setValue(var);
+    setValue(jsv);
 }

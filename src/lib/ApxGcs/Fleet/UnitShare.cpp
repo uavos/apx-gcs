@@ -52,18 +52,19 @@ bool UnitShare::exportRequest(QString format, QString fileName)
 bool UnitShare::importRequest(QStringList fileNames)
 {
     auto fileName = fileNames.first();
-    auto var = parseJsonDocument(loadData(fileName));
-    if (var.isNull())
+
+    const auto jso = Fact::parseJsonData(loadData(fileName)).toObject();
+    if (!jso.isEmpty())
         return false;
 
-    _unit->storage()->importUnitConfig(var.value<QVariantMap>());
+    _unit->storage()->importUnitConf(jso);
 
     if (QFileInfo(fileName).absoluteDir().absolutePath() == _templatesDir.absolutePath()) {
         // imported
         return true;
     }
 
-    _unit->fromVariant(var);
+    _unit->fromJson(jso);
     _imported(fileName);
     return true;
 }

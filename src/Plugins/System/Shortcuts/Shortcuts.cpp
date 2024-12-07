@@ -112,9 +112,12 @@ void Shortcuts::addUserShortcut()
 void Shortcuts::load()
 {
     QFile fusr(AppDirs::prefs().filePath("shortcuts.json"));
-    if (fusr.exists() && fusr.open(QFile::ReadOnly | QFile::Text)) {
-        fromJsonDocument(fusr.readAll());
+    if (!fusr.open(QFile::ReadOnly | QFile::Text)) {
+        qWarning() << fusr.errorString();
+        return;
     }
+
+    fromJson(Fact::parseJsonData(fusr.readAll()));
 }
 
 void Shortcuts::save()
@@ -142,70 +145,70 @@ QString Shortcuts::keyToPortableString(int key, int modifier) const
     return s;
 }
 
-QVariant Shortcuts::toVariant()
+QJsonValue Shortcuts::toJson()
 {
-    QVariantList asys;
+    QJsonArray jsa_sys;
     for (auto i : f_sys->facts()) {
-        asys.append(static_cast<Shortcut *>(i)->toVariant());
+        jsa_sys.append(static_cast<Shortcut *>(i)->toJson());
     }
-    QVariantList ausr;
+    QJsonArray jsa_usr;
     for (auto i : f_usr->facts()) {
-        ausr.append(static_cast<Shortcut *>(i)->toVariant());
+        jsa_usr.append(static_cast<Shortcut *>(i)->toJson());
     }
-    QVariantMap m;
-    m.insert("system", asys);
-    m.insert("user", ausr);
-    return m;
+    QJsonObject jso;
+    jso.insert("system", jsa_sys);
+    jso.insert("user", jsa_usr);
+    return jso;
 }
 
-void Shortcuts::fromVariant(const QVariant &var)
+void Shortcuts::fromJson(const QJsonValue &jsv)
 {
     f_sys->deleteChildren();
     f_usr->deleteChildren();
-    QMap<QString, QVariantMap> msys, musr;
+    QMap<QString, QJsonObject> msys, musr;
     QStringList lsys, lusr;
     QFile fsys(AppDirs::res().filePath("templates/shortcuts.json"));
     if (fsys.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument jsys = QJsonDocument::fromJson(fsys.readAll());
         fsys.close();
         for (auto v : jsys["system"].toArray()) {
-            auto key = v.toObject()["key"].toString();
+            auto key = v.toObject().value("key").toString();
             lsys.append(key);
-            auto jso = v.toObject().toVariantMap();
+            auto jso = v.toObject();
             jso.insert("enb", true); //default
             msys.insert(key, jso);
         }
     }
-    QVariantMap m = var.value<QVariantMap>();
-    for (auto i : m.value("system").value<QVariantList>()) {
-        auto m = i.value<QVariantMap>();
-        if (m.isEmpty())
+    const auto jso = jsv.toObject();
+    for (auto i : jso.value("system").toArray()) {
+        const auto jso_item = i.toObject();
+        if (jso_item.isEmpty())
             continue;
-        auto key = m.value("key").toString();
+        auto key = jso_item.value("key").toString();
         if (!msys.contains(key))
             continue;
         auto sys = msys.value(key);
-        sys.insert("enb", m.value("enb"));
+        sys.insert("enb", jso_item.value("enb"));
         msys.insert(key, sys);
     }
-    for (auto i : m.value("user").value<QVariantList>()) {
-        auto m = i.value<QVariantMap>();
-        if (m.isEmpty())
+    for (auto i : jso.value("user").toArray()) {
+        const auto jso_item = i.toObject();
+        if (jso_item.isEmpty())
             continue;
-        auto key = m.value("key").toString();
+        auto key = jso_item.value("key").toString();
         lusr.append(key);
-        musr.insert(key, m);
+        musr.insert(key, jso_item);
     }
 
     for (auto key : lsys) {
         f_add->defaults();
-        f_add->fromVariant(msys.value(key));
+        f_add->fromJson(msys.value(key));
         new Shortcut(f_sys, this, f_add, false);
     }
 
     for (auto key : lusr) {
         f_add->defaults();
-        f_add->fromVariant(musr.value(key));
+        f_add->fromJson(musr.value(key));
         addUserShortcut();
     }
     f_add->defaults();

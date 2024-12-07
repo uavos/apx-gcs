@@ -56,6 +56,7 @@ public:
 
     const auto &nodes() const { return _nodes; }
     const auto &ident() const { return _ident; }
+    const auto &dict() const { return _dict; }
 
     QString label() const { return _status_field ? _status_field->valueText().trimmed() : ""; }
 
@@ -66,12 +67,11 @@ public:
                                                             | AppNotify::Important);
 
     // variant conversions
-    QVariantMap get_dict() const;
-    QVariantMap get_values() const;
+    QJsonObject get_values() const;
 
     //Fact override
-    QVariant toVariant() override;
-    void fromVariant(const QVariant &var) override;
+    QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
 
     void updateAlive(bool alive);
 
@@ -87,7 +87,7 @@ private:
     PNode *_protocol;
 
     QJsonObject _ident;
-    QVariantMap _dict;
+    QJsonObject _dict;
 
     QList<NodeField *> m_fields;
 
@@ -116,13 +116,13 @@ public slots:
     void upload();
     void clear();
 
-    void importValues(QVariantMap values);
+    void importValues(QJsonObject values);
 
     //protocols:
     void identReceived(QJsonObject ident);
-    void dictReceived(QVariantMap dict);
-    void confReceived(QVariantMap values);
-    void confUpdated(QVariantMap values);
+    void dictReceived(QJsonObject dict);
+    void confReceived(QJsonObject values);
+    void confUpdated(QJsonObject values);
     void confSaved();
 
     void messageReceived(PNode::msg_type_e type, QString msg);

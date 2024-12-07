@@ -832,7 +832,7 @@ QJsonArray TelemetryFileImport::import_node_fields(const QJsonArray &src,
             value.clear();
             QJsonArray jsa_values;
             for (const auto i : jsa) {
-                auto v = i.toObject()["value"].toString();
+                auto v = i.toObject().value("value").toString();
                 if (v.isEmpty())
                     continue;
                 if (type_id == xbus::node::conf::bind)

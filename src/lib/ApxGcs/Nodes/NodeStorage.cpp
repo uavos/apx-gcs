@@ -22,8 +22,6 @@
 #include "NodeStorage.h"
 #include "NodeItem.h"
 
-#include <Database/FleetReqNode.h>
-
 #include <Database/NodesReqConf.h>
 #include <Database/NodesReqDict.h>
 #include <Database/NodesReqMeta.h>
@@ -48,27 +46,27 @@ void NodeStorage::saveNodeInfo()
 
 void NodeStorage::saveNodeDict()
 {
-    auto dict = _node->get_dict();
+    auto dict = _node->dict();
     if (dict.isEmpty()) {
         qWarning() << "no dict data";
         return;
     }
 
-    auto req = new DBReqSaveNodeDict(_node->uid(), dict);
+    auto req = new db::nodes::NodeSaveDict(_node->uid(), dict);
     req->exec();
 }
 
 void NodeStorage::saveNodeConfig()
 {
     _configID = 0; // invalidate for unit config
-    auto hash = _node->get_dict().value("hash").toString();
+    auto hash = _node->dict().value("hash").toString();
     if (hash.isEmpty()) {
         qWarning() << "no dict hash";
         return;
     }
-    auto req = new DBReqSaveNodeConfig(_node->uid(), hash, _node->get_values());
+    auto req = new db::nodes::NodeSaveConf(_node->uid(), hash, _node->get_values());
     connect(req,
-            &DBReqSaveNodeConfig::configSaved,
+            &db::nodes::NodeSaveConf::confSaved,
             this,
             &NodeStorage::updateConfigID,
             Qt::QueuedConnection);
@@ -83,9 +81,9 @@ void NodeStorage::updateConfigID(quint64 configID)
 
 void NodeStorage::loadNodeConfig(QString hash)
 {
-    auto req = new DBReqLoadNodeConfig(_node->uid(), hash);
+    auto req = new db::nodes::NodeLoadConf(_node->uid(), hash);
     connect(req,
-            &DBReqLoadNodeConfig::configLoaded,
+            &db::nodes::NodeLoadConf::confLoaded,
             _node,
             &NodeItem::importValues,
             Qt::QueuedConnection);

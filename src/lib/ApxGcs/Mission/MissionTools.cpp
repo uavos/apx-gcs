@@ -119,6 +119,6 @@ void MissionTools::copyUnitSelected(Unit *unit)
 {
     if (unit == mission->unit)
         return;
-    unit->f_mission->fromVariant(mission->toVariant());
+    unit->f_mission->fromJson(mission->toJson());
     Fleet::instance()->selectUnit(unit);
 }

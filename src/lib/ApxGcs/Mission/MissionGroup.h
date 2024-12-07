@@ -53,7 +53,7 @@ public:
 
     Fact *f_activeIndex; //mandala fact to reflect current item index in group
 
-    void fromVariant(const QVariant &var) override;
+    void fromJson(const QJsonValue &jsv) override;
 
 private:
     QTimer updateTimeTimer;

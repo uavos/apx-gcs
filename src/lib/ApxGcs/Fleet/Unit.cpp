@@ -222,30 +222,26 @@ QJsonObject Unit::get_info() const
         info.insert("time", _lastSeenTime);
     return info;
 }
-QVariant Unit::toVariant()
+QJsonValue Unit::toJson()
 {
-    QVariantMap m;
+    QJsonObject jso;
 
     if (_protocol)
-        m.insert("unit", get_info().toVariantMap());
+        jso.insert("unit", get_info());
 
-    m.insert("nodes", f_nodes->toVariant());
-    m.insert("title", f_nodes->getConfigTitle());
-    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    jso.insert("nodes", f_nodes->toJson());
+    jso.insert("title", f_nodes->getConfigTitle());
+    jso.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-    return m;
+    return jso;
 }
-void Unit::fromVariant(const QVariant &var)
+void Unit::fromJson(const QJsonValue &jsv)
 {
-    auto m = var.value<QVariantMap>();
-    if (m.isEmpty())
-        return;
-
-    auto nodes = m.value("nodes").value<QVariantList>();
+    const auto nodes = jsv.toObject().value("nodes").toArray();
     if (nodes.isEmpty()) {
         apxMsgW() << tr("Missing nodes in data set");
     } else {
-        f_nodes->fromVariant(nodes);
+        f_nodes->fromJson(nodes);
     }
 }
 

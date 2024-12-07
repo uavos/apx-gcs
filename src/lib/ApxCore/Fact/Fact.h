@@ -57,8 +57,6 @@ public:
 
     Q_INVOKABLE QByteArray hash() const;
 
-    Q_INVOKABLE QVariant findValue(const QString &namePath);
-
     Q_INVOKABLE Fact *findChild(const QString &factName) const;
     Q_INVOKABLE Fact *childByTitle(const QString &factTitle) const;
 
@@ -68,13 +66,11 @@ public:
     //Group fact values (settings)
     Q_INVOKABLE void setValues(const QVariantMap &values);
 
-    Q_INVOKABLE virtual QVariant toVariant();
-    Q_INVOKABLE virtual void fromVariant(const QVariant &var);
-
+    //JSON
     Q_INVOKABLE QJsonDocument toJsonDocument();
-    Q_INVOKABLE bool fromJsonDocument(QByteArray data);
-    Q_INVOKABLE static QVariant parseJsonDocument(QByteArray data);
-    Q_INVOKABLE void fromJsonObject(const QJsonObject &jso);
+    Q_INVOKABLE virtual QJsonValue toJson();
+    Q_INVOKABLE virtual void fromJson(const QJsonValue &jsv);
+    static QJsonValue parseJsonData(const QByteArray &data);
 
     virtual bool lessThan(Fact *other) const;           //sorting helper
     virtual bool showThis(QRegularExpression re) const; //filter helper

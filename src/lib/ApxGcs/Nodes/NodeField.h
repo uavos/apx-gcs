@@ -35,8 +35,11 @@ class NodeField : public Fact
     Q_PROPERTY(NodeScript *script MEMBER _script);
 
 public:
-    explicit NodeField(
-        Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent = nullptr);
+    explicit NodeField(Fact *parent,
+                       NodeItem *node,
+                       const QJsonObject &m,
+                       size_t id,
+                       NodeField *arrayParent = nullptr);
 
     //Fact override
     virtual QString toText(const QVariant &v) const override;
@@ -46,8 +49,8 @@ public:
     inline auto array() const { return _array; }
 
     //Fact override
-    QVariant toVariant() override;
-    void fromVariant(const QVariant &var) override;
+    QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
 
 private:
     NodeItem *_node;

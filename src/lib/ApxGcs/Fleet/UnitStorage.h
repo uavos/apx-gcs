@@ -43,7 +43,7 @@ public slots:
     void saveUnitConfig();
     void loadUnitConfig(QString hash);
 
-    void importUnitConfig(QVariantMap config);
+    void importUnitConf(QJsonObject conf);
 
 signals:
     void configSaved(QString hash, QString title);

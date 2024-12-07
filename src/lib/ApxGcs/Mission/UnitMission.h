@@ -110,8 +110,8 @@ public:
     Q_INVOKABLE QGeoRectangle boundingGeoRectangle() const;
 
     //Fact override
-    QVariant toVariant() override;
-    void fromVariant(const QVariant &var) override;
+    QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
 
     void hashData(QCryptographicHash *h) const override;
 
