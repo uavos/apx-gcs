@@ -215,10 +215,10 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
             q["hash"] = new_hash;
         }
 
-        q["duration"] = rinfo["duration"].toInteger();
-        q["size"] = rinfo["size"].toInteger();
+        q["duration"] = rinfo["duration"].toVariant().toULongLong();
+        q["size"] = rinfo["size"].toVariant().toULongLong();
         q["info"] = QJsonDocument(rinfo).toJson(QJsonDocument::Compact);
-        q["parsed"] = rinfo["parsed"].toInteger();
+        q["parsed"] = rinfo["parsed"].toVariant().toULongLong();
         q["sync"] = 2; // info synced
 
         // write changes to db
@@ -494,10 +494,10 @@ bool TelemetrySyncFiles::run(QSqlQuery &query)
 }
 QString TelemetrySyncFiles::defaultBasename(const QJsonObject &info)
 {
-    const auto time_utc = info["timestamp"].toInteger();
+    const auto time_utc = info["timestamp"].toVariant().toULongLong();
     if (time_utc == 0)
         return {};
-    const auto utc_offset = info["utc_offset"].toInt();
+    const auto utc_offset = info["utc_offset"].toVariant().toInt();
 
     // check file name
     auto timestamp = QDateTime::fromMSecsSinceEpoch(time_utc);
@@ -642,7 +642,7 @@ bool TelemetryImport::run(QSqlQuery &query)
 
         const auto srcFileName = QFileInfo(_src).fileName();
         const auto &info = import.info();
-        const auto timestamp = import.info()["timestamp"].toInteger();
+        const auto timestamp = import.info()["timestamp"].toVariant().toULongLong();
         const auto hash = info["hash"].toString();
 
         // check hash already in db

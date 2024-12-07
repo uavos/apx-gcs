@@ -378,7 +378,6 @@ void PApxNode::dictCacheLoaded(QJsonObject dict)
         requestDictDownload();
         return;
     }
-    qDebug() << "dict from cache";
 
     _field_types.clear();
     _field_names.clear();
@@ -407,6 +406,8 @@ void PApxNode::dictCacheLoaded(QJsonObject dict)
         _field_arrays.append(field.value("array").toInt());
         _field_units.append(field.value("units").toString());
     }
+
+    qDebug() << "dict from cache" << _field_names.size();
 
     emit dictReceived(dict);
 }
@@ -559,7 +560,7 @@ void PApxNode::parseDictData(PApxNode *node,
         _field_units.clear();
         return;
     }
-    qDebug() << "dict parsed";
+    qDebug() << "dict parsed" << _field_names.size();
 
     QJsonObject dict;
     dict.insert("hash", _dict_hash);
@@ -670,7 +671,7 @@ void PApxNode::parseConfData(PApxNode *node,
             QString name = _field_names.value(fidx);
 
             if (type == xbus::node::conf::script) {
-                _script_value = value.toInteger();
+                _script_value = value.toVariant().value<xbus::node::conf::script_t>();
                 _script_field = name;
                 value = {};
             }

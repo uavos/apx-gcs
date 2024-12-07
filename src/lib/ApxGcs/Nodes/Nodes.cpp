@@ -118,7 +118,7 @@ void Nodes::node_available(PNode *node)
     m_nodes.append(f);
 
     connect(f, &NodeItem::validChanged, this, &Nodes::updateValid);
-    connect(f->storage, &NodeStorage::configSaved, unit->storage(), &UnitStorage::saveUnitConfig);
+    connect(f->storage, &NodeStorage::configSaved, unit->storage(), &UnitStorage::saveUnitConf);
 
     updateValid();
     updateActions();

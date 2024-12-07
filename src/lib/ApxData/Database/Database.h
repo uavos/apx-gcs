@@ -24,10 +24,10 @@
 #include <App/AppLog.h>
 #include <Fact/Fact.h>
 
+#include "DatabaseToolsReq.h"
 #include "NodesSession.h"
 #include "StorageSession.h"
 
-class FleetDB;
 class MissionsDB;
 
 class Database : public Fact
@@ -42,8 +42,6 @@ public:
 
     QPointer<db::storage::Session> storage;
     QPointer<db::nodes::Session> nodes;
-
-    QPointer<FleetDB> fleet;
 
 private:
     static Database *_instance;

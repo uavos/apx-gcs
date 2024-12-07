@@ -51,7 +51,7 @@ bool NodeSaveInfo::run(QSqlQuery &query)
     if (!RequestNode::run(query))
         return false;
 
-    auto time = _info["time"].toInteger();
+    auto time = _info["time"].toVariant().toULongLong();
     auto name = _info["name"].toString();
 
     if (!_nodeID) {
@@ -76,8 +76,8 @@ bool NodeSaveInfo::run(QSqlQuery &query)
                   " WHERE key=?");
     query.addBindValue(time ? time : QVariant());
     query.addBindValue(name);
-    query.addBindValue(_info["version"]);
-    query.addBindValue(_info["hardware"]);
+    query.addBindValue(_info["version"].toVariant());
+    query.addBindValue(_info["hardware"].toVariant());
     query.addBindValue(_nodeID);
     if (!query.exec())
         return false;

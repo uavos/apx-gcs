@@ -90,9 +90,9 @@ void TelemetryShare::syncTemplates()
     // TODO parse xml file and cache hash in config
     /*for (auto fi : _templatesDir.entryInfoList()) {
         auto hash = fi.completeBaseName();
-        auto req = new DBReqTelemetryRecover(hash);
+        auto req = new db::storage::TelemetryRecover(hash);
         connect(req,
-                &DBReqTelemetryRecover::unavailable,
+                &db::storage::TelemetryRecover::unavailable,
                 this,
                 &TelemetryShare::syncTemplate,
                 Qt::QueuedConnection);

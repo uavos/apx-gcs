@@ -529,38 +529,38 @@ bool ApxFw::loadApfwFile(QString fileName, QString section, QByteArray *data, qu
         errString = "object";
         if (!doc.isObject())
             break;
-        QVariantMap m = doc.object().toVariantMap();
-        if (m.value("magic").toString() != "APXFW") {
+        auto jso = doc.object();
+        if (jso.value("magic").toString() != "APXFW") {
             errString = "magic";
             break;
         }
 
-        QVariantMap msect = m.value(section).toMap();
-        if (msect.isEmpty()) {
+        auto jso_sect = jso.value(section).toObject();
+        if (jso_sect.isEmpty()) {
             errString = "missing section '" + section + "'";
             break;
         }
 
-        quint32 size = msect.value("size").toUInt();
+        auto size = jso_sect.value("size").toVariant().toUInt();
         if (!size) {
             errString = "zero size";
             break;
         }
 
         if (startAddr) {
-            if (!msect.contains("origin")) {
+            if (!jso_sect.contains("origin")) {
                 errString = "missing origin";
                 break;
             }
             bool ok;
-            *startAddr = msect.value("origin").toString().toUInt(&ok, 16);
+            *startAddr = jso_sect.value("origin").toString().toUInt(&ok, 16);
             if (!ok) {
                 errString = "missing origin convert error";
                 break;
             }
         }
 
-        QByteArray ba = QByteArray::fromBase64(msect.value("data").toString().toUtf8());
+        QByteArray ba = QByteArray::fromBase64(jso_sect.value("data").toString().toUtf8());
         errString = "missing image data";
         if (ba.isEmpty())
             break;

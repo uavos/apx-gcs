@@ -329,7 +329,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
                 ts_name.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utc_offset));
                 // compare two timestamps
                 auto tms_name = ts_name.toMSecsSinceEpoch();
-                auto tms = info["timestamp"].toInteger();
+                auto tms = info["timestamp"].toVariant().toULongLong();
                 if (tms_name != tms) {
                     apxMsgW() << tr("Timestamp mismatch").append(':') << tms_name << tms
                               << utc_offset;
@@ -340,7 +340,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
             }
         } // parse title
 
-        auto timestamp = info["timestamp"].toInteger();
+        auto timestamp = info["timestamp"].toVariant().toULongLong();
         if (timestamp == 0 || QDateTime::fromMSecsSinceEpoch(timestamp).date().year() < 2010) {
             apxMsgW() << tr("Unknown timestamp");
             qWarning() << info;

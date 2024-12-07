@@ -33,7 +33,7 @@ NodeScript::NodeScript(Fact *fact)
     srcFile.setFileTemplate(
         QFileInfo(srcFile.fileTemplate()).absoluteDir().absoluteFilePath("script-XXXXXX.cpp"));
     srcFile.open();
-    qDebug() << srcFile.fileName();
+    // qDebug() << srcFile.fileName();
 
     outFileName = QFileInfo(srcFile.fileName())
                       .absoluteDir()

@@ -35,16 +35,14 @@ private:
     Unit *_unit;
 
 private slots:
-    void configLoaded(QVariantMap config);
+    void confLoaded(QJsonObject config);
 
 public slots:
     void saveUnitInfo();
-
-    void saveUnitConfig();
-    void loadUnitConfig(QString hash);
-
+    void saveUnitConf();
+    void loadUnitConf(QString hash);
     void importUnitConf(QJsonObject conf);
 
 signals:
-    void configSaved(QString hash, QString title);
+    void confSaved(QString hash, QString title);
 };

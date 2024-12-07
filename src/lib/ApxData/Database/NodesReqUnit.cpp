@@ -27,7 +27,7 @@ using namespace db::nodes;
 
 bool UnitSaveInfo::run(QSqlQuery &query)
 {
-    auto time = _info["time"].toInteger();
+    auto time = _info["time"].toVariant().toULongLong();
     auto name = _info["name"].toString();
     auto type = _info["type"].toString();
 
@@ -224,7 +224,7 @@ bool UnitLoadConf::run(QSqlQuery &query)
     query.prepare("SELECT * FROM UnitConfData"
                   " INNER JOIN NodeConf ON UnitConfData.nodeConfID=NodeConf.key"
                   " INNER JOIN NodeDict ON NodeConf.dictID=NodeDict.key"
-                  " INNER JOIN Nodes ON NodeConf.nodeID=Nodes.key"
+                  " INNER JOIN Node ON NodeConf.nodeID=Node.key"
                   " WHERE UnitConfData.unitConfID=?");
     query.addBindValue(unitConfID);
     if (!query.exec())
@@ -369,7 +369,7 @@ bool UnitImportConf::run(QSqlQuery &query)
         if (values.isEmpty())
             continue;
 
-        auto time = node["time"].toInteger();
+        auto time = node["time"].toVariant().toULongLong();
 
         req = new NodeSaveConf(uid, hash, values, time);
         if (!req->run(query))
@@ -387,7 +387,7 @@ bool UnitImportConf::run(QSqlQuery &query)
     // unit conf
     auto uid = unit["uid"].toString();
     auto title = _conf["title"].toString();
-    auto time = _conf["time"].toInteger();
+    auto time = _conf["time"].toVariant().toULongLong();
 
     if (nodeConfIDs.isEmpty()) {
         qWarning() << "missing nodes in import";

@@ -26,7 +26,7 @@
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
 
-#include <Database/FleetReqUnit.h>
+#include <Database/NodesReqUnit.h>
 #include <Database/StorageReq.h>
 
 #include <QGeoCoordinate>
@@ -203,7 +203,7 @@ void TelemetryReader::do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject
         return;
 
     if (name == "nodes") {
-        // auto req = new DBReqImportUnitConfig(data.toVariantMap());
+        // auto req = new db::nodes::ImportUnitConfig(data);
         // req->exec();
         // qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
     }
@@ -223,17 +223,17 @@ void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
     _recordInfo = info;
     const auto &m = info;
 
-    setTotalTime(m["duration"].toInteger());
+    setTotalTime(m["duration"].toVariant().toULongLong());
 
     const auto &cnt = m["counters"].toObject();
 
-    setTotalSize(cnt["records"].toInteger());
+    setTotalSize(cnt["records"].toVariant().toULongLong());
 
-    quint64 downlink = cnt["downlink"].toInteger();
-    quint64 uplink = cnt["uplink"].toInteger();
-    quint64 events = cnt["evt"].toInteger();
+    quint64 downlink = cnt["downlink"].toVariant().toULongLong();
+    quint64 uplink = cnt["uplink"].toVariant().toULongLong();
+    quint64 events = cnt["evt"].toVariant().toULongLong();
 
-    qint64 t = m["timestamp"].toInteger();
+    qint64 t = m["timestamp"].toVariant().toULongLong();
     QString title = t > 0 ? QDateTime::fromMSecsSinceEpoch(t).toString("yyyy MMM dd hh:mm:ss")
                           : tr("Telemetry Data");
     QString unitName = m["unit"]["name"].toString();

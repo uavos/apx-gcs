@@ -76,7 +76,7 @@ private slots:
 
     //internal flow
     void recordMission(bool uplink);
-    void recordConfig(QString hash, QString title);
+    void recordUnitConf(QString hash, QString title);
 
 public slots:
     //exported slots for recording

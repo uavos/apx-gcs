@@ -32,7 +32,7 @@ bool NodeSaveDict::run(QSqlQuery &query)
         return false;
 
     auto hash = _dict["hash"].toString();
-    auto time = _dict["time"].toInteger();
+    auto time = _dict["time"].toVariant().toULongLong();
 
     auto name = query.value("name");
     auto version = query.value("version");
@@ -122,7 +122,7 @@ bool NodeSaveDict::run(QSqlQuery &query)
                       + ")"
                         " VALUES(?,?,?,?,?)");
         for (auto k : columns) {
-            query.addBindValue(m.value(k));
+            query.addBindValue(m.value(k).toVariant());
         }
         if (!query.exec())
             return false;

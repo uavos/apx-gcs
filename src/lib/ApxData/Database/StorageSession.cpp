@@ -57,43 +57,43 @@ Session::Session(QObject *parent, QString sessionName)
 
     // create tables
 
-    new DBReqMakeTable(this,
-                       "Telemetry",
-                       {
-                           "key INTEGER PRIMARY KEY NOT NULL",
+    new db::MakeTable(this,
+                      "Telemetry",
+                      {
+                          "key INTEGER PRIMARY KEY NOT NULL",
 
-                           // fields written on file creation
-                           "time INTEGER", // [ms since epoch] file creation time
-                           "file TEXT",    // file name with data (no ext)
+                          // fields written on file creation
+                          "time INTEGER", // [ms since epoch] file creation time
+                          "file TEXT",    // file name with data (no ext)
 
-                           // identity info
-                           "unitUID TEXT",  // unit UID from linked table
-                           "unitName TEXT", // unit name
-                           "unitType TEXT", // unit type (GCU, UAV, etc)
-                           "confName TEXT", // conf name or comment
+                          // identity info
+                          "unitUID TEXT",  // unit UID from linked table
+                          "unitName TEXT", // unit name
+                          "unitType TEXT", // unit type (GCU, UAV, etc)
+                          "confName TEXT", // conf name or comment
 
-                           // info extracted from file
-                           "size INTEGER",     // [bytes] file size
-                           "hash TEXT",        // file content hash
-                           "info TEXT",        // JSON info meta data
-                           "duration INTEGER", // [ms] total time of telemetry data
+                          // info extracted from file
+                          "size INTEGER",     // [bytes] file size
+                          "hash TEXT",        // file content hash
+                          "info TEXT",        // JSON info meta data
+                          "duration INTEGER", // [ms] total time of telemetry data
 
-                           // local record status and flags
-                           "trash INTEGER", // not null if record deleted
-                           "sync INTEGER", // sync status: NULL=unsynced, 1=synced file, 2=synced info
-                           "src INTEGER",      // source of record: NULL=record, 1=import, 2=share
-                           "src_hash TEXT",    // source file hash
-                           "imported INTEGER", // [ms since epoch] file import time
-                           "exported INTEGER", // [ms since epoch] file export time
-                           "parsed INTEGER",   // [ms since epoch] file parsing time
-                           "notes TEXT",       // user notes or comments if any
-                       });
+                          // local record status and flags
+                          "trash INTEGER", // not null if record deleted
+                          "sync INTEGER", // sync status: NULL=unsynced, 1=synced file, 2=synced info
+                          "src INTEGER",  // source of record: NULL=record, 1=import, 2=share
+                          "src_hash TEXT",    // source file hash
+                          "imported INTEGER", // [ms since epoch] file import time
+                          "exported INTEGER", // [ms since epoch] file export time
+                          "parsed INTEGER",   // [ms since epoch] file parsing time
+                          "notes TEXT",       // user notes or comments if any
+                      });
 
-    new DBReqMakeIndex(this, "Telemetry", "time", false);
-    new DBReqMakeIndex(this, "Telemetry", "unitUID", false);
-    new DBReqMakeIndex(this, "Telemetry", "unitName", false);
-    new DBReqMakeIndex(this, "Telemetry", "file", true);
-    new DBReqMakeIndex(this, "Telemetry", "trash", false);
+    new db::MakeIndex(this, "Telemetry", "time", false);
+    new db::MakeIndex(this, "Telemetry", "unitUID", false);
+    new db::MakeIndex(this, "Telemetry", "unitName", false);
+    new db::MakeIndex(this, "Telemetry", "file", true);
+    new db::MakeIndex(this, "Telemetry", "trash", false);
 }
 
 QString Session::telemetryFileBasename(QDateTime timestamp, QString unitName)

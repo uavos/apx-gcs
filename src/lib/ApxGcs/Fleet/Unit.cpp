@@ -26,7 +26,6 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
-#include <Database/FleetReqUnit.h>
 #include <Mandala/Mandala.h>
 #include <Mission/UnitMission.h>
 #include <Nodes/Nodes.h>
@@ -139,7 +138,6 @@ Unit::Unit(Fleet *fleet, PUnit *protocol)
         // storage
         connect(this, &Unit::titleChanged, _storage, &UnitStorage::saveUnitInfo);
         connect(this, &Unit::isGroundControlChanged, _storage, &UnitStorage::saveUnitInfo);
-        _storage->saveUnitInfo();
 
         // counters
         connect(protocol, &PUnit::packetReceived, this, &Unit::packetReceived);
@@ -180,6 +178,10 @@ Unit::Unit(Fleet *fleet, PUnit *protocol)
 
     updateInfo();
 
+    if (isIdentified()) {
+        _storage->saveUnitInfo();
+    }
+
     App::jsync(this);
 }
 
@@ -218,8 +220,11 @@ QJsonObject Unit::get_info() const
     info.insert("uid", _protocol->uid());
     info.insert("name", title());
     info.insert("type", _protocol->unitTypeText());
+
     if (_lastSeenTime)
         info.insert("time", _lastSeenTime);
+
+    qDebug() << _lastSeenTime << title() << m_is_identified;
     return info;
 }
 QJsonValue Unit::toJson()

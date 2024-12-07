@@ -22,7 +22,7 @@
 #include "LookupUnitConfig.h"
 
 #include <Database/Database.h>
-#include <Database/FleetDB.h>
+#include <Database/NodesSession.h>
 
 #include <Fleet/Unit.h>
 
@@ -33,7 +33,7 @@ LookupUnitConfig::LookupUnitConfig(Unit *unit, Fact *parent)
                      "load",
                      tr("Load configuration"),
                      tr("Load configuration from database"),
-                     Database::instance()->fleet,
+                     Database::instance()->nodes,
                      Action | IconOnly)
     , _unit(unit)
 {
@@ -45,7 +45,7 @@ void LookupUnitConfig::loadItem(QVariantMap modelData)
     QString hash = modelData.value("hash").toString();
     if (hash.isEmpty())
         return;
-    _unit->storage()->loadUnitConfig(hash);
+    _unit->storage()->loadUnitConf(hash);
 }
 
 bool LookupUnitConfig::fixItemDataThr(QVariantMap *item)
@@ -64,9 +64,9 @@ bool LookupUnitConfig::fixItemDataThr(QVariantMap *item)
 void LookupUnitConfig::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
-    query("SELECT * FROM UnitConfigs"
-          " LEFT JOIN Fleet ON UnitConfigs.unitID=Fleet.key"
-          " WHERE callsign LIKE ? OR title LIKE ? OR notes LIKE ? OR class LIKE ?"
-          " ORDER BY UnitConfigs.time DESC",
+    query("SELECT * FROM UnitConf"
+          " LEFT JOIN Unit ON UnitConf.unitID=Unit.key"
+          " WHERE name LIKE ? OR title LIKE ? OR notes LIKE ? OR type LIKE ?"
+          " ORDER BY UnitConf.time DESC",
           QVariantList() << s << s << s << s);
 }

@@ -24,7 +24,7 @@
 
 #include <Nodes/Nodes.h>
 
-#include <Database/FleetReqUnit.h>
+#include <Database/NodesReqUnit.h>
 
 UnitStorage::UnitStorage(Unit *unit)
     : QObject(unit)
@@ -33,15 +33,15 @@ UnitStorage::UnitStorage(Unit *unit)
 
 void UnitStorage::saveUnitInfo()
 {
-    auto m = _unit->get_info();
-    if (m.isEmpty())
+    auto unit = _unit->get_info();
+    if (unit.isEmpty())
         return;
 
-    auto req = new DBReqSaveUnitInfo(m.toVariantMap());
+    auto req = new db::nodes::UnitSaveInfo(unit);
     req->exec();
 }
 
-void UnitStorage::saveUnitConfig()
+void UnitStorage::saveUnitConf()
 {
     auto nodes = _unit->f_nodes;
 
@@ -63,33 +63,33 @@ void UnitStorage::saveUnitConfig()
     auto vuid = _unit->uid();
     auto title = nodes->getConfigTitle();
 
-    auto req = new DBReqSaveUnitConfig(vuid, nconfIDs, title);
+    auto req = new db::nodes::UnitSaveConf(vuid, nconfIDs, title);
     connect(req,
-            &DBReqSaveUnitConfig::configSaved,
+            &db::nodes::UnitSaveConf::confSaved,
             this,
-            &UnitStorage::configSaved,
+            &UnitStorage::confSaved,
             Qt::QueuedConnection);
     req->exec();
 }
 
-void UnitStorage::loadUnitConfig(QString hash)
+void UnitStorage::loadUnitConf(QString hash)
 {
-    auto req = new DBReqLoadUnitConfig(hash);
+    auto req = new db::nodes::UnitLoadConf(hash);
     connect(req,
-            &DBReqLoadUnitConfig::configLoaded,
+            &db::nodes::UnitLoadConf::confLoaded,
             this,
-            &UnitStorage::configLoaded,
+            &UnitStorage::confLoaded,
             Qt::QueuedConnection);
     req->exec();
 }
-void UnitStorage::configLoaded(QVariantMap config)
+void UnitStorage::confLoaded(QJsonObject config)
 {
     auto title = config.value("title").toString();
 
     QElapsedTimer timer;
     timer.start();
 
-    _unit->fromJson(QJsonObject::fromVariantMap(config));
+    _unit->fromJson(config);
 
     qDebug() << title << "loaded in" << timer.elapsed() << "ms";
     _unit->message(tr("Unit configuration loaded").append(": ").append(title));
@@ -97,6 +97,6 @@ void UnitStorage::configLoaded(QVariantMap config)
 
 void UnitStorage::importUnitConf(QJsonObject conf)
 {
-    auto req = new DBReqImportUnitConfig(conf.toVariantMap());
+    auto req = new db::nodes::UnitImportConf(conf);
     req->exec();
 }

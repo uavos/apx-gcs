@@ -21,8 +21,6 @@
  */
 #include "Database.h"
 
-#include "FleetDB.h"
-
 #include <App/App.h>
 #include <App/AppLog.h>
 
@@ -43,8 +41,6 @@ Database::Database(Fact *parent)
 
     storage = new db::storage::Session(this, QStringLiteral("StorageDbSession"));
     nodes = new db::nodes::Session(this, QStringLiteral("NodesDbSession"));
-
-    fleet = new FleetDB(this, QStringLiteral("FleetDbSession"));
 }
 
 Database::~Database()

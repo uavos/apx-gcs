@@ -186,5 +186,5 @@ void NodeField::fromJson(const QJsonValue &jsv)
         return;
     }
 
-    setValue(jsv);
+    setValue(jsv.toVariant());
 }

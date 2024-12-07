@@ -253,6 +253,10 @@ QString NodeItem::toolTip() const
         st << "";
         st << "[ident]";
         for (auto it = _ident.begin(); it != _ident.end(); ++it) {
+            const auto key = it.key();
+            if (key == "host")
+                continue;
+
             const auto value = it.value();
             QString s;
             if (value.isObject())
@@ -550,7 +554,9 @@ void NodeItem::identReceived(QJsonObject ident)
     if (_ident == ident && valid())
         return;
 
-    qWarning() << "ident updated" << title() << _unit->title();
+    if (valid()) {
+        qWarning() << "ident updated" << title() << _unit->title();
+    }
 
     _ident = ident;
     clear();
@@ -592,7 +598,7 @@ void NodeItem::dictReceived(QJsonObject dict)
     _dict = dict;
     _dict.remove("cached");
 
-    if (!_dict.value("time").toInteger()) {
+    if (!_dict.value("time").toVariant().toULongLong()) {
         _dict.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
     }
 

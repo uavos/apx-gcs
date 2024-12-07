@@ -22,7 +22,7 @@
 #include "LookupNodeBackup.h"
 
 #include <Database/Database.h>
-#include <Database/FleetDB.h>
+#include <Database/NodesSession.h>
 
 #include "NodeItem.h"
 #include "NodeStorage.h"
@@ -32,7 +32,7 @@ LookupNodeBackup::LookupNodeBackup(NodeItem *node, Fact *parent)
                      "backups",
                      tr("Backups"),
                      tr("Restore parameters from backup"),
-                     Database::instance()->fleet)
+                     Database::instance()->nodes)
     , _node(node)
 {
     connect(this, &DatabaseLookup::itemTriggered, this, &LookupNodeBackup::loadItem);
@@ -62,11 +62,11 @@ bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
 void LookupNodeBackup::defaultLookup()
 {
     const QString s = QString("%%%1%%").arg(filter());
-    query("SELECT * FROM NodeConfigs"
-          " LEFT JOIN Nodes ON NodeConfigs.nodeID=Nodes.key "
-          " LEFT JOIN NodeDicts ON NodeConfigs.dictID=NodeDicts.key "
-          " WHERE Nodes.sn=? AND (NodeConfigs.title LIKE ?)"
-          " ORDER BY NodeConfigs.time DESC"
+    query("SELECT * FROM NodeConf"
+          " LEFT JOIN Node ON NodeConf.nodeID=Node.key "
+          " LEFT JOIN NodeDict ON NodeConf.dictID=NodeDict.key "
+          " WHERE Node.uid=? AND (NodeConf.title LIKE ?)"
+          " ORDER BY NodeConf.time DESC"
           " LIMIT 50",
           QVariantList() << _node->uid() << s);
 }

@@ -62,7 +62,7 @@ TelemetryRecorder::TelemetryRecorder(Unit *unit, Fact *parent)
             [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, false); });
 
     // record config on each upload or save
-    connect(unit->storage(), &UnitStorage::configSaved, this, &TelemetryRecorder::recordConfig);
+    connect(unit->storage(), &UnitStorage::confSaved, this, &TelemetryRecorder::recordUnitConf);
 
     // record text messages
     connect(unit->f_nodes, &Nodes::fieldUploadReport, this, &TelemetryRecorder::recordConfigUpdate);
@@ -156,7 +156,7 @@ void TelemetryRecorder::checkFileRecord()
     if (_unit->f_nodes->valid()) {
         auto hash = _configHash;
         _configHash.clear();
-        recordConfig(hash, _unit->confTitle());
+        recordUnitConf(hash, _unit->confTitle());
     }
 
     if (!_unit->f_mission->empty())
@@ -301,7 +301,7 @@ void TelemetryRecorder::recordMission(bool uplink)
 
     _stream.write_jso(getEventTimestamp(), "mission", mission, uplink);
 }
-void TelemetryRecorder::recordConfig(QString hash, QString title)
+void TelemetryRecorder::recordUnitConf(QString hash, QString title)
 {
     if (hash.isEmpty())
         return;

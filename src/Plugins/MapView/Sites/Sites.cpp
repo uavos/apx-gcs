@@ -46,16 +46,16 @@ Sites::Sites(Fact *parent)
 
     // create/update database table
     auto db = Database::instance()->storage;
-    new DBReqMakeTable(db,
-                       "Sites",
-                       {
-                           "key INTEGER PRIMARY KEY NOT NULL",
-                           "title TEXT NOT NULL",
-                           "lat REAL NOT NULL",
-                           "lon REAL NOT NULL",
-                       });
-    new DBReqMakeIndex(db, "Sites", "title", true);
-    new DBReqMakeIndex(db, "Sites", "lat,lon", true);
+    new db::MakeTable(db,
+                      "Sites",
+                      {
+                          "key INTEGER PRIMARY KEY NOT NULL",
+                          "title TEXT NOT NULL",
+                          "lat REAL NOT NULL",
+                          "lon REAL NOT NULL",
+                      });
+    new db::MakeIndex(db, "Sites", "title", true);
+    new db::MakeIndex(db, "Sites", "lat,lon", true);
 
     f_lookup = new LookupSites(this);
 
