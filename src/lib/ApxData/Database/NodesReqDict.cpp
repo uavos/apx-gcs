@@ -97,7 +97,7 @@ bool NodeSaveDict::run(QSqlQuery &query)
         QVariantList rec_bind;
         QStringList st;
         for (auto k : columns) {
-            QVariant v = m[k];
+            QVariant v = m.value(k).toVariant();
             if (v.isNull()) {
                 st << QString("%1 IS NULL").arg(k);
             } else {

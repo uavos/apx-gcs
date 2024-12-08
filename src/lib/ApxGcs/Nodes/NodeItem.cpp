@@ -185,7 +185,6 @@ void NodeItem::upload()
         emit _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
     }
     _protocol->requestUpdate(values);
-    json::save("node-upload-" + title(), values);
 }
 void NodeItem::confSaved()
 {

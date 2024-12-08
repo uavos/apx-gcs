@@ -309,7 +309,7 @@ bool PApxNode::find_field(QString name,
     if (a > 1) {
         auto i = match.captured(1).toInt() - 1;
         if (i < 0) {
-            qWarning() << "array" << name;
+            qWarning() << title() << "array" << name;
             return false;
         }
         name = name.left(a);
@@ -317,7 +317,7 @@ bool PApxNode::find_field(QString name,
     }
     auto i = _field_names.indexOf(name);
     if (i < 0) {
-        qWarning() << "missing field:" << name;
+        qWarning() << title() << "missing field:" << name;
         return false;
     }
     v |= i << 8;
@@ -370,11 +370,11 @@ void PApxNode::dictCacheLoaded(QJsonObject dict)
 {
     auto hash = dict.value("hash").toString();
     if (_dict_hash != hash) {
-        qWarning() << "wrong hash" << _dict_hash << hash;
+        qWarning() << title() << "wrong hash" << _dict_hash << hash;
         return;
     }
     if (dict.isEmpty()) {
-        qWarning() << "no dict data";
+        qWarning() << title() << "no dict data";
         requestDictDownload();
         return;
     }
@@ -407,14 +407,14 @@ void PApxNode::dictCacheLoaded(QJsonObject dict)
         _field_units.append(field.value("units").toString());
     }
 
-    qDebug() << "dict from cache" << _field_names.size();
+    qDebug() << title() << "dict from cache" << _field_names.size();
 
     emit dictReceived(dict);
 }
 void PApxNode::dictCacheMissing(QString hash)
 {
     if (_dict_hash != hash) {
-        qWarning() << "wrong hash" << _dict_hash << hash;
+        qWarning() << title() << "wrong hash" << _dict_hash << hash;
         return;
     }
     requestDictDownload();
@@ -442,7 +442,7 @@ void PApxNode::parseDictData(PApxNode *node,
         // check node hash
         QString hash = hashToText(info.hash);
         if (hash != _dict_hash) {
-            qWarning() << "node hash error:" << hash << _dict_hash;
+            qWarning() << title() << "node hash error:" << hash << _dict_hash;
             break;
         }
 
@@ -525,7 +525,8 @@ void PApxNode::parseDictData(PApxNode *node,
                     i = groups.at(gidx);
                     continue;
                 }
-                qWarning() << "missing group:" << type << field.value("array") << group << st;
+                qWarning() << this->title() << "missing group:" << type << field.value("array")
+                           << group << st;
                 path.clear(); //mark error
                 break;
             }
@@ -552,14 +553,14 @@ void PApxNode::parseDictData(PApxNode *node,
     } while (0);
 
     if (err) {
-        qWarning() << "dict error" << data.toHex().toUpper();
+        qWarning() << title() << "dict error" << data.toHex().toUpper();
         _field_types.clear();
         _field_names.clear();
         _field_arrays.clear();
         _field_units.clear();
         return;
     }
-    qDebug() << "dict parsed" << _field_names.size();
+    qDebug() << title() << "dict parsed" << _field_names.size();
 
     QJsonObject dict;
     dict.insert("hash", _dict_hash);
@@ -611,7 +612,7 @@ void PApxNode::parseConfData(PApxNode *node,
         auto hash = hashToText(vhash);
 
         if (hash != _dict_hash) {
-            qWarning() << "data hash error:" << hash << _dict_hash;
+            qWarning() << title() << "data hash error:" << hash << _dict_hash;
             break;
         }
 
@@ -629,7 +630,7 @@ void PApxNode::parseConfData(PApxNode *node,
                     break;
                 stream.reset(stream.pos() + d_pos);
             } else if (d_offset < d_pos) {
-                qWarning() << "padding negative:" << d_offset << d_pos << offsets;
+                qWarning() << title() << "padding negative:" << d_offset << d_pos << offsets;
                 break;
             }
 
@@ -687,7 +688,8 @@ void PApxNode::parseConfData(PApxNode *node,
     } while (0);
 
     if (err) {
-        qWarning() << "conf error" << fidx << stream.available() << data.toHex().toUpper();
+        qWarning() << title() << "conf error" << fidx << stream.available()
+                   << data.toHex().toUpper();
         _skip_cache = true;
         // requestDict();
         return;
@@ -825,13 +827,13 @@ void PApxNode::parseScriptData(PApxNode *node,
     //qDebug() << "script data" << info.size << data.size();
     // check script hash
     if (info.hash != _script_value) {
-        qWarning() << "script hash error:" << QString::number(info.hash, 16)
+        qWarning() << title() << "script hash error:" << QString::number(info.hash, 16)
                    << QString::number(_script_value, 16);
         return;
     }
 
     if (_script_field.isEmpty()) {
-        qWarning() << "missing script field";
+        qWarning() << title() << "missing script field";
         return;
     }
 
@@ -840,28 +842,28 @@ void PApxNode::parseScriptData(PApxNode *node,
         PStreamReader stream(data);
         xbus::script::file_hdr_s hdr{};
         if (stream.available() < hdr.psize()) {
-            qWarning() << "hdr size" << stream.available();
+            qWarning() << title() << "hdr size" << stream.available();
             return;
         }
         hdr.read(&stream);
 
         if (stream.available() != (hdr.code_size + hdr.src_size)) {
-            qWarning() << "size" << stream.available() << hdr.code_size << hdr.src_size;
+            qWarning() << title() << "size" << stream.available() << hdr.code_size << hdr.src_size;
             return;
         }
         const QByteArray code = stream.toByteArray(stream.pos(), hdr.code_size);
         const QByteArray src = qUncompress(
             stream.toByteArray(stream.pos() + hdr.code_size, hdr.src_size));
         if (src.isEmpty() || code.isEmpty()) {
-            qWarning() << "empty" << stream.available() << src.size() << code.size();
+            qWarning() << title() << "empty" << stream.available() << src.size() << code.size();
             return;
         }
-        QString title = QString::fromUtf8(hdr.title, strnlen(hdr.title, sizeof(hdr.title)));
+        auto scr_title = QString::fromUtf8(hdr.title, strnlen(hdr.title, sizeof(hdr.title)));
 
-        qDebug() << "script:" << title; // << _script_code.toHex().toUpper();
+        qDebug() << title() << "script:" << scr_title; // << _script_code.toHex().toUpper();
 
         QStringList st;
-        st << title;
+        st << scr_title;
         st << qCompress(src, 9).toHex().toUpper();
         st << qCompress(code, 9).toHex().toUpper();
         value = st.join(',');
@@ -878,7 +880,7 @@ void PApxNode::requestUpdate(QJsonObject values)
         QByteArray data = pack_script(values.value(_script_field));
         if (data.isEmpty()) {
             _script_value = {};
-            qDebug() << "empty script";
+            qDebug() << title() << "empty script";
         } else {
             _script_value = apx::crc32(data.data(), data.size());
         }
