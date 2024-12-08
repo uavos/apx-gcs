@@ -471,7 +471,7 @@ void NodeItem::fromJson(const QJsonValue &jsv)
     if (jso.isEmpty())
         return;
 
-    json::save("nodes-fromJson-" + title(), jso);
+    // json::save("nodes-fromJson-" + title(), jso);
 
     auto values = jso.value("values").toObject();
 
@@ -491,8 +491,6 @@ void NodeItem::fromJson(const QJsonValue &jsv)
 
 void NodeItem::importValues(QJsonObject values)
 {
-    json::save("nodes-importValues-" + title(), values);
-
     auto keys = values.keys();
     for (auto f : m_fields) {
         QString fpath = f->fpath();
@@ -511,6 +509,8 @@ void NodeItem::importValues(QJsonObject values)
     } else {
         //message(tr("Imported config"), AppNotify::FromApp);
     }
+
+    // json::save("nodes-importValues-" + title(), values);
 }
 
 NodeField *NodeItem::field(QString name) const
