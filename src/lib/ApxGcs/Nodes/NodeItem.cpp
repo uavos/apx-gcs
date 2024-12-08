@@ -471,6 +471,8 @@ void NodeItem::fromJson(const QJsonValue &jsv)
     if (jso.isEmpty())
         return;
 
+    json::save("nodes-fromJson-" + title(), jso);
+
     auto values = jso.value("values").toObject();
 
     if (!valid()) {
@@ -489,19 +491,21 @@ void NodeItem::fromJson(const QJsonValue &jsv)
 
 void NodeItem::importValues(QJsonObject values)
 {
-    QStringList st = values.keys();
+    json::save("nodes-importValues-" + title(), values);
+
+    auto keys = values.keys();
     for (auto f : m_fields) {
         QString fpath = f->fpath();
         if (!values.contains(fpath))
             continue;
         f->fromJson(values.value(fpath));
-        st.removeOne(fpath);
+        keys.removeOne(fpath);
     }
-    if (st.size() > 0) {
-        for (auto &i : st) {
+    if (keys.size() > 0) {
+        for (auto &i : keys) {
             qWarning() << "missing field:" << i;
         }
-        auto rcnt = values.size() - st.size();
+        auto rcnt = values.size() - keys.size();
         message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),
                 AppNotify::FromApp | AppNotify::Warning);
     } else {

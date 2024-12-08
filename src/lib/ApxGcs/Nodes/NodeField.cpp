@@ -26,6 +26,7 @@
 
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
+#include <ApxMisc/JsonHelpers.h>
 #include <Fleet/Fleet.h>
 
 NodeField::NodeField(
@@ -168,6 +169,8 @@ void NodeField::fromJson(const QJsonValue &jsv)
 {
     if (size() > 0) {
         //expanded field
+        json::save("nodes-field-" + title(), jsv.toArray());
+
         if (!jsv.isArray()) {
             qWarning() << "Array expected" << path();
             return;
@@ -182,7 +185,7 @@ void NodeField::fromJson(const QJsonValue &jsv)
     }
 
     if (_type == "real") {
-        setValue(QString::number(jsv.toDouble()));
+        setValue(QString::number(jsv.toVariant().toDouble()));
         return;
     }
 

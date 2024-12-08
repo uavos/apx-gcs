@@ -25,7 +25,7 @@
 
 namespace json {
 
-void save(QString fileName, const QJsonObject &jso);
+void save(QString fileName, const QJsonValue &jsv);
 
 QJsonObject filter_names(QJsonObject jso, const QStringList &names = {}, bool recursive = true);
 

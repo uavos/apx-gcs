@@ -352,7 +352,7 @@ void Nodes::fromJson(const QJsonValue &jsv)
         return;
     }
 
-    // imprt by UID
+    // import by UID
     QList<NodeItem *> nlist = m_nodes;
     QJsonArray vlist;
     for (const auto &i : nodes) {

@@ -21,7 +21,7 @@
  */
 #include "JsonHelpers.h"
 
-void json::save(QString fileName, const QJsonObject &jso)
+void json::save(QString fileName, const QJsonValue &jsv)
 {
     // default to downloads folder
     auto fi = QFileInfo(fileName);
@@ -39,7 +39,12 @@ void json::save(QString fileName, const QJsonObject &jso)
         qWarning() << "failed to open file" << fileName;
         return;
     }
-    file.write(QJsonDocument(jso).toJson(QJsonDocument::Indented).constData());
+    if (jsv.isObject())
+        file.write(QJsonDocument(jsv.toObject()).toJson(QJsonDocument::Indented));
+    else if (jsv.isArray())
+        file.write(QJsonDocument(jsv.toArray()).toJson(QJsonDocument::Indented));
+    else
+        file.write(jsv.toVariant().toString().toUtf8());
 }
 
 QJsonObject json::filter_names(QJsonObject jso, const QStringList &names, bool recursive)

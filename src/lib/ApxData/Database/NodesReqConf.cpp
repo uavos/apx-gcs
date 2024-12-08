@@ -267,6 +267,7 @@ bool NodeLoadConf::run(QSqlQuery &query)
         jsa.append(jsv);
         _values[s] = jsa;
     }
+
     emit confLoaded(_values);
     return true;
 }
