@@ -128,9 +128,10 @@ QJsonValue WaypointActions::toJson()
     for (auto i : facts()) {
         if (i->isZero())
             continue;
-        auto v = i->toJson();
-        if (!v.isNull())
-            jso.insert(i->name(), v);
+        auto jsv = i->toJson();
+        if (jsv.isNull() || jsv.isUndefined())
+            continue;
+        jso.insert(i->name(), jsv);
     }
     if (jso.isEmpty())
         return {};

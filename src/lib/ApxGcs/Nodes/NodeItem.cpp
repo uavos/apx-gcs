@@ -714,18 +714,21 @@ void NodeItem::confUpdated(QJsonObject values)
     // updated from another GCS instance
     if (!valid())
         return;
-    for (const auto name : values.keys()) {
-        auto f = field(name);
+
+    auto keys = values.keys();
+    for (auto it = values.constBegin(); it != values.constEnd(); ++it) {
+        auto f = field(it.key());
         if (!f)
             continue;
-        f->fromJson(values.take(name));
+        f->fromJson(it.value());
         f->backup();
+        keys.removeOne(it.key());
         apxMsg() << tr("Updated").append(':') << f->name() + ':' << f->text();
     }
-    if (values.isEmpty())
+    if (keys.isEmpty())
         return;
 
-    apxMsgW() << tr("Fields not found").append(':') << values.keys();
+    apxMsgW() << tr("Fields not found").append(':') << keys;
 }
 
 void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)

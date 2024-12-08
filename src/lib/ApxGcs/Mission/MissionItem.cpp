@@ -114,7 +114,7 @@ void MissionItem::hashData(QCryptographicHash *h) const
 QJsonValue MissionItem::toJson()
 {
     const auto jsv = Fact::toJson();
-    if (jsv.isNull())
+    if (jsv.isNull() || jsv.isUndefined())
         return {};
     auto jso = jsv.toObject();
     jso.remove(f_order->name());

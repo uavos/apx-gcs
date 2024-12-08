@@ -640,43 +640,43 @@ void PApxNode::parseConfData(PApxNode *node,
             auto array = _field_arrays.value(fidx);
             auto type = _field_types.value(fidx);
             auto units = _field_units.value(fidx);
-            QJsonValue value;
+            QJsonValue jsv;
 
             if (array > 0) {
                 QJsonArray list;
                 for (auto i = 0; i < array; ++i) {
-                    QJsonValue v = read_param(stream, type);
-                    if (v.isNull())
+                    auto jsv_item = read_param(stream, type);
+                    if (jsv_item.isNull() || jsv_item.isUndefined())
                         break;
                     if (type == xbus::node::conf::option)
-                        v = optionToText(v, fidx);
+                        jsv_item = optionToText(jsv_item, fidx);
                     else if (type == xbus::node::conf::bind)
-                        v = mandalaToString(v.toInt());
-                    list.append(v);
+                        jsv_item = mandalaToString(jsv_item.toVariant().toInt());
+                    list.append(jsv_item);
                 }
                 if (list.size() == array)
-                    value = list;
+                    jsv = list;
             } else {
-                value = read_param(stream, type);
+                jsv = read_param(stream, type);
                 if (type == xbus::node::conf::option)
-                    value = optionToText(value, fidx);
+                    jsv = optionToText(jsv, fidx);
                 else if (type == xbus::node::conf::bind)
-                    value = mandalaToString(value.toInt());
+                    jsv = mandalaToString(jsv.toInt());
             }
 
             //qDebug() << v << stream.pos() << stream.available();
-            if (value.isNull())
+            if (jsv.isNull() || jsv.isUndefined())
                 break;
 
             QString name = _field_names.value(fidx);
 
             if (type == xbus::node::conf::script) {
-                _script_value = value.toVariant().value<xbus::node::conf::script_t>();
+                _script_value = jsv.toVariant().value<xbus::node::conf::script_t>();
                 _script_field = name;
-                value = {};
+                jsv = {};
             }
 
-            values.insert(name, value);
+            values.insert(name, jsv);
 
             fidx++;
             if (fidx == _field_types.size()) {
@@ -793,21 +793,21 @@ bool PApxNode::write_param(PStreamWriter &stream, xbus::node::conf::type_e type,
     return false;
 }
 
-QJsonValue PApxNode::optionToText(QJsonValue value, size_t fidx)
+QJsonValue PApxNode::optionToText(const QJsonValue &jsv, size_t fidx)
 {
-    auto v = value.toInt();
+    auto var = jsv.toVariant();
     auto units = _field_units.value(fidx).split(',');
-    return units.value(v, value.toString());
+    return units.value(var.toInt(), var.toString());
 }
-QJsonValue PApxNode::textToOption(QJsonValue value, size_t fidx)
+QJsonValue PApxNode::textToOption(const QJsonValue &jsv, size_t fidx)
 {
-    auto s = value.toString();
+    auto s = jsv.toVariant().toString();
     auto units = _field_units.value(fidx).split(',');
     if (units.contains(s)) {
         xbus::node::conf::option_t opt = units.indexOf(s);
         return opt;
     }
-    return value;
+    return jsv;
 }
 
 void PApxNode::parseScriptDataUpload(PApxNode *node,
@@ -889,9 +889,9 @@ void PApxNode::requestUpdate(QJsonObject values)
 
     new PApxNodeRequestUpdate(this, values);
 }
-QByteArray PApxNode::pack_script(QJsonValue value)
+QByteArray PApxNode::pack_script(const QJsonValue &jsv)
 {
-    QStringList st = value.toString().split(',', Qt::KeepEmptyParts);
+    QStringList st = jsv.toVariant().toString().split(',', Qt::KeepEmptyParts);
 
     if (st.size() != 3)
         return {};

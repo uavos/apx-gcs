@@ -53,15 +53,15 @@ QJsonObject json::filter_names(QJsonObject jso, const QStringList &names, bool r
     // and keep only those in fields array if set
     for (auto it = jso.begin(); it != jso.end();) {
         auto key = it.key();
-        auto value = it.value();
+        auto jsv = it.value();
 
-        if (value.isNull() || value.isUndefined() || (!names.isEmpty() && !names.contains(key))) {
+        if (jsv.isNull() || jsv.isUndefined() || (!names.isEmpty() && !names.contains(key))) {
             it = jso.erase(it);
             continue;
         }
 
-        if (value.isObject()) {
-            auto jso_value = value.toObject();
+        if (jsv.isObject()) {
+            auto jso_value = jsv.toObject();
             if (jso_value.isEmpty()) {
                 it = jso.erase(it);
                 continue;
@@ -74,10 +74,10 @@ QJsonObject json::filter_names(QJsonObject jso, const QStringList &names, bool r
                 }
                 jso[key] = jso_value;
             }
-        } else if (value.isArray() && value.toArray().isEmpty()) {
+        } else if (jsv.isArray() && jsv.toArray().isEmpty()) {
             it = jso.erase(it);
             continue;
-        } else if (value.isString() && value.toString().isEmpty()) {
+        } else if (jsv.isString() && jsv.toString().isEmpty()) {
             it = jso.erase(it);
             continue;
         }

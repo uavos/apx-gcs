@@ -566,9 +566,10 @@ QJsonValue Fact::toJson()
         if (treeType() != NoFlags && dataType() == Count) {
             QJsonArray jsa;
             for (auto i : facts()) {
-                auto v = i->toJson();
-                if (!v.isNull())
-                    jsa.append(v);
+                const auto jsv = i->toJson();
+                if (jsv.isNull() || jsv.isUndefined())
+                    continue;
+                jsa.append(jsv);
             }
             if (jsa.isEmpty())
                 return {};
@@ -577,9 +578,10 @@ QJsonValue Fact::toJson()
 
         QJsonObject jso;
         for (auto i : facts()) {
-            auto v = i->toJson();
-            if (!v.isNull())
-                jso[i->name()] = v;
+            const auto jsv = i->toJson();
+            if (jsv.isNull() || jsv.isUndefined())
+                continue;
+            jso[i->name()] = jsv;
         }
         if (jso.isEmpty())
             return {};

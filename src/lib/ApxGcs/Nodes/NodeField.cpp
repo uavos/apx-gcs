@@ -169,7 +169,7 @@ void NodeField::fromJson(const QJsonValue &jsv)
 {
     if (size() > 0) {
         //expanded field
-        // json::save("nodes-field-" + title(), jsv.toArray());
+        // json::save("nodes-field-" + title(), jsv);
 
         if (!jsv.isArray()) {
             qWarning() << "Array expected" << path();

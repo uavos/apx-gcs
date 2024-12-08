@@ -744,7 +744,7 @@ void ApxFw::updateNodesMeta(QDir dir)
         }
     }
 
-    meta = json::filter_names(meta);
+    meta = json::fix_numbers(json::filter_names(meta));
     if (meta.isEmpty())
         return;
 

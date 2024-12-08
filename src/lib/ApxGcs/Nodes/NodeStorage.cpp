@@ -119,15 +119,15 @@ void NodeStorage::dictMetaLoaded(QJsonObject jso)
     uint cnt = 0;
     for (auto it = jso.begin(); it != jso.end(); ++it) {
         const auto name = it.key();
-        const auto meta = it.value().toObject();
-
         auto f = _node->findChild(name);
         if (!f)
             continue;
 
         cnt++;
 
-        auto descr = meta["descr"].toString();
+        const auto meta = json::fix_numbers(json::filter_names(it.value().toObject()));
+
+        auto descr = meta.value("descr").toString();
 
         descr = descr.left(descr.indexOf('\n'));
         descr = descr.left(descr.indexOf('.'));
@@ -138,11 +138,11 @@ void NodeStorage::dictMetaLoaded(QJsonObject jso)
         if (!nf)
             continue;
 
-        auto def = meta["def"];
-        auto min = meta["min"];
-        auto max = meta["max"];
-        auto increment = meta["increment"];
-        auto decimal = meta["decimal"];
+        const auto def = meta.value("def").toVariant();
+        const auto min = meta.value("min").toVariant();
+        const auto max = meta.value("max").toVariant();
+        const auto increment = meta.value("increment").toVariant();
+        const auto decimal = meta.value("decimal").toVariant();
 
         if (!def.isNull())
             nf->setDefaultValue(def);

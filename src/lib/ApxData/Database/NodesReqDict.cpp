@@ -207,7 +207,7 @@ bool NodeLoadDict::run(QSqlQuery &query)
                                         "units",
                                     });
 
-        // if (query.value("type").toString() == "option" && field.value("units").isNull())
+        // if (query.value("type").toString() == "option" && field.value("units").isUndefined())
         //     field["units"] = QString("off,on");
 
         field = json::fix_numbers(json::filter_names(field));

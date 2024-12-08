@@ -60,7 +60,7 @@ bool MissionShare::importRequest(QStringList fileNames)
     auto fileName = fileNames.first();
 
     const auto jsv = Fact::parseJsonData(loadData(fileName));
-    if (jsv.isNull())
+    if (jsv.isNull() || jsv.isUndefined())
         return false;
 
     _mission->fromJson(jsv);

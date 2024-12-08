@@ -54,11 +54,11 @@ public:
     static QJsonValue read_param(PStreamReader &stream, xbus::node::conf::type_e type);
     static bool write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QJsonValue value);
 
-    static QByteArray pack_script(QJsonValue value);
+    static QByteArray pack_script(const QJsonValue &jsv);
     static QString hashToText(xbus::node::hash_t hash);
 
-    QJsonValue optionToText(QJsonValue value, size_t fidx);
-    QJsonValue textToOption(QJsonValue value, size_t fidx);
+    QJsonValue optionToText(const QJsonValue &jsv, size_t fidx);
+    QJsonValue textToOption(const QJsonValue &jsv, size_t fidx);
 
     // requests
     void requestIdent() override { new PApxNodeRequestIdent(this); }

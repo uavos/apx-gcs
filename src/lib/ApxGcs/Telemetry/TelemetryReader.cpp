@@ -203,8 +203,8 @@ void TelemetryReader::do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject
         return;
 
     if (name == "nodes") {
-        // auto req = new db::nodes::ImportUnitConfig(data);
-        // req->exec();
+        auto req = new db::nodes::UnitImportConf(data);
+        req->exec();
         // qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
     }
 }
