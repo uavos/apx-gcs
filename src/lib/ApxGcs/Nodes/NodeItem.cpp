@@ -185,6 +185,7 @@ void NodeItem::upload()
         emit _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
     }
     _protocol->requestUpdate(values);
+    json::save("node-upload-" + title(), values);
 }
 void NodeItem::confSaved()
 {
@@ -501,7 +502,7 @@ void NodeItem::importValues(QJsonObject values)
     }
     if (keys.size() > 0) {
         for (auto &i : keys) {
-            qWarning() << "missing field:" << i;
+            qWarning() << "missing field:" << i << values.value(i);
         }
         auto rcnt = values.size() - keys.size();
         message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),
@@ -679,6 +680,8 @@ void NodeItem::confReceived(QJsonObject values)
         qWarning() << "missing dict:" << title();
         return;
     }
+
+    // json::save("nodes-confReceived-" + title(), values);
 
     QStringList fields;
     for (auto f : m_fields) {

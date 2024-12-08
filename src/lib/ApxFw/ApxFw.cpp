@@ -676,7 +676,7 @@ QJsonArray ApxFw::loadParameters(QString nodeName, QString hw)
         if (ba.isEmpty())
             break;
 
-        quint32 size = params["size"].toInt();
+        quint32 size = params["size"].toVariant().toUInt();
 
         ba.prepend(static_cast<char>(size));
         ba.prepend(static_cast<char>(size >> 8));
@@ -725,7 +725,7 @@ void ApxFw::updateNodesMeta(QDir dir)
         if (ba.isEmpty())
             continue;
 
-        quint32 size = params["size"].toInt();
+        quint32 size = params["size"].toVariant().toUInt();
 
         ba.prepend(static_cast<char>(size));
         ba.prepend(static_cast<char>(size >> 8));

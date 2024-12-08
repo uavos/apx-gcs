@@ -403,7 +403,7 @@ void PApxNode::dictCacheLoaded(QJsonObject dict)
             continue;
         _field_types.append(type_id);
         _field_names.append(field.value("name").toString());
-        _field_arrays.append(field.value("array").toInt());
+        _field_arrays.append(field.value("array").toVariant().toUInt());
         _field_units.append(field.value("units").toString());
     }
 
@@ -525,8 +525,7 @@ void PApxNode::parseDictData(PApxNode *node,
                     i = groups.at(gidx);
                     continue;
                 }
-                qWarning() << "missing group:" << type << field.value("array").toInt() << group
-                           << st;
+                qWarning() << "missing group:" << type << field.value("array") << group << st;
                 path.clear(); //mark error
                 break;
             }
@@ -651,7 +650,7 @@ void PApxNode::parseConfData(PApxNode *node,
                     if (type == xbus::node::conf::option)
                         jsv_item = optionToText(jsv_item, fidx);
                     else if (type == xbus::node::conf::bind)
-                        jsv_item = mandalaToString(jsv_item.toVariant().toInt());
+                        jsv_item = mandalaToString(jsv_item.toVariant().toUInt());
                     list.append(jsv_item);
                 }
                 if (list.size() == array)
@@ -661,7 +660,7 @@ void PApxNode::parseConfData(PApxNode *node,
                 if (type == xbus::node::conf::option)
                     jsv = optionToText(jsv, fidx);
                 else if (type == xbus::node::conf::bind)
-                    jsv = mandalaToString(jsv.toInt());
+                    jsv = mandalaToString(jsv.toVariant().toUInt());
             }
 
             //qDebug() << v << stream.pos() << stream.available();
@@ -753,13 +752,13 @@ QJsonValue PApxNode::read_param(PStreamReader &stream, xbus::node::conf::type_e 
 }
 
 template<typename _T>
-static bool _write_param(PStreamWriter &stream, QVariant value)
+static bool _write_param(PStreamWriter &stream, QJsonValue value)
 {
-    return stream.write<_T>(value.value<_T>());
+    return stream.write<_T>(value.toVariant().value<_T>());
 }
 
 template<typename _T>
-static bool _write_param_str(PStreamWriter &stream, QVariant value)
+static bool _write_param_str(PStreamWriter &stream, QJsonValue value)
 {
     return stream.write_string(value.toString().toLatin1().data());
 }

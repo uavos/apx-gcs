@@ -41,7 +41,7 @@ NodeField::NodeField(
     setTitle(m.value("title").toString());
 
     auto funits = m.value("units").toString();
-    _array = m.value("array").toInt();
+    _array = m.value("array").toVariant().toInt();
 
     new NodeViewActions(this, node->nodes());
 
