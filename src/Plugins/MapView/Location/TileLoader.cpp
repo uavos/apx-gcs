@@ -312,8 +312,8 @@ void TileLoader::networkReplyFinished()
     if (!checkImage(data)) {
         apxConsoleW() << "Error downloading map (not an image)";
     } else {
-        qDebug() << versionGoogleMaps << data.size()
-                 << reply->header(QNetworkRequest::ContentTypeHeader).toString();
+        // qDebug() << versionGoogleMaps << data.size()
+        //          << reply->header(QNetworkRequest::ContentTypeHeader).toString();
 
         saveTile(uid, versionGoogleMaps.toUInt(), data);
     }

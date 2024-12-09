@@ -31,8 +31,8 @@
 LookupUnitConfig::LookupUnitConfig(Unit *unit, Fact *parent)
     : DatabaseLookup(parent,
                      "load",
-                     tr("Load configuration"),
-                     tr("Load configuration from database"),
+                     tr("Unit Parameters"),
+                     tr("Load unit parameters from database"),
                      Database::instance()->nodes,
                      Action | IconOnly)
     , _unit(unit)
@@ -42,23 +42,27 @@ LookupUnitConfig::LookupUnitConfig(Unit *unit, Fact *parent)
 
 void LookupUnitConfig::loadItem(QVariantMap modelData)
 {
-    QString hash = modelData.value("hash").toString();
+    auto hash = modelData.value("hash").toString();
     if (hash.isEmpty())
         return;
+
     _unit->storage()->loadUnitConf(hash);
 }
 
-bool LookupUnitConfig::fixItemDataThr(QVariantMap *item)
+QVariantMap LookupUnitConfig::thr_prepareRecordData(const QJsonObject &jso)
 {
-    QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
+    auto item = jso.toVariantMap();
+
+    QString time = QDateTime::fromMSecsSinceEpoch(item.value("time").toLongLong())
                        .toString("yyyy MMM dd hh:mm:ss");
-    QString callsign = item->value("callsign").toString();
-    QString title = item->value("title").toString();
-    QString notes = item->value("notes").toString();
-    item->insert("title", time);
-    item->insert("value", title);
-    item->insert("descr", callsign + (notes.isEmpty() ? "" : QString(" - %1").arg(notes)));
-    return true;
+    QString callsign = item.value("name").toString();
+    QString title = item.value("title").toString();
+    QString notes = item.value("notes").toString();
+    item.insert("title", time);
+    item.insert("value", title);
+    item.insert("descr", callsign + (notes.isEmpty() ? "" : QString(" - %1").arg(notes)));
+
+    return item;
 }
 
 void LookupUnitConfig::defaultLookup()

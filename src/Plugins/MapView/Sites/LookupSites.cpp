@@ -43,21 +43,24 @@ LookupSites::LookupSites(Sites *sites)
     disconnect(db, &DatabaseSession::modified, this, nullptr);
 }
 
-bool LookupSites::fixItemDataThr(QVariantMap *item)
+QVariantMap LookupSites::thr_prepareRecordData(const QJsonObject &jso)
 {
+    auto item = jso.toVariantMap();
+
     mutex.lock();
     QGeoCoordinate rc = reqCenter;
     double rd = reqDist;
     mutex.unlock();
     double dist = 0;
-    QGeoCoordinate c(item->value("lat").toDouble(), item->value("lon").toDouble());
+    QGeoCoordinate c(item.value("lat").toDouble(), item.value("lon").toDouble());
     if (rc.isValid()) {
         dist = rc.distanceTo(c);
         if (dist > rd)
-            return false;
-        item->insert("value", AppRoot::distanceToString(dist));
+            return {};
+        item.insert("value", AppRoot::distanceToString(dist));
     }
-    return true;
+
+    return item;
 }
 
 void LookupSites::updateRect()
@@ -76,7 +79,7 @@ void LookupSites::updateRect()
         if (d > 8.0)
             break;
         if (reqRect.contains(r)) {
-            reloadQueryResults();
+            // defaultLookup();
             return;
         }
         break;

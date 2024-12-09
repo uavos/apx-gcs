@@ -36,12 +36,6 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
 
     setModel(new DatabaseLookupModel(this));
 
-    connect(this,
-            &DatabaseLookup::_itemsLoaded,
-            this,
-            &DatabaseLookup::loadRecordsItems,
-            Qt::QueuedConnection);
-
     connect(dbModel(), &DatabaseLookupModel::filterChanged, this, &DatabaseLookup::defaultLookup);
     connect(db,
             &DatabaseSession::modified,
@@ -59,9 +53,22 @@ DatabaseLookup::DatabaseLookup(Fact *parent,
                              "wrench");
     f_tools->setBinding(db);
 
-    modelSyncTimer.setSingleShot(true);
-    modelSyncTimer.setInterval(500);
-    connect(&modelSyncTimer, &QTimer::timeout, this, &DatabaseLookup::loadItems);
+    // delayed update loaded records
+    connect(
+        this,
+        &DatabaseLookup::_itemsLoaded,
+        this,
+        [this](DatabaseLookupModel::ItemsList items) {
+            _loadedItems = items;
+            _modelSyncTimer.start();
+        },
+        Qt::QueuedConnection);
+
+    _modelSyncTimer.setSingleShot(true);
+    _modelSyncTimer.setInterval(100);
+    connect(&_modelSyncTimer, &QTimer::timeout, this, [this]() {
+        static_cast<DatabaseLookupModel *>(model())->syncItems(_loadedItems);
+    });
 }
 
 QString DatabaseLookup::filter() const
@@ -84,56 +91,23 @@ void DatabaseLookup::query(DatabaseRequest *req)
     connect(req,
             &DatabaseRequest::queryResults,
             this,
-            &DatabaseLookup::loadQueryResults,
+            &DatabaseLookup::thr_loadQueryResults,
             Qt::DirectConnection);
     req->exec();
 }
-void DatabaseLookup::loadQueryResults(DatabaseRequest::Records records)
+void DatabaseLookup::thr_loadQueryResults(QJsonArray records)
 {
-    loadMutex.lock();
-    this->records = records;
-    loadMutex.unlock();
-    reloadQueryResults();
-}
-void DatabaseLookup::reloadQueryResults()
-{
-    //run in thread
-    loadMutex.lock();
-    const QStringList &n = records.names;
-    DatabaseLookupModel::ItemsList list;
-    for (int i = 0; i < records.values.size(); ++i) {
-        const QVariantList &r = records.values.at(i);
-        //create item data
-        QVariantMap m;
-        for (int j = 0; j < n.size(); ++j) {
-            const QString &fn = n.at(j);
-            if (m.contains(fn))
-                continue;
-            m.insert(fn, r.value(j));
-        }
-        if (!fixItemDataThr(&m))
-            break;
-        list.append(m);
-    }
-    loadMutex.unlock();
-    emit _itemsLoaded(list);
-}
-bool DatabaseLookup::fixItemDataThr(QVariantMap *item)
-{
-    Q_UNUSED(item)
-    return true;
-}
-void DatabaseLookup::loadRecordsItems(DatabaseLookupModel::ItemsList list)
-{
-    recordsItems = list;
-    modelSyncTimer.start();
-}
-void DatabaseLookup::loadItems()
-{
-    static_cast<DatabaseLookupModel *>(model())->syncItems(recordsItems);
-}
+    DatabaseLookupModel::ItemsList items;
 
-void DatabaseLookup::triggerItem(QVariantMap modelData)
-{
-    emit itemTriggered(modelData);
+    // fix items data in thread
+    for (auto i : records) {
+        auto item = thr_prepareRecordData(i.toObject());
+        if (item.isEmpty())
+            continue;
+        items.append(item);
+    }
+    json::save("DatabaseLookup", records);
+    qDebug() << "DatabaseLookup: " << title() << records.size() << items.size();
+
+    emit _itemsLoaded(items); // call from main thread
 }

@@ -65,7 +65,7 @@ private:
     QString m_filter;
 
 public slots:
-    void syncItems(ItemsList list);
+    void syncItems(ItemsList items);
     void resetFilter();
 
 signals:

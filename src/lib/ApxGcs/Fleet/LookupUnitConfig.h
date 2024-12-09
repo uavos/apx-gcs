@@ -35,7 +35,7 @@ public:
     explicit LookupUnitConfig(Unit *unit, Fact *parent);
 
 protected:
-    bool fixItemDataThr(QVariantMap *item) override;
+    QVariantMap thr_prepareRecordData(const QJsonObject &jso) override;
     void defaultLookup() override;
 
 private:

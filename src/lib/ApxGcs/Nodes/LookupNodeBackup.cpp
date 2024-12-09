@@ -47,16 +47,19 @@ void LookupNodeBackup::loadItem(QVariantMap modelData)
     _node->storage->loadNodeConfig(hash);
 }
 
-bool LookupNodeBackup::fixItemDataThr(QVariantMap *item)
+QVariantMap LookupNodeBackup::thr_prepareRecordData(const QJsonObject &jso)
 {
-    QString time = QDateTime::fromMSecsSinceEpoch(item->value("time").toLongLong())
+    auto item = jso.toVariantMap();
+
+    QString time = QDateTime::fromMSecsSinceEpoch(item.value("time").toLongLong())
                        .toString("yyyy MMM dd hh:mm:ss");
-    QString version = item->value("version").toString();
-    QString title = item->value("title").toString();
-    item->insert("title", time);
-    item->insert("value", title);
-    item->insert("descr", QString("v%1").arg(version.isEmpty() ? tr("Unknown version") : version));
-    return true;
+    QString version = item.value("version").toString();
+    QString title = item.value("title").toString();
+    item.insert("title", time);
+    item.insert("value", title);
+    item.insert("descr", QString("v%1").arg(version.isEmpty() ? tr("Unknown version") : version));
+
+    return item;
 }
 
 void LookupNodeBackup::defaultLookup()

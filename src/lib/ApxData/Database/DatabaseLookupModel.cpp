@@ -90,23 +90,23 @@ void DatabaseLookupModel::resetFilter()
     setFilter(QString());
 }
 
-void DatabaseLookupModel::syncItems(ItemsList list)
+void DatabaseLookupModel::syncItems(ItemsList items)
 {
     //QTime t0;
     //t0.start();
-    //qDebug()<<"size"<<_items.size()<<list.size();
+    qDebug() << "size" << _items.size() << items.size();
     bool bReset = false;
     //find deleted
     QList<quint64> newKeys;
-    for (int i = 0; i < list.size(); ++i) {
-        newKeys.append(list.at(i).value("key").toULongLong());
+    for (int i = 0; i < items.size(); ++i) {
+        newKeys.append(items.at(i).value("key").toULongLong());
     }
     for (int i = 0; i < _items.size(); ++i) {
         QVariantMap item = _items.at(i);
         quint64 key = item.value("key").toULongLong();
         if (newKeys.contains(key))
             continue;
-        //if(list.contains(_items.at(i)))continue;
+        //if(items.contains(_items.at(i)))continue;
         //qDebug()<<"rm row"<<i<<item.value("title").toString();
         if (qmlMapSafe && (!bReset)) {
             bReset |= i < (_items.size() - 1);
@@ -121,10 +121,10 @@ void DatabaseLookupModel::syncItems(ItemsList list)
         emit countChanged();
         i--;
     }
-    //_items.reserve(list.size());
+    //_items.reserve(items.size());
     //find inserted and moved
-    for (int i = 0; i < list.size(); ++i) {
-        QVariantMap item = list.at(i);
+    for (int i = 0; i < items.size(); ++i) {
+        QVariantMap item = items.at(i);
         quint64 key = item.value("key").toULongLong();
         //arrange
         int j = keys.indexOf(key);
@@ -149,6 +149,8 @@ void DatabaseLookupModel::syncItems(ItemsList list)
             //inserted
             int idx = ordered ? i : _items.size();
             //qDebug()<<"ins row"<<idx<<item.value("title").toString();
+            if (idx > _items.size())
+                idx = _items.size();
             beginInsertRows(QModelIndex(), idx, idx);
             _items.insert(idx, item);
             keys.insert(idx, key);
@@ -161,12 +163,17 @@ void DatabaseLookupModel::syncItems(ItemsList list)
         } else if (ordered) {
             //moved
             //qDebug()<<"mov row"<<i<<j<<item.value("title").toString();
-            beginMoveRows(QModelIndex(), j, j, QModelIndex(), i);
+            int idx = (i >= _items.size() && i > 0) ? _items.size() - 1 : i;
+            // beginMoveRows(QModelIndex(), j, j, QModelIndex(), idx);
+            if (!bReset) {
+                bReset = true;
+                beginResetModel();
+            }
             _items.removeAt(j);
             keys.removeAt(j);
-            _items.insert(i, item);
-            keys.insert(i, key);
-            endMoveRows();
+            _items.insert(idx, item);
+            keys.insert(idx, key);
+            // endMoveRows();
             if (qmlMapSafe && (!bReset)) {
                 beginResetModel();
                 bReset = true;

@@ -173,7 +173,7 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
         req->exec(); // chain next
     }
 
-    const auto hash = query.value("hash").toString();
+    auto hash = query.value("hash").toString();
 
     auto filePath = Session::telemetryFilePath(basename);
     QFile file(filePath);
@@ -200,37 +200,36 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
 
     // update db record when needed
     do {
-        const auto &rinfo = _reader.info();
+        const auto &info = _reader.info();
 
-        QVariantMap q;
         if (!still_writing) {
             // hash only set on finished file
-            auto new_hash = rinfo["hash"].toString();
+            auto new_hash = info["hash"].toString();
             if (new_hash.isEmpty()) {
                 qWarning() << "empty hash";
                 break;
             }
-            if (hash == new_hash) // no changes
-                break;
-            q["hash"] = new_hash;
+            if (hash == new_hash)
+                break; // no changes - don't update
+
+            hash = new_hash;
         }
 
-        q["duration"] = rinfo["duration"].toVariant().toULongLong();
-        q["size"] = rinfo["size"].toVariant().toULongLong();
-        q["info"] = QJsonDocument(rinfo).toJson(QJsonDocument::Compact);
-        q["parsed"] = rinfo["parsed"].toVariant().toULongLong();
-        q["sync"] = 2; // info synced
+        QJsonObject jso;
+        jso["hash"] = hash;
+        jso["duration"] = info["duration"];
+        jso["size"] = info["size"];
+        jso["parsed"] = info["parsed"];
+        jso["sync"] = 2; // info synced
+        jso["info"] = info;
+        if (!recordUpdateQuery(query, jso, "Telemetry", "WHERE key=?"))
+            break;
+        query.addBindValue(_id);
+        if (!query.exec())
+            return false;
 
-        // write changes to db
-        if (recordUpdateQuery(query, q, "Telemetry", "WHERE key=?")) {
-            query.addBindValue(_id);
-            if (!query.exec())
-                return false;
-
-            qDebug() << "Record hash updated";
-
-            emit dbModified();
-        }
+        qDebug() << "Record hash updated";
+        emit dbModified();
     } while (0);
 
     // read record info
@@ -239,16 +238,17 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
 
 bool TelemetryWriteRecordFields::run(QSqlQuery &query)
 {
-    bool bMod = restore;
-    if (recordUpdateQuery(query, info.toVariantMap(), "Telemetry", "WHERE key=?")) {
-        query.addBindValue(telemetryID);
+    bool bMod = _restore;
+    const auto jso = json::filter_names(_info);
+    if (!jso.isEmpty() && recordUpdateQuery(query, jso, "Telemetry", "WHERE key=?")) {
+        query.addBindValue(_telemetryID);
         if (!query.exec())
             return false;
         bMod = true;
     }
-    if (restore) {
+    if (_restore) {
         query.prepare("UPDATE Telemetry SET trash=NULL WHERE key=?");
-        query.addBindValue(telemetryID);
+        query.addBindValue(_telemetryID);
         if (!query.exec())
             return false;
     }

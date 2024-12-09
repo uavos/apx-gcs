@@ -135,15 +135,15 @@ class TelemetryWriteRecordFields : public Request
     Q_OBJECT
 public:
     explicit TelemetryWriteRecordFields(quint64 telemetryID, QJsonObject info, bool restore = false)
-        : telemetryID(telemetryID)
-        , info(info)
-        , restore(restore)
+        : _telemetryID(telemetryID)
+        , _info(info)
+        , _restore(restore)
     {}
 
 private:
-    quint64 telemetryID;
-    QJsonObject info;
-    bool restore;
+    quint64 _telemetryID;
+    QJsonObject _info;
+    bool _restore;
 
 public:
     bool run(QSqlQuery &query);

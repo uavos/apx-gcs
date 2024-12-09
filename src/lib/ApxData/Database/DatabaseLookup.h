@@ -46,30 +46,26 @@ public:
 
 protected:
     DatabaseSession *db;
-    DatabaseRequest::Records records;
-    DatabaseLookupModel::ItemsList recordsItems;
+
+    QTimer _modelSyncTimer;
+    DatabaseLookupModel::ItemsList _loadedItems;
 
     QString filter() const;
 
-    virtual bool fixItemDataThr(QVariantMap *item);
+    virtual QVariantMap thr_prepareRecordData(const QJsonObject &jso) { return jso.toVariantMap(); }
 
-    QTimer modelSyncTimer;
-
-    QMutex loadMutex;
-
-protected slots:
-    void reloadQueryResults();
-    void loadRecordsItems(DatabaseLookupModel::ItemsList list);
-    virtual void loadItems();
+private slots:
+    void thr_loadQueryResults(QJsonArray records);
 
 public slots:
     virtual void defaultLookup() {}
-    void loadQueryResults(DatabaseRequest::Records records);
-    void triggerItem(QVariantMap modelData);
+
+    // called from QML
+    void triggerItem(QVariantMap modelData) { emit itemTriggered(modelData); }
 
 signals:
     void itemTriggered(QVariantMap modelData);
 
     //internal loading
-    void _itemsLoaded(DatabaseLookupModel::ItemsList list);
+    void _itemsLoaded(DatabaseLookupModel::ItemsList items);
 };

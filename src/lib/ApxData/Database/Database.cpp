@@ -34,8 +34,6 @@ Database::Database(Fact *parent)
     _instance = this;
     setIcon("database");
 
-    //new DatabaseSession(this,"test.db","TestSession");
-    qRegisterMetaType<DatabaseRequest::Records>("DatabaseRequest::Records");
     qRegisterMetaType<DatabaseRequest::Status>("DatabaseRequest::Status");
     qRegisterMetaType<QList<QSqlRecord>>("QList<QSqlRecord>");
 
