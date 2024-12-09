@@ -31,6 +31,7 @@ Poi::Poi(MissionGroup *parent)
     f_hmsl = new MissionField(this, "hmsl", tr("HMSL"), tr("Object of interest altitude MSL"), Int);
     f_hmsl->setUnits("m");
     f_hmsl->setEnumStrings(QStringList() << "ground");
+    f_hmsl->setOpt("extrainfo", "ExtraInfoElevation.qml");
 
     f_radius = new MissionField(this, "radius", tr("Radius"), tr("Loiter radius"), Int);
     f_radius->setUnits("m");

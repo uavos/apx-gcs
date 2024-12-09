@@ -49,7 +49,7 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
             &TelemetryPlayer::setCacheId);
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActive);
 
-    f_time = new Fact(this, "time", tr("Time"), tr("Current postition"), Int);
+    f_time = new Fact(this, "time", tr("Time"), tr("Current position"), Int);
     f_time->setMin((quint64) 0);
     f_time->setUnits("ms");
     connect(f_time, &Fact::valueChanged, this, &TelemetryPlayer::updateTime);

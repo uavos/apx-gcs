@@ -292,6 +292,9 @@ Map {
                 lastX = mouse.x
                 lastY = mouse.y
             }
+            
+            if(apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value)
+                apx.tools.elevationmap.setElevationByCoordinate(toCoordinate(Qt.point(mouse.x, mouse.y)));
         }
 
         onClicked: (mouse) => {

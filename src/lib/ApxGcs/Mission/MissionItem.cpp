@@ -52,13 +52,13 @@ MissionItem::MissionItem(MissionGroup *parent,
     f_latitude = new MissionField(this,
                                   "lat",
                                   tr("Latitude"),
-                                  tr("Global postition latitude"),
+                                  tr("Global position latitude"),
                                   Float);
     f_latitude->setUnits("lat");
     f_longitude = new MissionField(this,
                                    "lon",
                                    tr("Longitude"),
-                                   tr("Global postition longitude"),
+                                   tr("Global position longitude"),
                                    Float);
     f_longitude->setUnits("lon");
 
