@@ -1568,6 +1568,7 @@ namespace cmd
             enum { ctr = 0x732 };
             enum { cfg = 0x733 };
             enum { display = 0x734 };
+            enum { usr = 0x735 };
         };
         namespace script
         {
