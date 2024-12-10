@@ -21,6 +21,7 @@
  */
 #include "PApxData.h"
 
+#include <Fleet/Fleet.h>
 #include <Mandala/Mandala.h>
 
 PApxData::PApxData(PApxUnit *parent)
@@ -36,15 +37,21 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             if (is_request)
                 return true;
 
-            if (mandala::is_bundle(pid.uid)) {
-                Mandala *mandalaInstance = Vehicles::instance()->current()->f_mandala;
+            // check for bundles sent from other GCS
+            static const QHash<mandala::uid_t, QString> bundleFactsNamePathsMap{
+                {mandala::cmd::nav::pos::uid, "cmd.pos"},
+                {mandala::est::nav::pos::uid, "est.pos"},
+                {mandala::est::nav::ref::uid, "est.ref"},
+            };
+            if (mandala::is_bundle(pid.uid) && bundleFactsNamePathsMap.contains(pid.uid)) {
+                Mandala *mandalaInstance = Fleet::instance()->current()->f_mandala;
                 mandala::bundle::pos_ll_s bundlePos;
                 stream.read(&bundlePos, 8);
 
-                QString factNamePath = bundleFactsNamePathsMap.value(pid.uid);
-                MandalaFact *lat = qobject_cast<MandalaFact *>(
+                auto factNamePath = bundleFactsNamePathsMap.value(pid.uid);
+                auto lat = qobject_cast<MandalaFact *>(
                     mandalaInstance->findChild(factNamePath + ".lat"));
-                MandalaFact *lon = qobject_cast<MandalaFact *>(
+                auto lon = qobject_cast<MandalaFact *>(
                     mandalaInstance->findChild(factNamePath + ".lon"));
                 if (lat && lon) {
                     lat->setRawValueLocal(mandala::a32_to_deg(bundlePos.lat));
@@ -53,6 +60,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
                 return true;
             }
 
+            // unpack data value
             if (stream.available() <= mandala::spec_s::psize()) {
                 qWarning() << "size" << stream.available();
                 break;
