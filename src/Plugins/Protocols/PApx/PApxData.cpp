@@ -36,7 +36,23 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             if (is_request)
                 return true;
 
-            // regular packed variable
+            if (mandala::is_bundle(pid.uid)) {
+                Mandala *mandalaInstance = Vehicles::instance()->current()->f_mandala;
+                mandala::bundle::pos_ll_s bundlePos;
+                stream.read(&bundlePos, 8);
+
+                QString factNamePath = bundleFactsNamePathsMap.value(pid.uid);
+                MandalaFact *lat = qobject_cast<MandalaFact *>(
+                    mandalaInstance->findChild(factNamePath + ".lat"));
+                MandalaFact *lon = qobject_cast<MandalaFact *>(
+                    mandalaInstance->findChild(factNamePath + ".lon"));
+                if (lat && lon) {
+                    lat->setRawValueLocal(mandala::a32_to_deg(bundlePos.lat));
+                    lon->setRawValueLocal(mandala::a32_to_deg(bundlePos.lon));
+                }
+                return true;
+            }
+
             if (stream.available() <= mandala::spec_s::psize()) {
                 qWarning() << "size" << stream.available();
                 break;
