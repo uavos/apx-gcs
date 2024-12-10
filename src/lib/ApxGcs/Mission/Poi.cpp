@@ -61,6 +61,10 @@ Poi::Poi(MissionGroup *parent)
     f_radius->setOpt("ft", ft);
     f_hmsl->setOpt("ft", 0);
 
+    connect(f_radius, &Fact::optsChanged, this, &Poi::updateTitle);
+    connect(this, &MissionItem::isFeetChanged, this, &Poi::updateTitle);
+    // Add feets options end
+
     //switch ft/m on
     f_feet->setVisible(true);
 
@@ -82,14 +86,19 @@ Poi::Poi(MissionGroup *parent)
 
 void Poi::updateTitle()
 {
-    if (m_isFeet)
-        return;
-
+    int r{0};
     QStringList st;
     st.append(QString::number(num() + 1));
-    int r = f_radius->value().toInt();
+    if (m_isFeet)
+        r = f_radius->opts().value("ft", 0).toInt();
+    else
+        r = f_radius->value().toInt();
+
     if (std::abs(r) > 0) {
-        st.append(AppRoot::distanceToString(std::abs(r)));
+        if (m_isFeet)
+            st.append(AppRoot::distanceToStringFt(std::abs(r)));
+        else
+            st.append(AppRoot::distanceToString(std::abs(r)));
         if (r < 0)
             st.append(tr("CCW"));
     } else

@@ -211,28 +211,6 @@ SpinBox {
         elapsed = startTime>0?(new Date().getTime()-startTime)/1000:0
     }
 
-    onOptsChanged: setParentTitle()
-    onIsFeetChanged: setParentTitle()
-    function setParentTitle() {
-        // This is a temporary solution for a prototype.
-        const names = ["altitude", "approach", "radius"];
-        if(!names.includes(fact.name))
-            return
-
-        var factTitle = fact.parentFact.title
-        var array = factTitle.split(' ');
-
-        var num = 1
-        if (fact.name == "approach" && array.length > 3)
-            num = 2
-
-        if(isFeet)
-            array[array.length-num] = opts.ft+"ft"
-        else
-            array[array.length-num] = fact.value+"m"   
-
-        fact.parentFact.title = array.join(" ")
-    }
 
     ToolTip {
         parent: editor

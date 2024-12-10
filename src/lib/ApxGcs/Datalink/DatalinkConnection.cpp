@@ -26,7 +26,7 @@
 #include <Mandala/Mandala.h>
 
 #include <XbusPacket.h>
-#include <XbusVehicle.h>
+#include <XbusUnit.h>
 
 #include <Protocols/PStream.h>
 
@@ -240,9 +240,9 @@ bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
 
     if (mandala::cmd::env::nmt::match(uid))
         return false;
-    if (mandala::cmd::env::vehicle::ident::match(uid))
+    if (mandala::cmd::env::unit::ident::match(uid))
         return false;
-    if (mandala::cmd::env::vehicle::downlink::match(uid))
+    if (mandala::cmd::env::unit::downlink::match(uid))
         return false;
 
     return true;

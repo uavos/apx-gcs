@@ -78,7 +78,13 @@ Runway::Runway(MissionGroup *parent)
     f_dN->setOpt("ft", ft);
     ft = std::round(f_dE->value().toInt() * coef);
     f_dE->setOpt("ft", ft);
-    f_hmsl->setOpt("ft", 0);
+    ft = std::round(f_hmsl->value().toInt() * coef);
+    f_hmsl->setOpt("ft", ft);
+
+    connect(f_approach, &Fact::optsChanged, this, &Runway::updateTitle);
+    connect(f_hmsl, &Fact::optsChanged, this, &Runway::updateTitle);
+    connect(this, &MissionItem::isFeetChanged, this, &Runway::updateTitle);
+    // Add feets option end
 
     //switch ft/m on
     f_feet->setVisible(true);
@@ -123,9 +129,6 @@ Runway::Runway(MissionGroup *parent)
 
 void Runway::updateTitle()
 {
-    if (m_isFeet)
-        return;
-
     setValue(
         f_type->valueText().left(1).toUpper()
         + QString("%1").arg((int) AppRoot::angle360(round(AppRoot::angle360(heading()) / 10.0) * 10)
@@ -136,9 +139,19 @@ void Runway::updateTitle()
     QStringList st;
     st.append(QString::number(num() + 1));
     st.append(value().toString());
-    st.append(AppRoot::distanceToString(f_approach->value().toInt()));
-    if (!f_hmsl->isZero())
-        st.append("MSL" + f_hmsl->valueText());
+    if (m_isFeet)
+        st.append(AppRoot::distanceToStringFt(f_approach->opts().value("ft", 0).toInt()));
+    else
+        st.append(AppRoot::distanceToString(f_approach->value().toInt()));
+        
+    if (m_isFeet) {
+        auto feets = f_hmsl->opts().value("ft", 0).toInt();
+        if (feets != 0)
+            st.append(QString("MSL%1").arg(feets));
+    } else {
+        if (!f_hmsl->isZero())
+            st.append("MSL" + f_hmsl->valueText());
+    }
     setTitle(st.join(' '));
 }
 

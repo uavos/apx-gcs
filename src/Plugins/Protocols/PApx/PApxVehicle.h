@@ -33,17 +33,17 @@ public:
     explicit PApxVehicle(PApx *parent,
                          QString callsign,
                          VehicleType type,
-                         const xbus::vehicle::uid_t *uid_raw,
-                         xbus::vehicle::squawk_t squawk);
+                         const xbus::unit::uid_t *uid_raw,
+                         xbus::unit::squawk_t squawk);
 
     void process_downlink(PStreamReader &stream);
 
     void send_uplink(QByteArray packet) override;
 
     auto squawk() const { return _squawk; }
-    void setSquawk(xbus::vehicle::squawk_t squawk) { _squawk = squawk; }
+    void setSquawk(xbus::unit::squawk_t squawk) { _squawk = squawk; }
 
-    static QString uidText(const xbus::vehicle::uid_t *uid_raw);
+    static QString uidText(const xbus::unit::uid_t *uid_raw);
 
     auto const &vuid() const { return _vuid; }
     bool check_vuid(uint8_t n, uint8_t seq) const;
@@ -51,8 +51,8 @@ public:
 private:
     PApx *_papx;
 
-    xbus::vehicle::squawk_t _squawk;
-    xbus::vehicle::uid_t _vuid{};
+    xbus::unit::squawk_t _squawk;
+    xbus::unit::uid_t _vuid{};
 
     PApxRequest _req;
 };

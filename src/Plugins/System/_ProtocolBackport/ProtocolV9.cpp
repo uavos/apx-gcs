@@ -22,7 +22,7 @@
 #include "ProtocolV9.h"
 
 #include <XbusPacket.h>
-#include <XbusVehicle.h>
+#include <XbusUnit.h>
 
 #include <Mandala/backport/MandalaBackport.h>
 
@@ -121,16 +121,16 @@ void ProtocolV9::parseDownlink(XbusStreamReader &is)
         copy(is);
         break;
     case mandala::backport::idx_xpdr:
-        stream.write<xbus::pid_t>(mandala::cmd::env::vehicle::xpdr::meta.uid);
+        stream.write<xbus::pid_t>(mandala::cmd::env::unit::xpdr::meta.uid);
         copy(is);
         break;
     case mandala::backport::idx_ident:
-        stream.write<xbus::pid_t>(mandala::cmd::env::vehicle::ident::meta.uid);
+        stream.write<xbus::pid_t>(mandala::cmd::env::unit::ident::meta.uid);
         copy(is);
         break;
     case mandala::backport::idx_dlink:
-        stream.write<xbus::pid_t>(mandala::cmd::env::vehicle::downlink::meta.uid);
-        stream << is.read<xbus::vehicle::squawk_t>();
+        stream.write<xbus::pid_t>(mandala::cmd::env::unit::downlink::meta.uid);
+        stream << is.read<xbus::unit::squawk_t>();
         parseDownlink(is);
         break;
     }
@@ -151,17 +151,17 @@ void ProtocolV9::parseUplink(XbusStreamReader &is)
         stream.write<xbus::v9::pid_t>(mandala::backport::idx_service);
         copy(is);
         break;
-    case mandala::cmd::env::vehicle::xpdr::meta.uid:
+    case mandala::cmd::env::unit::xpdr::meta.uid:
         stream.write<xbus::v9::pid_t>(mandala::backport::idx_xpdr);
         copy(is);
         break;
-    case mandala::cmd::env::vehicle::ident::meta.uid:
+    case mandala::cmd::env::unit::ident::meta.uid:
         stream.write<xbus::v9::pid_t>(mandala::backport::idx_ident);
         copy(is);
         break;
-    case mandala::cmd::env::vehicle::uplink::meta.uid:
+    case mandala::cmd::env::unit::uplink::meta.uid:
         stream.write<xbus::v9::pid_t>(mandala::backport::idx_dlink);
-        stream << is.read<xbus::vehicle::squawk_t>();
+        stream << is.read<xbus::unit::squawk_t>();
         parseUplink(is);
         break;
     }

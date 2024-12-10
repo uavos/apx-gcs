@@ -80,6 +80,10 @@ Waypoint::Waypoint(MissionGroup *parent)
     ft = std::round(f_amsl->value().toInt() * coef);
     f_amsl->setOpt("ft", ft);
 
+    connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
+    connect(this, &MissionItem::isFeetChanged, this, &Waypoint::updateTitle);
+    // Add feets options end
+
     connect(f_type, &Fact::valueChanged, this, &Waypoint::updatePath);
 
     connect(f_type, &Fact::valueChanged, this, &Waypoint::updateTitle);
@@ -94,15 +98,16 @@ Waypoint::Waypoint(MissionGroup *parent)
 
 void Waypoint::updateTitle()
 {
-    if(m_isFeet)
-        return;
-
     QStringList st;
     st.append(QString::number(num() + 1));
     st.append(f_type->valueText().left(1).toUpper());
-    st.append(AppRoot::distanceToString(f_altitude->value().toInt()));
+    if (m_isFeet)
+        st.append(AppRoot::distanceToStringFt(f_altitude->opts().value("ft", 0).toInt()));
+    else
+        st.append(AppRoot::distanceToString(f_altitude->value().toInt()));
     setTitle(st.join(' '));
 }
+
 void Waypoint::updateDescr()
 {
     setDescr(f_actions->value().toString());

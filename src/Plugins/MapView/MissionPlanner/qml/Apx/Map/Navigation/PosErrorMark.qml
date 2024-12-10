@@ -35,11 +35,11 @@ MapIcon {
     property real lon: mandala.est.pos.lon.value
     property real hmsl: mandala.est.pos.hmsl.value
 
-    property real dn: mandala.est.ahrs.dn.value
-    property real de: mandala.est.ahrs.de.value
-    property real dh: mandala.est.ahrs.dh.value
+    property real dn: mandala.est.ins.dn.value
+    property real de: mandala.est.ins.de.value
+    property real dh: mandala.est.ins.dh.value
 
-    property bool ahrs_nogps: mandala.cmd.ahrs.nogps.value
+    property bool ahrs_nogps: mandala.cmd.ins.nogps.value
 
 
     // calculated properties

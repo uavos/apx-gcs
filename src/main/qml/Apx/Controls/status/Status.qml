@@ -45,7 +45,7 @@ Rectangle {
     readonly property int m_agl_src: mandala.sns.agl.src.value
     readonly property bool m_agl_status: mandala.sns.agl.status.value
     readonly property bool m_pwr_agl: mandala.ctr.pwr.agl.value
-    readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
+    readonly property bool m_ahrs_hagl: mandala.cmd.ins.hagl.value
 
     readonly property bool m_agl_show: (m_agl_status || m_ahrs_hagl || m_pwr_agl || m_agl_src)
     readonly property bool m_agl_ready: m_agl_status

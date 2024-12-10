@@ -85,16 +85,16 @@ Fact {
         title: qsTr("Service")
         icon: "cog"
         Fact {
-            title: qsTr("AHRS")
+            title: qsTr("INS")
             Fact { title: qsTr("Reset gps home altitude"); descr: "hmsl()"; onTriggered: application.jsexec(descr); }
             Fact { title: qsTr("Reset static pressure"); descr: "zps()"; onTriggered: application.jsexec(descr); }
             Fact { enabled: false }
-            Fact { title: qsTr("Reset AHRS filter"); descr: "ahrs()"; onTriggered: application.jsexec(descr); }
+            Fact { title: qsTr("Reset INS filter"); descr: "ins()"; onTriggered: application.jsexec(descr); }
             Fact { enabled: false }
-            Fact { binding: mandala.cmd.ahrs.inair; flags: Fact.Bool; }
-            Fact { binding: mandala.cmd.ahrs.nogps; flags: Fact.Bool; }
-            Fact { binding: mandala.cmd.ahrs.nomag; flags: Fact.Bool; }
-            Fact { binding: mandala.cmd.ahrs.hsel }
+            Fact { binding: mandala.cmd.ins.inair; flags: Fact.Bool; }
+            Fact { binding: mandala.cmd.ins.nogps; flags: Fact.Bool; }
+            Fact { binding: mandala.cmd.ins.nomag; flags: Fact.Bool; }
+            Fact { binding: mandala.cmd.ins.hsel }
         }
     }
     Fact {

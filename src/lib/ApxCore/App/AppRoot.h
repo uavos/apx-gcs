@@ -56,7 +56,8 @@ public:
     Q_INVOKABLE static QString lonToString(double v);
     Q_INVOKABLE static double latFromString(QString s);
     Q_INVOKABLE static double lonFromString(QString s);
-    Q_INVOKABLE static QString distanceToString(uint v, bool units = true);
+    Q_INVOKABLE static QString distanceToString(uint v, bool units = true);   // Distance in meters
+    Q_INVOKABLE static QString distanceToStringFt(uint v, bool units = true); // Distance in feets
 
     Q_INVOKABLE static QString timeToString(quint64 v, bool seconds = false); // value in [sec]
     Q_INVOKABLE static QString timeString(bool seconds = false);              // current time

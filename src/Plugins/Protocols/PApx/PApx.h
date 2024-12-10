@@ -23,7 +23,7 @@
 
 #include <Protocols/Protocols.h>
 
-#include <XbusVehicle.h>
+#include <XbusUnit.h>
 
 #include "PApxRequest.h"
 #include "PApxVehicle.h"
@@ -41,28 +41,28 @@ public:
     void trace_pid(const xbus::pid_s &pid);
     void trace_uid(mandala::uid_t uid);
 
-    static QString squawkText(xbus::vehicle::squawk_t squawk)
+    static QString squawkText(xbus::unit::squawk_t squawk)
     {
         return QString("%1").arg(squawk, 4, 16, QChar('0')).toUpper();
     }
 
-    bool addressed(xbus::vehicle::squawk_t squawk) const { return _squawk_map.contains(squawk); }
+    bool addressed(xbus::unit::squawk_t squawk) const { return _squawk_map.contains(squawk); }
 
     auto local() const { return m_local; }
 
 private:
     PApxVehicle *m_local{};
-    QMap<xbus::vehicle::squawk_t, PApxVehicle *> _squawk_map; // identified vehicles
-    QList<xbus::vehicle::squawk_t> _squawk_blacklist;
+    QMap<xbus::unit::squawk_t, PApxVehicle *> _squawk_map; // identified vehicles
+    QList<xbus::unit::squawk_t> _squawk_blacklist;
 
     PApxRequest _req;
     QTimer _reqTimer;
-    QList<xbus::vehicle::squawk_t> _req_ident;
+    QList<xbus::unit::squawk_t> _req_ident;
 
-    void assign_squawk(const xbus::vehicle::uid_t &uid);
-    void request_ident(xbus::vehicle::squawk_t squawk);
+    void assign_squawk(const xbus::unit::uid_t &uid);
+    void request_ident(xbus::unit::squawk_t squawk);
 
-    void request_ident_schedule(xbus::vehicle::squawk_t squawk);
+    void request_ident_schedule(xbus::unit::squawk_t squawk);
     void request_next(); // delayed requests callback
 
     void process_downlink(QByteArray packet) override;

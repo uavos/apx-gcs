@@ -44,7 +44,7 @@ Item {
     readonly property var f_gps_su: mandala.sns.gps.su
     readonly property var f_gps_sv: mandala.sns.gps.sv
     readonly property var f_ref_status: mandala.est.ref.status
-    readonly property var f_ahrs_nogps: mandala.cmd.ahrs.nogps
+    readonly property var f_ins_nogps: mandala.cmd.ins.nogps
 
 
     readonly property var f_ktas: mandala.est.air.ktas
@@ -99,13 +99,13 @@ Item {
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
-    readonly property var f_ahrs_rest: mandala.est.ahrs.rest
+    readonly property var f_ins_rest: mandala.est.ins.rest
     readonly property var f_pos_status: mandala.est.pos.status
-    readonly property var f_ahrs_href: mandala.est.ahrs.href
+    readonly property var f_ins_href: mandala.est.ins.href
     readonly property var f_lpos_status: mandala.est.lpos.status
     readonly property var f_air_stall: mandala.est.air.stall
-    readonly property var f_ahrs_inair: mandala.cmd.ahrs.inair
-    readonly property var f_ahrs_hsel: mandala.cmd.ahrs.hsel
+    readonly property var f_ins_inair: mandala.cmd.ins.inair
+    readonly property var f_ins_hsel: mandala.cmd.ins.hsel
 
     readonly property var f_att_valid: mandala.est.att.valid
     readonly property var f_pos_valid: mandala.est.pos.valid
@@ -172,7 +172,7 @@ Item {
             anchors.horizontalCenter: windArrow.horizontalCenter
             anchors.bottomMargin: height*2
             height: pfdScene.txtHeight*0.5
-            fact: f_ahrs_rest
+            fact: f_ins_rest
             type: CleanText.Clean
             show: fact.value > 0
             text: fact.title.toUpperCase()
@@ -338,7 +338,7 @@ Item {
                     readonly property int sv: f_gps_sv.value
                     readonly property bool ref: f_ref_status.value === ref_status_initialized
                     readonly property bool avail: fix !== gps_fix_none
-                    readonly property bool blocked: f_ahrs_nogps.value > 0
+                    readonly property bool blocked: f_ins_nogps.value > 0
 
                     readonly property bool isOff: (!avail) && (!ref)
                     readonly property bool isErr: ref && (!avail)
@@ -403,21 +403,21 @@ Item {
                 anchors.bottomMargin: (parent.width-parent.width*0.5)*0.3
 
                 CleanText { // height reference
-                    id: ahrs_href
+                    id: ins_href
                     anchors.verticalCenterOffset: -pfdScene.flagHeight*1.5
                     anchors.centerIn: parent
                     visible: ui.test || (isValid)
                     height: pfdScene.txtHeight*0.5
-                    fact: f_ahrs_href
+                    fact: f_ins_href
                     type: CleanText.Clean
                 }
                 CleanText { // height source selection
-                    anchors.horizontalCenter: ahrs_href.horizontalCenter
-                    anchors.bottom: ahrs_href.top
+                    anchors.horizontalCenter: ins_href.horizontalCenter
+                    anchors.bottom: ins_href.top
                     anchors.bottomMargin: height/4
-                    visible: ahrs_href.visible && f_ahrs_href.text!=f_ahrs_hsel.text
-                    height: ahrs_href.height
-                    fact: f_ahrs_hsel
+                    visible: ins_href.visible && f_ins_href.text!=f_ins_hsel.text
+                    height: ins_href.height
+                    fact: f_ins_hsel
                     type: CleanText.Yellow
                 }
             }
@@ -551,10 +551,10 @@ Item {
             }
             StatusFlag { // inair status
                 height: pfdScene.flagHeight
-                fact: f_ahrs_inair
+                fact: f_ins_inair
                 text: qsTr("AIR")
                 show: ui.test || ( fact.value <= 0 && isValid)
-                status_reset: ahrs_inair_yes
+                status_reset: ins_inair_yes
             }
         }
 

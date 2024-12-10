@@ -142,7 +142,7 @@ flyTo.info = "Set commanded position";
 
 
 function inair(v) {
-    cmd.ahrs.inair = v;
+    cmd.ins.inair = v;
 }
 inair.info = "Set in-air status";
 

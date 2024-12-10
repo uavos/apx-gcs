@@ -30,10 +30,10 @@ ControlArea {
     readonly property var f_altitude: mandala.est.pos.altitude
     readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
 
-    readonly property var f_ahrs_dh: mandala.est.ahrs.dh
+    readonly property var f_ahrs_dh: mandala.est.ins.dh
 
     readonly property var f_agl: mandala.est.pos.agl
-    readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
+    readonly property bool m_ahrs_hagl: mandala.cmd.ins.hagl.value
 
     readonly property int m_agl_status: mandala.sns.agl.status.value
 

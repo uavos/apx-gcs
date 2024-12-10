@@ -83,13 +83,17 @@ MissionObject {
             }
         },
         Loader {
-            active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
+            property var opts: fact?fact.hmsl.opts:0
+            property bool isFeet: fact?fact.isFeet:false
+            property int hmsl: isFeet ? opts.ft : f_hmsl
+            active: showDetails && hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
+            //active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: f_hmsl+"m"
+                    text: isFeet ? opts.ft+"ft" : f_hmsl+"m"
                 }
             }
         }
