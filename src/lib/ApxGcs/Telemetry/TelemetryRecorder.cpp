@@ -62,7 +62,7 @@ TelemetryRecorder::TelemetryRecorder(Unit *unit, Fact *parent)
             [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, false); });
 
     // record config on each upload or save
-    connect(unit->storage(), &UnitStorage::confSaved, this, &TelemetryRecorder::recordUnitConf);
+    connect(unit->f_storage, &UnitStorage::confSaved, this, &TelemetryRecorder::recordUnitConf);
 
     // record text messages
     connect(unit->f_nodes, &Nodes::fieldUploadReport, this, &TelemetryRecorder::recordConfigUpdate);

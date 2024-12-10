@@ -57,7 +57,7 @@ bool UnitShare::importRequest(QStringList fileNames)
     if (!jso.isEmpty())
         return false;
 
-    _unit->storage()->importUnitConf(jso);
+    _unit->f_storage->importUnitConf(jso);
 
     if (QFileInfo(fileName).absoluteDir().absolutePath() == _templatesDir.absolutePath()) {
         // imported

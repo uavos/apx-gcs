@@ -53,6 +53,7 @@ class Request : public DatabaseRequest
 {
 public:
     explicit Request();
+    explicit Request(const QString &queryString, const QVariantList &bindValues);
 };
 
 } // namespace storage

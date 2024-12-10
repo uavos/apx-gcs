@@ -60,22 +60,6 @@ signals:
     void recordCreated(quint64 telemetryID);
 };
 
-class TelemetryModelRecordsList : public Request
-{
-    Q_OBJECT
-public:
-    explicit TelemetryModelRecordsList(QString filter)
-        : _filter(filter)
-    {}
-
-protected:
-    QString _filter;
-    bool run(QSqlQuery &query);
-
-signals:
-    void recordsList(DatabaseModel::RecordsList records);
-};
-
 class TelemetryLoadInfo : public Request
 {
     Q_OBJECT
@@ -93,11 +77,11 @@ signals:
     void recordInfo(quint64 id, QJsonObject info, QString notes);
 };
 
-class TelemetryModelTrash : public Request
+class TelemetryModifyTrash : public Request
 {
     Q_OBJECT
 public:
-    explicit TelemetryModelTrash(quint64 id, bool trash = false)
+    explicit TelemetryModifyTrash(quint64 id, bool trash = false)
         : _id(id)
         , _trash(trash)
     {}

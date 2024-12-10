@@ -27,10 +27,26 @@
 #include <Database/NodesReqMeta.h>
 #include <Database/NodesReqUnit.h>
 
-NodeStorage::NodeStorage(NodeItem *node)
-    : QObject(node)
+NodeStorage::NodeStorage(NodeItem *node, Fact *parent)
+    : Fact(parent,
+           "load",
+           tr("Node Backups"),
+           tr("Node parameters from database"),
+           FilterModel,
+           "database-search")
     , _node(node)
-{}
+{
+    setOpt("page", "Menu/FactMenuPageLookupDB.qml");
+
+    _dbmodel = new DatabaseModel(this);
+    setModel(_dbmodel);
+
+    connect(_dbmodel, &DatabaseModel::requestRecordsList, this, &NodeStorage::dbRequestRecordsList);
+    connect(_dbmodel, &DatabaseModel::requestRecordInfo, this, &NodeStorage::dbRequestRecordInfo);
+    connect(_dbmodel, &DatabaseModel::itemTriggered, this, &NodeStorage::loadNodeConfig);
+
+    connect(this, &Fact::triggered, this, &NodeStorage::dbRequestRecordsList);
+}
 
 void NodeStorage::saveNodeInfo()
 {
@@ -79,9 +95,9 @@ void NodeStorage::updateConfigID(quint64 configID)
         emit configSaved();
 }
 
-void NodeStorage::loadNodeConfig(QString hash)
+void NodeStorage::loadLatestNodeConfig()
 {
-    auto req = new db::nodes::NodeLoadConf(_node->uid(), hash);
+    auto req = new db::nodes::NodeLoadConf(_node->uid(), {});
     connect(req,
             &db::nodes::NodeLoadConf::confLoaded,
             _node,
@@ -157,4 +173,77 @@ void NodeStorage::dictMetaLoaded(QJsonObject jso)
     }
     // if (cnt > 0)
     //     qDebug() << "meta data loaded:" << cnt << "fields in" << timer.elapsed() << "ms";
+}
+
+void NodeStorage::dbRequestRecordsList()
+{
+    QStringList fields = {"NodeConf.title", "NodeDict.version"};
+    auto filter = _dbmodel->getFilterExpression(fields);
+
+    QString s = "SELECT * FROM NodeConf"
+                " LEFT JOIN Node ON NodeConf.nodeID=Node.key "
+                " LEFT JOIN NodeDict ON NodeConf.dictID=NodeDict.key "
+                " WHERE Node.uid=?";
+    if (!filter.isEmpty())
+        s += " AND (" + filter + ")";
+    s += " ORDER BY NodeConf.time DESC"
+         " LIMIT 50";
+
+    auto req = new db::nodes::Request(s, {_node->uid()});
+    connect(
+        req,
+        &db::nodes::Request::queryResults,
+        this,
+        [this](QJsonArray records) {
+            DatabaseModel::RecordsList list;
+            for (const auto &i : records) {
+                list.append(i.toObject().value("key").toVariant().toULongLong());
+            }
+            _dbmodel->setRecordsList(list);
+        },
+        Qt::QueuedConnection);
+    req->exec();
+}
+
+void NodeStorage::dbRequestRecordInfo(quint64 id)
+{
+    const QString s = "SELECT * FROM NodeConf"
+                      " LEFT JOIN Node ON NodeConf.nodeID=Node.key "
+                      " WHERE NodeConf.key=?";
+
+    auto req = new db::nodes::Request(s, {id});
+    connect(
+        req,
+        &db::nodes::Request::queryResults,
+        this,
+        [this, id](QJsonArray records) {
+            const auto jso = records.first().toObject();
+
+            auto time = QDateTime::fromMSecsSinceEpoch(jso.value("time").toVariant().toULongLong())
+                            .toString("yyyy MMM dd hh:mm:ss");
+            auto version = jso.value("version").toString();
+            auto title = jso.value("title").toString();
+
+            QJsonObject info;
+            info.insert("key", (qint64) id);
+            info.insert("title", time);
+            info.insert("value", title);
+            info.insert("descr",
+                        QString("v%1").arg(version.isEmpty() ? tr("Unknown version") : version));
+
+            _dbmodel->setRecordModelInfo(id, info);
+        },
+        Qt::QueuedConnection);
+    req->exec();
+}
+
+void NodeStorage::loadNodeConfig(quint64 id)
+{
+    auto req = new db::nodes::NodeLoadConf(id);
+    connect(req,
+            &db::nodes::NodeLoadConf::confLoaded,
+            _node,
+            &NodeItem::importValues,
+            Qt::QueuedConnection);
+    req->exec();
 }

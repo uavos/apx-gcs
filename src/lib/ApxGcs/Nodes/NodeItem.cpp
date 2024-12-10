@@ -44,7 +44,6 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
 
     new NodeViewActions(this, _nodes);
 
-    storage = new NodeStorage(this);
     tools = new NodeTools(this, Action);
 
     //protocol
@@ -144,7 +143,7 @@ void NodeItem::clear()
         emit validChanged();
     }
 
-    storage->updateConfigID(0);
+    tools->f_storage->updateConfigID(0);
     _dict = {};
     _status_field = nullptr;
     tools->clearCommands();
@@ -162,7 +161,7 @@ void NodeItem::upload()
     if (!_protocol)
         return;
 
-    storage->updateConfigID(0);
+    tools->f_storage->updateConfigID(0);
 
     QList<NodeField *> fields;
     for (auto i : m_fields) {
@@ -190,7 +189,7 @@ void NodeItem::confSaved()
 {
     qDebug() << modified();
     backup();
-    storage->saveNodeConfig();
+    tools->f_storage->saveNodeConfig();
 }
 
 QVariant NodeItem::data(int col, int role)
@@ -567,7 +566,7 @@ void NodeItem::identReceived(QJsonObject ident)
 
     if (_protocol && !_protocol->upgrading()) {
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-        storage->saveNodeInfo();
+        tools->f_storage->saveNodeInfo();
         emit _nodes->nodeNotify(this);
 
         // try to request dict automatically
@@ -650,13 +649,13 @@ void NodeItem::dictReceived(QJsonObject dict)
     linkGroupValues(this);
 
     // update descr and help from meta DB cache
-    storage->loadNodeMeta();
+    tools->f_storage->loadNodeMeta();
 
     backup();
 
     if (_protocol) {
         if (!_dict.value("cached").toBool())
-            storage->saveNodeDict();
+            tools->f_storage->saveNodeDict();
         if (!_unit->isLocal() || _unit->active())
             _protocol->requestConf();
     }
@@ -709,7 +708,7 @@ void NodeItem::confReceived(QJsonObject values)
     setEnabled(true);
 
     if (_protocol && !_ident.value("reconf").toBool())
-        storage->saveNodeConfig();
+        tools->f_storage->saveNodeConfig();
 }
 void NodeItem::confUpdated(QJsonObject values)
 {

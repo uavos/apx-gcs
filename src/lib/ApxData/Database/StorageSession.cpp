@@ -30,6 +30,9 @@ using namespace db::storage;
 Request::Request()
     : DatabaseRequest(Database::instance()->storage)
 {}
+Request::Request(const QString &queryString, const QVariantList &bindValues)
+    : DatabaseRequest(Database::instance()->storage, queryString, bindValues)
+{}
 
 Session::Session(QObject *parent, QString sessionName)
     : DatabaseSession(parent, "storage", sessionName, {}, AppDirs::storage())

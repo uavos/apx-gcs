@@ -21,6 +21,7 @@
  */
 #include "TelemetryRecords.h"
 
+#include <Database/DatabaseModel.h>
 #include <Database/StorageReq.h>
 
 TelemetryRecords::TelemetryRecords(Fact *parent)
@@ -127,11 +128,25 @@ void TelemetryRecords::dbRequestRecordsList()
     QStringList fields = {"unitName", "unitType", "confName", "notes", "file"};
     auto extra_filter = f_restore->value().toBool() ? "" : QString("trash IS NULL");
     auto filter = _dbmodel->getFilterExpression(fields, extra_filter);
-    auto req = new db::storage::TelemetryModelRecordsList(filter);
-    connect(req,
-            &db::storage::TelemetryModelRecordsList::recordsList,
-            _dbmodel,
-            &DatabaseModel::setRecordsList);
+
+    QString s = "SELECT key, time FROM Telemetry";
+    if (!filter.isEmpty())
+        s += " WHERE " + filter;
+    s += " ORDER BY time DESC";
+
+    auto req = new db::storage::Request(s, {});
+    connect(
+        req,
+        &db::storage::Request::queryResults,
+        this,
+        [this](QJsonArray records) {
+            DatabaseModel::RecordsList list;
+            for (const auto &i : records) {
+                list.append(i.toObject().value("key").toVariant().toULongLong());
+            }
+            _dbmodel->setRecordsList(list);
+        },
+        Qt::QueuedConnection);
     req->exec();
 }
 
@@ -195,8 +210,8 @@ void TelemetryRecords::dbRemove()
     if (!id)
         return;
 
-    auto req = new db::storage::TelemetryModelTrash(id);
-    connect(req, &db::storage::TelemetryModelTrash::finished, [this, id]() {
+    auto req = new db::storage::TelemetryModifyTrash(id);
+    connect(req, &db::storage::TelemetryModifyTrash::finished, [this, id]() {
         dbRequestRecordsList();
         dbRequestRecordInfo(id);
         dbLoadNext();

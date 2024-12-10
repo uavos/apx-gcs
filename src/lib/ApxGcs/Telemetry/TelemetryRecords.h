@@ -21,8 +21,9 @@
  */
 #pragma once
 
-#include <Database/DatabaseModel.h>
 #include <Fact/Fact.h>
+
+class DatabaseModel;
 
 class TelemetryRecords : public Fact
 {

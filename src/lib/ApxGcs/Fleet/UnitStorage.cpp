@@ -24,12 +24,29 @@
 
 #include <Nodes/Nodes.h>
 
+#include <Database/DatabaseModel.h>
 #include <Database/NodesReqUnit.h>
 
 UnitStorage::UnitStorage(Unit *unit)
-    : QObject(unit)
+    : Fact(unit,
+           "load",
+           tr("Unit Parameters"),
+           tr("Load unit parameters from database"),
+           FilterModel | Action | IconOnly,
+           "database-search")
     , _unit(unit)
-{}
+{
+    setOpt("page", "Menu/FactMenuPageLookupDB.qml");
+
+    _dbmodel = new DatabaseModel(this);
+    setModel(_dbmodel);
+
+    connect(_dbmodel, &DatabaseModel::requestRecordsList, this, &UnitStorage::dbRequestRecordsList);
+    connect(_dbmodel, &DatabaseModel::requestRecordInfo, this, &UnitStorage::dbRequestRecordInfo);
+    connect(_dbmodel, &DatabaseModel::itemTriggered, this, &UnitStorage::dbRecordTriggered);
+
+    connect(this, &Fact::triggered, this, &UnitStorage::dbRequestRecordsList);
+}
 
 void UnitStorage::saveUnitInfo()
 {
@@ -55,7 +72,7 @@ void UnitStorage::saveUnitConf()
     for (auto i : nodes->nodes()) {
         if (!i->valid())
             return;
-        auto nconfID = i->storage->configID();
+        auto nconfID = i->tools->f_storage->configID();
         if (!nconfID)
             return;
         nconfIDs.append(nconfID);
@@ -72,16 +89,6 @@ void UnitStorage::saveUnitConf()
     req->exec();
 }
 
-void UnitStorage::loadUnitConf(QString hash)
-{
-    auto req = new db::nodes::UnitLoadConf(hash);
-    connect(req,
-            &db::nodes::UnitLoadConf::confLoaded,
-            this,
-            &UnitStorage::confLoaded,
-            Qt::QueuedConnection);
-    req->exec();
-}
 void UnitStorage::confLoaded(QJsonObject config)
 {
     auto title = config.value("title").toString();
@@ -98,5 +105,74 @@ void UnitStorage::confLoaded(QJsonObject config)
 void UnitStorage::importUnitConf(QJsonObject conf)
 {
     auto req = new db::nodes::UnitImportConf(conf);
+    req->exec();
+}
+
+void UnitStorage::dbRequestRecordsList()
+{
+    QStringList fields = {"Unit.name", "Unit.type", "UnitConf.title", "UnitConf.notes"};
+    auto filter = _dbmodel->getFilterExpression(fields);
+
+    QString s = "SELECT UnitConf.key, UnitConf.time FROM UnitConf"
+                " LEFT JOIN Unit ON UnitConf.unitID=Unit.key";
+    if (!filter.isEmpty())
+        s += " WHERE " + filter;
+    s += " ORDER BY UnitConf.time DESC";
+
+    auto req = new db::nodes::Request(s, {});
+    connect(
+        req,
+        &db::nodes::Request::queryResults,
+        this,
+        [this](QJsonArray records) {
+            DatabaseModel::RecordsList list;
+            for (const auto &i : records) {
+                list.append(i.toObject().value("key").toVariant().toULongLong());
+            }
+            _dbmodel->setRecordsList(list);
+        },
+        Qt::QueuedConnection);
+    req->exec();
+}
+
+void UnitStorage::dbRequestRecordInfo(quint64 id)
+{
+    const QString s = "SELECT * FROM UnitConf"
+                      " LEFT JOIN Unit ON UnitConf.unitID=Unit.key"
+                      " WHERE UnitConf.key=?";
+
+    auto req = new db::nodes::Request(s, {id});
+    connect(
+        req,
+        &db::nodes::Request::queryResults,
+        this,
+        [this, id](QJsonArray records) {
+            const auto jso = records.first().toObject();
+
+            auto time = QDateTime::fromMSecsSinceEpoch(jso.value("time").toVariant().toULongLong())
+                            .toString("yyyy MMM dd hh:mm:ss");
+            auto callsign = jso.value("name").toString();
+            auto title = jso.value("title").toString();
+            auto notes = jso.value("notes").toString();
+
+            QJsonObject info;
+            info.insert("title", time);
+            info.insert("value", title);
+            info.insert("descr", callsign + (notes.isEmpty() ? "" : QString(" - %1").arg(notes)));
+
+            _dbmodel->setRecordModelInfo(id, info);
+        },
+        Qt::QueuedConnection);
+    req->exec();
+}
+
+void UnitStorage::dbRecordTriggered(quint64 id)
+{
+    auto req = new db::nodes::UnitLoadConf(id);
+    connect(req,
+            &db::nodes::UnitLoadConf::confLoaded,
+            this,
+            &UnitStorage::confLoaded,
+            Qt::QueuedConnection);
     req->exec();
 }

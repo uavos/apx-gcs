@@ -21,21 +21,24 @@
  */
 #pragma once
 
+#include <Database/DatabaseModel.h>
 #include <Fact/Fact.h>
-#include <QtCore>
 
 class NodeItem;
 
-class NodeStorage : public QObject
+class NodeStorage : public Fact
 {
     Q_OBJECT
 public:
-    explicit NodeStorage(NodeItem *node);
+    explicit NodeStorage(NodeItem *node, Fact *parent);
 
     auto configID() const { return _configID; }
 
+    auto dbmodel() const { return _dbmodel; }
+
 private:
     NodeItem *_node;
+    DatabaseModel *_dbmodel;
     quint64 _configID{};
 
     QStringList get_names(Fact *f, QStringList path = QStringList());
@@ -43,12 +46,16 @@ private:
 private slots:
     void dictMetaLoaded(QJsonObject jso);
 
+    void dbRequestRecordsList();
+    void dbRequestRecordInfo(quint64 id);
+
 public slots:
     void saveNodeInfo();
     void saveNodeDict();
     void saveNodeConfig();
 
-    void loadNodeConfig(QString hash = QString()); // will load most recent by default
+    void loadLatestNodeConfig();
+    void loadNodeConfig(quint64 id);
 
     void updateConfigID(quint64 configID);
 

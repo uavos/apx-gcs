@@ -88,7 +88,7 @@ void TelemetryReader::loadRecord(quint64 id)
     auto req = new db::storage::TelemetryLoadFile(id);
     auto reader = req->reader();
     connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
-    connect(req, &DatabaseRequest::finished, this, &TelemetryReader::do_rec_finished);
+    connect(req, &db::storage::TelemetryLoadFile::finished, this, &TelemetryReader::do_rec_finished);
     connect(req, &db::storage::TelemetryLoadFile::recordInfo, this, &TelemetryReader::setRecordInfo);
     connect(req, &db::storage::TelemetryLoadFile::fileOpened, this, [this](QString path) {
         _recordFilePath = path;

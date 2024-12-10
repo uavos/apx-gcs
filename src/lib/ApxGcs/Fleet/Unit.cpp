@@ -35,8 +35,6 @@ Unit::Unit(Fleet *fleet, PUnit *protocol)
     : Fact(fleet, protocol ? protocol->name() : "replay", protocol ? protocol->title() : "REPLAY")
     , _protocol(protocol)
 {
-    _storage = new UnitStorage(this);
-
     if (protocol) {
         bindProperty(protocol, "title", true);
         bindProperty(protocol, "value", true);
@@ -82,7 +80,8 @@ Unit::Unit(Fleet *fleet, PUnit *protocol)
         connect(this, &Unit::deleteUnit, fleet, [this, fleet]() { fleet->deleteUnit(this); });
     }
 
-    f_lookup = new LookupUnitConfig(this, this);
+    // f_lookup = new LookupUnitConfig(this, this);
+    f_storage = new UnitStorage(this);
     f_share = new UnitShare(this, this);
 
     setMandala(f_mandala);
@@ -136,8 +135,8 @@ Unit::Unit(Fleet *fleet, PUnit *protocol)
         connect(protocol->data(), &PData::jsexecData, App::instance(), &App::jsexec);
 
         // storage
-        connect(this, &Unit::titleChanged, _storage, &UnitStorage::saveUnitInfo);
-        connect(this, &Unit::isGroundControlChanged, _storage, &UnitStorage::saveUnitInfo);
+        connect(this, &Unit::titleChanged, f_storage, &UnitStorage::saveUnitInfo);
+        connect(this, &Unit::isGroundControlChanged, f_storage, &UnitStorage::saveUnitInfo);
 
         // counters
         connect(protocol, &PUnit::packetReceived, this, &Unit::packetReceived);
@@ -179,7 +178,7 @@ Unit::Unit(Fleet *fleet, PUnit *protocol)
     updateInfo();
 
     if (isIdentified()) {
-        _storage->saveUnitInfo();
+        f_storage->saveUnitInfo();
     }
 
     App::jsync(this);

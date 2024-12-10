@@ -28,8 +28,6 @@
 #include <Database/Database.h>
 #include <Fleet/Fleet.h>
 
-#include "LookupNodeBackup.h"
-
 NodeTools::NodeTools(NodeItem *anode, Flags flags)
     : NodeToolsGroup(anode, anode, "tools", tr("Tools"), tr("Node tools"), flags | FlatModel)
 {
@@ -38,15 +36,13 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
 
     QString sect = tr("Backups");
 
-    f_backups = new LookupNodeBackup(node, this);
-    f_backups->setSection(sect);
+    f_storage = new NodeStorage(node, this);
+    f_storage->setSection(sect);
 
     f_restore = new Fact(this, "recent", tr("Restore recent"), tr("Restore the most recent backup"));
     f_restore->setIcon("undo");
     f_restore->setSection(sect);
-    connect(f_restore, &Fact::triggered, node->storage, [this]() {
-        node->storage->loadNodeConfig();
-    });
+    connect(f_restore, &Fact::triggered, f_storage, &NodeStorage::loadLatestNodeConfig);
 
     //sections
     f_usr = new NodeToolsGroup(this,

@@ -126,7 +126,7 @@ void Sites::dbAddSite(QVariantMap item)
                                           item.value("lat").toDouble(),
                                           item.value("lon").toDouble());
     connect(req,
-            &DatabaseRequest::finished,
+            &db::storage::SitesSave::finished,
             f_lookup,
             &DatabaseLookup::defaultLookup,
             Qt::QueuedConnection);
@@ -148,7 +148,7 @@ void Sites::dbRemoveSite(QVariantMap item)
         return;
     auto req = new db::storage::SitesRemove(key);
     connect(req,
-            &DatabaseRequest::finished,
+            &db::storage::SitesRemove::finished,
             f_lookup,
             &DatabaseLookup::defaultLookup,
             Qt::QueuedConnection);
@@ -172,7 +172,7 @@ void Sites::dbUpdateSite(QVariantMap item)
                                           item.value("lon").toDouble(),
                                           key);
     connect(req,
-            &DatabaseRequest::finished,
+            &db::storage::SitesSave::finished,
             f_lookup,
             &DatabaseLookup::defaultLookup,
             Qt::QueuedConnection);

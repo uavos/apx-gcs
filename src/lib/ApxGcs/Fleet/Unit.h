@@ -29,7 +29,6 @@
 #include <Fact/Fact.h>
 #include <Mandala/Mandala.h>
 
-#include "LookupUnitConfig.h"
 #include "UnitShare.h"
 #include "UnitStorage.h"
 
@@ -75,7 +74,8 @@ public:
     UnitWarnings *f_warnings;
 
     Fact *f_select;
-    LookupUnitConfig *f_lookup;
+    // LookupUnitConfig *f_lookup;
+    UnitStorage *f_storage;
     UnitShare *f_share;
 
     QTimer telemetryReqTimer;
@@ -90,7 +90,6 @@ public:
 
     auto uid() const { return _protocol ? _protocol->uid() : QString(); }
     auto protocol() const { return _protocol; }
-    auto storage() const { return _storage; }
 
     QString unitTypeText() const { return _protocol ? _protocol->unitTypeText() : ""; }
 
@@ -144,7 +143,6 @@ protected:
 
 private:
     PUnit *_protocol;
-    UnitStorage *_storage;
 
     qint64 _lastSeenTime{};
 

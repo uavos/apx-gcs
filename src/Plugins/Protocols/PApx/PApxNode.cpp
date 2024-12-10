@@ -356,9 +356,9 @@ void PApxNode::requestDict()
 
     connect(
         req,
-        &DatabaseRequest::finished,
+        &db::nodes::NodeLoadDict::finished,
         this,
-        [this](DatabaseRequest::Status status) {
+        [this](db::nodes::NodeLoadDict::Status status) {
             if (status)
                 requestDictDownload();
         },

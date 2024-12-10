@@ -27,8 +27,6 @@
 #include <Nodes/Nodes.h>
 #include <QAction>
 
-#include <Database/DatabaseLookup.h>
-
 NodesFrame::NodesFrame(QWidget *parent)
     : QWidget(parent)
     , _unit(nullptr)
@@ -87,7 +85,7 @@ void NodesFrame::unitSelected(Unit *unit)
     toolBar->addAction(new QActionFact(unit->f_nodes->f_stop));
     toolBar->addAction(new QActionFact(unit->f_nodes->f_clear));
 
-    QAction *aLookup = new QActionFact(unit->f_lookup);
+    QAction *aLookup = new QActionFact(unit->f_storage);
     toolBar->addAction(aLookup);
     connect(aLookup, &QAction::triggered, treeWidget, &FactTreeWidget::resetFilter);
 
@@ -221,35 +219,63 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
         }
         // add sub items
 
-        DatabaseLookup *dbq = qobject_cast<DatabaseLookup *>(fact);
-        if (dbq) {
+        auto storage = qobject_cast<NodeStorage *>(fact);
+        if (storage) {
             if (!m->actions().isEmpty()) {
                 m->setEnabled(false);
                 return;
             }
-            dbq->defaultLookup(); //refresh db (delayed thread)
-            int cnt = dbq->dbModel()->count();
-            if (cnt > 30)
-                cnt = 30;
-            else if (cnt <= 0)
-                m->setEnabled(false);
-            for (int i = 0; i < cnt; ++i) {
-                QVariantMap modelData = dbq->dbModel()->get(i);
-                QString s = modelData.value("title").toString();
-                QString s2 = modelData.value("value").toString();
-                if (!s2.isEmpty())
-                    s.append(QString(" (%1)").arg(s2));
+            auto model = storage->dbmodel();
+            connect(model, &DatabaseModel::recordsListChanged, m, [this, m, storage, nodeName]() {
+                auto model = storage->dbmodel();
+                int cnt = model->rowCount();
+                if (cnt > 30)
+                    cnt = 30;
+                else if (cnt <= 0)
+                    m->setEnabled(false);
+                for (int i = 0; i < cnt; ++i) {
+                    auto a = new QAction(m);
 
-                QAction *a = new QAction(s, m);
-                a->setObjectName(s);
-                a->setToolTip(nodeName);
-                m->addAction(a);
-                connect(a, &QAction::triggered, dbq, [dbq, modelData]() {
-                    dbq->triggerItem(modelData);
-                });
-            }
+                    const auto jso = model->get(i);
+                    a->setData(jso.value("key").toVariant());
+
+                    QString s = jso.value("title").toString();
+                    QString s2 = jso.value("value").toString();
+                    if (!s2.isEmpty())
+                        s.append(QString(" (%1)").arg(s2));
+
+                    a->setText(s);
+                    a->setObjectName(s);
+                    a->setToolTip(nodeName);
+                    m->addAction(a);
+
+                    // link action to db record
+                    connect(a, &QAction::triggered, storage, [storage, a]() {
+                        storage->loadNodeConfig(a->data().toULongLong());
+                    });
+
+                    // update caption
+                    connect(model,
+                            &DatabaseModel::dataChanged,
+                            a,
+                            [model, a, i](const QModelIndex &topLeft) {
+                                if (topLeft.row() != i)
+                                    return;
+                                const auto jso = model->get(i);
+                                QString s = jso.value("title").toString();
+                                QString s2 = jso.value("value").toString();
+                                if (!s2.isEmpty())
+                                    s.append(QString(" (%1)").arg(s2));
+                                a->setText(s);
+                                a->setData(jso.value("key").toVariant());
+                            });
+                }
+            });
+
+            emit model->requestRecordsList(); //refresh db (delayed thread)
             return;
         }
+
         for (int i = 0; i < fact->size(); ++i) {
             addNodeTools(m, fact->child(i), nodeName);
         }

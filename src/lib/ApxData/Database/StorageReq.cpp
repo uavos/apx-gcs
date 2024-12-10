@@ -47,28 +47,6 @@ bool TelemetryCreateRecord::run(QSqlQuery &query)
     return true;
 }
 
-bool TelemetryModelRecordsList::run(QSqlQuery &query)
-{
-    QString s = "SELECT key, time FROM Telemetry";
-    if (!_filter.isEmpty())
-        s += " WHERE " + _filter;
-    s += " ORDER BY time DESC";
-
-    query.prepare(s);
-    if (!query.exec())
-        return false;
-
-    DatabaseModel::RecordsList records;
-
-    while (query.next()) {
-        records.append(query.value(0).toULongLong());
-    }
-
-    emit recordsList(records);
-
-    return true;
-}
-
 bool TelemetryLoadInfo::run(QSqlQuery &query)
 {
     query.prepare("SELECT * FROM Telemetry WHERE key=?");
@@ -122,7 +100,7 @@ bool TelemetryLoadInfo::run(QSqlQuery &query)
     return true;
 }
 
-bool TelemetryModelTrash::run(QSqlQuery &query)
+bool TelemetryModifyTrash::run(QSqlQuery &query)
 {
     // toggle trash flag
     query.prepare("SELECT * FROM Telemetry WHERE key=?");
@@ -169,7 +147,7 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
 
     if (query.value("trash").toBool()) {
         qDebug() << "Recovering record from trash";
-        auto req = new TelemetryModelTrash(_id, false);
+        auto req = new TelemetryModifyTrash(_id, false);
         req->exec(); // chain next
     }
 

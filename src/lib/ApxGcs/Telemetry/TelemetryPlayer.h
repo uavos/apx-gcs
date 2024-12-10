@@ -21,7 +21,6 @@
  */
 #pragma once
 
-#include <Database/DatabaseRequest.h>
 #include <Mandala/Mandala.h>
 
 #include "TelemetryReader.h"

@@ -28,8 +28,6 @@
 
 #include <App/AppNotify.h>
 
-#include "NodeStorage.h"
-
 class Nodes;
 class Unit;
 
@@ -42,7 +40,6 @@ class NodeItem : public Fact
 public:
     explicit NodeItem(Fact *parent, Nodes *nodes, PNode *protocol);
 
-    NodeStorage *storage;
     NodeTools *tools;
 
     auto valid() const { return m_valid; }

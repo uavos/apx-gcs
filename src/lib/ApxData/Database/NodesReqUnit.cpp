@@ -206,12 +206,12 @@ bool UnitSaveConf::run(QSqlQuery &query)
 
 bool UnitLoadConf::run(QSqlQuery &query)
 {
-    query.prepare("SELECT * FROM UnitConf WHERE hash=?");
-    query.addBindValue(_hash);
+    query.prepare("SELECT * FROM UnitConf WHERE key=?");
+    query.addBindValue(_unitConfID);
     if (!query.exec())
         return false;
     if (!query.next()) {
-        qWarning() << "missing conf" << _hash;
+        qWarning() << "missing conf" << _unitConfID;
         return false;
     }
     auto unitConfID = query.value(0).toULongLong();

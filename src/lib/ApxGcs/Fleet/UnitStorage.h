@@ -21,11 +21,12 @@
  */
 #pragma once
 
-#include <QtCore>
+#include <Fact/Fact.h>
 
 class Unit;
+class DatabaseModel;
 
-class UnitStorage : public QObject
+class UnitStorage : public Fact
 {
     Q_OBJECT
 public:
@@ -33,14 +34,18 @@ public:
 
 private:
     Unit *_unit;
+    DatabaseModel *_dbmodel;
 
 private slots:
     void confLoaded(QJsonObject config);
 
+    void dbRequestRecordsList();
+    void dbRequestRecordInfo(quint64 id);
+    void dbRecordTriggered(quint64 id);
+
 public slots:
     void saveUnitInfo();
     void saveUnitConf();
-    void loadUnitConf(QString hash);
     void importUnitConf(QJsonObject conf);
 
 signals:

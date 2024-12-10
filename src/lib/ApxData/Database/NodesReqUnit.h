@@ -78,15 +78,15 @@ class UnitLoadConf : public Request
 {
     Q_OBJECT
 public:
-    explicit UnitLoadConf(QString hash)
-        : _hash(hash)
+    explicit UnitLoadConf(quint64 unitConfID)
+        : _unitConfID(unitConfID)
     {}
     bool run(QSqlQuery &query);
 
     auto conf() const { return _conf; }
 
 private:
-    QString _hash;
+    quint64 _unitConfID;
     QJsonObject _conf;
 
 signals:

@@ -203,6 +203,7 @@ quint64 NodeSaveConf::_getValueID(QSqlQuery &query, const QJsonValue &v)
 
 bool NodeLoadConf::run(QSqlQuery &query)
 {
+    // qDebug() << "load conf" << _nodeID << _hash << _nodeConfID;
     if (!_nodeConfID) {
         if (!RequestNode::run(query))
             return false;

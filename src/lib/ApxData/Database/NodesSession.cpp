@@ -188,3 +188,7 @@ Session::Session(QObject *parent, QString sessionName)
 Request::Request()
     : DatabaseRequest(Database::instance()->nodes)
 {}
+
+Request::Request(const QString &sql, const QVariantList &bind)
+    : DatabaseRequest(Database::instance()->nodes, sql, bind)
+{}
