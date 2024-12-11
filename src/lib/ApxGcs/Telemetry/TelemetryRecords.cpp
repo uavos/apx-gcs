@@ -21,6 +21,7 @@
  */
 #include "TelemetryRecords.h"
 
+#include <Database/Database.h>
 #include <Database/DatabaseModel.h>
 #include <Database/StorageReq.h>
 
@@ -52,10 +53,6 @@ TelemetryRecords::TelemetryRecords(Fact *parent)
     });
 
     connect(this, &Fact::triggered, this, &TelemetryRecords::dbRequestRecordsList);
-    // connect(Database::instance()->telemetry,
-    //         &DatabaseSession::modified,
-    //         this,
-    //         &TelemetryRecords::dbRequestRecordsList);
 
     //actions
     f_remove = new Fact(this,
@@ -125,6 +122,13 @@ void TelemetryRecords::updateStatus()
 
 void TelemetryRecords::dbRequestRecordsList()
 {
+    // subscribe to update list next time on ochanges
+    connect(Database::instance()->storage,
+            &DatabaseSession::modified,
+            this,
+            &TelemetryRecords::dbRequestRecordsList,
+            Qt::QueuedConnection);
+
     QStringList fields = {"unitName", "unitType", "confName", "notes", "file"};
     auto extra_filter = f_restore->value().toBool() ? "" : QString("trash IS NULL");
     auto filter = _dbmodel->getFilterExpression(fields, extra_filter);

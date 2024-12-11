@@ -207,7 +207,6 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
             return false;
 
         qDebug() << "Record hash updated";
-        emit dbModified();
     } while (0);
 
     // read record info

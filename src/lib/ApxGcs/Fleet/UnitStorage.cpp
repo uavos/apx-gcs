@@ -24,6 +24,7 @@
 
 #include <Nodes/Nodes.h>
 
+#include <Database/Database.h>
 #include <Database/DatabaseModel.h>
 #include <Database/NodesReqUnit.h>
 
@@ -110,6 +111,13 @@ void UnitStorage::importUnitConf(QJsonObject conf)
 
 void UnitStorage::dbRequestRecordsList()
 {
+    // subscribe to update list next time on ochanges
+    connect(Database::instance()->nodes,
+            &DatabaseSession::modified,
+            this,
+            &UnitStorage::dbRequestRecordsList,
+            Qt::UniqueConnection);
+
     QStringList fields = {"Unit.name", "Unit.type", "UnitConf.title", "UnitConf.notes"};
     auto filter = _dbmodel->getFilterExpression(fields);
 

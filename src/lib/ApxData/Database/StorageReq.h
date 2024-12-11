@@ -21,7 +21,6 @@
  */
 #pragma once
 
-#include "DatabaseModel.h"
 #include "StorageSession.h"
 
 #include "TelemetryFileEvents.h"

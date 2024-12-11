@@ -22,6 +22,7 @@
 #include "NodeStorage.h"
 #include "NodeItem.h"
 
+#include <Database/Database.h>
 #include <Database/NodesReqConf.h>
 #include <Database/NodesReqDict.h>
 #include <Database/NodesReqMeta.h>
@@ -176,6 +177,13 @@ void NodeStorage::dictMetaLoaded(QJsonObject jso)
 
 void NodeStorage::dbRequestRecordsList()
 {
+    // subscribe to update list next time on ochanges
+    connect(Database::instance()->nodes,
+            &DatabaseSession::modified,
+            this,
+            &NodeStorage::dbRequestRecordsList,
+            Qt::UniqueConnection);
+
     QStringList fields = {"NodeConf.title", "NodeDict.version"};
     auto filter = _dbmodel->getFilterExpression(fields);
 
