@@ -60,8 +60,14 @@ Item {
 
     function getElevation()
     {
-        if(fact.parentFact.isFeet)
+        if(fact.parentFact.isFeets)
             return m2ft(item.elevation) + "ft"
         return item.elevation + "m"
     }
+
+    // For hmsl of runway and poi updating when elevation changed
+    // onElevationChanged: {
+    //     if(fact.name === "hmsl" && !isNaN(item.elevation))
+    //         fact.value = item.isFeets?m2ft(item.elevation):item.elevation
+    // } 
 }

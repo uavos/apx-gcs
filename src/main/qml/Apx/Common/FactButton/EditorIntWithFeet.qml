@@ -28,7 +28,7 @@ import Apx.Common
 SpinBox {
     id: editor
     property var opts: fact.opts
-    property bool isFeet: !fact.parentFact.isFeet ? false : true
+    property bool isFeets: !fact.parentFact.isFeets ? false : true
 
     hoverEnabled: true
     
@@ -37,7 +37,7 @@ SpinBox {
     
     property real div: 1
 
-    value: !isFeet ? fact.value * div : opts.ft * div
+    value: !isFeets ? fact.value * div : opts.ft * div
 
     readonly property real precision: fact.precision
 
@@ -78,11 +78,11 @@ SpinBox {
                 : 1
 
     contentItem: Item{
-        implicitWidth: isFeet ? textInputFt.width : textInput.width
+        implicitWidth: isFeets ? textInputFt.width : textInput.width
         
         TextInput {
             id: textInputFt
-            visible: isFeet
+            visible: isFeets
             validator: IntValidator{bottom: editor.from; top: editor.to}
 
             anchors.centerIn: parent
@@ -154,7 +154,7 @@ SpinBox {
                 }
             }
             onFactValueChanged:{
-                if(!isFeet)
+                if(!isFeets)
                     opts.ft = m2ft(fact.value)
                     fact.opts = opts;
             }
@@ -197,7 +197,7 @@ SpinBox {
         var v=value
         v -= v % stepSize
         v /= div
-        if(!isFeet) {
+        if(!isFeets) {
             fact.setValue(v)
             opts.ft = m2ft(v)
             fact.opts = opts
@@ -206,7 +206,7 @@ SpinBox {
             fact.opts = opts
             fact.setValue(ft2m(v))
         }
-        value=Qt.binding(function(){return Math.round(!isFeet ? fact.value*div : opts.ft*div)})   
+        value=Qt.binding(function(){return Math.round(!isFeets ? fact.value*div : opts.ft*div)})   
         // accelerate
         elapsed = startTime>0?(new Date().getTime()-startTime)/1000:0
     }
@@ -218,7 +218,7 @@ SpinBox {
         font: parent.font
         implicitHeight: parent.height
         topPadding: (implicitHeight-implicitContentHeight)/2
-        text: isFeet ? textInput.text : textInputFt.text
+        text: isFeets ? textInput.text : textInputFt.text
         x: parent.x + parent.implicitWidth + 7*ui.scale
         y: parent.y
         background: Rectangle {

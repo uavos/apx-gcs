@@ -55,9 +55,6 @@ Waypoint::Waypoint(MissionGroup *parent)
     f_type->setEnumStrings(QStringList() << "direct"
                                          << "track");
 
-    //switch ft/m on
-    f_feet->setVisible(true);
-
     //actions
     f_actions = new WaypointActions(this);
 
@@ -69,19 +66,17 @@ Waypoint::Waypoint(MissionGroup *parent)
         f_altitude->setValue(200);
 
     // Add feets options
-    // 3.2808 - conversion coefficient feets to meters
-    const float coef = 3.2808;
-    auto ft = std::round(f_altitude->value().toInt() * coef);
+    auto ft = std::round(f_altitude->value().toInt() * M2FT_COEF);
     f_altitude->setOpt("ft", ft);
 
-    ft = std::round(f_agl->value().toInt() * coef);
+    ft = std::round(f_agl->value().toInt() * M2FT_COEF);
     f_agl->setOpt("ft", ft);
 
-    ft = std::round(f_amsl->value().toInt() * coef);
+    ft = std::round(f_amsl->value().toInt() * M2FT_COEF);
     f_amsl->setOpt("ft", ft);
 
     connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
-    connect(this, &MissionItem::isFeetChanged, this, &Waypoint::updateTitle);
+    connect(this, &MissionItem::isFeetsChanged, this, &Waypoint::updateTitle);
     // Add feets options end
 
     connect(f_type, &Fact::valueChanged, this, &Waypoint::updatePath);
@@ -101,7 +96,7 @@ void Waypoint::updateTitle()
     QStringList st;
     st.append(QString::number(num() + 1));
     st.append(f_type->valueText().left(1).toUpper());
-    if (m_isFeet)
+    if (m_isFeets)
         st.append(AppRoot::distanceToStringFt(f_altitude->opts().value("ft", 0).toInt()));
     else
         st.append(AppRoot::distanceToString(f_altitude->value().toInt()));

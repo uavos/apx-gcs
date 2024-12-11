@@ -84,8 +84,8 @@ MissionObject {
         },
         Loader {
             property var opts: fact?fact.hmsl.opts:0
-            property bool isFeet: fact?fact.isFeet:false
-            property int hmsl: isFeet ? opts.ft : f_hmsl
+            property bool isFeets: fact?fact.isFeets:false
+            property int hmsl: isFeets ? opts.ft : f_hmsl
             active: showDetails && hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
             //active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
             // asynchronous: true
@@ -93,7 +93,7 @@ MissionObject {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: isFeet ? opts.ft+"ft" : f_hmsl+"m"
+                    text: isFeets ? opts.ft+"ft" : f_hmsl+"m"
                 }
             }
         }
@@ -175,17 +175,17 @@ MissionObject {
     Loader {
         // Feets
         property var opts: fact?fact.approach.opts:0
-        property bool isFeet: fact?fact.isFeet:false
+        property bool isFeets: fact?fact.isFeets:false
         property int approach: runwayItem.f_approach
         property var rwObjTitle: getTitle()
 
-        onIsFeetChanged: rwObjTitle=getTitle()
+        onIsFeetsChanged: rwObjTitle=getTitle()
         onOptsChanged: rwObjTitle=getTitle()
         onApproachChanged: rwObjTitle=getTitle()
 
         function getTitle() {
-            if(isFeet)
-                return opts.ft>0?(opts.ft + "ft"):"H----"
+            if(isFeets)
+                return opts.ft>0?(apx.distanceToStringFt(opts.ft)):"H----"
             else
                 return f_approach>0?(apx.distanceToString(f_approach)):"H----"
         }

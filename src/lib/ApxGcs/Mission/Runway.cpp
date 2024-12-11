@@ -71,23 +71,18 @@ Runway::Runway(MissionGroup *parent)
     f_dN->setOpt("editor", "EditorIntWithFeet.qml");
     f_dE->setOpt("editor", "EditorIntWithFeet.qml");
 
-    const float coef = 3.2808;
-    auto ft = std::round(f_approach->value().toInt() * coef);
+    auto ft = std::round(f_approach->value().toInt() * M2FT_COEF);
     f_approach->setOpt("ft", ft);
-    ft = std::round(f_dN->value().toInt() * coef);
+    ft = std::round(f_dN->value().toInt() * M2FT_COEF);
     f_dN->setOpt("ft", ft);
-    ft = std::round(f_dE->value().toInt() * coef);
+    ft = std::round(f_dE->value().toInt() * M2FT_COEF);
     f_dE->setOpt("ft", ft);
-    ft = std::round(f_hmsl->value().toInt() * coef);
+    ft = std::round(f_hmsl->value().toInt() * M2FT_COEF);
     f_hmsl->setOpt("ft", ft);
 
     connect(f_approach, &Fact::optsChanged, this, &Runway::updateTitle);
     connect(f_hmsl, &Fact::optsChanged, this, &Runway::updateTitle);
-    connect(this, &MissionItem::isFeetChanged, this, &Runway::updateTitle);
-    // Add feets option end
-
-    //switch ft/m on
-    f_feet->setVisible(true);
+    connect(this, &MissionItem::isFeetsChanged, this, &Runway::updateTitle);
 
     //title
     connect(f_type, &Fact::valueChanged, this, &Runway::updateTitle);
@@ -139,12 +134,12 @@ void Runway::updateTitle()
     QStringList st;
     st.append(QString::number(num() + 1));
     st.append(value().toString());
-    if (m_isFeet)
+    if (m_isFeets)
         st.append(AppRoot::distanceToStringFt(f_approach->opts().value("ft", 0).toInt()));
     else
         st.append(AppRoot::distanceToString(f_approach->value().toInt()));
         
-    if (m_isFeet) {
+    if (m_isFeets) {
         auto feets = f_hmsl->opts().value("ft", 0).toInt();
         if (feets != 0)
             st.append(QString("MSL%1").arg(feets));

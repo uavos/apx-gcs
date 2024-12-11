@@ -123,17 +123,16 @@ MissionObject {
     contentsRight: [
         Loader {
             // Feets 
-            property var isFeet: fact?fact.isFeet:false
+            property var isFeets: fact?fact.isFeets:false
             property var opts: fact?fact.child("altitude").opts:""
-            
+           
             active: (!dragging) && (hover||selected)?1:0
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    // text: f_altitude.toFixed()+"m"
-                    text: isFeet? opts.ft + "ft" : f_altitude.toFixed()+"m"
+                    text: isFeets? opts.ft + "ft" : f_altitude.toFixed()+"m"
                 }
             }
         }

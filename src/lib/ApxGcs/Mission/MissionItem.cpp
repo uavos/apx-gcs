@@ -39,7 +39,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     , m_totalDistance(0)
     , m_totalTime(0)
     , m_selected(false)
-    , m_isFeet(false)
+    , m_isFeets(false)
 {
     setOpt("pos", QPointF(0.25, 0.5));
 
@@ -64,14 +64,11 @@ MissionItem::MissionItem(MissionGroup *parent,
     f_longitude->setUnits("lon");
 
     // This is a temporary solution until the feet-meters conversion of gcs is completed.
-    f_feet = new Fact(this,
-                      "ft_m",
-                      tr("ft"),
-                      tr("switch between feet and meters"),
-                      Action,"swap-vertical");
-    f_feet->setVisible(false);
-
-    connect(f_feet, &Fact::triggered, this, &MissionItem::changeFeetMeters);
+    f_feets = AppSettings::instance()->f_interface->findChild("measurementsystem.feets");
+    if(f_feets) {
+        connect(f_feets, &Fact::valueChanged, this, &MissionItem::changeFeetMeters);
+        setIsFeets(f_feets->value().toBool());
+    }
 
     f_remove = new Fact(this, "remove", tr("Remove"), tr("Remove mission item"), Action | Remove);
     connect(f_remove, &Fact::triggered, this, &Fact::deleteFact);
@@ -336,24 +333,20 @@ void MissionItem::setSelected(bool v)
         group->mission->setSelectedItem(nullptr);
 }
 
-bool MissionItem::isFeet() const
+bool MissionItem::isFeets() const
 {
-    return m_isFeet;
+    return m_isFeets;
 }
 
-void MissionItem::setIsFeet(bool v)
+void MissionItem::setIsFeets(bool v)
 {
-    if (m_isFeet == v)
+    if (m_isFeets == v)
         return;
-    m_isFeet = v;
-    emit isFeetChanged();
+    m_isFeets = v;
+    emit isFeetsChanged();
 }
 
 void MissionItem::changeFeetMeters()
 {
-    setIsFeet(!m_isFeet);
-    if(m_isFeet)
-        f_feet->setTitle("m");
-    else
-        f_feet->setTitle("ft");
+    setIsFeets(!m_isFeets);
 }

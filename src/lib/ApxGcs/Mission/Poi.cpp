@@ -52,21 +52,16 @@ Poi::Poi(MissionGroup *parent)
     f_time->setMax(0xFFFF);
 
     // Add feets option
-    // 3.2808 - conversion coefficient feets to meters
     f_hmsl->setOpt("editor", "EditorIntWithFeet.qml");
     f_radius->setOpt("editor", "EditorIntWithFeet.qml");
 
-    const float coef = 3.2808;
-    auto ft = std::round(f_radius->value().toInt() * coef);
+    auto ft = std::round(f_radius->value().toInt() * M2FT_COEF);
     f_radius->setOpt("ft", ft);
-    f_hmsl->setOpt("ft", 0);
+    ft = std::round(f_hmsl->value().toInt() * M2FT_COEF);
+    f_hmsl->setOpt("ft", ft);
 
     connect(f_radius, &Fact::optsChanged, this, &Poi::updateTitle);
-    connect(this, &MissionItem::isFeetChanged, this, &Poi::updateTitle);
-    // Add feets options end
-
-    //switch ft/m on
-    f_feet->setVisible(true);
+    connect(this, &MissionItem::isFeetsChanged, this, &Poi::updateTitle);
 
     //conversions
     connect(this, &MissionItem::coordinateChanged, this, &Poi::radiusPointChanged);
@@ -89,13 +84,13 @@ void Poi::updateTitle()
     int r{0};
     QStringList st;
     st.append(QString::number(num() + 1));
-    if (m_isFeet)
+    if (m_isFeets)
         r = f_radius->opts().value("ft", 0).toInt();
     else
         r = f_radius->value().toInt();
 
     if (std::abs(r) > 0) {
-        if (m_isFeet)
+        if (m_isFeets)
             st.append(AppRoot::distanceToStringFt(std::abs(r)));
         else
             st.append(AppRoot::distanceToString(std::abs(r)));

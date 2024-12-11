@@ -6,5 +6,6 @@ add_subdirectory("ScriptCompiler")
 add_subdirectory("FirmwareLoader")
 add_subdirectory("Joystick")
 add_subdirectory("HttpService")
+add_subdirectory("MeasurementSystem")
 
 add_subdirectory("AppUpdate")

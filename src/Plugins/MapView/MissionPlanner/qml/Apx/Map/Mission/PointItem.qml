@@ -61,7 +61,7 @@ MissionObject {
         Loader {
             // Feets
             property var opts: fact?fact.hmsl.opts:0
-            property bool isFeet: fact?fact.isFeet:false
+            property bool isFeets: fact?fact.isFeets:false
 
             active: (f_hmsl!==0 || opts.ft !==0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
             // asynchronous: true
@@ -69,7 +69,7 @@ MissionObject {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: !isFeet ? f_hmsl+"m" : opts.ft + "ft"
+                    text: !isFeets ? f_hmsl+"m" : opts.ft + "ft"
                 }
             }
         }
@@ -104,17 +104,17 @@ MissionObject {
     Loader {
         // Feets
         property var opts: fact?fact.radius.opts:0
-        property bool isFeet: fact?fact.isFeet:false
+        property bool isFeets: fact?fact.isFeets:false
         property int radius: pointItem.f_radius
         property var poiTitle: getTitle()
 
-        onIsFeetChanged: poiTitle=getTitle()
+        onIsFeetsChanged: poiTitle=getTitle()
         onOptsChanged: poiTitle=getTitle()
         onRadiusChanged: poiTitle=getTitle()
 
         function getTitle() {
-            if(isFeet)
-                return opts.ft>0?(opts.ft + "ft"):"H----"
+            if(isFeets)
+                return opts.ft>0?(apx.distanceToString(opts.ft)):"H----"
             else
                 return f_radius>0?(apx.distanceToString(f_radius)):"H----"
         }
