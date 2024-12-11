@@ -29,6 +29,8 @@ SpinBox {
     id: editor
     property var opts: fact.opts
     property bool isFeets: !fact.parentFact.isFeets ? false : true
+    property var measurementsystem: apx.settings.interface.measurementsystem
+    property bool tooltip: measurementsystem ? measurementsystem.tooltip.value : false
 
     hoverEnabled: true
     
@@ -214,7 +216,7 @@ SpinBox {
 
     ToolTip {
         parent: editor
-        visible: hovered
+        visible: hovered && tooltip
         font: parent.font
         implicitHeight: parent.height
         topPadding: (implicitHeight-implicitContentHeight)/2
