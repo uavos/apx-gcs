@@ -21,33 +21,40 @@
  */
 #pragma once
 
-#include <Database/DatabaseLookup.h>
+#include <Database/DatabaseModel.h>
+#include <Fact/Fact.h>
+
 #include <QGeoCoordinate>
 #include <QGeoRectangle>
 #include <QtCore>
+
 class Sites;
 
-class LookupSites : public DatabaseLookup
+class NearestSites : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(QGeoShape area READ area WRITE setArea NOTIFY areaChanged)
 
 public:
-    explicit LookupSites(Sites *sites);
+    explicit NearestSites(Sites *sites);
 
 private:
-    Sites *sites;
-    QGeoCoordinate reqCenter;
-    double reqDist;
-    QGeoRectangle reqRect;
-    QMutex mutex;
-
-protected:
-    QVariantMap thr_prepareRecordData(const QJsonObject &jso) override;
-    void defaultLookup() override;
+    Sites *_sites;
+    DatabaseModel *_dbmodel;
+    QGeoCoordinate _reqCenter;
+    double _reqDist;
+    QGeoRectangle _reqRect;
+    QMutex _mutex;
 
 private slots:
     void updateRect();
+
+    void dbRequestRecordsList();
+    void dbRequestRecordInfo(quint64 key);
+
+public slots:
+    void updateRecords() { dbRequestRecordsList(); }
+    void updateRecord(quint64 key) { dbRequestRecordInfo(key); }
 
     //---------------------------------------
     // PROPERTIES

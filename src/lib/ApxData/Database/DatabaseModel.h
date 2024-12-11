@@ -58,6 +58,9 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
+    void setRecordsList(QJsonArray records, QString key);
+    void setRecordsList(RecordsList recordsList);
+
 private:
     RecordsList _recordsList;
     quint64 _activeRecordId{};
@@ -69,7 +72,8 @@ private:
     QString _filter;
 
 public slots:
-    void setRecordsList(RecordsList recordsList);
+    void dbUpdateRecords(QJsonArray records) { setRecordsList(records, "key"); }
+
     void setRecordModelInfo(quint64 id, QJsonObject modelInfo);
 
     void resetFilter() { setFilter({}); }
@@ -78,7 +82,7 @@ public slots:
 
 signals:
     void countChanged(quint64 count);
-    void itemTriggered(quint64 id);
+    void itemTriggered(quint64 id, QJsonObject info);
     void filterChanged();
     void recordsListChanged();
 

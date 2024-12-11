@@ -120,18 +120,11 @@ void UnitStorage::dbRequestRecordsList()
     s += " ORDER BY UnitConf.time DESC";
 
     auto req = new db::nodes::Request(s, {});
-    connect(
-        req,
-        &db::nodes::Request::queryResults,
-        this,
-        [this](QJsonArray records) {
-            DatabaseModel::RecordsList list;
-            for (const auto &i : records) {
-                list.append(i.toObject().value("key").toVariant().toULongLong());
-            }
-            _dbmodel->setRecordsList(list);
-        },
-        Qt::QueuedConnection);
+    connect(req,
+            &db::nodes::Request::queryResults,
+            _dbmodel,
+            &DatabaseModel::dbUpdateRecords,
+            Qt::QueuedConnection);
     req->exec();
 }
 

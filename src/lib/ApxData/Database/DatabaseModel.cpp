@@ -49,7 +49,15 @@ void DatabaseModel::setActiveRecordId(quint64 id)
 void DatabaseModel::triggerItem(quint64 id)
 {
     setActiveRecordId(id);
-    emit itemTriggered(id);
+    emit itemTriggered(id, get(_recordsList.indexOf(id)));
+}
+
+void DatabaseModel::setRecordsList(QJsonArray records, QString key)
+{
+    RecordsList list;
+    for (const auto &r : records)
+        list.append(r.toObject().value(key).toVariant().toULongLong());
+    setRecordsList(list);
 }
 
 void DatabaseModel::setRecordsList(RecordsList recordsList)

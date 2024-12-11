@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include "LookupSites.h"
+#include "NearestSites.h"
 #include "SiteEdit.h"
 #include <Fact/Fact.h>
 #include <QtCore>
@@ -44,8 +44,9 @@ public:
 
     Q_INVOKABLE void createEditor(QVariantMap item);
     Q_INVOKABLE void destroyEditor(QVariantMap item);
+    Q_INVOKABLE void updateSite(QVariantMap item) { dbUpdateSite(item); }
 
-    LookupSites *f_lookup;
+    NearestSites *f_nearest;
 
 private:
     SiteEdit *f_add;
@@ -55,7 +56,6 @@ private:
 
 private slots:
     void appLoaded();
-    void syncEditorFromModel();
 
     void dbAddSite(QVariantMap item);
     void dbRemoveSite(QVariantMap item);

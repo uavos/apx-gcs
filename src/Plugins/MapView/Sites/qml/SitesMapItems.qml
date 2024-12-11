@@ -27,29 +27,28 @@ import QtQml
 import Apx.Common
 
 MapItemGroup {
-    id: places
-    property bool showPlaces: apx.tools && sites
+    property bool showSites: apx.tools && sitesPlugin
     property var map: ui.map
-    property var sites: apx.tools.sites
+    property var sitesPlugin: apx.tools.sites
 
     z: 1
 
     MapItemView {
         id: sitesView
-        model: places.showPlaces?sites.lookup.model:0
+        model: showSites?sitesPlugin.db.model:0
         delegate: SiteItem { }
     }
 
     Component.onCompleted: {
-        sites.lookup.area=Qt.binding(function(){return map.area})
+        sitesPlugin.db.area=Qt.binding(function(){return map.area})
         map.addMapItemView(sitesView)
     }
 
 
-    //triggered site in lookup - focus on map
+    //triggered site fact in list menu - focus on map
     Connections {
-        target: sites.lookup
-        function onItemTriggered(modelData){
+        target: sitesPlugin.db.model
+        function onItemTriggered(id, modelData){
             map.showCoordinate(QtPositioning.coordinate(modelData.lat,modelData.lon))
         }
     }

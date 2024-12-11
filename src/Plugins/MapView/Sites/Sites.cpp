@@ -57,7 +57,7 @@ Sites::Sites(Fact *parent)
     new db::MakeIndex(db, "Sites", "title", true);
     new db::MakeIndex(db, "Sites", "lat,lon", true);
 
-    f_lookup = new LookupSites(this);
+    f_nearest = new NearestSites(this);
 
     //facts
     f_add = new SiteEdit(this, "add", tr("Add new site"), tr("Create new named area"), QVariantMap());
@@ -69,7 +69,6 @@ Sites::Sites(Fact *parent)
 
 void Sites::appLoaded()
 {
-    //qDebug()<<"appLoaded";
     //add menus to map tools plugin
     Fact *fMapAdd = AppRoot::instance()->findChild("tools.missionplanner.add");
     if (!fMapAdd)
@@ -90,11 +89,6 @@ void Sites::createEditor(QVariantMap item)
     connect(f_edit, &SiteEdit::removed, this, [this]() { f_edit = nullptr; });
     connect(f_edit, &SiteEdit::removeTriggered, this, &Sites::dbRemoveSite);
     connect(f_edit, &SiteEdit::siteEdited, this, &Sites::dbUpdateSite);
-    connect(f_lookup->dbModel(),
-            &DatabaseLookupModel::itemEdited,
-            f_edit,
-            &SiteEdit::updateFromEditedModelData);
-    connect(f_lookup->dbModel(), &DatabaseLookupModel::synced, this, &Sites::syncEditorFromModel);
 }
 void Sites::destroyEditor(QVariantMap item)
 {
@@ -107,17 +101,6 @@ void Sites::destroyEditor(QVariantMap item)
     f_edit->deleteFact();
     f_edit = nullptr;
 }
-void Sites::syncEditorFromModel()
-{
-    if (!f_edit)
-        return;
-    int i = f_lookup->dbModel()->indexOf("key", f_edit->modelData.value("key"));
-    if (i < 0) {
-        destroyEditor(f_edit->modelData);
-        return;
-    }
-    f_edit->setModelData(f_lookup->dbModel()->get(i));
-}
 
 void Sites::dbAddSite(QVariantMap item)
 {
@@ -127,8 +110,8 @@ void Sites::dbAddSite(QVariantMap item)
                                           item.value("lon").toDouble());
     connect(req,
             &db::storage::SitesSave::finished,
-            f_lookup,
-            &DatabaseLookup::defaultLookup,
+            f_nearest,
+            &NearestSites::updateRecords,
             Qt::QueuedConnection);
     connect(
         req,
@@ -149,8 +132,8 @@ void Sites::dbRemoveSite(QVariantMap item)
     auto req = new db::storage::SitesRemove(key);
     connect(req,
             &db::storage::SitesRemove::finished,
-            f_lookup,
-            &DatabaseLookup::defaultLookup,
+            f_nearest,
+            &NearestSites::updateRecords,
             Qt::QueuedConnection);
     connect(
         req,
@@ -163,7 +146,7 @@ void Sites::dbRemoveSite(QVariantMap item)
 
 void Sites::dbUpdateSite(QVariantMap item)
 {
-    //qDebug()<<item;
+    // qDebug() << item;
     quint64 key = item.value("key").toULongLong();
     if (!key)
         return;
@@ -171,11 +154,12 @@ void Sites::dbUpdateSite(QVariantMap item)
                                           item.value("lat").toDouble(),
                                           item.value("lon").toDouble(),
                                           key);
-    connect(req,
-            &db::storage::SitesSave::finished,
-            f_lookup,
-            &DatabaseLookup::defaultLookup,
-            Qt::QueuedConnection);
+    connect(
+        req,
+        &db::storage::SitesRemove::finished,
+        f_nearest,
+        [this, key]() { f_nearest->updateRecord(key); },
+        Qt::QueuedConnection);
     connect(
         req,
         &db::storage::SitesSave::siteModified,

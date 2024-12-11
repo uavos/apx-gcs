@@ -36,10 +36,9 @@ NodeStorage::NodeStorage(NodeItem *node, Fact *parent)
            "database-search")
     , _node(node)
 {
-    setOpt("page", "Menu/FactMenuPageLookupDB.qml");
-
     _dbmodel = new DatabaseModel(this);
     setModel(_dbmodel);
+    setOpt("page", "Menu/FactMenuPageLookupDB.qml");
 
     connect(_dbmodel, &DatabaseModel::requestRecordsList, this, &NodeStorage::dbRequestRecordsList);
     connect(_dbmodel, &DatabaseModel::requestRecordInfo, this, &NodeStorage::dbRequestRecordInfo);
@@ -190,18 +189,11 @@ void NodeStorage::dbRequestRecordsList()
          " LIMIT 50";
 
     auto req = new db::nodes::Request(s, {_node->uid()});
-    connect(
-        req,
-        &db::nodes::Request::queryResults,
-        this,
-        [this](QJsonArray records) {
-            DatabaseModel::RecordsList list;
-            for (const auto &i : records) {
-                list.append(i.toObject().value("key").toVariant().toULongLong());
-            }
-            _dbmodel->setRecordsList(list);
-        },
-        Qt::QueuedConnection);
+    connect(req,
+            &db::nodes::Request::queryResults,
+            _dbmodel,
+            &DatabaseModel::dbUpdateRecords,
+            Qt::QueuedConnection);
     req->exec();
 }
 
