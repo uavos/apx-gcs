@@ -145,12 +145,17 @@ void MissionItem::updateTitle()
 void MissionItem::updateStatus()
 {
     uint d = totalDistance();
+    if(m_isFeets)
+        d = static_cast<uint>(d * M2FT_COEF);
     uint t = totalTime();
     if ((d | t) == 0)
         setValue(QVariant());
     else {
         QStringList st;
-        st.append(AppRoot::distanceToString(d));
+        if (m_isFeets)
+            st.append(AppRoot::distanceToStringFt(d));
+        else
+            st.append(AppRoot::distanceToString(d));
         st.append(AppRoot::timeToString(t, false));
         setValue(st.join(' '));
     }

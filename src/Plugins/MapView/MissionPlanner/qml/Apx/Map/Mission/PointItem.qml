@@ -114,7 +114,7 @@ MissionObject {
 
         function getTitle() {
             if(isFeets)
-                return opts.ft>0?(apx.distanceToString(opts.ft)):"H----"
+                return opts.ft>0?(apx.distanceToStringFt(opts.ft)):"H----"
             else
                 return f_radius>0?(apx.distanceToString(f_radius)):"H----"
         }

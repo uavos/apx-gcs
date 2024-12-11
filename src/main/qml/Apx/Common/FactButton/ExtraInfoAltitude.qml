@@ -97,7 +97,7 @@ Item {
 
     function getHomeHmsl()
     {
-        if(fact.parentFact.isFeet)
+        if(fact.parentFact.isFeets)
             return m2ft(homeHmsl) + "ft"
         return homeHmsl + "m"     
     }

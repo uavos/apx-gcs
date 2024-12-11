@@ -98,13 +98,19 @@ MissionObject {
 
     contentsTop: [
         Loader {
+            property bool isFeets: fact?fact.isFeets:false
             active: dragging||hover
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cNormal
-                    text: apx.distanceToString(f_distance)+"/"+apx.distanceToString(f_totalDistance)
+                    text: {
+                        if(isFeets)
+                            return apx.distanceToStringFt(f_distance * 3.2808)+"/"+apx.distanceToStringFt(f_totalDistance * 3.2808)
+                        else
+                            return apx.distanceToString(f_distance)+"/"+apx.distanceToString(f_totalDistance)
+                    }
                 }
             }
         },

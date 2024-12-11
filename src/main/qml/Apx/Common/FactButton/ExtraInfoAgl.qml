@@ -87,7 +87,7 @@ Item {
 
     function getElevation()
     {
-        if(fact.parentFact.isFeet)
+        if(fact.parentFact.isFeets)
             return m2ft(item.elevation) + "ft"
         return item.elevation + "m"     
     }
