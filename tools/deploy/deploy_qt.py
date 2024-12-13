@@ -90,7 +90,7 @@ def deploy_qt(path, json):
                     os.path.join(path, app['path']['plugins']))
         opts.append('--plugin=qt')
         # opts.append('--plugin=gstreamer')
-        opts.append('--output=appimage')
+        # opts.append('--output=appimage')
         # opts.append('--custom-apprun='+os.path.join(path,
         #                                             app['path']['data'], 'AppRun.sh'))
 
