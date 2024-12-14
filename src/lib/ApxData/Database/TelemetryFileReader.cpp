@@ -186,7 +186,7 @@ QJsonObject TelemetryFileReader::_read_info()
         }
 
         bool ok = false;
-        auto name = _read_string(&ok);
+        auto name = _read_string_cached(&ok);
         if (name.isEmpty() || !ok) {
             qWarning() << "failed to read info data name";
             break;
@@ -393,6 +393,8 @@ void TelemetryFileReader::_reset_data()
     _field_index.clear();
     _evt_index.clear();
 
+    _str_cache = {""}; // reserve empty string
+
     _jso_s.clear();
 }
 
@@ -439,6 +441,47 @@ QString TelemetryFileReader::_read_string(bool *ok)
     }
     qWarning() << "failed to read string data";
     return {};
+}
+
+QString TelemetryFileReader::_read_string_cached(bool *ok)
+{
+    if (_str_cache.empty()) // cache disabled
+        return _read_string(ok);
+
+    *ok = false;
+    if (!isOpen() || atEnd())
+        return {};
+
+    // read first byte (index in cache)
+    uint8_t idx;
+    if (!read(&idx, 1)) {
+        qWarning() << "failed to read string index";
+        return {};
+    }
+    if (idx < _str_cache.size()) {
+        // string found in cache
+        *ok = true;
+        return QString::fromUtf8(_str_cache[idx]);
+    }
+
+    // string not in cache - data follows
+    auto s = _read_string(ok);
+    if (!*ok)
+        return {};
+
+    if (idx == 255) // skip cache
+        return s;
+
+    if (idx == _str_cache.size()) {
+        // add string to cache
+        _str_cache.push_back(s.toStdString());
+        return s;
+    }
+    // either old style or invalid index
+    _str_cache.clear(); // disable cache for this file
+    qWarning() << "invalid string index" << idx << _str_cache.size() << s;
+    s.prepend(QChar((char) idx));
+    return s;
 }
 
 QJsonObject TelemetryFileReader::_read_jso_content()
@@ -612,7 +655,7 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
         // read values
         QJsonObject jso;
         for (int i = 0; i < evtid.info.size(); ++i) {
-            auto value = _read_string(&ok);
+            auto value = _read_string_cached(&ok);
             if (!ok)
                 break;
             jso[evtid.info[i]] = value;
@@ -626,7 +669,7 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
     }
 
     case extid_e::jso: { // [name,size(32),jso_zip(...)] (nodes,mission)
-        auto name = _read_string(&ok);
+        auto name = _read_string_cached(&ok);
         if (name.isEmpty() || !ok) {
             qWarning() << "failed to read jso data name";
             break;
@@ -656,7 +699,7 @@ bool TelemetryFileReader::_read_ext(telemetry::extid_e extid, bool is_uplink)
 
     case extid_e::raw:
     case extid_e::zip: { // [id(16),size(16),data(...)] raw data (serial vcp)
-        const auto name = _read_string(&ok);
+        const auto name = _read_string_cached(&ok);
         if (name.isEmpty() || !ok) {
             qWarning() << "failed to read jso data name";
             break;

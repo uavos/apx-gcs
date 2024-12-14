@@ -60,15 +60,10 @@ public:
     void write_evt(quint32 timestamp_ms,
                    const Event *evt,
                    const QStringList &values,
-                   bool dir = false);
-    void write_jso(quint32 timestamp_ms,
-                   const QString &name,
-                   const QJsonObject &data,
-                   bool dir = false);
-    void write_raw(quint32 timestamp_ms,
-                   const QString &name,
-                   const QByteArray &data,
-                   bool dir = false);
+                   bool dir,
+                   uint skip_cache_cnt = 0);
+    void write_jso(quint32 timestamp_ms, const QString &name, const QJsonObject &data, bool dir);
+    void write_raw(quint32 timestamp_ms, const QString &name, const QByteArray &data, bool dir);
 
     // helpers
     static QLockFile *get_lock_file(QString fileName);
@@ -84,14 +79,16 @@ private:
 
     // helpers
     void _write_string(const char *s);
+    void _write_string_cached(const char *s, bool skip_cache = false);
     void _write_dir();
 
     void _write_reg(telemetry::extid_e extid, QString name, QStringList stings);
 
-    // monitor changes and updates
+    // monitor stream changes and updates
     std::map<const Field *, size_t> _field_index; // field indexes in file
     std::map<const Event *, size_t> _evt_index;   // evt index in file
     std::map<const Field *, double> _values_s;    // monitor value changes
+    std::vector<std::string> _str_cache;          // strings cache
 
     std::map<QString, QJsonObject> _jso_s;
 

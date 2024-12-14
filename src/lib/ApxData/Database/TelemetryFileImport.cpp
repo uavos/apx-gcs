@@ -467,7 +467,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
                         src = msg.mid(i1 + 1, i2 - i1 - 1);
                         msg.remove(i1, i2 - i1 + 1);
                     }
-                    stream.write_evt(time_tag, &telemetry::EVT_MSG, {msg, src, uid});
+                    stream.write_evt(time_tag, &telemetry::EVT_MSG, {uid, src, msg}, false, 1);
                     continue;
                 }
                 if (evt_name == "mission") {

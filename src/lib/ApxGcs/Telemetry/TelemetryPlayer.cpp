@@ -268,13 +268,13 @@ void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject da
     QString subsystem;
 
     if (name == telemetry::EVT_MSG.name) {
-        name = data["txt"].toString();
-        subsystem = data["src"].toString();
+        name = data.value("txt").toString();
+        subsystem = data.value("src").toString();
 
     } else if (name == telemetry::EVT_CONF.name) {
-        auto uid = data["uid"].toString();
-        auto param = data["param"].toString();
-        auto value = data["value"].toVariant().toString();
+        auto uid = data.value("uid").toString();
+        auto param = data.value("param").toString();
+        auto value = data.value("value").toVariant().toString();
         loadConfValue(uid, param, value);
 
         if (value.size() > (param.size() + 32) || value.contains('\n'))
@@ -356,7 +356,7 @@ void TelemetryPlayer::next()
     bool ok = true;
     while (tNext <= t) {
         ok = _stream.parse_next();
-        if (!ok || _stream.atEnd())
+        if (!ok || _stream.atEnd() || _stream.interrupted())
             break;
         auto t1 = _stream.current_time();
         if (t1 != tNext) {

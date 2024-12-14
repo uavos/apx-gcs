@@ -268,20 +268,20 @@ void TelemetryRecorder::recordNotification(QString msg,
 
     auto uid = fact ? fact->path() : QString();
     auto src = "gcs" + (subsystem.isEmpty() ? "" : ("/" + subsystem));
-    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {msg, src, uid});
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {uid, src, msg}, false, 1);
 }
 
 void TelemetryRecorder::recordMsg(QString msg, QString subsystem, QString src_uid)
 {
     if (msg.isEmpty())
         return;
-    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {msg, subsystem, src_uid});
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {src_uid, subsystem, msg}, false, 1);
 }
 
 void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString value)
 {
     name = QString("%1/%2").arg(node->title()).arg(name);
-    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_CONF, {name, value, node->uid()}, true);
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_CONF, {node->uid(), name, value}, true);
 }
 void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool uplink)
 {

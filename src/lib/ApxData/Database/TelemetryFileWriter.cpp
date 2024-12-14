@@ -144,6 +144,16 @@ bool TelemetryFileWriter::init(QIODevice *d, const QString &name, quint64 time_u
         return true;
     _name = name;
 
+    // reset stream
+    _widx = 0;
+    _field_index.clear();
+    _evt_index.clear();
+    _values_s.clear();
+    _stats_values.clear();
+    _jso_s.clear();
+    _ts_s = 0;
+    _str_cache = {""}; // reserve empty string
+
     resetStatus();
     setDevice(d);
 
@@ -159,18 +169,9 @@ bool TelemetryFileWriter::init(QIODevice *d, const QString &name, quint64 time_u
 
     // write info
     info["title"] = name; // store original creation name
-    write_jso(0, "info", info);
+    write_jso(0, "info", info, false);
 
     flush();
-
-    // reset stream counters
-    _widx = 0;
-    _field_index.clear();
-    _evt_index.clear();
-    _values_s.clear();
-    _stats_values.clear();
-    _jso_s.clear();
-    _ts_s = 0;
 
     return true;
 }
@@ -210,7 +211,8 @@ void TelemetryFileWriter::write_values(quint32 timestamp_ms, const Values &value
 void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
                                     const Event *evt,
                                     const QStringList &values,
-                                    bool dir)
+                                    bool dir,
+                                    uint skip_cache_cnt)
 {
     if (!isOpen())
         return;
@@ -247,9 +249,10 @@ void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::evt};
     write(&dspec, 1);
     write(&evt_index, 1);
+    const auto icached = evt->info.size() - skip_cache_cnt;
     for (int i = 0; i < evt->info.size(); ++i) {
         auto value = i < values.size() ? values.at(i) : QString();
-        _write_string(value.toUtf8());
+        _write_string_cached(value.toUtf8(), i >= icached);
     }
 }
 
@@ -300,7 +303,7 @@ void TelemetryFileWriter::write_jso(quint32 timestamp_ms,
     const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::jso};
     write(&dspec, 1);
 
-    _write_string(name.toUtf8());
+    _write_string_cached(name.toUtf8());
 
     auto ba = qCompress(jdata, 9);
     uint32_t size = ba.size();
@@ -317,10 +320,9 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
         return;
 
     size_t size = data.size();
-    bool zip = size >= MIN_ZCOMP;
 
     QByteArray zip_data;
-    if (zip) {
+    if (size >= MIN_ZCOMP) {
         zip_data = qCompress(data, 9);
         size = zip_data.size();
         if (size > std::numeric_limits<uint16_t>::max()) {
@@ -335,16 +337,16 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
     if (dir)
         _write_dir();
 
-    if (zip) {
+    if (zip_data.size() > 0) {
         const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::zip};
         write(&dspec, 1);
-        _write_string(name.toUtf8());
+        _write_string_cached(name.toUtf8());
         write(&size, 4);
         write(zip_data.constData(), size);
     } else {
-        const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::zip};
+        const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::raw};
         write(&dspec, 1);
-        _write_string(name.toUtf8());
+        _write_string_cached(name.toUtf8());
         write(&size, 2);
         write(data.constData(), size);
     }
@@ -359,6 +361,45 @@ void TelemetryFileWriter::_write_string(const char *s)
         write("\0", 1);
         return;
     }
+    write(s, sz);
+}
+
+void TelemetryFileWriter::_write_string_cached(const char *s, bool skip_cache)
+{
+    // find string in cache
+    auto it = std::find(_str_cache.begin(), _str_cache.end(), s);
+    if (it != _str_cache.end()) {
+        // string found in cache
+        auto idx = std::distance(_str_cache.begin(), it);
+        if (idx == 0) {
+            // empty string
+            write("\0", 1);
+        } else {
+            // write index
+            write(&idx, 1);
+        }
+        return;
+    }
+
+    // string not found in cache
+    auto sz = qstrlen(s) + 1;
+    if (sz > MAX_STRLEN) {
+        qWarning() << "string too long" << sz;
+        write("\0", 1); // just write empty string instead
+        return;
+    }
+    // add string to cache
+    auto idx = _str_cache.size();
+    if (idx >= 254 || skip_cache) {
+        idx = 255; // string is not cacheable
+    } else {
+        _str_cache.push_back(s);
+    }
+
+    // qDebug() << "cache" << idx << s;
+
+    // write cache index + string
+    write((char *) &idx, 1);
     write(s, sz);
 }
 

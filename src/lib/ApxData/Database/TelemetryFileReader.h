@@ -83,6 +83,7 @@ private:
     // helpers
     telemetry::dspec_s _read_dspec();
     QString _read_string(bool *ok);
+    QString _read_string_cached(bool *ok);
     QJsonObject _read_jso_content();
     QJsonObject _read_info();
     QStringList _read_reg();
@@ -133,6 +134,8 @@ private:
     // fields data
     std::vector<Field> _field_index; // used internally
     std::vector<Event> _evt_index;   // used internally
+
+    std::vector<std::string> _str_cache; // strings cache
 
     // values data
     Values _downlink_values;
