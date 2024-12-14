@@ -47,45 +47,77 @@ void json::save(QString fileName, const QJsonValue &jsv)
         file.write(jsv.toVariant().toString().toUtf8());
 }
 
-QJsonObject json::filter_names(QJsonObject jso, const QStringList &names, bool recursive)
+static QJsonValueRef _remove_empty(QJsonValueRef value, bool remove_zeroes)
+{
+    do {
+        if (value.isNull() || value.isUndefined())
+            break;
+
+        if (value.isObject()) {
+            value = json::remove_empty(value.toObject(), remove_zeroes);
+            if (value.toObject().isEmpty())
+                break;
+            return value;
+        }
+        if (value.isArray()) {
+            value = json::remove_empty(value.toArray(), remove_zeroes);
+            if (value.toArray().isEmpty())
+                break;
+            return value;
+        }
+
+        if (value.isString()) {
+            if (value.toString().isEmpty())
+                break;
+            return value;
+        }
+        if (remove_zeroes) {
+            if (value.isDouble()) {
+                if (value.toDouble() == 0)
+                    break;
+                return value;
+            }
+            if (value.isBool()) {
+                if (!value.toBool())
+                    break;
+                return value;
+            }
+        }
+
+        // no change - return as is
+        return value;
+    } while (0);
+
+    // set to null to be further removed
+    value = QJsonValue();
+    return value;
+}
+
+QJsonObject json::remove_empty(QJsonObject jso, bool remove_zeroes)
 {
     // recursively filter out null or empty object or empty string fields
-    // and keep only those in fields array if set
     for (auto it = jso.begin(); it != jso.end();) {
-        auto key = it.key();
-        auto jsv = it.value();
-
-        if (jsv.isNull() || jsv.isUndefined() || (!names.isEmpty() && !names.contains(key))) {
-            it = jso.erase(it);
+        auto jsv = _remove_empty(it.value(), remove_zeroes);
+        if (jsv.isNull()) {
+            jso.erase(it);
             continue;
         }
-
-        if (jsv.isObject()) {
-            auto jso_value = jsv.toObject();
-            if (jso_value.isEmpty()) {
-                it = jso.erase(it);
-                continue;
-            }
-            if (recursive) {
-                jso_value = json::filter_names(jso_value, names, recursive);
-                if (jso_value.isEmpty()) {
-                    it = jso.erase(it);
-                    continue;
-                }
-                jso[key] = jso_value;
-            }
-        } else if (jsv.isArray() && jsv.toArray().isEmpty()) {
-            it = jso.erase(it);
-            continue;
-        } else if (jsv.isString() && jsv.toString().isEmpty()) {
-            it = jso.erase(it);
-            continue;
-        }
-
         // keep field
-        ++it;
+        it++;
     }
     return jso;
+}
+
+QJsonArray json::remove_empty(QJsonArray jsa, bool remove_zeroes)
+{
+    // recursively filter out null or empty object or empty string fields
+    uint cnt = 0;
+    for (auto v : jsa) {
+        _remove_empty(v, remove_zeroes);
+        if (!v.isNull())
+            cnt++;
+    }
+    return cnt > 0 ? jsa : QJsonArray();
 }
 
 static QJsonValueRef _fix_number(QJsonValueRef value,

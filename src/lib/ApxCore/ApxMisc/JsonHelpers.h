@@ -27,10 +27,11 @@ namespace json {
 
 void save(QString fileName, const QJsonValue &jsv);
 
-QJsonObject filter_names(QJsonObject jso, const QStringList &names = {}, bool recursive = true);
-
 QJsonObject fix_numbers(QJsonObject jso, const QStringList &names = {}, bool recursive = true);
 QJsonArray fix_numbers(QJsonArray jsa, const QStringList &names = {}, bool recursive = true);
+
+QJsonObject remove_empty(QJsonObject jso_src, bool remove_zeroes = false);
+QJsonArray remove_empty(QJsonArray jsa_src, bool remove_zeroes = false);
 
 QJsonObject rename(QJsonObject jso, const QHash<QString, QString> &map);
 

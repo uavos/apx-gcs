@@ -52,7 +52,7 @@ public:
 
     auto timestamp() const { return _fhdr.timestamp; }
     auto utc_offset() const { return _fhdr.utc_offset; }
-    auto is_parsed() const { return _info["parsed"].toBool(); }
+    auto is_parsed() const { return _info["parsed"].toVariant().toBool(); }
 
     static QString get_hash(QIODevice *d);
     static QString get_hash(QString filePath);

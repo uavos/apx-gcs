@@ -166,7 +166,7 @@ QJsonValue TelemetryFileImport::import_js(QXmlStreamReader &xml,
     for (auto [tag, jsa] : arrays.asKeyValueRange())
         jso[tag] = jsa;
 
-    return json::filter_names(jso);
+    return json::fix_numbers(json::remove_empty(jso));
 }
 
 bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString format)
@@ -200,7 +200,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
 
             if (tag == "info") {
                 auto jso = import_js(xml).toObject();
-                info["timestamp"] = jso["time"].toString().toLongLong();
+                info["timestamp"] = jso["time"].toVariant().toLongLong();
                 info["conf"] = jso["comment"].toString();
 
                 QJsonObject unit;
@@ -271,6 +271,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
                     }
                     QJsonParseError err;
                     auto jso = QJsonDocument::fromJson(data, &err).object();
+                    jso = json::fix_numbers(json::remove_empty(jso));
                     if (err.error != QJsonParseError::NoError || jso.isEmpty()) {
                         apxMsgW() << err.errorString();
                         continue;
@@ -300,7 +301,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
         }
 
         // save import info
-        jso_import = json::filter_names(jso_import);
+        jso_import = json::remove_empty(jso_import);
         info["import"] = jso_import;
 
         // parse title
@@ -309,7 +310,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
             auto s_ts = s.left(s.indexOf('-'));
             auto s_name = s.mid(s.indexOf('-') + 1);
             auto ts_name = QDateTime::fromString(s_ts, "yyyy_MM_dd_HH_mm_ss_zzz");
-            auto s_timestamp = jso_import["timestamp"].toString();
+            auto s_timestamp = jso_import["timestamp"].toVariant().toString();
 
             // parse timestamps, find UTC offset
             auto ts2 = QDateTime::fromString(s_timestamp, Qt::RFC2822Date);
@@ -507,6 +508,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
             if (tag == "nodes") {
                 auto jso = import_nodes(xml);
                 jso["import"] = json::merge(jso["import"].toObject(), jso_import);
+                jso = json::fix_numbers(jso);
                 stream.write_jso(time_tag, tag, jso, false);
                 continue;
             }
@@ -577,8 +579,7 @@ QJsonObject TelemetryFileImport::import_mission(QXmlStreamReader &xml)
 
     {
         QJsonObject jso;
-        auto format = imp["format"].toString();
-        jso["format"] = format.isEmpty() ? "old" : format;
+        jso["format"] = imp["format"];
         jso["title"] = imp["title"];
         jso["version"] = imp["version"];
         jso["timestamp"] = imp["timestamp"];
@@ -594,7 +595,7 @@ QJsonObject TelemetryFileImport::import_mission(QXmlStreamReader &xml)
             auto jso = json::rename(jsv.toObject(), map_fields);
             // fix some values
             jso.remove("id");
-            auto type = jso["type"].toString();
+            auto type = jso["type"].toVariant().toString();
             if (name == "wp") {
                 jso["type"] = (type == "Line" || type == "1") ? QString("track")
                                                               : QString("direct");
@@ -610,7 +611,7 @@ QJsonObject TelemetryFileImport::import_mission(QXmlStreamReader &xml)
             }
 
             // continue to next point
-            jsa.push_back(json::filter_names(jso));
+            jsa.push_back(json::remove_empty(jso));
             record_count++;
         }
         if (!jsa.isEmpty())
@@ -622,9 +623,9 @@ QJsonObject TelemetryFileImport::import_mission(QXmlStreamReader &xml)
         return {};
     }
 
-    mission = json::fix_numbers(json::filter_names(mission));
-    // json::save("mission-conv", mission);
-    // json::save("mission-orig", imp);
+    mission = json::fix_numbers(json::remove_empty(mission));
+    json::save("mission-conv", mission);
+    json::save("mission-orig", imp);
 
     return mission;
 }
@@ -656,8 +657,7 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
 
     {
         QJsonObject jso;
-        auto format = imp["format"].toString();
-        jso["format"] = format.isEmpty() ? "old" : format;
+        jso["format"] = imp["format"];
         jso["title"] = imp["title"];
         jso["version"] = imp["version"];
         jso["timestamp"] = imp["timestamp"];
@@ -738,6 +738,40 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
                                          &groups_index,
                                          {});
 
+        // remove default enum values
+        for (const auto i : node_fields) {
+            auto field = i.toObject();
+            if (field["type"].toString() != "option")
+                continue;
+            auto opts = field["units"].toString().split(',');
+            if (opts.size() < 2) {
+                qWarning() << "empty opts" << field;
+                continue;
+            }
+            const auto zero = opts.at(0);
+            if (zero.isEmpty()) {
+                qWarning() << "empty zero value" << field;
+                continue;
+            }
+            const auto name = field["name"].toString();
+            auto value = node_values[name];
+            if (value.isArray()) {
+                uint zcnt = 0;
+                for (auto v : value.toArray()) {
+                    if (v.toString() == zero)
+                        zcnt++;
+                }
+                if (zcnt == value.toArray().size())
+                    node_values.remove(name);
+                continue;
+            }
+            if (value.toString() == zero)
+                node_values.remove(name);
+        }
+
+        // zero or empty values (defaults) are removed
+        node_values = json::remove_empty(json::fix_numbers(node_values), true);
+
         if (node_fields.isEmpty()) {
             qWarning() << "empty node" << node;
             continue;
@@ -747,7 +781,7 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
         node["info"] = node_info;
         node_dict["fields"] = node_fields;
         node["dict"] = node_dict;
-        node["values"] = node_values;
+        node["values"] = json::remove_empty(node_values, true);
 
         nodes_array.push_back(node);
     }
@@ -759,9 +793,9 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
     nodes["nodes"] = nodes_array;
 
     // clean up and return object
-    nodes = json::fix_numbers(json::filter_names(nodes));
-    // json::save("nodes-conv", nodes);
-    // json::save("nodes-orig", imp);
+    nodes = json::fix_numbers(json::remove_empty(nodes));
+    json::save("nodes-conv", nodes);
+    json::save("nodes-orig", imp);
 
     return nodes;
 }
@@ -804,7 +838,7 @@ QJsonArray TelemetryFileImport::import_node_fields(const QJsonArray &src,
         field["title"] = imp["title"];
         field["descr"] = imp["descr"];
 
-        auto value = imp["value"].toString();
+        auto value = imp["value"].toVariant().toString();
         auto type = imp["type"].toString();
 
         static const QHash<QString, xbus::node::conf::type_e> type_map{

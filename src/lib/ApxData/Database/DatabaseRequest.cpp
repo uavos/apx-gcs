@@ -92,7 +92,7 @@ bool DatabaseRequest::run(QSqlQuery &query)
     // emit signal with records
     QJsonArray records;
     while (query.next()) {
-        auto jso = json::filter_names(record_to_json(query.record(), {}));
+        auto jso = record_to_json(query.record(), {});
         if (jso.isEmpty())
             continue;
         records.append(jso);

@@ -278,7 +278,7 @@ bool UnitLoadConf::run(QSqlQuery &query)
             if (!ok)
                 return false;
         }
-        node = json::filter_names(node);
+        node = json::remove_empty(node);
         if (node.isEmpty())
             continue;
 
@@ -306,14 +306,13 @@ bool UnitLoadConf::run(QSqlQuery &query)
     if (!query.next()) {
         qWarning() << "missing unit" << unitID;
     } else {
-        auto jso = record_to_json(query.record(),
-                                  {
-                                      "uid",
-                                      "name",
-                                      "type",
-                                      "time",
-                                  });
-        _conf["unit"] = json::filter_names(jso);
+        _conf["unit"] = record_to_json(query.record(),
+                                       {
+                                           "uid",
+                                           "name",
+                                           "type",
+                                           "time",
+                                       });
     }
 
     emit confLoaded(_conf);
@@ -331,6 +330,8 @@ bool UnitImportConf::run(QSqlQuery &query)
         if (!ok)
             return false;
     }
+
+    json::save("UnitImportConf-all", _conf);
 
     // import nodes
     QList<quint64> nodeConfIDs;

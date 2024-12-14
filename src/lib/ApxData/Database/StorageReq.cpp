@@ -216,7 +216,7 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
 bool TelemetryWriteRecordFields::run(QSqlQuery &query)
 {
     bool bMod = _restore;
-    const auto jso = json::filter_names(_info);
+    const auto jso = json::remove_empty(_info);
     if (!jso.isEmpty() && recordUpdateQuery(query, jso, "Telemetry", "WHERE key=?")) {
         query.addBindValue(_telemetryID);
         if (!query.exec())

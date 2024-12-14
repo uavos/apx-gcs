@@ -484,7 +484,7 @@ QJsonDocument Fact::toJsonDocument()
 {
     const auto jsv = toJson();
     if (jsv.isObject())
-        return QJsonDocument(json::fix_numbers(json::filter_names(jsv.toObject())));
+        return QJsonDocument(jsv.toObject());
     if (jsv.isArray())
         return QJsonDocument(jsv.toArray());
     return {};

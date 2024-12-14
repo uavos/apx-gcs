@@ -141,7 +141,8 @@ void NodeStorage::dictMetaLoaded(QJsonObject jso)
 
         cnt++;
 
-        const auto meta = json::fix_numbers(json::filter_names(it.value().toObject()));
+        // field metadata from the database
+        const auto meta = json::fix_numbers(json::remove_empty(it.value().toObject()));
 
         auto descr = meta.value("descr").toString();
 

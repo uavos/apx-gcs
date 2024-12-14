@@ -103,7 +103,7 @@ bool NodeLoadInfo::run(QSqlQuery &query)
                          });
     jso["uid"] = _uid;
 
-    _info = json::filter_names(jso);
+    _info = jso;
     emit infoLoaded(_info);
     return true;
 }

@@ -91,13 +91,13 @@ bool NodeSaveDict::run(QSqlQuery &query)
                                        << "array";
     QList<quint64> fieldIDs;
     for (const auto &i : _dict["fields"].toArray()) {
-        const auto m = json::filter_names(i.toObject());
+        const auto jso = i.toObject();
 
         // find existing field
         QVariantList rec_bind;
         QStringList st;
         for (auto k : columns) {
-            QVariant v = m.value(k).toVariant();
+            QVariant v = jso.value(k).toVariant();
             if (v.isNull()) {
                 st << QString("%1 IS NULL").arg(k);
             } else {
@@ -122,13 +122,13 @@ bool NodeSaveDict::run(QSqlQuery &query)
                       + ")"
                         " VALUES(?,?,?,?,?)");
         for (auto k : columns) {
-            query.addBindValue(m.value(k).toVariant());
+            query.addBindValue(jso.value(k).toVariant());
         }
         if (!query.exec())
             return false;
         //qDebug()<<"new field"<<vlist.at(0).toString();
         fieldIDs.append(query.lastInsertId().toULongLong());
-        qDebug() << "new field" << m["name"].toString();
+        qDebug() << "new field" << jso["name"].toString();
     }
 
     //write dict fields
@@ -210,7 +210,7 @@ bool NodeLoadDict::run(QSqlQuery &query)
         // if (query.value("type").toString() == "option" && field.value("units").isUndefined())
         //     field["units"] = QString("off,on");
 
-        field = json::fix_numbers(json::filter_names(field));
+        field = json::fix_numbers(json::remove_empty(field));
         fields.append(field);
     }
 

@@ -493,14 +493,19 @@ void NodeItem::importValues(QJsonObject values)
     auto keys = values.keys();
     for (auto f : m_fields) {
         QString fpath = f->fpath();
-        if (!values.contains(fpath))
+        if (values.contains(fpath))
             continue;
         f->fromJson(values.value(fpath));
         keys.removeOne(fpath);
     }
     if (keys.size() > 0) {
         for (auto &i : keys) {
-            qWarning() << "missing field:" << i << values.value(i);
+            apxMsgW() << "missing field:" << i << values.value(i);
+            // set all missing fields to default (zero)
+            auto f = field(i);
+            if (f) {
+                f->fromJson(values.value(i));
+            }
         }
         auto rcnt = values.size() - keys.size();
         message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),

@@ -266,50 +266,37 @@ bool TelemetryFileReader::parse_payload()
 
     QJsonObject counters;
 
-    if (_counters.records > 0)
-        counters["records"] = _counters.records;
-
-    if (_counters.uplink > 0)
-        counters["uplink"] = _counters.uplink;
-
-    if (_counters.downlink > 0)
-        counters["downlink"] = _counters.downlink;
-
-    if (_counters.ts > 0)
-        counters["ts"] = _counters.ts;
-
-    if (_counters.dir > 0)
-        counters["dir"] = _counters.dir;
-
-    if (_counters.field > 0)
-        counters["field"] = _counters.field;
-
-    if (_counters.evtid > 0)
-        counters["evtid"] = _counters.evtid;
+    counters["records"] = _counters.records;
+    counters["uplink"] = _counters.uplink;
+    counters["downlink"] = _counters.downlink;
+    counters["ts"] = _counters.ts;
+    counters["dir"] = _counters.dir;
+    counters["field"] = _counters.field;
+    counters["evtid"] = _counters.evtid;
 
     int evt_total = 0;
     for (auto [key, value] : _counters.evt_by_name) {
         counters[key] = value;
         evt_total += value;
     }
-    if (evt_total > 0)
-        counters["evt"] = evt_total;
+    counters["evt"] = evt_total;
 
     int jso_total = 0;
     for (auto [key, value] : _counters.jso_by_name) {
         counters[key] = value;
         jso_total += value;
     }
-    if (jso_total > 0)
-        counters["jso"] = jso_total;
+    counters["jso"] = jso_total;
 
     int raw_total = 0;
     for (auto [key, value] : _counters.raw_by_name) {
         counters[key] = value;
         raw_total += value;
     }
-    if (raw_total > 0)
-        counters["raw"] = raw_total;
+    counters["raw"] = raw_total;
+
+    // remove zero counters
+    counters = json::remove_empty(counters, true);
 
     _info["counters"] = counters;
 
@@ -323,7 +310,7 @@ bool TelemetryFileReader::parse_payload()
         evt_names.append(i.name);
     _info["evt_names"] = evt_names;
 
-    _info = json::fix_numbers(json::filter_names(_info));
+    _info = json::fix_numbers(json::remove_empty(_info));
 
     emit infoUpdated(_info);
 

@@ -274,7 +274,7 @@ void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject da
     } else if (name == telemetry::EVT_CONF.name) {
         auto uid = data["uid"].toString();
         auto param = data["param"].toString();
-        auto value = data["value"].toString();
+        auto value = data["value"].toVariant().toString();
         loadConfValue(uid, param, value);
 
         if (value.size() > (param.size() + 32) || value.contains('\n'))

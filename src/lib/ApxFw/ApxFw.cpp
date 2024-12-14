@@ -697,6 +697,9 @@ QJsonArray ApxFw::loadParameters(QString nodeName, QString hw)
 
 void ApxFw::updateNodesMeta(QDir dir)
 {
+    // read node parameters meta data from firmware files
+    // and store it in the database
+
     QJsonObject meta;
 
     for (auto fi : dir.entryInfoList(QStringList() << "*.apxfw", QDir::Files)) {
@@ -744,7 +747,8 @@ void ApxFw::updateNodesMeta(QDir dir)
         }
     }
 
-    meta = json::fix_numbers(json::filter_names(meta));
+    // clean up empty fields
+    meta = json::fix_numbers(json::remove_empty(meta));
     if (meta.isEmpty())
         return;
 
