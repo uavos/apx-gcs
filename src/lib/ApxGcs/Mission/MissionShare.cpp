@@ -59,11 +59,11 @@ bool MissionShare::importRequest(QStringList fileNames)
 {
     auto fileName = fileNames.first();
 
-    const auto jsv = Fact::parseJsonData(loadData(fileName));
-    if (jsv.isNull() || jsv.isUndefined())
+    const auto jso = Fact::parseJsonData(loadData(fileName)).toObject();
+    if (jso.isEmpty())
         return false;
 
-    _mission->fromJson(jsv);
+    _mission->fromJson(jso);
 
     _imported(fileName, _mission->f_title->text());
     return true;

@@ -451,7 +451,10 @@ QJsonObject NodeItem::get_values() const
 {
     QJsonObject jso;
     for (auto f : m_fields) {
-        jso[f->fpath()] = f->toJson();
+        auto jsv = f->toJson();
+        if (jsv.isNull())
+            continue;
+        jso[f->fpath()] = jsv;
     }
     return jso;
 }
@@ -473,48 +476,63 @@ void NodeItem::fromJson(const QJsonValue &jsv)
     // json::save("nodes-fromJson-" + title(), jso);
 
     auto values = jso.value("values").toObject();
+    const auto dict = jso.value("dict").toObject();
+
+    // fill default values to array
+    if (!dict.isEmpty()) {
+        for (const auto i : dict.value("fields").toArray()) {
+            const auto field = i.toObject();
+            auto type = field.value("type").toString();
+            if (type == "group" || type == "command")
+                continue;
+            auto name = field.value("name").toString();
+            if (values.contains(name))
+                continue;
+            values.insert(name, QJsonValue());
+        }
+    }
 
     if (!valid()) {
+        if (dict.isEmpty()) {
+            qWarning() << "missing dict" << title();
+            return;
+        }
         // construct the whole node
-        const auto info = jso["info"].toObject();
-        const auto dict = jso["dict"].toObject();
-
-        identReceived(info);
+        identReceived(jso.value("info").toObject());
         dictReceived(dict);
         confReceived(values);
         return;
     }
 
+    // confReceived(values);
     importValues(values);
 }
 
 void NodeItem::importValues(QJsonObject values)
 {
-    auto keys = values.keys();
-    for (auto f : m_fields) {
-        QString fpath = f->fpath();
-        if (values.contains(fpath))
+    // json::save("nodes-importValues-" + title(), values);
+
+    uint vcnt = values.size();
+    uint rcnt = 0;
+    for (const auto f : m_fields) {
+        const auto fpath = f->fpath();
+        if (!values.contains(fpath))
             continue;
-        f->fromJson(values.value(fpath));
-        keys.removeOne(fpath);
+        f->fromJson(values.take(fpath));
+        rcnt++;
     }
-    if (keys.size() > 0) {
-        for (auto &i : keys) {
-            apxMsgW() << "missing field:" << i << values.value(i);
-            // set all missing fields to default (zero)
-            auto f = field(i);
-            if (f) {
-                f->fromJson(values.value(i));
-            }
+    if (!values.isEmpty()) {
+        for (auto it = values.begin(); it != values.end(); ++it) {
+            const auto name = it.key();
+            const auto value = it.value();
+            qWarning() << "missing field:" << name;
         }
-        auto rcnt = values.size() - keys.size();
-        message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),
+        message(tr("Imported %1 fields of %2").arg(rcnt).arg(vcnt),
                 AppNotify::FromApp | AppNotify::Warning);
     } else {
-        //message(tr("Imported config"), AppNotify::FromApp);
+        // message(tr("Imported config"), AppNotify::FromApp);
+        qDebug() << "imported" << title() << vcnt;
     }
-
-    // json::save("nodes-importValues-" + title(), values);
 }
 
 NodeField *NodeItem::field(QString name) const
@@ -690,7 +708,7 @@ void NodeItem::confReceived(QJsonObject values)
     for (auto f : m_fields) {
         QString fpath = f->fpath();
         if (!values.contains(fpath)) {
-            // qWarning() << "missing data for:" << fpath;
+            qWarning() << "missing data for:" << fpath;
             continue;
         }
         fields.append(fpath);

@@ -331,7 +331,7 @@ bool UnitImportConf::run(QSqlQuery &query)
             return false;
     }
 
-    json::save("UnitImportConf-all", _conf);
+    // json::save("UnitImportConf-all", _conf);
 
     // import nodes
     QList<quint64> nodeConfIDs;

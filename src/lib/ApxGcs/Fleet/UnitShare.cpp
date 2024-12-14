@@ -54,7 +54,7 @@ bool UnitShare::importRequest(QStringList fileNames)
     auto fileName = fileNames.first();
 
     const auto jso = Fact::parseJsonData(loadData(fileName)).toObject();
-    if (!jso.isEmpty())
+    if (jso.isEmpty())
         return false;
 
     _unit->f_storage->importUnitConf(jso);

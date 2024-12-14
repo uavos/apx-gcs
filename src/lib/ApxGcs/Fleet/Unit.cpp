@@ -26,6 +26,7 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
+#include <ApxMisc/JsonHelpers.h>
 #include <Mandala/Mandala.h>
 #include <Mission/UnitMission.h>
 #include <Nodes/Nodes.h>
@@ -213,7 +214,7 @@ void Unit::updateActive()
 QJsonObject Unit::get_info() const
 {
     if (!_protocol)
-        return {};
+        return _importedUnitInfo;
 
     QJsonObject info;
     info.insert("uid", _protocol->uid());
@@ -230,9 +231,7 @@ QJsonValue Unit::toJson()
 {
     QJsonObject jso;
 
-    if (_protocol)
-        jso.insert("unit", get_info());
-
+    jso.insert("unit", get_info());
     jso.insert("nodes", f_nodes->toJson());
     jso.insert("title", f_nodes->getConfigTitle());
     jso.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
@@ -241,7 +240,14 @@ QJsonValue Unit::toJson()
 }
 void Unit::fromJson(const QJsonValue &jsv)
 {
-    const auto nodes = jsv.toObject().value("nodes").toArray();
+    // json::save("unit-fromJson-" + title(), jsv);
+
+    const auto jso = jsv.toObject();
+
+    if (!_protocol)
+        _importedUnitInfo = jso.value("unit").toObject();
+
+    const auto nodes = jso.value("nodes").toArray();
     if (nodes.isEmpty()) {
         apxMsgW() << tr("Missing nodes in data set");
     } else {

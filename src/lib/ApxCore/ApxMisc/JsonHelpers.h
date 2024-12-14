@@ -29,6 +29,7 @@ void save(QString fileName, const QJsonValue &jsv);
 
 QJsonObject fix_numbers(QJsonObject jso, const QStringList &names = {}, bool recursive = true);
 QJsonArray fix_numbers(QJsonArray jsa, const QStringList &names = {}, bool recursive = true);
+QJsonValue fix_number(QJsonValue jsv);
 
 QJsonObject remove_empty(QJsonObject jso_src, bool remove_zeroes = false);
 QJsonArray remove_empty(QJsonArray jsa_src, bool remove_zeroes = false);

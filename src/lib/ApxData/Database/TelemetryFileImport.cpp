@@ -624,8 +624,8 @@ QJsonObject TelemetryFileImport::import_mission(QXmlStreamReader &xml)
     }
 
     mission = json::fix_numbers(json::remove_empty(mission));
-    json::save("mission-conv", mission);
-    json::save("mission-orig", imp);
+    // json::save("mission-conv", mission);
+    // json::save("mission-orig", imp);
 
     return mission;
 }
@@ -794,8 +794,8 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
 
     // clean up and return object
     nodes = json::fix_numbers(json::remove_empty(nodes));
-    json::save("nodes-conv", nodes);
-    json::save("nodes-orig", imp);
+    // json::save("nodes-conv", nodes);
+    // json::save("nodes-orig", imp);
 
     return nodes;
 }

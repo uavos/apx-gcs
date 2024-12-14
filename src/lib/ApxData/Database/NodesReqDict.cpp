@@ -89,6 +89,7 @@ bool NodeSaveDict::run(QSqlQuery &query)
                                        << "units"
                                        << "type"
                                        << "array";
+    uint add_cnt = 0;
     QList<quint64> fieldIDs;
     for (const auto &i : _dict["fields"].toArray()) {
         const auto jso = i.toObject();
@@ -128,8 +129,10 @@ bool NodeSaveDict::run(QSqlQuery &query)
             return false;
         //qDebug()<<"new field"<<vlist.at(0).toString();
         fieldIDs.append(query.lastInsertId().toULongLong());
-        qDebug() << "new field" << jso["name"].toString();
+        add_cnt++;
     }
+    if (add_cnt > 0)
+        qDebug() << "new fields:" << add_cnt;
 
     //write dict fields
     for (uint i = 0; i < fieldIDs.size(); ++i) {

@@ -295,7 +295,7 @@ void TelemetryRecorder::recordMission(bool uplink)
 {
     if (_unit->f_mission->empty())
         return;
-    auto mission = _unit->f_mission->toJsonDocument().object();
+    auto mission = _unit->f_mission->toJson().toObject();
     auto title = mission["title"].toString();
     auto hash = mission["hash"].toString();
 
@@ -309,7 +309,7 @@ void TelemetryRecorder::recordUnitConf(QString hash, QString title)
         return;
     _configHash = hash;
 
-    _stream.write_jso(getEventTimestamp(), "nodes", _unit->toJsonDocument().object(), false);
+    _stream.write_jso(getEventTimestamp(), "nodes", _unit->toJson().toObject(), false);
 }
 
 bool TelemetryRecorder::checkAutoRecord(void)

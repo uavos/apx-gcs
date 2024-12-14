@@ -125,8 +125,13 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
     if (mpath.contains('.')) {
         f = static_cast<MandalaFact *>(findChild(mpath));
     }
-    if (!f && !silent) {
-        apxMsgW() << "Mandala fact not found:" << mpath;
+
+    // report missing facts
+    static QStringList missingFacts;
+    if (!f && !missingFacts.contains(mpath)) {
+        missingFacts.append(mpath);
+        if (!silent)
+            apxMsgW() << "Mandala fact not found:" << mpath;
     }
     return f;
 }

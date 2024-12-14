@@ -168,7 +168,7 @@ void DatabaseRequest::getHash(QCryptographicHash &h, const QJsonValue &jsv) cons
             getHash(h, jsa.at(i));
         }
     } else {
-        h.addData(jsv.toString().toUtf8());
+        h.addData(jsv.toVariant().toString().toUtf8());
     }
 }
 

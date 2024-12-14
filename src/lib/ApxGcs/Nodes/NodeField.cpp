@@ -148,38 +148,53 @@ QString NodeField::toText(const QVariant &v) const
 
 QJsonValue NodeField::toJson()
 {
+    if (isZero())
+        return {};
+
+    QJsonValue jsv;
+
     if (size() > 0) {
-        //expanded field
+        //expanded field (array)
         QJsonArray jsa;
         for (auto i : facts()) {
             jsa.append(static_cast<NodeField *>(i)->toJson());
         }
-        return jsa;
+        // remove tail null values
+        while (!jsa.isEmpty() && jsa.last().isNull())
+            jsa.removeLast();
+        jsv = jsa.isEmpty() ? QJsonValue() : jsa;
+    } else if (_type == "script") {
+        jsv = QJsonValue::fromVariant(value());
+    } else if (_type == "real") {
+        // use floats as-is (not text)
+        jsv = QJsonValue::fromVariant(value());
+    } else {
+        jsv = valueText();
     }
 
-    if (_type == "script")
-        return QJsonValue::fromVariant(value());
-
-    if (_type == "real") // use floats as-is (not text)
-        return QString::number(value().toFloat());
-
-    return valueText();
+    return json::fix_number(jsv);
 }
 void NodeField::fromJson(const QJsonValue &jsv)
 {
     if (size() > 0) {
-        //expanded field
+        // expanded field
         // json::save("nodes-field-" + title(), jsv);
 
-        if (!jsv.isArray()) {
+        if (!jsv.isArray() && !jsv.isNull()) {
             qWarning() << "Array expected" << path();
             return;
         }
-        auto values = jsv.toArray();
-        for (int i = 0; i < values.size(); ++i) {
-            if (i >= size())
-                break;
-            child(i)->fromJson(values.at(i));
+        const auto jsa = jsv.toArray();
+        int i = 0;
+        while (i < jsa.size() && i < size()) {
+            child(i)->fromJson(jsa.at(i));
+            i++;
+        }
+        // set all missing array elements to zero
+        while (i < size()) {
+            // qDebug() << "zero" << fpath() << i;
+            child(i)->setValue({});
+            i++;
         }
         return;
     }

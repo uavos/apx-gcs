@@ -175,6 +175,12 @@ QJsonArray json::fix_numbers(QJsonArray jsa, const QStringList &names, bool recu
     }
     return jsa;
 }
+QJsonValue json::fix_number(QJsonValue jsv)
+{
+    QJsonArray jsa{jsv}; // temporary array
+    _fix_number(jsa[0]); // modify reference in place
+    return jsa.first();
+}
 
 QJsonObject json::rename(QJsonObject jso, const QHash<QString, QString> &map)
 {

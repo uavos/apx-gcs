@@ -145,6 +145,7 @@ private:
     PUnit *_protocol;
 
     qint64 _lastSeenTime{};
+    QJsonObject _importedUnitInfo; // stored for offline units (REPLAY)
 
     QTimer updateInfoTimer;
 

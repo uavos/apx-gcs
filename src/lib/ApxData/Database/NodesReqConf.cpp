@@ -134,8 +134,13 @@ bool NodeSaveConf::run(QSqlQuery &query)
         }
         if (value.isArray()) {
             int subidx = 0;
-            for (const auto &i : value.toArray()) {
-                quint64 valueID = _getValueID(query, i);
+            for (const auto &jsv : value.toArray()) {
+                if (jsv.isNull()) { // don't record null values
+                    subidx++;
+                    continue;
+                }
+
+                quint64 valueID = _getValueID(query, jsv);
                 if (!valueID)
                     return false;
 
@@ -152,6 +157,9 @@ bool NodeSaveConf::run(QSqlQuery &query)
                 subidx++;
             }
         } else {
+            if (value.isNull()) // don't record null values
+                continue;
+
             //find valueID
             quint64 valueID = _getValueID(query, value);
             if (!valueID)
@@ -259,15 +267,27 @@ bool NodeLoadConf::run(QSqlQuery &query)
             qWarning() << "duplicate field" << s;
         }
         const auto jsv = QJsonValue::fromVariant(query.value(2));
+        if (jsv.isNull())
+            continue;
+
         if (query.value(1).isNull()) { // no subidx (not array)
             _values[s] = jsv;
             continue;
         }
         // array
+        auto subidx = query.value(1).toInt();
+        if (subidx < 0 || subidx > 10000) {
+            qWarning() << "subidx error" << subidx;
+            continue;
+        }
         auto jsa = _values[s].toArray();
+        while (jsa.size() < subidx)
+            jsa.append(QJsonValue());
         jsa.append(jsv);
         _values[s] = jsa;
     }
+
+    _values = json::remove_empty(json::fix_numbers(_values), true);
 
     emit confLoaded(_values);
     return true;
