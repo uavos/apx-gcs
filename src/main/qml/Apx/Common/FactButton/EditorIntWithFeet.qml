@@ -28,9 +28,9 @@ import Apx.Common
 SpinBox {
     id: editor
     property var opts: fact.opts
-    property bool isFeets: !fact.parentFact.isFeets ? false : true
     property var measurementsystem: apx.settings.interface.measurementsystem
     property bool tooltip: measurementsystem ? measurementsystem.tooltip.value : false
+    property bool isFeets: measurementsystem ? measurementsystem.feets.value : false
 
     hoverEnabled: true
     

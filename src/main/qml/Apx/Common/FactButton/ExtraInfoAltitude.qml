@@ -37,8 +37,9 @@ Item {
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var color: "#dcdcdc"
     property var elevation: NaN
-    property bool chosen: fact.parentFact.chosen == Waypoint.ALT
-
+    property var chosenFact: fact.parentFact.chosen
+    property bool chosen: chosenFact == Waypoint.ALT
+    
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter
     implicitHeight: parent.height
@@ -89,9 +90,9 @@ Item {
             return
         if(chosen)
             return
-        if (fact.parentFact.chosen == Waypoint.AGL)
+        if (chosenFact == Waypoint.AGL)
             fact.value = elevation + agl - homeHmsl
-        if (fact.parentFact.chosen == Waypoint.AMSL) 
+        if (chosenFact == Waypoint.AMSL) 
             fact.value = amsl - homeHmsl
     }
 
@@ -106,21 +107,25 @@ Item {
     property var aglOpts: fact.parentFact.child("agl").opts
     property var amslOpts: fact.parentFact.child("amsl").opts
     property var opts: fact.opts
-    onAglOptsChanged: altitudeFtProcessing()
-    onAmslOptsChanged: altitudeFtProcessing()
 
-    function altitudeFtProcessing() {
+    onAglOptsChanged: altitudeFtProcessingAgl()
+    onAmslOptsChanged: altitudeFtProcessingAmsl()
+
+    function altitudeFtProcessingAgl() {
         if(isNaN(elevation))
             return
-        if(chosen)
+        if (chosenFact != Waypoint.AGL)
             return
-        if (fact.parentFact.chosen == Waypoint.AGL) {
-            opts.ft = parseInt(aglOpts.ft) + m2ft(elevation - homeHmsl)
-            fact.opts = opts
-        }
-        if (fact.parentFact.chosen == Waypoint.AMSL) {
-            opts.ft = parseInt(amslOpts.ft) - m2ft(homeHmsl)
-            fact.opts = opts
-        }
+        opts.ft = parseInt(aglOpts.ft) + m2ft(elevation - homeHmsl)
+        fact.opts = opts
+    }
+
+    function altitudeFtProcessingAmsl() {
+        if(isNaN(elevation))
+            return
+        if (chosenFact != Waypoint.AMSL)
+            return
+        opts.ft = parseInt(amslOpts.ft) - m2ft(homeHmsl)
+        fact.opts = opts
     }
 }

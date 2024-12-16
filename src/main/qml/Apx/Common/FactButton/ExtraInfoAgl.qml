@@ -98,6 +98,9 @@ Item {
     onAltOptsChanged: aglFtProcessing()
 
     function aglFtProcessing() {
+        if(chosen)
+            return
+
         if(isNaN(elevation)) {
             opts.ft = 0
             fact.opts = opts
