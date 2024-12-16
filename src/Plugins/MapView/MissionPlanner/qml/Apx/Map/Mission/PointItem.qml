@@ -61,15 +61,16 @@ MissionObject {
         Loader {
             // Feets
             property var opts: fact?fact.hmsl.opts:0
+            property int feets: !isNaN(parseInt(opts.ft))?opts.ft:0
             property bool isFeets: fact?fact.isFeets:false
 
-            active: (f_hmsl!==0 || opts.ft !==0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
+            active: (f_hmsl!==0 || feets !==0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: !isFeets ? f_hmsl+"m" : opts.ft + "ft"
+                    text: !isFeets ? f_hmsl+"m" : feets + "ft"
                 }
             }
         }
