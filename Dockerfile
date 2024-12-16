@@ -80,6 +80,10 @@ RUN cd $LIBS_DIST_DIR && apt-get download libsdl2-2.0-0 libsndio7.0
 # python tools
 RUN pip3 install networkx simplejson jinja2 pyyaml
 
+# libs: gdal
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgdal-dev
+
 # Qt packages
 RUN apt install -y --no-install-recommends \
     python3-dev && rm -Rf /var/cache/apt
