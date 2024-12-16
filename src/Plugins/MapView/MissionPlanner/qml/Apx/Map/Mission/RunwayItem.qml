@@ -85,7 +85,8 @@ MissionObject {
         Loader {
             property var opts: fact?fact.hmsl.opts:0
             property bool isFeets: fact?fact.isFeets:false
-            property int hmsl: isFeets ? opts.ft : f_hmsl
+            property int feets: !isNaN(parseInt(opts.ft))?opts.ft:0
+            property int hmsl: isFeets ? feets : f_hmsl
             active: showDetails && hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
             //active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
             // asynchronous: true
@@ -93,7 +94,7 @@ MissionObject {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: isFeets ? opts.ft+"ft" : f_hmsl+"m"
+                    text: isFeets ? feets+"ft" : f_hmsl+"m"
                 }
             }
         }

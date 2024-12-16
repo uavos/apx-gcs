@@ -79,6 +79,19 @@ SpinBox {
                 ? 10
                 : 1
 
+    // Temporary meters/feets stub for Runway and Point of interest
+    onOptsChanged: hmslCheck()
+    function hmslCheck()
+    {
+        if(fact.name != "hmsl")
+            return
+        if(fact.parentFact.name == "p#" && opts.ft == 0)  // Point of interest
+            opts.ft = "ground"
+        if(fact.parentFact.name == "r#" && opts.ft == 0)  // Runway
+            opts.ft = "default"
+    }
+    // Stub END 
+
     contentItem: Item{
         implicitWidth: isFeets ? textInputFt.width : textInput.width
         
@@ -102,7 +115,8 @@ SpinBox {
                 opts.ft = text
                 fact.opts = opts
                 fact.setValue(ft2m(text))
-                factButton.forceActiveFocus();
+                factButton.forceActiveFocus()
+                hmslCheck() // Temporary meters/feets stub for Runway and Point of interest
             }
             onActiveFocusChanged: {
                 if(activeFocus){
