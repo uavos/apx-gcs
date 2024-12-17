@@ -207,11 +207,12 @@ QVariant NodeItem::data(int col, int role)
             return QColor(Qt::darkGray);
         if (col == FACT_MODEL_COLUMN_VALUE)
             return QColor(Qt::yellow).lighter(180);
-        if (!_protocol)
-            return QColor(Qt::darkGray);
 
         if (modified())
             break;
+
+        if (!_protocol)
+            return QColor(Qt::darkGray);
 
         if (alive() == alive_cnt)
             return QColor(255, 255, 200);
