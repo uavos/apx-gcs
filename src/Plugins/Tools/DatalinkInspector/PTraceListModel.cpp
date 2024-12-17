@@ -44,7 +44,7 @@ QVariant PTraceListModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() >= rowCount())
         return QVariant();
-    auto const &item = m_items.at(index.row());
+    const auto &item = m_items.at(index.row());
     switch (role) {
     case DataRole:
         return item;
@@ -111,7 +111,7 @@ bool PTraceFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
 {
     QModelIndex index0 = sourceModel()->index(sourceRow, 0, sourceParent);
     QStringList blocks = sourceModel()->data(index0, PTraceListModel::DataRole).toStringList();
-    for (auto const &i : blocks) {
+    for (const auto &i : blocks) {
         if (!i.startsWith('$'))
             continue;
         if (_filter.contains(i))

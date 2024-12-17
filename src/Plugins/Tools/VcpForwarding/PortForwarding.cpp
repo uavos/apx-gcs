@@ -20,21 +20,18 @@ PortForwarding::PortForwarding(QObject *parent,
     f_vcpid->setMax(255);
 
     // allow reception of data from any UDP port
-    connect(Vehicles::instance(),
-            &Vehicles::currentChanged,
-            this,
-            &PortForwarding::onCurrentVehicleChanged);
-    onCurrentVehicleChanged();
+    connect(Fleet::instance(), &Fleet::currentChanged, this, &PortForwarding::onCurrentUnitChanged);
+    onCurrentUnitChanged();
 
     connect(this, &Fact::activeChanged, this, &PortForwarding::updateStatus);
 }
 
-void PortForwarding::onCurrentVehicleChanged()
+void PortForwarding::onCurrentUnitChanged()
 {
     if (_pdata) {
         disconnect(_pdata, &PData::serialData, this, &PortForwarding::onPdataSerialData);
     }
-    auto protocol = Vehicles::instance()->current()->protocol();
+    auto protocol = Fleet::instance()->current()->protocol();
     if (protocol)
         _pdata = protocol->data();
     if (_pdata) {

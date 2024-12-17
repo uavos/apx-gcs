@@ -33,6 +33,7 @@ if(APPLE)
     set(MACOSX_BUNDLE_EXECUTABLE_NAME ${target})
     set(MACOSX_BUNDLE_ICON_FILE /icons/uavos-logo.icns)
     configure_file(${APX_RESOURCES_DIR}/macos/Info.plist.in Info.plist)
+    cmake_policy(SET CMP0177 NEW)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Info.plist DESTINATION ${APX_INSTALL_BIN_DIR}/..)
     apx_install_res(${APX_RESOURCES_DIR} icons/*.icns)
 

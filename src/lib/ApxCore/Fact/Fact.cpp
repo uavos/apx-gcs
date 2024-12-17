@@ -27,6 +27,8 @@
 #include <App/AppLog.h>
 #include <App/AppNotify.h>
 
+#include <ApxMisc/JsonHelpers.h>
+
 #include <QColor>
 #include <QFont>
 #include <QFontDatabase>
@@ -286,43 +288,20 @@ bool Fact::hasChild(Fact *child) const
     return facts().contains(child);
 }
 
-QVariant Fact::findValue(const QString &namePath)
+Fact *Fact::findChild(const QString &factNamePath) const
 {
-    Fact *f = findChild(namePath);
-    if (!f) {
-        apxConsoleW() << "FactSystem fact not found:" << namePath;
-        return QVariant();
-    }
-    if (dataType() == Enum)
-        return f->text();
-    return f->value();
-}
-
-Fact *Fact::findChild(const QString &factNamePath, bool exactMatch) const
-{
-    FactList slist;
-    bool del = factNamePath.contains('.');
-    for (auto i : facts()) {
-        if (i->name() == factNamePath)
-            return i;
-        if (del && i->path().endsWith(factNamePath))
-            return i;
-        if ((!exactMatch) && i->name().startsWith(factNamePath))
-            slist.append(i);
-    }
-    if (del) {
-        for (auto i : facts()) {
-            i = i->findChild(factNamePath);
-            if (i)
-                return i;
+    // search parts of the path in underlying levels
+    auto parts = factNamePath.split('.');
+    Fact *p = const_cast<Fact *>(this);
+    for (const auto &s : parts) {
+        auto f = p->child(s);
+        if (!f) {
+            apxConsoleW() << "Fact not found in" << path().append(':') << factNamePath;
+            return nullptr;
         }
+        p = f;
     }
-    //qDebug()<<slist.size();
-    if (slist.size() == 1)
-        return slist.first();
-    if (exactMatch && (!del))
-        apxConsoleW() << "Fact not found:" << factNamePath; //<<sender();
-    return nullptr;
+    return p;
 }
 
 Fact *Fact::childByTitle(const QString &factTitle) const
@@ -409,6 +388,10 @@ void Fact::trigger(QVariantMap opts)
     if (!enabled())
         return;
 
+    if (treeType() == Action && dataType() == Bool) {
+        setValue(!value().toBool());
+    }
+
     if (binding()) {
         if (binding()->treeType() == Action) {
             binding()->trigger(opts);
@@ -482,9 +465,9 @@ void Fact::updateBinding(Fact *src)
     }
 }
 
-Fact *Fact::createAction(Fact *parent)
+Fact *Fact::createAction(Fact *parent, FactBase::Flags flags)
 {
-    Fact *f = new Fact(parent, name(), "", "", Action | dataType() | options(), icon());
+    Fact *f = new Fact(parent, name(), "", "", flags | Action | dataType() | options(), icon());
     f->setBinding(this);
     return f;
 }
@@ -499,103 +482,69 @@ void Fact::setValues(const QVariantMap &values)
 }
 QJsonDocument Fact::toJsonDocument()
 {
-    return QJsonDocument::fromVariant(toVariant());
+    const auto jsv = toJson();
+    if (jsv.isObject())
+        return QJsonDocument(jsv.toObject());
+    if (jsv.isArray())
+        return QJsonDocument(jsv.toArray());
+    return {};
 }
-bool Fact::fromJsonDocument(QByteArray data)
-{
-    auto var = parseJsonDocument(data);
-    if (var.isNull())
-        return false;
-    fromVariant(var);
-    return true;
-}
-QVariant Fact::parseJsonDocument(QByteArray data)
+
+QJsonValue Fact::parseJsonData(const QByteArray &data)
 {
     QJsonParseError err;
-    auto json = QJsonDocument::fromJson(data, &err);
+    const auto jsd = QJsonDocument::fromJson(data, &err);
     if (err.error != QJsonParseError::NoError) {
         apxMsgW() << err.errorString();
         return {};
     }
-    if (json.isObject() || json.isArray()) {
-        return json.toVariant();
+
+    if (jsd.isObject()) {
+        const auto jso = jsd.object();
+        if (jso.isEmpty()) {
+            apxMsgW() << "empty json object" << data.size();
+            return {};
+        }
+        return jso;
     }
+
+    if (jsd.isArray()) {
+        const auto jso = jsd.array();
+        if (jso.isEmpty()) {
+            apxMsgW() << "empty json array" << data.size();
+            return {};
+        }
+        return jso;
+    }
+
+    apxMsgW() << "unknown json type" << data.size();
     return {};
 }
 
-QVariant Fact::toVariant()
+void Fact::fromJson(const QJsonValue &jsv)
 {
-    if (treeType() == Action || !visible())
-        return {};
-    if (size() > 0) {
-        if (treeType() != NoFlags && dataType() == Count) {
-            QVariantList a;
-            for (auto i : facts()) {
-                QVariant v = i->toVariant();
-                if (!v.isNull())
-                    a.append(v);
-            }
-            if (a.isEmpty())
-                return {};
-            return a;
-        }
-
-        QVariantMap h;
-        for (auto i : facts()) {
-            QVariant v = i->toVariant();
-            if (!v.isNull())
-                h.insert(i->name(), v);
-        }
-        if (h.isEmpty())
-            return {};
-        return h;
-    }
-
-    QVariant v;
-    do {
-        if (treeType() != NoFlags)
-            break;
-        if (dataType() == NoFlags || dataType() == Count || valueText().isEmpty())
-            break;
-
-        if (dataType() == Text || dataType() == Bool)
-            v = valueText();
-        else if (enumStrings().isEmpty())
-            v = value();
-        else
-            v = valueText();
-    } while (0);
-
-    return v;
-}
-void Fact::fromVariant(const QVariant &var)
-{
-    if (var.isNull())
-        return;
-
-    if (var.typeId() == QMetaType::QVariantMap) {
-        auto m = var.value<QVariantMap>();
-        for (auto key : m.keys()) {
+    if (jsv.isObject()) {
+        auto jso = jsv.toObject();
+        for (auto key : jso.keys()) {
             Fact *f = child(key);
             if (!f) {
                 qWarning() << "missing json fact" << key << path();
                 continue;
             }
-            auto v = m.value(key);
-            if (v.typeId() == QMetaType::QVariantMap) {
-                f->fromVariant(v);
-                continue;
-            }
-            if (v.typeId() == QMetaType::QVariantList) {
-                f->fromVariant(v);
-                continue;
-            }
-            f->setValue(v);
+            f->fromJson(jso.value(key));
         }
         return;
     }
-    if (var.typeId() == QMetaType::QVariantList) {
-        // must be implemented in subclasses to create children structure from array
+    if (jsv.isArray()) {
+        auto jsa = jsv.toArray();
+        for (int i = 0; i < jsa.size(); ++i) {
+            Fact *f = child(i);
+            if (!f) {
+                qWarning() << "missing json fact" << i << path();
+                continue;
+            }
+            f->fromJson(jsa.at(i));
+        }
         return;
     }
     if (size() > 0)
@@ -605,7 +554,56 @@ void Fact::fromVariant(const QVariant &var)
     if (dataType() == NoFlags || dataType() == Count)
         return;
 
-    setValue(var);
+    setValue(jsv.toVariant());
+}
+
+QJsonValue Fact::toJson()
+{
+    if (treeType() == Action || !visible())
+        return {};
+
+    if (size() > 0) {
+        if (treeType() != NoFlags && dataType() == Count) {
+            QJsonArray jsa;
+            for (auto i : facts()) {
+                const auto jsv = i->toJson();
+                if (jsv.isNull() || jsv.isUndefined())
+                    continue;
+                jsa.append(jsv);
+            }
+            if (jsa.isEmpty())
+                return {};
+            return jsa;
+        }
+
+        QJsonObject jso;
+        for (auto i : facts()) {
+            const auto jsv = i->toJson();
+            if (jsv.isNull() || jsv.isUndefined())
+                continue;
+            jso[i->name()] = jsv;
+        }
+        if (jso.isEmpty())
+            return {};
+        return jso;
+    }
+
+    QJsonValue jsv;
+    do {
+        if (treeType() != NoFlags)
+            break;
+        if (dataType() == NoFlags || dataType() == Count || valueText().isEmpty())
+            break;
+
+        if (dataType() == Text || dataType() == Bool)
+            jsv = valueText();
+        else if (enumStrings().isEmpty())
+            jsv = QJsonValue::fromVariant(value());
+        else
+            jsv = valueText();
+    } while (0);
+
+    return jsv;
 }
 
 Fact *Fact::mandala() const
@@ -664,7 +662,7 @@ void Fact::setFlags(FactBase::Flags v)
     setDataType(static_cast<Flag>(static_cast<int>(v & DataMask)));
     setOptions(v & OptsMask);
 }
-QAbstractListModel *Fact::model()
+QAbstractItemModel *Fact::model()
 {
     /*if (!m_model && size() <= 0 && bind()) {
         return bind()->model();
@@ -682,14 +680,14 @@ QAbstractListModel *Fact::model()
     }
     return m_model;
 }
-void Fact::setModel(QAbstractListModel *v)
+void Fact::setModel(QAbstractItemModel *v)
 {
     if (m_model)
         m_model->deleteLater();
     m_model = v;
     emit modelChanged();
 }
-QAbstractListModel *Fact::actionsModel()
+QAbstractItemModel *Fact::actionsModel()
 {
     bool bEmpty = actions().isEmpty();
     if (!m_actionsModel) {
@@ -701,7 +699,7 @@ QAbstractListModel *Fact::actionsModel()
     }
     return m_actionsModel;
 }
-void Fact::setActionsModel(QAbstractListModel *v)
+void Fact::setActionsModel(QAbstractItemModel *v)
 {
     if (m_actionsModel)
         m_actionsModel->deleteLater();
@@ -714,9 +712,6 @@ bool Fact::enabled() const
 }
 void Fact::setEnabled(const bool v)
 {
-    /*if (v == false && name() == "vehicles") {
-        qDebug() << "BEGIN" << path() << v << m_parentEnabled;
-    }*/
     //qDebug() << "BEGIN" << path() << v << m_parentEnabled;
     if (m_enabled == v)
         return;
@@ -826,7 +821,7 @@ void Fact::trackProgress()
 {
     int ncnt = 0, v = 0;
     if (options() & ProgressTrack) {
-        for (auto const f : facts()) {
+        for (const auto f : facts()) {
             int np = f->progress();
             if (np < 0)
                 continue;

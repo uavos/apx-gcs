@@ -23,6 +23,7 @@
 #pragma once
 
 #include <QApplication>
+#include <QtCore>
 
 #include "RunGuard.h"
 
@@ -45,6 +46,7 @@ public:
     Q_INVOKABLE static QString machineUID() { return _instance->m_machineUID; }
     Q_INVOKABLE static QString hostname() { return _instance->m_hostname; }
     Q_INVOKABLE static QString username() { return _instance->m_username; }
+    Q_INVOKABLE static const auto &host() { return _instance->m_host; }
 
     Q_INVOKABLE static bool dryRun() { return _instance->m_dryRun; }
     Q_INVOKABLE static bool segfault() { return _instance->m_segfault; }
@@ -54,6 +56,8 @@ public:
     Q_INVOKABLE static QString installDir() { return _instance->m_installDir; }
     Q_INVOKABLE static QString bundlePath() { return _instance->m_bundlePath; }
     Q_INVOKABLE static bool install();
+
+    Q_INVOKABLE static bool debug() { return _instance->m_debug; }
 
     Q_INVOKABLE static bool multipleInstances() { return _instance->m_multipleInstances; }
 
@@ -71,10 +75,14 @@ private:
     QString m_hostname;
     QString m_username;
 
+    QJsonObject m_host;
+
     bool m_bundle{};
     bool m_installed{};
     QString m_installDir;
     QString m_bundlePath;
+
+    bool m_debug{};
 
     RunGuard _guard{"instance.app.gcs.uavos.com"};
     bool m_multipleInstances{};

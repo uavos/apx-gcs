@@ -34,10 +34,10 @@ Item {
     //readonly property var f_thdg: mandala.est.wpt.thdg
     readonly property var f_adj: mandala.cmd.proc.adj
 
-    readonly property var f_nomag: mandala.cmd.ahrs.nomag
+    readonly property var f_nomag: mandala.cmd.ins.nomag
     readonly property var f_rud: mandala.ctr.att.rud
 
-    readonly property var f_ahrs_mag: mandala.est.ahrs.mag
+    readonly property var f_ins_mag: mandala.est.ins.mag
 
     readonly property int m_reg_pos: mandala.cmd.reg.pos.value
     readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
@@ -46,7 +46,7 @@ Item {
     readonly property bool isShiftControl: isTrack
 
 
-    readonly property bool nomag: f_nomag.value > 0 || f_ahrs_mag.value === ahrs_mag_blocked
+    readonly property bool nomag: f_nomag.value > 0 || f_ins_mag.value === ins_mag_blocked
 
 
     //instrument item
@@ -322,11 +322,11 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: -width
         height: pfdScene.flagHeight
-        fact: f_ahrs_mag
+        fact: f_ins_mag
         text: qsTr("MAG")
-        status_warning: ahrs_mag_warning
-        status_reset: ahrs_mag_unknown
-        //status_show: ahrs_mag_blocked
+        status_warning: ins_mag_warning
+        status_reset: ins_mag_unknown
+        //status_show: ins_mag_blocked
     }
     CleanText {
         anchors.top: parent.top
@@ -334,9 +334,9 @@ Item {
         anchors.left: parent.horizontalCenter
         anchors.leftMargin: height
         height: pfdScene.flagHeight
-        fact: f_ahrs_mag
+        fact: f_ins_mag
         type: CleanText.Clean
-        show: fact.value > ahrs_mag_3D
+        show: fact.value > ins_mag_3D
     }
 
 }

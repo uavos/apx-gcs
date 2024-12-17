@@ -22,10 +22,10 @@
 #pragma once
 
 #include "TelemetryPlot.h"
-#include <Telemetry/LookupTelemetry.h>
 #include <Telemetry/Telemetry.h>
 #include <Telemetry/TelemetryPlayer.h>
 #include <Telemetry/TelemetryReader.h>
+#include <Telemetry/TelemetryRecords.h>
 //#include <Telemetry/TelemetryShare.h>
 #include <QtCore>
 
@@ -37,9 +37,10 @@ public:
 
 private:
     Telemetry *telemetry;
+    Mandala *mandala;
 
     //members of telemetry
-    LookupTelemetry *lookup;
+    TelemetryRecords *records;
     TelemetryReader *reader;
     TelemetryPlayer *player;
     TelemetryShare *share;
@@ -77,9 +78,20 @@ private:
     QTimer plotCursorUpdateTimer;
 
     QDockWidget *parentW;
+
+    double _timeMax;
+
+    // all data values from file loaded into memory
+    QVector<QVector<QPointF>> _samples;
+
 private slots:
+    void rec_started();
+    void rec_finished();
+
+    void rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink);
+    void rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+
     void updateStats();
-    void updateData();
     void updateProgress();
     void updateStatus();
 

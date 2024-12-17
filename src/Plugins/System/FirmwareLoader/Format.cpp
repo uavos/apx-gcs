@@ -23,9 +23,9 @@
 #include "Firmware.h"
 #include <App/AppGcs.h>
 
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
 #include <Nodes/Nodes.h>
-#include <Vehicles/Vehicle.h>
-#include <Vehicles/Vehicles.h>
 
 Format::Format(Firmware *firmware, Fact *parent)
     : FirmwareSelect(firmware,

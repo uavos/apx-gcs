@@ -25,7 +25,7 @@ To use [Visual Studio Code](https://code.visualstudio.com/) as IDE, follow these
 
 >When GCS script editor saves a script to a file or loads from a file - such file is watched for modifications by the GCS and the node configuration parameter is updated accordingly upon changes of the file's content are detected.
 >
->The node parameter, which have the `script` as its content will be compiled by the GCS on it's value changes. You may need to `upload` the vehicle parameters to bring the compiled script to run onboard;
+>The node parameter, which have the `script` as its content will be compiled by the GCS on it's value changes. You may need to `upload` parameters to bring the compiled script to run onboard;
 
 ## LLVM `sysroot`
 

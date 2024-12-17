@@ -24,10 +24,10 @@
 #include <App/AppDirs.h>
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
-#include <Telemetry/LookupTelemetry.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
+#include <Telemetry/TelemetryRecords.h>
 #include <Telemetry/TelemetryShare.h>
-#include <Vehicles/Vehicle.h>
-#include <Vehicles/Vehicles.h>
 #include <QColor>
 #include <QtGui>
 #include <QtNetwork>
@@ -39,17 +39,28 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     //setWindowTitle(tr("Telemetry"));
     //setWindowFlags(Qt::Dialog|Qt::CustomizeWindowHint|Qt::WindowTitleHint|Qt::WindowCloseButtonHint);
 
-    telemetry = Vehicles::instance()->f_replay->f_telemetry;
-    lookup = telemetry->f_lookup;
+    auto unit = Fleet::replay();
+    mandala = unit->f_mandala;
+    telemetry = unit->f_telemetry;
+    records = telemetry->f_records;
     reader = telemetry->f_reader;
     player = telemetry->f_player;
     share = telemetry->f_share;
 
-    connect(lookup, &LookupTelemetry::recordIdChanged, this, &TelemetryFrame::resetPlot);
-    connect(lookup, &LookupTelemetry::valueChanged, this, &TelemetryFrame::updateStats);
+    connect(reader, &TelemetryReader::rec_started, this, &TelemetryFrame::rec_started);
+    connect(reader, &TelemetryReader::rec_finished, this, &TelemetryFrame::rec_finished);
 
-    connect(reader, &TelemetryReader::statsAvailable, this, &TelemetryFrame::updateStats);
-    connect(reader, &TelemetryReader::dataAvailable, this, &TelemetryFrame::updateData);
+    connect(reader, &TelemetryReader::rec_values, this, &TelemetryFrame::rec_values);
+    connect(reader, &TelemetryReader::rec_evt, this, &TelemetryFrame::rec_evt);
+    connect(reader, &TelemetryReader::rec_jso, this, &TelemetryFrame::rec_evt);
+    connect(reader,
+            &TelemetryReader::rec_raw,
+            this,
+            [this](quint64 timestamp_ms, QString name, QByteArray data, bool uplink) {
+                rec_evt(timestamp_ms, name, {}, uplink);
+            });
+
+    connect(reader, &TelemetryReader::recordInfoChanged, this, &TelemetryFrame::updateStats);
     connect(telemetry, &TelemetryReader::progressChanged, this, &TelemetryFrame::updateProgress);
     connect(telemetry, &TelemetryReader::descrChanged, this, &TelemetryFrame::updateStatus);
 
@@ -97,12 +108,12 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
 
     //actions
     QAction *a;
-    toolBar->addAction(new QActionFact(lookup->f_latest));
+    toolBar->addAction(new QActionFact(records->f_latest));
     toolBar->addSeparator();
-    toolBar->addAction(new QActionFact(lookup->f_prev));
-    toolBar->addAction(new QActionFact(lookup->f_next));
+    toolBar->addAction(new QActionFact(records->f_prev));
+    toolBar->addAction(new QActionFact(records->f_next));
     toolBar->addSeparator();
-    a = new QActionFact(lookup);
+    a = new QActionFact(records);
     toolBar->addAction(a);
     toolBar->addSeparator();
     aSplit = toolBar->addAction(MaterialIcon("book-open-variant"),
@@ -121,7 +132,7 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     toolBar->addAction(new QActionFact(share->f_export));
     toolBar->addAction(new QActionFact(share->f_import));
     toolBar->addSeparator();
-    toolBar->addAction(new QActionFact(lookup->f_remove));
+    toolBar->addAction(new QActionFact(records->f_remove));
     toolBar->addSeparator();
 
     aReplay = toolBar->addAction(MaterialIcon(player->icon()),
@@ -197,7 +208,6 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     }
 
     updateStats();
-    updateData();
     updateProgress();
     updateStatus();
 }
@@ -216,18 +226,9 @@ void TelemetryFrame::updateStats()
                                           : QString("%1").arg(recSize);
         s.append(QString("\t(%1 %2)").arg(srcnt).arg(tr("records")));
     }
-    //events stats
-    QString recStats;
-    QStringList st;
-    foreach (QString s, reader->evtCountMap.keys()) {
-        st.append(QString("%1: %2").arg(s).arg(reader->evtCountMap.value(s)));
-    }
-    recStats = st.join(" | ");
+
     //set label
-    lbTitle->setText(QString("%1    \t%2%3")
-                         .arg(lookup->value().toString())
-                         .arg(s)
-                         .arg(recStats.isEmpty() ? recStats : recStats.prepend("\n\t")));
+    lbTitle->setText(QString("%1    \t%2").arg(records->value().toString(), s));
     lbTitle->adjustSize();
     progressBar->move(2, 2 + lbTitle->geometry().height() + 5);
     updateStatus();
@@ -250,44 +251,39 @@ void TelemetryFrame::updateStatus()
     lbStatus->move(r.right() + 8, r.y() + r.height() / 2 - lbStatus->height() / 2);
 }
 
-void TelemetryFrame::updateData()
+void TelemetryFrame::rec_started()
 {
     resetPlot();
-    //create curves
-    QHash<quint64, MandalaFact *> fidmap;
-    for (auto fid : reader->fieldNames.keys()) {
-        const QVector<QPointF> *d = reader->fieldData.value(fid);
-        if (!d)
-            continue;
-        //check if all zero
-        int zcnt = 0;
-        for (auto const &p : *d) {
-            if (p.y() != 0.0)
-                break;
-            zcnt++;
+    _samples.clear();
+    _timeMax = 0;
+}
+void TelemetryFrame::rec_finished()
+{
+    //final data tail at max time
+    for (auto &pts : _samples) {
+        if (pts.isEmpty()) {
+            pts.append(QPointF(0, 0));
+            //continue;
         }
-        if (d->size() == zcnt)
+        if (pts.last().x() >= _timeMax)
             continue;
-
-        const QString &s = reader->fieldNames.value(fid);
-        MandalaFact *f = qobject_cast<MandalaFact *>(
-            Vehicles::instance()->f_replay->f_mandala->findChild(s));
-        if (!f)
-            continue;
-        fidmap.insert(fid, f);
+        pts.append(QPointF(_timeMax, pts.last().y()));
     }
-    QList<quint64> fidlist = fidmap.keys();
-    std::sort(fidlist.begin(), fidlist.end(), [fidmap](quint64 v1, quint64 v2) {
-        return fidmap.value(v1)->uid() < fidmap.value(v2)->uid();
-    });
 
+    // sort fields by name
+    const auto &fields = reader->fields();
+    QMap<QString, size_t> order;
+    for (const auto &f : fields) {
+        order.insert(f.name, order.size());
+    }
+
+    // create plot fields
     ctr_fields.clear();
     plot->resetLegend();
-    QHash<quint64, QwtPlotCurve *> cmap;
-    for (auto fid : fidlist) {
+    for (const auto [name, index] : order.asKeyValueRange()) {
         //map a fact
-        const QString &s = reader->fieldNames.value(fid);
-        const Fact *f = fidmap.value(fid);
+        const auto &field = fields[index];
+        const QString &s = name;
         //fill params
         Qt::PenStyle style = Qt::SolidLine;
         if (s.startsWith("cmd."))
@@ -296,40 +292,86 @@ void TelemetryFrame::updateData()
             style = Qt::DashLine;
         else if (s.contains(".rc."))
             style = Qt::DotLine;
-        QColor c(f->opts().value("color", QColor(Qt::white)).value<QColor>());
-        QwtPlotCurve *cv = plot->addCurve(s, f->descr(), f->units(), QPen(c, 0, style));
-        cmap.insert(fid, cv);
+
         if (s.startsWith("ctr."))
             ctr_fields.append(s);
+
+        // try to find matching fact to guess color
+        const auto f = mandala->fact(s, true);
+        QColor c(Qt::white);
+        if (f) {
+            c = f->opts().value("color", c).value<QColor>();
+        }
+        auto title = field.info.value(0);
+        auto descr = field.info.value(1);
+        // add curve
+        auto curve = plot->addCurve(s, title, descr, QPen(c, 0, style));
+
+        // assign data to plot
+        curve->setSamples(_samples[index]);
     }
 
     plot->restoreSettings();
-
-    //load data to plot
-    for (auto fid : cmap.keys()) {
-        cmap.value(fid)->setSamples(*reader->fieldData.value(fid));
-    }
-    //load events
-    for (TelemetryReader::events_t::iterator e = reader->events.begin(); e != reader->events.end();
-         ++e) {
-        //const TelemetryReader::event_t &e = i;
-        if (e->name == "msg")
-            continue;
-        if (e->name == "serial")
-            continue;
-        if (e->name == "xpdr")
-            continue;
-        QColor c;
-        if (e->name == "mission")
-            c = QColor(50, 50, 100);
-        else if (e->name == "conf")
-            c = QColor(100, 100, 50);
-        else if (e->name == "uplink")
-            c = QColor(Qt::darkCyan);
-        plot->addEvent(e->time / 1000.0, QString("%1: %2").arg(e->name).arg(e->value), c);
-    }
-
     plot->resetZoom();
+}
+
+void TelemetryFrame::rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink)
+{
+    if (uplink) {
+        // uplink goes to event
+        for (const auto &[index, value] : data) {
+            const auto &field = reader->fields().value(index);
+            auto name = field.name;
+            if (name.contains(".rc."))
+                continue;
+
+            plot->addEvent(timestamp_ms / 1000.0,
+                           QString(">%1").arg(name), //, value.toString()),
+                           Qt::darkCyan);
+        }
+        return;
+    }
+
+    for (const auto [index, value] : data) {
+        auto tf = timestamp_ms / 1000.0;
+        if (tf > _timeMax)
+            _timeMax = tf;
+
+        auto v = value.toDouble();
+        while (_samples.size() <= index)
+            _samples.append(QVector<QPointF>());
+
+        auto &pts = _samples[index];
+        if (pts.size() > 0 && (tf - pts.last().x()) > 0.5) {
+            //extrapolate unchanged value tail-1ms
+            pts.append(QPointF(tf, pts.last().y()));
+        }
+        if (pts.isEmpty() && v != 0.0 && timestamp_ms != 0) {
+            //extrapolate/predict initial value at start
+            pts.append(QPointF(0, 0));
+            pts.append(QPointF(tf, 0));
+        }
+        pts.append(QPointF(tf, v));
+    }
+}
+void TelemetryFrame::rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
+{
+    // filter some names
+    if (name.contains(".rc."))
+        return;
+
+    if (name == "msg" || name == "vcp")
+        return;
+
+    QColor c;
+    if (name == "mission")
+        c = QColor(50, 50, 100);
+    else if (name == "conf")
+        c = QColor(100, 100, 50);
+
+    auto s = QString("%1%2").arg(uplink ? ">" : "<", name);
+
+    plot->addEvent(timestamp_ms / 1000.0, s, c);
 }
 
 void TelemetryFrame::resetPlot()

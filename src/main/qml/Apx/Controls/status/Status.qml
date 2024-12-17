@@ -45,17 +45,17 @@ Rectangle {
     readonly property int m_agl_src: mandala.sns.agl.src.value
     readonly property bool m_agl_status: mandala.sns.agl.status.value
     readonly property bool m_pwr_agl: mandala.ctr.pwr.agl.value
-    readonly property bool m_ahrs_hagl: mandala.cmd.ahrs.hagl.value
+    readonly property bool m_ins_hagl: mandala.cmd.ins.hagl.value
 
-    readonly property bool m_agl_show: (m_agl_status || m_ahrs_hagl || m_pwr_agl || m_agl_src)
+    readonly property bool m_agl_show: (m_agl_status || m_ins_hagl || m_pwr_agl || m_agl_src)
     readonly property bool m_agl_ready: m_agl_status
-    readonly property bool m_agl_warning: m_ahrs_hagl && !m_agl_status
+    readonly property bool m_agl_warning: m_ins_hagl && !m_agl_status
     readonly property bool m_agl_failure: m_pwr_agl && !m_agl_src
 
     readonly property real m_cmd_lat: mandala.cmd.pos.lat.value
     readonly property real m_cmd_lon: mandala.cmd.pos.lon.value
     readonly property real wp_dist: (m_cmd_lat!=0 && m_cmd_lon!=0)
-                                    ? apx.vehicles.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
+                                    ? apx.fleet.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
                                     : 0
 
     readonly property int m_reg_pos: mandala.cmd.reg.pos.value

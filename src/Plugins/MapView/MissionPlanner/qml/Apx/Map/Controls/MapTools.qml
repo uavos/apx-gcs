@@ -37,7 +37,7 @@ Item {
 
     property var plugin: apx.tools.missionplanner
     property var factAdd: plugin.add
-    property var factVehicle: plugin.vehicle
+    property var factUnit: plugin.unit
 
     property var selectedTool: map.selectedTool
     property var selectedGroup
@@ -71,9 +71,9 @@ Item {
         function onFactTriggered(fact){ if(fact!==selectedTool) reset() }
     }
     Connections {
-        target: apx.vehicles
+        target: apx.fleet
         enabled: selTool || selGroup
-        function onVehicleSelected(){ reset() }
+        function onUnitSelected(){ reset() }
     }
 
 
@@ -140,8 +140,8 @@ Item {
             }
         }
         ActionButton {
-            id: vehicle
-            fact: factVehicle
+            id: unit
+            fact: factUnit
             noFactTrigger: true
             showText: false
             highlighted: selectedGroup===fact

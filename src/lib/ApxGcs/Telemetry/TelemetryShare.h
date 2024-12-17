@@ -25,8 +25,6 @@
 #include <Sharing/Share.h>
 #include <QtCore>
 
-#include <ApxMisc/QueueJob.h>
-
 class Telemetry;
 
 class TelemetryShare : public Share
@@ -43,22 +41,13 @@ public:
 private:
     Telemetry *_telemetry;
 
-    QueueJob *qimp;
-    QueueJob *qexp;
-    QString descr_s;
-
     QString getDefaultTitle() override;
     bool exportRequest(QString format, QString fileName) override;
-    bool importRequest(QString format, QString fileName) override;
+    bool importRequest(QStringList fileNames) override;
 
     void syncTemplates() override;
 
 private slots:
-    void updateActions();
-    void updateProgress();
-    void updateStatus();
-    void updateDescr();
-
     void syncTemplate(QString hash);
 
 signals:

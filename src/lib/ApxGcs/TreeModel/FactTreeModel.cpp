@@ -45,10 +45,11 @@ void FactTreeModel::setRoot(Fact *f)
         recursiveDisconnect(i);
 
     _root = f;
-    endResetModel();
 
     checkConnections(f);
     indexHashCleanup();
+
+    endResetModel();
 }
 
 QHash<int, QByteArray> FactTreeModel::roleNames() const
@@ -223,26 +224,29 @@ void FactTreeModel::checkConnections(Fact *fact) const
 
     const_cast<QList<QPointer<Fact>> *>(&conFactLayout)->append(fact);
 
-    auto t = Qt::UniqueConnection;
-    connect(fact, &Fact::removed, this, &FactTreeModel::itemDestroyed, t);
-    connect(fact, &Fact::destroyed, this, &FactTreeModel::itemDestroyed, t);
+    Qt::ConnectionType tDirect, tQueued;
+    tDirect = (Qt::ConnectionType)(Qt::UniqueConnection);
+    tQueued = (Qt::ConnectionType)(tDirect | Qt::QueuedConnection);
 
-    connect(fact, &Fact::itemToBeInserted, this, &FactTreeModel::itemToBeInserted, t);
-    connect(fact, &Fact::itemInserted, this, &FactTreeModel::itemInserted, t);
-    connect(fact, &Fact::itemToBeRemoved, this, &FactTreeModel::itemToBeRemoved, t);
-    connect(fact, &Fact::itemRemoved, this, &FactTreeModel::itemRemoved, t);
-    connect(fact, &Fact::itemToBeMoved, this, &FactTreeModel::itemToBeMoved, t);
-    connect(fact, &Fact::itemMoved, this, &FactTreeModel::itemMoved, t);
+    connect(fact, &Fact::removed, this, &FactTreeModel::itemDestroyed, tDirect);
+    connect(fact, &Fact::destroyed, this, &FactTreeModel::itemDestroyed, tDirect);
 
-    t = (Qt::ConnectionType)(Qt::UniqueConnection | Qt::QueuedConnection);
-    connect(fact, &Fact::textChanged, this, &FactTreeModel::textChanged, t);
-    connect(fact, &Fact::titleChanged, this, &FactTreeModel::titleChanged, t);
-    connect(fact, &Fact::descrChanged, this, &FactTreeModel::descrChanged, t);
-    connect(fact, &Fact::enabledChanged, this, &FactTreeModel::enabledChanged, t);
-    connect(fact, &Fact::activeChanged, this, &FactTreeModel::activeChanged, t);
-    connect(fact, &Fact::modifiedChanged, this, &FactTreeModel::modifiedChanged, t);
-    connect(fact, &Fact::progressChanged, this, &FactTreeModel::progressChanged, t);
-    connect(fact, &Fact::visibleChanged, this, &FactTreeModel::visibleChanged, t);
+    connect(fact, &Fact::itemToBeInserted, this, &FactTreeModel::itemToBeInserted, tDirect);
+    connect(fact, &Fact::itemInserted, this, &FactTreeModel::itemInserted, tDirect);
+
+    connect(fact, &Fact::itemToBeRemoved, this, &FactTreeModel::itemToBeRemoved, tDirect);
+    connect(fact, &Fact::itemRemoved, this, &FactTreeModel::itemRemoved, tDirect);
+    connect(fact, &Fact::itemToBeMoved, this, &FactTreeModel::itemToBeMoved, tDirect);
+    connect(fact, &Fact::itemMoved, this, &FactTreeModel::itemMoved, tDirect);
+
+    connect(fact, &Fact::textChanged, this, &FactTreeModel::textChanged, tQueued);
+    connect(fact, &Fact::titleChanged, this, &FactTreeModel::titleChanged, tQueued);
+    connect(fact, &Fact::descrChanged, this, &FactTreeModel::descrChanged, tQueued);
+    connect(fact, &Fact::enabledChanged, this, &FactTreeModel::enabledChanged, tQueued);
+    connect(fact, &Fact::activeChanged, this, &FactTreeModel::activeChanged, tQueued);
+    connect(fact, &Fact::modifiedChanged, this, &FactTreeModel::modifiedChanged, tQueued);
+    connect(fact, &Fact::progressChanged, this, &FactTreeModel::progressChanged, tQueued);
+    connect(fact, &Fact::visibleChanged, this, &FactTreeModel::visibleChanged, tQueued);
 }
 
 void FactTreeModel::recursiveDisconnect(Fact *fact)
@@ -268,17 +272,27 @@ void FactTreeModel::recursiveDisconnect(Fact *fact)
 
 void FactTreeModel::itemToBeInserted(int row, FactBase *item)
 {
-    Fact *fact = qobject_cast<Fact *>(item->parentFact());
-    const QModelIndex &index = factIndex(fact);
-    beginInsertRows(index, row, row);
+    // auto fact = qobject_cast<Fact *>(item->parentFact());
+    // if (!fact)
+    //     return;
+
+    // const QModelIndex &index = factIndex(fact);
+    // beginInsertRows(index, row, row);
+
+    // reset model is faster when many items are added
+    beginResetModel();
 }
 void FactTreeModel::itemInserted(FactBase *)
 {
-    endInsertRows();
+    // endInsertRows();
+    endResetModel();
 }
 void FactTreeModel::itemToBeRemoved(int row, FactBase *item)
 {
-    Fact *fact = qobject_cast<Fact *>(item->parentFact());
+    auto fact = qobject_cast<Fact *>(item->parentFact());
+    if (!fact)
+        return;
+
     //updateList.removeAll(fact);
     const QModelIndex &index = factIndex(fact);
     beginRemoveRows(index, row, row);
@@ -289,7 +303,10 @@ void FactTreeModel::itemRemoved(FactBase *)
 }
 void FactTreeModel::itemToBeMoved(int row, int dest, FactBase *item)
 {
-    Fact *fact = qobject_cast<Fact *>(item->parentFact());
+    auto fact = qobject_cast<Fact *>(item->parentFact());
+    if (!fact)
+        return;
+
     const QModelIndex &index = factIndex(fact);
     beginMoveRows(index, row, row, index, dest);
 }

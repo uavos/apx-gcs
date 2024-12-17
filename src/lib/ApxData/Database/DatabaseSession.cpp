@@ -28,10 +28,8 @@
 
 // TODO implement file names format without subfolders to include version number
 
-DatabaseSession::DatabaseSession(QObject *parent,
-                                 const QString &name,
-                                 const QString &sessionName,
-                                 QString version)
+DatabaseSession::DatabaseSession(
+    QObject *parent, const QString &name, const QString &sessionName, QString version, QDir dir)
     : Fact(Database::instance(), name, "", "", Group)
     , sessionName(sessionName)
     , inTransaction(false)
@@ -45,16 +43,15 @@ DatabaseSession::DatabaseSession(QObject *parent,
 
     setIcon("database");
 
+    // storage directory
+    if (!dir.exists())
+        dir.mkpath(".");
+
     // file name
-    // fileName = AppDirs::db().absoluteFilePath(version + QDir::separator() + name + ".db");
-    fileName = AppDirs::db().absoluteFilePath(name);
+    fileName = dir.absoluteFilePath(name);
     if (!version.isEmpty())
         fileName.append('.').append(version);
     fileName.append(".db");
-
-    QDir dir(QFileInfo(fileName).absoluteDir());
-    if (!dir.exists())
-        dir.mkpath(".");
 
     //QMutexLocker lock(&mutex);
     sql.setDatabaseName(fileName);
@@ -235,7 +232,7 @@ void DatabaseSession::request(DatabaseRequest *req)
 
 void DatabaseSession::vacuumTriggered()
 {
-    DBReqVacuum *req = new DBReqVacuum(this);
+    auto req = new db::Vacuum(this);
     connect(
         req,
         &DatabaseRequest::finished,
@@ -248,7 +245,7 @@ void DatabaseSession::vacuumTriggered()
 
 void DatabaseSession::analyzeTriggered()
 {
-    DBReqAnalyze *req = new DBReqAnalyze(this);
+    auto req = new db::Analyze(this);
     connect(
         req,
         &DatabaseRequest::finished,
@@ -262,110 +259,4 @@ void DatabaseSession::analyzeTriggered()
 quint64 DatabaseSession::capacity() const
 {
     return m_capacity;
-}
-
-bool DBReqMakeTable::run(QSqlQuery &query)
-{
-    query.prepare(QString("PRAGMA table_info('%1')").arg(tableName));
-    if (!query.exec())
-        return false;
-
-    QStringList fieldsList;
-    for (auto i : fields) {
-        if (i.contains('('))
-            continue;
-        if (!i.contains(' '))
-            continue;
-        fieldsList.append(i.split(' ').first());
-    }
-    db->updateTableFields(tableName, fieldsList);
-
-    if (!query.next()) {
-        //not exists - create new table
-        const QString &s = QString("CREATE TABLE IF NOT EXISTS %1 (%2) %3")
-                               .arg(tableName)
-                               .arg(fields.join(','))
-                               .arg(tail);
-        db->transaction(query);
-        query.prepare(s);
-        if (!query.exec())
-            return false;
-        db->commit(query);
-        return true;
-    }
-    //update existing table
-    do {
-        QString s = query.value("name").toString();
-        for (int i = 0; i < fields.size(); ++i) {
-            if (!fields.at(i).simplified().startsWith(s + " "))
-                continue;
-            fields.removeAt(i);
-            break;
-        }
-    } while (query.next());
-    for (int i = 0; i < fields.size(); ++i) {
-        if (!fields.at(i).simplified().startsWith("FOREIGN KEY"))
-            continue;
-        fields.removeAt(i);
-        i--;
-    }
-    if (!fields.isEmpty()) {
-        db->transaction(query);
-        for (int i = 0; i < fields.size(); ++i) {
-            QString s = QString("ALTER TABLE '%1' ADD %2").arg(tableName).arg(fields.at(i));
-            qDebug() << s;
-            query.prepare(s);
-            if (!query.exec())
-                return false;
-        }
-        apxMsg() << tr("Table %1 updated").arg(tableName);
-        db->commit(query);
-    }
-    return true;
-}
-
-bool DBReqMakeIndex::run(QSqlQuery &query)
-{
-    const QString &s = QString("CREATE%3 INDEX IF NOT EXISTS idx_%1_%2 ON %1 (%4);")
-                           .arg(tableName)
-                           .arg(QString(indexName).replace(',', '_'))
-                           .arg(unique ? " UNIQUE" : "")
-                           .arg(indexName);
-    db->transaction(query);
-    query.prepare(s);
-    if (!query.exec())
-        return false;
-    db->commit(query);
-    return true;
-}
-
-bool DBReqVacuum::run(QSqlQuery &query)
-{
-    QElapsedTimer t0;
-    t0.start();
-    apxMsg() << tr("Optimizing") << name + "...";
-    if (!db->commit(query))
-        return false;
-    query.prepare("VACUUM");
-    if (!query.exec())
-        return false;
-    apxMsg() << tr("Optimized") << name << t0.elapsed() << "ms";
-    return true;
-}
-
-bool DBReqAnalyze::run(QSqlQuery &query)
-{
-    QElapsedTimer t0;
-    t0.start();
-    apxMsg() << tr("Analyzing") << name + "...";
-    if (!db->commit(query))
-        return false;
-    query.prepare("ANALYZE");
-    if (!query.exec()) {
-        apxMsgW() << tr("Error") << name << t0.elapsed() << "ms";
-        apxMsgW() << query.lastError().text();
-        return false;
-    }
-    apxMsg() << "OK" << name << t0.elapsed() << "ms";
-    return true;
 }

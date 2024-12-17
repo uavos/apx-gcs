@@ -50,7 +50,7 @@ jobs:
     name: Build MacOS
     runs-on: macos-latest
     env:
-      VERSION_QT: 6.7.1
+      VERSION_QT: 6.8.1
       VERSION_SDL: 2.30.8
       VERSION_GST: 1.22.5
 

@@ -67,7 +67,7 @@ Firmware::Firmware(Fact *parent)
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop upgrading"), Action | Stop);
     connect(f_stop, &Fact::triggered, this, &Firmware::stop);
 
-    connect(Vehicles::instance(), &Vehicles::vehicleRegistered, this, &Firmware::vehicleRegistered);
+    connect(Fleet::instance(), &Fleet::unitRegistered, this, &Firmware::unitRegistered);
 
     connect(
         f_queue,
@@ -91,10 +91,10 @@ Firmware::Firmware(Fact *parent)
     updateStatus();
 }
 
-void Firmware::vehicleRegistered(Vehicle *vehicle)
+void Firmware::unitRegistered(Unit *unit)
 {
-    connect(vehicle->f_nodes, &Nodes::requestUpgrade, this, &Firmware::upgradeRequested);
-    connect(vehicle->f_nodes, &Nodes::nodeNotify, this, &Firmware::nodeNotify);
+    connect(unit->f_nodes, &Nodes::requestUpgrade, this, &Firmware::upgradeRequested);
+    connect(unit->f_nodes, &Nodes::nodeNotify, this, &Firmware::nodeNotify);
 }
 void Firmware::nodeNotify(NodeItem *node)
 {
@@ -168,7 +168,7 @@ void Firmware::requestUpgrade(QString uid, QString name, QString hw, QString typ
 {
     qDebug() << uid << type << name;
 
-    auto *f = queued(f_available, uid);
+    auto f = queued(f_available, uid);
     if (f)
         f->deleteFact();
 

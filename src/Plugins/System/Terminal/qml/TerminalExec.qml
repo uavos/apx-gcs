@@ -31,7 +31,7 @@ Rectangle{
     implicitWidth: cmdText.implicitWidth
     border.width: 0
     color: cmdText.activeFocus?"#133":"#111"
-    readonly property string user: apx.vehicles.current.title
+    readonly property string user: apx.fleet.current.title
     readonly property string pdel: "> "
     readonly property string prefix: user+pdel
 

@@ -35,9 +35,9 @@ public:
     enum NotifyFlag {
         //message origin [enum]
         NotifySourceMask = 0x0F,
-        FromApp = 0,     // msg from app
-        FromInput = 1,   // msg from user terminal input
-        FromVehicle = 2, // msg from vehicle
+        FromApp = 0,   // msg from app
+        FromInput = 1, // msg from user terminal input
+        FromUnit = 2,  // msg from unit
 
         //importance [enum]
         NotifyTypeMask = 0xF0,

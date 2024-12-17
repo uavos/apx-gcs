@@ -23,7 +23,7 @@
 
 #include "PBase.h"
 
-class PVehicle;
+class PUnit;
 class PNode;
 class PNodes;
 
@@ -66,7 +66,7 @@ public slots:
     virtual void requestIdent() { _nimp(__FUNCTION__); }
     virtual void requestDict() { _nimp(__FUNCTION__); }
     virtual void requestConf() { _nimp(__FUNCTION__); }
-    virtual void requestUpdate(QVariantMap values) { _nimp(__FUNCTION__); }
+    virtual void requestUpdate(QJsonObject values) { _nimp(__FUNCTION__); }
 
     virtual void requestReboot() { _nimp(__FUNCTION__); }
     virtual void requestMod(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data)
@@ -80,16 +80,16 @@ signals:
     void messageReceived(PNode::msg_type_e type, QString msg);
 
     // hash of node identity, title, version, hardware, etc
-    void identReceived(QVariantMap ident);
+    void identReceived(QJsonObject ident);
 
-    // list of QVariantMap describing fields {name, type, array, etc}
-    void dictReceived(QVariantMap dict);
+    // list of QJsonObject describing fields {name, type, array, etc}
+    void dictReceived(QJsonObject dict);
 
     // the whole set of parameters received
-    void confReceived(QVariantMap values);
+    void confReceived(QJsonObject values);
 
     // some parameters updated externally
-    void confUpdated(QVariantMap values);
+    void confUpdated(QJsonObject values);
 
     // when requestUpdate accepted and saved
     void confSaved();

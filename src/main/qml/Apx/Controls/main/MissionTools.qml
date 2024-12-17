@@ -26,7 +26,7 @@ import QtPositioning
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 import APX.Mission
 
 import Apx.Common
@@ -35,9 +35,9 @@ import Apx.Menu
 
 Row {
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
+    readonly property APX.Unit unit: apx.fleet.current
 
-    readonly property Mission mission: vehicle.mission
+    readonly property Mission mission: unit.mission
 
     height: missionButton.height
     spacing: Style.spacing
@@ -64,12 +64,7 @@ Row {
         visible: (!mission.synced) && (!mission.empty)
     }
     ActionButton {
-        fact: mission.tools.save
-        showText: false
-        visible: (!mission.saved) && (!mission.empty)
-    }
-    ActionButton {
-        fact: mission.load
+        fact: mission.tools.share.imp
         showText: false
         visible: (mission.empty)
     }

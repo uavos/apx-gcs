@@ -26,7 +26,8 @@
 
 #include "quazip/JlCompress.h"
 
-#include <Database/VehiclesReqNode.h>
+#include <ApxMisc/JsonHelpers.h>
+#include <Database/NodesReqMeta.h>
 
 // TODO collect and display changelog based on minimum node version
 // see https://doc.qt.io/qt-5/qtwebengine-webenginewidgets-markdowneditor-example.html
@@ -37,7 +38,7 @@ ApxFw::ApxFw(Fact *parent)
     setIcon("alarm-light");
 
     _versionPrefix = QVersionNumber::fromString(App::version());
-    _versionPrefix = QVersionNumber(_versionPrefix.majorVersion(), _versionPrefix.minorVersion());
+    _versionPrefix = QVersionNumber(_versionPrefix.majorVersion());
 
     m_packagePrefix = "APX_Nodes_Firmware";
 
@@ -200,10 +201,8 @@ void ApxFw::makeFacts(Fact *fact, QDir dir)
         if (!f_hw)
             f_hw = new Fact(f_ng, st.at(1).toLower(), st.at(1), "", Group | Count | Section);
 
-        Fact *f = new Fact(f_hw,
-                           fi.completeBaseName().toLower(),
-                           fi.completeBaseName(),
-                           fi.lastModified().toString());
+        auto fact_name = fi.completeBaseName().toLower().replace('.', '_');
+        Fact *f = new Fact(f_hw, fact_name, fi.completeBaseName(), fi.lastModified().toString());
         f->setValue(v.toString());
     }
 }
@@ -530,38 +529,38 @@ bool ApxFw::loadApfwFile(QString fileName, QString section, QByteArray *data, qu
         errString = "object";
         if (!doc.isObject())
             break;
-        QVariantMap m = doc.object().toVariantMap();
-        if (m.value("magic").toString() != "APXFW") {
+        auto jso = doc.object();
+        if (jso.value("magic").toString() != "APXFW") {
             errString = "magic";
             break;
         }
 
-        QVariantMap msect = m.value(section).toMap();
-        if (msect.isEmpty()) {
+        auto jso_sect = jso.value(section).toObject();
+        if (jso_sect.isEmpty()) {
             errString = "missing section '" + section + "'";
             break;
         }
 
-        quint32 size = msect.value("size").toUInt();
+        auto size = jso_sect.value("size").toVariant().toUInt();
         if (!size) {
             errString = "zero size";
             break;
         }
 
         if (startAddr) {
-            if (!msect.contains("origin")) {
+            if (!jso_sect.contains("origin")) {
                 errString = "missing origin";
                 break;
             }
             bool ok;
-            *startAddr = msect.value("origin").toString().toUInt(&ok, 16);
+            *startAddr = jso_sect.value("origin").toString().toUInt(&ok, 16);
             if (!ok) {
                 errString = "missing origin convert error";
                 break;
             }
         }
 
-        QByteArray ba = QByteArray::fromBase64(msect.value("data").toString().toUtf8());
+        QByteArray ba = QByteArray::fromBase64(jso_sect.value("data").toString().toUtf8());
         errString = "missing image data";
         if (ba.isEmpty())
             break;
@@ -677,7 +676,7 @@ QJsonArray ApxFw::loadParameters(QString nodeName, QString hw)
         if (ba.isEmpty())
             break;
 
-        quint32 size = params["size"].toInt();
+        quint32 size = params["size"].toVariant().toUInt();
 
         ba.prepend(static_cast<char>(size));
         ba.prepend(static_cast<char>(size >> 8));
@@ -698,7 +697,10 @@ QJsonArray ApxFw::loadParameters(QString nodeName, QString hw)
 
 void ApxFw::updateNodesMeta(QDir dir)
 {
-    QVariantMap meta;
+    // read node parameters meta data from firmware files
+    // and store it in the database
+
+    QJsonObject meta;
 
     for (auto fi : dir.entryInfoList(QStringList() << "*.apxfw", QDir::Files)) {
         if (fi.suffix() != "apxfw")
@@ -726,7 +728,7 @@ void ApxFw::updateNodesMeta(QDir dir)
         if (ba.isEmpty())
             continue;
 
-        quint32 size = params["size"].toInt();
+        quint32 size = params["size"].toVariant().toUInt();
 
         ba.prepend(static_cast<char>(size));
         ba.prepend(static_cast<char>(size >> 8));
@@ -740,24 +742,30 @@ void ApxFw::updateNodesMeta(QDir dir)
         if (!json.isArray())
             continue;
 
-        for (auto i : json.array()) {
-            updateNodesMeta(meta, version, i, QStringList());
+        for (const auto &i : json.array()) {
+            updateNodesMeta(&meta, version, i, QStringList());
         }
     }
+
+    // clean up empty fields
+    meta = json::fix_numbers(json::remove_empty(meta));
     if (meta.isEmpty())
         return;
 
     // push to DB
-    auto *req = new DBReqSaveNodeMeta(meta);
+    auto req = new db::nodes::SaveFieldMeta(meta);
     req->exec();
 }
 
-void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json, QStringList path)
+void ApxFw::updateNodesMeta(QJsonObject *meta,
+                            QString version,
+                            const QJsonValue &jsv,
+                            QStringList path)
 {
-    if (!json.isObject())
+    if (!jsv.isObject())
         return;
 
-    auto jso = json.toObject();
+    const auto jso = jsv.toObject();
     if (!jso.contains("name"))
         return;
     auto name = jso.value("name").toString();
@@ -768,19 +776,19 @@ void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json,
 
     bool is_group = jso.contains("content");
 
-    auto m = meta.value(name).value<QVariantMap>();
+    auto m = (*meta)[name].toObject();
 
     do {
         if (m.contains("version")) {
             auto mver = QVersionNumber::fromString(m.value("version").toString());
             auto nver = QVersionNumber::fromString(version);
             if (nver < mver)
-                break;
-            m.clear();
+                break; // downgrade not allowed
+            m = {};
         }
 
-        auto descr = jso.value("descr").toString();
-        auto title = jso.value("title").toString();
+        auto descr = jso["descr"].toString();
+        auto title = jso["title"].toString();
 
         if (!is_group) {
             if (descr.isEmpty()) {
@@ -793,43 +801,38 @@ void ApxFw::updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json,
         descr = descr.trimmed();
 
         if (descr.isEmpty())
-            descr = m.value("descr").toString();
+            descr = m["descr"].toString();
 
-        m.insert("version", version);
-        m.insert("descr", descr);
+        m["version"] = version;
+        m["descr"] = descr;
 
         // default values
         if (jso.contains("default")) {
-            auto def = jso.value("default");
+            auto def = jso["default"];
             if (def.isObject()) {
-                auto jsdef = def.toObject();
-                for (auto key : jsdef.keys()) {
-                    auto kname = name + "." + key;
-                    auto km = meta.value(kname).value<QVariantMap>();
-                    auto v = jsdef.value(key).toVariant();
-                    km.insert("def", v);
-                    meta.insert(kname, km);
+                // expand object defaults to separate sub fields
+                const auto jsdef = def.toObject();
+                for (auto it = jsdef.begin(); it != jsdef.end(); ++it) {
+                    auto s = name + "." + it.key();
+                    (*meta)[s] = (*meta)[s].toObject().value("def") = it.value();
                 }
             } else {
-                auto v = def.toVariant();
-                m.insert("def", v);
+                m["def"] = def;
             }
         }
 
         for (auto n : {"min", "max", "increment", "decimal"}) {
-            if (jso.contains(n)) {
-                m.insert(n, jso.value(n).toVariant());
-            }
+            m[n] = jso[n];
         }
 
-        meta.insert(name, m);
+        (*meta)[name] = m;
     } while (0);
 
     // parse child objects
     if (!is_group)
         return;
 
-    for (auto v : jso.value("content").toArray()) {
+    for (const auto &v : jso["content"].toArray()) {
         updateNodesMeta(meta, version, v, path);
     }
 }

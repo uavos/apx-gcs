@@ -21,11 +21,13 @@
  */
 #pragma once
 
-#include "DatabaseSession.h"
+#include <App/AppLog.h>
 #include <Fact/Fact.h>
 
-class VehiclesDB;
-class TelemetryDB;
+#include "DatabaseToolsReq.h"
+#include "NodesSession.h"
+#include "StorageSession.h"
+
 class MissionsDB;
 
 class Database : public Fact
@@ -38,9 +40,8 @@ public:
 
     static Database *instance() { return _instance; }
 
-    VehiclesDB *vehicles;
-    TelemetryDB *telemetry;
-    MissionsDB *missions;
+    QPointer<db::storage::Session> storage;
+    QPointer<db::nodes::Session> nodes;
 
 private:
     static Database *_instance;

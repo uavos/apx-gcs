@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "CompassFrame.h"
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 #include <QtCore>
 
 #include <Protocols/PStream.h>
@@ -85,8 +85,8 @@ CompassFrame::CompassFrame(QWidget *parent)
 
     checkBoxTrace.setChecked(true);
 
-    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &CompassFrame::vehicleSelected);
-    vehicleSelected(Vehicles::instance()->current());
+    connect(Fleet::instance(), &Fleet::unitSelected, this, &CompassFrame::unitSelected);
+    unitSelected(Fleet::instance()->current());
 }
 void CompassFrame::closeEvent(QCloseEvent *event)
 {
@@ -94,12 +94,12 @@ void CompassFrame::closeEvent(QCloseEvent *event)
     disconnect(this);
     emit closed();
 }
-void CompassFrame::vehicleSelected(Vehicle *vehicle)
+void CompassFrame::unitSelected(Unit *unit)
 {
     for (auto c : clist)
         disconnect(c);
 
-    PVehicle *protocol = vehicle->protocol();
+    auto protocol = unit->protocol();
     if (!protocol)
         return;
 
@@ -109,7 +109,7 @@ void CompassFrame::vehicleSelected(Vehicle *vehicle)
 
 void CompassFrame::requestCalibrationData()
 {
-    PVehicle *protocol = Vehicles::instance()->current()->protocol();
+    PUnit *protocol = Fleet::instance()->current()->protocol();
     if (!protocol)
         return;
     QByteArray ba;

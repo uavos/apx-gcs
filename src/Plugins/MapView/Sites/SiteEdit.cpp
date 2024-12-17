@@ -42,9 +42,6 @@ SiteEdit::SiteEdit(Fact *parent,
     f_longitude->setUnits("lon");
 
     if (!modelData.isEmpty()) {
-        f_missions = new LookupMissions(nullptr, this, Action);
-        connect(f_missions, &Fact::triggered, this, &SiteEdit::lookupMissions);
-
         a_remove = new Fact(this,
                             "remove",
                             tr("Remove"),
@@ -120,10 +117,4 @@ void SiteEdit::updateFromEditedModelData(int i, QVariantMap v)
     Q_UNUSED(i)
     setModelData(v);
     emit siteEdited(modelData);
-}
-
-void SiteEdit::lookupMissions()
-{
-    QGeoCoordinate c(modelData.value("lat").toDouble(), modelData.value("lon").toDouble());
-    f_missions->dbLookupMissionsByArea(c, modelData.value("title").toString());
 }

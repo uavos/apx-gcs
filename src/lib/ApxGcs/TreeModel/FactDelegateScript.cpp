@@ -25,8 +25,8 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <ApxMisc/MaterialIcon.h>
+#include <Fleet/Fleet.h>
 #include <Nodes/NodeScript.h>
-#include <Vehicles/Vehicles.h>
 #include <QtWidgets>
 
 FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)

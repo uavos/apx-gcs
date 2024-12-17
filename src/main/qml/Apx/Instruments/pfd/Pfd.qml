@@ -23,14 +23,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 import "."
 import "../common"
 
 Item {
     id: pfd
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
+    readonly property APX.Unit unit: apx.fleet.current
 
     readonly property var f_mode: mandala.cmd.proc.mode
 
@@ -44,7 +44,7 @@ Item {
     readonly property var f_gps_su: mandala.sns.gps.su
     readonly property var f_gps_sv: mandala.sns.gps.sv
     readonly property var f_ref_status: mandala.est.ref.status
-    readonly property var f_ahrs_nogps: mandala.cmd.ahrs.nogps
+    readonly property var f_ins_nogps: mandala.cmd.ins.nogps
 
 
     readonly property var f_ktas: mandala.est.air.ktas
@@ -99,13 +99,13 @@ Item {
 
     // status flags and warnings
     readonly property var f_att_status: mandala.est.att.status
-    readonly property var f_ahrs_rest: mandala.est.ahrs.rest
+    readonly property var f_ins_rest: mandala.est.ins.rest
     readonly property var f_pos_status: mandala.est.pos.status
-    readonly property var f_ahrs_href: mandala.est.ahrs.href
+    readonly property var f_ins_href: mandala.est.ins.href
     readonly property var f_lpos_status: mandala.est.lpos.status
     readonly property var f_air_stall: mandala.est.air.stall
-    readonly property var f_ahrs_inair: mandala.cmd.ahrs.inair
-    readonly property var f_ahrs_hsel: mandala.cmd.ahrs.hsel
+    readonly property var f_ins_inair: mandala.cmd.ins.inair
+    readonly property var f_ins_hsel: mandala.cmd.ins.hsel
 
     readonly property var f_att_valid: mandala.est.att.valid
     readonly property var f_pos_valid: mandala.est.pos.valid
@@ -114,7 +114,7 @@ Item {
 
     readonly property bool isValid: f_att_status.value > 0
 
-    opacity: ui.effects?((apx.datalink.valid && !(vehicle.streamType===APX.PVehicle.XPDR||vehicle.streamType===APX.PVehicle.TELEMETRY))?0.7:1):1
+    opacity: ui.effects?((apx.datalink.valid && !(unit.streamType===APX.PUnit.XPDR||unit.streamType===APX.PUnit.TELEMETRY))?0.7:1):1
 
     clip: true
 
@@ -172,7 +172,7 @@ Item {
             anchors.horizontalCenter: windArrow.horizontalCenter
             anchors.bottomMargin: height*2
             height: pfdScene.txtHeight*0.5
-            fact: f_ahrs_rest
+            fact: f_ins_rest
             type: CleanText.Clean
             show: fact.value > 0
             text: fact.title.toUpperCase()
@@ -334,15 +334,16 @@ Item {
 
                     readonly property int src: f_gps_src.value
                     readonly property int fix: f_gps_fix.value
+                    readonly property int fix_valid: f_gps_fix.everReceived
                     readonly property int su: f_gps_su.value
                     readonly property int sv: f_gps_sv.value
                     readonly property bool ref: f_ref_status.value === ref_status_initialized
                     readonly property bool avail: fix !== gps_fix_none
-                    readonly property bool blocked: f_ahrs_nogps.value > 0
+                    readonly property bool blocked: f_ins_nogps.value > 0
 
                     readonly property bool isOff: (!avail) && (!ref)
-                    readonly property bool isErr: ref && (!avail)
-                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && fix >= gps_fix_3D
+                    readonly property bool isErr: ref && (!avail) && fix_valid
+                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && (fix >= gps_fix_3D || !fix_valid)
 
                     show: isValid || su>0 || sv>0 || fix>0 || src>0
 
@@ -403,21 +404,21 @@ Item {
                 anchors.bottomMargin: (parent.width-parent.width*0.5)*0.3
 
                 CleanText { // height reference
-                    id: ahrs_href
+                    id: ins_href
                     anchors.verticalCenterOffset: -pfdScene.flagHeight*1.5
                     anchors.centerIn: parent
                     visible: ui.test || (isValid)
                     height: pfdScene.txtHeight*0.5
-                    fact: f_ahrs_href
+                    fact: f_ins_href
                     type: CleanText.Clean
                 }
                 CleanText { // height source selection
-                    anchors.horizontalCenter: ahrs_href.horizontalCenter
-                    anchors.bottom: ahrs_href.top
+                    anchors.horizontalCenter: ins_href.horizontalCenter
+                    anchors.bottom: ins_href.top
                     anchors.bottomMargin: height/4
-                    visible: ahrs_href.visible && f_ahrs_href.text!=f_ahrs_hsel.text
-                    height: ahrs_href.height
-                    fact: f_ahrs_hsel
+                    visible: ins_href.visible && f_ins_href.text!=f_ins_hsel.text
+                    height: ins_href.height
+                    fact: f_ins_hsel
                     type: CleanText.Yellow
                 }
             }
@@ -551,10 +552,11 @@ Item {
             }
             StatusFlag { // inair status
                 height: pfdScene.flagHeight
-                fact: f_ahrs_inair
+                fact: f_ins_inair
                 text: qsTr("AIR")
-                show: ui.test || ( fact.value <= 0 && isValid)
-                status_reset: ahrs_inair_yes
+                show: ui.test || ( fact.value != ins_inair_yes && isValid)
+                status_reset: ins_inair_yes
+                status_warning: ins_inair_hover
             }
         }
 
@@ -592,7 +594,7 @@ Item {
                 status_warning: att_status_warning
                 status_show: att_status_busy
                 status_reset: att_status_unknown
-                text: qsTr("AHRS")
+                text: qsTr("INS")
             }
             StatusFlag {
                 height: pfdScene.flagHeight
@@ -646,7 +648,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
             text: qsTr("DISCONNECTED")
-            visible: !vehicle.isReplay && !apx.datalink.online
+            visible: !unit.isReplay && !apx.datalink.online
             font: apx.font_narrow(apx.datalink.valid?(parent.height*0.5*0.35):10,true)
         }
         Text {
@@ -654,15 +656,15 @@ Item {
             anchors.top: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
-            text: vehicle.text
-            visible: !vehicle.isReplay && apx.datalink.valid && (vehicle.streamType!==APX.PVehicle.TELEMETRY)
+            text: unit.text
+            visible: !unit.isReplay && apx.datalink.valid && (unit.streamType!==APX.PUnit.TELEMETRY)
             horizontalAlignment: Text.AlignHCenter
             font: apx.font_narrow(parent.height*0.5*0.25,true)
             Text {
                 color: "#70000000"
                 anchors.top: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: vehicle.protocol?vehicle.protocol.telemetry.text:""
+                text: unit.protocol?unit.protocol.telemetry.text:""
                 font: apx.font_narrow(parent.font.pixelSize*0.5,true)
             }
         }

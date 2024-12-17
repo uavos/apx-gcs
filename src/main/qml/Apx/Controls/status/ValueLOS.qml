@@ -24,7 +24,7 @@ import QtQuick.Layouts
 import QtQuick.Controls.Material
 import QtPositioning
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 import Apx.Common
 
 ValueButton {
@@ -33,7 +33,7 @@ ValueButton {
     text: qsTr("LOS")
     toolTip: qsTr("Line of Sight distance to Home")
 
-    readonly property real m_dist: QtPositioning.coordinate(mandala.est.ref.lat.value,mandala.est.ref.lon.value).distanceTo(apx.vehicles.current.coordinate)
+    readonly property real m_dist: QtPositioning.coordinate(mandala.est.ref.lat.value,mandala.est.ref.lon.value).distanceTo(apx.fleet.current.coordinate)
     readonly property real m_hmsl: mandala.est.pos.hmsl.value
     readonly property real m_ref_hmsl: mandala.est.ref.hmsl.value
     readonly property real m_rss: mandala.sns.com.rss.value
@@ -42,8 +42,8 @@ ValueButton {
     value: v>1000000?"--":apx.distanceToString(v)
 
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
-    readonly property int err: vehicle.protocol?vehicle.protocol.errcnt:0
+    readonly property APX.Unit unit: apx.fleet.current
+    readonly property int err: unit.protocol?unit.protocol.errcnt:0
     
     valueScale: 0.8
 
@@ -54,21 +54,21 @@ ValueButton {
     }
 
     Connections {
-        target: apx.vehicles
-        function onVehicleSelected() {
-            cv = vehicle
+        target: apx.fleet
+        function onUnitSelected() {
+            cv = unit
         }
     }
     property var cv
     Component.onCompleted: {
-        cv = vehicle
+        cv = unit
         visible=bvisible
     }
 
     onErrChanged: {
         if(err<=0) return
-        if(cv !== vehicle){
-            cv = vehicle
+        if(cv !== unit){
+            cv = unit
             return
         }
         errTimer.restart()

@@ -23,15 +23,15 @@
 
 #include <Fact/Fact.h>
 #include <QtCore>
-class VehicleMission;
-class Vehicle;
+class UnitMission;
+class Unit;
 
 class MissionTools : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit MissionTools(VehicleMission *mission, FactBase::Flags flags = FactBase::Flags(Group));
+    explicit MissionTools(UnitMission *mission, FactBase::Flags flags = FactBase::Flags(Group));
 
     Fact *f_altadjust;
     Fact *f_altadjustApply;
@@ -40,7 +40,7 @@ public:
 
     Fact *f_copy;
 
-    VehicleMission *mission;
+    UnitMission *mission;
 
 private slots:
     void altadjustTriggered();
@@ -48,5 +48,5 @@ private slots:
 
     void updateMaxAltitude();
 
-    void copyVehicleSelected(Vehicle *vehicle);
+    void copyUnitSelected(Unit *unit);
 };

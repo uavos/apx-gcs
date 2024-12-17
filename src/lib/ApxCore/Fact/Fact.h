@@ -29,8 +29,8 @@ class Fact : public FactData
 
     Q_PROPERTY(FactBase::Flags flags READ flags WRITE setFlags NOTIFY flagsChanged)
 
-    Q_PROPERTY(QAbstractListModel *model READ model NOTIFY modelChanged)
-    Q_PROPERTY(QAbstractListModel *actionsModel READ actionsModel NOTIFY actionsModelChanged)
+    Q_PROPERTY(QAbstractItemModel *model READ model NOTIFY modelChanged)
+    Q_PROPERTY(QAbstractItemModel *actionsModel READ actionsModel NOTIFY actionsModelChanged)
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
@@ -57,9 +57,7 @@ public:
 
     Q_INVOKABLE QByteArray hash() const;
 
-    Q_INVOKABLE QVariant findValue(const QString &namePath);
-
-    Q_INVOKABLE Fact *findChild(const QString &factName, bool exactMatch = true) const;
+    Q_INVOKABLE Fact *findChild(const QString &factName) const;
     Q_INVOKABLE Fact *childByTitle(const QString &factTitle) const;
 
     Q_INVOKABLE QString titlePath(const QChar pathDelimiter = QChar('/')) const;
@@ -68,12 +66,11 @@ public:
     //Group fact values (settings)
     Q_INVOKABLE void setValues(const QVariantMap &values);
 
-    Q_INVOKABLE virtual QVariant toVariant();
-    Q_INVOKABLE virtual void fromVariant(const QVariant &var);
-
+    //JSON
     Q_INVOKABLE QJsonDocument toJsonDocument();
-    Q_INVOKABLE bool fromJsonDocument(QByteArray data);
-    Q_INVOKABLE static QVariant parseJsonDocument(QByteArray data);
+    Q_INVOKABLE virtual QJsonValue toJson();
+    Q_INVOKABLE virtual void fromJson(const QJsonValue &jsv);
+    static QJsonValue parseJsonData(const QByteArray &data);
 
     virtual bool lessThan(Fact *other) const;           //sorting helper
     virtual bool showThis(QRegularExpression re) const; //filter helper
@@ -128,7 +125,7 @@ public:
     virtual void hashData(QCryptographicHash *h) const;
 
     //create action fact that opens this fact, or binded to this action
-    Q_INVOKABLE Fact *createAction(Fact *parent);
+    Q_INVOKABLE Fact *createAction(Fact *parent, FactBase::Flags flags = {});
 
     //forward to app instance with fact opts
     Q_INVOKABLE QObject *loadQml(const QString &qmlFile);
@@ -143,11 +140,11 @@ public:
     FactBase::Flags flags() const;
     void setFlags(FactBase::Flags v);
 
-    QAbstractListModel *model();
-    void setModel(QAbstractListModel *v);
+    QAbstractItemModel *model();
+    void setModel(QAbstractItemModel *v);
 
-    QAbstractListModel *actionsModel();
-    void setActionsModel(QAbstractListModel *v);
+    QAbstractItemModel *actionsModel();
+    void setActionsModel(QAbstractItemModel *v);
 
     bool enabled() const;
     void setEnabled(const bool v);
@@ -179,8 +176,8 @@ public:
     void setOpt(const QString &name, const QVariant &v);
 
 protected:
-    QAbstractListModel *m_model{nullptr};
-    QAbstractListModel *m_actionsModel{nullptr};
+    QAbstractItemModel *m_model{nullptr};
+    QAbstractItemModel *m_actionsModel{nullptr};
 
     bool m_enabled{true};
     bool m_visible{true};

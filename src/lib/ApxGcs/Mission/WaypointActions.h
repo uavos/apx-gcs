@@ -38,7 +38,7 @@ public:
     Fact *f_script;
     Fact *f_poi;
 
-    QVariant toVariant() override;
+    QJsonValue toJson() override;
 
 private:
     bool blockActionsValueChanged;

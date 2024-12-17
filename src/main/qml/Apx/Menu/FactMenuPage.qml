@@ -142,6 +142,7 @@ ColumnLayout {
                     ActionButton {
                         fact: modelData
                         onTriggered: menuPage.factButtonTriggered(modelData)
+                        active: fact?(fact.active||(fact.value?true:false)):false
                     }
                 }
             }

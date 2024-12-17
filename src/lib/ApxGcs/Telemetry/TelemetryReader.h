@@ -22,13 +22,14 @@
 #pragma once
 
 #include <ApxMisc/DelayedEvent.h>
-#include <Database/DatabaseRequest.h>
 #include <Fact/Fact.h>
 #include <QGeoPath>
 #include <QtCore>
 
-#include "TelemetryReaderDataReq.h"
-class LookupTelemetry;
+#include <Database/StorageReq.h>
+#include <Mandala/Mandala.h>
+
+class TelemetryRecords;
 
 class TelemetryReader : public Fact
 {
@@ -37,71 +38,79 @@ class TelemetryReader : public Fact
     Q_PROPERTY(quint64 totalTime READ totalTime NOTIFY totalTimeChanged)
 
 public:
-    explicit TelemetryReader(LookupTelemetry *lookup, Fact *parent);
-
-    LookupTelemetry *lookup;
+    explicit TelemetryReader(Fact *parent);
 
     Fact *f_notes;
     Fact *f_reload;
 
-    //data from database
-    typedef TelemetryReaderDataReq::fieldData_t fieldData_t;
-    typedef TelemetryReaderDataReq::evtCountMap_t evtCountMap_t;
-    typedef TelemetryReaderDataReq::fieldNames_t fieldNames_t;
-    typedef TelemetryReaderDataReq::times_t times_t;
-    typedef TelemetryReaderDataReq::event_t event_t;
-    typedef TelemetryReaderDataReq::events_t events_t;
+    // datatypes for data signals
+    using Field = TelemetryFileReader::Field;
+    using Values = TelemetryFileReader::Values;
 
-    fieldData_t fieldData;
-    evtCountMap_t evtCountMap;
-    fieldNames_t fieldNames;
-    times_t times;
-    events_t events;
-    QGeoPath geoPath;
+    const auto &recordInfo() const { return _recordInfo; }
+    const auto &fields() const { return _fields; }
+    const auto &recordFilePath() const { return _recordFilePath; }
+
+    static MandalaFact *fieldFact(const Field &field);
+    MandalaFact *fieldFact(size_t field_index) const { return fieldFact(_fields.at(field_index)); }
 
 private:
-    bool blockNotesChange;
-    DelayedEvent loadEvent;
+    quint64 _loadRecordID{};
+    QList<Field> _fields; // store read fields copy
+    QJsonObject _recordInfo;
+    QString _recordFilePath;
+    QHash<Fact *, QByteArray> _jsoData; // store jso data for event facts
 
-    void changeThread(Fact *fact, QThread *thread);
+    // geo path calculation
+    QGeoPath _geoPath;
+    quint64 _totalDistance;
+    int _index_lat;
+    int _index_lon;
+    int _index_hmsl;
+    QGeoCoordinate _geoPos;
+
+    QSet<quint64> _importedMeta; // keep track of imported nodes and missions
+
+    bool blockNotesChange;
+
+    void addEventFact(quint64 time, QString name, QJsonObject data, bool uplink);
 
 private slots:
     void notesChanged();
     void updateStatus();
 
-    void updateRecordInfo();
-    void load();
+    void setRecordInfo(quint64 id, QJsonObject info, QString notes);
 
-    //Database
-private slots:
-    void dbLoadData();
+    void do_rec_field(Field field);
+    void do_rec_values(quint64 timestamp_ms, Values data, bool uplink);
+    void do_rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
 
-    void dbCacheFound(quint64 telemetryID);
-    void dbCacheNotFound(quint64 telemetryID);
-
-    void dbResultsDataProc(quint64 telemetryID,
-                           quint64 cacheID,
-                           fieldData_t fieldData,
-                           fieldNames_t fieldNames,
-                           times_t times,
-                           events_t events,
-                           QGeoPath path,
-                           Fact *f_events);
-
-    void dbStatsFound(quint64 telemetryID, QVariantMap stats);
-    void dbStatsUpdated(quint64 telemetryID, QVariantMap stats);
-    void dbProgress(quint64 telemetryID, int v);
-
-    void reloadTriggered();
+    void do_rec_finished();
 
 signals:
-    void statsAvailable();
-    void dataAvailable(quint64 cacheID);
+    // forwarded signals from file reader
+    void rec_started();
+    void rec_finished();
 
-    void recordFactTriggered(Fact *f);
+    void rec_field(Field field);
+    void rec_values(quint64 timestamp_ms, Values data, bool uplink);
+    void rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void rec_raw(quint64 timestamp_ms, QString name, QByteArray data, bool uplink);
+
+    // called when file parsed and header info collected
+    void recordInfoUpdated(quint64 id, QJsonObject info);
+    void geoPathCollected(QGeoPath path, quint64 totalDistance);
+
+    // stats text changed
+    void recordInfoChanged();
+
+    // user triggers event fact (child with stats)
+    void statsFactTriggered(Fact *f, QJsonObject jso);
 
 public slots:
-    void loadCurrent();
+    void loadRecord(quint64 id);
 
     //PROPERTIES
 public:

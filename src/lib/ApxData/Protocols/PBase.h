@@ -28,7 +28,12 @@
 #include "PTrace.h"
 #include "PTreeBase.h"
 
-class PVehicle;
+#include <Mandala/MandalaContainers.h>
+
+#include <map>
+#include <variant>
+
+class PUnit;
 class PFirmware;
 class PTrace;
 
@@ -45,7 +50,7 @@ public:
 
     virtual void process_downlink(QByteArray packet) = 0;
 
-    typedef QHash<mandala::uid_t, QVariant> Values;
+    typedef QList<std::pair<mandala::uid_t, QVariant>> Values;
 
     // interface to node firmware loader
     PFirmware *firmware() const { return m_firmware; }
@@ -62,8 +67,8 @@ public slots:
 signals:
     void tx_data(QByteArray packet); //connect tx interface
 
-    // signaled when a new vehicle is identified to provide interface
-    void vehicle_available(PVehicle *vehicle);
+    // signaled when a new unit is identified to provide interface
+    void unit_available(PUnit *unit);
 
     // central signal to cancel all requests
     void cancelRequests();

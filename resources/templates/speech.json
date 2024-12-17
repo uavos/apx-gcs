@@ -53,7 +53,7 @@
             "_comment": "# ------ status flags -----------------"
         },
         {
-            "msg": "ahrs airdata yes",
+            "msg": "ins airdata yes",
             "say": "in flight"
         },
         {

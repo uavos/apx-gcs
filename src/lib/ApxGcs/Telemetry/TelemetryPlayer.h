@@ -21,21 +21,19 @@
  */
 #pragma once
 
-#include <Database/DatabaseRequest.h>
-#include <Fact/Fact.h>
-#include <QtCore>
+#include <Mandala/Mandala.h>
 
-class Vehicle;
-class Telemetry;
+#include "TelemetryReader.h"
+
+class Unit;
+class TelemetryReader;
 
 class TelemetryPlayer : public Fact
 {
     Q_OBJECT
 public:
-    explicit TelemetryPlayer(Telemetry *telemetry, Fact *parent);
+    explicit TelemetryPlayer(TelemetryReader *reader, Unit *unit, Fact *parent);
 
-    Fact *f_record;
-    Fact *f_filter;
     Fact *f_time;
     Fact *f_speed;
 
@@ -44,10 +42,14 @@ public:
     Fact *f_rewind;
 
 private:
-    Telemetry *telemetry;
-    Vehicle *vehicle;
+    TelemetryReader *reader;
+    Unit *unit;
 
-    quint64 cacheID;
+    QFile _stream_file;
+    TelemetryFileReader _stream;
+
+    std::vector<MandalaFact *> _facts_by_index;
+    TelemetryReader::Values _values;
 
     QTimer timer;
     quint64 playTime0;
@@ -56,18 +58,16 @@ private:
 
     quint64 setTime0;
     double _speed;
-    double _time;
+    quint64 _time;
+    bool _values_init;
 
     bool blockTimeChange;
 
-    QHash<quint64, Fact *> factByDBID;
-    DatabaseRequest::Records events;
-    int iEventRec;
+    void loadConfValue(QString uid, QString param, QString value);
+    void loadLatestMeta(Fact *group, quint64 time);
 
-    QHash<quint64, int> dataPosMap;
-    double sampleValue(quint64 fieldID, double t);
-
-    void loadConfValue(const QString &sn, QString s);
+    MandalaFact *updateMandalaFact(size_t index, const QVariant &value);
+    void message(QString msg, bool uplink, QString subsystem);
 
 private slots:
     void updateActions();
@@ -77,16 +77,17 @@ private slots:
     void updateTime();
 
     void reset();
-    void setCacheId(quint64 v);
 
     void next();
 
-    //database
-    void dbRequestEvents(quint64 t);
-    void eventsLoaded(DatabaseRequest::Records records);
-    void missionDataLoaded(QString value, QString uid, bool uplink);
-    void nodesDataLoaded(QString value, QString uid, bool uplink);
-    void nodesConfUpdatesLoaded(DatabaseRequest::Records records);
+    // file reader
+    void rec_started();
+    void rec_finished();
+
+    void rec_field(TelemetryReader::Field field);
+    void rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink);
+    void rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
+    void rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink);
 
     void play();
     void stop();

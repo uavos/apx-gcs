@@ -557,7 +557,7 @@ QwtText PlotPicker::trackerText(const QPoint &pos) const
         if (curve->pen().style() != Qt::SolidLine)
             c = c.darker();
         //QString units;
-        //Fact *fact=Vehicles::instance()->f_local->f_mandala->factByName(name);
+        //Fact *fact=Fleet::instance()->f_local->f_mandala->factByName(name);
         //if(fact)units=fact->units();
         s += "<tr><td align=right><font size=+2 color=" + c.name() + ">" + curve->title().text()
              + "</font>&nbsp;&nbsp;</td><td align=left><font size=+2>"

@@ -21,9 +21,9 @@
  */
 #include "MissionListModel.h"
 #include "MissionGroup.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 
-MissionListModel::MissionListModel(VehicleMission *parent)
+MissionListModel::MissionListModel(UnitMission *parent)
     : FactListModel(nullptr)
     , mission(parent)
 {

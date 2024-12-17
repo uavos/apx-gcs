@@ -24,7 +24,7 @@
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QtCore>
-class VehicleMission;
+class UnitMission;
 class MissionItem;
 
 class MissionGroup : public Fact
@@ -35,13 +35,13 @@ class MissionGroup : public Fact
     Q_PROPERTY(QAbstractListModel *mapModel READ mapModel CONSTANT)
 
 public:
-    explicit MissionGroup(VehicleMission *parent,
+    explicit MissionGroup(UnitMission *parent,
                           const QString &name,
                           const QString &title,
                           const QString &descr,
                           Fact *activeIndex);
 
-    VehicleMission *mission;
+    UnitMission *mission;
 
     virtual int missionItemType() const { return -1; }
 
@@ -53,7 +53,7 @@ public:
 
     Fact *f_activeIndex; //mandala fact to reflect current item index in group
 
-    void fromVariant(const QVariant &var) override;
+    void fromJson(const QJsonValue &jsv) override;
 
 private:
     QTimer updateTimeTimer;
@@ -102,7 +102,7 @@ template<class T, int miType>
 class MissionGroupT : public MissionGroup
 {
 public:
-    explicit MissionGroupT(VehicleMission *parent,
+    explicit MissionGroupT(UnitMission *parent,
                            const QString &name,
                            const QString &title,
                            const QString &descr,

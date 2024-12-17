@@ -33,14 +33,14 @@ public:
 
     Fact *app;
     Fact *file;
-    Fact *vehicles;
+    Fact *fleet;
     Fact *datalink;
     Fact *tools;
     Fact *windows;
     Fact *help;
 
-    Fact *vehicleSelect;
-    Fact *vehicleTools;
+    Fact *unitSelect;
+    Fact *unitTools;
 
 private:
     QMenuBar *_menuBar{nullptr};
@@ -48,8 +48,8 @@ private:
 private slots:
     void updateMenu(Fact *fact);
 
-    void updateVehicleTools();
-    void updateVehicleSelect();
+    void updateUnitTools();
+    void updateUnitSelect();
 
 public slots:
     void createMenuBar();

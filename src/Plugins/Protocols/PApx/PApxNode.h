@@ -22,9 +22,9 @@
 #pragma once
 
 #include "PApxNodeRequest.h"
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
-class PApxVehicle;
+class PApxUnit;
 class PApxNodes;
 class PApxNodeFile;
 
@@ -51,20 +51,20 @@ public:
                     xbus::node::conf::fid_t *fid,
                     xbus::node::conf::type_e *type) const;
 
-    static QVariant read_param(PStreamReader &stream, xbus::node::conf::type_e type);
-    static bool write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QVariant value);
+    static QJsonValue read_param(PStreamReader &stream, xbus::node::conf::type_e type);
+    static bool write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QJsonValue value);
 
-    static QByteArray pack_script(QVariant value);
+    static QByteArray pack_script(const QJsonValue &jsv);
     static QString hashToText(xbus::node::hash_t hash);
 
-    QVariant optionToText(QVariant value, size_t fidx);
-    QVariant textToOption(QVariant value, size_t fidx);
+    QJsonValue optionToText(const QJsonValue &jsv, size_t fidx);
+    QJsonValue textToOption(const QJsonValue &jsv, size_t fidx);
 
     // requests
     void requestIdent() override { new PApxNodeRequestIdent(this); }
     void requestDict() override;
     void requestConf() override;
-    void requestUpdate(QVariantMap values) override;
+    void requestUpdate(QJsonObject values) override;
 
     void requestReboot() override { new PApxNodeRequestReboot(this); }
     void requestMod(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data) override
@@ -85,7 +85,7 @@ private:
     QMap<QString, PApxNodeFile *> _files_map;
 
     // stored dict
-    QString _dict_hash;
+    QString _dict_cache_hash;
     QList<xbus::node::conf::type_e> _field_types;
     QList<size_t> _field_arrays;
     QStringList _field_names;
@@ -93,17 +93,17 @@ private:
 
     bool _skip_cache{};
 
-    QVariantMap _values;
+    QJsonObject _values;
     xbus::node::conf::script_t _script_value{};
     QString _script_field;
 
     void updateProgress();
 
 private slots:
-    void infoCacheLoaded(QVariantMap info);
+    void infoCacheLoaded(QJsonObject info);
 
     void requestDictDownload() { new PApxNodeRequestFileRead(this, "dict"); }
-    void dictCacheLoaded(QVariantMap dict);
+    void dictCacheLoaded(quint64 dictID, QJsonObject dict);
     void dictCacheMissing(QString hash);
 
     void parseDictData(PApxNode *node, const xbus::node::file::info_s &info, const QByteArray data);

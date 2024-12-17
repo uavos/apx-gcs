@@ -103,7 +103,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
             break;
 
         if (_size == 0 && _info.size == 0 && _data.size() == 0) {
-            qDebug() << "download ok:" << name() << "empty";
+            qDebug() << "downloaded:" << name() << "empty";
         } else {
             // check downloaded data
             if (_hash != _info.hash || _tcnt != _size || _data.size() != _tcnt) {
@@ -112,7 +112,7 @@ void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &st
                            << QString::number(_info.hash, 16);
                 break;
             }
-            qDebug() << "download ok:" << name() << _size << "bytes" << QString::number(_hash, 16);
+            qDebug() << "downloaded:" << name() << _size << "bytes" << QString::number(_hash, 16);
         }
 
         if (_open_op == xbus::node::file::ropen)

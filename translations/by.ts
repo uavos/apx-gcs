@@ -597,7 +597,7 @@
     </message>
 </context>
 <context>
-    <name>DBReqMakeTable</name>
+    <name>db::MakeTable</name>
     <message>
         <source>Table %1 updated</source>
         <translation type="unfinished"></translation>

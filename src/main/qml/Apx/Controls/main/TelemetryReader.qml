@@ -24,12 +24,12 @@ import QtQuick
 import Apx.Common
 
 FactButton {
-    fact: apx.vehicles.replay.telemetry.reader
+    fact: apx.fleet.replay.telemetry.reader
     value: ""
     titleSize: descrSize
     expandable: false
     noFactTrigger: true
     onTriggered: {
-        apx.vehicles.replay.telemetry.trigger()
+        apx.fleet.replay.telemetry.trigger()
     }
 }

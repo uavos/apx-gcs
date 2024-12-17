@@ -10,4 +10,4 @@ apx_lib(
     Xml
 )
 
-apx_install_res(${APX_RESOURCES_DIR} "templates/share")
+# apx_install_res(${APX_RESOURCES_DIR} "templates/share")

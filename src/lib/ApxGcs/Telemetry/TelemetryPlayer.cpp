@@ -20,33 +20,34 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryPlayer.h"
-#include "LookupTelemetry.h"
 #include "Telemetry.h"
 #include "TelemetryReader.h"
+#include "TelemetryRecords.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Database/Database.h>
-#include <Database/TelemetryReqRead.h>
 
-#include <Mission/MissionStorage.h>
-#include <Mission/VehicleMission.h>
+#include <Mandala/MandalaAliases.h>
+#include <Mission/UnitMission.h>
 #include <Nodes/Nodes.h>
 
-TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
+TelemetryPlayer::TelemetryPlayer(TelemetryReader *reader, Unit *unit, Fact *parent)
     : Fact(parent, "player", tr("Player"), tr("Telemetry data player"), Group)
-    , telemetry(telemetry)
-    , vehicle(telemetry->vehicle)
-    , cacheID(0)
+    , reader(reader)
+    , unit(unit)
     , setTime0(0)
     , blockTimeChange(false)
 {
     setIcon("play-circle-outline");
 
-    connect(telemetry->f_reader,
-            &TelemetryReader::dataAvailable,
-            this,
-            &TelemetryPlayer::setCacheId);
+    connect(reader, &TelemetryReader::rec_started, this, &TelemetryPlayer::rec_started);
+    connect(reader, &TelemetryReader::rec_finished, this, &TelemetryPlayer::rec_finished);
+
+    connect(&_stream, &TelemetryFileReader::field, this, &TelemetryPlayer::rec_field);
+    connect(&_stream, &TelemetryFileReader::values, this, &TelemetryPlayer::rec_values);
+    connect(&_stream, &TelemetryFileReader::evt, this, &TelemetryPlayer::rec_evt);
+    connect(&_stream, &TelemetryFileReader::jso, this, &TelemetryPlayer::rec_jso);
+
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActive);
 
     f_time = new Fact(this, "time", tr("Time"), tr("Current postition"), Int);
@@ -75,15 +76,15 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
     timer.setSingleShot(true);
     connect(&timer, &QTimer::timeout, this, &TelemetryPlayer::next);
 
-    connect(telemetry->f_lookup, &LookupTelemetry::recordIdChanged, this, &TelemetryPlayer::reset);
-    connect(telemetry->f_reader, &TelemetryReader::totalTimeChanged, this, [=]() {
-        f_time->setMax(telemetry->f_reader->totalTime());
+    // connect(telemetry->f_records, &TelemetryRecords::recordIdChanged, this, &TelemetryPlayer::reset);
+    connect(reader, &TelemetryReader::totalTimeChanged, this, [this]() {
+        f_time->setMax(this->reader->totalTime());
     });
 
     connect(this, &Fact::activeChanged, this, &TelemetryPlayer::updateActions);
 
-    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, [=](Vehicle *v) {
-        if (v != vehicle)
+    connect(Fleet::instance(), &Fleet::unitSelected, this, [this](Unit *unit) {
+        if (unit != this->unit)
             stop();
     });
     updateSpeed();
@@ -93,7 +94,7 @@ TelemetryPlayer::TelemetryPlayer(Telemetry *telemetry, Fact *parent)
 
 void TelemetryPlayer::updateActions()
 {
-    bool enb = cacheID;
+    bool enb = true;
     bool playing = active();
     f_play->setEnabled(enb && (!playing));
     f_stop->setEnabled(enb && (playing));
@@ -110,14 +111,6 @@ void TelemetryPlayer::reset()
     stop();
     f_time->setValue(0);
     f_speed->setValue(1.0);
-    cacheID = 0;
-    updateActions();
-}
-void TelemetryPlayer::setCacheId(quint64 v)
-{
-    if (cacheID)
-        reset();
-    cacheID = v;
     updateActions();
 }
 
@@ -151,40 +144,56 @@ void TelemetryPlayer::play()
 {
     if (active())
         return;
-    if (!telemetry->f_lookup->recordId())
+    if (!reader->totalTime())
         return;
-    vehicle->f_select->trigger();
+    unit->f_select->trigger();
     setActive(true);
 
-    //reste mandala
-    vehicle->f_mandala->restoreDefaults();
+    apxMsg() << tr("Replay started");
+
+    unit->f_mandala->restoreDefaults();
+    _facts_by_index.clear();
 
     playTime0 = _time;
     playTime.start();
 
-    //fill facts map
-    if (factByDBID.isEmpty()) {
-        for (auto f : vehicle->f_mandala->valueFacts()) {
-            factByDBID.insert(Database::instance()->telemetry->field_key(f->uid()), f);
-        }
-    }
-
-    //collect data samples for t0
-    double t = _time / 1000.0;
-    for (auto fieldID : telemetry->f_reader->fieldData.keys()) {
-        Fact *f = factByDBID.value(fieldID);
-        if (!f)
-            continue;
-        f->setValue(sampleValue(fieldID, t));
-    }
     tNext = _time;
-    dbRequestEvents(tNext);
+    timer.start(0);
+    _stream_file.open(QIODevice::ReadOnly);
+    _stream.init(&_stream_file, QFileInfo(_stream_file.fileName()).completeBaseName());
+    _values_init = false;
+
+    // load nearest meta
+    loadLatestMeta(reader->child("mission"), _time);
+    loadLatestMeta(reader->child("nodes"), _time);
 }
+
+void TelemetryPlayer::loadLatestMeta(Fact *group, quint64 time)
+{
+    if (!group)
+        return;
+
+    Fact *f = group->child(0);
+    for (auto i : group->facts()) {
+        auto t = i->property("time").toULongLong();
+        if (t > time)
+            break;
+        f = i;
+    }
+    if (!f)
+        return;
+
+    f->trigger();
+}
+
 void TelemetryPlayer::stop()
 {
     setActive(false);
     emit discardRequests();
-    events.clear();
+    timer.stop();
+    _values.clear();
+
+    _stream_file.close();
 }
 void TelemetryPlayer::rewind()
 {
@@ -199,290 +208,187 @@ void TelemetryPlayer::rewind()
     }
 }
 
-void TelemetryPlayer::dbRequestEvents(quint64 t)
+void TelemetryPlayer::rec_started()
 {
-    {
-        DBReqTelemetryReadEvent *req = new DBReqTelemetryReadEvent(cacheID, t, "mission");
-        connect(this, &TelemetryPlayer::discardRequests, req, &DatabaseRequest::discard);
-        connect(req,
-                &DBReqTelemetryReadEvent::eventLoaded,
-                this,
-                &TelemetryPlayer::missionDataLoaded,
-                Qt::QueuedConnection);
-        req->exec();
-    }
-    {
-        DBReqTelemetryReadEvent *req = new DBReqTelemetryReadEvent(cacheID, t, "nodes");
-        connect(this, &TelemetryPlayer::discardRequests, req, &DatabaseRequest::discard);
-        connect(req,
-                &DBReqTelemetryReadEvent::eventLoaded,
-                this,
-                &TelemetryPlayer::nodesDataLoaded,
-                Qt::QueuedConnection);
-        req->exec();
-    }
-    {
-        DBReqTelemetryReadConfData *req = new DBReqTelemetryReadConfData(cacheID, t);
-        connect(this, &TelemetryPlayer::discardRequests, req, &DatabaseRequest::discard);
-        connect(req,
-                &DBReqTelemetryReadConfData::confLoaded,
-                this,
-                &TelemetryPlayer::nodesConfUpdatesLoaded,
-                Qt::QueuedConnection);
-        req->exec();
-    }
-    {
-        //must be the last as will begin after its finish
-        DBReqTelemetryReadEvents *req = new DBReqTelemetryReadEvents(cacheID, t);
-        connect(this, &TelemetryPlayer::discardRequests, req, &DatabaseRequest::discard);
-        connect(req,
-                &DBReqTelemetryReadEvents::eventsLoaded,
-                this,
-                &TelemetryPlayer::eventsLoaded,
-                Qt::QueuedConnection);
-        req->exec();
-    }
+    _stream_file.close();
 }
-void TelemetryPlayer::eventsLoaded(DatabaseRequest::Records records)
+
+void TelemetryPlayer::rec_finished()
+{
+    const auto &filePath = reader->recordFilePath();
+    _stream_file.setFileName(filePath);
+}
+
+void TelemetryPlayer::rec_field(TelemetryReader::Field field)
+{
+    // if (!active())
+    //     return;
+
+    // _facts_by_index.push_back(TelemetryReader::fieldFact(field));
+}
+void TelemetryPlayer::rec_values(quint64 timestamp_ms, TelemetryReader::Values data, bool uplink)
 {
     if (!active())
         return;
-    events = records;
-    iEventRec = 0;
-    playTime.start();
-    next();
+
+    // just store values to update later
+    for (const auto &[index, value] : data) {
+        _values[index] = value;
+    }
+
+    // report uplink values
+    if (!uplink || !_values_init)
+        return;
+
+    for (const auto &[index, value] : data) {
+        auto f = updateMandalaFact(index, value);
+        if (f) {
+            auto s = f->mpath();
+            if (s.startsWith("cmd.rc."))
+                continue;
+            if (s.startsWith("cmd.gimbal."))
+                continue;
+            unit->message(QString(">%1=%2").arg(f->title(), f->text()), AppNotify::Important);
+            continue;
+        }
+        // field not found in current mandala
+        auto s = reader->fields().value(index).name;
+        if (s.isEmpty())
+            continue;
+        if (s.startsWith("rc_"))
+            continue;
+        unit->message(QString(">%1").arg(s), AppNotify::Important);
+    }
 }
-void TelemetryPlayer::missionDataLoaded(QString value, QString uid, bool uplink)
-{
-    Q_UNUSED(value)
-    Q_UNUSED(uplink)
-    vehicle->f_mission->storage->loadMission(uid);
-}
-void TelemetryPlayer::nodesDataLoaded(QString value, QString uid, bool uplink)
-{
-    Q_UNUSED(value)
-    Q_UNUSED(uplink)
-    vehicle->storage()->loadVehicleConfig(uid);
-}
-void TelemetryPlayer::nodesConfUpdatesLoaded(DatabaseRequest::Records records)
+void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
 {
     if (!active())
         return;
-    const QStringList &n = records.names;
-    int iUid = n.indexOf("uid");
-    int iValue = n.indexOf("value");
-    for (int i = 0; i < records.values.size(); ++i) {
-        const QVariantList &r = records.values.at(i);
-        loadConfValue(r.at(iUid).toByteArray(), r.at(iValue).toString());
+
+    QString subsystem;
+
+    if (name == telemetry::EVT_MSG.name) {
+        name = data.value("txt").toString();
+        subsystem = data.value("src").toString();
+
+    } else if (name == telemetry::EVT_CONF.name) {
+        auto uid = data.value("uid").toString();
+        auto param = data.value("param").toString();
+        auto value = data.value("value").toVariant().toString();
+        loadConfValue(uid, param, value);
+
+        if (value.size() > (param.size() + 32) || value.contains('\n'))
+            value = "<data>";
+        name = QString("%1=%2").arg(param).arg(value);
     }
+
+    if (!_values_init || name.isEmpty())
+        return;
+
+    message(name, uplink, subsystem);
 }
-void TelemetryPlayer::loadConfValue(const QString &sn, QString s)
+void TelemetryPlayer::rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
 {
-    NodeItem *node = vehicle->f_nodes->node(sn);
+    if (!active())
+        return;
+
+    if (name == "mission") {
+        if (_values_init)
+            unit->f_mission->fromJson(data);
+    } else if (name == "nodes") {
+        if (_values_init)
+            unit->f_nodes->fromJson(data);
+    }
+
+    if (!_values_init || name.isEmpty())
+        return;
+
+    message(name, uplink, {});
+}
+
+MandalaFact *TelemetryPlayer::updateMandalaFact(size_t index, const QVariant &value)
+{
+    // find facts by name cache
+    while (_facts_by_index.size() <= index) {
+        _facts_by_index.push_back(reader->fieldFact(index));
+    }
+
+    auto f = _facts_by_index[index];
+    if (f)
+        f->setValue(value);
+    return f;
+}
+
+void TelemetryPlayer::message(QString msg, bool uplink, QString subsystem)
+{
+    AppNotify::NotifyFlags flags = AppNotify::Important;
+    if (!uplink)
+        flags |= AppNotify::FromUnit;
+    auto s = QString("%1: %2").arg(uplink ? ">" : "<").arg(msg);
+    unit->message(s, flags, subsystem);
+}
+
+void TelemetryPlayer::loadConfValue(QString uid, QString param, QString value)
+{
+    auto node = unit->f_nodes->node(uid);
     if (!node) {
-        qWarning() << "missing node" << sn;
+        qWarning() << "missing node" << uid;
         return;
     }
-    int del = s.indexOf('=');
-    if (del < 0)
+    if (param.startsWith(node->title()))
+        param.remove(0, node->title().size() + 1);
+    if (param.isEmpty())
         return;
-    QString spath = s.left(del).trimmed();
-    QString sv = s.mid(del + 1);
-    //qDebug()<<spath<<sv;
-    if (spath.startsWith(node->title()))
-        spath.remove(0, node->title().size() + 1);
-    if (spath.isEmpty())
-        return;
-    node->loadConfigValue(spath, sv);
+    node->loadConfigValue(param, value);
 }
 
 void TelemetryPlayer::next()
 {
     if (!active())
         return;
+
     quint64 t = playTime.elapsed();
     if (_speed > 0 && _speed != 1.0)
         t = t * _speed;
     t += playTime0;
 
-    uint updCnt = 0;
-    if (tNext <= t) {
-        quint64 tNextMin = tNext;
-        //mandala data
-        for (const auto fieldID : telemetry->f_reader->fieldData.keys()) {
-            QVector<QPointF> *pts = telemetry->f_reader->fieldData.value(fieldID);
-            if (!pts)
-                continue;
-            for (int i = dataPosMap.value(fieldID); i < pts->size(); ++i) {
-                const QPointF &p = pts->at(i);
-                quint64 tP = p.x() * 1000.0;
-                if (tP > tNext) {
-                    if (tNextMin == tNext || tNextMin > tP)
-                        tNextMin = tP;
-                    break;
-                }
-                dataPosMap[fieldID] = i;
-                Fact *f = factByDBID.value(fieldID);
-                if (f) {
-                    if (f->setValue(p.y()))
-                        updCnt++;
-                }
-            }
-        }
-        //events
-        const QStringList &n = events.names;
-        for (; iEventRec < events.values.size(); ++iEventRec) {
-            const QVariantList &r = events.values.at(iEventRec);
-            quint64 tP = r.at(n.indexOf("time")).toULongLong();
-            if (tP > t) {
-                if (tNextMin == tNext || tNextMin > tP)
-                    tNextMin = tP;
-                break;
-            }
-            //show event
-            QString sv = r.at(n.indexOf("value")).toString();
-            uint type = r.at(n.indexOf("type")).toUInt();
-            if (type == 1) {
-                //uplink data
-                quint64 fieldID = r.at(n.indexOf("name")).toULongLong();
-                if (!fieldID)
-                    continue;
-                MandalaFact *f = static_cast<MandalaFact *>(factByDBID.value(fieldID));
-                if (!f)
-                    continue;
-                if (f->setValue(sv))
-                    updCnt++;
-                const QString &s = f->mpath();
-                if (s.startsWith("cmd.rc."))
-                    continue;
-                if (s.startsWith("cmd.gimbal."))
-                    continue;
-                vehicle->message(QString("%1: %2 = %3").arg(">").arg(f->title()).arg(f->text()),
-                                 AppNotify::Important);
-                continue;
-            }
-            if (type == 2 || type == 3) {
-                const QString &evt = r.at(n.indexOf("name")).toString();
-                const QString &uid = r.at(n.indexOf("uid")).toString();
-                if (evt == "msg") {
-                    QString s = sv;
-                    QString sub;
-                    if (s.startsWith('[')) {
-                        s.remove(0, 1);
-                        sub = s.left(s.indexOf(']'));
-                        s.remove(0, sub.size() + 1);
-                    }
-                    vehicle->message(QString("<: %1").arg(s),
-                                     AppNotify::FromVehicle | AppNotify::Important,
-                                     sub);
-                    App::sound(sv);
-                    continue;
-                }
-                if (evt == "mission") {
-                    vehicle->f_mission->storage->loadMission(uid);
-                } else if (evt == "nodes") {
-                    vehicle->storage()->loadVehicleConfig(uid);
-                } else if (evt == "conf") {
-                    loadConfValue(uid, sv);
-                    QString fn = sv.left(sv.indexOf('='));
-                    if (sv.size() > (fn.size() + 32) || sv.contains('\n')) {
-                        sv = fn + "=<data>";
-                    }
-                } else if (evt == "serial") {
-                    qDebug() << evt << sv;
-                    continue;
-                }
-                AppNotify::NotifyFlags flags = AppNotify::Important;
-                if (type != 3)
-                    flags |= AppNotify::FromVehicle;
-                QString s = QString("%1: %2").arg(type == 3 ? ">" : "<").arg(evt);
-                if (!sv.isEmpty())
-                    s.append(QString(" (%1)").arg(sv));
-                vehicle->message(s, flags);
-                continue;
-            }
-        }
-
-        //update states
-        if (_time != t) {
-            _time = t;
-            blockTimeChange = true;
-            f_time->setValue(_time);
-            blockTimeChange = false;
-        }
-
-        if (updCnt) {
-            vehicle->f_mandala->telemetryDecoded();
-        }
-
-        //continue next time event
-        if (tNextMin == tNext) {
-            apxMsg() << tr("Replay finished");
-            stop();
-        } else {
-            tNext = tNextMin;
+    bool updated = false;
+    bool ok = true;
+    while (tNext <= t) {
+        ok = _stream.parse_next();
+        if (!ok || _stream.atEnd() || _stream.interrupted())
+            break;
+        auto t1 = _stream.current_time();
+        if (t1 != tNext) {
+            tNext = t1;
+            updated = true;
         }
     }
-    if (!active())
+
+    if (_time != t) {
+        _time = t;
+        blockTimeChange = true;
+        f_time->setValue(_time);
+        blockTimeChange = false;
+    }
+
+    // update data values
+    if (updated || !ok) {
+        for (const auto &[index, value] : _values) {
+            updateMandalaFact(index, value);
+        }
+        _values.clear();
+        unit->f_mandala->telemetryDecoded();
+        _values_init = true;
+    }
+
+    if (!ok) {
+        apxMsg() << tr("Replay finished");
+        stop();
         return;
-    if (tNext > t) {
+    }
+
+    // schedule next call
+    if (active())
         timer.start(tNext - t);
-    } else
-        next();
-}
-
-double TelemetryPlayer::sampleValue(quint64 fieldID, double t)
-{
-    dataPosMap[fieldID] = 0;
-    QVector<QPointF> *pts = telemetry->f_reader->fieldData.value(fieldID);
-    if (!pts)
-        return 0;
-
-    if (pts->size() < 50) {
-        for (int i = 0; i < pts->size(); ++i) {
-            if (pts->at(i).x() >= t) {
-                dataPosMap[fieldID] = i;
-                return pts->at(i).y();
-            }
-        }
-        return 0;
-    }
-    int ts = pts->size() / 2;
-    int tx = ts;
-    bool bFound = false, bFwd = false;
-    while (1) {
-        const QPointF &p = pts->at(tx);
-        double vx = p.x();
-        ts >>= 1;
-        if (ts == 0) {
-            if (bFound) {
-                dataPosMap[fieldID] = tx;
-                return p.y();
-            }
-            ts = 1;
-        }
-        if (vx < t) {
-            tx += ts;
-            if (tx >= pts->size()) {
-                tx = pts->size() - 1;
-                if (ts == 1)
-                    bFound = true;
-            }
-            bFwd = true;
-        } else if (vx > t) {
-            if (ts == 1 && bFwd == true)
-                bFound = true;
-            if (tx > ts)
-                tx -= ts;
-            else {
-                tx = 0;
-                if (ts == 1)
-                    bFound = true;
-            }
-            bFwd = false;
-        } else {
-            dataPosMap[fieldID] = tx;
-            return p.y();
-        }
-    }
 }

@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MissionField.h"
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 
 MissionField::MissionField(
     Fact *parent, const QString &name, const QString &title, const QString &descr, Flags flags)

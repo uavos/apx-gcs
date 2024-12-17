@@ -28,7 +28,7 @@
 
 // TODO cache datasets in DB
 
-PApxTelemetry::PApxTelemetry(PApxVehicle *parent)
+PApxTelemetry::PApxTelemetry(PApxUnit *parent)
     : PTelemetry(parent)
     , _req(parent)
 {
@@ -125,14 +125,14 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
         if (unpack(pid, stream))
             return true;
 
-        _vehicle->setStreamType(PVehicle::DATA);
+        _unit->setStreamType(PUnit::DATA);
         break;
     }
     //error
     trace()->block("ERR:");
     trace()->data(stream.payload());
 
-    _vehicle->incErrcnt();
+    _unit->incErrcnt();
     return true;
 
     //qDebug() << decoder.fmt_cnt() << QString::number(stream.ptr()[3], 16) << cobs.size();
@@ -213,7 +213,7 @@ bool PApxTelemetry::unpack(const xbus::pid_s &pid, PStreamReader &stream)
             auto type = decoder.xpdr_slots().value_type[i];
             auto uid = xbus::telemetry::xpdr::dataset[i].uid;
             QVariant v = raw_value(&raw, type);
-            values.insert(uid, v);
+            values.push_back({uid, v});
         }
         // qDebug() << "XPDR";
         emit xpdrData(values, timestamp);
@@ -226,9 +226,9 @@ bool PApxTelemetry::unpack(const xbus::pid_s &pid, PStreamReader &stream)
         if (!flags.upd)
             continue;
         flags.upd = false;
-        auto const &f = decoder.dec_slots().fields[i];
-        auto const &value = decoder.dec_slots().value[i];
-        values.insert(f.pid.uid, raw_value(&value, flags.type));
+        const auto &f = decoder.dec_slots().fields[i];
+        const auto &value = decoder.dec_slots().value[i];
+        values.push_back({f.pid.uid, raw_value(&value, flags.type)});
     }
 
     emit telemetryData(values, timestamp);

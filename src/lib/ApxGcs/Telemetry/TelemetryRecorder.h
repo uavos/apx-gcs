@@ -21,9 +21,10 @@
  */
 #pragma once
 
-#include <Database/TelemetryReqWrite.h>
+#include <Database/StorageReq.h>
+
 #include <Fact/Fact.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 #include <QtCore>
 
 class Recorder;
@@ -35,21 +36,26 @@ class TelemetryRecorder : public Fact
     Q_PROPERTY(bool recording READ recording WRITE setRecording NOTIFY recordingChanged)
 
 public:
-    explicit TelemetryRecorder(Vehicle *vehicle, Fact *parent);
+    explicit TelemetryRecorder(Unit *unit, Fact *parent);
 
 private:
-    Vehicle *_vehicle;
+    Unit *_unit;
+
+    QFile _stream_file;
+    TelemetryFileWriter _stream;
 
     Fact *f_enable;
 
-    //database
-    bool dbCheckRecord();
+    // data file
+    QJsonObject prepareFileInfo();
+    std::map<mandala::uid_t, TelemetryFileWriter::Field> _fields_map; // uid to field in file
+    TelemetryFileWriter::Values prepareValues(const PBase::Values &values) const;
 
-    quint64 recTelemetryID{};
+    void checkFileRecord();
 
     //auto recorder
     bool checkAutoRecord(void);
-    Vehicle::FlightState flightState_s;
+    Unit::FlightState flightState_s;
     QTimer timeUpdateTimer, recStopTimer;
 
     //timestamp
@@ -61,36 +67,16 @@ private:
 
     quint64 getEventTimestamp();
 
-    DatabaseRequest *reqNewRecord{};
-    QList<DBReqTelemetryWriteBase *> reqPendingList;
-
-    PBase::Values _values;
-
-    QString confTitle;
-
-    //cache duplicates
-    QString configHash;
-    QString missionHash;
-
-    void cleanupValues(PBase::Values *values);
-
-    void invalidateCache();
-    void dbWriteRequest(DBReqTelemetryWriteBase *req);
+    QString _configHash;
 
 private slots:
     void updateStatus();
     void timeUpdate(void);
     void restartRecording();
 
-    //database
-    void dbRecordCreated(quint64 telemetryID);
-    void writeEvent(const QString &name, const QString &value, const QString &uid, bool uplink);
-
     //internal flow
-    void recordMissionDownlink();
-    void recordMissionUplink();
     void recordMission(bool uplink);
-    void recordConfig(QString hash, QString title);
+    void recordUnitConf(QString hash, QString title);
 
 public slots:
     //exported slots for recording
@@ -104,6 +90,7 @@ public slots:
                             QString subsystem,
                             AppNotify::NotifyFlags flags,
                             Fact *fact);
+    void recordMsg(QString msg, QString subsystem, QString src_uid);
 
     //PROPERTIES
 public:
@@ -116,6 +103,7 @@ public:
 private:
     quint64 m_time{0};
     void setTime(quint64 v, bool forceUpdate = false);
+
 signals:
     void timeChanged();
     void recordingChanged();

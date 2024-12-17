@@ -181,9 +181,9 @@ enum constants_e : uint8_t {
     com_status_warning = 4,
     com_status_failure = 5,
 
-    // sns.env.aux.srv
-    aux_srv_off = 0,
-    aux_srv_on = 1,
+    // sns.env.aux.svc
+    aux_svc_off = 0,
+    aux_svc_on = 1,
 
     // sns.env.aux.gear
     aux_gear_down = 0,
@@ -199,11 +199,6 @@ enum constants_e : uint8_t {
     // sns.env.ers.block
     ers_block_off = 0,
     ers_block_on = 1,
-
-    // sns.env.turret.status
-    turret_status_ready = 0,
-    turret_status_shooting = 1,
-    turret_status_reloading = 2,
 
 
     // ctr.nav.eng.starter
@@ -407,13 +402,6 @@ enum constants_e : uint8_t {
     cam_zout_off = 0,
     cam_zout_on = 1,
 
-    // ctr.env.turret.op
-    turret_op_off = 0,
-    turret_op_arm = 1,
-    turret_op_shoot = 2,
-    turret_op_shooting = 3,
-    turret_op_reload = 4,
-
 
     // est.nav.gyro.valid
     gyro_valid_no = 0,
@@ -465,24 +453,24 @@ enum constants_e : uint8_t {
     air_stall_warning = 2,
     air_stall_critical = 3,
 
-    // est.nav.ahrs.rest
-    ahrs_rest_no = 0,
-    ahrs_rest_yes = 1,
+    // est.nav.ins.rest
+    ins_rest_no = 0,
+    ins_rest_yes = 1,
 
-    // est.nav.ahrs.mag
-    ahrs_mag_unknown = 0,
-    ahrs_mag_3D = 1,
-    ahrs_mag_HDG = 2,
-    ahrs_mag_blocked = 3,
-    ahrs_mag_warning = 4,
-    ahrs_mag_failure = 5,
+    // est.nav.ins.mag
+    ins_mag_unknown = 0,
+    ins_mag_3D = 1,
+    ins_mag_HDG = 2,
+    ins_mag_blocked = 3,
+    ins_mag_warning = 4,
+    ins_mag_failure = 5,
 
-    // est.nav.ahrs.href
-    ahrs_href_none = 0,
-    ahrs_href_baro = 1,
-    ahrs_href_gps = 2,
-    ahrs_href_range = 3,
-    ahrs_href_vision = 4,
+    // est.nav.ins.href
+    ins_href_none = 0,
+    ins_href_baro = 1,
+    ins_href_gps = 2,
+    ins_href_range = 3,
+    ins_href_vision = 4,
 
     // est.nav.wind.status
     wind_status_unknown = 0,
@@ -651,31 +639,32 @@ enum constants_e : uint8_t {
     reg_airbrk_off = 0,
     reg_airbrk_on = 1,
 
-    // cmd.nav.ahrs
-    nav_ahrs_no = 0,
-    nav_ahrs_yes = 1,
+    // cmd.nav.ins
+    nav_ins_no = 0,
+    nav_ins_yes = 1,
 
-    // cmd.nav.ahrs.inair
-    ahrs_inair_no = 0,
-    ahrs_inair_yes = 1,
+    // cmd.nav.ins.inair
+    ins_inair_no = 0,
+    ins_inair_yes = 1,
+    ins_inair_hover = 2,
 
-    // cmd.nav.ahrs.nogps
-    ahrs_nogps_no = 0,
-    ahrs_nogps_yes = 1,
+    // cmd.nav.ins.nogps
+    ins_nogps_no = 0,
+    ins_nogps_yes = 1,
 
-    // cmd.nav.ahrs.nomag
-    ahrs_nomag_no = 0,
-    ahrs_nomag_yes = 1,
+    // cmd.nav.ins.nomag
+    ins_nomag_no = 0,
+    ins_nomag_yes = 1,
 
-    // cmd.nav.ahrs.hsel
-    ahrs_hsel_baro = 0,
-    ahrs_hsel_gps = 1,
-    ahrs_hsel_range = 2,
-    ahrs_hsel_vision = 3,
+    // cmd.nav.ins.hsel
+    ins_hsel_baro = 0,
+    ins_hsel_gps = 1,
+    ins_hsel_range = 2,
+    ins_hsel_vision = 3,
 
-    // cmd.nav.ahrs.hagl
-    ahrs_hagl_no = 0,
-    ahrs_hagl_yes = 1,
+    // cmd.nav.ins.hagl
+    ins_hagl_no = 0,
+    ins_hagl_yes = 1,
 
     // cmd.nav.eng.mode
     eng_mode_auto = 0,
@@ -738,13 +727,6 @@ enum constants_e : uint8_t {
     ats_mode_track = 1,
     ats_mode_manual = 2,
     ats_mode_search = 3,
-
-    // cmd.nav.turret.mode
-    turret_mode_off = 0,
-    turret_mode_fixed = 1,
-    turret_mode_stab = 2,
-    turret_mode_position = 3,
-    turret_mode_speed = 4,
 
 
 
@@ -954,14 +936,14 @@ namespace sns
             enum { voltage = 0x175 };
             enum { current = 0x176 };
             enum { hdg = 0x177 };
-            enum { dme = 0x178 };
+            enum { dist = 0x178 };
             enum { roll = 0x179 };
             enum { pitch = 0x17a };
             enum { yaw = 0x17b };
         };
         namespace aux
         {
-            enum { srv = 0x181 };
+            enum { svc = 0x181 };
             enum { rt = 0x182 };
             enum { gear = 0x183 };
             enum { fgear = 0x184 };
@@ -987,14 +969,6 @@ namespace sns
             enum { dyaw = 0x1b6 };
             enum { fov = 0x1b7 };
             enum { range = 0x1b8 };
-        };
-        namespace turret
-        {
-            enum { roll = 0x1c1 };
-            enum { pitch = 0x1c2 };
-            enum { yaw = 0x1c3 };
-            enum { status = 0x1c4 };
-            enum { capacity = 0x1c5 };
         };
     };
 };
@@ -1126,13 +1100,6 @@ namespace ctr
             enum { pitch = 0x382 };
             enum { yaw = 0x383 };
         };
-        namespace turret
-        {
-            enum { roll = 0x391 };
-            enum { pitch = 0x392 };
-            enum { yaw = 0x393 };
-            enum { op = 0x394 };
-        };
     };
 };
 namespace est
@@ -1211,7 +1178,7 @@ namespace est
             enum { stab = 0x469 };
             enum { stall = 0x46a };
         };
-        namespace ahrs
+        namespace ins
         {
             enum { rest = 0x471 };
             enum { mag = 0x472 };
@@ -1278,138 +1245,129 @@ namespace est
             enum { lon = 0x525 };
             enum { hmsl = 0x526 };
         };
-        namespace turret
-        {
-            enum { roll = 0x531 };
-            enum { pitch = 0x532 };
-            enum { yaw = 0x533 };
-            enum { lat = 0x534 };
-            enum { lon = 0x535 };
-            enum { hmsl = 0x536 };
-        };
         namespace haps
         {
-            enum { shape = 0x541 };
-            enum { cshape = 0x542 };
-            enum { roll = 0x543 };
-            enum { roll1 = 0x544 };
-            enum { roll2 = 0x545 };
-            enum { pitch1 = 0x546 };
-            enum { pitch2 = 0x547 };
-            enum { cpitch1 = 0x548 };
-            enum { cpitch2 = 0x549 };
-            enum { spd1 = 0x54a };
-            enum { spd2 = 0x54b };
-            enum { ail1 = 0x54c };
-            enum { ail2 = 0x54d };
+            enum { shape = 0x531 };
+            enum { cshape = 0x532 };
+            enum { roll = 0x533 };
+            enum { roll1 = 0x534 };
+            enum { roll2 = 0x535 };
+            enum { pitch1 = 0x536 };
+            enum { pitch2 = 0x537 };
+            enum { cpitch1 = 0x538 };
+            enum { cpitch2 = 0x539 };
+            enum { spd1 = 0x53a };
+            enum { spd2 = 0x53b };
+            enum { ail1 = 0x53c };
+            enum { ail2 = 0x53d };
         };
         namespace usr
         {
-            enum { u1 = 0x551 };
-            enum { u2 = 0x552 };
-            enum { u3 = 0x553 };
-            enum { u4 = 0x554 };
-            enum { u5 = 0x555 };
-            enum { u6 = 0x556 };
-            enum { u7 = 0x557 };
-            enum { u8 = 0x558 };
-            enum { u9 = 0x559 };
-            enum { u10 = 0x55a };
-            enum { u11 = 0x55b };
-            enum { u12 = 0x55c };
-            enum { u13 = 0x55d };
-            enum { u14 = 0x55e };
-            enum { u15 = 0x55f };
+            enum { u1 = 0x541 };
+            enum { u2 = 0x542 };
+            enum { u3 = 0x543 };
+            enum { u4 = 0x544 };
+            enum { u5 = 0x545 };
+            enum { u6 = 0x546 };
+            enum { u7 = 0x547 };
+            enum { u8 = 0x548 };
+            enum { u9 = 0x549 };
+            enum { u10 = 0x54a };
+            enum { u11 = 0x54b };
+            enum { u12 = 0x54c };
+            enum { u13 = 0x54d };
+            enum { u14 = 0x54e };
+            enum { u15 = 0x54f };
         };
         namespace usrb
         {
-            enum { b1 = 0x561 };
-            enum { b2 = 0x562 };
-            enum { b3 = 0x563 };
-            enum { b4 = 0x564 };
-            enum { b5 = 0x565 };
-            enum { b6 = 0x566 };
-            enum { b7 = 0x567 };
-            enum { b8 = 0x568 };
-            enum { b9 = 0x569 };
-            enum { b10 = 0x56a };
-            enum { b11 = 0x56b };
-            enum { b12 = 0x56c };
-            enum { b13 = 0x56d };
-            enum { b14 = 0x56e };
-            enum { b15 = 0x56f };
+            enum { b1 = 0x551 };
+            enum { b2 = 0x552 };
+            enum { b3 = 0x553 };
+            enum { b4 = 0x554 };
+            enum { b5 = 0x555 };
+            enum { b6 = 0x556 };
+            enum { b7 = 0x557 };
+            enum { b8 = 0x558 };
+            enum { b9 = 0x559 };
+            enum { b10 = 0x55a };
+            enum { b11 = 0x55b };
+            enum { b12 = 0x55c };
+            enum { b13 = 0x55d };
+            enum { b14 = 0x55e };
+            enum { b15 = 0x55f };
         };
         namespace usrc
         {
-            enum { c1 = 0x571 };
-            enum { c2 = 0x572 };
-            enum { c3 = 0x573 };
-            enum { c4 = 0x574 };
-            enum { c5 = 0x575 };
-            enum { c6 = 0x576 };
-            enum { c7 = 0x577 };
-            enum { c8 = 0x578 };
-            enum { c9 = 0x579 };
-            enum { c10 = 0x57a };
-            enum { c11 = 0x57b };
-            enum { c12 = 0x57c };
-            enum { c13 = 0x57d };
-            enum { c14 = 0x57e };
-            enum { c15 = 0x57f };
+            enum { c1 = 0x561 };
+            enum { c2 = 0x562 };
+            enum { c3 = 0x563 };
+            enum { c4 = 0x564 };
+            enum { c5 = 0x565 };
+            enum { c6 = 0x566 };
+            enum { c7 = 0x567 };
+            enum { c8 = 0x568 };
+            enum { c9 = 0x569 };
+            enum { c10 = 0x56a };
+            enum { c11 = 0x56b };
+            enum { c12 = 0x56c };
+            enum { c13 = 0x56d };
+            enum { c14 = 0x56e };
+            enum { c15 = 0x56f };
         };
         namespace usrw
         {
-            enum { w1 = 0x581 };
-            enum { w2 = 0x582 };
-            enum { w3 = 0x583 };
-            enum { w4 = 0x584 };
-            enum { w5 = 0x585 };
-            enum { w6 = 0x586 };
-            enum { w7 = 0x587 };
-            enum { w8 = 0x588 };
-            enum { w9 = 0x589 };
-            enum { w10 = 0x58a };
-            enum { w11 = 0x58b };
-            enum { w12 = 0x58c };
-            enum { w13 = 0x58d };
-            enum { w14 = 0x58e };
-            enum { w15 = 0x58f };
+            enum { w1 = 0x571 };
+            enum { w2 = 0x572 };
+            enum { w3 = 0x573 };
+            enum { w4 = 0x574 };
+            enum { w5 = 0x575 };
+            enum { w6 = 0x576 };
+            enum { w7 = 0x577 };
+            enum { w8 = 0x578 };
+            enum { w9 = 0x579 };
+            enum { w10 = 0x57a };
+            enum { w11 = 0x57b };
+            enum { w12 = 0x57c };
+            enum { w13 = 0x57d };
+            enum { w14 = 0x57e };
+            enum { w15 = 0x57f };
         };
         namespace usrf
         {
-            enum { f1 = 0x591 };
-            enum { f2 = 0x592 };
-            enum { f3 = 0x593 };
-            enum { f4 = 0x594 };
-            enum { f5 = 0x595 };
-            enum { f6 = 0x596 };
-            enum { f7 = 0x597 };
-            enum { f8 = 0x598 };
-            enum { f9 = 0x599 };
-            enum { f10 = 0x59a };
-            enum { f11 = 0x59b };
-            enum { f12 = 0x59c };
-            enum { f13 = 0x59d };
-            enum { f14 = 0x59e };
-            enum { f15 = 0x59f };
+            enum { f1 = 0x581 };
+            enum { f2 = 0x582 };
+            enum { f3 = 0x583 };
+            enum { f4 = 0x584 };
+            enum { f5 = 0x585 };
+            enum { f6 = 0x586 };
+            enum { f7 = 0x587 };
+            enum { f8 = 0x588 };
+            enum { f9 = 0x589 };
+            enum { f10 = 0x58a };
+            enum { f11 = 0x58b };
+            enum { f12 = 0x58c };
+            enum { f13 = 0x58d };
+            enum { f14 = 0x58e };
+            enum { f15 = 0x58f };
         };
         namespace usrx
         {
-            enum { x1 = 0x5a1 };
-            enum { x2 = 0x5a2 };
-            enum { x3 = 0x5a3 };
-            enum { x4 = 0x5a4 };
-            enum { x5 = 0x5a5 };
-            enum { x6 = 0x5a6 };
-            enum { x7 = 0x5a7 };
-            enum { x8 = 0x5a8 };
-            enum { x9 = 0x5a9 };
-            enum { x10 = 0x5aa };
-            enum { x11 = 0x5ab };
-            enum { x12 = 0x5ac };
-            enum { x13 = 0x5ad };
-            enum { x14 = 0x5ae };
-            enum { x15 = 0x5af };
+            enum { x1 = 0x591 };
+            enum { x2 = 0x592 };
+            enum { x3 = 0x593 };
+            enum { x4 = 0x594 };
+            enum { x5 = 0x595 };
+            enum { x6 = 0x596 };
+            enum { x7 = 0x597 };
+            enum { x8 = 0x598 };
+            enum { x9 = 0x599 };
+            enum { x10 = 0x59a };
+            enum { x11 = 0x59b };
+            enum { x12 = 0x59c };
+            enum { x13 = 0x59d };
+            enum { x14 = 0x59e };
+            enum { x15 = 0x59f };
         };
     };
 };
@@ -1443,7 +1401,7 @@ namespace cmd
             enum { flaps = 0x61a };
             enum { airbrk = 0x61b };
         };
-        namespace ahrs
+        namespace ins
         {
             enum { inair = 0x621 };
             enum { nogps = 0x622 };
@@ -1526,23 +1484,10 @@ namespace cmd
             enum { q = 0x696 };
             enum { r = 0x697 };
         };
-        namespace turret
-        {
-            enum { mode = 0x6a1 };
-            enum { roll = 0x6a2 };
-            enum { pitch = 0x6a3 };
-            enum { yaw = 0x6a4 };
-            enum { p = 0x6a5 };
-            enum { q = 0x6a6 };
-            enum { r = 0x6a7 };
-            enum { broll = 0x6a8 };
-            enum { bipitch = 0x6a9 };
-            enum { byaw = 0x6aa };
-        };
     };
     namespace env
     {
-        namespace vehicle
+        namespace unit
         {
             enum { ident = 0x701 };
             enum { downlink = 0x702 };

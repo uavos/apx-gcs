@@ -20,19 +20,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryShare.h"
-#include "LookupTelemetry.h"
 #include "Telemetry.h"
-
-#include "TelemetryExport.h"
-#include "TelemetryImport.h"
+#include "TelemetryReader.h"
 
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 
+using namespace db::storage;
+
 TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
     : Share(parent,
-            "telemetry",
+            telemetry::APXTLM_FTYPE,
             tr("Telemetry data"),
             QStandardPaths::writableLocation(QStandardPaths::DownloadLocation),
             flags)
@@ -46,110 +45,41 @@ TelemetryShare::TelemetryShare(Telemetry *telemetry, Fact *parent, Flags flags)
 
     _exportFormats << "csv";
 
-    QString sect = tr("Queue");
-    qimp = new QueueJob(this, "qimp", tr("Import queue"), "", new TelemetryImport());
-    qimp->setIcon("import");
-    qimp->setSection(sect);
-    connect(qimp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
-    connect(qimp, &Fact::valueChanged, this, &TelemetryShare::updateStatus);
-
-    connect(qimp, &QueueJob::finished, this, [this](Fact *, QVariantMap result) {
-        if (result.value("key").toULongLong()) {
-            emit imported("", result.value("title").toString());
-        }
+    f_export->setEnabled(false);
+    connect(_telemetry->f_reader, &TelemetryReader::rec_finished, this, [this]() {
+        f_export->setEnabled(QFile::exists(_telemetry->f_reader->recordFilePath()));
     });
-    connect(qimp, &QueueJob::jobDone, this, [this](QVariantMap latestResult) {
-        emit importJobDone(latestResult.value("key").toULongLong());
-    });
-
-    qexp = new QueueJob(this, "qexp", tr("Export queue"), "", new TelemetryExport());
-    qexp->setIcon("export");
-    qexp->setSection(sect);
-    connect(qexp, &Fact::progressChanged, this, &TelemetryShare::updateProgress);
-
-    f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop conversion"), Action | Stop);
-    connect(f_stop, &Fact::triggered, qimp, &QueueJob::stop);
-    connect(f_stop, &Fact::triggered, qexp, &QueueJob::stop);
-
-    connect(telemetry->f_lookup,
-            &LookupTelemetry::recordIdChanged,
-            this,
-            &TelemetryShare::updateActions);
-
-    descr_s = descr();
-    updateProgress();
-    updateStatus();
-    updateActions();
 }
 
 QString TelemetryShare::getDefaultTitle()
 {
-    QVariantMap info = _telemetry->f_lookup->recordInfo();
-    QString fname = QDateTime::fromMSecsSinceEpoch(_telemetry->f_lookup->recordTimestamp())
-                        .toString("yyyy_MM_dd_hh_mm_ss_zzz");
-    QString callsign = info.value("callsign").toString();
-    if (!callsign.isEmpty())
-        fname.append("-").append(callsign);
-    return fname;
+    return QFileInfo(_telemetry->f_reader->recordFilePath()).completeBaseName();
 }
+
 bool TelemetryShare::exportRequest(QString format, QString fileName)
 {
-    quint64 key = _telemetry->f_lookup->recordId();
-    if (!key) {
-        apxMsgW() << tr("Missing data in database");
-        return false;
+    auto req = new TelemetryExport(format, _telemetry->f_reader->recordFilePath(), fileName);
+    connect(req, &TelemetryExport::progress, this, &Fact::setProgress);
+    connect(req, &TelemetryExport::success, this, [this, fileName]() { _exported(fileName); });
+    req->exec();
+    return true;
+}
+bool TelemetryShare::importRequest(QStringList fileNames)
+{
+    for (int i = 0; i < fileNames.size(); i++) {
+        auto fileName = fileNames.at(i);
+        auto req = new TelemetryImport(fileName);
+        connect(req, &TelemetryImport::progress, this, &Fact::setProgress);
+        connect(req, &TelemetryImport::success, this, [this, fileName]() { _imported(fileName); });
+        if (i == fileNames.size() - 1) {
+            connect(req,
+                    &TelemetryImport::recordAvailable,
+                    _telemetry->f_reader,
+                    &TelemetryReader::loadRecord);
+        }
+        req->exec();
     }
-    auto fi = QFileInfo(fileName);
-
-    QSettings().setValue(QString("ShareExportPath_%1").arg(_exportFormats.first()),
-                         fi.dir().absolutePath());
-
-    //add to queue
-    auto title = fi.completeBaseName();
-    Fact *f = new Fact(nullptr, title, title, fileName);
-    f->setValue(key);
-    f->setParentFact(qexp);
-
     return true;
-}
-bool TelemetryShare::importRequest(QString format, QString fileName)
-{
-    //add to queue
-    auto title = QFileInfo(fileName).completeBaseName();
-    new Fact(qimp, title, title, fileName);
-    return true;
-}
-
-void TelemetryShare::updateActions()
-{
-    f_export->setEnabled(_telemetry->f_lookup->recordId());
-}
-void TelemetryShare::updateProgress()
-{
-    int v = -1;
-    if (qexp->size() > 0)
-        v = qexp->progress();
-    else
-        v = qimp->progress();
-    setProgress(v);
-    f_stop->setEnabled(v >= 0);
-    updateDescr();
-}
-void TelemetryShare::updateStatus()
-{
-    setValue(qimp->value());
-}
-void TelemetryShare::updateDescr()
-{
-    QString s;
-    if (qimp->progress() >= 0)
-        s = tr("Importing");
-    else if (qexp->progress() >= 0)
-        s = tr("Exporting");
-    if (s.isEmpty())
-        setDescr(descr_s);
-    else
-        setDescr(s.append(QString("... %1").arg(value().toString())));
 }
 
 void TelemetryShare::syncTemplates()
@@ -158,21 +88,21 @@ void TelemetryShare::syncTemplates()
         return;
 
     // TODO parse xml file and cache hash in config
-    for (auto fi : _templatesDir.entryInfoList()) {
+    /*for (auto fi : _templatesDir.entryInfoList()) {
         auto hash = fi.completeBaseName();
-        auto req = new DBReqTelemetryRecover(hash);
+        auto req = new db::storage::TelemetryRecover(hash);
         connect(req,
-                &DBReqTelemetryRecover::unavailable,
+                &db::storage::TelemetryRecover::unavailable,
                 this,
                 &TelemetryShare::syncTemplate,
                 Qt::QueuedConnection);
         req->exec();
-    }
+    }*/
 }
 
 void TelemetryShare::syncTemplate(QString hash)
 {
     auto fname = _templatesDir.absoluteFilePath(
         QString("%1.%2").arg(hash).arg(_importFormats.first()));
-    importRequest(_importFormats.first(), fname);
+    importRequest({fname});
 }

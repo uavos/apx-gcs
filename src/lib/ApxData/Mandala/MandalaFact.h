@@ -26,14 +26,19 @@
 #include <Fact/Fact.h>
 
 class Mandala;
+class MandalaConverter;
 
 class MandalaFact : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(uint uid READ uid CONSTANT)
+    Q_PROPERTY(bool everReceived READ everReceived NOTIFY everReceivedChanged)
 
 public:
     explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta);
+
+    void addConverter(MandalaConverter *c) { _converters.append(c); }
+    void removeConverter(MandalaConverter *c) { _converters.removeAll(c); }
 
     // send value to uplink when set
     bool setValue(const QVariant &v) override;
@@ -56,8 +61,14 @@ public:
     void increment_rx_cnt();
     auto rx_cnt() const { return _rx_cnt; }
     auto everReceived() const { return _everReceived; }
+    void resetCounters();
+
+    void increment_tx_cnt();
+    auto tx_cnt() const { return _tx_cnt; }
+    auto everSent() const { return _everSent; }
 
     inline const mandala::meta_s &meta() const { return m_meta; }
+    inline const mandala::fmt_s &fmt() const { return m_fmt; }
 
 public:
     bool isSystem() const;
@@ -73,9 +84,7 @@ private:
     const mandala::meta_s &m_meta;
     const mandala::fmt_s &m_fmt;
 
-    bool _convert_value{};
-    qreal _conversion_factor{1.};
-    bool _convert_gps{};
+    QList<MandalaConverter *> _converters;
 
     QElapsedTimer sendTime;
     QTimer sendTimer;
@@ -85,8 +94,15 @@ private:
 
     size_t _rx_cnt{};
     bool _everReceived{};
+
+    size_t _tx_cnt{};
+    bool _everSent{};
+
     void updateCounters();
 
-    QVariant convertFromStream(const QVariant &v) const;
-    QVariant convertForStream(const QVariant &v) const;
+    QVariant convertFromStream(QVariant v) const;
+    QVariant convertForStream(QVariant v) const;
+
+signals:
+    void everReceivedChanged();
 };

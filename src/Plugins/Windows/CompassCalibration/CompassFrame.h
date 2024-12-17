@@ -22,7 +22,7 @@
 #pragma once
 
 #include "DrawingArea.h"
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 #include <QWidget>
 
 class CompassFrame : public QWidget
@@ -59,7 +59,7 @@ private:
     QTimer reqTimer;
 
 private slots:
-    void vehicleSelected(Vehicle *vehicle);
+    void unitSelected(Unit *unit);
 
     void calibrationData(mandala::uid_t uid, QByteArray data);
 
