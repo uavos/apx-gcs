@@ -67,9 +67,13 @@ WaypointActions::WaypointActions(Waypoint *parent)
 
     // Add feets options
     m_isFeets = parent->isFeets();
-    auto ft = std::round(f_dshot->value().toInt() * parent->M2FT_COEF);
+    auto ft = std::round(f_speed->value().toInt() * parent->M2FT_COEF);
+    f_speed->setOpt("editor", "EditorIntWithFeet.qml");
+    f_speed->setOpt("ft", ft);
+    ft = std::round(f_dshot->value().toInt() * parent->M2FT_COEF);
     f_dshot->setOpt("editor", "EditorIntWithFeet.qml");
     f_dshot->setOpt("ft", ft);
+    connect(f_speed, &Fact::optsChanged, this, &WaypointActions::updateActionsValue);
     connect(f_dshot, &Fact::optsChanged, this, &WaypointActions::updateActionsValue);
     connect(parent, &Waypoint::isFeetsChanged, this, [this]() { setIsFeets(!m_isFeets); });
     connect(this, &WaypointActions::isFeetsChanged, this, &WaypointActions::updateActionsValue);

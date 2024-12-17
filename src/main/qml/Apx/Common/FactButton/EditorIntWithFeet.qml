@@ -83,15 +83,16 @@ SpinBox {
     onOptsChanged: zeroCheck()
     function zeroCheck()
     {
-        var names = ["hmsl", "dshot"]
+        var names = ["hmsl", "dshot", "speed"]
         if(!names.includes(fact.name))
             return
         if(fact.parentFact.name == "p#" && opts.ft == 0)  // Point of interest
             opts.ft = "ground"
         if(fact.parentFact.name == "r#" && opts.ft == 0)  // Runway
             opts.ft = "default"
-        if(fact.name == "dshot" && opts.ft == 0)
-            opts.ft = "off"  
+        if(fact.parentFact.name == "actions" && opts.ft == 0)
+            if(fact.name == "dshot" || fact.name == "speed")
+                opts.ft = "off"
     }
     // Stub END 
 
@@ -100,6 +101,8 @@ SpinBox {
         
         TextInput {
             id: textInputFt
+            property var units: fact.units=="m"?" ft":" ft/s"
+
             visible: isFeets
             validator: IntValidator{bottom: editor.from; top: editor.to}
 
@@ -107,7 +110,7 @@ SpinBox {
             font: editor.font
 
             color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
-            text: opts.ft + " ft"
+            text: opts.ft + units
 
             activeFocusOnTab: true
 
@@ -119,14 +122,14 @@ SpinBox {
                 fact.opts = opts
                 fact.setValue(ft2m(text))
                 factButton.forceActiveFocus()
-                hmslCheck() // Temporary meters/feets stub for Runway and Point of interest
+                zeroCheck() // Temporary meters/feets stub for Runway and Point of interest
             }
             onActiveFocusChanged: {
                 if(activeFocus){
                     text=opts.ft    
                     selectAll();
                 }else{
-                    text=Qt.binding(function(){return opts.ft + " ft"})
+                    text=Qt.binding(function(){return opts.ft + units})
                 }
             }
             horizontalAlignment: Qt.AlignHCenter
