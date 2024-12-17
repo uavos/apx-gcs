@@ -195,8 +195,8 @@ void NodeStorage::dbRequestRecordsList()
     auto filter = _dbmodel->getFilterExpression(fields);
 
     QString s = "SELECT * FROM NodeConf"
-                " LEFT JOIN Node ON NodeConf.nodeID=Node.key "
                 " LEFT JOIN NodeDict ON NodeConf.dictID=NodeDict.key "
+                " LEFT JOIN Node ON NodeDict.nodeID=Node.key "
                 " WHERE Node.uid=?";
     if (!filter.isEmpty())
         s += " AND (" + filter + ")";
@@ -215,7 +215,8 @@ void NodeStorage::dbRequestRecordsList()
 void NodeStorage::dbRequestRecordInfo(quint64 id)
 {
     const QString s = "SELECT * FROM NodeConf"
-                      " LEFT JOIN Node ON NodeConf.nodeID=Node.key "
+                      " LEFT JOIN NodeDict ON NodeConf.dictID=NodeDict.key "
+                      " LEFT JOIN Node ON NodeDict.nodeID=Node.key "
                       " WHERE NodeConf.key=?";
 
     auto req = new db::nodes::Request(s, {id});

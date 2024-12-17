@@ -224,7 +224,7 @@ bool UnitLoadConf::run(QSqlQuery &query)
     query.prepare("SELECT * FROM UnitConfData"
                   " INNER JOIN NodeConf ON UnitConfData.nodeConfID=NodeConf.key"
                   " INNER JOIN NodeDict ON NodeConf.dictID=NodeDict.key"
-                  " INNER JOIN Node ON NodeConf.nodeID=Node.key"
+                  " INNER JOIN Node ON NodeDict.nodeID=Node.key"
                   " WHERE UnitConfData.unitConfID=?");
     query.addBindValue(unitConfID);
     if (!query.exec())
