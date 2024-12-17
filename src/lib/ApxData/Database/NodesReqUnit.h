@@ -50,7 +50,7 @@ class UnitSaveConf : public Request
 {
     Q_OBJECT
 public:
-    explicit UnitSaveConf(QString uid,
+    explicit UnitSaveConf(QString uid, // unit uid
                           QList<quint64> nodeConfIDs,
                           QString title,
                           QString notes = {},

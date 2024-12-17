@@ -43,7 +43,7 @@ NodeStorage::NodeStorage(NodeItem *node, Fact *parent)
 
     connect(_dbmodel, &DatabaseModel::requestRecordsList, this, &NodeStorage::dbRequestRecordsList);
     connect(_dbmodel, &DatabaseModel::requestRecordInfo, this, &NodeStorage::dbRequestRecordInfo);
-    connect(_dbmodel, &DatabaseModel::itemTriggered, this, &NodeStorage::loadNodeConfig);
+    connect(_dbmodel, &DatabaseModel::itemTriggered, this, &NodeStorage::loadNodeConf);
 
     connect(this, &Fact::triggered, this, &NodeStorage::dbRequestRecordsList);
 }
@@ -69,35 +69,41 @@ void NodeStorage::saveNodeDict()
     }
 
     auto req = new db::nodes::NodeSaveDict(_node->uid(), dict);
+    connect(
+        req,
+        &db::nodes::NodeSaveDict::dictSaved,
+        this,
+        [this](quint64 dictID) { _dictID = dictID; },
+        Qt::QueuedConnection);
     req->exec();
 }
 
-void NodeStorage::saveNodeConfig()
+void NodeStorage::saveNodeConf()
 {
-    _configID = 0; // invalidate for unit config
-    auto hash = _node->dict().value("hash").toString();
-    if (hash.isEmpty()) {
-        qWarning() << "no dict hash";
+    _confID = 0; // invalidate for unit config
+    auto cache_hash = _node->dict().value("cache").toString();
+    if (cache_hash.isEmpty()) {
+        qWarning() << "no dict cache hash";
         return;
     }
-    auto req = new db::nodes::NodeSaveConf(_node->uid(), hash, _node->get_values());
+    auto req = new db::nodes::NodeSaveConf(_dictID, _node->get_values());
     connect(req,
             &db::nodes::NodeSaveConf::confSaved,
             this,
-            &NodeStorage::updateConfigID,
+            &NodeStorage::updateConfID,
             Qt::QueuedConnection);
     req->exec();
 }
-void NodeStorage::updateConfigID(quint64 configID)
+void NodeStorage::updateConfID(quint64 confID)
 {
-    _configID = configID;
-    if (configID)
-        emit configSaved();
+    _confID = confID;
+    if (confID)
+        emit confSaved();
 }
 
-void NodeStorage::loadLatestNodeConfig()
+void NodeStorage::loadLatestNodeConf()
 {
-    auto req = new db::nodes::NodeLoadConf(_node->uid(), {});
+    auto req = new db::nodes::NodeLoadConf(_dictID, {});
     connect(req,
             &db::nodes::NodeLoadConf::confLoaded,
             _node,
@@ -238,7 +244,7 @@ void NodeStorage::dbRequestRecordInfo(quint64 id)
     req->exec();
 }
 
-void NodeStorage::loadNodeConfig(quint64 id)
+void NodeStorage::loadNodeConf(quint64 id)
 {
     auto req = new db::nodes::NodeLoadConf(id);
     connect(req,

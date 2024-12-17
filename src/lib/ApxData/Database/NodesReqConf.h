@@ -26,16 +26,12 @@
 namespace db {
 namespace nodes {
 
-class NodeSaveConf : public RequestNode
+class NodeSaveConf : public Request
 {
     Q_OBJECT
 public:
-    explicit NodeSaveConf(const QString &uid,
-                          const QString &hash,
-                          const QJsonObject &values,
-                          quint64 time = 0)
-        : RequestNode(uid)
-        , _hash(hash)
+    explicit NodeSaveConf(const quint64 dictID, const QJsonObject &values, quint64 time = 0)
+        : _dictID(dictID)
         , _values(values)
         , _time(time ? time : QDateTime::currentDateTime().toMSecsSinceEpoch())
     {}
@@ -45,7 +41,7 @@ public:
     auto nodeConfID() const { return _nodeConfID; }
 
 private:
-    const QString _hash;
+    const quint64 _dictID;
     const QJsonObject _values;
     const quint64 _time;
     quint64 _nodeConfID{};
@@ -56,17 +52,16 @@ signals:
     void confSaved(quint64 confID);
 };
 
-class NodeLoadConf : public RequestNode
+class NodeLoadConf : public Request
 {
     Q_OBJECT
 public:
-    explicit NodeLoadConf(const QString &uid, const QString &hash) // latest if no hash
-        : RequestNode(uid)
+    explicit NodeLoadConf(const quint64 dictID, const QString &hash) // latest if no hash
+        : _dictID(dictID)
         , _hash(hash)
     {}
     explicit NodeLoadConf(quint64 nodeConfID)
-        : RequestNode(QString())
-        , _nodeConfID(nodeConfID)
+        : _nodeConfID(nodeConfID)
     {}
 
     bool run(QSqlQuery &query);
@@ -75,10 +70,11 @@ public:
     auto time() const { return _time; }
 
 protected:
+    const quint64 _dictID{};
     const QString _hash;
     quint64 _nodeConfID{};
-    quint64 _time{};
 
+    quint64 _time{};
     QJsonObject _values;
 
 signals:

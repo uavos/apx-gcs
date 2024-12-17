@@ -85,7 +85,7 @@ private:
     QMap<QString, PApxNodeFile *> _files_map;
 
     // stored dict
-    QString _dict_hash;
+    QString _dict_cache_hash;
     QList<xbus::node::conf::type_e> _field_types;
     QList<size_t> _field_arrays;
     QStringList _field_names;
@@ -103,7 +103,7 @@ private slots:
     void infoCacheLoaded(QJsonObject info);
 
     void requestDictDownload() { new PApxNodeRequestFileRead(this, "dict"); }
-    void dictCacheLoaded(QJsonObject dict);
+    void dictCacheLoaded(quint64 dictID, QJsonObject dict);
     void dictCacheMissing(QString hash);
 
     void parseDictData(PApxNode *node, const xbus::node::file::info_s &info, const QByteArray data);

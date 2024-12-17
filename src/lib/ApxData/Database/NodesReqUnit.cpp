@@ -127,8 +127,8 @@ bool UnitSaveConf::run(QSqlQuery &query)
         stKeys.append(QString::number(i));
 
     query.prepare("SELECT * FROM NodeConf "
-                  "INNER JOIN Node ON NodeConf.nodeID=Node.key "
                   "INNER JOIN NodeDict ON NodeConf.dictID=NodeDict.key "
+                  "INNER JOIN Node ON NodeDict.nodeID=Node.key "
                   "WHERE NodeConf.key IN ("
                   + stKeys.join(',')
                   + ")"
@@ -151,7 +151,7 @@ bool UnitSaveConf::run(QSqlQuery &query)
     //find latest conf by hash
     query.prepare("SELECT * FROM UnitConf"
                   " LEFT JOIN Unit ON UnitConf.unitID=Unit.key"
-                  " WHERE hash=?");
+                  " WHERE UnitConf.hash=?");
     query.addBindValue(hash);
     if (!query.exec())
         return false;
@@ -357,11 +357,10 @@ bool UnitImportConf::run(QSqlQuery &query)
         if (dict.isEmpty())
             continue;
 
-        auto hash = dict["hash"].toString();
-
         req = new NodeSaveDict(uid, dict);
         if (!req->run(query))
             break;
+        const auto dictID = static_cast<NodeSaveDict *>(req)->dictID();
         delete req;
         req = {};
 
@@ -372,7 +371,7 @@ bool UnitImportConf::run(QSqlQuery &query)
 
         auto time = node["time"].toVariant().toULongLong();
 
-        req = new NodeSaveConf(uid, hash, values, time);
+        req = new NodeSaveConf(dictID, values, time);
         if (!req->run(query))
             break;
         nodeConfIDs.append(static_cast<NodeSaveConf *>(req)->nodeConfID());

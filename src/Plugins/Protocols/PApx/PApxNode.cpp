@@ -40,7 +40,7 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
 {
     // store ident to parse dict
     connect(this, &PNode::identReceived, this, [this](QJsonObject ident) {
-        _dict_hash = ident.value("hash").toString();
+        _dict_cache_hash = ident.value("hash").toString();
     });
 
     // get node info guess from cache
@@ -60,7 +60,7 @@ PApxNode::~PApxNode()
 
 void PApxNode::infoCacheLoaded(QJsonObject info)
 {
-    if (!_dict_hash.isEmpty())
+    if (!_dict_cache_hash.isEmpty())
         return;
     setTitle(info.value("name").toString());
 }
@@ -342,7 +342,7 @@ void PApxNode::requestDict()
         return;
     }
 
-    auto req = new db::nodes::NodeLoadDict(uid(), _dict_hash);
+    auto req = new db::nodes::NodeLoadDict(uid(), _dict_cache_hash);
     connect(req,
             &db::nodes::NodeLoadDict::dictLoaded,
             this,
@@ -366,11 +366,11 @@ void PApxNode::requestDict()
 
     req->exec();
 }
-void PApxNode::dictCacheLoaded(QJsonObject dict)
+void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
 {
-    auto hash = dict.value("hash").toString();
-    if (_dict_hash != hash) {
-        qWarning() << title() << "wrong hash" << _dict_hash << hash;
+    auto hash = dict.value("cache").toString();
+    if (_dict_cache_hash != hash) {
+        qWarning() << title() << "wrong hash" << _dict_cache_hash << hash;
         return;
     }
     if (dict.isEmpty()) {
@@ -413,8 +413,8 @@ void PApxNode::dictCacheLoaded(QJsonObject dict)
 }
 void PApxNode::dictCacheMissing(QString hash)
 {
-    if (_dict_hash != hash) {
-        qWarning() << title() << "wrong hash" << _dict_hash << hash;
+    if (_dict_cache_hash != hash) {
+        qWarning() << title() << "wrong hash" << _dict_cache_hash << hash;
         return;
     }
     requestDictDownload();
@@ -441,8 +441,8 @@ void PApxNode::parseDictData(PApxNode *node,
     do {
         // check node hash
         QString hash = hashToText(info.hash);
-        if (hash != _dict_hash) {
-            qWarning() << title() << "node hash error:" << hash << _dict_hash;
+        if (hash != _dict_cache_hash) {
+            qWarning() << title() << "node hash error:" << hash << _dict_cache_hash;
             break;
         }
 
@@ -563,7 +563,7 @@ void PApxNode::parseDictData(PApxNode *node,
     qDebug() << title() << "dict parsed" << _field_names.size();
 
     QJsonObject dict;
-    dict.insert("hash", _dict_hash);
+    dict.insert("cache", _dict_cache_hash);
     dict.insert("cached", false);
     dict.insert("fields", fields);
 
@@ -611,8 +611,8 @@ void PApxNode::parseConfData(PApxNode *node,
 
         auto hash = hashToText(vhash);
 
-        if (hash != _dict_hash) {
-            qWarning() << title() << "data hash error:" << hash << _dict_hash;
+        if (hash != _dict_cache_hash) {
+            qWarning() << title() << "data hash error:" << hash << _dict_cache_hash;
             break;
         }
 

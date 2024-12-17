@@ -119,9 +119,10 @@ void Nodes::node_available(PNode *node)
 
     connect(f, &NodeItem::validChanged, this, &Nodes::updateValid);
     connect(f->tools->f_storage,
-            &NodeStorage::configSaved,
-            unit->f_storage,
-            &UnitStorage::saveUnitConf);
+            &NodeStorage::confSaved,
+            unit->f_storage, // will still wait until all nodes valid
+            &UnitStorage::saveUnitConf,
+            Qt::QueuedConnection);
 
     updateValid();
     updateActions();

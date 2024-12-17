@@ -73,7 +73,7 @@ void UnitStorage::saveUnitConf()
     for (auto i : nodes->nodes()) {
         if (!i->valid())
             return;
-        auto nconfID = i->tools->f_storage->configID();
+        auto nconfID = i->tools->f_storage->confID();
         if (!nconfID)
             return;
         nconfIDs.append(nconfID);

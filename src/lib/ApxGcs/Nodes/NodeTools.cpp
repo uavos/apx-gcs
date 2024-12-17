@@ -42,7 +42,7 @@ NodeTools::NodeTools(NodeItem *anode, Flags flags)
     f_restore = new Fact(this, "recent", tr("Restore recent"), tr("Restore the most recent backup"));
     f_restore->setIcon("undo");
     f_restore->setSection(sect);
-    connect(f_restore, &Fact::triggered, f_storage, &NodeStorage::loadLatestNodeConfig);
+    connect(f_restore, &Fact::triggered, f_storage, &NodeStorage::loadLatestNodeConf);
 
     //sections
     f_usr = new NodeToolsGroup(this,

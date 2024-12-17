@@ -32,14 +32,14 @@ class NodeStorage : public Fact
 public:
     explicit NodeStorage(NodeItem *node, Fact *parent);
 
-    auto configID() const { return _configID; }
-
     auto dbmodel() const { return _dbmodel; }
+    auto confID() const { return _confID; }
 
 private:
     NodeItem *_node;
     DatabaseModel *_dbmodel;
-    quint64 _configID{};
+    quint64 _dictID{};
+    quint64 _confID{};
 
     QStringList get_names(Fact *f, QStringList path = QStringList());
 
@@ -52,15 +52,15 @@ private slots:
 public slots:
     void saveNodeInfo();
     void saveNodeDict();
-    void saveNodeConfig();
+    void saveNodeConf();
 
-    void loadLatestNodeConfig();
-    void loadNodeConfig(quint64 id);
+    void loadLatestNodeConf();
+    void loadNodeConf(quint64 id);
 
-    void updateConfigID(quint64 configID);
+    void updateConfID(quint64 confID);
 
     void loadNodeMeta();
 
 signals:
-    void configSaved();
+    void confSaved();
 };

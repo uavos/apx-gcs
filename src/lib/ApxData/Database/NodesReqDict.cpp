@@ -31,14 +31,24 @@ bool NodeSaveDict::run(QSqlQuery &query)
     if (!_nodeID)
         return false;
 
-    auto hash = _dict["hash"].toString();
+    // get hash
+    QString hash;
+    {
+        QCryptographicHash h(QCryptographicHash::Sha1);
+        getHash(h, _dict["fields"]);
+        hash = h.result().toHex().toUpper();
+    }
+
     auto time = _dict["time"].toVariant().toULongLong();
+    auto cache = _dict["cache"].toVariant();
+    if (!cache.isNull() && cache.toString().isEmpty())
+        cache = {};
 
     auto name = query.value("name");
     auto version = query.value("version");
     auto hardware = query.value("hardware");
 
-    //find existing dictionary
+    // find existing dictionary by node id and content hash
     query.prepare("SELECT * FROM NodeDict"
                   " WHERE nodeID=? AND hash=?"
                   " ORDER BY time DESC, key DESC"
@@ -49,35 +59,41 @@ bool NodeSaveDict::run(QSqlQuery &query)
         return false;
 
     if (query.next()) {
-        //dictionary exists
+        // dictionary exists
         qDebug() << "dict exists";
         auto dictID = query.value(0).toULongLong();
+        if (cache.isNull())
+            cache = query.value("cache");
 
         query.prepare("UPDATE NodeDict"
-                      " SET time=?, name=?, version=?, hardware=?"
+                      " SET time=?, name=?, version=?, hardware=?, cache=?"
                       " WHERE key=?");
         query.addBindValue(time);
         query.addBindValue(name);
         query.addBindValue(version);
         query.addBindValue(hardware);
+        query.addBindValue(cache);
         query.addBindValue(dictID);
         if (!query.exec())
             return false;
 
+        _dictID = dictID;
+        emit dictSaved(dictID);
         return true;
     }
 
     // create new dict record
     db->transaction(query);
     query.prepare("INSERT INTO"
-                  " NodeDict(nodeID,time,hash,name,version,hardware)"
-                  " VALUES(?,?,?,?,?,?)");
+                  " NodeDict(nodeID,time,hash,name,version,hardware,cache)"
+                  " VALUES(?,?,?,?,?,?,?)");
     query.addBindValue(_nodeID);
     query.addBindValue(time);
     query.addBindValue(hash);
     query.addBindValue(name);
     query.addBindValue(version);
     query.addBindValue(hardware);
+    query.addBindValue(cache);
     if (!query.exec())
         return false;
 
@@ -134,7 +150,7 @@ bool NodeSaveDict::run(QSqlQuery &query)
     if (add_cnt > 0)
         qDebug() << "new fields:" << add_cnt;
 
-    //write dict fields
+    // write dict fields
     for (uint i = 0; i < fieldIDs.size(); ++i) {
         query.prepare("INSERT INTO NodeDictStruct(dictID,fieldID,fieldIndex) "
                       "VALUES(?,?,?)");
@@ -146,32 +162,44 @@ bool NodeSaveDict::run(QSqlQuery &query)
     }
     db->commit(query);
 
-    qDebug() << "new dict" << name.toString() << version.toString() << hardware.toString() << hash;
+    qDebug() << "new dict" << name.toString() << version.toString() << hardware.toString() << hash
+             << cache.toString();
+
+    _dictID = dictID;
+    emit dictSaved(dictID);
     return true;
 }
 
 bool NodeLoadDict::run(QSqlQuery &query)
 {
     if (!_dictID) {
+        // cache lookup mode
         if (!RequestNode::run(query))
             return false;
 
-        if (!_nodeID)
+        if (!_nodeID) {
+            qWarning() << "no node id";
             return false;
+        }
+
+        if (_cache_hash.isEmpty()) {
+            qWarning() << "no cache hash";
+            return false;
+        }
 
         query.prepare("SELECT * FROM NodeDict"
-                      " WHERE nodeID=? AND hash=?"
+                      " WHERE nodeID=? AND cache=?"
                       " ORDER BY time DESC, key DESC"
                       " LIMIT 1");
         query.addBindValue(_nodeID);
-        query.addBindValue(_hash);
+        query.addBindValue(_cache_hash);
 
         if (!query.exec())
             return false;
 
         if (!query.next()) {
             qDebug() << "no dict in db";
-            emit dictMissing(_hash);
+            emit dictMissing(_cache_hash);
             return true;
         }
         _dictID = query.value(0).toULongLong();
@@ -186,11 +214,11 @@ bool NodeLoadDict::run(QSqlQuery &query)
             qDebug() << "no dict in db by key" << _dictID;
             return true;
         }
-        _hash = query.value("hash").toString();
+        _cache_hash = query.value("cache").toString();
     }
     auto time = query.value("time").toULongLong();
 
-    //read fields
+    // read dict fields
     query.prepare("SELECT * FROM NodeDictStruct "
                   "INNER JOIN NodeField ON NodeDictStruct.fieldID=NodeField.key "
                   "WHERE dictID=? "
@@ -210,18 +238,16 @@ bool NodeLoadDict::run(QSqlQuery &query)
                                         "units",
                                     });
 
-        // if (query.value("type").toString() == "option" && field.value("units").isUndefined())
-        //     field["units"] = QString("off,on");
-
         field = json::fix_numbers(json::remove_empty(field));
         fields.append(field);
     }
 
-    _dict["hash"] = _hash;
     _dict["fields"] = fields;
     _dict["time"] = (qint64) time;
-    _dict["cached"] = true;
 
-    emit dictLoaded(_dict);
+    if (!_cache_hash.isEmpty())
+        _dict["cache"] = _cache_hash;
+
+    emit dictLoaded(_dictID, _dict);
     return true;
 }

@@ -251,7 +251,7 @@ void NodesFrame::addNodeTools(QMenu *menu, Fact *fact, QString nodeName)
 
                     // link action to db record
                     connect(a, &QAction::triggered, storage, [storage, a]() {
-                        storage->loadNodeConfig(a->data().toULongLong());
+                        storage->loadNodeConf(a->data().toULongLong());
                     });
 
                     // update caption

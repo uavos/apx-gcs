@@ -25,57 +25,44 @@ using namespace db::nodes;
 
 bool NodeSaveConf::run(QSqlQuery &query)
 {
-    if (!RequestNode::run(query))
-        return false;
-
-    if (!_nodeID) {
-        qWarning() << "no node in db";
-        return false;
-    }
-
-    query.prepare("SELECT * FROM NodeDict"
-                  " WHERE nodeID=? AND hash=?"
-                  " ORDER BY time DESC, key DESC"
-                  " LIMIT 1");
-    query.addBindValue(_nodeID);
-    query.addBindValue(_hash);
+    query.prepare("SELECT * FROM NodeDict WHERE key=?");
+    query.addBindValue(_dictID);
 
     if (!query.exec())
         return false;
 
     if (!query.next()) {
         qWarning() << "no dict in db";
-        return true;
+        return false;
     }
-    auto dictID = query.value(0).toULongLong();
 
     //grab title from node's comment
-    auto title = _values["label"].toString().simplified().trimmed();
+    const auto title = _values["label"].toString().simplified().trimmed();
 
     //generate hash
     QCryptographicHash h(QCryptographicHash::Sha1);
-    h.addData(_uid.toUtf8());
-    h.addData(_hash.toUtf8());
     getHash(h, _values);
     QString hash = h.result().toHex().toUpper();
 
     //find existing conf
-    query.prepare("SELECT * FROM NodeConf"
-                  " WHERE hash=?");
+    query.prepare("SELECT * FROM NodeConf WHERE dictID=? AND hash=?");
+    query.addBindValue(_dictID);
     query.addBindValue(hash);
     if (!query.exec())
         return false;
 
     if (query.next()) { //same node conf exist
         _nodeConfID = query.value(0).toULongLong();
+        qDebug() << "conf exists" << title;
 
         // update conf record with actual time
-        query.prepare("UPDATE NodeConf SET time=? WHERE key=?");
-        query.addBindValue(_time);
-        query.addBindValue(_nodeConfID);
-        if (!query.exec())
-            return false;
-        qDebug() << "conf exists" << title;
+        if (_time > query.value("time").toULongLong()) {
+            query.prepare("UPDATE NodeConf SET time=? WHERE key=?");
+            query.addBindValue(_time);
+            query.addBindValue(_nodeConfID);
+            if (!query.exec())
+                return false;
+        }
         //all ok
         emit dbModified();
         emit confSaved(_nodeConfID);
@@ -86,12 +73,11 @@ bool NodeSaveConf::run(QSqlQuery &query)
     db->transaction(query);
 
     query.prepare("INSERT INTO NodeConf("
-                  " nodeID, dictID, time, hash, title"
-                  " ) VALUES(?, ?, ?, ?, ?)");
-    query.addBindValue(_nodeID);
-    query.addBindValue(dictID);
-    query.addBindValue(_time);
+                  " dictID, hash, time, title"
+                  " ) VALUES(?, ?, ?, ?)");
+    query.addBindValue(_dictID);
     query.addBindValue(hash);
+    query.addBindValue(_time);
     query.addBindValue(title.isEmpty() ? QVariant() : title);
     if (!query.exec())
         return false;
@@ -103,7 +89,7 @@ bool NodeSaveConf::run(QSqlQuery &query)
     query.prepare("SELECT * FROM NodeDictStruct "
                   "INNER JOIN NodeField ON NodeDictStruct.fieldID=NodeField.key "
                   "WHERE dictID=? AND type!='command' AND type!='group'");
-    query.addBindValue(dictID);
+    query.addBindValue(_dictID);
     if (!query.exec())
         return false;
 
@@ -117,7 +103,7 @@ bool NodeSaveConf::run(QSqlQuery &query)
         fieldsMap.insert(s, query.value(0).toULongLong());
     }
     if (fieldsMap.isEmpty()) {
-        qWarning() << "missing fields in dictionary" << dictID;
+        qWarning() << "missing fields in dictionary" << _dictID;
         return true;
     }
 
@@ -211,33 +197,29 @@ quint64 NodeSaveConf::_getValueID(QSqlQuery &query, const QJsonValue &v)
 
 bool NodeLoadConf::run(QSqlQuery &query)
 {
-    // qDebug() << "load conf" << _nodeID << _hash << _nodeConfID;
     if (!_nodeConfID) {
-        if (!RequestNode::run(query))
-            return false;
-
-        if (!_nodeID)
-            return false;
+        // find node conf by dictID and hash
 
         if (_hash.isEmpty()) {
             // load latest
             query.prepare("SELECT * FROM NodeConf"
-                          " WHERE nodeID=?"
+                          " WHERE dictID=?"
                           " ORDER BY time DESC LIMIT 1");
-            query.addBindValue(_nodeID);
+            query.addBindValue(_dictID);
         } else {
             query.prepare("SELECT * FROM NodeConf"
-                          " WHERE nodeID=? AND hash=?");
-            query.addBindValue(_nodeID);
+                          " WHERE dictID=? AND hash=?");
+            query.addBindValue(_dictID);
             query.addBindValue(_hash);
         }
         if (!query.exec())
             return false;
         if (!query.next())
-            return _hash.isEmpty();
+            return _hash.isEmpty(); // still return ok when latest not exists
 
         _nodeConfID = query.value(0).toULongLong();
     } else {
+        // load by confID
         query.prepare("SELECT * FROM NodeConf WHERE key=?");
         query.addBindValue(_nodeConfID);
 

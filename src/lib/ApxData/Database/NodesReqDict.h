@@ -36,38 +36,44 @@ public:
     {}
 
     bool run(QSqlQuery &query);
+    auto dictID() const { return _dictID; }
 
 private:
     const QJsonObject _dict;
+    quint64 _dictID{};
+
+signals:
+    void dictSaved(quint64 dictID);
 };
 
 class NodeLoadDict : public RequestNode
 {
     Q_OBJECT
 public:
-    explicit NodeLoadDict(const QString &uid, const QString &hash)
+    // dict cache
+    explicit NodeLoadDict(const QString &uid, const QString &cache_hash)
         : RequestNode(uid)
-        , _hash(hash)
+        , _cache_hash(cache_hash)
     {}
 
+    // dict by id
     explicit NodeLoadDict(quint64 dictID)
-        : RequestNode(QString())
+        : RequestNode({})
         , _dictID(dictID)
     {}
 
     bool run(QSqlQuery &query);
-
     const auto &dict() const { return _dict; }
 
 private:
-    QString _hash;
+    QString _cache_hash;
     quint64 _dictID{};
 
     QJsonObject _dict;
 
 signals:
-    void dictLoaded(QJsonObject dict);
-    void dictMissing(QString hash);
+    void dictLoaded(quint64 dictID, QJsonObject dict);
+    void dictMissing(QString cache_hash);
 };
 
 } // namespace nodes

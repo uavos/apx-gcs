@@ -92,7 +92,7 @@ void NodeItem::validateData()
     emit validChanged();
 
     updateStatus();
-    qDebug() << "Node data valid:" << path();
+    qDebug() << "Node data valid:" << title() << label();
 
     if (_protocol)
         emit _nodes->nodeNotify(this);
@@ -143,7 +143,7 @@ void NodeItem::clear()
         emit validChanged();
     }
 
-    tools->f_storage->updateConfigID(0);
+    tools->f_storage->updateConfID(0);
     _dict = {};
     _status_field = nullptr;
     tools->clearCommands();
@@ -161,7 +161,7 @@ void NodeItem::upload()
     if (!_protocol)
         return;
 
-    tools->f_storage->updateConfigID(0);
+    tools->f_storage->updateConfID(0);
 
     QList<NodeField *> fields;
     for (auto i : m_fields) {
@@ -189,7 +189,7 @@ void NodeItem::confSaved()
 {
     qDebug() << modified();
     backup();
-    tools->f_storage->saveNodeConfig();
+    tools->f_storage->saveNodeConf();
 }
 
 QVariant NodeItem::data(int col, int role)
@@ -731,7 +731,7 @@ void NodeItem::confReceived(QJsonObject values)
     setEnabled(true);
 
     if (_protocol && !_ident.value("reconf").toBool())
-        tools->f_storage->saveNodeConfig();
+        tools->f_storage->saveNodeConf();
 }
 void NodeItem::confUpdated(QJsonObject values)
 {
