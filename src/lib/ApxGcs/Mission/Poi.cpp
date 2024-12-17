@@ -62,6 +62,8 @@ Poi::Poi(MissionGroup *parent)
 
     connect(f_radius, &Fact::optsChanged, this, &Poi::updateTitle);
     connect(this, &MissionItem::isFeetsChanged, this, &Poi::updateTitle);
+    connect(f_hmsl, &Fact::optsChanged, this, &Poi::updateDescr);
+    connect(this, &MissionItem::isFeetsChanged, this, &Poi::updateDescr);
 
     //conversions
     connect(this, &MissionItem::coordinateChanged, this, &Poi::radiusPointChanged);
@@ -104,10 +106,23 @@ void Poi::updateDescr()
 {
     QStringList st;
     QString sts;
-    if (!f_hmsl->isZero()) {
-        st.append("MSL" + f_hmsl->valueText());
-        sts.append("H");
+
+    // Add feets option
+    if(m_isFeets) {
+        if (f_hmsl->opts().value("ft").toInt() != 0) {
+            st.append("MSL" + f_hmsl->opts().value("ft").toString());
+            sts.append("H");
+        }
+    } else {
+        if (!f_hmsl->isZero()) {
+            st.append("MSL" + f_hmsl->valueText());
+            sts.append("H");
+        }
     }
+    // if (!f_hmsl->isZero()) {
+    //     st.append("MSL" + f_hmsl->valueText());
+    //     sts.append("H");
+    // }
     if (!f_loops->isZero()) {
         st.append("L" + f_loops->valueText());
         sts.append("L");
