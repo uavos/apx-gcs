@@ -80,15 +80,18 @@ SpinBox {
                 : 1
 
     // Temporary meters/feets stub for Runway and Point of interest
-    onOptsChanged: hmslCheck()
-    function hmslCheck()
+    onOptsChanged: zeroCheck()
+    function zeroCheck()
     {
-        if(fact.name != "hmsl")
+        var names = ["hmsl", "dshot"]
+        if(!names.includes(fact.name))
             return
         if(fact.parentFact.name == "p#" && opts.ft == 0)  // Point of interest
             opts.ft = "ground"
         if(fact.parentFact.name == "r#" && opts.ft == 0)  // Runway
             opts.ft = "default"
+        if(fact.name == "dshot" && opts.ft == 0)
+            opts.ft = "off"  
     }
     // Stub END 
 

@@ -65,6 +65,16 @@ WaypointActions::WaypointActions(Waypoint *parent)
     f_dshot->setUnits("m");
     f_dshot->setMin(0);
 
+    // Add feets options
+    m_isFeets = parent->isFeets();
+    auto ft = std::round(f_dshot->value().toInt() * parent->M2FT_COEF);
+    f_dshot->setOpt("editor", "EditorIntWithFeet.qml");
+    f_dshot->setOpt("ft", ft);
+    connect(f_dshot, &Fact::optsChanged, this, &WaypointActions::updateActionsValue);
+    connect(parent, &Waypoint::isFeetsChanged, this, [this]() { setIsFeets(!m_isFeets); });
+    connect(this, &WaypointActions::isFeetsChanged, this, &WaypointActions::updateActionsValue);
+    // feets end
+
     connect(this, &Fact::valueChanged, this, &WaypointActions::actionsValueChanged);
     updateActionsValue();
 
@@ -93,9 +103,25 @@ void WaypointActions::updateActionsValue()
     st.clear();*/
     for (int i = 0; i < this->size(); ++i) {
         Fact *f = this->child(i);
-        if (f->isZero())
-            continue;
-        st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
+        // if (f->isZero())
+        //     continue;
+        // st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
+
+        if(!m_isFeets) {
+            if (f->isZero())
+                continue;
+            st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
+        } else {
+            if (!f->opts().contains("ft")) {
+                if (f->isZero())
+                    continue;
+                st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
+            } else {
+                if (f->opts().value("ft").toInt() == 0)
+                    continue;
+                st.append(QString("%1=%2").arg(f->name()).arg(f->opts().value("ft").toInt()));
+            }
+        }
     }
     blockActionsValueChanged = true;
     this->setValue(st.join(','));
@@ -135,4 +161,17 @@ QVariant WaypointActions::toVariant()
     if (m.isEmpty())
         return {};
     return m;
+}
+
+bool WaypointActions::isFeets() const
+{
+    return m_isFeets;
+}
+
+void WaypointActions::setIsFeets(bool v)
+{
+    if (m_isFeets == v)
+        return;
+    m_isFeets = v;
+    emit isFeetsChanged();
 }

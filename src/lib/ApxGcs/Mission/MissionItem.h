@@ -57,6 +57,7 @@ public:
     MissionGroup *group;
     int missionItemType() const;
 
+    static constexpr float M2FT_COEF = 3.2808; // conversion coefficient feets to meter
     Fact *f_order;
     Fact *f_latitude;
     Fact *f_longitude;
@@ -127,7 +128,6 @@ public:
     void changeFeetMeters();
 
 protected:
-    static constexpr float M2FT_COEF = 3.2808; // conversion coefficient feets to meter 
     QGeoCoordinate m_coordinate;
     QGeoPath m_geoPath;
     double m_bearing;

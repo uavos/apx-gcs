@@ -379,14 +379,14 @@ ActionButton {
     }
 
     // Feets / meters conversion
-    property var coef: 3.2808
+    property var m2ft_coef: 3.2808
 
     function m2ft(value) {
-        return Math.round(value * coef)
+        return Math.round(value * m2ft_coef)
     }
 
     function ft2m(value) {
-        return Math.round(value / coef)
+        return Math.round(value / m2ft_coef)
     }
 }
 

@@ -28,6 +28,7 @@ class Waypoint;
 class WaypointActions : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(bool isFeets READ isFeets WRITE setIsFeets NOTIFY isFeetsChanged)
 
 public:
     explicit WaypointActions(Waypoint *parent);
@@ -40,8 +41,11 @@ public:
 
     QVariant toVariant() override;
 
+    bool isFeets() const;
+    void setIsFeets(bool v);
 private:
     bool blockActionsValueChanged;
+    bool m_isFeets;
 
 protected:
     void hashData(QCryptographicHash *h) const override;
@@ -49,4 +53,7 @@ protected:
 private slots:
     void updateActionsValue();
     void actionsValueChanged();
+
+signals:
+    void isFeetsChanged();
 };
