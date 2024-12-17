@@ -38,7 +38,7 @@ ApxFw::ApxFw(Fact *parent)
     setIcon("alarm-light");
 
     _versionPrefix = QVersionNumber::fromString(App::version());
-    _versionPrefix = QVersionNumber(_versionPrefix.majorVersion(), _versionPrefix.minorVersion());
+    _versionPrefix = QVersionNumber(_versionPrefix.majorVersion());
 
     m_packagePrefix = "APX_Nodes_Firmware";
 
