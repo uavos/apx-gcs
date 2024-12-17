@@ -187,7 +187,7 @@ void TelemetryFileWriter::write_timestamp(quint32 timestamp_ms)
         return; // don't write repetitive timestamps
     _ts_s = timestamp_ms;
 
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::ts};
+    const dspec_s dspec{extid_e::ts};
     write(&dspec, 1);
 
     write(&timestamp_ms, 4);
@@ -246,7 +246,7 @@ void TelemetryFileWriter::write_evt(quint32 timestamp_ms,
     if (dir)
         _write_dir();
 
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::evt};
+    const dspec_s dspec{extid_e::evt};
     write(&dspec, 1);
     write(&evt_index, 1);
     const auto icached = evt->info.size() - skip_cache_cnt;
@@ -300,7 +300,7 @@ void TelemetryFileWriter::write_jso(quint32 timestamp_ms,
     if (dir)
         _write_dir();
 
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::jso};
+    const dspec_s dspec{extid_e::jso};
     write(&dspec, 1);
 
     _write_string_cached(name.toUtf8());
@@ -338,13 +338,13 @@ void TelemetryFileWriter::write_raw(quint32 timestamp_ms,
         _write_dir();
 
     if (zip_data.size() > 0) {
-        const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::zip};
+        const dspec_s dspec{extid_e::zip};
         write(&dspec, 1);
         _write_string_cached(name.toUtf8());
         write(&size, 4);
         write(zip_data.constData(), size);
     } else {
-        const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::raw};
+        const dspec_s dspec{extid_e::raw};
         write(&dspec, 1);
         _write_string_cached(name.toUtf8());
         write(&size, 2);
@@ -408,7 +408,7 @@ void TelemetryFileWriter::_write_reg(extid_e extid, QString name, QStringList st
     // qDebug() << name << strings;
 
     // write specifier
-    const dspec_s dspec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid};
+    const dspec_s dspec{extid};
     write(&dspec, 1);
 
     // write field data
@@ -596,6 +596,6 @@ void TelemetryFileWriter::write_value(const Field *field, const QVariant &value,
 
 void TelemetryFileWriter::_write_dir()
 {
-    const dspec_s spec{.spec_ext.dspec = dspec_e::ext, .spec_ext.extid = extid_e::dir};
+    const dspec_s spec{extid_e::dir};
     write(&spec, 1);
 }

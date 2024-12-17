@@ -140,6 +140,13 @@ union dspec_s {
         dspec_e dspec : 4;
         extid_e extid : 4; // special field
     } spec_ext;
+
+    dspec_s()
+        : _raw16(0)
+    {}
+    dspec_s(extid_e extid)
+        : spec_ext{dspec_e::ext, extid}
+    {}
 };
 static_assert(sizeof(dspec_s) == 2, "size error");
 

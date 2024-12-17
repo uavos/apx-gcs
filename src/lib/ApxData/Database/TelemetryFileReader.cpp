@@ -548,7 +548,7 @@ QVariant TelemetryFileReader::_read_value(telemetry::dspec_e dspec)
         v = _read_raw<uint32_t>(&ok);
         break;
     case dspec_e::u64:
-        v = _read_raw<uint64_t>(&ok);
+        v = QVariant::fromValue(_read_raw<uint64_t>(&ok));
         break;
 
     case dspec_e::f16:

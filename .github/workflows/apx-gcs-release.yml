@@ -38,7 +38,7 @@ jobs:
         run: make release-package
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: |
             ${{ env.BUILD_DIR }}/deploy/*.AppImage
@@ -133,7 +133,7 @@ jobs:
           make release-package
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: |
             ${{ env.BUILD_DIR }}/deploy/*.dmg
@@ -149,7 +149,7 @@ jobs:
     # if: "false"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           path: package
       - name: Collecting files
@@ -182,7 +182,7 @@ jobs:
           prerelease: true
 
       - name: Publish release
-        uses: actions/github-script@v3
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.CI_PAT}}
           script: |
