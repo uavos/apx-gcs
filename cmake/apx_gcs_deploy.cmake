@@ -70,7 +70,7 @@ if(APPLE)
         COMMAND ${codesign_cmd} ${APX_INSTALL_BIN_DIR}/gcs
         COMMAND ${codesign_cmd} ${APX_INSTALL_APP_DIR}
         COMMENT "Signing app with $ENV{CODE_IDENTITY}"
-        # DEPENDS deploy_libs
+        DEPENDS deploy_libs
         WORKING_DIRECTORY ${APX_DEPLOY_DIR}
         VERBATIM USES_TERMINAL
     )
