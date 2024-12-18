@@ -1,3 +1,26 @@
+# [APX Ground Control v11.2.0](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.0) (12/18/24)
+
+> Branch: `main`\
+> Date: `12/18/24 14:40:45`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/4ff1445905132122d572e51ff75009807ac1be73...fe34f8bb01884b0f6c205c96f1e11adee9a3d582)
+
+## New Features
+* Antenna Tracking System (ATS) control plugin
+
+## Bug Fixes
+* segfault on remote conf change
+* subdirectory
+* parameters saved wav announcement
+* QML active focus op (closes [`86`](https://github.com/uavos/apx-gcs/issues/86))
+* event overflows for SDL
+* init SDL for macOS
+* readme file
+
+## Performance Enhancements
+* fact lookup by name optimizations
+* fact tree model queued response
+* maps storage in files
+
 # [APX Ground Control v11.1.17](https://github.com/uavos/apx-gcs/releases/tag/release-11.1.17) (05/30/24)
 
 > Branch: `main`\
