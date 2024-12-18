@@ -206,7 +206,7 @@ jobs:
               if (file.name.endsWith('.xml'))
                 continue;
               console.log('uploading', file.name);
-              await github.repos.uploadReleaseAsset({
+              await github.rest.repos.uploadReleaseAsset({
                 owner, repo,
                 release_id: "${{ steps.create_release.outputs.id }}",
                 name: file.name,
@@ -214,7 +214,7 @@ jobs:
               });            
             }
 
-            github.repos.updateRelease({
+            github.rest.repos.updateRelease({
               owner, repo,
               release_id: "${{ steps.create_release.outputs.id }}",
               draft: false
