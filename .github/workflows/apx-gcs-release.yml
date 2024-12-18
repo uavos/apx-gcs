@@ -132,6 +132,16 @@ jobs:
         run: |
           make release-package
 
+      - name: Notarize package
+        env:
+          NOTARIZATION_API_KEY_ID: ${{ secrets.NOTARIZATION_API_KEY_ID }}
+          NOTARIZATION_API_KEY: ${{ secrets.NOTARIZATION_API_KEY }}
+          NOTARIZATION_API_ISSUER: ${{ secrets.NOTARIZATION_API_ISSUER }}
+        run: |
+          echo $NOTARIZATION_API_KEY | base64 --decode > notarization_api_key
+          xcrun notarytool submit ${{ env.BUILD_DIR }}/deploy/*.dmg --key notarization_api_key --key-id $NOTARIZATION_API_KEY_ID --issuer $NOTARIZATION_API_ISSUER --wait
+          xcrun stapler staple ${{ env.BUILD_DIR }}/deploy/*.dmg
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
