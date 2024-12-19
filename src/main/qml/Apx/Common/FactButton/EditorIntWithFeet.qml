@@ -121,7 +121,8 @@ SpinBox {
                 opts.ft = text
                 fact.opts = opts
                 fact.setValue(ft2m(text))
-                factButton.forceActiveFocus()
+                if(textInput.activeFocus)
+                    factButton.forceActiveFocus()
                 zeroCheck() // Temporary meters/feets stub for Runway and Point of interest
             }
             onActiveFocusChanged: {
@@ -165,7 +166,8 @@ SpinBox {
                 fact.setValue(text)
                 opts.ft = m2ft(fact.value)
                 fact.opts = opts;
-                factButton.forceActiveFocus();
+                if(textInput.activeFocus)
+                    factButton.forceActiveFocus();
             }
             onActiveFocusChanged: {
                 if(activeFocus){
