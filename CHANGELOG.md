@@ -1,3 +1,12 @@
+# [APX Ground Control v11.2.1](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.1) (12/19/24)
+
+> Branch: `main`\
+> Date: `12/19/24 12:25:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/9e27f473d97a10f9754d5292445d5d1b97f90208...a6087379eccbd203ada95a1ab1fb06c16303dde5)
+
+## Bug Fixes
+* memory leak for joystick plugin
+
 # [APX Ground Control v11.2.0](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.0) (12/18/24)
 
 > Branch: `main`\
