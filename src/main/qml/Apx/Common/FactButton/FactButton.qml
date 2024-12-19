@@ -221,6 +221,7 @@ ActionButton {
 
             // value
             Item {
+                id: _data
                 anchors.right: _next.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
@@ -253,6 +254,23 @@ ActionButton {
                 }
             }
 
+            // extrainfo
+            Item {
+                id: _extrainfo
+                property var mrg: 10
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: _data.left
+                anchors.rightMargin: mrg
+
+                Loader {
+                    active: !fact.opts.extrainfo ? false : true
+                    anchors.fill: parent
+                    // Material.accent: Material.color(Material.Green)
+                    source: active?getExtrainfoSource():""
+                    onLoaded: _extrainfo.mrg = item.implicitWidth + 10*Style.scale
+                }
+            }
         }
     }
 
@@ -308,6 +326,17 @@ ActionButton {
         }
         if(!qml)return ""
         return "Editor"+qml+".qml"
+    }
+
+    function getExtrainfoSource()
+    {
+        if(!fact)
+            return ""
+
+         if(fact.opts.extrainfo)
+            return fact.opts.extrainfo
+
+        return ""       
     }
 
     function openDialog(name)
