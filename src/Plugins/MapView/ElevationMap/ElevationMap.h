@@ -61,6 +61,9 @@ private:
     void createElevationDatabase();
     // QObject *qml;
 
+private slots:
+    void onOpenTriggered();
+
 signals:
     void elevationChanged();
 };

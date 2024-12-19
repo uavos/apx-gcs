@@ -23,6 +23,8 @@
 #include "ElevationMap.h"
 #include <App/App.h>
 
+#include <QFileDialog>
+
 ElevationMap::ElevationMap(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -45,6 +47,7 @@ ElevationMap::ElevationMap(Fact *parent)
                       "import");
     f_path->setDefaultValue(path);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
+    connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
 
     createElevationDatabase();
     //  qml = loadQml("qrc:/ElevationPlugin.qml");
@@ -79,4 +82,15 @@ void ElevationMap::createElevationDatabase()
 {
     auto path = f_path->value().toString();
     m_elevationDB = std::make_shared<OfflineElevationDB>(path);
+}
+
+void ElevationMap::onOpenTriggered()
+{
+    QString path = QFileDialog::getExistingDirectory(nullptr,
+                                                     tr("Open Directory"),
+                                                     QDir::homePath(),
+                                                     QFileDialog::ShowDirsOnly
+                                                     | QFileDialog::DontResolveSymlinks);
+    if (!path.isEmpty())
+        f_path->setValue(path);
 }
