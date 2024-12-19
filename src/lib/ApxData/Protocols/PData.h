@@ -23,17 +23,17 @@
 
 #include "PBase.h"
 
-class PVehicle;
+class PUnit;
 
 class PData : public PTreeBase
 {
     Q_OBJECT
 
 public:
-    explicit PData(PVehicle *parent);
+    explicit PData(PUnit *parent);
 
 protected:
-    PVehicle *_vehicle;
+    PUnit *_unit;
 
 private slots:
     void updateStreamType();

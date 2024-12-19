@@ -91,7 +91,7 @@ Fact {
             Fact { enabled: false }
             Fact { title: qsTr("Reset INS filter"); descr: "ins()"; onTriggered: application.jsexec(descr); }
             Fact { enabled: false }
-            Fact { binding: mandala.cmd.ins.inair; flags: Fact.Bool; }
+            Fact { binding: mandala.cmd.ins.inair }
             Fact { binding: mandala.cmd.ins.nogps; flags: Fact.Bool; }
             Fact { binding: mandala.cmd.ins.nomag; flags: Fact.Bool; }
             Fact { binding: mandala.cmd.ins.hsel }

@@ -26,10 +26,10 @@
 #include <XbusUnit.h>
 
 #include "PApxRequest.h"
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
 class PApx;
-class PApxVehicle;
+class PApxUnit;
 
 class PApx : public PBase
 {
@@ -51,8 +51,8 @@ public:
     auto local() const { return m_local; }
 
 private:
-    PApxVehicle *m_local{};
-    QMap<xbus::unit::squawk_t, PApxVehicle *> _squawk_map; // identified vehicles
+    PApxUnit *m_local{};
+    QMap<xbus::unit::squawk_t, PApxUnit *> _squawk_map; // identified units
     QList<xbus::unit::squawk_t> _squawk_blacklist;
 
     PApxRequest _req;
@@ -67,7 +67,7 @@ private:
 
     void process_downlink(QByteArray packet) override;
 
-    bool check_vuid(PApxVehicle *v, uint8_t n, uint8_t seq);
+    bool check_vuid(PApxUnit *v, uint8_t n, uint8_t seq);
 
 private slots:
     void updateLocal();

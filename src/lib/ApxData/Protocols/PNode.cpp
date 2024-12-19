@@ -22,7 +22,7 @@
 #include "PNode.h"
 
 #include "PFirmware.h"
-#include "PVehicle.h"
+#include "PUnit.h"
 
 PNode::PNode(PNodes *parent, QString uid)
     : PTreeBase(parent, "node#", "node", "", Group)

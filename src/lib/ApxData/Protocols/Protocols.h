@@ -31,10 +31,10 @@
 #include "PNodes.h"
 #include "PTelemetry.h"
 
-#include "PVehicle.h"
+#include "PUnit.h"
 
 class PBase;
-class PVehicle;
+class PUnit;
 
 class Protocols : public Fact
 {
@@ -63,6 +63,6 @@ signals:
     void tx_data(QByteArray packet); //connect tx interface
 
     // interface provider
-    void vehicle_available(PVehicle *vehicle);
+    void unit_available(PUnit *unit);
     void trace_packet(QStringList blocks);
 };

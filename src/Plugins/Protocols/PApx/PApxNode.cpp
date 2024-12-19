@@ -30,7 +30,8 @@
 
 #include <crc.h>
 
-#include <Database/VehiclesReqNode.h>
+#include <Database/NodesReq.h>
+#include <Database/NodesReqDict.h>
 
 PApxNode::PApxNode(PApxNodes *parent, QString uid)
     : PNode(parent, uid)
@@ -38,14 +39,14 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
     , _req(this)
 {
     // store ident to parse dict
-    connect(this, &PNode::identReceived, this, [this](QVariantMap ident) {
-        _dict_hash = ident.value("hash").toString();
+    connect(this, &PNode::identReceived, this, [this](QJsonObject ident) {
+        _dict_cache_hash = ident.value("hash").toString();
     });
 
     // get node info guess from cache
-    auto *req = new DBReqLoadNodeInfo(uid);
+    auto req = new db::nodes::NodeLoadInfo(uid);
     connect(req,
-            &DBReqLoadNodeInfo::infoLoaded,
+            &db::nodes::NodeLoadInfo::infoLoaded,
             this,
             &PApxNode::infoCacheLoaded,
             Qt::QueuedConnection);
@@ -57,9 +58,9 @@ PApxNode::~PApxNode()
     _nodes->cancel_requests(this);
 }
 
-void PApxNode::infoCacheLoaded(QVariantMap info)
+void PApxNode::infoCacheLoaded(QJsonObject info)
 {
-    if (!_dict_hash.isEmpty())
+    if (!_dict_cache_hash.isEmpty())
         return;
     setTitle(info.value("name").toString());
 }
@@ -148,8 +149,8 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             if (name == _script_field)
                 return;
             auto value = read_param(stream, _field_types.at(fidx));
-            QVariantMap values;
-            values.insert(name, value);
+            QJsonObject values;
+            values[name] = QJsonValue::fromVariant(value);
             emit confUpdated(values);
             return;
         } else
@@ -308,7 +309,7 @@ bool PApxNode::find_field(QString name,
     if (a > 1) {
         auto i = match.captured(1).toInt() - 1;
         if (i < 0) {
-            qWarning() << "array" << name;
+            qWarning() << title() << "array" << name;
             return false;
         }
         name = name.left(a);
@@ -316,7 +317,7 @@ bool PApxNode::find_field(QString name,
     }
     auto i = _field_names.indexOf(name);
     if (i < 0) {
-        qWarning() << "missing field:" << name;
+        qWarning() << title() << "missing field:" << name;
         return false;
     }
     v |= i << 8;
@@ -341,23 +342,23 @@ void PApxNode::requestDict()
         return;
     }
 
-    auto *req = new DBReqLoadNodeDict(uid(), _dict_hash);
+    auto req = new db::nodes::NodeLoadDict(uid(), _dict_cache_hash);
     connect(req,
-            &DBReqLoadNodeDict::dictLoaded,
+            &db::nodes::NodeLoadDict::dictLoaded,
             this,
             &PApxNode::dictCacheLoaded,
             Qt::QueuedConnection);
     connect(req,
-            &DBReqLoadNodeDict::dictMissing,
+            &db::nodes::NodeLoadDict::dictMissing,
             this,
             &PApxNode::dictCacheMissing,
             Qt::QueuedConnection);
 
     connect(
         req,
-        &DatabaseRequest::finished,
+        &db::nodes::NodeLoadDict::finished,
         this,
-        [this](DatabaseRequest::Status status) {
+        [this](db::nodes::NodeLoadDict::Status status) {
             if (status)
                 requestDictDownload();
         },
@@ -365,31 +366,30 @@ void PApxNode::requestDict()
 
     req->exec();
 }
-void PApxNode::dictCacheLoaded(QVariantMap dict)
+void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
 {
-    auto hash = dict.value("hash").toString();
-    if (_dict_hash != hash) {
-        qWarning() << "wrong hash" << _dict_hash << hash;
+    auto hash = dict.value("cache").toString();
+    if (_dict_cache_hash != hash) {
+        qWarning() << title() << "wrong hash" << _dict_cache_hash << hash;
         return;
     }
     if (dict.isEmpty()) {
-        qWarning() << "no dict data";
+        qWarning() << title() << "no dict data";
         requestDictDownload();
         return;
     }
-    qDebug() << "dict from cache";
 
     _field_types.clear();
     _field_names.clear();
     _field_arrays.clear();
     _field_units.clear();
 
-    _values.clear();
+    _values = {};
     _script_value = {};
     _script_field.clear();
 
-    for (auto i : dict.value("fields").value<QVariantList>()) {
-        auto field = i.value<QVariantMap>();
+    for (const auto &i : dict.value("fields").toArray()) {
+        const auto field = i.toObject();
         auto type = field.value("type").toString();
         xbus::node::conf::type_e type_id{};
         for (uint8_t t = xbus::node::conf::type_field; t < xbus::node::conf::type_max; ++t) {
@@ -403,16 +403,18 @@ void PApxNode::dictCacheLoaded(QVariantMap dict)
             continue;
         _field_types.append(type_id);
         _field_names.append(field.value("name").toString());
-        _field_arrays.append(field.value("array").toUInt());
+        _field_arrays.append(field.value("array").toVariant().toUInt());
         _field_units.append(field.value("units").toString());
     }
+
+    qDebug() << title() << "dict from cache" << _field_names.size();
 
     emit dictReceived(dict);
 }
 void PApxNode::dictCacheMissing(QString hash)
 {
-    if (_dict_hash != hash) {
-        qWarning() << "wrong hash" << _dict_hash << hash;
+    if (_dict_cache_hash != hash) {
+        qWarning() << title() << "wrong hash" << _dict_cache_hash << hash;
         return;
     }
     requestDictDownload();
@@ -426,21 +428,21 @@ void PApxNode::parseDictData(PApxNode *node,
     PStreamReader stream(data);
 
     bool err = true;
-    QVariantList fields;
+    QJsonArray fields;
     _field_types.clear();
     _field_names.clear();
     _field_arrays.clear();
     _field_units.clear();
 
-    _values.clear();
+    _values = {};
     _script_value = {};
     _script_field.clear();
 
     do {
         // check node hash
         QString hash = hashToText(info.hash);
-        if (hash != _dict_hash) {
-            qWarning() << "node hash error:" << hash << _dict_hash;
+        if (hash != _dict_cache_hash) {
+            qWarning() << title() << "node hash error:" << hash << _dict_cache_hash;
             break;
         }
 
@@ -449,7 +451,7 @@ void PApxNode::parseDictData(PApxNode *node,
         QList<int> group_idx;
 
         while (stream.available() > 4) {
-            QVariantMap field;
+            QJsonObject field;
 
             xbus::node::conf::type_e type_id = static_cast<xbus::node::conf::type_e>(
                 stream.read<uint8_t>());
@@ -523,8 +525,8 @@ void PApxNode::parseDictData(PApxNode *node,
                     i = groups.at(gidx);
                     continue;
                 }
-                qWarning() << "missing group:" << type << field.value("array").toInt() << group
-                           << st;
+                qWarning() << this->title() << "missing group:" << type << field.value("array")
+                           << group << st;
                 path.clear(); //mark error
                 break;
             }
@@ -551,17 +553,17 @@ void PApxNode::parseDictData(PApxNode *node,
     } while (0);
 
     if (err) {
-        qWarning() << "dict error" << data.toHex().toUpper();
+        qWarning() << title() << "dict error" << data.toHex().toUpper();
         _field_types.clear();
         _field_names.clear();
         _field_arrays.clear();
         _field_units.clear();
         return;
     }
-    qDebug() << "dict parsed";
+    qDebug() << title() << "dict parsed" << _field_names.size();
 
-    QVariantMap dict;
-    dict.insert("hash", _dict_hash);
+    QJsonObject dict;
+    dict.insert("cache", _dict_cache_hash);
     dict.insert("cached", false);
     dict.insert("fields", fields);
 
@@ -583,10 +585,10 @@ void PApxNode::parseConfData(PApxNode *node,
 
     PStreamReader stream(data);
 
-    _values.clear();
+    _values = {};
 
     bool err = true;
-    QVariantMap values;
+    QJsonObject values;
     int fidx = 0;
 
     do {
@@ -609,8 +611,8 @@ void PApxNode::parseConfData(PApxNode *node,
 
         auto hash = hashToText(vhash);
 
-        if (hash != _dict_hash) {
-            qWarning() << "data hash error:" << hash << _dict_hash;
+        if (hash != _dict_cache_hash) {
+            qWarning() << title() << "data hash error:" << hash << _dict_cache_hash;
             break;
         }
 
@@ -628,7 +630,7 @@ void PApxNode::parseConfData(PApxNode *node,
                     break;
                 stream.reset(stream.pos() + d_pos);
             } else if (d_offset < d_pos) {
-                qWarning() << "padding negative:" << d_offset << d_pos << offsets;
+                qWarning() << title() << "padding negative:" << d_offset << d_pos << offsets;
                 break;
             }
 
@@ -638,43 +640,43 @@ void PApxNode::parseConfData(PApxNode *node,
             auto array = _field_arrays.value(fidx);
             auto type = _field_types.value(fidx);
             auto units = _field_units.value(fidx);
-            QVariant value;
+            QJsonValue jsv;
 
             if (array > 0) {
-                QVariantList list;
+                QJsonArray list;
                 for (auto i = 0; i < array; ++i) {
-                    QVariant v = read_param(stream, type);
-                    if (!v.isValid())
+                    auto jsv_item = read_param(stream, type);
+                    if (jsv_item.isNull() || jsv_item.isUndefined())
                         break;
                     if (type == xbus::node::conf::option)
-                        v = optionToText(v, fidx);
+                        jsv_item = optionToText(jsv_item, fidx);
                     else if (type == xbus::node::conf::bind)
-                        v = mandalaToString(v.toUInt());
-                    list.append(v);
+                        jsv_item = mandalaToString(jsv_item.toVariant().toUInt());
+                    list.append(jsv_item);
                 }
                 if (list.size() == array)
-                    value = list;
+                    jsv = list;
             } else {
-                value = read_param(stream, type);
+                jsv = read_param(stream, type);
                 if (type == xbus::node::conf::option)
-                    value = optionToText(value, fidx);
+                    jsv = optionToText(jsv, fidx);
                 else if (type == xbus::node::conf::bind)
-                    value = mandalaToString(value.toUInt());
+                    jsv = mandalaToString(jsv.toVariant().toUInt());
             }
 
             //qDebug() << v << stream.pos() << stream.available();
-            if (!value.isValid())
+            if (jsv.isNull() || jsv.isUndefined())
                 break;
 
             QString name = _field_names.value(fidx);
 
             if (type == xbus::node::conf::script) {
-                _script_value = value.value<xbus::node::conf::script_t>();
+                _script_value = jsv.toVariant().value<xbus::node::conf::script_t>();
                 _script_field = name;
-                value = QVariant();
+                jsv = {};
             }
 
-            values.insert(name, value);
+            values.insert(name, jsv);
 
             fidx++;
             if (fidx == _field_types.size()) {
@@ -686,7 +688,8 @@ void PApxNode::parseConfData(PApxNode *node,
     } while (0);
 
     if (err) {
-        qWarning() << "conf error" << fidx << stream.available() << data.toHex().toUpper();
+        qWarning() << title() << "conf error" << fidx << stream.available()
+                   << data.toHex().toUpper();
         _skip_cache = true;
         // requestDict();
         return;
@@ -704,24 +707,24 @@ void PApxNode::parseConfData(PApxNode *node,
         new PApxNodeRequestFileRead(this, "script");
 }
 template<typename T, typename Tout = T>
-static QVariant _read_param(PStreamReader &stream)
+static QJsonValue _read_param(PStreamReader &stream)
 {
     if (stream.available() < sizeof(T))
-        return QVariant();
-    return QVariant::fromValue(stream.read<T, Tout>());
+        return {};
+    return QJsonValue::fromVariant(QVariant::fromValue(stream.read<T, Tout>()));
 }
 template<typename _T>
-static QVariant _read_param_str(PStreamReader &stream)
+static QJsonValue _read_param_str(PStreamReader &stream)
 {
     size_t pos_s = stream.pos();
     const char *s = stream.read_string(sizeof(_T));
     if (!s)
-        return QVariant();
+        return {};
     stream.reset(pos_s + sizeof(_T));
-    return QVariant::fromValue(QString(s));
+    return QString(s);
 }
 
-QVariant PApxNode::read_param(PStreamReader &stream, xbus::node::conf::type_e type)
+QJsonValue PApxNode::read_param(PStreamReader &stream, xbus::node::conf::type_e type)
 {
     switch (type) {
     case xbus::node::conf::group:
@@ -747,22 +750,22 @@ QVariant PApxNode::read_param(PStreamReader &stream, xbus::node::conf::type_e ty
     case xbus::node::conf::script:
         return ::_read_param<xbus::node::conf::script_t>(stream);
     }
-    return QVariant();
+    return {};
 }
 
 template<typename _T>
-static bool _write_param(PStreamWriter &stream, QVariant value)
+static bool _write_param(PStreamWriter &stream, QJsonValue value)
 {
-    return stream.write<_T>(value.value<_T>());
+    return stream.write<_T>(value.toVariant().value<_T>());
 }
 
 template<typename _T>
-static bool _write_param_str(PStreamWriter &stream, QVariant value)
+static bool _write_param_str(PStreamWriter &stream, QJsonValue value)
 {
     return stream.write_string(value.toString().toLatin1().data());
 }
 
-bool PApxNode::write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QVariant value)
+bool PApxNode::write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QJsonValue value)
 {
     switch (type) {
     case xbus::node::conf::group:
@@ -791,21 +794,21 @@ bool PApxNode::write_param(PStreamWriter &stream, xbus::node::conf::type_e type,
     return false;
 }
 
-QVariant PApxNode::optionToText(QVariant value, size_t fidx)
+QJsonValue PApxNode::optionToText(const QJsonValue &jsv, size_t fidx)
 {
-    auto v = value.value<xbus::node::conf::option_t>();
+    auto var = jsv.toVariant();
     auto units = _field_units.value(fidx).split(',');
-    return units.value(v, value.toString());
+    return units.value(var.toInt(), var.toString());
 }
-QVariant PApxNode::textToOption(QVariant value, size_t fidx)
+QJsonValue PApxNode::textToOption(const QJsonValue &jsv, size_t fidx)
 {
-    auto s = value.toString();
+    auto s = jsv.toVariant().toString();
     auto units = _field_units.value(fidx).split(',');
     if (units.contains(s)) {
         xbus::node::conf::option_t opt = units.indexOf(s);
         return opt;
     }
-    return value;
+    return jsv;
 }
 
 void PApxNode::parseScriptDataUpload(PApxNode *node,
@@ -824,43 +827,43 @@ void PApxNode::parseScriptData(PApxNode *node,
     //qDebug() << "script data" << info.size << data.size();
     // check script hash
     if (info.hash != _script_value) {
-        qWarning() << "script hash error:" << QString::number(info.hash, 16)
+        qWarning() << title() << "script hash error:" << QString::number(info.hash, 16)
                    << QString::number(_script_value, 16);
         return;
     }
 
     if (_script_field.isEmpty()) {
-        qWarning() << "missing script field";
+        qWarning() << title() << "missing script field";
         return;
     }
 
-    QVariant value;
+    QJsonValue value;
     if (info.size > 0) {
         PStreamReader stream(data);
         xbus::script::file_hdr_s hdr{};
         if (stream.available() < hdr.psize()) {
-            qWarning() << "hdr size" << stream.available();
+            qWarning() << title() << "hdr size" << stream.available();
             return;
         }
         hdr.read(&stream);
 
         if (stream.available() != (hdr.code_size + hdr.src_size)) {
-            qWarning() << "size" << stream.available() << hdr.code_size << hdr.src_size;
+            qWarning() << title() << "size" << stream.available() << hdr.code_size << hdr.src_size;
             return;
         }
         const QByteArray code = stream.toByteArray(stream.pos(), hdr.code_size);
         const QByteArray src = qUncompress(
             stream.toByteArray(stream.pos() + hdr.code_size, hdr.src_size));
         if (src.isEmpty() || code.isEmpty()) {
-            qWarning() << "empty" << stream.available() << src.size() << code.size();
+            qWarning() << title() << "empty" << stream.available() << src.size() << code.size();
             return;
         }
-        QString title = QString::fromUtf8(hdr.title, strnlen(hdr.title, sizeof(hdr.title)));
+        auto scr_title = QString::fromUtf8(hdr.title, strnlen(hdr.title, sizeof(hdr.title)));
 
-        qDebug() << "script:" << title; // << _script_code.toHex().toUpper();
+        qDebug() << title() << "script:" << scr_title; // << _script_code.toHex().toUpper();
 
         QStringList st;
-        st << title;
+        st << scr_title;
         st << qCompress(src, 9).toHex().toUpper();
         st << qCompress(code, 9).toHex().toUpper();
         value = st.join(',');
@@ -868,28 +871,28 @@ void PApxNode::parseScriptData(PApxNode *node,
 
     _values.insert(_script_field, value);
     emit confReceived(_values);
-    _values.clear();
+    _values = {};
 }
 
-void PApxNode::requestUpdate(QVariantMap values)
+void PApxNode::requestUpdate(QJsonObject values)
 {
     if (values.contains(_script_field)) {
         QByteArray data = pack_script(values.value(_script_field));
         if (data.isEmpty()) {
             _script_value = {};
-            qDebug() << "empty script";
+            qDebug() << title() << "empty script";
         } else {
             _script_value = apx::crc32(data.data(), data.size());
         }
-        values.insert(_script_field, _script_value);
+        values.insert(_script_field, (qint64) _script_value);
         new PApxNodeRequestFileWrite(this, "script", data);
     }
 
     new PApxNodeRequestUpdate(this, values);
 }
-QByteArray PApxNode::pack_script(QVariant value)
+QByteArray PApxNode::pack_script(const QJsonValue &jsv)
 {
-    QStringList st = value.toString().split(',', Qt::KeepEmptyParts);
+    QStringList st = jsv.toVariant().toString().split(',', Qt::KeepEmptyParts);
 
     if (st.size() != 3)
         return {};

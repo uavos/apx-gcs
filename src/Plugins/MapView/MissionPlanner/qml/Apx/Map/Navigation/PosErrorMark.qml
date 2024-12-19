@@ -39,7 +39,7 @@ MapIcon {
     property real de: mandala.est.ins.de.value
     property real dh: mandala.est.ins.dh.value
 
-    property bool ahrs_nogps: mandala.cmd.ins.nogps.value
+    property bool ins_nogps: mandala.cmd.ins.nogps.value
 
 
     // calculated properties
@@ -48,5 +48,5 @@ MapIcon {
 
     coordinate: QtPositioning.coordinate(lat,lon,hmsl-dh).atDistanceAndAzimuth(distance,azimuth)
 
-    visible: distance > 10 || ahrs_nogps
+    visible: distance > 10 || ins_nogps
 }

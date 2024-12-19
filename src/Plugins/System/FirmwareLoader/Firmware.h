@@ -24,9 +24,9 @@
 #include "QueueItem.h"
 
 #include <App/AppGcs.h>
+#include <Fleet/Fleet.h>
 #include <Nodes/NodeItem.h>
 #include <Nodes/Nodes.h>
-#include <Vehicles/Vehicles.h>
 
 class Releases;
 class FirmwareTools;
@@ -60,7 +60,7 @@ private:
     QueueItem *queued(Fact *list, const QString &uid);
 
 private slots:
-    void vehicleRegistered(Vehicle *vehicle);
+    void unitRegistered(Unit *unit);
     void upgradeRequested(NodeItem *node, QString type); // captured by plugins
 
     void nodeNotify(NodeItem *node);

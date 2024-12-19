@@ -69,7 +69,7 @@ public slots:
     void resetCounters();
 
 signals:
-    // forwarded to vehicle
+    // forwarded to unit
     void sendValue(mandala::uid_t uid, QVariant value);
 
     // data recorders (converted values)

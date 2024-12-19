@@ -26,9 +26,11 @@
 
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <Vehicles/Vehicles.h>
+#include <ApxMisc/JsonHelpers.h>
+#include <Fleet/Fleet.h>
 
-NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, NodeField *arrayParent)
+NodeField::NodeField(
+    Fact *parent, NodeItem *node, const QJsonObject &m, size_t id, NodeField *arrayParent)
     : Fact(parent)
     , _node(node)
     , _type(m.value("type").toString())
@@ -39,7 +41,7 @@ NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, Nod
     setTitle(m.value("title").toString());
 
     auto funits = m.value("units").toString();
-    _array = m.value("array").toInt();
+    _array = m.value("array").toVariant().toInt();
 
     new NodeViewActions(this, node->nodes());
 
@@ -60,7 +62,7 @@ NodeField::NodeField(Fact *parent, NodeItem *node, QVariantMap m, size_t id, Nod
             item.insert("name", QString("%1_%2").arg(_fpath).arg(s.toLower()));
             item.insert("title", s);
             item.insert("array", i);
-            auto *f = new NodeField(this, node, item, id, this);
+            auto f = new NodeField(this, node, item, id, this);
             connect(f,
                     &Fact::valueChanged,
                     this,
@@ -144,46 +146,63 @@ QString NodeField::toText(const QVariant &v) const
     return Fact::toText(v);
 }
 
-QVariant NodeField::toVariant()
+QJsonValue NodeField::toJson()
 {
+    if (isZero())
+        return {};
+
+    QJsonValue jsv;
+
     if (size() > 0) {
-        //expanded field
-        QVariantList list;
+        //expanded field (array)
+        QJsonArray jsa;
         for (auto i : facts()) {
-            list.append(static_cast<NodeField *>(i)->toVariant());
+            jsa.append(static_cast<NodeField *>(i)->toJson());
         }
-        return list;
+        // remove tail null values
+        while (!jsa.isEmpty() && jsa.last().isNull())
+            jsa.removeLast();
+        jsv = jsa.isEmpty() ? QJsonValue() : jsa;
+    } else if (_type == "script") {
+        jsv = QJsonValue::fromVariant(value());
+    } else if (_type == "real") {
+        // use floats as-is (not text)
+        jsv = QJsonValue::fromVariant(value());
+    } else {
+        jsv = valueText();
     }
 
-    if (_type == "script")
-        return value();
-
-    if (_type == "real")
-        return QString::number(value().toFloat());
-
-    return valueText();
+    return json::fix_number(jsv);
 }
-void NodeField::fromVariant(const QVariant &var)
+void NodeField::fromJson(const QJsonValue &jsv)
 {
     if (size() > 0) {
-        //expanded field - i.e. array
-        if (var.typeId() == QMetaType::QVariantList) {
-            QVariantList values = var.value<QVariantList>();
-            for (int i = 0; i < values.size(); ++i) {
-                if (i >= size())
-                    break;
-                child(i)->fromVariant(values.at(i));
-            }
+        // expanded field
+        // json::save("nodes-field-" + title(), jsv);
+
+        if (!jsv.isArray() && !jsv.isNull()) {
+            qWarning() << "Array expected" << path();
             return;
         }
-        qWarning() << path() << var;
+        const auto jsa = jsv.toArray();
+        int i = 0;
+        while (i < jsa.size() && i < size()) {
+            child(i)->fromJson(jsa.at(i));
+            i++;
+        }
+        // set all missing array elements to zero
+        while (i < size()) {
+            // qDebug() << "zero" << fpath() << i;
+            child(i)->setValue({});
+            i++;
+        }
         return;
     }
 
     if (_type == "real") {
-        setValue(QString::number(var.toFloat()));
+        setValue(QString::number(jsv.toVariant().toDouble()));
         return;
     }
 
-    setValue(var);
+    setValue(jsv.toVariant());
 }

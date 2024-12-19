@@ -55,9 +55,20 @@ add_custom_target(
 add_custom_target(bundle DEPENDS deploy_libs)
 
 if(APPLE)
+    set(codesign_cmd
+        codesign
+        --deep
+        --force
+        --options
+        runtime
+        -s
+        $ENV{CODE_IDENTITY}
+    )
     add_custom_target(
         deploy_sign
-        COMMAND codesign --deep --force -s $ENV{CODE_IDENTITY} ${APX_INSTALL_APP_DIR}
+        COMMAND ${codesign_cmd} ${APX_INSTALL_DATA_DIR}/xplane/ApxSIL_Darwin_universal.xpl
+        COMMAND ${codesign_cmd} ${APX_INSTALL_BIN_DIR}/gcs
+        COMMAND ${codesign_cmd} ${APX_INSTALL_APP_DIR}
         COMMENT "Signing app with $ENV{CODE_IDENTITY}"
         DEPENDS deploy_libs
         WORKING_DIRECTORY ${APX_DEPLOY_DIR}

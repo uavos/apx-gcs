@@ -24,16 +24,16 @@ import QtLocation
 
 import QtQuick.Controls
 
-import Apx.Map.Vehicles
+import Apx.Map.Fleet
 import Apx.Map.Mission
 import Apx.Map.Navigation
 
 Control {
     id: control
 
-    property bool showVehicles: true
-    property bool showMission: showVehicles
-    property bool showNavigation: showVehicles
+    property bool showFleet: true
+    property bool showMission: showFleet
+    property bool showNavigation: showFleet
 
     property bool showWind: showNavigation
     property bool showScale: showNavigation
@@ -107,9 +107,9 @@ Control {
 
 
             Loader {
-                active: showVehicles
+                active: showFleet
                 // asynchronous: true
-                sourceComponent: VehiclesMapItems { }
+                sourceComponent: FleetMapItems { }
             }
             Loader {
                 active: showMission
@@ -123,9 +123,9 @@ Control {
             }
 
             Connections {
-                enabled: showVehicles && showNavigation
-                target: apx.vehicles.current.mission
-                function onTriggered(){ mapView.showRegion(apx.vehicles.current.mission.boundingGeoRectangle()) }
+                enabled: showFleet && showNavigation
+                target: apx.fleet.current.mission
+                function onTriggered(){ mapView.showRegion(apx.fleet.current.mission.boundingGeoRectangle()) }
             }
         }
 

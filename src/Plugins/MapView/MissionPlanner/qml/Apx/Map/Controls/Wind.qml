@@ -49,8 +49,8 @@ Item {
         onTriggered: smoothMove=true
     }
     Connections {
-        target: apx.vehicles
-        function onVehicleSelected() {
+        target: apx.fleet
+        function onUnitSelected() {
             smoothMove=false
             smoothMoveTimer.restart()
         }

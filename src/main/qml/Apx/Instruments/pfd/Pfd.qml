@@ -23,14 +23,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 import "."
 import "../common"
 
 Item {
     id: pfd
 
-    readonly property APX.Vehicle vehicle: apx.vehicles.current
+    readonly property APX.Unit unit: apx.fleet.current
 
     readonly property var f_mode: mandala.cmd.proc.mode
 
@@ -114,7 +114,7 @@ Item {
 
     readonly property bool isValid: f_att_status.value > 0
 
-    opacity: ui.effects?((apx.datalink.valid && !(vehicle.streamType===APX.PVehicle.XPDR||vehicle.streamType===APX.PVehicle.TELEMETRY))?0.7:1):1
+    opacity: ui.effects?((apx.datalink.valid && !(unit.streamType===APX.PUnit.XPDR||unit.streamType===APX.PUnit.TELEMETRY))?0.7:1):1
 
     clip: true
 
@@ -334,6 +334,7 @@ Item {
 
                     readonly property int src: f_gps_src.value
                     readonly property int fix: f_gps_fix.value
+                    readonly property int fix_valid: f_gps_fix.everReceived
                     readonly property int su: f_gps_su.value
                     readonly property int sv: f_gps_sv.value
                     readonly property bool ref: f_ref_status.value === ref_status_initialized
@@ -341,8 +342,8 @@ Item {
                     readonly property bool blocked: f_ins_nogps.value > 0
 
                     readonly property bool isOff: (!avail) && (!ref)
-                    readonly property bool isErr: ref && (!avail)
-                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && fix >= gps_fix_3D
+                    readonly property bool isErr: ref && (!avail) && fix_valid
+                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && (fix >= gps_fix_3D || !fix_valid)
 
                     show: isValid || su>0 || sv>0 || fix>0 || src>0
 
@@ -553,8 +554,9 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_ins_inair
                 text: qsTr("AIR")
-                show: ui.test || ( fact.value <= 0 && isValid)
+                show: ui.test || ( fact.value != ins_inair_yes && isValid)
                 status_reset: ins_inair_yes
+                status_warning: ins_inair_hover
             }
         }
 
@@ -592,7 +594,7 @@ Item {
                 status_warning: att_status_warning
                 status_show: att_status_busy
                 status_reset: att_status_unknown
-                text: qsTr("AHRS")
+                text: qsTr("INS")
             }
             StatusFlag {
                 height: pfdScene.flagHeight
@@ -646,7 +648,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
             text: qsTr("DISCONNECTED")
-            visible: !vehicle.isReplay && !apx.datalink.online
+            visible: !unit.isReplay && !apx.datalink.online
             font: apx.font_narrow(apx.datalink.valid?(parent.height*0.5*0.35):10,true)
         }
         Text {
@@ -654,15 +656,15 @@ Item {
             anchors.top: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.horizontalCenterOffset: horizon.center_shift
-            text: vehicle.text
-            visible: !vehicle.isReplay && apx.datalink.valid && (vehicle.streamType!==APX.PVehicle.TELEMETRY)
+            text: unit.text
+            visible: !unit.isReplay && apx.datalink.valid && (unit.streamType!==APX.PUnit.TELEMETRY)
             horizontalAlignment: Text.AlignHCenter
             font: apx.font_narrow(parent.height*0.5*0.25,true)
             Text {
                 color: "#70000000"
                 anchors.top: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: vehicle.protocol?vehicle.protocol.telemetry.text:""
+                text: unit.protocol?unit.protocol.telemetry.text:""
                 font: apx.font_narrow(parent.font.pixelSize*0.5,true)
             }
         }

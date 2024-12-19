@@ -32,7 +32,7 @@
 #include <Database/Database.h>
 #include <Datalink/Datalink.h>
 
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 
 #include <ApxFw.h>
 

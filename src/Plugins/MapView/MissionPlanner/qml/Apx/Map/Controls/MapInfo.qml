@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick          2.12
-import QtQuick.Layouts  1.12
+import QtQuick
+import QtQuick.Layouts
 import QtQuick.Controls
 
 import Apx.Common
@@ -56,9 +56,11 @@ RowLayout {
             Component {
                 id: siteC
                 Text {
-                    font: apx.font_narrow(Style.fontSize)
+                    readonly property string site_text: apx.fleet.current.mission.site
                     color: "#fff"
-                    text: apx.vehicles.current.mission.site
+                    text: site_text?site_text:application.materialIconChar("web")
+                    font: site_text?apx.font_narrow(Style.fontSize):apx.font_icons(Style.fontSize)
+
                 }
             }
         }
@@ -155,8 +157,8 @@ RowLayout {
         implicitHeight: control.size
         implicitWidth: Math.max(icon.width+textItem.implicitWidth, height*4)
 
-        opacity: apx.vehicles.current.totalDistance>0?1:0.5
-        property string text: apx.distanceToString(apx.vehicles.current.totalDistance)
+        opacity: apx.fleet.current.totalDistance>0?1:0.5
+        property string text: apx.distanceToString(apx.fleet.current.totalDistance)
         MaterialIcon {
             id: icon
             anchors.left: parent.left
@@ -179,7 +181,7 @@ RowLayout {
         ToolTipArea {
             text: qsTr("Distance travelled")
             cursorShape: Qt.PointingHandCursor
-            onClicked: apx.vehicles.current.telemetry.rpath.trigger()
+            onClicked: apx.fleet.current.telemetry.rpath.trigger()
         }
     }
 

@@ -29,10 +29,9 @@ class DatabaseRequest : public QObject
 {
     Q_OBJECT
 public:
-    explicit DatabaseRequest(DatabaseSession *db);
     explicit DatabaseRequest(DatabaseSession *db,
-                             const QString &queryString,
-                             const QVariantList &bindValues = QVariantList());
+                             const QString &queryString = {},
+                             const QVariantList &bindValues = {});
     enum Status {
         Success = 0,
         Error,
@@ -50,57 +49,20 @@ public:
 
     virtual bool run(QSqlQuery &query);
 
-    struct Records
-    {
-        QStringList names;
-        QList<QVariantList> values;
-        void clear()
-        {
-            names.clear();
-            values.clear();
-        }
-    };
-
-    static QVariantMap queryRecord(Records &records, QVariantMap info = QVariantMap(), int i = 0);
-
-    static QVariantMap filterNullValues(QVariantMap values);
-    static QVariantMap filterIdValues(QVariantMap values);
-
-    QVariantMap filterFields(QString tableName, QVariantMap values) const;
-
 protected:
     DatabaseSession *db;
     QString queryString;
     QVariantList bindValues;
 
     //helpers
-    void recordUpdateQuery(QSqlQuery &query,
-                           const Records &records,
-                           int i,
-                           const QString &table,
-                           const QString &tail) const;
-    void recordInsertQuery(QSqlQuery &query,
-                           const Records &records,
-                           int i,
-                           const QString &table,
-                           const QString &tail = QString()) const;
-
     bool recordUpdateQuery(QSqlQuery &query,
-                           QVariantMap values,
+                           const QJsonObject &jso,
                            const QString &table,
                            const QString &tail) const;
-    bool recordInsertQuery(QSqlQuery &query,
-                           QVariantMap values,
-                           const QString &table,
-                           const QString &tail = QString()) const;
 
-    static QStringList fieldNames(QSqlQuery &query);
-    static QVariantList values(QSqlQuery &query, const QStringList &names);
-    Records queryRecords(QSqlQuery &query) const;
-    QVariantMap queryRecord(QSqlQuery &query, QVariantMap info = QVariantMap()) const;
+    static QJsonObject record_to_json(const QSqlRecord &record, const QStringList &names);
 
-    void getHash(QCryptographicHash &h, const Records &records) const;
-    void getHash(QCryptographicHash &h, const QVariantMap &map) const;
+    void getHash(QCryptographicHash &h, const QJsonValue &jsv) const;
     void getHash(QCryptographicHash &h, QSqlQuery &query) const;
 
 private:
@@ -111,8 +73,10 @@ public slots:
     void discard();
 
 signals:
+    void discardRequested();
     void finished(DatabaseRequest::Status status);
+    void success();
 
-    void queryResults(DatabaseRequest::Records records);
+    void queryResults(QJsonArray records);
     void dbModified();
 };

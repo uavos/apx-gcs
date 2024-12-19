@@ -44,7 +44,7 @@ Rectangle {
         clip: true
         spacing: 0
         cacheBuffer: 0
-        model: apx.vehicles.current.nodes.model
+        model: apx.fleet.current.nodes.model
         snapMode: ListView.SnapToItem
         delegate: ValueButton {
             implicitWidth: itemWidth
@@ -56,8 +56,8 @@ Rectangle {
             valueColor: titleColor
             enabled: true
             onTriggered: {
-                if(fact.active)apx.vehicles.current.nodes.request()
-                else apx.vehicles.current.nodes.nstat()
+                if(fact.active)apx.fleet.current.nodes.request()
+                else apx.fleet.current.nodes.nstat()
             }
             textColor: {
                 if(fact){
@@ -72,7 +72,7 @@ Rectangle {
             z: 100
             implicitWidth: itemWidth
             size: itemHeight
-            fact: apx.vehicles.current.nodes
+            fact: apx.fleet.current.nodes
             value: fact.text
             valueScale: 0.7
             enabled: true

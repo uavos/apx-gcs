@@ -39,13 +39,13 @@ void AppGcs::loadServices()
 
     f_datalink = new Datalink(f_apx);
 
-    Vehicles *vehicles = new Vehicles(f_apx, f_datalink->f_protocols);
+    auto fleet = new Fleet(f_apx, f_datalink->f_protocols);
 
     f_apxfw = new ApxFw(f_apx);
 
-    // QObject::connect(f_datalink, &Datalink::heartbeat, protocol, &ProtocolVehicles::sendHeartbeat);
+    // QObject::connect(f_datalink, &Datalink::heartbeat, protocol, &ProtocolFleet::sendHeartbeat);
 
-    vehicles->move(f_apx->size());
+    fleet->move(f_apx->size());
 
     f_menu = new AppMenu(f_apx);
 

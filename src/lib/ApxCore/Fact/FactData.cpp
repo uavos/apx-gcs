@@ -168,6 +168,15 @@ bool FactData::updateValue(const QVariant &v)
             break;
         }
 
+        long long vi = 0;
+
+        if (v.isNull()) {
+            if (v_prev.toLongLong() == vi)
+                return false;
+            m_value = QVariant::fromValue(vi);
+            break;
+        }
+
         QVariant vx = v;
         QString s = vx.toString();
         QString u = units();
@@ -184,7 +193,6 @@ bool FactData::updateValue(const QVariant &v)
         if (m_enumStrings.size() > 1)
             return false;
 
-        long long vi = 0;
         bool ok = false;
 
         if (u == "hex") {
@@ -224,7 +232,10 @@ bool FactData::updateValue(const QVariant &v)
     } break;
     case Float: {
         qreal vf;
-        if (!(_check_type(v, QMetaType::Double) || _check_type(v, QMetaType::Float))) {
+
+        if (v.isNull()) {
+            vf = 0.0;
+        } else if (!(_check_type(v, QMetaType::Double) || _check_type(v, QMetaType::Float))) {
             QString s = v.toString();
             QString u = units();
             if (!u.isEmpty() && s.endsWith(u)) {
@@ -265,7 +276,11 @@ int FactData::enumValue(const QVariant &v) const
     if (m_enumStrings.isEmpty())
         return -1;
 
+    if (v.isNull())
+        return 0;
+
     int idx = -1;
+
     if (_check_int(v))
         idx = v.toInt();
     else {
@@ -286,6 +301,9 @@ QString FactData::enumText(int idx) const
 
 int FactData::_string_to_bool(QString s)
 {
+    if (s.isEmpty())
+        return 0;
+
     s = s.toLower();
     if (s == "true" || s == "on" || s == "yes")
         return 1;

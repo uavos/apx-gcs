@@ -50,8 +50,16 @@ FactMenuPageList {
                 active: d.active?d.active:false
                 showEditor: false
                 onTriggered: {
-                    parentFact.triggerItem(modelData)
+                    if(parentFact && parentFact.opts.dbtool){
+                        parentFact.triggerItem(d)
+                    }else{
+                        parentFact.model.triggerItem(d.id)
+                    }
                 }
+                onPressAndHold: {
+                    console.log(JSON.stringify(d,' ',2))
+                }
+                // toolTip: JSON.stringify(d,' ',2)
             }
         }
     }

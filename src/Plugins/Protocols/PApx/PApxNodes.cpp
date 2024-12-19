@@ -30,7 +30,7 @@
 
 #define PAPX_REQ_DELAY_MS 0
 
-PApxNodes::PApxNodes(PApxVehicle *parent)
+PApxNodes::PApxNodes(PApxUnit *parent)
     : PNodes(parent)
     , _req(parent)
     , _local(parent->uid().isEmpty())
@@ -43,7 +43,7 @@ PApxNodes::PApxNodes(PApxVehicle *parent)
 
     connect(root(), &PBase::cancelRequests, this, [this]() { cancel_requests(nullptr); });
 
-    // inactive vehicle has delay for nodes downloading
+    // inactive unit has delay for nodes downloading
     connect(parent, &Fact::activeChanged, this, &PApxNodes::updateActive);
     connect(this, &PNodes::upgradingChanged, this, &PApxNodes::updateActive);
     updateActive();

@@ -28,7 +28,7 @@ namespace Ui {
 class ServosForm;
 }
 
-class Vehicle;
+class Unit;
 class ServosForm : public QWidget
 {
     Q_OBJECT
@@ -49,7 +49,7 @@ private:
     void sendFutabaAddr(uint servoID, uint newAddr);
 
 private slots:
-    void vehicleSelected(Vehicle *vehicle);
+    void unitSelected(Unit *unit);
 
     void btnFind();
     void btnMove();

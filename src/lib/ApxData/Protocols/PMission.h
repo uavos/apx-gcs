@@ -23,14 +23,14 @@
 
 #include "PBase.h"
 
-class PVehicle;
+class PUnit;
 
 class PMission : public PTreeBase
 {
     Q_OBJECT
 
 public:
-    explicit PMission(PVehicle *parent);
+    explicit PMission(PUnit *parent);
 
 public slots:
     virtual void requestMission() { _nimp(__FUNCTION__); }

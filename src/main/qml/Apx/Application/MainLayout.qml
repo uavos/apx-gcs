@@ -37,7 +37,7 @@ Item {
     /*Item {
         z: 9999
         BoundingRect { item: top }
-        BoundingRect { item: vehicles }
+        BoundingRect { item: fleet }
         BoundingRect { item: taskbar }
         BoundingRect { item: main }
         BoundingRect { item: notifications }
@@ -177,8 +177,8 @@ Item {
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: margins
-        VehiclesListView {
-            id: vehicles
+        FleetListView {
+            id: fleet
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -200,7 +200,7 @@ Item {
         anchors.leftMargin: margins
         anchors.rightMargin: widgets.implicitWidth+margins*2
         anchors.bottomMargin: margins
-        anchors.topMargin: vehicles.implicitHeight+margins
+        anchors.topMargin: fleet.implicitHeight+margins
     }
     ColumnLayout {
         id: widgets

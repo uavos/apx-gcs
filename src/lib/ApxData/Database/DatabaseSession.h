@@ -21,9 +21,16 @@
  */
 #pragma once
 
+#include "DatabaseRequest.h"
 #include "DatabaseWorker.h"
+
+#include <App/App.h>
+#include <App/AppDirs.h>
+
 #include <ApxMisc/DelayedEvent.h>
+#include <ApxMisc/JsonHelpers.h>
 #include <Fact/Fact.h>
+
 #include <QMutex>
 #include <QtCore>
 #include <QtSql>
@@ -38,7 +45,8 @@ public:
     explicit DatabaseSession(QObject *parent,
                              const QString &name,
                              const QString &sessionName,
-                             QString version);
+                             QString version = {},
+                             QDir dir = AppDirs::db());
     ~DatabaseSession();
 
     Fact *f_vacuum;
@@ -100,83 +108,4 @@ signals:
 
 signals:
     void capacityChanged();
-};
-
-class DBReqMakeTable : public DatabaseRequest
-{
-    Q_OBJECT
-public:
-    explicit DBReqMakeTable(DatabaseSession *db,
-                            const QString &tableName,
-                            const QStringList &fields,
-                            const QString &tail = QString())
-        : DatabaseRequest(db)
-        , tableName(tableName)
-        , fields(fields)
-        , tail(tail)
-    {
-        exec();
-    }
-
-protected:
-    bool run(QSqlQuery &query);
-
-private:
-    QString tableName;
-    QStringList fields;
-    QString tail;
-};
-class DBReqMakeIndex : public DatabaseRequest
-{
-    Q_OBJECT
-public:
-    explicit DBReqMakeIndex(DatabaseSession *db,
-                            const QString &tableName,
-                            const QString &indexName,
-                            bool unique)
-        : DatabaseRequest(db)
-        , tableName(tableName)
-        , indexName(indexName)
-        , unique(unique)
-    {
-        exec();
-    }
-
-protected:
-    bool run(QSqlQuery &query);
-
-private:
-    QString tableName;
-    QString indexName;
-    bool unique;
-};
-class DBReqVacuum : public DatabaseRequest
-{
-    Q_OBJECT
-public:
-    explicit DBReqVacuum(DatabaseSession *db)
-        : DatabaseRequest(db)
-        , name(QFileInfo(db->fileName).baseName())
-    {}
-
-protected:
-    bool run(QSqlQuery &query);
-
-private:
-    QString name;
-};
-class DBReqAnalyze : public DatabaseRequest
-{
-    Q_OBJECT
-public:
-    explicit DBReqAnalyze(DatabaseSession *db)
-        : DatabaseRequest(db)
-        , name(QFileInfo(db->fileName).baseName())
-    {}
-
-protected:
-    bool run(QSqlQuery &query);
-
-private:
-    QString name;
 };

@@ -100,7 +100,7 @@ MouseArea {
             mvar_set(adj(mvar.value,sv))
         }
     }
-    onWheel: {
+    onWheel: (wheel) => {
         if(mvar && doWheel){
             var sv=wheel.angleDelta.y*wheel.angleDelta.y*stepWheel*(wheel.angleDelta.y>0?1:-1)
             adj(mvar_timer.running?mvar_s:mvar.value,sv)

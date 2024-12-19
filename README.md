@@ -59,7 +59,7 @@ Launch the `GCS` app:
 To create the GCS application bundle - use [`bundle`](https://github.com/uavos/apx-gcs/blob/main/cmake/apx_gcs_deploy.cmake) target:
 
 ```bash
-cmake --build build --target bundle
+cmake --build build --target deploy_package
 ```
 
 Depending on the host platform, this will build either `.app` macos application or the [`AppImage`](https://appimage.org) linux bundle.
@@ -123,6 +123,6 @@ More information about AppImage standard can be found here: [appimage.org](https
 - [APX Autopilot documentation](http://docs.uavos.com)
 - [UAVOS Inc. GitHub Organization](https://github.com/uavos)
 
-#   
+# 
 
 >&copy; [Aliaksei Stratsilatau](https://github.com/uavinda)

@@ -213,7 +213,7 @@ void Simulator::launchXplane()
             if (dir.isEmpty())
                 apxMsgW() << tr("XPL Plugin not found");
 
-            for (auto const &fiSource : dir.entryInfoList()) {
+            for (const auto &fiSource : dir.entryInfoList()) {
                 QString destPath = d.absoluteFilePath(fiSource.fileName());
                 QFileInfo fiDest(destPath);
 
@@ -262,7 +262,7 @@ void Simulator::launchShiva()
         /*QStringList args;
     if (f_oDLHD->value().toBool())
         args << "-a";
-    if (f_oAHRS->value().toBool())
+    if (f_oINS->value().toBool())
         args << "-i";
     if (f_oNoise->value().toBool())
         args << "-n";

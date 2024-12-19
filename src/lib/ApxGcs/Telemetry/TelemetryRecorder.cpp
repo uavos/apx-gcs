@@ -23,16 +23,15 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Database/Database.h>
-#include <Mission/MissionStorage.h>
-#include <Mission/VehicleMission.h>
-#include <Vehicles/Vehicle.h>
-
+#include <Fleet/Unit.h>
+#include <Mission/UnitMission.h>
 #include <Nodes/Nodes.h>
 
-TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
+#include <ApxMisc/JsonHelpers.h>
+
+TelemetryRecorder::TelemetryRecorder(Unit *unit, Fact *parent)
     : Fact(parent, "recorder", tr("Recorder"), tr("Telemetry recording"))
-    , _vehicle(vehicle)
+    , _unit(unit)
 {
     setIcon("record-rec");
 
@@ -44,49 +43,42 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::recordingChanged);
     connect(f_enable, &Fact::valueChanged, this, &TelemetryRecorder::restartRecording);
 
+    // prepare fields map
+    for (auto f : _unit->f_mandala->valueFacts()) {
+        // guess best field storage format
+        auto uid = f->uid();
+        auto dspec = TelemetryFileWriter::dspec_for_uid(uid);
+        _fields_map[uid] = {f->mpath(), {f->title(), f->units()}, dspec};
+    }
+
     // record doenlink/uplink
-    connect(vehicle->f_mandala,
-            &Mandala::recordTelemetry,
-            this,
-            &TelemetryRecorder::recordTelemetry);
-    connect(vehicle->f_mandala, &Mandala::recordData, this, &TelemetryRecorder::recordData);
+    connect(unit->f_mandala, &Mandala::recordTelemetry, this, &TelemetryRecorder::recordTelemetry);
+    connect(unit->f_mandala, &Mandala::recordData, this, &TelemetryRecorder::recordData);
 
     // record serial port data
-    connect(vehicle->protocol()->data(),
+    connect(unit->protocol()->data(),
             &PData::serialData,
             this,
             [this](quint8 portID, QByteArray data) { recordSerialData(portID, data, false); });
 
     // record config on each upload or save
-    connect(vehicle->storage(),
-            &VehicleStorage::configSaved,
-            this,
-            &TelemetryRecorder::recordConfig);
+    connect(unit->f_storage, &UnitStorage::confSaved, this, &TelemetryRecorder::recordUnitConf);
 
     // record text messages
-    connect(vehicle->f_nodes,
-            &Nodes::fieldUploadReport,
-            this,
-            &TelemetryRecorder::recordConfigUpdate);
+    connect(unit->f_nodes, &Nodes::fieldUploadReport, this, &TelemetryRecorder::recordConfigUpdate);
 
     connect(AppNotify::instance(),
             &AppNotify::notification,
             this,
             &TelemetryRecorder::recordNotification);
 
+    connect(unit, &Unit::messageReported, this, &TelemetryRecorder::recordMsg);
+
     // record mission on each upload or download
-    connect(vehicle->f_mission, &VehicleMission::missionDownloaded, this, [this]() {
-        connect(this->_vehicle->f_mission->storage,
-                &MissionStorage::saved,
-                this,
-                &TelemetryRecorder::recordMissionDownlink);
+    connect(unit->f_mission, &UnitMission::missionDownloaded, this, [this]() {
+        recordMission(false);
     });
-    connect(vehicle->f_mission, &VehicleMission::missionUploaded, this, [this]() {
-        connect(this->_vehicle->f_mission->storage,
-                &MissionStorage::saved,
-                this,
-                &TelemetryRecorder::recordMissionUplink);
-    });
+    connect(unit->f_mission, &UnitMission::missionUploaded, this, [this]() { recordMission(true); });
 
     // display
     connect(this, &TelemetryRecorder::timeChanged, this, &TelemetryRecorder::updateStatus);
@@ -96,15 +88,9 @@ TelemetryRecorder::TelemetryRecorder(Vehicle *vehicle, Fact *parent)
     connect(&timeUpdateTimer, &QTimer::timeout, this, &TelemetryRecorder::timeUpdate);
 
     // auto recorder
-    flightState_s = Vehicle::FS_UNKNOWN;
+    flightState_s = Unit::FS_UNKNOWN;
     recStopTimer.setSingleShot(true);
     connect(&recStopTimer, &QTimer::timeout, this, [this]() { setRecording(false); });
-
-    //invalidate record ID after trash empty
-    connect(Database::instance()->telemetry,
-            &TelemetryDB::invalidateRecords,
-            this,
-            &TelemetryRecorder::restartRecording);
 
     updateStatus();
 
@@ -121,125 +107,112 @@ void TelemetryRecorder::restartRecording()
     reset();
 }
 
-void TelemetryRecorder::invalidateCache()
+void TelemetryRecorder::checkFileRecord()
 {
-    if (!recTelemetryID)
-        return;
-
-    if (Database::instance()->telemetry)
-        Database::instance()->telemetry->markCacheInvalid(recTelemetryID);
-}
-
-bool TelemetryRecorder::dbCheckRecord()
-{
-    if (!Database::instance()->telemetry) {
-        recTelemetryID = 0;
-        return false;
-    }
-
     checkAutoRecord();
-    if (recTelemetryID)
-        return true;
 
-    //register telemetry file record
-    if (!reqNewRecord) {
-        QString title = _vehicle->confTitle();
-        if (!title.isEmpty())
-            confTitle = title;
-        DBReqTelemetryNewRecord *req
-            = new DBReqTelemetryNewRecord(_vehicle->uid(),
-                                          _vehicle->title(),
-                                          confTitle,
-                                          recording(),
-                                          QDateTime::currentDateTime().toMSecsSinceEpoch());
-        connect(req,
-                &DBReqTelemetryNewRecord::idUpdated,
-                this,
-                &TelemetryRecorder::dbRecordCreated,
-                Qt::QueuedConnection);
-        reqNewRecord = req;
-        reqPendingList.clear();
-
-        // write initial mandala state
-        PBase::Values values;
-        for (auto f : _vehicle->f_mandala->valueFacts()) {
-            if (!f->everReceived())
-                continue;
-            values.insert(f->uid(), f->value());
-            // qDebug() << f->mpath() << f->value();
-        }
-        _values = values;
-        reqPendingList.append(new DBReqTelemetryWriteData(0, 0, _values, false));
-
-        apxConsole() << tr("Telemetry record request");
-        reqNewRecord->exec();
-    }
-
-    if (reqPendingList.size() > 50000)
-        reqPendingList.takeFirst();
-
-    return false;
-}
-void TelemetryRecorder::dbRecordCreated(quint64 telemetryID)
-{
-    if (!reqNewRecord)
-        return;
-    if (!telemetryID)
+    if (_stream_file.isOpen())
         return;
 
-    //qDebug() << telemetryID << reqPendingList.size();
-    auto chash = configHash;
-    recTelemetryID = telemetryID;
-    reqNewRecord = nullptr;
-    configHash.clear();  //force write
-    missionHash.clear(); //force write
+    apxConsole() << tr("Telemetry record request");
 
-    recordMission(false);
-    recordConfig(chash, "init");
+    // construct new file name
 
-    for (auto req : reqPendingList) {
-        req->telemetryID = recTelemetryID;
-        req->exec();
+    auto timestamp = QDateTime::currentDateTime();
+
+    QString unitName = _unit->title();
+    if (unitName.isEmpty())
+        unitName = _unit->confTitle();
+
+    const auto info = prepareFileInfo();
+    const auto time_utc = timestamp.toMSecsSinceEpoch();
+
+    // create new file
+    const auto basename = db::storage::Session::telemetryFileBasename(timestamp, unitName);
+    const auto filePath = db::storage::Session::telemetryFilePathUnique(basename);
+    if (filePath.isEmpty())
+        return;
+
+    auto fileDir = QFileInfo(filePath).absoluteDir();
+    if (!fileDir.exists())
+        fileDir.mkpath(".");
+
+    _stream_file.setFileName(filePath);
+    if (!_stream_file.open(QIODevice::WriteOnly)) {
+        apxMsgW() << tr("Failed to open file").append(':') << filePath;
+        return;
     }
-    reqPendingList.clear();
+    _stream.init(&_stream_file, basename, time_utc, info);
 
-    //record shared info
-    QVariantMap info;
-    info["machineUID"] = App::machineUID();
-    info["hostname"] = App::hostname();
-    info["username"] = App::username();
-    DBReqTelemetryWriteSharedInfo *req = new DBReqTelemetryWriteSharedInfo(telemetryID, info);
+    // record initial mandala state
+    for (auto f : _unit->f_mandala->valueFacts()) {
+        if (!(f->everReceived() || f->everSent()))
+            continue;
+        const auto &field = _fields_map[f->uid()];
+        _stream.write_value(&field, f->value());
+    }
+
+    // record initial meta data
+    if (_unit->f_nodes->valid()) {
+        auto hash = _configHash;
+        _configHash.clear();
+        recordUnitConf(hash, _unit->confTitle());
+    }
+
+    if (!_unit->f_mission->empty())
+        recordMission(false);
+
+    // create DB record
+    auto req = new db::storage::TelemetryCreateRecord(time_utc,
+                                                      QFileInfo(filePath).completeBaseName(),
+                                                      info,
+                                                      !recording());
     req->exec();
 }
-void TelemetryRecorder::cleanupValues(PBase::Values *values)
+
+QJsonObject TelemetryRecorder::prepareFileInfo()
 {
-    for (auto uid : values->keys()) {
-        auto v = values->value(uid);
-        if (_values.value(uid) == v) {
-            values->remove(uid);
-        } else {
-            _values.insert(uid, v);
+    QJsonObject info;
+
+    info["unit"] = _unit->get_info();
+    info["conf"] = _unit->confTitle();
+
+    QJsonObject sw;
+    sw["version"] = QCoreApplication::applicationVersion();
+    sw["hash"] = App::git_hash();
+    info["sw"] = sw;
+
+    info["host"] = App::host();
+
+    return info;
+}
+
+TelemetryFileWriter::Values TelemetryRecorder::prepareValues(const PBase::Values &values) const
+{
+    TelemetryFileWriter::Values vlist;
+    for (const auto [uid, value] : values) {
+        auto it = _fields_map.find(uid);
+        if (it == _fields_map.end()) {
+            qWarning() << "field not found" << uid << value << _fields_map.size();
+            continue;
         }
+        vlist[&it->second] = value;
     }
+    return vlist;
 }
-void TelemetryRecorder::dbWriteRequest(DBReqTelemetryWriteBase *req)
-{
-    if (recTelemetryID) {
-        req->exec();
-        invalidateCache();
-    } else {
-        reqPendingList.append(req);
-    }
-}
+
 quint64 TelemetryRecorder::getEventTimestamp()
 {
     if (!_tsElapsed.isValid()) {
         _tsElapsed.start();
+        qDebug() << _unit->title() << "0 PRE";
         return 0;
     }
 
-    quint64 t = _tsElapsed.elapsed();
-    t += _ts_t2;
+    quint64 elapsed = _tsElapsed.elapsed();
+    quint64 t = elapsed + _ts_t2;
+
+    // qDebug() << _unit->title() << t << elapsed << _ts_t2;
     return t;
 }
 
@@ -251,9 +224,10 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     if (t < _ts_t0)
         reset();
 
-    dbCheckRecord();
+    checkFileRecord();
 
     if (_reset_timestamp) {
+        qDebug() << _unit->title() << "reset timestamp:" << t;
         _reset_timestamp = false;
         _ts_t0 = t;
         if (_tsElapsed.isValid()) {
@@ -265,44 +239,19 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     t += _ts_t1;
     _ts_t2 = t;
     _tsElapsed.start();
-
-    // qDebug() << _vehicle->title() << "ts" << t << _ts_t0;
-
     setTime(t / 1000);
 
-    // record changed values only
-    cleanupValues(&values);
-    if (values.isEmpty())
-        return;
+    // qDebug() << _unit->title() << t << values.size();
 
-    dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, t, values, false));
+    _stream.write_values(t, prepareValues(values), false);
 }
 void TelemetryRecorder::recordData(PBase::Values values, bool uplink)
 {
-    if (!uplink)
-        cleanupValues(&values);
-    if (values.isEmpty())
-        return;
+    // qDebug() << values << uplink;
 
-    dbCheckRecord();
+    checkFileRecord();
 
-    dbWriteRequest(new DBReqTelemetryWriteData(recTelemetryID, getEventTimestamp(), values, uplink));
-}
-
-void TelemetryRecorder::writeEvent(const QString &name,
-                                   const QString &value,
-                                   const QString &uid,
-                                   bool uplink)
-{
-    dbCheckRecord();
-
-    auto req = new DBReqTelemetryWriteEvent(recTelemetryID,
-                                            getEventTimestamp(),
-                                            name,
-                                            value,
-                                            uid,
-                                            uplink);
-    dbWriteRequest(req);
+    _stream.write_values(getEventTimestamp(), prepareValues(values), uplink);
 }
 
 // write data slots
@@ -314,89 +263,70 @@ void TelemetryRecorder::recordNotification(QString msg,
 {
     if (msg.isEmpty())
         return;
-    QString uid;
-    writeEvent("msg", QString("[%1]%2").arg(subsystem).arg(msg), uid, false);
+    if (flags & AppNotify::FromUnit)
+        return;
+
+    auto uid = fact ? fact->path() : QString();
+    auto src = "gcs" + (subsystem.isEmpty() ? "" : ("/" + subsystem));
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {uid, src, msg}, false, 1);
 }
+
+void TelemetryRecorder::recordMsg(QString msg, QString subsystem, QString src_uid)
+{
+    if (msg.isEmpty())
+        return;
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_MSG, {src_uid, subsystem, msg}, false, 1);
+}
+
 void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString value)
 {
-    writeEvent("conf",
-               QString("%1/%2=%3").arg(node->title()).arg(name).arg(value),
-               node->uid(),
-               true);
+    name = QString("%1/%2").arg(node->title()).arg(name);
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_CONF, {node->uid(), name, value}, true);
 }
 void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool uplink)
 {
-    writeEvent("serial", data.toHex().toUpper(), QString::number(portNo), uplink);
+    QByteArray d;
+    d.append((char) portNo, 2);
+    d.append(data);
+    _stream.write_raw(getEventTimestamp(), "vcp", d, uplink);
 }
 
-void TelemetryRecorder::recordMissionDownlink()
-{
-    disconnect(_vehicle->f_mission->storage,
-               &MissionStorage::saved,
-               this,
-               &TelemetryRecorder::recordMissionDownlink);
-    recordMission(false);
-}
-void TelemetryRecorder::recordMissionUplink()
-{
-    disconnect(_vehicle->f_mission->storage,
-               &MissionStorage::saved,
-               this,
-               &TelemetryRecorder::recordMissionUplink);
-    recordMission(true);
-}
 void TelemetryRecorder::recordMission(bool uplink)
 {
-    QString title = _vehicle->f_mission->f_title->text();
-    QString hash = _vehicle->f_mission->storage->dbHash;
-    if (hash.isEmpty())
+    if (_unit->f_mission->empty())
         return;
-    if (missionHash == hash)
-        return;
-    missionHash = hash;
-    //qDebug()<<title<<hash;
-    writeEvent("mission", title, hash, uplink);
+    auto mission = _unit->f_mission->toJson().toObject();
+    auto title = mission["title"].toString();
+    auto hash = mission["hash"].toString();
+
+    _stream.write_jso(getEventTimestamp(), "mission", mission, uplink);
 }
-void TelemetryRecorder::recordConfig(QString hash, QString title)
+void TelemetryRecorder::recordUnitConf(QString hash, QString title)
 {
-    if (!dbCheckRecord())
-        return;
-
     if (hash.isEmpty())
         return;
-    if (configHash == hash)
+    if (_configHash == hash)
         return;
-    configHash = hash;
-    //qDebug()<<hash<<info;
-    writeEvent("nodes", title, hash, false);
+    _configHash = hash;
 
-    //check for config title change
-    if (confTitle != title) {
-        confTitle = title;
-        if (recTelemetryID) {
-            QVariantMap info;
-            info.insert("comment", title);
-            DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(recTelemetryID, info);
-            req->exec();
-        }
-    }
+    _stream.write_jso(getEventTimestamp(), "nodes", _unit->toJson().toObject(), false);
 }
 
 bool TelemetryRecorder::checkAutoRecord(void)
 {
-    if (_vehicle->streamType() != PVehicle::TELEMETRY)
+    if (_unit->streamType() != PUnit::TELEMETRY)
         return recording();
 
-    Vehicle::FlightState fs = _vehicle->flightState();
+    Unit::FlightState fs = _unit->flightState();
     if (flightState_s != fs) {
         flightState_s = fs; //only once
 
         // stop recording when landed
-        if (fs == Vehicle::FS_LANDED && recording() && !recStopTimer.isActive())
+        if (fs == Unit::FS_LANDED && recording() && !recStopTimer.isActive())
             recStopTimer.start(2000);
 
         // start or restart when starts flying
-        if (fs == Vehicle::FS_TAKEOFF) {
+        if (fs == Unit::FS_TAKEOFF) {
             reset(); //restart
             setRecording(true);
         }
@@ -414,7 +344,7 @@ void TelemetryRecorder::setRecording(bool v)
 }
 void TelemetryRecorder::reset(void)
 {
-    recTelemetryID = 0;
+    _stream.close();
 
     _reset_timestamp = true;
     _ts_t0 = _ts_t1 = _ts_t2 = 0;

@@ -53,10 +53,10 @@ private:
     QTimer effectTimer;
 
     QTextToSpeech *tts;
-    QMap<QString, QVariantMap> phrases;
+    QMap<QString, QJsonObject> phrases;
+    QJsonObject defaultVoices; // voice by locale, i.e. "en_US": "Vicki"
     QList<QLocale> locales;
     QList<QVoice> voices;
-    QVariantMap defaultVoices;
 
     QQueue<QString> sayQueue;
     QString sayText;

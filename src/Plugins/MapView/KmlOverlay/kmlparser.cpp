@@ -33,13 +33,12 @@ void KmlParser::parse(const QByteArray &data)
     m_polygonId = 0;
     m_polygons.clear();
 
-    QString errorMessage;
-    int errorLine;
-    if (m_dom.setContent(data, &errorMessage, &errorLine)) {
+    auto parseResult = m_dom.setContent(data);
+    if (parseResult) {
         auto cb = std::bind(&KmlParser::placemarkCallback, this, _1);
         iterateOverChildrenElements(m_dom.documentElement(), "Placemark", cb);
     } else
-        apxMsgW() << QString("%1 at line %2").arg(errorMessage, errorLine);
+        apxMsgW() << QString("%1 at line %2").arg(parseResult.errorMessage, parseResult.errorLine);
 }
 
 QList<KmlPolygon> KmlParser::getPolygons()

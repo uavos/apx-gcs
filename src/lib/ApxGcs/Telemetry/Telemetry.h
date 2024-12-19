@@ -23,9 +23,10 @@
 
 #include <Fact/Fact.h>
 #include <QtCore>
-class Vehicle;
+
+class Unit;
 class TelemetryRecorder;
-class LookupTelemetry;
+class TelemetryRecords;
 class TelemetryReader;
 class TelemetryPlayer;
 class TelemetryShare;
@@ -34,13 +35,14 @@ class Telemetry : public Fact
 {
     Q_OBJECT
 public:
-    explicit Telemetry(Vehicle *parent);
+    explicit Telemetry(Unit *parent);
 
-    Vehicle *vehicle;
+    Unit *unit;
 
     TelemetryRecorder *f_recorder;
 
-    LookupTelemetry *f_lookup;
+    TelemetryRecords *f_records;
+
     TelemetryReader *f_reader;
     TelemetryPlayer *f_player;
     TelemetryShare *f_share;
@@ -53,7 +55,7 @@ private slots:
     void updateProgress();
     void updateDescr();
 
-    void recordFactTriggered(Fact *f);
+    void statsFactTriggered(Fact *f, QJsonObject jso);
 
     void recordLoaded();
 };

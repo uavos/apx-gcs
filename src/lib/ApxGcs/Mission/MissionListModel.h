@@ -23,7 +23,7 @@
 
 #include <Fact/FactListModel.h>
 #include <QtCore>
-class VehicleMission;
+class UnitMission;
 class MissionGroup;
 
 class MissionListModel : public FactListModel
@@ -31,10 +31,10 @@ class MissionListModel : public FactListModel
     Q_OBJECT
 
 public:
-    explicit MissionListModel(VehicleMission *parent);
+    explicit MissionListModel(UnitMission *parent);
 
 private:
-    VehicleMission *mission;
+    UnitMission *mission;
 
 protected:
     void populate(ItemsList *list, Fact *fact) override;

@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <Vehicles/Vehicle.h>
+#include <Fleet/Unit.h>
 #include <QtCore>
 
 class HttpService : public QObject
@@ -49,7 +49,7 @@ private:
     Fact *c_roll;
     Fact *c_pitch;
 private slots:
-    void vehicleSelected(Vehicle *vehicle);
+    void unitSelected(Unit *unit);
 
 public slots:
     void httpRequest(QTextStream &stream, QString req, const QTcpSocket *tcp);

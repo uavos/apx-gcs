@@ -21,18 +21,18 @@
  */
 #pragma once
 
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
 #include <telemetry/TelemetryDecoder.h>
 
-class PApxVehicle;
+class PApxUnit;
 
 class PApxTelemetry : public PTelemetry
 {
     Q_OBJECT
 
 public:
-    explicit PApxTelemetry(PApxVehicle *parent);
+    explicit PApxTelemetry(PApxUnit *parent);
 
     bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 

@@ -44,7 +44,7 @@ public:
     bool saveData(QByteArray data, QString fileName);
 
     Q_INVOKABLE virtual bool exportRequest(QString format, QString fileName) { return false; }
-    Q_INVOKABLE virtual bool importRequest(QString format, QString fileName) { return false; }
+    Q_INVOKABLE virtual bool importRequest(QStringList fileNames) { return false; }
 
 protected:
     QString _dataTitle;

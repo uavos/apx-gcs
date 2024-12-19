@@ -24,7 +24,7 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 
 NodeScript::NodeScript(Fact *fact)
     : QObject(fact)
@@ -33,7 +33,7 @@ NodeScript::NodeScript(Fact *fact)
     srcFile.setFileTemplate(
         QFileInfo(srcFile.fileTemplate()).absoluteDir().absoluteFilePath("script-XXXXXX.cpp"));
     srcFile.open();
-    qDebug() << srcFile.fileName();
+    // qDebug() << srcFile.fileName();
 
     outFileName = QFileInfo(srcFile.fileName())
                       .absoluteDir()

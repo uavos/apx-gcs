@@ -22,63 +22,90 @@
 #include "NodeStorage.h"
 #include "NodeItem.h"
 
-#include <Database/VehiclesReqNode.h>
+#include <Database/Database.h>
+#include <Database/NodesReqConf.h>
+#include <Database/NodesReqDict.h>
+#include <Database/NodesReqMeta.h>
+#include <Database/NodesReqUnit.h>
 
-NodeStorage::NodeStorage(NodeItem *node)
-    : QObject(node)
+NodeStorage::NodeStorage(NodeItem *node, Fact *parent)
+    : Fact(parent,
+           "load",
+           tr("Node Backups"),
+           tr("Node parameters from database"),
+           FilterModel,
+           "database-search")
     , _node(node)
-{}
+{
+    _dbmodel = new DatabaseModel(this);
+    setModel(_dbmodel);
+    setOpt("page", "Menu/FactMenuPageLookupDB.qml");
+
+    connect(_dbmodel, &DatabaseModel::requestRecordsList, this, &NodeStorage::dbRequestRecordsList);
+    connect(_dbmodel, &DatabaseModel::requestRecordInfo, this, &NodeStorage::dbRequestRecordInfo);
+    connect(_dbmodel, &DatabaseModel::itemTriggered, this, &NodeStorage::loadNodeConf);
+
+    connect(this, &Fact::triggered, this, &NodeStorage::dbRequestRecordsList);
+}
 
 void NodeStorage::saveNodeInfo()
 {
-    auto info = _node->get_info();
+    auto info = _node->ident();
     if (info.isEmpty())
         return;
 
-    auto *req = new DBReqSaveNodeInfo(info);
+    info["time"] = QDateTime::currentDateTime().toMSecsSinceEpoch();
+
+    auto req = new db::nodes::NodeSaveInfo(info);
     req->exec();
 }
 
 void NodeStorage::saveNodeDict()
 {
-    auto dict = _node->get_dict();
+    auto dict = _node->dict();
     if (dict.isEmpty()) {
         qWarning() << "no dict data";
         return;
     }
 
-    auto *req = new DBReqSaveNodeDict(_node->uid(), dict);
+    auto req = new db::nodes::NodeSaveDict(_node->uid(), dict);
+    connect(
+        req,
+        &db::nodes::NodeSaveDict::dictSaved,
+        this,
+        [this](quint64 dictID) { _dictID = dictID; },
+        Qt::QueuedConnection);
     req->exec();
 }
 
-void NodeStorage::saveNodeConfig()
+void NodeStorage::saveNodeConf()
 {
-    _configID = 0; // invalidate for vehicle config
-    auto hash = _node->get_dict().value("hash").toString();
-    if (hash.isEmpty()) {
-        qWarning() << "no dict hash";
+    _confID = 0; // invalidate for unit config
+    auto cache_hash = _node->dict().value("cache").toString();
+    if (cache_hash.isEmpty()) {
+        qWarning() << "no dict cache hash";
         return;
     }
-    auto *req = new DBReqSaveNodeConfig(_node->uid(), hash, _node->get_values());
+    auto req = new db::nodes::NodeSaveConf(_dictID, _node->get_values());
     connect(req,
-            &DBReqSaveNodeConfig::configSaved,
+            &db::nodes::NodeSaveConf::confSaved,
             this,
-            &NodeStorage::updateConfigID,
+            &NodeStorage::updateConfID,
             Qt::QueuedConnection);
     req->exec();
 }
-void NodeStorage::updateConfigID(quint64 configID)
+void NodeStorage::updateConfID(quint64 confID)
 {
-    _configID = configID;
-    if (configID)
-        emit configSaved();
+    _confID = confID;
+    if (confID)
+        emit confSaved();
 }
 
-void NodeStorage::loadNodeConfig(QString hash)
+void NodeStorage::loadLatestNodeConf()
 {
-    auto *req = new DBReqLoadNodeConfig(_node->uid(), hash);
+    auto req = new db::nodes::NodeLoadConf(_dictID, {});
     connect(req,
-            &DBReqLoadNodeConfig::configLoaded,
+            &db::nodes::NodeLoadConf::confLoaded,
             _node,
             &NodeItem::importValues,
             Qt::QueuedConnection);
@@ -87,11 +114,11 @@ void NodeStorage::loadNodeConfig(QString hash)
 
 void NodeStorage::loadNodeMeta()
 {
-    auto *req = new DBReqLoadNodeMeta(get_names(_node));
+    auto req = new db::nodes::LoadFieldMeta(get_names(_node));
     connect(req,
-            &DBReqLoadNodeMeta::metaDataLoaded,
+            &db::nodes::LoadFieldMeta::dictMetaLoaded,
             this,
-            &NodeStorage::metaDataLoaded,
+            &NodeStorage::dictMetaLoaded,
             Qt::QueuedConnection);
     req->exec();
 }
@@ -106,18 +133,24 @@ QStringList NodeStorage::get_names(Fact *f, QStringList path)
     }
     return names;
 }
-void NodeStorage::metaDataLoaded(QVariantMap meta)
+void NodeStorage::dictMetaLoaded(QJsonObject jso)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     uint cnt = 0;
-    for (auto name : meta.keys()) {
+    for (auto it = jso.begin(); it != jso.end(); ++it) {
+        const auto name = it.key();
         auto f = _node->findChild(name);
         if (!f)
             continue;
 
         cnt++;
 
-        auto m = meta.value(name).value<QVariantMap>();
-        auto descr = m.value("descr").toString();
+        // field metadata from the database
+        const auto meta = json::fix_numbers(json::remove_empty(it.value().toObject()));
+
+        auto descr = meta.value("descr").toString();
 
         descr = descr.left(descr.indexOf('\n'));
         descr = descr.left(descr.indexOf('.'));
@@ -128,11 +161,11 @@ void NodeStorage::metaDataLoaded(QVariantMap meta)
         if (!nf)
             continue;
 
-        auto def = m.value("def");
-        auto min = m.value("min");
-        auto max = m.value("max");
-        auto increment = m.value("increment");
-        auto decimal = m.value("decimal");
+        const auto def = meta.value("def").toVariant();
+        const auto min = meta.value("min").toVariant();
+        const auto max = meta.value("max").toVariant();
+        const auto increment = meta.value("increment").toVariant();
+        const auto decimal = meta.value("decimal").toVariant();
 
         if (!def.isNull())
             nf->setDefaultValue(def);
@@ -145,6 +178,80 @@ void NodeStorage::metaDataLoaded(QVariantMap meta)
         // if (!decimal.isNull())
         //     nf->setPrecision(decimal.toInt());
     }
-    if (cnt > 0)
-        qDebug() << "meta data loaded:" << cnt;
+    // if (cnt > 0)
+    //     qDebug() << "meta data loaded:" << cnt << "fields in" << timer.elapsed() << "ms";
+}
+
+void NodeStorage::dbRequestRecordsList()
+{
+    // subscribe to update list next time on ochanges
+    connect(Database::instance()->nodes,
+            &DatabaseSession::modified,
+            this,
+            &NodeStorage::dbRequestRecordsList,
+            Qt::UniqueConnection);
+
+    QStringList fields = {"NodeConf.title", "NodeDict.version"};
+    auto filter = _dbmodel->getFilterExpression(fields);
+
+    QString s = "SELECT * FROM NodeConf"
+                " LEFT JOIN NodeDict ON NodeConf.dictID=NodeDict.key "
+                " LEFT JOIN Node ON NodeDict.nodeID=Node.key "
+                " WHERE Node.uid=?";
+    if (!filter.isEmpty())
+        s += " AND (" + filter + ")";
+    s += " ORDER BY NodeConf.time DESC"
+         " LIMIT 50";
+
+    auto req = new db::nodes::Request(s, {_node->uid()});
+    connect(req,
+            &db::nodes::Request::queryResults,
+            _dbmodel,
+            &DatabaseModel::dbUpdateRecords,
+            Qt::QueuedConnection);
+    req->exec();
+}
+
+void NodeStorage::dbRequestRecordInfo(quint64 id)
+{
+    const QString s = "SELECT * FROM NodeConf"
+                      " LEFT JOIN NodeDict ON NodeConf.dictID=NodeDict.key "
+                      " LEFT JOIN Node ON NodeDict.nodeID=Node.key "
+                      " WHERE NodeConf.key=?";
+
+    auto req = new db::nodes::Request(s, {id});
+    connect(
+        req,
+        &db::nodes::Request::queryResults,
+        this,
+        [this, id](QJsonArray records) {
+            const auto jso = records.first().toObject();
+
+            auto time = QDateTime::fromMSecsSinceEpoch(jso.value("time").toVariant().toULongLong())
+                            .toString("yyyy MMM dd hh:mm:ss");
+            auto version = jso.value("version").toString();
+            auto title = jso.value("title").toString();
+
+            QJsonObject info;
+            info.insert("key", (qint64) id);
+            info.insert("title", time);
+            info.insert("value", title);
+            info.insert("descr",
+                        QString("v%1").arg(version.isEmpty() ? tr("Unknown version") : version));
+
+            _dbmodel->setRecordModelInfo(id, info);
+        },
+        Qt::QueuedConnection);
+    req->exec();
+}
+
+void NodeStorage::loadNodeConf(quint64 id)
+{
+    auto req = new db::nodes::NodeLoadConf(id);
+    connect(req,
+            &db::nodes::NodeLoadConf::confLoaded,
+            _node,
+            &NodeItem::importValues,
+            Qt::QueuedConnection);
+    req->exec();
 }

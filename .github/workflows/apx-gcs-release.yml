@@ -38,7 +38,7 @@ jobs:
         run: make release-package
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: |
             ${{ env.BUILD_DIR }}/deploy/*.AppImage
@@ -50,7 +50,7 @@ jobs:
     name: Build MacOS
     runs-on: macos-latest
     env:
-      VERSION_QT: 6.7.1
+      VERSION_QT: 6.8.1
       VERSION_SDL: 2.30.8
       VERSION_GST: 1.22.5
 
@@ -132,8 +132,18 @@ jobs:
         run: |
           make release-package
 
+      - name: Notarize package
+        env:
+          NOTARIZATION_API_KEY_ID: ${{ secrets.NOTARIZATION_API_KEY_ID }}
+          NOTARIZATION_API_KEY: ${{ secrets.NOTARIZATION_API_KEY }}
+          NOTARIZATION_API_ISSUER: ${{ secrets.NOTARIZATION_API_ISSUER }}
+        run: |
+          echo $NOTARIZATION_API_KEY | base64 --decode > notarization_api_key
+          xcrun notarytool submit ${{ env.BUILD_DIR }}/deploy/*.dmg --key notarization_api_key --key-id $NOTARIZATION_API_KEY_ID --issuer $NOTARIZATION_API_ISSUER --wait
+          xcrun stapler staple ${{ env.BUILD_DIR }}/deploy/*.dmg
+
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: |
             ${{ env.BUILD_DIR }}/deploy/*.dmg
@@ -149,7 +159,7 @@ jobs:
     # if: "false"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           path: package
       - name: Collecting files
@@ -182,7 +192,7 @@ jobs:
           prerelease: true
 
       - name: Publish release
-        uses: actions/github-script@v3
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.CI_PAT}}
           script: |
@@ -196,7 +206,7 @@ jobs:
               if (file.name.endsWith('.xml'))
                 continue;
               console.log('uploading', file.name);
-              await github.repos.uploadReleaseAsset({
+              await github.rest.repos.uploadReleaseAsset({
                 owner, repo,
                 release_id: "${{ steps.create_release.outputs.id }}",
                 name: file.name,
@@ -204,7 +214,7 @@ jobs:
               });            
             }
 
-            github.repos.updateRelease({
+            github.rest.repos.updateRelease({
               owner, repo,
               release_id: "${{ steps.create_release.outputs.id }}",
               draft: false

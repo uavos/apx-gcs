@@ -82,6 +82,12 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     }
     m_username = sname;
 
+    m_host = {
+        {"uid", m_machineUID},
+        {"username", m_username},
+        {"hostname", m_hostname},
+    };
+
     // check dry run
     QSettings sx;
     QString lastVer = sx.value("version").toString();
@@ -106,6 +112,11 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
     connect(this, &QCoreApplication::aboutToQuit, this, []() {
         QSettings().setValue("segfault", version());
     });
+
+// check debug
+#ifdef QT_DEBUG
+    m_debug = true;
+#endif
 
     // check installation
     m_installed = false;
@@ -157,7 +168,9 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
             }
         }
     }
-
+    if (m_debug) {
+        apxConsoleW() << tr("Debug build");
+    }
     if (!m_bundle) {
         apxConsoleW() << tr("Application is not a bundle");
     }

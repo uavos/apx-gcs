@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include "NodeStorage.h"
 #include "NodeToolsGroup.h"
 
 class NodeItem;
@@ -41,7 +42,7 @@ public:
     //NodeToolsGroup *f_status;
     NodeToolsGroup *f_maintenance;
 
-    LookupNodeBackup *f_backups;
+    NodeStorage *f_storage;
 
     Fact *f_restore;
 

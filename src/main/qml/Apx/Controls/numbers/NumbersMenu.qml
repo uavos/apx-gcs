@@ -40,10 +40,10 @@ Fact {
     Component.onCompleted: open()
 
     function open() {
-        //ensure mandala linked to vehicle
+        //ensure mandala linked to unit
         if(!parentFact){
             var p=parent
-            parentFact=apx.vehicles.local
+            parentFact=apx.fleet.local
             parent=p
         }
         loadSettings()

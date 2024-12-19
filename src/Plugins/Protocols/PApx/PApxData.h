@@ -21,27 +21,21 @@
  */
 #pragma once
 
-#include "PApxVehicle.h"
+#include "PApxUnit.h"
 
-#include <QHash>
-
-class PApxVehicle;
+class PApxUnit;
 
 class PApxData : public PData
 {
     Q_OBJECT
 
 public:
-    explicit PApxData(PApxVehicle *parent);
+    explicit PApxData(PApxUnit *parent);
 
     bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
 private:
     PApxRequest _req;
-
-    QHash<mandala::uid_t, QString> bundleFactsNamePathsMap{{mandala::cmd::nav::pos::uid, "cmd.pos"},
-                                                           {mandala::est::nav::pos::uid, "est.pos"},
-                                                           {mandala::est::nav::ref::uid, "est.ref"}};
 
     template<typename S>
     void sendBundleT(mandala::uid_t uid, const S &data)

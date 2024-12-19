@@ -28,7 +28,7 @@
 // TODO PLUGIN: real-time visualization of Mandala state:
 // See: https://youtu.be/NjUuAuBcoqs
 // See: https://doc.qt.io/qt-5/qtwidgets-graphicsview-elasticnodes-example.html
-// Intended to monitor by human mind the current state of the vehicle and its behavior in real-time.
+// Intended to monitor by human mind the current state of the system and its behavior in real-time.
 // Inspiration could be found on shaders workbench here:
 //   http://regis.toile-libre.org/fractals/MYOS/
 //   or here https://youtu.be/qMIS2BaDilY
@@ -38,7 +38,7 @@ Mandala::Mandala(Fact *parent)
     : Fact(parent,
            "mandala",
            "Mandala",
-           tr("Vehicle data tree"),
+           tr("System data tree"),
            Group | FilterModel | ModifiedGroup,
            "hexagon-multiple")
 {
@@ -103,7 +103,7 @@ void Mandala::updateStatus()
 void Mandala::resetCounters()
 {
     for (auto f : _valueFacts)
-        f->setModified(false);
+        f->resetCounters();
 }
 
 MandalaFact *Mandala::fact(mandala::uid_t uid) const
@@ -125,15 +125,20 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
     if (mpath.contains('.')) {
         f = static_cast<MandalaFact *>(findChild(mpath));
     }
-    if (!f && !silent) {
-        apxMsgW() << "Mandala fact not found:" << mpath;
+
+    // report missing facts
+    static QStringList missingFacts;
+    if (!f && !missingFacts.contains(mpath)) {
+        missingFacts.append(mpath);
+        if (!silent)
+            apxMsgW() << "Mandala fact not found:" << mpath;
     }
     return f;
 }
 
 mandala::uid_t Mandala::uid(const QString &mpath) // static
 {
-    for (auto const &d : mandala::meta) {
+    for (const auto &d : mandala::meta) {
         if (d.path == mpath)
             return d.uid;
     }
@@ -161,7 +166,7 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
 
 const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
 {
-    for (auto const &d : mandala::meta) {
+    for (const auto &d : mandala::meta) {
         if (d.uid == uid)
             return d;
     }
@@ -171,12 +176,12 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
 void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 {
     PBase::Values rec_values;
-    for (auto const &uid : values.keys()) {
+    for (const auto [uid, v] : values) {
         MandalaFact *f = fact(uid);
         if (!f)
             continue;
-        f->setValueFromStream(values.value(uid));
-        rec_values.insert(uid, f->value());
+        f->setValueFromStream(v);
+        rec_values.push_back({uid, f->value()});
     }
     emit recordTelemetry(rec_values, timestamp_ms);
     emit telemetryDecoded();
@@ -185,12 +190,12 @@ void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
 void Mandala::valuesData(PBase::Values values)
 {
     PBase::Values rec_values;
-    for (auto const &uid : values.keys()) {
+    for (const auto [uid, v] : values) {
         MandalaFact *f = fact(uid);
         if (!f)
             continue;
-        f->setValueFromStream(values.value(uid));
-        rec_values.insert(uid, f->value());
+        f->setValueFromStream(v);
+        rec_values.push_back({uid, f->value()});
     }
     emit recordData(rec_values, false);
 }
@@ -204,6 +209,6 @@ void Mandala::recordSendValue(mandala::uid_t uid, QVariant value)
         value = f->value();
     }
     PBase::Values rec_values;
-    rec_values.insert(uid, value);
+    rec_values.push_back({uid, value});
     emit recordData(rec_values, true);
 }

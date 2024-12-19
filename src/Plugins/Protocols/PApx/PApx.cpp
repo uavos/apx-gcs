@@ -39,9 +39,9 @@ PApx::PApx(Fact *parent)
 
 void PApx::updateLocal()
 {
-    m_local = new PApxVehicle(this, "LOCAL", PVehicle::UAV, 0, 0);
+    m_local = new PApxUnit(this, "LOCAL", PUnit::UAV, 0, 0);
     m_firmware = new PApxFirmware(this);
-    emit vehicle_available(m_local);
+    emit unit_available(m_local);
 }
 
 void PApx::process_downlink(QByteArray packet)
@@ -62,7 +62,7 @@ void PApx::process_downlink(QByteArray packet)
     pid.read(&stream);
 
     if (!mandala::cmd::env::unit::match(pid.uid)) {
-        // is not vehicle wrapped format - forward to local
+        // is not unit wrapped format - forward to local
         stream.reset();
         m_local->process_downlink(stream);
         return;
@@ -81,8 +81,8 @@ void PApx::process_downlink(QByteArray packet)
             return;
         if (stream.available() <= sizeof(xbus::unit::squawk_t))
             return;
-        auto const squawk = stream.read<xbus::unit::squawk_t>();
-        auto const squawkText = PApx::squawkText(squawk);
+        const auto squawk = stream.read<xbus::unit::squawk_t>();
+        const auto squawkText = PApx::squawkText(squawk);
 
         trace()->block(squawkText);
 
@@ -116,22 +116,22 @@ void PApx::process_downlink(QByteArray packet)
             return;
         }
 
-        QString uid = PApxVehicle::uidText(&uid_raw);
+        QString uid = PApxUnit::uidText(&uid_raw);
 
-        PVehicle::VehicleType type = ident.flags.gcs ? PVehicle::GCS : PVehicle::UAV;
+        PUnit::UnitType type = ident.flags.gcs ? PUnit::GCS : PUnit::UAV;
 
-        // lookup vehicle by uid
-        PApxVehicle *available = nullptr;
+        // lookup unit by uid
+        PApxUnit *available = nullptr;
         for (auto c : facts()) {
-            PApxVehicle *i = static_cast<PApxVehicle *>(c);
+            PApxUnit *i = static_cast<PApxUnit *>(c);
             if (i->uid() == uid) {
                 available = i;
                 break;
             }
         }
 
-        // lookup vehicle by squawk
-        PApxVehicle *identified = _squawk_map.value(squawk);
+        // lookup unit by squawk
+        PApxUnit *identified = _squawk_map.value(squawk);
 
         if (available) {
             available->packetReceived(pid.uid);
@@ -149,25 +149,25 @@ void PApx::process_downlink(QByteArray packet)
             }
             // update matched by uid info from ident
             available->setTitle(callsign);
-            available->setVehicleType(type);
+            available->setUnitType(type);
             available->setSquawk(squawk);
         } else {
-            // vehicle not created
+            // unit not created
             if (identified) {
                 qWarning() << "change squawk: " << PApx::squawkText(squawk);
                 _squawk_map.remove(squawk);
                 assign_squawk(uid_raw);
                 return;
             } else {
-                // add new identified vehicle
+                // add new identified unit
                 qDebug() << "created" << callsign << PApx::squawkText(squawk);
-                available = new PApxVehicle(this, callsign, type, &uid_raw, squawk);
+                available = new PApxUnit(this, callsign, type, &uid_raw, squawk);
                 _squawk_map.insert(squawk, available);
                 _req_ident.removeAll(squawk);
                 connect(available, &Fact::removed, this, [this, available]() {
                     _squawk_map.remove(_squawk_map.key(available));
                 });
-                emit vehicle_available(available);
+                emit unit_available(available);
                 available->packetReceived(pid.uid);
             }
         }
@@ -195,7 +195,7 @@ void PApx::process_downlink(QByteArray packet)
             return;
         }
 
-        auto *v = _squawk_map.value(squawk);
+        auto v = _squawk_map.value(squawk);
         if (v) {
             if (!check_vuid(v, vuid_n, pid.seq))
                 return;
@@ -208,11 +208,11 @@ void PApx::process_downlink(QByteArray packet)
             return;
         }
 
-        // new vehicle detected
+        // new unit detected
         auto pos_s = stream.pos();
         pid.read(&stream);
         if (mandala::cmd::env::nmt::msg::match(pid.uid)) {
-            // allow messages of unknown vehicles
+            // allow messages from unknown units
             stream.reset(pos_s);
             m_local->process_downlink(stream);
         } else {
@@ -235,7 +235,7 @@ void PApx::process_downlink(QByteArray packet)
         if (stream.available() <= xbus::pid_s::psize())
             return;
 
-        auto *v = _squawk_map.value(squawk);
+        auto v = _squawk_map.value(squawk);
         if (!v)
             return;
 
@@ -246,9 +246,9 @@ void PApx::process_downlink(QByteArray packet)
         return;
     }
     }
-    qDebug() << "orphan vehicle packet";
+    qDebug() << "orphan unit packet";
 }
-bool PApx::check_vuid(PApxVehicle *v, uint8_t n, uint8_t seq)
+bool PApx::check_vuid(PApxUnit *v, uint8_t n, uint8_t seq)
 {
     if (v->check_vuid(n, seq))
         return true;
@@ -294,8 +294,7 @@ void PApx::assign_squawk(const xbus::unit::uid_t &uid)
     xbus::unit::squawk_t squawk = 0xA5AD;
     xbus::unit::squawk_t tcnt = 32767;
     do {
-        squawk = (static_cast<xbus::unit::squawk_t>(QRandomGenerator::global()->generate())
-                  + tcnt)
+        squawk = (static_cast<xbus::unit::squawk_t>(QRandomGenerator::global()->generate()) + tcnt)
                  ^ squawk;
         if (squawk < 100 || squawk > 0xff00)
             continue;

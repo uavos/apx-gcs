@@ -3,7 +3,7 @@
 
 # Protocols abstraction
 
-The protocol, which is used to communicate to vehicle is defined by a plugin.
+The protocol, which is used to communicate to unit is defined by a plugin.
 
 The interface is defined in [ApxData](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxData/Protocols) lib.
 

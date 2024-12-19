@@ -64,7 +64,10 @@ private:
     bool loadFileMHX(QString ver, QByteArray *data);
 
     void updateNodesMeta(QDir dir);
-    void updateNodesMeta(QVariantMap &meta, QString version, QJsonValue json, QStringList path);
+    void updateNodesMeta(QJsonObject *meta,
+                         QString version,
+                         const QJsonValue &jsv,
+                         QStringList path);
 
 private slots:
     void sync();

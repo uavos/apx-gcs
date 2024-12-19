@@ -84,9 +84,9 @@ void DatalinkPorts::load()
     if (file.exists() && file.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(file.readAll());
         file.close();
-        for (auto const v : json.array()) {
+        for (const auto v : json.array()) {
             f_add->clear();
-            f_add->fromVariant(v.toObject().toVariantMap());
+            f_add->fromJson(v);
             addPort(new DatalinkPort(this, datalink, f_add));
         }
         f_add->defaults();

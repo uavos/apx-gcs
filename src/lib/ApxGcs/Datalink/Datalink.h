@@ -75,7 +75,7 @@ public:
     void setErrcnt(const uint &v);
 
 private:
-    QTimer heartbeatTimer; //data link alive for vehicle
+    QTimer heartbeatTimer; //data link alive broadcast (uplink)
     bool bReadOnly;
     QTimer onlineTimer;
 

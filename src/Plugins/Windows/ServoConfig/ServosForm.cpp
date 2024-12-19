@@ -21,7 +21,7 @@
  */
 #include "ServosForm.h"
 #include <App/AppLog.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
 
 #include "ui_ServosForm.h"
 
@@ -35,8 +35,8 @@ ServosForm::ServosForm(QWidget *parent)
     connect(ui->btnMove, SIGNAL(pressed()), this, SLOT(btnMove()));
     connect(ui->btnSetAdr, SIGNAL(pressed()), this, SLOT(btnSetAdr()));
 
-    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &ServosForm::vehicleSelected);
-    vehicleSelected(Vehicles::instance()->current());
+    connect(Fleet::instance(), &Fleet::unitSelected, this, &ServosForm::unitSelected);
+    unitSelected(Fleet::instance()->current());
 }
 
 void ServosForm::closeEvent(QCloseEvent *event)
@@ -46,11 +46,11 @@ void ServosForm::closeEvent(QCloseEvent *event)
     emit finished();
 }
 
-void ServosForm::vehicleSelected(Vehicle *vehicle)
+void ServosForm::unitSelected(Unit *unit)
 {
     for (auto c : clist)
         disconnect(c);
-    PVehicle *protocol = vehicle->protocol();
+    auto protocol = unit->protocol();
     if (!protocol)
         return;
     clist.append(connect(protocol->data(), &PData::serialData, this, &ServosForm::serialData));
@@ -128,7 +128,7 @@ void ServosForm::sendVolz(uint cmd, uint id, uint arg)
     pack[4] = (crc >> 8) & 0xFF;
     pack[5] = crc & 0xFF;
 
-    auto protocol = Vehicles::instance()->current()->protocol();
+    auto protocol = Fleet::instance()->current()->protocol();
     if (protocol)
         protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), pack);
 }
@@ -172,7 +172,7 @@ void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)
         pack[i] = vx;
     }
 
-    PVehicle *protocol = Vehicles::instance()->current()->protocol();
+    PUnit *protocol = Fleet::instance()->current()->protocol();
     if (!protocol)
         return;
     protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), pack);

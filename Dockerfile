@@ -37,14 +37,14 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}
     cmake --version
 
 # LINUXDEPLOY
+# Qt plugin continuous is segfaulting
 RUN curl -L https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy && \
     chmod +x /usr/local/bin/linuxdeploy && \
-    curl -L https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy-plugin-qt && \
+    curl -L https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/1-alpha-20240109-1/linuxdeploy-plugin-qt-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy-plugin-qt && \
     chmod +x /usr/local/bin/linuxdeploy-plugin-qt && \
     curl -L https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-$(cat /arch).tar.gz --output /tmp/patchelf.tar.gz && \
     cd /tmp && tar -xf patchelf.tar.gz && \
     mv bin/patchelf /usr/local/bin/ && rm -rf *
-
 
 # APPIMAGETOOL
 RUN curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(cat /arch).AppImage --output /usr/local/bin/appimagetool && \
@@ -88,6 +88,7 @@ RUN apt-get update && \
 RUN apt install -y --no-install-recommends \
     python3-dev && rm -Rf /var/cache/apt
 
+# Qt 6.8 does not work with Ubuntu 22.04
 ARG VERSION_QT=6.7.1
 RUN pip install aqtinstall &&\
     aqt install-qt linux$(cat /arch_qt) desktop ${VERSION_QT} -m \

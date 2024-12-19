@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Taxiway.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 #include <App/App.h>
 
 Taxiway::Taxiway(MissionGroup *parent)

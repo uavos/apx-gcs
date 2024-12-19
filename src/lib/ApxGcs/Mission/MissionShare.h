@@ -25,23 +25,23 @@
 #include <Sharing/Share.h>
 #include <QtCore>
 
-class VehicleMission;
+class UnitMission;
 
 class MissionShare : public Share
 {
     Q_OBJECT
 
 public:
-    explicit MissionShare(VehicleMission *mission,
+    explicit MissionShare(UnitMission *mission,
                           Fact *parent,
                           FactBase::Flags flags = FactBase::Flags(Group));
 
 private:
-    VehicleMission *_mission;
+    UnitMission *_mission;
 
     QString getDefaultTitle() override;
     bool exportRequest(QString format, QString fileName) override;
-    bool importRequest(QString format, QString fileName) override;
+    bool importRequest(QStringList fileNames) override;
 
 private slots:
     void updateActions();

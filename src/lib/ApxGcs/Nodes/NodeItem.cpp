@@ -26,13 +26,14 @@
 #include "Nodes.h"
 
 #include <App/AppGcs.h>
-#include <Vehicles/VehicleWarnings.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/UnitWarnings.h>
 #include <QFontDatabase>
 
 NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     : Fact(parent, "node#")
     , _nodes(nodes)
+    , _unit(nodes->unit)
     , _protocol(protocol)
 {
     setIcon("sitemap");
@@ -43,7 +44,6 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
 
     new NodeViewActions(this, _nodes);
 
-    storage = new NodeStorage(this);
     tools = new NodeTools(this, Action);
 
     //protocol
@@ -79,7 +79,7 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
     // models decorations update
     connect(this, &NodeItem::aliveChanged, this, &Fact::enabledChanged);
 
-    if (protocol && !_nodes->upgrading() && !_nodes->vehicle->isLocal())
+    if (protocol && !_nodes->upgrading() && !_unit->isLocal())
         protocol->requestIdent();
 }
 
@@ -92,7 +92,7 @@ void NodeItem::validateData()
     emit validChanged();
 
     updateStatus();
-    qDebug() << "Node data valid:" << path();
+    qDebug() << "Node data valid:" << title() << label();
 
     if (_protocol)
         emit _nodes->nodeNotify(this);
@@ -113,12 +113,12 @@ void NodeItem::updateStatus()
 void NodeItem::updateUpgrading()
 {
     if (_protocol->upgrading()) {
-        //qDebug() << "UPGRADING:" << title() << _nodes->vehicle->title();
+        //qDebug() << "UPGRADING:" << title() << _unit->title();
         clear();
         return;
     }
-    //qDebug() << "UPGRADING FINISHED:" << title() << _nodes->vehicle->title();
-    if (!_nodes->vehicle->isLocal()) {
+    //qDebug() << "UPGRADING FINISHED:" << title() << _unit->title();
+    if (!_unit->isLocal()) {
         _protocol->requestIdent();
     }
 }
@@ -143,8 +143,8 @@ void NodeItem::clear()
         emit validChanged();
     }
 
-    storage->updateConfigID(0);
-    _dict.clear();
+    tools->f_storage->updateConfID(0);
+    _dict = {};
     _status_field = nullptr;
     tools->clearCommands();
     m_fields.clear();
@@ -161,7 +161,7 @@ void NodeItem::upload()
     if (!_protocol)
         return;
 
-    storage->updateConfigID(0);
+    tools->f_storage->updateConfID(0);
 
     QList<NodeField *> fields;
     for (auto i : m_fields) {
@@ -178,9 +178,9 @@ void NodeItem::upload()
         fields.append(static_cast<NodeField *>(i));
     }
 
-    QVariantMap values;
+    QJsonObject values;
     for (auto i : fields) {
-        values.insert(i->fpath(), i->toVariant());
+        values.insert(i->fpath(), i->toJson());
         emit _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
     }
     _protocol->requestUpdate(values);
@@ -189,7 +189,7 @@ void NodeItem::confSaved()
 {
     qDebug() << modified();
     backup();
-    storage->saveNodeConfig();
+    tools->f_storage->saveNodeConf();
 }
 
 QVariant NodeItem::data(int col, int role)
@@ -207,11 +207,12 @@ QVariant NodeItem::data(int col, int role)
             return QColor(Qt::darkGray);
         if (col == FACT_MODEL_COLUMN_VALUE)
             return QColor(Qt::yellow).lighter(180);
-        if (!_protocol)
-            return QColor(Qt::darkGray);
 
         if (modified())
             break;
+
+        if (!_protocol)
+            return QColor(Qt::darkGray);
 
         if (alive() == alive_cnt)
             return QColor(255, 255, 200);
@@ -251,13 +252,22 @@ QString NodeItem::toolTip() const
     if (!_ident.isEmpty()) {
         st << "";
         st << "[ident]";
-        for (const auto [key, value] : _ident.asKeyValueRange()) {
-            QString s(value.toString().trimmed());
-            if (s.isEmpty())
-                s = QJsonDocument::fromVariant(value).toJson();
+        for (auto it = _ident.begin(); it != _ident.end(); ++it) {
+            const auto key = it.key();
+            if (key == "host")
+                continue;
+
+            const auto value = it.value();
+            QString s;
+            if (value.isObject())
+                s = QJsonDocument(value.toObject()).toJson(QJsonDocument::Compact);
+            else if (value.isArray())
+                s = QJsonDocument(value.toArray()).toJson(QJsonDocument::Compact);
+            else
+                s = value.toVariant().toString().trimmed();
             if (s.isEmpty())
                 continue;
-            st.append(QString("%1: %2").arg(key, s));
+            st.append(QString("%1: %2").arg(it.key(), s));
         }
     }
     return st.join('\n');
@@ -438,79 +448,91 @@ void NodeItem::linkGroupValues(Fact *f)
     }
 }
 
-QVariantMap NodeItem::get_info() const
+QJsonObject NodeItem::get_values() const
 {
-    QVariantMap m;
-    m.insert("uid", _ident.value("uid"));
-    m.insert("name", _ident.value("name"));
-    m.insert("version", _ident.value("version"));
-    m.insert("hardware", _ident.value("hardware"));
-    m.insert("user", _ident.value("user"));
-    if (_lastSeenTime)
-        m.insert("time", _lastSeenTime);
-    return m;
-}
-QVariantMap NodeItem::get_dict() const
-{
-    return _dict;
-}
-QVariantMap NodeItem::get_values() const
-{
-    QVariantMap m;
+    QJsonObject jso;
     for (auto f : m_fields) {
-        m.insert(f->fpath(), f->toVariant());
+        auto jsv = f->toJson();
+        if (jsv.isNull())
+            continue;
+        jso[f->fpath()] = jsv;
     }
-    return m;
+    return jso;
 }
-QVariant NodeItem::toVariant()
+QJsonValue NodeItem::toJson()
 {
-    QVariantMap m;
-    m.insert("info", get_info());
-    m.insert("dict", get_dict());
-    m.insert("values", get_values());
-    m.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
-    return m;
+    QJsonObject jso;
+    jso.insert("info", _ident);
+    jso.insert("dict", _dict);
+    jso.insert("values", get_values());
+    jso.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+    return jso;
 }
-void NodeItem::fromVariant(const QVariant &var)
+void NodeItem::fromJson(const QJsonValue &jsv)
 {
-    QVariantMap m = var.value<QVariantMap>();
-    if (m.isEmpty())
+    const auto jso = jsv.toObject();
+    if (jso.isEmpty())
         return;
 
-    auto info = m.value("info").value<QVariantMap>();
-    auto dict = m.value("dict").value<QVariantMap>();
-    auto values = m.value("values").value<QVariantMap>();
+    // json::save("nodes-fromJson-" + title(), jso);
+
+    auto values = jso.value("values").toObject();
+    const auto dict = jso.value("dict").toObject();
+
+    // fill default values to array
+    if (!dict.isEmpty()) {
+        for (const auto i : dict.value("fields").toArray()) {
+            const auto field = i.toObject();
+            auto type = field.value("type").toString();
+            if (type == "group" || type == "command")
+                continue;
+            auto name = field.value("name").toString();
+            if (values.contains(name))
+                continue;
+            values.insert(name, QJsonValue());
+        }
+    }
 
     if (!valid()) {
+        if (dict.isEmpty()) {
+            qWarning() << "missing dict" << title();
+            return;
+        }
         // construct the whole node
-        identReceived(info);
+        identReceived(jso.value("info").toObject());
         dictReceived(dict);
         confReceived(values);
         return;
     }
 
+    // confReceived(values);
     importValues(values);
 }
 
-void NodeItem::importValues(QVariantMap values)
+void NodeItem::importValues(QJsonObject values)
 {
-    QStringList st = values.keys();
-    for (auto f : m_fields) {
-        QString fpath = f->fpath();
+    // json::save("nodes-importValues-" + title(), values);
+
+    uint vcnt = values.size();
+    uint rcnt = 0;
+    for (const auto f : m_fields) {
+        const auto fpath = f->fpath();
         if (!values.contains(fpath))
             continue;
-        f->fromVariant(values.value(fpath));
-        st.removeOne(fpath);
+        f->fromJson(values.take(fpath));
+        rcnt++;
     }
-    if (st.size() > 0) {
-        for (auto &i : st) {
-            qWarning() << "missing field:" << i;
+    if (!values.isEmpty()) {
+        for (auto it = values.begin(); it != values.end(); ++it) {
+            const auto name = it.key();
+            const auto value = it.value();
+            qWarning() << "missing field:" << name;
         }
-        auto rcnt = values.size() - st.size();
-        message(tr("Imported %1 fields of %2").arg(rcnt).arg(values.size()),
+        message(tr("Imported %1 fields of %2").arg(rcnt).arg(vcnt),
                 AppNotify::FromApp | AppNotify::Warning);
     } else {
-        //message(tr("Imported config"), AppNotify::FromApp);
+        // message(tr("Imported config"), AppNotify::FromApp);
+        qDebug() << "imported" << title() << vcnt;
     }
 }
 
@@ -548,35 +570,32 @@ NodeField *NodeItem::field(QString name) const
 
 // Protocols connection
 
-void NodeItem::identReceived(QVariantMap ident)
+void NodeItem::identReceived(QJsonObject ident)
 {
     if (ident.isEmpty())
         return;
 
-    if (!ident.contains("user")) {
-        QVariantMap user;
-        user.insert("machineUID", App::machineUID());
-        user.insert("username", App::username());
-        user.insert("hostname", App::hostname());
-        ident.insert("user", user);
-    }
+    if (!ident.contains("host"))
+        ident["host"] = App::host();
 
     if (_ident == ident && valid())
         return;
 
-    qWarning() << "ident updated" << title() << _nodes->vehicle->title();
+    if (valid()) {
+        qWarning() << "ident updated" << title() << _unit->title();
+    }
 
     _ident = ident;
     clear();
 
     if (_protocol && !_protocol->upgrading()) {
         _lastSeenTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-        storage->saveNodeInfo();
+        tools->f_storage->saveNodeInfo();
         emit _nodes->nodeNotify(this);
 
         // try to request dict automatically
         do {
-            if (_nodes->vehicle->isLocal() && !_nodes->vehicle->active())
+            if (_unit->isLocal() && !_unit->active())
                 break;
             if (_nodes->upgrading())
                 break;
@@ -594,7 +613,7 @@ void NodeItem::identReceived(QVariantMap ident)
     setDescr(descr.join(' '));
 }
 
-void NodeItem::dictReceived(QVariantMap dict)
+void NodeItem::dictReceived(QJsonObject dict)
 {
     if (dict.isEmpty())
         return;
@@ -606,15 +625,15 @@ void NodeItem::dictReceived(QVariantMap dict)
     _dict = dict;
     _dict.remove("cached");
 
-    if (!_dict.value("time").toULongLong()) {
+    if (!_dict.value("time").toVariant().toULongLong()) {
         _dict.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
     }
 
-    auto fields = dict.value("fields").value<QVariantList>();
+    const auto fields = dict.value("fields").toArray();
 
     xbus::node::usr::cmd_t cmd_cnt = 0;
-    for (auto const &i : fields) {
-        auto field = i.value<QVariantMap>();
+    for (const auto &i : fields) {
+        auto field = i.toObject();
         QString name = field.value("name").toString();
         QString title = field.value("title").toString();
         QString type = field.value("type").toString();
@@ -654,34 +673,16 @@ void NodeItem::dictReceived(QVariantMap dict)
     linkGroupValues(this);
 
     // update descr and help from meta DB cache
-    storage->loadNodeMeta();
+    tools->f_storage->loadNodeMeta();
 
     backup();
 
     if (_protocol) {
         if (!_dict.value("cached").toBool())
-            storage->saveNodeDict();
-        if (!_nodes->vehicle->isLocal() || _nodes->vehicle->active())
+            tools->f_storage->saveNodeDict();
+        if (!_unit->isLocal() || _unit->active())
             _protocol->requestConf();
     }
-}
-
-static QVariant jsonToVariant(QJsonValue json)
-{
-    switch (json.type()) {
-    default:
-        break;
-    case QJsonValue::Double:
-        return QString::number(json.toVariant().toFloat());
-    case QJsonValue::Array: {
-        QVariantList list;
-        const auto a = json.toArray();
-        for (auto v : a)
-            list.append(jsonToVariant(v));
-        return list;
-    }
-    }
-    return json.toVariant();
 }
 
 bool NodeItem::loadConfigValue(const QString &name, const QString &value)
@@ -689,28 +690,30 @@ bool NodeItem::loadConfigValue(const QString &name, const QString &value)
     for (auto f : m_fields) {
         if (f->fpath() != name)
             continue;
-        f->fromVariant(value);
+        f->fromJson(value);
         return true;
     }
     return false;
 }
 
-void NodeItem::confReceived(QVariantMap values)
+void NodeItem::confReceived(QJsonObject values)
 {
     if (m_fields.isEmpty()) {
         qWarning() << "missing dict:" << title();
         return;
     }
 
+    // json::save("nodes-confReceived-" + title(), values);
+
     QStringList fields;
     for (auto f : m_fields) {
         QString fpath = f->fpath();
         if (!values.contains(fpath)) {
-            //qWarning() << "missing data for:" << fpath;
+            qWarning() << "missing data for:" << fpath;
             continue;
         }
         fields.append(fpath);
-        f->fromVariant(values.value(fpath));
+        f->fromJson(values.value(fpath));
     }
 
     if (valid()) {
@@ -719,44 +722,43 @@ void NodeItem::confReceived(QVariantMap values)
     }
 
     // report missing fields
-    for (const auto [key, value] : values.asKeyValueRange()) {
+    for (const auto &key : values.keys()) {
         if (!fields.contains(key)) {
             qWarning() << "missing field for:" << key;
         }
-    }
-    if (fields.size() != m_fields.size()) {
-        apxMsgW() << tr("Inconsistent parameters");
-        return;
     }
 
     validateData();
     setEnabled(true);
 
     if (_protocol && !_ident.value("reconf").toBool())
-        storage->saveNodeConfig();
+        tools->f_storage->saveNodeConf();
 }
-void NodeItem::confUpdated(QVariantMap values)
+void NodeItem::confUpdated(QJsonObject values)
 {
     // updated from another GCS instance
     if (!valid())
         return;
-    for (const auto name : values.keys()) {
-        auto f = field(name);
+
+    auto keys = values.keys();
+    for (auto it = values.constBegin(); it != values.constEnd(); ++it) {
+        auto f = field(it.key());
         if (!f)
             continue;
-        f->fromVariant(values.take(name));
+        f->fromJson(it.value());
         f->backup();
+        keys.removeOne(it.key());
         apxMsg() << tr("Updated").append(':') << f->name() + ':' << f->text();
     }
-    if (values.isEmpty())
+    if (keys.isEmpty())
         return;
 
-    apxMsgW() << tr("Fields not found").append(':') << values.keys();
+    apxMsgW() << tr("Fields not found").append(':') << keys;
 }
 
 void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)
 {
-    AppNotify::NotifyFlags flags = AppNotify::FromVehicle | AppNotify::Important;
+    AppNotify::NotifyFlags flags = AppNotify::FromUnit | AppNotify::Important;
     switch (type) {
     default:
         break;
@@ -775,8 +777,7 @@ void NodeItem::message(QString msg, AppNotify::NotifyFlags flags)
     if (!valueText().isEmpty()) {
         s.append(QString("/%1").arg(valueText()));
     }
-    _nodes->vehicle->message(msg, flags, s);
-    //_nodes->vehicle->recordNodeMessage(s, msg, protocol()->sn());
+    _unit->message(msg, flags, s, uid());
 }
 void NodeItem::statusReceived(const xbus::node::status::status_s &status)
 {

@@ -24,8 +24,8 @@
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 
+#include <Fleet/Fleet.h>
 #include <Telemetry/Telemetry.h>
-#include <Vehicles/Vehicles.h>
 
 #include "ui_SerialForm.h"
 
@@ -51,8 +51,8 @@ SerialForm::SerialForm(QWidget *parent)
 
     ui->eForward->setText(QSettings().value(objectName() + "_fwdDev").toString());
 
-    connect(Vehicles::instance(), &Vehicles::vehicleSelected, this, &SerialForm::vehicleSelected);
-    vehicleSelected(Vehicles::instance()->current());
+    connect(Fleet::instance(), &Fleet::unitSelected, this, &SerialForm::unitSelected);
+    unitSelected(Fleet::instance()->current());
 }
 
 void SerialForm::closeEvent(QCloseEvent *event)
@@ -69,11 +69,11 @@ void SerialForm::closeEvent(QCloseEvent *event)
     emit finished();
 }
 
-void SerialForm::vehicleSelected(Vehicle *vehicle)
+void SerialForm::unitSelected(Unit *unit)
 {
     for (auto c : clist)
         disconnect(c);
-    PVehicle *protocol = vehicle->protocol();
+    auto protocol = unit->protocol();
     if (!protocol)
         return;
     clist.append(connect(protocol->data(), &PData::serialData, this, &SerialForm::serialData));
@@ -118,7 +118,7 @@ void SerialForm::btnSend()
     if (ui->cbLF->isChecked())
         ba.append('\n');
 
-    auto protocol = Vehicles::instance()->current()->protocol();
+    auto protocol = Fleet::instance()->current()->protocol();
     if (protocol)
         protocol->data()->sendSerial(static_cast<quint8>(ui->ePortID->value()), ba);
 }
@@ -236,6 +236,6 @@ void SerialForm::uartRead()
     ba.resize(uart.read((uint8_t *) ba.data(), ba.size()));
     if (ba.size() <= 0)
         return;
-    Vehicles::instance()->current()->sendSerial(ui->ePortID->value(), ba);
+    Fleet::instance()->current()->sendSerial(ui->ePortID->value(), ba);
     QTimer::singleShot(100, this, SLOT(uartRead()));*/
 }

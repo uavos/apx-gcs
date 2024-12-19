@@ -24,6 +24,8 @@
 #include <App/AppDirs.h>
 #include <Fact/Fact.h>
 
+#include <ApxMisc/JsonHelpers.h>
+
 Sounds::Sounds(Fact *parent)
     : Fact(parent,
            QString(PLUGIN_NAME).toLower(),
@@ -100,15 +102,16 @@ Sounds::Sounds(Fact *parent)
     //read phrases config
     QFile fsys(AppDirs::res().filePath("templates/speech.json"));
     if (fsys.open(QFile::ReadOnly | QFile::Text)) {
-        QJsonDocument json = QJsonDocument::fromJson(fsys.readAll());
+        const auto jso = QJsonDocument::fromJson(fsys.readAll()).object();
         fsys.close();
-        foreach (QJsonValue v, json["phrases"].toArray()) {
-            QString key = v["msg"].toString();
-            if (key.isEmpty())
+        for (const auto &i : jso["phrases"].toArray()) {
+            const auto phrase = i.toObject();
+            auto msg = phrase["msg"].toString();
+            if (msg.isEmpty())
                 continue;
-            phrases.insert(key, v.toObject().toVariantMap());
+            phrases.insert(msg, phrase);
         }
-        defaultVoices = json["voices"].toObject().toVariantMap();
+        defaultVoices = jso["voices"].toObject();
     }
 
     //alarms
@@ -310,24 +313,30 @@ void Sounds::effectTimeout()
 
 void Sounds::say(const QString &text, bool ttsForce)
 {
-    //qDebug() << text;
+    qDebug() << text;
     QStringList st;
     if (tts) {
-        foreach (QString key, phrases.keys()) {
+        for (const auto [key, jso] : phrases.asKeyValueRange()) {
             if (!text.contains(key, Qt::CaseInsensitive))
                 continue;
-            const QVariantMap &m = phrases.value(key);
-            QString s = m.value(tts->voice().name(), m.value("say", key)).toString();
+
+            // find say words
+            // by voice name
+            auto s = jso.value(tts->voice().name()).toString();
+            if (s.isEmpty()) // by field name "say"
+                s = jso.value("say").toString();
+            if (s.isEmpty())
+                s = key; // use key as is
             if (s.isEmpty())
                 continue;
-            //qDebug()<<key<<s<<m;
+            qDebug() << key << s << jso;
             st.append(s);
         }
         if (st.isEmpty() && ttsForce)
             st.append(text);
-        //qDebug()<<st<<text;
+        qDebug() << st << text;
     } else {
-        foreach (QString key, speech.keys()) {
+        for (const auto &key : speech.keys()) {
             if (!text.contains(key, Qt::CaseInsensitive))
                 continue;
             st.append(key);
@@ -335,7 +344,7 @@ void Sounds::say(const QString &text, bool ttsForce)
     }
     if (st.isEmpty()) {
         //try effects
-        foreach (QString key, effects.keys()) {
+        for (const auto &key : effects.keys()) {
             if (text.contains(key, Qt::CaseInsensitive))
                 st.append(key);
         }

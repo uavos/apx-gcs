@@ -20,20 +20,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TelemetryReader.h"
-#include "LookupTelemetry.h"
+#include "TelemetryRecords.h"
+
 #include <App/App.h>
 #include <App/AppLog.h>
 #include <App/AppRoot.h>
 
-#include <Database/Database.h>
-#include <Database/TelemetryReqRead.h>
-#include <Database/TelemetryReqWrite.h>
+#include <Database/NodesReqUnit.h>
+#include <Database/StorageReq.h>
 
 #include <QGeoCoordinate>
 
-TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
+#include <Fleet/Fleet.h>
+#include <Mandala/MandalaAliases.h>
+
+TelemetryReader::TelemetryReader(Fact *parent)
     : Fact(parent, "reader", "", "", Group, "progress-download")
-    , lookup(lookup)
     , blockNotesChange(false)
     , m_totalSize(0)
     , m_totalTime(0)
@@ -50,27 +52,10 @@ TelemetryReader::TelemetryReader(LookupTelemetry *lookup, Fact *parent)
                         Action | ShowDisabled,
                         "reload");
     f_reload->setEnabled(false);
-    connect(f_reload, &Fact::triggered, this, &TelemetryReader::reloadTriggered);
+    connect(f_reload, &Fact::triggered, this, [this]() { loadRecord(_loadRecordID); });
 
     //info
-    connect(lookup, &LookupTelemetry::recordInfoChanged, this, &TelemetryReader::updateRecordInfo);
     connect(this, &TelemetryReader::totalTimeChanged, this, &TelemetryReader::updateStatus);
-
-    //load sequence
-    qRegisterMetaType<fieldData_t>("fieldData_t");
-    qRegisterMetaType<fieldNames_t>("fieldNames_t");
-    qRegisterMetaType<times_t>("times_t");
-    qRegisterMetaType<events_t>("events_t");
-    qRegisterMetaType<FactList>("FactList");
-
-    connect(lookup, &LookupTelemetry::recordTriggered, this, &TelemetryReader::load);
-
-    connect(&loadEvent, &DelayedEvent::triggered, this, &TelemetryReader::dbLoadData);
-    loadEvent.setInterval(500);
-
-    connect(this, &Fact::triggered, this, &TelemetryReader::loadCurrent);
-
-    updateRecordInfo();
 }
 
 void TelemetryReader::updateStatus()
@@ -79,229 +64,305 @@ void TelemetryReader::updateStatus()
     setValue(s);
 }
 
-void TelemetryReader::loadCurrent()
+void TelemetryReader::loadRecord(quint64 id)
 {
-    if (!lookup->recordId())
-        lookup->f_latest->trigger();
+    f_reload->setEnabled(false);
+
+    setTotalSize(0);
+    setTotalTime(0);
+    setProgress(0);
+
+    _loadRecordID = id;
+    _fields.clear();
+    _geoPath = {};
+    _totalDistance = 0;
+    _index_lat = -1;
+    _index_lon = -1;
+    _index_hmsl = -1;
+    _geoPos = {};
+
+    deleteChildren();
+    _recordInfo = {};
+    _jsoData.clear();
+
+    auto req = new db::storage::TelemetryLoadFile(id);
+    auto reader = req->reader();
+    connect(reader, &TelemetryFileReader::progressChanged, this, [this](int v) { setProgress(v); });
+    connect(req, &db::storage::TelemetryLoadFile::finished, this, &TelemetryReader::do_rec_finished);
+    connect(req, &db::storage::TelemetryLoadFile::recordInfo, this, &TelemetryReader::setRecordInfo);
+    connect(req, &db::storage::TelemetryLoadFile::fileOpened, this, [this](QString path) {
+        _recordFilePath = path;
+    });
+
+    // forward info to other facts (lists)
+    connect(req,
+            &db::storage::TelemetryLoadInfo::recordInfo,
+            this,
+            &TelemetryReader::recordInfoUpdated);
+
+    // forward as-is
+    connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::rec_values);
+    connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::rec_evt);
+    connect(reader, &TelemetryFileReader::jso, this, &TelemetryReader::rec_jso);
+    connect(reader, &TelemetryFileReader::raw, this, &TelemetryReader::rec_raw);
+
+    // processed by reader
+    connect(reader, &TelemetryFileReader::field, this, &TelemetryReader::do_rec_field);
+    connect(reader, &TelemetryFileReader::values, this, &TelemetryReader::do_rec_values);
+    connect(reader, &TelemetryFileReader::evt, this, &TelemetryReader::do_rec_evt);
+    connect(reader, &TelemetryFileReader::jso, this, &TelemetryReader::do_rec_jso);
+
+    // start parsing
+    emit rec_started();
+    req->exec();
 }
 
-void TelemetryReader::updateRecordInfo()
+MandalaFact *TelemetryReader::fieldFact(const Field &field)
 {
-    QVariantMap info = lookup->recordInfo();
-    setTotalTime(info.value("totalTime").toULongLong());
-    quint64 downlink = info.value("downlink").toULongLong();
-    quint64 uplink = info.value("uplink").toULongLong();
-    quint64 events = info.value("events").toULongLong();
-    setTotalSize(downlink + uplink + events);
-    evtCountMap.clear();
-    foreach (QString s, info.value("evtDetails").toString().split(',')) {
-        if (s.isEmpty())
-            continue;
-        QString key = s.left(s.indexOf('='));
-        QString v = s.mid(s.indexOf('=') + 1);
-        evtCountMap.insert(key, v.toUInt());
+    auto it = mandala::ALIAS_MAP.find(field.name.toStdString());
+    if (it != mandala::ALIAS_MAP.end()) {
+        auto uid = it->second;
+        return Fleet::replay()->f_mandala->fact(uid);
     }
-    if (uplink)
-        evtCountMap.insert("uplink", uplink);
+    return Fleet::replay()->f_mandala->fact(field.name, true);
+}
 
-    qint64 t = info.value("time").toLongLong();
+void TelemetryReader::do_rec_field(Field field)
+{
+    auto f = fieldFact(field);
+    if (f) {
+        // update field to match latest mandala info
+        auto name = f->mpath();
+        auto title = f->title();
+        auto units = f->units();
+        if (name != field.name)
+            title = QString("%1 (%2)").arg(title, field.name);
+        field = {name, {title, units}};
+    }
+
+    _fields.append(field);
+    auto name = field.name;
+    auto index = _fields.size() - 1;
+
+    if (name == "est.pos.lat")
+        _index_lat = index;
+    else if (name == "est.pos.lon")
+        _index_lon = index;
+    else if (name == "est.pos.hmsl")
+        _index_hmsl = index;
+
+    emit rec_field(field);
+}
+void TelemetryReader::do_rec_values(quint64 timestamp_ms, Values data, bool uplink)
+{
+    if (uplink) {
+        for (auto [index, value] : data) {
+            const auto &field = _fields[index];
+            QJsonObject jso;
+            jso["path"] = field.name;
+            jso["title"] = field.info.value(0);
+            jso["value"] = QJsonValue::fromVariant(value);
+            addEventFact(timestamp_ms, "uplink", jso, uplink);
+        }
+        return;
+    }
+
+    // collect flight path
+    for (auto [index, value] : data) {
+        // normally all three components should be present in one record
+        if (index == _index_lat)
+            _geoPos.setLatitude(value.toDouble());
+        else if (index == _index_lon)
+            _geoPos.setLongitude(value.toDouble());
+        else if (index == _index_hmsl)
+            _geoPos.setAltitude(value.toDouble());
+    }
+    if (_geoPos.isValid()) {
+        if (_geoPath.size() == 0)
+            _geoPath.addCoordinate(_geoPos);
+        else {
+            auto dist = _geoPath.coordinateAt(_geoPath.size() - 1).distanceTo(_geoPos);
+            _totalDistance += dist;
+            if (dist >= 10)
+                _geoPath.addCoordinate(_geoPos);
+        }
+        _geoPos = {};
+    }
+}
+void TelemetryReader::do_rec_evt(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
+{
+    addEventFact(timestamp_ms, name, data, uplink);
+}
+
+void TelemetryReader::do_rec_jso(quint64 timestamp_ms, QString name, QJsonObject data, bool uplink)
+{
+    addEventFact(timestamp_ms, name, data, uplink);
+
+    // save meta objects to databases
+    if (_importedMeta.contains(_loadRecordID))
+        return;
+
+    if (name == "nodes") {
+        auto req = new db::nodes::UnitImportConf(data);
+        req->exec();
+        // qDebug("%s", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
+    }
+}
+
+void TelemetryReader::do_rec_finished()
+{
+    emit rec_finished();
+    emit geoPathCollected(_geoPath, _totalDistance);
+    _geoPath = {};
+    f_reload->setEnabled(true);
+    setProgress(-1);
+}
+
+void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
+{
+    _recordInfo = info;
+    const auto &m = info;
+
+    setTotalTime(m["duration"].toVariant().toULongLong());
+
+    const auto &cnt = m["counters"].toObject();
+
+    setTotalSize(cnt["records"].toVariant().toULongLong());
+
+    quint64 downlink = cnt["downlink"].toVariant().toULongLong();
+    quint64 uplink = cnt["uplink"].toVariant().toULongLong();
+    quint64 events = cnt["evt"].toVariant().toULongLong();
+
+    qint64 t = m["timestamp"].toVariant().toULongLong();
     QString title = t > 0 ? QDateTime::fromMSecsSinceEpoch(t).toString("yyyy MMM dd hh:mm:ss")
                           : tr("Telemetry Data");
-    QString callsign = info.value("callsign").toString();
-    QString comment = info.value("comment").toString();
-    QString notes = info.value("notes").toString();
+    QString unitName = m["unit"]["name"].toString();
+    QString unitType = m["unit"]["type"].toString();
+    QString comment = m["conf"].toString();
     QString stime = AppRoot::timeToString(totalTime() / 1000, true);
 
     QStringList descr;
-    if (!callsign.isEmpty())
-        descr.append(callsign);
-    if (!comment.isEmpty() && comment != callsign)
+    if (!unitType.isEmpty() && unitType != unitName && unitType != "UAV")
+        descr.append(unitType);
+    if (!unitName.isEmpty())
+        descr.append(unitName);
+    if (!comment.isEmpty() && comment != unitName)
         descr.append(comment);
+
+    descr.append(QString("%1/%2/%3").arg(downlink).arg(uplink).arg(events));
 
     setTitle(title);
     setDescr(descr.join(" | "));
+
     blockNotesChange = true;
     f_notes->setValue(notes);
     blockNotesChange = false;
 
-    emit statsAvailable();
+    // qDebug("%s", QJsonDocument(info).toJson(QJsonDocument::Indented).constData());
+
+    // create info fact with text
+    auto f = new Fact(this, "info", tr("Record Info"), tr("Telemetry record metadata"), Group);
+    f->move(0);
+    f->setIcon("information");
+    f->setText("{}");
+    f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
+    f->setOpt("info", QJsonDocument(_recordInfo).toJson(QJsonDocument::Indented).constData());
+
+    _importedMeta.insert(id);
+
+    emit recordInfoChanged();
 }
 
-void TelemetryReader::load()
+void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data, bool uplink)
 {
-    f_reload->setEnabled(false);
-    quint64 key = lookup->recordId();
-    if (!key)
-        return;
-    setTotalSize(0);
-    setTotalTime(0);
-    setProgress(0);
-    deleteChildren();
-    DBReqTelemetryFindCache *req = new DBReqTelemetryFindCache(key);
-    connect(req,
-            &DBReqTelemetryFindCache::cacheFound,
-            this,
-            &TelemetryReader::dbCacheFound,
-            Qt::QueuedConnection);
-    connect(req,
-            &DBReqTelemetryFindCache::cacheNotFound,
-            this,
-            &TelemetryReader::dbCacheNotFound,
-            Qt::QueuedConnection);
-    req->exec();
-}
-
-void TelemetryReader::reloadTriggered()
-{
-    quint64 key = lookup->recordId();
-    if (!key)
-        return;
-    Database::instance()->telemetry->markCacheInvalid(key);
-    load();
-}
-
-void TelemetryReader::dbCacheNotFound(quint64 telemetryID)
-{
-    if (telemetryID != lookup->recordId())
-        return;
-    loadEvent.schedule();
-}
-void TelemetryReader::dbCacheFound(quint64 telemetryID)
-{
-    if (telemetryID != lookup->recordId())
-        return;
-    dbLoadData();
-}
-void TelemetryReader::dbLoadData()
-{
-    quint64 telemetryID = lookup->recordId();
-    if (!telemetryID)
-        return;
-    setProgress(0);
-    //request data
-    {
-        DBReqTelemetryMakeStats *req = new DBReqTelemetryMakeStats(telemetryID);
-        connect(lookup,
-                &LookupTelemetry::discardRequests,
-                req,
-                &DatabaseRequest::discard,
-                Qt::QueuedConnection);
-        connect(req,
-                &DBReqTelemetryMakeStats::statsUpdated,
-                this,
-                &TelemetryReader::dbStatsUpdated,
-                Qt::QueuedConnection);
-        connect(req,
-                &DBReqTelemetryMakeStats::statsFound,
-                this,
-                &TelemetryReader::dbStatsFound,
-                Qt::QueuedConnection);
-        req->exec();
+    Fact *g = child(name);
+    if (!g) {
+        g = new Fact(this, name, "", "", Fact::Group | Fact::Count);
     }
-}
 
-void TelemetryReader::dbStatsFound(quint64 telemetryID, QVariantMap stats)
-{
-    Q_UNUSED(stats)
-    if (telemetryID != lookup->recordId())
-        return;
-    TelemetryReaderDataReq *req = new TelemetryReaderDataReq(telemetryID);
-    connect(lookup,
-            &LookupTelemetry::discardRequests,
-            req,
-            &DatabaseRequest::discard,
-            Qt::QueuedConnection);
-    connect(req,
-            &TelemetryReaderDataReq::dataProcessed,
-            this,
-            &TelemetryReader::dbResultsDataProc,
-            Qt::QueuedConnection);
-    connect(req,
-            &DBReqTelemetryReadData::progress,
-            this,
-            &TelemetryReader::dbProgress,
-            Qt::QueuedConnection);
-    connect(req, &DatabaseRequest::finished, this, [this](DatabaseRequest::Status) {
-        setProgress(-1);
-    });
-    req->exec();
-}
-void TelemetryReader::dbStatsUpdated(quint64 telemetryID, QVariantMap stats)
-{
-    if (telemetryID != lookup->recordId())
-        return;
-    QVariantMap info = lookup->recordInfo();
-    foreach (QString key, stats.keys()) {
-        info[key] = stats.value(key);
-    }
-    lookup->setRecordInfo(info);
-    updateRecordInfo();
-    dbStatsFound(telemetryID, stats);
-}
-void TelemetryReader::dbResultsDataProc(quint64 telemetryID,
-                                        quint64 cacheID,
-                                        fieldData_t fieldData,
-                                        fieldNames_t fieldNames,
-                                        times_t times,
-                                        events_t events,
-                                        QGeoPath path,
-                                        Fact *f_events)
-{
-    if (telemetryID != lookup->recordId())
-        return;
+    name.replace('.', '_');
 
-    deleteChildren();
-    f_reload->setEnabled(true);
-
-    times.swap(this->times);
-    fieldNames.swap(this->fieldNames);
-    fieldData.swap(this->fieldData);
-    events.swap(this->events);
-    this->geoPath = path;
-
-    changeThread(f_events, thread());
-    f_events->setParentFact(this);
-    for (int i = 0; i < f_events->size(); ++i) {
-        Fact *g = f_events->child(i);
-        for (int j = 0; j < g->size(); ++j) {
-            Fact *f = g->child(j);
-            connect(f, &Fact::triggered, this, [this, f]() { emit recordFactTriggered(f); });
+    Fact *f = nullptr;
+    if (name == "uplink") {
+        auto path = data.value("path").toString();
+        auto title = data.value("title").toString();
+        auto value = data.value("value").toString();
+        name = QString(path).replace('.', '_');
+        f = g->child(name);
+        if (!f) {
+            f = new Fact(g, name, title, path);
+            //qDebug() << name << value;
+            f->setValue(1);
+        } else {
+            f->setValue(f->value().toInt() + 1);
+        }
+    } else if (name == "vcp") {
+        auto id = data.value("id").toString();
+        f = g->childByTitle(id);
+        if (!f) {
+            f = new Fact(g, id, id, uplink ? "TX" : "RX");
+            //qDebug() << name << value;
+            f->setValue(1);
+        } else {
+            f->setValue(f->value().toInt() + 1);
+        }
+    } else if (name == telemetry::EVT_MSG.name) {
+        auto msg = data.value("txt").toString();
+        auto src = data.value("src").toString();
+        auto uid = data.value("uid").toString();
+        auto descr = uid.isEmpty() ? src : (src + " | " + uid);
+        f = new Fact(g, name + "#", msg, descr);
+    } else if (name == telemetry::EVT_CONF.name) {
+        auto param = data.value("param").toString();
+        auto value = data.value("value").toString();
+        auto uid = data.value("uid").toString();
+        auto title = QString("%1=%2").arg(param).arg(value);
+        f = new Fact(g, name + "#", title, uid);
+    } else {
+        static const QHash<QString, QString> title_keys = {
+            // {"info", "name_create"},
+        };
+        auto key = title_keys.value(name, "title");
+        auto title = data.value(key).toString();
+        f = new Fact(g, name + "#", title, {});
+        // loadable data vs shown as page
+        if (name == "nodes" || name == "mission") {
+            auto zip = qCompress(QJsonDocument(data).toJson(QJsonDocument::Compact), 9);
+            _jsoData.insert(f, zip);
+        } else {
+            f->setOpt("page", "Menu/FactMenuPageInfoText.qml");
+            f->setOpt("info", QJsonDocument(data).toJson(QJsonDocument::Indented).constData());
         }
     }
 
-    quint64 tMax = 0;
-    if (!this->times.isEmpty())
-        tMax = qRound(this->times.last() * 1000.0);
-    setTotalTime(tMax);
-
-    setProgress(-1);
-    emit dataAvailable(cacheID);
-}
-void TelemetryReader::dbProgress(quint64 telemetryID, int v)
-{
-    if (telemetryID != lookup->recordId())
+    if (!f)
         return;
-    setProgress(v);
-}
-void TelemetryReader::changeThread(Fact *fact, QThread *thread)
-{
-    fact->moveToThread(thread);
-    for (auto i : fact->facts())
-        changeThread(i, thread);
+
+    f->setProperty("time", QVariant::fromValue(time));
+
+    if (f->opts().contains("page"))
+        return;
+
+    if (f->value().isNull())
+        f->setValue(QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz"));
+
+    connect(f, &Fact::triggered, this, [this, f]() {
+        emit statsFactTriggered(f, QJsonDocument::fromJson(qUncompress(_jsoData.value(f))).object());
+    });
 }
 
 void TelemetryReader::notesChanged()
 {
     if (blockNotesChange)
         return;
-    if (!lookup->recordId())
+    if (!_loadRecordID)
         return;
-    QVariantMap info;
-    info.insert("notes", f_notes->text());
-    DBReqTelemetryWriteInfo *req = new DBReqTelemetryWriteInfo(lookup->recordId(), info);
+    QJsonObject recordInfo;
+    recordInfo["notes"] = f_notes->text();
+    auto req = new db::storage::TelemetryWriteRecordFields(_loadRecordID, recordInfo);
     connect(
         req,
-        &DBReqTelemetryWriteInfo::finished,
+        &db::storage::TelemetryWriteRecordFields::finished,
         this,
         [this]() { apxMsg() << tr("Notes recorded").append(':') << title(); },
         Qt::QueuedConnection);

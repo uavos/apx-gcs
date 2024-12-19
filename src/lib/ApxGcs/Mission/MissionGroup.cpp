@@ -22,11 +22,11 @@
 #include "MissionGroup.h"
 #include "MissionItem.h"
 #include "MissionMapItemsModel.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 
 #include <App/AppRoot.h>
 
-MissionGroup::MissionGroup(VehicleMission *parent,
+MissionGroup::MissionGroup(UnitMission *parent,
                            const QString &name,
                            const QString &title,
                            const QString &descr,
@@ -183,12 +183,10 @@ void MissionGroup::clearGroup()
     setModified(true);
 }
 
-void MissionGroup::fromVariant(const QVariant &var)
+void MissionGroup::fromJson(const QJsonValue &jsv)
 {
     clearGroup();
-    if (var.isNull())
-        return;
-    for (auto i : var.value<QVariantList>()) {
-        createObject()->fromVariant(i);
+    for (const auto &i : jsv.toArray()) {
+        createObject()->fromJson(i);
     }
 }

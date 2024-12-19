@@ -67,7 +67,7 @@ public:
 
     Q_INVOKABLE virtual QGeoRectangle boundingGeoRectangle() const;
 
-    QVariant toVariant() override;
+    QJsonValue toJson() override;
 
 public slots:
     void updatePath();

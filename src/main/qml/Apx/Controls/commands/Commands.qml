@@ -27,7 +27,7 @@ import QtQuick.Controls.Material
 import Apx.Common
 import Apx.Menu
 
-import APX.Vehicles as APX
+import APX.Fleet as APX
 
 
 Rectangle {
@@ -44,7 +44,7 @@ Rectangle {
 
     readonly property real margins: width/200
 
-    property APX.Vehicle vehicle: apx.vehicles.current
+    property APX.Unit unit: apx.fleet.current
 
     //sizes
     readonly property real buttonHeight: height/10
@@ -57,7 +57,7 @@ Rectangle {
         anchors.margins: root.margins
         spacing: buttonSpacing*2
 
-        // top buttons of vehicle facts
+        // top buttons of unit facts
         RowLayout {
             Layout.alignment: Qt.AlignTop|Qt.AlignLeft
             height: buttonHeight
@@ -65,30 +65,30 @@ Rectangle {
 
             ValueButton {
                 size: buttonHeight
-                fact: vehicle
-                toolTip: apx.vehicles.title
+                fact: unit
+                toolTip: apx.fleet.title
                 showText: false
-                value: vehicle.title
+                value: unit.title
                 active: false
-                warning: vehicle.streamType<=0
+                warning: unit.streamType<=0
                 enabled: true
             }
 
             ValueButton {
                 size: buttonHeight
-                fact: vehicle.nodes
+                fact: unit.nodes
                 showText: false
                 showIcon: true
                 //valueScale: 0.6
                 value: fact.value?fact.value:""
-                warning: vehicle.isIdentified && !value
+                warning: unit.isIdentified && !value
                 active: fact.modified || fact.progress>=0 || (!fact.valid)
                 enabled: true
             }
 
             ValueButton {
                 size: buttonHeight
-                fact: vehicle.mission
+                fact: unit.mission
                 showText: false
                 showIcon: true
                 //valueScale: 0.6

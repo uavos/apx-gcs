@@ -31,7 +31,7 @@ MapObject {
     implicitZ: -100
 
     implicitCoordinate: QtPositioning.coordinate(modelData.lat,modelData.lon)
-    title: modelData.title
+    title: modelData.title?modelData.title:""
 
 
     textColor: "white"
@@ -40,7 +40,7 @@ MapObject {
     opacity: ui.effects?((hover||selected)?1:0.7):1
 
     onTriggered: {
-        sites.editor.trigger() //({"pos":Qt.point(0,ui.window.height)})
+        sitesPlugin.editor.trigger() //({"pos":Qt.point(0,ui.window.height)})
     }
 
     //dragging support
@@ -49,16 +49,17 @@ MapObject {
             var d=modelData
             d.lat=coordinate.latitude
             d.lon=coordinate.longitude
-            sites.lookup.model.set(index,d)
+            sitesPlugin.updateSite(d)
+            // sitesPlugin.db.model.set(index,d)
         }
     }
     draggable: selected
 
     onSelectedChanged: {
         if(selected){
-            sites.createEditor(modelData)
+            sitesPlugin.createEditor(modelData)
         }else{
-            sites.destroyEditor(modelData)
+            sitesPlugin.destroyEditor(modelData)
         }
     }
 }

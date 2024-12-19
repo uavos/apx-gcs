@@ -1,0 +1,7 @@
+module Fleet
+depends Apx.Map.Objects 1.0
+
+FleetMapItems 1.0 FleetMapItems.qml
+
+
+

@@ -21,11 +21,11 @@
  */
 #include "PData.h"
 
-#include "PVehicle.h"
+#include "PUnit.h"
 
-PData::PData(PVehicle *parent)
-    : PTreeBase(parent, "data", tr("Data"), tr("Vehicle C2"))
-    , _vehicle(parent)
+PData::PData(PUnit *parent)
+    : PTreeBase(parent, "data", tr("Data"), tr("Unit C2"))
+    , _unit(parent)
 {
     connect(this, &PData::valuesData, this, &PData::updateStreamType);
     connect(this, &PData::calibrationData, this, &PData::updateStreamType);
@@ -35,5 +35,5 @@ PData::PData(PVehicle *parent)
 
 void PData::updateStreamType()
 {
-    _vehicle->setStreamType(PVehicle::DATA);
+    _unit->setStreamType(PUnit::DATA);
 }

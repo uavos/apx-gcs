@@ -21,11 +21,15 @@
  */
 #pragma once
 
-#include "LookupSites.h"
+#include "NearestSites.h"
 #include "SiteEdit.h"
 #include <Fact/Fact.h>
 #include <QtCore>
 #include <QtLocation>
+
+#include <ApxMisc/DelayedEvent.h>
+
+class Unit;
 
 class Sites : public Fact
 {
@@ -40,18 +44,21 @@ public:
 
     Q_INVOKABLE void createEditor(QVariantMap item);
     Q_INVOKABLE void destroyEditor(QVariantMap item);
+    Q_INVOKABLE void updateSite(QVariantMap item) { dbUpdateSite(item); }
 
-    LookupSites *f_lookup;
+    NearestSites *f_nearest;
 
 private:
     SiteEdit *f_add;
     SiteEdit *f_edit;
 
+    DelayedEvent evtUpdateMissionSite;
+
 private slots:
     void appLoaded();
-    void syncEditorFromModel();
 
     void dbAddSite(QVariantMap item);
     void dbRemoveSite(QVariantMap item);
     void dbUpdateSite(QVariantMap item);
+    void dbFindSite();
 };

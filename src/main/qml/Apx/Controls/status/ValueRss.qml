@@ -37,7 +37,7 @@ ValueButton {
     readonly property var f_rss: mandala.sns.com.rss
     readonly property real m_rss: f_rss?f_rss.value:0
 
-    readonly property var f_gcs_rss: apx.vehicles.gcs?apx.vehicles.gcs.mandala.sns.com.rss:null
+    readonly property var f_gcs_rss: apx.fleet.gcs?apx.fleet.gcs.mandala.sns.com.rss:null
     readonly property real m_gcs_rss: f_gcs_rss?f_gcs_rss.value:0
 
 

@@ -21,7 +21,7 @@
  */
 #include "MissionItem.h"
 #include "MissionField.h"
-#include "VehicleMission.h"
+#include "UnitMission.h"
 
 #include <App/AppRoot.h>
 #include <QGeoCircle>
@@ -97,10 +97,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(this, &Fact::numChanged, this, &MissionItem::updatePath, Qt::QueuedConnection);
 
     //selection support
-    connect(group->mission,
-            &VehicleMission::selectedItemChanged,
-            this,
-            &MissionItem::updateSelected);
+    connect(group->mission, &UnitMission::selectedItemChanged, this, &MissionItem::updateSelected);
 
     //title
     connect(this, &Fact::numChanged, this, &MissionItem::updateTitle);
@@ -122,14 +119,14 @@ void MissionItem::hashData(QCryptographicHash *h) const
     }
 }
 
-QVariant MissionItem::toVariant()
+QJsonValue MissionItem::toJson()
 {
-    QVariant v = Fact::toVariant();
-    if (v.isNull())
+    const auto jsv = Fact::toJson();
+    if (jsv.isNull() || jsv.isUndefined())
         return {};
-    auto h = v.value<QVariantMap>();
-    h.remove(f_order->name());
-    return h;
+    auto jso = jsv.toObject();
+    jso.remove(f_order->name());
+    return jso;
 }
 
 int MissionItem::missionItemType() const

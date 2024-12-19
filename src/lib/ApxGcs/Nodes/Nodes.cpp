@@ -25,19 +25,19 @@
 
 #include <App/App.h>
 #include <App/AppLog.h>
-#include <Vehicles/Vehicle.h>
-#include <Vehicles/Vehicles.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
 
 #include <algorithm>
 
-Nodes::Nodes(Vehicle *vehicle)
-    : Fact(vehicle,
+Nodes::Nodes(Unit *unit)
+    : Fact(unit,
            "nodes",
            tr("Nodes"),
-           tr("Vehicle components"),
+           tr("Unit components"),
            Group | FlatModel | ModifiedGroup | ProgressTrack)
-    , vehicle(vehicle)
-    , _protocol(vehicle->protocol() ? vehicle->protocol()->nodes() : nullptr)
+    , unit(unit)
+    , _protocol(unit->protocol() ? unit->protocol()->nodes() : nullptr)
 {
     setIcon("puzzle");
 
@@ -49,8 +49,7 @@ Nodes::Nodes(Vehicle *vehicle)
                         "upload");
     connect(f_upload, &Fact::triggered, this, &Nodes::upload);
 
-    f_search
-        = new Fact(this, "search", tr("Search"), tr("Download from vehicle"), Action, "download");
+    f_search = new Fact(this, "search", tr("Search"), tr("Download from unit"), Action, "download");
     connect(f_search, &Fact::triggered, this, &Nodes::search);
 
     f_reload = new Fact(this, "reload", tr("Reload"), tr("Clear and download all"), Action, "reload");
@@ -96,7 +95,7 @@ Nodes::Nodes(Vehicle *vehicle)
 
     connect(this, &Fact::triggered, this, &Nodes::search);
 
-    if (vehicle->isIdentified())
+    if (unit->isIdentified())
         _protocol->requestSearch();
 }
 
@@ -119,10 +118,11 @@ void Nodes::node_available(PNode *node)
     m_nodes.append(f);
 
     connect(f, &NodeItem::validChanged, this, &Nodes::updateValid);
-    connect(f->storage,
-            &NodeStorage::configSaved,
-            vehicle->storage(),
-            &VehicleStorage::saveVehicleConfig);
+    connect(f->tools->f_storage,
+            &NodeStorage::confSaved,
+            unit->f_storage, // will still wait until all nodes valid
+            &UnitStorage::saveUnitConf,
+            Qt::QueuedConnection);
 
     updateValid();
     updateActions();
@@ -177,7 +177,7 @@ void Nodes::updateValid()
 
     if (!m_valid)
         return;
-    qDebug() << "nodes valid" << vehicle->title();
+    qDebug() << "nodes valid" << unit->title();
 }
 
 void Nodes::search()
@@ -213,7 +213,7 @@ void Nodes::clear()
 
 void Nodes::reload()
 {
-    if (vehicle->isReplay())
+    if (unit->isReplay())
         return;
 
     if (upgrading()) {
@@ -306,27 +306,27 @@ QString Nodes::getConfigTitle()
     return st.first();
 }
 
-QVariant Nodes::toVariant()
+QJsonValue Nodes::toJson()
 {
-    QVariantList list;
+    QJsonArray jsa;
     for (auto i : nodes()) {
-        list.append(i->toVariant());
+        jsa.append(i->toJson());
     }
-    return list;
+    return jsa;
 }
-void Nodes::fromVariant(const QVariant &var)
+void Nodes::fromJson(const QJsonValue &jsv)
 {
-    auto nodes = var.value<QVariantList>();
+    const auto nodes = jsv.toArray();
     if (nodes.isEmpty()) {
         return;
     }
 
-    if (vehicle->isReplay()) {
+    if (unit->isReplay()) {
         // check if nodes set is the same
         size_t match_cnt = 0;
-        for (auto i : nodes) {
-            auto uid
-                = i.value<QVariantMap>().value("info").value<QVariantMap>().value("uid").toString();
+        for (const auto &i : nodes) {
+            const auto node = i.toObject();
+            auto uid = node["info"]["uid"].toString();
             if (this->node(uid))
                 match_cnt++;
         }
@@ -334,15 +334,15 @@ void Nodes::fromVariant(const QVariant &var)
         if (match_cnt != m_nodes.size())
             clear();
 
-        for (auto i : nodes) {
-            auto node = i.value<QVariantMap>();
-            auto uid = node.value("info").value<QVariantMap>().value("uid").toString();
-            NodeItem *f = this->node(uid);
+        for (const auto &i : nodes) {
+            const auto node = i.toObject();
+            auto uid = node["info"]["uid"].toString();
+            auto f = this->node(uid);
             if (!f) {
                 f = new NodeItem(this, this, nullptr);
                 m_nodes.append(f);
             }
-            f->fromVariant(node);
+            f->fromJson(node);
         }
 
         updateValid();
@@ -356,15 +356,15 @@ void Nodes::fromVariant(const QVariant &var)
         return;
     }
 
-    // imprt by UID
+    // import by UID
     QList<NodeItem *> nlist = m_nodes;
-    QVariantList vlist;
-    for (auto i : nodes) {
-        auto node = i.value<QVariantMap>();
-        auto uid = node.value("info").value<QVariantMap>().value("uid").toString();
-        NodeItem *n = this->node(uid);
+    QJsonArray vlist;
+    for (const auto &i : nodes) {
+        const auto node = i.toObject();
+        auto uid = node["info"]["uid"].toString();
+        auto n = this->node(uid);
         if (n) {
-            n->fromVariant(node);
+            n->fromJson(node);
             nlist.removeOne(n);
         } else {
             vlist.append(node);
@@ -385,17 +385,16 @@ void Nodes::fromVariant(const QVariant &var)
         for (int i = 0; i < vlist.size(); ++i) {
             if (nlist.isEmpty())
                 break;
-            auto node = vlist.at(i).value<QVariantMap>();
-            auto info = node.value("info").value<QVariantMap>();
-            auto name = info.value("name").toString();
-            auto label = node.value("values").value<QVariantMap>().value("label").toString();
+            const auto node = vlist.at(i).toObject();
+            auto name = node["info"].toObject().value("name").toString();
+            auto label = node["values"].toObject().value("label").toString();
 
-            for (auto n : nlist) {
-                if (n->title() != name && n->label() != label)
+            for (auto f : nlist) {
+                if (f->title() != name && f->label() != label)
                     continue;
-                n->fromVariant(node);
-                nlist.removeOne(n);
-                vlist.removeAt(i);
+                f->fromJson(node);
+                nlist.removeOne(f);
+                vlist.removeAt(i--);
                 break;
             }
         }
@@ -406,17 +405,15 @@ void Nodes::fromVariant(const QVariant &var)
         for (int i = 0; i < vlist.size(); ++i) {
             if (nlist.isEmpty())
                 break;
-            auto node = vlist.at(i).value<QVariantMap>();
-            auto info = node.value("info").value<QVariantMap>();
-            auto name = info.value("name").toString();
-            auto label = node.value("values").value<QVariantMap>().value("label").toString();
+            const auto node = vlist.at(i).toObject();
+            auto name = node["info"].toObject().value("name").toString();
 
             for (auto n : nlist) {
                 if (n->title() != name)
                     continue;
-                n->fromVariant(node);
+                n->fromJson(node);
                 nlist.removeOne(n);
-                vlist.removeAt(i);
+                vlist.removeAt(i--);
                 break;
             }
         }
@@ -425,10 +422,10 @@ void Nodes::fromVariant(const QVariant &var)
 
         // try import shiva config
         do {
-            QVariantList shivas; // find import shivas
+            QJsonArray shivas; // find import shivas
             for (int i = 0; i < vlist.size(); ++i) {
-                auto node = vlist.at(i).value<QVariantMap>();
-                auto sh = node.value("values").value<QVariantMap>().value("shiva.mode");
+                const auto node = vlist.at(i).toObject();
+                auto sh = node["values"].toObject().value("shiva.mode");
                 if (!sh.toBool())
                     continue;
                 // enabled shivas only
@@ -436,6 +433,7 @@ void Nodes::fromVariant(const QVariant &var)
             }
             if (shivas.isEmpty())
                 break;
+
             QMap<QString, NodeItem *> nshiva;
             // find available to import shivas with priority to enabled ones
             for (auto n : nlist) {
@@ -454,7 +452,7 @@ void Nodes::fromVariant(const QVariant &var)
             if (nshiva.isEmpty())
                 break;
 
-            for (auto shiva : shivas) {
+            for (int i = 0; i < shivas.size(); ++i) {
                 // look for nodes by priority
                 NodeItem *n = {};
                 // search for enabled nav
@@ -484,9 +482,15 @@ void Nodes::fromVariant(const QVariant &var)
 
                 apxMsg() << tr("Importing autopilot config for %1").arg(n->title());
 
-                n->fromVariant(shiva);
+                const auto shiva = shivas.at(i).toObject();
+                n->fromJson(shiva);
                 nlist.removeOne(n);
-                vlist.removeOne(shiva);
+                for (int j = 0; j < vlist.size(); ++j) {
+                    if (vlist.at(j) == shiva) {
+                        vlist.removeAt(j);
+                        break;
+                    }
+                }
             }
         } while (0); // shiva import
 
@@ -495,11 +499,11 @@ void Nodes::fromVariant(const QVariant &var)
     if (!vlist.isEmpty()) {
         apxMsg() << tr("Ignored configuration for %1 nodes").arg(vlist.size());
         QStringList st;
-        for (auto i : vlist) {
-            auto node = i.value<QVariantMap>();
-            auto info = node.value("info").value<QVariantMap>();
-            auto name = info.value("name").toString();
-            auto label = node.value("values").value<QVariantMap>().value("label").toString();
+        for (int i = 0; i < vlist.size(); ++i) {
+            const auto node = vlist.at(i).toObject();
+            auto name = node["info"].toObject().value("name").toString();
+            auto label = node["values"].toObject().value("label").toString();
+
             QString s = name;
             if (!label.isEmpty())
                 s.append(QString("-%1").arg(label));
