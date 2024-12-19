@@ -212,7 +212,7 @@ RowLayout {
             verticalAlignment: Text.AlignVCenter
             font: apx.font_narrow(Style.fontSize)
             color: elevationItem.color
-            text: isNaN(elevationItem.elevation) ? "NO" : elevationItem.elevation + "m"
+            text: isNaN(elevationItem.elevation) ? "NO" : Math.round(elevationItem.elevation) + "m"
         }
         ToolTipArea {
             text: qsTr("Point elevation above sea level")

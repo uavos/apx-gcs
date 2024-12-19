@@ -89,7 +89,7 @@ Item {
     {
         if(fact.parentFact.isFeets)
             return m2ft(item.elevation) + "ft"
-        return item.elevation + "m"     
+        return Math.round(item.elevation) + "m"     
     }
 
     // Feets processing

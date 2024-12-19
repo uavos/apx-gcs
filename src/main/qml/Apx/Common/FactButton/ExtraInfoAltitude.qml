@@ -100,7 +100,7 @@ Item {
     {
         if(fact.parentFact.isFeets)
             return m2ft(homeHmsl) + "ft"
-        return homeHmsl + "m"     
+        return Math.round(homeHmsl) + "m"     
     }
 
     // Feets processing
