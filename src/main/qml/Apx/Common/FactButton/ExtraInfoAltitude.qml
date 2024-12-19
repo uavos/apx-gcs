@@ -65,8 +65,8 @@ Item {
     }
 
     onChosenChanged: _editor.enabled = chosen
-    onAglChanged: altitudeProcessing()
-    onAmslChanged: altitudeProcessing()
+    onAglChanged: if(chosenFact == Waypoint.AGL) altitudeProcessing()
+    onAmslChanged: if(chosenFact == Waypoint.AMSL) altitudeProcessing()
     onHomeHmslChanged: altitudeProcessing()
     
     Component.onCompleted: {
@@ -92,7 +92,7 @@ Item {
             return
         if (chosenFact == Waypoint.AGL)
             fact.value = elevation + agl - homeHmsl
-        if (chosenFact == Waypoint.AMSL) 
+        else if (chosenFact == Waypoint.AMSL) 
             fact.value = amsl - homeHmsl
     }
 
@@ -108,24 +108,18 @@ Item {
     property var amslOpts: fact.parentFact.child("amsl").opts
     property var opts: fact.opts
 
-    onAglOptsChanged: altitudeFtProcessingAgl()
-    onAmslOptsChanged: altitudeFtProcessingAmsl()
+    onAglOptsChanged: if (chosenFact == Waypoint.AGL) altitudeFtProcessing()
+    onAmslOptsChanged: if (chosenFact == Waypoint.AMSL) altitudeFtProcessing()
 
-    function altitudeFtProcessingAgl() {
+    function altitudeFtProcessing() {
         if(isNaN(elevation))
             return
-        if (chosenFact != Waypoint.AGL)
-            return
-        opts.ft = parseInt(aglOpts.ft) + m2ft(elevation - homeHmsl)
-        fact.opts = opts
-    }
-
-    function altitudeFtProcessingAmsl() {
-        if(isNaN(elevation))
-            return
-        if (chosenFact != Waypoint.AMSL)
-            return
-        opts.ft = parseInt(amslOpts.ft) - m2ft(homeHmsl)
-        fact.opts = opts
+        if (chosenFact == Waypoint.AGL) {
+            opts.ft = parseInt(aglOpts.ft) + m2ft(elevation - homeHmsl)
+            fact.opts = opts
+        } else if (chosenFact == Waypoint.AMSL) {
+            opts.ft = parseInt(amslOpts.ft) - m2ft(homeHmsl)
+            fact.opts = opts
+        }
     }
 }

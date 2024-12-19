@@ -35,7 +35,8 @@ Item {
     property var coordinate: fact.parentFact.coordinate
     property var elevation: NaN
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
-    property bool chosen: fact.parentFact.chosen == Waypoint.AGL
+    property var chosenFact: fact.parentFact.chosen
+    property bool chosen: chosenFact == Waypoint.AGL
 
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter
@@ -63,7 +64,7 @@ Item {
 
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
     onChosenChanged: _editor.enabled = chosen
-    onAltitudeChanged: aglProcessing()
+    onAltitudeChanged: if(chosenFact != Waypoint.AGL) aglProcessing()
     
     Component.onCompleted: {
         _editor.enabled = chosen
