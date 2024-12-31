@@ -26,16 +26,22 @@
 
 Waypoint::Waypoint(MissionGroup *parent)
     : MissionItem(parent, "w#", "", "")
-    , m_bearing(0)
-    , m_reachable(false)
-    , m_warning(false)
 {
-    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);
-    f_altitude->setUnits("m");
+    f_amsl = new MissionField(this, "amsl", tr("AMSL mode"), tr("Altitude above sea level"), Bool);
 
-    f_type = new MissionField(this, "type", tr("Type"), tr("Maneuver type"), Enum);
-    f_type->setEnumStrings(QStringList() << "direct"
-                                         << "track");
+    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);
+    _altUnits = "m";
+
+    f_xtrack = new MissionField(this,
+                                "xtrack",
+                                tr("Line tracking"),
+                                tr("Maintain path crosstrack"),
+                                Bool);
+    f_vtrack = new MissionField(this,
+                                "vtrack",
+                                tr("Altitude tracking"),
+                                tr("Precise altitude control"),
+                                Bool);
 
     //actions
     f_actions = new WaypointActions(this);
@@ -47,9 +53,18 @@ Waypoint::Waypoint(MissionGroup *parent)
     else
         f_altitude->setValue(200);
 
-    connect(f_type, &Fact::valueChanged, this, &Waypoint::updatePath);
+    connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
+    connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateTitle);
 
-    connect(f_type, &Fact::valueChanged, this, &Waypoint::updateTitle);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAMSL);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateTitle);
+    updateAMSL();
+
+    connect(f_xtrack, &Fact::valueChanged, this, &Waypoint::updatePath);
+
+    connect(f_xtrack, &Fact::valueChanged, this, &Waypoint::updateTitle);
+    connect(f_vtrack, &Fact::valueChanged, this, &Waypoint::updateTitle);
+
     connect(f_altitude, &Fact::valueChanged, this, &Waypoint::updateTitle);
     updateTitle();
 
@@ -61,15 +76,38 @@ Waypoint::Waypoint(MissionGroup *parent)
 
 void Waypoint::updateTitle()
 {
+    if (blockUpdates)
+        return;
+
     QStringList st;
     st.append(QString::number(num() + 1));
-    st.append(f_type->valueText().left(1).toUpper());
-    st.append(AppRoot::distanceToString(f_altitude->value().toInt()));
+    if (f_xtrack->value().toBool())
+        st.append("T");
+    if (f_vtrack->value().toBool())
+        st.append("H");
+    st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
     setTitle(st.join(' '));
 }
 void Waypoint::updateDescr()
 {
     setDescr(f_actions->value().toString());
+}
+
+void Waypoint::updateAMSL()
+{
+    if (blockUpdates)
+        return;
+
+    auto m_ref_hmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
+    const int href = m_ref_hmsl ? m_ref_hmsl->value().toInt() : 0;
+
+    if (f_amsl->value().toBool()) {
+        f_altitude->setUnits(QString("%1 %2").arg(_altUnits, tr("AMSL")));
+        f_altitude->setValue(f_altitude->value().toInt() + href);
+    } else {
+        f_altitude->setUnits(_altUnits);
+        f_altitude->setValue(f_altitude->value().toInt() - href);
+    }
 }
 
 QGeoPath Waypoint::getPath()
@@ -117,7 +155,7 @@ QGeoPath Waypoint::getPath()
             pt = prev->coordinate();
             if (prev->geoPath().path().size() > 1) {
                 crs = prev->bearing();
-                wptLine = f_type->text().toLower() == "track";
+                wptLine = f_xtrack->value().toBool();
             } else
                 wptLine = true;
         }

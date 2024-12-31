@@ -33,8 +33,6 @@ public:
     explicit WaypointActions(Waypoint *parent);
 
     Fact *f_speed;
-    Fact *f_shot;
-    Fact *f_dshot;
     Fact *f_script;
     Fact *f_poi;
 
