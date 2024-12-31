@@ -33,6 +33,7 @@
 #include "Waypoint.h"
 
 #include <App/App.h>
+#include <ApxMisc/JsonHelpers.h>
 #include <Fleet/Fleet.h>
 #include <Fleet/Unit.h>
 #include <Nodes/Nodes.h>
@@ -301,6 +302,9 @@ QJsonValue UnitMission::toJson()
     jso.insert("hash", QString(hash.result().toHex().toUpper()));
 
     jso.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
+
+    jso = json::remove_empty(json::fix_numbers(jso), true);
+
     return jso;
 }
 void UnitMission::fromJson(const QJsonValue &jsv)

@@ -55,6 +55,7 @@ Waypoint::Waypoint(MissionGroup *parent)
 
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateTitle);
+    connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateDescr);
 
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAMSL);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateTitle);
@@ -90,6 +91,9 @@ void Waypoint::updateTitle()
 }
 void Waypoint::updateDescr()
 {
+    if (blockUpdates)
+        return;
+
     setDescr(f_actions->value().toString());
 }
 
