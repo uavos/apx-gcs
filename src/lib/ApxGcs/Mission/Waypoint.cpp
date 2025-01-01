@@ -29,14 +29,28 @@ Waypoint::Waypoint(MissionGroup *parent)
     , m_bearing(0)
     , m_reachable(false)
     , m_warning(false)
+    , m_chosen(ALT)
 {
-    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);
+    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above home"), Int);
     f_altitude->setUnits("m");
+    f_altitude->setOpt("extrainfo", "ExtraInfoAltitude.qml");
+    connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
+
+    f_agl = new MissionField(this, "agl", tr("AGL"), tr("Altitude above ground level"), Int);
+    f_agl->setUnits("m");
+    f_agl->setDefaultValue(0);
+    f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
+    connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
+
+    f_amsl = new MissionField(this, "amsl", tr("AMSL"), tr("Altitude above sea level"), Int);
+    f_amsl->setUnits("m");
+    f_amsl->setDefaultValue(0);
+    f_amsl->setOpt("extrainfo", "ExtraInfoAmsl.qml");
+    connect(f_amsl, &Fact::triggered, this, [this]() { this->setChosen(AMSL); });
 
     f_type = new MissionField(this, "type", tr("Type"), tr("Maneuver type"), Enum);
     f_type->setEnumStrings(QStringList() << "direct"
                                          << "track");
-
     //actions
     f_actions = new WaypointActions(this);
 
@@ -211,4 +225,22 @@ void Waypoint::setWarning(bool v)
         return;
     m_warning = v;
     emit warningChanged();
+}
+
+Waypoint::ChosenFact Waypoint::chosen() const
+{
+    return m_chosen;
+}
+
+void Waypoint::setChosen(ChosenFact v)
+{
+    if (m_chosen == v)
+        return;
+    m_chosen = v;
+    emit chosenChanged();
+}
+
+int Waypoint::unsafeAgl() const
+{
+    return UNSAFE_AGL;
 }
