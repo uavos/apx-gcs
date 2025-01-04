@@ -308,7 +308,9 @@ void TelemetryFrame::rec_finished()
         auto curve = plot->addCurve(s, title, descr, QPen(c, 0, style));
 
         // assign data to plot
-        curve->setSamples(_samples[index]);
+        if (index < _samples.size()) {
+            curve->setSamples(_samples[index]);
+        }
     }
 
     plot->restoreSettings();
