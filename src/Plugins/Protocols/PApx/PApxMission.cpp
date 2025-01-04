@@ -277,10 +277,10 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
         QVariantMap m;
         m.insert("lat", mandala::a32_to_deg(e.lat));
         m.insert("lon", mandala::a32_to_deg(e.lon));
-        m.insert("alt", e.alt);
+        m.insert("altitude", e.alt);
         m.insert("amsl", e.amsl);
-        m.insert("xtrk", e.xtrk);
-        m.insert("vtrk", e.vtrk);
+        m.insert("xtrack", e.xtrk);
+        m.insert("vtrack", e.vtrk);
         if (e.act) {
             QVariantMap actions;
             _unpack_act(&actions, act, e.act);
@@ -385,10 +385,10 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         xbus::mission::wp_s e{};
         e.lat = mandala::deg_to_a32(im.value("lat").toDouble());
         e.lon = mandala::deg_to_a32(im.value("lon").toDouble());
-        e.alt = im.value("alt").toInt();
+        e.alt = im.value("altitude").toInt();
         e.amsl = im.value("amsl").toBool();
-        e.xtrk = im.value("xtrk").toBool();
-        e.vtrk = im.value("vtrk").toBool();
+        e.xtrk = im.value("xtrack").toBool();
+        e.vtrk = im.value("vtrack").toBool();
         const auto actions = im.value("actions").toMap();
         if (!actions.isEmpty()) {
             // fill act list with missing items

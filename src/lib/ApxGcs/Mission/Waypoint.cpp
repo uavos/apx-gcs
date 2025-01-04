@@ -102,15 +102,15 @@ void Waypoint::updateAMSL()
     if (blockUpdates)
         return;
 
-    auto m_ref_hmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
-    const int href = m_ref_hmsl ? m_ref_hmsl->value().toInt() : 0;
+    // auto m_ref_hmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
+    // const int href = m_ref_hmsl ? m_ref_hmsl->value().toInt() : 0;
 
     if (f_amsl->value().toBool()) {
         f_altitude->setUnits(QString("%1 %2").arg(_altUnits, tr("AMSL")));
-        f_altitude->setValue(f_altitude->value().toInt() + href);
+        // f_altitude->setValue(f_altitude->value().toInt() + href);
     } else {
         f_altitude->setUnits(_altUnits);
-        f_altitude->setValue(f_altitude->value().toInt() - href);
+        // f_altitude->setValue(f_altitude->value().toInt() - href);
     }
 }
 
