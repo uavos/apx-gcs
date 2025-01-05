@@ -33,8 +33,8 @@ public:
     explicit WaypointActions(Waypoint *parent);
 
     Fact *f_speed;
-    Fact *f_script;
     Fact *f_poi;
+    Fact *f_script;
 
     QJsonValue toJson() override;
 

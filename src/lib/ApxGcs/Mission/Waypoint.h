@@ -39,19 +39,23 @@ public:
 
     Fact *f_altitude;
     Fact *f_amsl;
+
+    Fact *f_atrack;
     Fact *f_xtrack;
-    Fact *f_vtrack;
 
     WaypointActions *f_actions;
 
+    QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
+
 protected:
-    QGeoPath getPath();
+    QGeoPath getPath() override;
 
 private:
     QString _altUnits;
 
 private slots:
-    void updateTitle();
+    void updateTitle() override;
     void updateDescr();
     void updateAMSL();
 

@@ -23,6 +23,7 @@
 #include "MissionField.h"
 #include "UnitMission.h"
 #include <App/App.h>
+#include <ApxMisc/JsonHelpers.h>
 
 Waypoint::Waypoint(MissionGroup *parent)
     : MissionItem(parent, "w#", "", "")
@@ -32,16 +33,13 @@ Waypoint::Waypoint(MissionGroup *parent)
     f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);
     _altUnits = "m";
 
-    f_xtrack = new MissionField(this,
-                                "xtrack",
-                                tr("Line tracking"),
-                                tr("Maintain path crosstrack"),
-                                Bool);
-    f_vtrack = new MissionField(this,
-                                "vtrack",
+    f_atrack = new MissionField(this,
+                                "atrack",
                                 tr("Altitude tracking"),
-                                tr("Precise altitude control"),
+                                tr("Linear altitude control"),
                                 Bool);
+
+    f_xtrack = new MissionField(this, "xtrack", tr("Line tracking"), tr("Maintain path track"), Bool);
 
     //actions
     f_actions = new WaypointActions(this);
@@ -64,7 +62,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_xtrack, &Fact::valueChanged, this, &Waypoint::updatePath);
 
     connect(f_xtrack, &Fact::valueChanged, this, &Waypoint::updateTitle);
-    connect(f_vtrack, &Fact::valueChanged, this, &Waypoint::updateTitle);
+    connect(f_atrack, &Fact::valueChanged, this, &Waypoint::updateTitle);
 
     connect(f_altitude, &Fact::valueChanged, this, &Waypoint::updateTitle);
     updateTitle();
@@ -73,6 +71,35 @@ Waypoint::Waypoint(MissionGroup *parent)
     updateDescr();
 
     App::jsync(this);
+}
+
+QJsonValue Waypoint::toJson()
+{
+    auto jso = MissionItem::toJson().toObject();
+
+    // move all actions to object
+    auto jso_actions = jso.take("actions").toObject();
+    for (auto it = jso_actions.begin(); it != jso_actions.end(); ++it) {
+        jso.insert(it.key(), it.value());
+    }
+    return json::remove_empty(jso, true);
+}
+
+void Waypoint::fromJson(const QJsonValue &jsv)
+{
+    const auto jso = jsv.toObject();
+    for (auto i = jso.begin(); i != jso.end(); ++i) {
+        auto f = child(i.key());
+        if (f) {
+            f->fromJson(i.value());
+            continue;
+        }
+        f = f_actions->child(i.key());
+        if (f) {
+            f->fromJson(i.value());
+            continue;
+        }
+    }
 }
 
 void Waypoint::updateTitle()
@@ -84,7 +111,7 @@ void Waypoint::updateTitle()
     st.append(QString::number(num() + 1));
     if (f_xtrack->value().toBool())
         st.append("T");
-    if (f_vtrack->value().toBool())
+    if (f_atrack->value().toBool())
         st.append("H");
     st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
     setTitle(st.join(' '));

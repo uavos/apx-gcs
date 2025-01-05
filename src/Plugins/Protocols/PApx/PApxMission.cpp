@@ -27,6 +27,7 @@
 #include "PApxUnit.h"
 
 #include <App/App.h>
+#include <ApxMisc/JsonHelpers.h>
 
 #include <XbusMission.h>
 
@@ -96,21 +97,83 @@ PApxNodeFile *PApxMission::_file() const
     return nullptr;
 }
 
-static void _unpack_act(QVariantMap *actions, const QVariantList &act, int index)
+static void _unpack_act(QVariantMap *wp, const QVariantList &act, int index)
 {
     auto a = act.value(index - 1).toMap();
     if (a.isEmpty())
         return;
 
-    auto name = a.keys().first();
-    auto value = a.value(name);
-    if (name == "next") {
-        for (const auto i : value.toList()) {
-            _unpack_act(actions, act, i.toInt());
-        }
-    } else {
-        actions->insert(name, value);
+    const auto k = a.keys().first();
+    if (k == "seq") {
+        for (const auto &i : a.value(k).toList())
+            _unpack_act(wp, act, i.toInt());
+        return;
     }
+    // merge action to wp
+    for (auto it = a.begin(); it != a.end(); ++it)
+        wp->insert(it.key(), it.value());
+}
+static void _pack_act_wp(QVariantMap *actions,
+                         const QVariantMap &wp,
+                         const QString &name,
+                         QStringList names = {})
+{
+    if (names.isEmpty())
+        names = {name};
+    QVariantMap m;
+    for (const auto &k : names) {
+        auto v = wp.value(k);
+        if (v.isNull())
+            continue;
+        m.insert(k, v);
+    }
+    if (!m.isEmpty())
+        actions->insert(name, m);
+}
+static uint _pack_act_add(QVariantList *actions_list, const QVariantMap &action)
+{
+    // action must be only one name-value pair
+    if (action.size() != 1)
+        return 0;
+    // fill global actions list with missing items
+    auto index = actions_list->indexOf(action);
+    if (index >= 0)
+        return index + 1;
+    if (actions_list->size() >= 256) {
+        qWarning() << "too many actions";
+        return 0;
+    }
+    // add new action to global list
+    actions_list->append(action);
+    return actions_list->size();
+}
+
+static uint _pack_act(QVariantList *actions_list, const QVariantMap &wp)
+{
+    // group wp params to actions
+    QVariantMap m;
+    _pack_act_wp(&m, wp, "alt", {"altitude", "amsl", "atrack"});
+    _pack_act_wp(&m, wp, "trk", {"xtrack"});
+    _pack_act_wp(&m, wp, "speed");
+    _pack_act_wp(&m, wp, "poi");
+    _pack_act_wp(&m, wp, "scr");
+
+    if (m.isEmpty())
+        return 0;
+
+    if (m.size() == 1)
+        return _pack_act_add(actions_list, m);
+
+    // add a seq action
+    QVariantList seq;
+    for (auto it = m.begin(); it != m.end(); ++it) {
+        QVariantMap a{{it.key(), it.value()}};
+        auto index = _pack_act_add(actions_list, a);
+        if (!index)
+            return 0;
+        seq.append(index);
+    }
+    return _pack_act_add(actions_list, {{"seq", seq}});
 }
 
 QVariantMap PApxMission::_unpack(PStreamReader &stream)
@@ -119,37 +182,44 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
     if (stream.available() < sizeof(xbus::mission::file_hdr_s))
         return {};
 
-    const auto fsize = stream.available();
-    xbus::mission::file_hdr_s fhdr{};
-    stream.read(&fhdr, sizeof(fhdr));
+    const auto file_size = stream.available();
+    xbus::mission::file_hdr_s file_hdr{};
+    stream.read(&file_hdr, sizeof(file_hdr));
 
     //check file format
-    if (fhdr.format != xbus::mission::file_hdr_s::FORMAT) {
-        qWarning() << "file format" << fhdr.format;
+    if (file_hdr.format != xbus::mission::file_hdr_s::FORMAT) {
+        qWarning() << "file format" << file_hdr.format;
         return {};
     }
 
     // check size
-    if (fhdr.size != fsize) {
-        qWarning() << "data size" << fhdr.size << fsize;
+    if (file_hdr.size != file_size) {
+        qWarning() << "data size" << file_hdr.size << file_size;
         return {};
     }
-    if (fhdr.pld_offset < sizeof(fhdr) || fhdr.pld_offset >= fsize) {
-        qWarning() << "payload offset" << fhdr.pld_offset << fsize;
+
+    if (stream.available() <= sizeof(xbus::mission::pld_hdr_s)) {
+        qWarning() << "empty file" << stream.available();
         return {};
     }
-    stream.reset(fhdr.pld_offset);
 
     // check payload crc32
-    const auto pld_crc32 = apx::crc32(stream.ptr(), fsize - fhdr.pld_offset);
-    if (fhdr.pld_crc32 != pld_crc32) {
-        qWarning() << "payload crc32 mismatch" << pld_crc32 << fhdr.pld_crc32;
+    const auto pld_crc32 = apx::crc32(stream.ptr(),
+                                      file_size - sizeof(xbus::mission::file_hdr_s),
+                                      0xFFFFFFFF);
+    if (file_hdr.pld_crc32 != pld_crc32) {
+        qWarning() << "payload crc32 mismatch" << pld_crc32 << file_hdr.pld_crc32;
         return {};
     }
+
+    // read payload header
+    xbus::mission::pld_hdr_s hdr{};
+    stream.read(&hdr, sizeof(hdr));
+    const auto pld_offset = stream.pos();
 
     // get title
     const auto title = QString::fromUtf8(
-        QByteArray(fhdr.title, strnlen(fhdr.title, sizeof(fhdr.title))));
+        QByteArray(hdr.title, strnlen(hdr.title, sizeof(hdr.title))));
 
     // qDebug() << title << stream.size() << "bytes";
 
@@ -157,13 +227,13 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
     QVariantList rw, pi, wp, tw, act;
 
     // Runways
-    stream.reset(fhdr.pld_offset + fhdr.items.rw.off);
+    stream.reset(pld_offset + hdr.items.rw.off);
     if (!stream.available())
         return {};
-    for (size_t i = 0; i < fhdr.items.rw.cnt; ++i) {
+    for (size_t i = 0; i < hdr.items.rw.cnt; ++i) {
         xbus::mission::rw_s e;
         if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading rw" << i << fhdr.items.rw.cnt;
+            qWarning() << "error reading rw" << i << hdr.items.rw.cnt;
             return {};
         }
         QVariantMap m;
@@ -185,13 +255,13 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
     }
 
     // Points of Interest
-    stream.reset(fhdr.pld_offset + fhdr.items.pi.off);
+    stream.reset(pld_offset + hdr.items.pi.off);
     if (!stream.available())
         return {};
-    for (size_t i = 0; i < fhdr.items.pi.cnt; ++i) {
+    for (size_t i = 0; i < hdr.items.pi.cnt; ++i) {
         xbus::mission::pi_s e;
         if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading pi" << i << fhdr.items.pi.cnt;
+            qWarning() << "error reading pi" << i << hdr.items.pi.cnt;
             return {};
         }
         QVariantMap m;
@@ -205,14 +275,14 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
     }
 
     // Actions
-    stream.reset(fhdr.pld_offset + fhdr.items.act.off);
+    stream.reset(pld_offset + hdr.items.act.off);
     if (!stream.available())
         return {};
-    for (size_t i = 0; i < fhdr.items.act.cnt; ++i) {
+    for (size_t i = 0; i < hdr.items.act.cnt; ++i) {
         xbus::mission::act_s e;
         auto pos_s = stream.pos();
         if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading act" << i << fhdr.items.act.cnt;
+            qWarning() << "error reading act" << i << hdr.items.act.cnt;
             return {};
         }
         stream.reset(pos_s);
@@ -221,22 +291,46 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
         case xbus::mission::act_s::ACT_SEQ: {
             xbus::mission::act_seq_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_seq" << i << fhdr.items.act.cnt;
+                qWarning() << "error reading act_seq" << i << hdr.items.act.cnt;
                 return {};
             }
-            QVariantList next;
-            for (size_t j = 0; j < sizeof(e.next) / sizeof(e.next[0]); ++j) {
-                if (e.next[j] == 0)
-                    break;
-                next.append(QVariant::fromValue((uint) e.next[j]));
+            QVariantList seq;
+            for (uint j = 0; j < e.cnt; ++j) {
+                uint8_t index;
+                if (stream.read(&index, 1) != 1) {
+                    qWarning() << "error reading act_seq item" << i << hdr.items.act.cnt << j
+                               << e.cnt;
+                    return {};
+                }
+                seq.append((uint) index);
             }
-            m.insert("next", next);
+            m.insert("seq", seq);
+            break;
+        }
+        case xbus::mission::act_s::ACT_ALT: {
+            xbus::mission::act_alt_s e;
+            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                qWarning() << "error reading act_alt" << i << hdr.items.act.cnt;
+                return {};
+            }
+            m.insert("altitude", e.alt);
+            m.insert("amsl", e.amsl);
+            m.insert("atrack", e.atrk);
+            break;
+        }
+        case xbus::mission::act_s::ACT_TRK: {
+            xbus::mission::act_trk_s e;
+            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                qWarning() << "error reading act_trk" << i << hdr.items.act.cnt;
+                return {};
+            }
+            m.insert("xtrack", e.xtrk);
             break;
         }
         case xbus::mission::act_s::ACT_SPEED: {
             xbus::mission::act_speed_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_speed" << i << fhdr.items.act.cnt;
+                qWarning() << "error reading act_speed" << i << hdr.items.act.cnt;
                 return {};
             }
             m.insert("speed", QVariant::fromValue((uint) e.speed));
@@ -245,7 +339,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
         case xbus::mission::act_s::ACT_POI: {
             xbus::mission::act_poi_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_poi" << i << fhdr.items.act.cnt;
+                qWarning() << "error reading act_poi" << i << hdr.items.act.cnt;
                 return {};
             }
             m.insert("poi", QVariant::fromValue((uint) e.index));
@@ -254,7 +348,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
         case xbus::mission::act_s::ACT_SCR: {
             xbus::mission::act_scr_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_scr" << i << fhdr.items.act.cnt;
+                qWarning() << "error reading act_scr" << i << hdr.items.act.cnt;
                 return {};
             }
             m.insert("script", QString::fromUtf8(QByteArray(e.scr, strnlen(e.scr, sizeof(e.scr)))));
@@ -263,41 +357,36 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
         }
         act.append(m);
     }
+    // json::save("act-unpack", QJsonDocument::fromVariant(act).array());
 
     // Waypoints
-    stream.reset(fhdr.pld_offset + fhdr.items.wp.off);
+    stream.reset(pld_offset + hdr.items.wp.off);
     if (!stream.available())
         return {};
-    for (size_t i = 0; i < fhdr.items.wp.cnt; ++i) {
+    for (size_t i = 0; i < hdr.items.wp.cnt; ++i) {
         xbus::mission::wp_s e;
         if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading wp" << i << fhdr.items.wp.cnt;
+            qWarning() << "error reading wp" << i << hdr.items.wp.cnt;
             return {};
         }
         QVariantMap m;
         m.insert("lat", mandala::a32_to_deg(e.lat));
         m.insert("lon", mandala::a32_to_deg(e.lon));
-        m.insert("altitude", e.alt);
-        m.insert("amsl", e.amsl);
-        m.insert("xtrack", e.xtrk);
-        m.insert("vtrack", e.vtrk);
         if (e.act) {
-            QVariantMap actions;
-            _unpack_act(&actions, act, e.act);
-            if (!actions.isEmpty())
-                m.insert("actions", actions);
+            _unpack_act(&m, act, e.act);
+            // qDebug() << "wp" << e.act << m;
         }
         wp.append(m);
     }
 
     // Taxiways
-    stream.reset(fhdr.pld_offset + fhdr.items.tw.off);
+    stream.reset(pld_offset + hdr.items.tw.off);
     if (!stream.available())
         return {};
-    for (size_t i = 0; i < fhdr.items.tw.cnt; ++i) {
+    for (size_t i = 0; i < hdr.items.tw.cnt; ++i) {
         xbus::mission::tw_s e;
         if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading tw" << i << fhdr.items.tw.cnt;
+            qWarning() << "error reading tw" << i << hdr.items.tw.cnt;
             return {};
         }
         QVariantMap m;
@@ -331,14 +420,15 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     XbusStreamWriter stream(pdata, data.size());
 
     // skip header for now
-    xbus::mission::file_hdr_s fhdr{};
-    stream.reset(fhdr.pld_offset);
+    xbus::mission::pld_hdr_s hdr{};
+    const auto pld_offset = sizeof(xbus::mission::file_hdr_s) + sizeof(xbus::mission::pld_hdr_s);
+    stream.reset(pld_offset);
 
     // write items
 
     // Runways
-    fhdr.items.rw.off = stream.pos() - fhdr.pld_offset;
-    fhdr.items.rw.cnt = 0;
+    hdr.items.rw.off = stream.pos() - pld_offset;
+    hdr.items.rw.cnt = 0;
     for (auto i : m.value("rw").toList()) {
         const auto im = i.toMap();
         xbus::mission::rw_s e{};
@@ -357,12 +447,12 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         else if (type == "right")
             e.type = xbus::mission::rw_s::CRIGHT;
         stream.write(&e, sizeof(e));
-        fhdr.items.rw.cnt++;
+        hdr.items.rw.cnt++;
     }
 
     // Points of Interest
-    fhdr.items.pi.off = stream.pos() - fhdr.pld_offset;
-    fhdr.items.pi.cnt = 0;
+    hdr.items.pi.off = stream.pos() - pld_offset;
+    hdr.items.pi.cnt = 0;
     for (auto i : m.value("pi").toList()) {
         const auto im = i.toMap();
         xbus::mission::pi_s e{};
@@ -373,116 +463,80 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         e.loops = im.value("loops").toUInt();
         e.timeout = AppRoot::timeFromString(im.value("timeout").toString(), false);
         stream.write(&e, sizeof(e));
-        fhdr.items.pi.cnt++;
+        hdr.items.pi.cnt++;
     }
 
     // Waypoints
-    QVariantList act; // wil collect actions here
-    fhdr.items.wp.off = stream.pos() - fhdr.pld_offset;
-    fhdr.items.wp.cnt = 0;
+    QVariantList actions_list; // wil collect actions here
+    hdr.items.wp.off = stream.pos() - pld_offset;
+    hdr.items.wp.cnt = 0;
     for (auto i : m.value("wp").toList()) {
-        const auto im = i.toMap();
+        auto im = i.toMap();
         xbus::mission::wp_s e{};
-        e.lat = mandala::deg_to_a32(im.value("lat").toDouble());
-        e.lon = mandala::deg_to_a32(im.value("lon").toDouble());
-        e.alt = im.value("altitude").toInt();
-        e.amsl = im.value("amsl").toBool();
-        e.xtrk = im.value("xtrack").toBool();
-        e.vtrk = im.value("vtrack").toBool();
-        const auto actions = im.value("actions").toMap();
-        if (!actions.isEmpty()) {
-            // fill act list with missing items
-            QVariantList seq;
-            for (auto key : actions.keys()) {
-                uint seq_index = 0;
-                const auto value = actions.value(key);
-                for (int act_index = 0; act_index < act.size(); act_index++) {
-                    if (act.at(act_index).toMap().value(key).toString() != value.toString())
-                        continue;
-                    // found in act array
-                    seq_index = act_index + 1;
-                    break;
-                }
-                if (seq_index == 0) {
-                    // not found in act array
-                    // add entry to act array
-                    act.append(QVariantMap({{key, value}}));
-                    seq_index = act.size();
-                }
-                seq.append(seq_index);
-            }
-            const auto seq_max = xbus::mission::act_seq_s::MAX;
-            uint seq_index = 0;
-            if (seq.size() == 1) {
-                seq_index = seq.at(0).toUInt();
-            } else if (seq.size() > xbus::mission::act_seq_s::MAX) {
-                qWarning() << "too many actions in sequence";
-            } else {
-                // write sequence of actions
-                // find existing sequence in act list
-                uint seq_index = 0;
-                QString key = "seq";
-                for (int act_index = 0; act_index < act.size(); act_index++) {
-                    if (act.at(act_index).toMap().value(key) != act)
-                        continue;
-                    // found in act array
-                    seq_index = act_index + 1;
-                    break;
-                }
-                if (seq_index == 0) {
-                    // not found in act array
-                    // add entry to act array
-                    act.append(QVariantMap({{key, seq}}));
-                    seq_index = act.size();
-                }
-            }
-            e.act = seq_index;
-        }
+        e.lat = mandala::deg_to_a32(im.take("lat").toDouble());
+        e.lon = mandala::deg_to_a32(im.take("lon").toDouble());
+        e.act = _pack_act(&actions_list, im);
         stream.write(&e, sizeof(e));
-        fhdr.items.wp.cnt++;
+        hdr.items.wp.cnt++;
     }
+    // json::save("act-pack", QJsonDocument::fromVariant(actions_list).array());
 
     // Taxiways
-    fhdr.items.tw.off = stream.pos() - fhdr.pld_offset;
-    fhdr.items.tw.cnt = 0;
+    hdr.items.tw.off = stream.pos() - pld_offset;
+    hdr.items.tw.cnt = 0;
     for (auto i : m.value("tw").toList()) {
         const auto im = i.toMap();
         xbus::mission::tw_s e{};
         e.lat = mandala::deg_to_a32(im.value("lat").toDouble());
         e.lon = mandala::deg_to_a32(im.value("lon").toDouble());
         stream.write(&e, sizeof(e));
-        fhdr.items.tw.cnt++;
+        hdr.items.tw.cnt++;
     }
 
     // Actions
-    fhdr.items.act.off = stream.pos() - fhdr.pld_offset;
-    fhdr.items.act.cnt = 0;
-    for (const auto &i : act) {
+    hdr.items.act.off = stream.pos() - pld_offset;
+    hdr.items.act.cnt = 0;
+    for (const auto &i : actions_list) {
         const auto im = i.toMap();
         const auto key = im.keys().first();
         const auto value = im.value(key);
+        auto m = value.toMap();
         if (key == "seq") {
             xbus::mission::act_seq_s e{};
             e.type = xbus::mission::act_s::ACT_SEQ;
-            const auto next = value.toList();
-            for (int j = 0; j < next.size() && j < xbus::mission::act_seq_s::MAX; ++j) {
-                e.next[j] = next.at(j).toUInt();
+            auto list = value.toList();
+            e.cnt = list.size();
+            stream.write(&e, sizeof(e));
+            for (int j = 0; j < list.size(); ++j) {
+                uint8_t index = list.at(j).toUInt();
+                stream.write(&index, 1);
             }
+        } else if (key == "alt") {
+            xbus::mission::act_alt_s e{};
+            e.type = xbus::mission::act_s::ACT_ALT;
+            e.alt = m.value("altitude").toUInt();
+            e.amsl = m.value("amsl").toBool();
+            e.atrk = m.value("atrack").toBool();
+            stream.write(&e, sizeof(e));
+        } else if (key == "trk") {
+            xbus::mission::act_trk_s e{};
+            e.type = xbus::mission::act_s::ACT_TRK;
+            e.xtrk = m.value("xtrack").toBool();
             stream.write(&e, sizeof(e));
         } else if (key == "speed") {
             xbus::mission::act_speed_s e{};
             e.type = xbus::mission::act_s::ACT_SPEED;
-            e.speed = value.toUInt();
+            e.speed = m.value(key).toUInt();
             stream.write(&e, sizeof(e));
         } else if (key == "poi") {
             xbus::mission::act_poi_s e{};
             e.type = xbus::mission::act_s::ACT_POI;
-            e.index = value.toUInt();
+            e.index = m.value(key).toUInt();
             stream.write(&e, sizeof(e));
         } else if (key == "script") {
             xbus::mission::act_scr_s e{};
             e.type = xbus::mission::act_s::ACT_SCR;
-            auto scr = value.toString();
+            auto scr = m.value(key).toString();
             if (scr.size() > sizeof(e.scr) - 1)
                 scr.resize(sizeof(e.scr) - 1);
             memcpy(e.scr, scr.toUtf8().data(), scr.size());
@@ -492,21 +546,25 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             qWarning() << "Unknown action" << key;
             continue;
         }
-        fhdr.items.act.cnt++;
+        hdr.items.act.cnt++;
     }
 
-    if (stream.pos() <= fhdr.pld_offset) {
+    if (stream.pos() <= pld_offset) {
         qDebug() << "Upload empty mission";
     }
 
-    //update fhdr
-    fhdr.size = stream.pos();
-    fhdr.pld_crc32 = apx::crc32(pdata + fhdr.pld_offset, fhdr.size - fhdr.pld_offset, 0xFFFFFFFF);
+    //update hdr
+    strncpy(hdr.title, m.value("title").toString().toUtf8(), sizeof(hdr.title) - 1);
+    uint32_t pld_crc32 = apx::crc32(&hdr, sizeof(hdr), 0xFFFFFFFF);
+    pld_crc32 = apx::crc32(pdata + pld_offset, stream.pos() - pld_offset, pld_crc32);
 
-    strncpy(fhdr.title, m.value("title").toString().toUtf8(), sizeof(fhdr.title) - 1);
+    xbus::mission::file_hdr_s file_hdr{};
+    file_hdr.size = stream.pos();
+    file_hdr.pld_crc32 = pld_crc32;
 
     stream.reset();
-    stream.write(&fhdr, sizeof(fhdr));
+    stream.write(&file_hdr, sizeof(file_hdr));
+    stream.write(&hdr, sizeof(hdr));
 
-    return data.left(fhdr.size);
+    return data.left(file_hdr.size);
 }
