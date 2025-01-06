@@ -342,7 +342,9 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                 qWarning() << "error reading act_poi" << i << hdr.items.act.cnt;
                 return {};
             }
-            m.insert("poi", QVariant::fromValue((uint) e.index));
+            uint index = e.index;
+            // GCS poi index from 1
+            m.insert("poi", index + 1);
             break;
         }
         case xbus::mission::act_s::TRG_SCR: {
@@ -532,7 +534,12 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         } else if (key == "poi") {
             xbus::mission::act_poi_s e{};
             e.type = xbus::mission::act_s::TRG_POI;
-            e.index = m.value(key).toUInt();
+            auto index = m.value(key).toInt() - 1; // GCS count from 1
+            if (index < 0)
+                index = 0;
+            else if (index > 255)
+                index = 255;
+            e.index = index;
             stream.write(&e, sizeof(e));
         } else if (key == "script") {
             xbus::mission::act_scr_s e{};
