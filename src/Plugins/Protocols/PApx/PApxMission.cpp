@@ -156,7 +156,7 @@ static uint _pack_act(QVariantList *actions_list, const QVariantMap &wp)
     _pack_act_wp(&m, wp, "trk", {"xtrack"});
     _pack_act_wp(&m, wp, "speed");
     _pack_act_wp(&m, wp, "poi");
-    _pack_act_wp(&m, wp, "scr");
+    _pack_act_wp(&m, wp, "script");
 
     if (m.isEmpty())
         return 0;
@@ -307,7 +307,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
             m.insert("seq", seq);
             break;
         }
-        case xbus::mission::act_s::ACT_ALT: {
+        case xbus::mission::act_s::ATR_ALT: {
             xbus::mission::act_alt_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
                 qWarning() << "error reading act_alt" << i << hdr.items.act.cnt;
@@ -318,7 +318,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
             m.insert("atrack", e.atrk);
             break;
         }
-        case xbus::mission::act_s::ACT_TRK: {
+        case xbus::mission::act_s::ATR_TRK: {
             xbus::mission::act_trk_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
                 qWarning() << "error reading act_trk" << i << hdr.items.act.cnt;
@@ -327,7 +327,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
             m.insert("xtrack", e.xtrk);
             break;
         }
-        case xbus::mission::act_s::ACT_SPEED: {
+        case xbus::mission::act_s::TRG_SPEED: {
             xbus::mission::act_speed_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
                 qWarning() << "error reading act_speed" << i << hdr.items.act.cnt;
@@ -336,7 +336,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
             m.insert("speed", QVariant::fromValue((uint) e.speed));
             break;
         }
-        case xbus::mission::act_s::ACT_POI: {
+        case xbus::mission::act_s::TRG_POI: {
             xbus::mission::act_poi_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
                 qWarning() << "error reading act_poi" << i << hdr.items.act.cnt;
@@ -345,13 +345,14 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
             m.insert("poi", QVariant::fromValue((uint) e.index));
             break;
         }
-        case xbus::mission::act_s::ACT_SCR: {
+        case xbus::mission::act_s::TRG_SCR: {
             xbus::mission::act_scr_s e;
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
                 qWarning() << "error reading act_scr" << i << hdr.items.act.cnt;
                 return {};
             }
-            m.insert("script", QString::fromUtf8(QByteArray(e.scr, strnlen(e.scr, sizeof(e.scr)))));
+            auto s = stream.read_string(xbus::mission::act_scr_s::MAX);
+            m.insert("script", QString::fromUtf8(QByteArray(s, strlen(s))));
             break;
         }
         }
@@ -513,35 +514,35 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             }
         } else if (key == "alt") {
             xbus::mission::act_alt_s e{};
-            e.type = xbus::mission::act_s::ACT_ALT;
+            e.type = xbus::mission::act_s::ATR_ALT;
             e.alt = m.value("altitude").toUInt();
             e.amsl = m.value("amsl").toBool();
             e.atrk = m.value("atrack").toBool();
             stream.write(&e, sizeof(e));
         } else if (key == "trk") {
             xbus::mission::act_trk_s e{};
-            e.type = xbus::mission::act_s::ACT_TRK;
+            e.type = xbus::mission::act_s::ATR_TRK;
             e.xtrk = m.value("xtrack").toBool();
             stream.write(&e, sizeof(e));
         } else if (key == "speed") {
             xbus::mission::act_speed_s e{};
-            e.type = xbus::mission::act_s::ACT_SPEED;
+            e.type = xbus::mission::act_s::TRG_SPEED;
             e.speed = m.value(key).toUInt();
             stream.write(&e, sizeof(e));
         } else if (key == "poi") {
             xbus::mission::act_poi_s e{};
-            e.type = xbus::mission::act_s::ACT_POI;
+            e.type = xbus::mission::act_s::TRG_POI;
             e.index = m.value(key).toUInt();
             stream.write(&e, sizeof(e));
         } else if (key == "script") {
             xbus::mission::act_scr_s e{};
-            e.type = xbus::mission::act_s::ACT_SCR;
-            auto scr = m.value(key).toString();
-            if (scr.size() > sizeof(e.scr) - 1)
-                scr.resize(sizeof(e.scr) - 1);
-            memcpy(e.scr, scr.toUtf8().data(), scr.size());
-            e.scr[sizeof(e.scr) - 1] = 0; // ensure null-terminated
+            e.type = xbus::mission::act_s::TRG_SCR;
             stream.write(&e, sizeof(e));
+            auto scr = m.value(key).toString();
+            auto max = xbus::mission::act_scr_s::MAX;
+            if (scr.size() > max - 1)
+                scr.resize(max - 1);
+            stream.write_string(scr.toUtf8().constData());
         } else {
             qWarning() << "Unknown action" << key;
             continue;
