@@ -22,6 +22,8 @@
 #pragma once
 
 #include "MissionGroup.h"
+#include "UnitMission.h"
+
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QGeoPath>
@@ -65,6 +67,7 @@ public:
     Q_INVOKABLE virtual QGeoRectangle boundingGeoRectangle() const;
 
     QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
 
 public slots:
     void updatePath();
@@ -78,6 +81,11 @@ protected:
     MissionItem *prevItem() const;
     MissionItem *nextItem() const;
 
+    auto unit() const { return group->mission->unit; }
+
+    bool blockUpdates{};
+    bool blockUpdateCoordinate{};
+
 private slots:
     virtual void updateTitle();
     virtual void updateStatus();
@@ -89,8 +97,8 @@ private slots:
 
     void selectTriggered();
 
-private:
-    bool blockUpdateCoordinate;
+signals:
+    void itemDataLoaded();
 
     //---------------------------------------
     // PROPERTIES
@@ -122,14 +130,14 @@ public:
 protected:
     QGeoCoordinate m_coordinate;
     QGeoPath m_geoPath;
-    double m_bearing;
-    uint m_time;
-    uint m_distance;
+    double m_bearing{};
+    uint m_time{};
+    uint m_distance{};
 
-    uint m_totalDistance;
-    uint m_totalTime;
+    uint m_totalDistance{};
+    uint m_totalTime{};
 
-    bool m_selected;
+    bool m_selected{};
 
 signals:
     void coordinateChanged();

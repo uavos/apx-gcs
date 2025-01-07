@@ -38,19 +38,26 @@ public:
     explicit Waypoint(MissionGroup *parent);
 
     Fact *f_altitude;
-    Fact *f_type;
+    Fact *f_amsl;
+
+    Fact *f_atrack;
+    Fact *f_xtrack;
 
     WaypointActions *f_actions;
 
+    QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
+
 protected:
-    QGeoPath getPath();
+    QGeoPath getPath() override;
 
 private:
-    int m_bearing;
+    QString _altUnits;
 
 private slots:
-    void updateTitle();
+    void updateTitle() override;
     void updateDescr();
+    void updateAMSL();
 
     //---------------------------------------
     // PROPERTIES
@@ -62,8 +69,8 @@ public:
     void setWarning(bool v);
 
 protected:
-    bool m_reachable;
-    bool m_warning;
+    bool m_reachable{};
+    bool m_warning{};
 
 signals:
     void reachableChanged();
