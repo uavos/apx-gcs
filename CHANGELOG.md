@@ -1,3 +1,17 @@
+# [APX Ground Control v11.2.2](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.2) (01/06/25)
+
+> Branch: `main`\
+> Date: `01/06/25 19:17:09`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/04172f4f21c79c27c1d67d14f2312401f81d7cf6...0bd0cc48814f3df531041137bb45362cfdf24c15)
+
+## New Features
+* new mission protocol format
+* Waypoint options AMSL, xtrack, vtrack
+
+## Bug Fixes
+* restore latest node conf
+* script compiler enforce via option
+
 # [APX Ground Control v11.2.1](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.1) (12/19/24)
 
 > Branch: `main`\
