@@ -1384,8 +1384,8 @@ namespace cmd
             enum { pi = 0x605 };
             enum { action = 0x606 };
             enum { adj = 0x607 };
-            enum { loops = 0x608 };
-            enum { timeout = 0x609 };
+            enum { orbs = 0x608 };
+            enum { time = 0x609 };
         };
         namespace reg
         {

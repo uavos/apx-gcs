@@ -269,8 +269,8 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
         m.insert("lon", mandala::a32_to_deg(e.lon));
         m.insert("hmsl", e.hmsl);
         m.insert("radius", e.radius);
-        m.insert("loops", e.loops);
-        m.insert("timeout", e.timeout);
+        m.insert("orbits", e.orbs);
+        m.insert("timeout", e.time);
         pi.append(m);
     }
 
@@ -463,8 +463,8 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         e.lon = mandala::deg_to_a32(im.value("lon").toDouble());
         e.hmsl = im.value("hmsl").toInt();
         e.radius = im.value("radius").toInt();
-        e.loops = im.value("loops").toUInt();
-        e.timeout = AppRoot::timeFromString(im.value("timeout").toString(), false);
+        e.orbs = im.value("orbits").toUInt();
+        e.time = AppRoot::timeFromString(im.value("timeout").toString(), false);
         stream.write(&e, sizeof(e));
         hdr.items.pi.cnt++;
     }

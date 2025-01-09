@@ -38,16 +38,16 @@ Poi::Poi(MissionGroup *parent)
     f_radius->setMax(10000);
     f_radius->setValue(800);
 
-    f_loops = new MissionField(this, "loops", tr("Loops"), tr("Loiter loops limit"), Int);
-    f_loops->setEnumStrings(QStringList() << "default");
-    f_loops->setMin(0);
-    f_loops->setMax(255);
+    f_orbs = new MissionField(this, "orbits", tr("Orbits"), tr("Number of orbits to loiter"), Int);
+    f_orbs->setEnumStrings(QStringList() << "default");
+    f_orbs->setMin(0);
+    f_orbs->setMax(255);
 
-    f_time = new MissionField(this, "timeout", tr("Time"), tr("Loiter time limit"), Int);
+    f_time = new MissionField(this, "timeout", tr("Time"), tr("Loiter time"), Int);
     f_time->setEnumStrings(QStringList() << "default");
     f_time->setUnits("min");
     f_time->setMin(0);
-    f_time->setMax(0xFFFF);
+    f_time->setMax(0xFFFF / 60);
 
     //conversions
     connect(this, &MissionItem::coordinateChanged, this, &Poi::radiusPointChanged);
@@ -58,7 +58,7 @@ Poi::Poi(MissionGroup *parent)
     updateTitle();
 
     connect(f_hmsl, &Fact::valueChanged, this, &Poi::updateDescr);
-    connect(f_loops, &Fact::valueChanged, this, &Poi::updateDescr);
+    connect(f_orbs, &Fact::valueChanged, this, &Poi::updateDescr);
     connect(f_time, &Fact::valueChanged, this, &Poi::updateDescr);
     updateDescr();
 
@@ -86,9 +86,9 @@ void Poi::updateDescr()
         st.append("MSL" + f_hmsl->valueText());
         sts.append("H");
     }
-    if (!f_loops->isZero()) {
-        st.append("L" + f_loops->valueText());
-        sts.append("L");
+    if (!f_orbs->isZero()) {
+        st.append("R" + f_orbs->valueText());
+        sts.append("R");
     }
     if (!f_time->isZero()) {
         st.append("T" + f_time->valueText());
