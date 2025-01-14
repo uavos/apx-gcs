@@ -26,7 +26,7 @@
 
 #include <memory>
 
-// #include <QQmlComponent>
+#include <QQmlComponent>
 #include <QGeoCoordinate>
 #include <QtCore>
 
@@ -59,7 +59,7 @@ private:
     std::shared_ptr<AbstractElevationDB> m_elevationDB;
 
     void createElevationDatabase();
-    // QObject *qml;
+    QObject *qml;
 
 private slots:
     void onOpenTriggered();

@@ -50,7 +50,7 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
 
     createElevationDatabase();
-    //  qml = loadQml("qrc:/ElevationPlugin.qml");
+    qml = loadQml("qrc:/ElevationPlugin.qml");
 }
 
 double ElevationMap::elevation() const
