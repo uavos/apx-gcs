@@ -91,7 +91,8 @@ Item {
 
     readonly property var f_ref_hmsl: mandala.est.ref.hmsl
 
-    readonly property var f_reg_pos: mandala.cmd.reg.pos
+    readonly property var f_reg_hdg: mandala.cmd.reg.hdg
+    readonly property var f_reg_hover: mandala.cmd.reg.hover
     readonly property bool m_wpt_status: mandala.est.wpt.status.value
 
     readonly property bool m_reg_spd: mandala.cmd.reg.spd.value
@@ -475,15 +476,28 @@ Item {
             anchors.leftMargin: spacing
             spacing: pfdScene.txtHeight/8
 
-            StatusFlag { // pos control mode
+            StatusFlag { // hdg control mode
                 height: pfdScene.flagHeight
-                fact: f_reg_pos
-                show: ui.test || ((status != reg_pos_direct || !m_wpt_status) && isValid)
-                blinking: status===reg_pos_hover && m_reg_spd
+                fact: f_reg_hdg
+                readonly property bool off_but_hover: !status && hoverFlag.status
+                readonly property bool always_hidden: status===reg_hdg_direct && m_wpt_status && !hoverFlag.status
+                show: ui.test || (!always_hidden && !off_but_hover && isValid)
+                blinking: false
                 text: fact.text==="runway" ? "rw" : fact.text
-                type: status===reg_pos_off || !m_wpt_status
+                type: status===reg_hdg_off || !m_wpt_status
                       ? CleanText.White
-                      : (status===reg_pos_hdg || blinking)
+                      : CleanText.Green
+            }
+            StatusFlag { // hover mode
+                id: hoverFlag
+                height: pfdScene.flagHeight
+                fact: f_reg_hover
+                show: ui.test || (status && isValid)
+                blinking: status && m_reg_spd
+                text: fact.name
+                type: (!m_wpt_status)
+                      ? CleanText.White
+                      : blinking
                         ? CleanText.Yellow
                         : CleanText.Green
             }

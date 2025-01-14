@@ -39,9 +39,9 @@ Item {
 
     readonly property var f_ins_mag: mandala.est.ins.mag
 
-    readonly property int m_reg_pos: mandala.cmd.reg.pos.value
+    readonly property int m_reg_hdg: mandala.cmd.reg.hdg.value
     readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
-    property bool isTrack: m_reg_taxi || m_reg_pos===reg_pos_track || m_reg_pos===reg_pos_runway || m_reg_pos===reg_pos_loiter
+    property bool isTrack: m_reg_taxi || m_reg_hdg===reg_hdg_track || m_reg_hdg===reg_hdg_loiter
 
     readonly property bool isShiftControl: isTrack
 
