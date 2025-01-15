@@ -94,7 +94,8 @@ Window {
                 labelsFont.family: axisXLabel.font.family
                 labelsFont.pointSize: axisXLabel.font.pointSize
                 labelsColor: axisXLabel.color
-                gridLineColor: "#40FFFFFF" 
+                gridVisible: false
+                // gridLineColor: "#40FFFFFF" 
                 tickCount: 11
                 labelFormat: "%.0f"
             }
@@ -106,10 +107,10 @@ Window {
                 labelsFont.family: axisYLabel.font.family
                 labelsFont.pointSize: axisYLabel.font.pointSize
                 labelsColor: axisYLabel.color
-                gridLineColor: "#40FFFFFF" 
+                gridLineColor: "#40FFFFFF"
                 tickCount: 5
                 labelFormat: "%.0f"
-             }
+            }
             LineSeries {
                 id: lineSeries
                 axisX: axisX
@@ -119,9 +120,44 @@ Window {
                 id: repeater
                 model: chartView.mission.wp.mapModel
                 Item { 
+                    id: chartItem
                     required property var modelData
                     property var d: modelData.totalDistance
                     property var h: modelData.child("altitude").value
+                    property var chartWidth: chartView.plotArea.width
+                    property var chartHeight: chartView.plotArea.height
+                    property var scaleX: axisX.max/chartWidth
+                    property var scaleY: axisY.max/chartHeight
+                    x: chartView.plotArea.x + d/scaleX
+                    y: chartView.plotArea.y + chartView.plotArea.height - h/scaleY
+                    Rectangle {
+                        height: h/scaleY
+                        width: 1
+                        x: -width/2
+                        y: 0
+                        color: "#7FFFFFFF"
+                    }
+                    Rectangle {
+                        id: chartPoint
+                        height: 16
+                        width: height
+                        x: -width/2
+                        y: -height/2
+                        // x: chartView.plotArea.x + d/scaleX - width/2
+                        // y: chartView.plotArea.y + chartView.plotArea.height - h/scaleY - height/2
+                        radius: height/8
+                        color: "yellow"
+                        Text {
+                            anchors.centerIn: parent
+                            text: modelData.num + 1
+                            font.pixelSize: 12
+                            font.bold: true
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: modelData.trigger()
+                        }
+                    }
                     Component.onCompleted: {lineSeries.append(d,h)}
                 }
             }
