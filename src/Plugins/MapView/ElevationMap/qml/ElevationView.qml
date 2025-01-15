@@ -32,6 +32,9 @@ import QtQml.Models
 // import Apx.Instruments
 // import Apx.Application
 
+import APX.Fleet as APX
+import APX.Mission
+
 Window {
     id: elevationView
 
@@ -69,6 +72,10 @@ Window {
         ChartView {
             id: chartView
             property int margin: 5
+            property APX.Unit unit: apx.fleet.current
+            readonly property Mission mission: unit.mission
+            property var distance: mission.wp.distance
+            readonly property bool empty: mission.empty
 
             anchors.fill: parent
             margins.top: margin
@@ -82,7 +89,7 @@ Window {
             ValueAxis {
                 id: axisX
                 min: 0
-                max: 10000
+                max: (chartView.empty&&chartView.distance!=0)?10000:chartView.distance
                 lineVisible: true
                 labelsFont.family: axisXLabel.font.family
                 labelsFont.pointSize: axisXLabel.font.pointSize
@@ -107,10 +114,16 @@ Window {
                 id: lineSeries
                 axisX: axisX
                 axisY: axisY
-                visible: false
-
-                XYPoint { x: 0; y: 0 }
-                XYPoint { x: 10000; y: 2000}
+            }
+            Repeater {
+                id: repeater
+                model: chartView.mission.wp.mapModel
+                Item { 
+                    required property var modelData
+                    property var d: modelData.totalDistance
+                    property var h: modelData.child("altitude").value
+                    Component.onCompleted: {lineSeries.append(d,h)}
+                }
             }
         }
     }
