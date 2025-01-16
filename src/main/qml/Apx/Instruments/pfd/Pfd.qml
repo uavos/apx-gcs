@@ -493,8 +493,8 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_reg_hover
                 show: ui.test || (status && isValid)
-                blinking: status && m_reg_spd
-                text: fact.name
+                blinking: status==reg_hover_vel
+                text: blinking?"HVEL":"HOVER"
                 type: (!m_wpt_status)
                       ? CleanText.White
                       : blinking
