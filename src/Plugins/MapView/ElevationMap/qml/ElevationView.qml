@@ -91,7 +91,7 @@ Window {
             ValueAxis {
                 id: axisX
                 min: 0
-                max: (chartView.count>1&&chartView.distance!=0)?1:chartView.distance
+                max: chartView.distance!=0?chartView.distance:10
                 lineVisible: true
                 labelsFont.family: axisXLabel.font.family
                 labelsFont.pointSize: axisXLabel.font.pointSize
@@ -126,9 +126,10 @@ Window {
             id: startPoint
             property var coordinate: mission.startPoint
             property var elevationmap: apx.tools.elevationmap
+            property var elevation: elevationmap.getElevationByCoordinate(coordinate)
             property var chartHeight: chartView.plotArea.height
             property var scaleY: axisY.max/chartHeight
-            property var hStartPoint: 0
+            property var hStartPoint: !isNaN(elevation)?(elevation/scaleY):0
 
             x: chartView.plotArea.x
             y: chartView.plotArea.y + chartHeight
@@ -153,8 +154,6 @@ Window {
             function updateStartPoint()
             {
                 var point = lineSeries.at(0)
-                var elevation = elevationmap.getElevationByCoordinate(coordinate)
-                hStartPoint = !isNaN(elevation)?(elevation/scaleY):0
                 lineSeries.replace(point.x, point.y, point.x, elevation)
             }
         }
