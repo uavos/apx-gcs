@@ -118,6 +118,46 @@ Window {
                 XYPoint{x:0; y:0}
             }
         }
+
+        // Start point
+        Item {
+            id: startPoint
+            property var coordinate: mission.startPoint
+            property var elevationmap: apx.tools.elevationmap
+            property var chartHeight: chartView.plotArea.height
+            property var scaleY: axisY.max/chartHeight
+            property var hStartPoint: 0
+
+            x: chartView.plotArea.x
+            y: chartView.plotArea.y + chartHeight
+
+            Rectangle {
+                id: takeOffPoint
+                height: 16
+                width: height
+                x: -width/2
+                y: -height/2 - startPoint.hStartPoint
+                radius: height/8
+                color: "white"
+                Text {
+                    anchors.centerIn: parent
+                    text: qsTr("S")
+                    font.pixelSize: 12
+                    font.bold: true
+                }
+            }
+            Component.onCompleted: updateStartPoint()
+            onCoordinateChanged: updateStartPoint()
+            function updateStartPoint()
+            {
+                var point = lineSeries.at(0)
+                var elevation = elevationmap.getElevationByCoordinate(coordinate)
+                hStartPoint = !isNaN(elevation)?(elevation/scaleY):0
+                lineSeries.replace(point.x, point.y, point.x, elevation)
+            }
+        }
+
+        // Waypoints
         Repeater {
             id: repeater
             model: mission.wp.mapModel
