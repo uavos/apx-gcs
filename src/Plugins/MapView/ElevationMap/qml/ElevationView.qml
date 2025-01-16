@@ -37,6 +37,9 @@ import APX.Mission
 
 Window {
     id: elevationView
+    property APX.Unit unit: apx.fleet.current
+    readonly property Mission mission: unit.mission
+    readonly property bool empty: mission.empty
 
     width: Screen.desktopAvailableWidth - 50
     height: 200
@@ -72,10 +75,7 @@ Window {
         ChartView {
             id: chartView
             property int margin: 5
-            property APX.Unit unit: apx.fleet.current
-            readonly property Mission mission: unit.mission
             property var distance: mission.wp.distance
-            readonly property bool empty: mission.empty
 
             anchors.fill: parent
             margins.top: margin
@@ -118,32 +118,10 @@ Window {
                 XYPoint{x:0; y:0}
             }
         }
-        Item {
-            id: takeOff
-            x: chartView.plotArea.x
-            y: chartView.plotArea.y + chartView.plotArea.height
-            Rectangle {
-                id: takeOffPoint
-                height: 16
-                width: height
-                x: -width/2
-                y: -height/2
-                radius: height/8
-                color: "white"
-                Text {
-                    anchors.centerIn: parent
-                    text: "T"
-                    font.pixelSize: 12
-                    font.bold: true
-                }
-            }
-        }
         Repeater {
             id: repeater
+            model: mission.wp.mapModel
             property int lastIndex: 0
-
-            model: chartView.mission.wp.mapModel
-
 
             Item { 
                 id: wpItem
@@ -154,13 +132,14 @@ Window {
                 property var oldHAMSL: -1
                 property var distance: modelData.totalDistance
                 property var hAMSL: modelData.child("altitude").value // Calc for different cases
+                property var coordinate: modelData.coordinate
                 property var chartWidth: chartView.plotArea.width
                 property var chartHeight: chartView.plotArea.height
                 property var scaleX: axisX.max/chartWidth
                 property var scaleY: axisY.max/chartHeight
                 
                 x: chartView.plotArea.x + distance/scaleX
-                y: chartView.plotArea.y + chartView.plotArea.height - hAMSL/scaleY
+                y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
                 Rectangle {
                     id: verticalLine
                     height: hAMSL/scaleY
@@ -192,6 +171,8 @@ Window {
                 Component.onDestruction: removeData()
                 onDistanceChanged: updateData()
                 onHAMSLChanged: updateData()
+                onCoordinateChanged: updateData() 
+
                 function appendData() {
                     if(index>repeater.lastIndex)
                         lineSeries.append(distance,hAMSL)
