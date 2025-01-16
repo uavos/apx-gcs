@@ -619,7 +619,8 @@ enum constants_e : uint8_t {
 
     // cmd.nav.reg.hover
     reg_hover_off = 0,
-    reg_hover_on = 1,
+    reg_hover_vel = 1,
+    reg_hover_pos = 2,
 
     // cmd.nav.reg.str
     reg_str_off = 0,
