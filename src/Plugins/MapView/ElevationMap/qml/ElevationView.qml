@@ -51,6 +51,8 @@ Window {
     x: 25
     y: Screen.desktopAvailableHeight - height - 50
 
+    onClosing: plugin.active=false
+
     Label {
         id: axisYLabel
         anchors.top: parent.bottom
