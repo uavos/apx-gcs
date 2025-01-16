@@ -89,7 +89,7 @@ Window {
             ValueAxis {
                 id: axisX
                 min: 0
-                max: (chartView.empty&&chartView.distance!=0)?10000:chartView.distance
+                max: (chartView.count>1&&chartView.distance!=0)?1:chartView.distance
                 lineVisible: true
                 labelsFont.family: axisXLabel.font.family
                 labelsFont.pointSize: axisXLabel.font.pointSize
@@ -115,50 +115,101 @@ Window {
                 id: lineSeries
                 axisX: axisX
                 axisY: axisY
+                XYPoint{x:0; y:0}
             }
-            Repeater {
-                id: repeater
-                model: chartView.mission.wp.mapModel
-                Item { 
-                    id: chartItem
-                    required property var modelData
-                    property var d: modelData.totalDistance
-                    property var h: modelData.child("altitude").value
-                    property var chartWidth: chartView.plotArea.width
-                    property var chartHeight: chartView.plotArea.height
-                    property var scaleX: axisX.max/chartWidth
-                    property var scaleY: axisY.max/chartHeight
-                    x: chartView.plotArea.x + d/scaleX
-                    y: chartView.plotArea.y + chartView.plotArea.height - h/scaleY
-                    Rectangle {
-                        height: h/scaleY
-                        width: 1
-                        x: -width/2
-                        y: 0
-                        color: "#7FFFFFFF"
+        }
+        Item {
+            id: takeOff
+            x: chartView.plotArea.x
+            y: chartView.plotArea.y + chartView.plotArea.height
+            Rectangle {
+                id: takeOffPoint
+                height: 16
+                width: height
+                x: -width/2
+                y: -height/2
+                radius: height/8
+                color: "white"
+                Text {
+                    anchors.centerIn: parent
+                    text: "T"
+                    font.pixelSize: 12
+                    font.bold: true
+                }
+            }
+        }
+        Repeater {
+            id: repeater
+            property int lastIndex: 0
+
+            model: chartView.mission.wp.mapModel
+
+
+            Item { 
+                id: wpItem
+                required property var modelData
+                required property var index
+
+                property var oldDistance: -1
+                property var oldHAMSL: -1
+                property var distance: modelData.totalDistance
+                property var hAMSL: modelData.child("altitude").value // Calc for different cases
+                property var chartWidth: chartView.plotArea.width
+                property var chartHeight: chartView.plotArea.height
+                property var scaleX: axisX.max/chartWidth
+                property var scaleY: axisY.max/chartHeight
+                
+                x: chartView.plotArea.x + distance/scaleX
+                y: chartView.plotArea.y + chartView.plotArea.height - hAMSL/scaleY
+                Rectangle {
+                    id: verticalLine
+                    height: hAMSL/scaleY
+                    width: 1
+                    x: -width/2
+                    y: 0
+                    color: "#7FFFFFFF"
+                }
+                Rectangle {
+                    id: chartPoint
+                    height: 16
+                    width: height
+                    x: -width/2
+                    y: -height/2
+                    radius: height/8
+                    color: "yellow"
+                    Text {
+                        anchors.centerIn: parent
+                        text: modelData.num + 1
+                        font.pixelSize: 12
+                        font.bold: true
                     }
-                    Rectangle {
-                        id: chartPoint
-                        height: 16
-                        width: height
-                        x: -width/2
-                        y: -height/2
-                        // x: chartView.plotArea.x + d/scaleX - width/2
-                        // y: chartView.plotArea.y + chartView.plotArea.height - h/scaleY - height/2
-                        radius: height/8
-                        color: "yellow"
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData.num + 1
-                            font.pixelSize: 12
-                            font.bold: true
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: modelData.trigger()
-                        }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: modelData.trigger()
                     }
-                    Component.onCompleted: {lineSeries.append(d,h)}
+                }
+                Component.onCompleted: appendData()
+                Component.onDestruction: removeData()
+                onDistanceChanged: updateData()
+                onHAMSLChanged: updateData()
+                function appendData() {
+                    if(index>repeater.lastIndex)
+                        lineSeries.append(distance,hAMSL)
+                    else 
+                        lineSeries.insert(1,distance,hAMSL)
+                    repeater.lastIndex = index
+                    setOldValues()
+                }
+                function updateData() {
+                    lineSeries.replace(oldDistance, oldHAMSL, distance, hAMSL)
+                    setOldValues()
+                }
+                function removeData() {
+                    lineSeries.remove(oldDistance, oldHAMSL)
+                }
+                function setOldValues() {
+                    oldDistance = distance
+                    oldHAMSL = hAMSL 
                 }
             }
         }
