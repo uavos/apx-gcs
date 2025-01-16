@@ -87,7 +87,7 @@ Runway::Runway(MissionGroup *parent)
     connect(this, &Fact::numChanged, this, &Runway::updateMissionStartPoint);
 
     updateMissionStartPoint();
-    connect(this, &Fact::removed, group, [=]() {
+    connect(this, &Fact::removed, group, [this]() {
         //qDebug()<<"rm";
         if (group->size() <= 0) {
             //qDebug()<<"rst";
