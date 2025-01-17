@@ -61,7 +61,10 @@ if(APPLE)
         --force
         --options
         runtime
-        -s
+        --entitlements 
+        ${APX_RESOURCES_DIR}/macos/entitlements.plist
+        --timestamp
+        --sign
         $ENV{CODE_IDENTITY}
     )
     add_custom_target(

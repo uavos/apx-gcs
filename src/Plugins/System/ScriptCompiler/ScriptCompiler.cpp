@@ -99,7 +99,7 @@ bool ScriptCompiler::lookup()
         if (lookup_llvm())
             return true;
     } else {
-        if (lookup_wasi() || lookup_llvm())
+        if (lookup_wasi()) // || lookup_llvm())
             return true;
     }
 

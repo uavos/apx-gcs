@@ -51,34 +51,6 @@ WaypointActions::WaypointActions(Waypoint *parent)
                                 tr("Execute VM script (@function) on waypoint"),
                                 Text);
 
-    f_shot = new MissionField(this, "shot", tr("Shot"), tr("Make a cam shot on waypoint"), Enum);
-    f_shot->setEnumStrings(QStringList() << "off"
-                                         << "single"
-                                         << "start"
-                                         << "stop");
-    f_dshot = new MissionField(this,
-                               "dshot",
-                               tr("Auto Shot"),
-                               tr("Continuous cam shots distance"),
-                               Int);
-    f_dshot->setEnumStrings(QStringList() << "off");
-    f_dshot->setUnits("m");
-    f_dshot->setMin(0);
-
-    // Add feets options
-    m_isFeets = parent->isFeets();
-    auto ft = std::round(f_speed->value().toInt() * parent->M2FT_COEF);
-    f_speed->setOpt("editor", "EditorIntWithFeet.qml");
-    f_speed->setOpt("ft", ft);
-    ft = std::round(f_dshot->value().toInt() * parent->M2FT_COEF);
-    f_dshot->setOpt("editor", "EditorIntWithFeet.qml");
-    f_dshot->setOpt("ft", ft);
-    connect(f_speed, &Fact::optsChanged, this, &WaypointActions::updateActionsValue);
-    connect(f_dshot, &Fact::optsChanged, this, &WaypointActions::updateActionsValue);
-    connect(parent, &Waypoint::isFeetsChanged, this, [this]() { setIsFeets(!m_isFeets); });
-    connect(this, &WaypointActions::isFeetsChanged, this, &WaypointActions::updateActionsValue);
-    // feets end
-
     connect(this, &Fact::valueChanged, this, &WaypointActions::actionsValueChanged);
     updateActionsValue();
 
@@ -111,7 +83,7 @@ void WaypointActions::updateActionsValue()
         //     continue;
         // st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
 
-        if(!m_isFeets) {
+        if (!m_isFeets) {
             if (f->isZero())
                 continue;
             st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));

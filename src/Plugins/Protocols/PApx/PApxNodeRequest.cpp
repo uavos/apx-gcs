@@ -241,8 +241,7 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
     // node descr
     QStringList descr;
     descr.append(shardware);
-    if (sversion != App::version())
-        descr.append(sversion);
+    descr.append(sversion);
     if (ident.flags.bits.files == 1 && fnames.contains("fw"))
         descr.append("LOADER");
     _node->setDescr(descr.join(' '));

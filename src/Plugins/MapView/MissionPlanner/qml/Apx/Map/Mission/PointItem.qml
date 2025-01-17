@@ -40,7 +40,7 @@ MissionObject {
     //Fact bindings
     property int f_radius: Math.abs(fact?fact.radius.value:0)
     property int f_hmsl: fact?fact.hmsl.value:0
-    property int f_loops: fact?fact.loops.value:0
+    property int f_orbs: fact?fact.orbits.value:0
     property int f_time: fact?fact.timeout.value:0
     property string timeText: fact?fact.timeout.text:""
     property var radiusPointCoordinate: fact?fact.radiusPoint:QtPositioning.coordinate()
@@ -78,13 +78,13 @@ MissionObject {
 
     contentsBottom: [
         Loader {
-            active: (f_loops>0 || f_time>0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
+            active: (f_orbs>0 || f_time>0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cNormal
-                    text: (f_loops>0?"L"+f_loops:"")+
+                    text: (f_orbs>0?"L"+f_orbs:"")+
                           (f_time>0?"T"+timeText:"")
                 }
             }

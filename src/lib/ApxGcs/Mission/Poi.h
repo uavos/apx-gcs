@@ -35,7 +35,7 @@ public:
 
     Fact *f_hmsl;
     Fact *f_radius;
-    Fact *f_loops;
+    Fact *f_orbs;
     Fact *f_time;
 
 protected:

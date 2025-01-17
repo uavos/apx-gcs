@@ -35,11 +35,11 @@ MapCircle {
     property real cmd_lon: mandala.cmd.pos.lon.value
 
     property real turnR: mandala.cmd.pos.radius.value
-    property int mode: mandala.cmd.reg.pos.value
+    property int mode: mandala.cmd.reg.hdg.value
 
     center: QtPositioning.coordinate(cmd_lat,cmd_lon)
     radius: Math.abs(turnR)
-    visible: mode===reg_pos_loiter
+    visible: mode===reg_hdg_loiter
 
     Behavior on radius { enabled: ui.smooth; NumberAnimation {duration: 100;} }
 }

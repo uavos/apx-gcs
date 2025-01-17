@@ -108,7 +108,7 @@ Runway::Runway(MissionGroup *parent)
     connect(this, &Fact::numChanged, this, &Runway::updateMissionStartPoint);
 
     updateMissionStartPoint();
-    connect(this, &Fact::removed, group, [=]() {
+    connect(this, &Fact::removed, group, [this]() {
         //qDebug()<<"rm";
         if (group->size() <= 0) {
             //qDebug()<<"rst";
@@ -138,7 +138,7 @@ void Runway::updateTitle()
         st.append(AppRoot::distanceToStringFt(f_approach->opts().value("ft", 0).toInt()));
     else
         st.append(AppRoot::distanceToString(f_approach->value().toInt()));
-        
+
     if (m_isFeets) {
         auto feets = f_hmsl->opts().value("ft", 0).toInt();
         if (feets != 0)

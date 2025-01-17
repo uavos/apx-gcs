@@ -219,8 +219,8 @@ const std::map<std::string, mandala::uid_t> ALIAS_MAP = {
 
     malias<mandala::est::nav::wpt::thdg>("tgHDG"),
     malias<mandala::cmd::nav::pos::radius>("turnR"),
-    malias<mandala::est::nav::wpt::delta>("delta"),
-    malias<mandala::cmd::nav::proc::loops>("loops"),
+    malias<mandala::est::nav::wpt::derr>("delta"),
+    malias<mandala::cmd::nav::proc::orbs>("loops"),
     malias<mandala::est::nav::wpt::eta>("ETA"),
     // malias<mandala::cmd::nav::proc::mtype>("mtype"),
 

@@ -202,20 +202,39 @@ bool NodeLoadConf::run(QSqlQuery &query)
 
         if (_hash.isEmpty()) {
             // load latest
-            query.prepare("SELECT * FROM NodeConf"
-                          " WHERE dictID=?"
-                          " ORDER BY time DESC LIMIT 1");
+            // still return ok when latest not exists
+            qDebug() << "restore conf" << _dictID;
+            // find nodeID
+            query.prepare("SELECT nodeID FROM NodeDict WHERE key=?");
             query.addBindValue(_dictID);
+            if (!query.exec())
+                return false;
+            if (!query.next()) {
+                qWarning() << "dictID not found" << _dictID;
+                return false;
+            }
+            auto nodeID = query.value(0).toULongLong();
+            query.prepare("SELECT * FROM NodeConf"
+                          " INNER JOIN NodeDict ON NodeConf.dictID=NodeDict.key"
+                          " WHERE nodeID=?"
+                          " ORDER BY time DESC LIMIT 1");
+            query.addBindValue(nodeID);
+            if (!query.exec())
+                return false;
+            if (!query.next()) {
+                qDebug() << "no conf found" << _dictID;
+                return true;
+            }
         } else {
             query.prepare("SELECT * FROM NodeConf"
                           " WHERE dictID=? AND hash=?");
             query.addBindValue(_dictID);
             query.addBindValue(_hash);
+            if (!query.exec())
+                return false;
+            if (!query.next())
+                return false;
         }
-        if (!query.exec())
-            return false;
-        if (!query.next())
-            return _hash.isEmpty(); // still return ok when latest not exists
 
         _nodeConfID = query.value(0).toULongLong();
     } else {
