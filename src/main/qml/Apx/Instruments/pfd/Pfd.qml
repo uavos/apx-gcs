@@ -67,6 +67,7 @@ Item {
 
     readonly property var f_rpm: mandala.est.eng.rpm
     readonly property var f_airbrk: mandala.ctr.wing.airbrk
+    readonly property var f_reg_airbrk: mandala.cmd.reg.airbrk
     readonly property var f_tecs: mandala.cmd.pos.tecs
 
     readonly property var f_baro_status: mandala.sns.baro.status
@@ -506,19 +507,21 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_airbrk
                 readonly property real v: fact.value
-                show: v > 0
-                text: qsTr("AIRBR")
+                readonly property int reg_mode: f_reg_airbrk.value
+                show: v > 0 || reg_mode > 0
+                text: qsTr("ABR")
                 status_warning: 0.3
                 status_failure: 0.7
                 status_reset: 0
                 CleanText {
                     readonly property real v: airbrkFlag.v
+                    readonly property int reg_mode: airbrkFlag.reg_mode
                     fact: airbrkFlag.fact
-                    show: (v>0 && v<1)
+                    show: (v>0 && v<1) || reg_mode > 0
                     height: pfdScene.flagHeight
                     anchors.left: parent.right
                     anchors.leftMargin: 2
-                    text: (v*100).toFixed()
+                    text: (reg_mode > 0?f_reg_airbrk.text[0]+" ":"") + (v*100).toFixed()
                 }
             }
             StatusFlag {

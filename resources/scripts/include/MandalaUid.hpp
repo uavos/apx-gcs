@@ -640,7 +640,8 @@ enum constants_e : uint8_t {
 
     // cmd.nav.reg.airbrk
     reg_airbrk_off = 0,
-    reg_airbrk_on = 1,
+    reg_airbrk_tecs = 1,
+    reg_airbrk_dist = 2,
 
     // cmd.nav.ins
     nav_ins_no = 0,
