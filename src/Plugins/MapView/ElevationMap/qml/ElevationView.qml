@@ -41,6 +41,7 @@ Window {
     readonly property Mission mission: unit.mission
     readonly property bool empty: mission.empty
 
+    flags: Qt.WindowStaysOnTopHint
     width: Screen.desktopAvailableWidth - 50
     height: 200
     minimumHeight: 200
