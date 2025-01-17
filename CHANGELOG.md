@@ -1,3 +1,14 @@
+# [APX Ground Control v11.2.3](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.3) (01/16/25)
+
+> Branch: `main`\
+> Date: `01/16/25 21:30:20`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/210229fedcd6c1fd1b36fbf9d14bc57d89f07f51...fb21faad071edf3179ec34c86651b52e618751a0)
+
+## Bug Fixes
+* entitlements list
+* numbers warn colors
+* PFD hover indicator
+
 # [APX Ground Control v11.2.2](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.2) (01/06/25)
 
 > Branch: `main`\
