@@ -1104,6 +1104,13 @@ namespace ctr
             enum { pitch = 0x382 };
             enum { yaw = 0x383 };
         };
+        namespace haps
+        {
+            enum { ail1 = 0x391 };
+            enum { ail2 = 0x392 };
+            enum { elv1 = 0x393 };
+            enum { elv2 = 0x394 };
+        };
     };
 };
 namespace est
@@ -1176,11 +1183,12 @@ namespace est
             enum { aoa = 0x463 };
             enum { ld = 0x464 };
             enum { vse = 0x465 };
-            enum { rho = 0x466 };
-            enum { ktas = 0x467 };
-            enum { keas = 0x468 };
-            enum { stab = 0x469 };
-            enum { stall = 0x46a };
+            enum { tas = 0x466 };
+            enum { rho = 0x467 };
+            enum { ktas = 0x468 };
+            enum { keas = 0x469 };
+            enum { stab = 0x46a };
+            enum { stall = 0x46b };
         };
         namespace ins
         {
@@ -1254,18 +1262,15 @@ namespace est
         namespace haps
         {
             enum { shape = 0x531 };
-            enum { cshape = 0x532 };
-            enum { roll = 0x533 };
-            enum { roll1 = 0x534 };
-            enum { roll2 = 0x535 };
-            enum { pitch1 = 0x536 };
-            enum { pitch2 = 0x537 };
-            enum { cpitch1 = 0x538 };
-            enum { cpitch2 = 0x539 };
-            enum { spd1 = 0x53a };
-            enum { spd2 = 0x53b };
-            enum { ail1 = 0x53c };
-            enum { ail2 = 0x53d };
+            enum { roll = 0x532 };
+            enum { roll1 = 0x533 };
+            enum { roll2 = 0x534 };
+            enum { pitch1 = 0x535 };
+            enum { pitch2 = 0x536 };
+            enum { yaw1 = 0x537 };
+            enum { yaw2 = 0x538 };
+            enum { spd1 = 0x539 };
+            enum { spd2 = 0x53a };
         };
         namespace usr
         {
@@ -1490,6 +1495,12 @@ namespace cmd
             enum { p = 0x695 };
             enum { q = 0x696 };
             enum { r = 0x697 };
+        };
+        namespace haps
+        {
+            enum { cshape = 0x6a1 };
+            enum { cpitch1 = 0x6a2 };
+            enum { cpitch2 = 0x6a3 };
         };
     };
     namespace env
