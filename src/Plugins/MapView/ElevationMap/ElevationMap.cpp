@@ -94,3 +94,68 @@ void ElevationMap::onOpenTriggered()
     if (!path.isEmpty())
         f_path->setValue(path);
 }
+
+QVariantList ElevationMap::getElevationProfile(const QGeoPath &geoPath)
+{
+    double distance{0};
+    double elevation{0};
+    QVariantList elevationProfile;
+    auto path = geoPath.path();
+
+    // Add path points
+    for (int i = 0; i < path.size()-1; ++i) {
+        auto plotLenght = path[i].distanceTo(path[i+1]);
+        if (plotLenght > TERRAIN_STEP) {
+            double lenght{0};
+            auto azimuth = path[i].azimuthTo(path[i + 1]);
+            while (lenght < plotLenght) {
+                auto point = path[i].atDistanceAndAzimuth(lenght, azimuth);
+                elevation = getElevationByCoordinate(point);                
+                elevationProfile.append(QPointF(distance + lenght, elevation));
+                lenght += TERRAIN_STEP;
+            }
+        } else {
+            elevation = getElevationByCoordinate(path[i]);
+            elevationProfile.append(QPointF(distance, elevation));
+        }
+        distance += plotLenght;
+    }
+    // Add last point
+    elevation = getElevationByCoordinate(path.last());
+    elevationProfile.append(QPointF(distance, elevation));
+
+    return elevationProfile;
+}
+
+
+bool ElevationMap::isRoutHasCollision(QVariantList &elevationProfile,
+                                      double startHAMSL,
+                                      double endHAMSL)
+{
+    if (elevationProfile.empty())
+        return false;
+
+    auto diff = endHAMSL - startHAMSL;
+    auto distance = elevationProfile.last().toPointF().x();
+    if(distance !=0) {
+        auto tg = diff / distance;
+        for(const auto ep:elevationProfile) {
+            auto point = ep.toPoint();
+            auto height = startHAMSL + point.x() * tg;
+            if (height < point.y()) {
+                return true;
+            }
+        }
+    } else {
+        auto firstPoint = elevationProfile.first().toPoint();
+        if (startHAMSL < firstPoint.y()) {
+            return true;
+        }
+        auto lastPoint = elevationProfile.last().toPoint();
+        if (endHAMSL < lastPoint.y()) {
+            return true;
+        }
+    }
+    
+    return true;
+}

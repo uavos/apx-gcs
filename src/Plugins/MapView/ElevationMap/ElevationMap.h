@@ -30,6 +30,11 @@
 #include <QGeoCoordinate>
 #include <QtCore>
 
+// ===== Analyze elevation route =====
+#include <QGeoPath>
+#include <QPointF>
+// ===================================
+
 class ElevationMap : public Fact
 {
     Q_OBJECT
@@ -50,6 +55,13 @@ public:
 
     Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &v);
     Q_INVOKABLE double getElevationByCoordinate(const QGeoCoordinate &v);
+    Q_INVOKABLE bool isRoutHasCollision(QVariantList &elevationProfile, double startHAMSL, double endHAMSL);
+
+    // ===== Analyze elevation route =====
+    // static constexpr int TERRAIN_STEP = 10;
+    static constexpr int TERRAIN_STEP = 30;
+    Q_INVOKABLE QVariantList getElevationProfile(const QGeoPath &geoPath);
+    // ===================================
 
 protected:
     double m_elevation;
