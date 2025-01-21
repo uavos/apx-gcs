@@ -79,7 +79,7 @@ ObjectModel {
         for(var i in list){
             var n=list[i]
             //console.log(n.bind)
-            var s="import QtQuick 2.0; NumbersItem {"
+            var s="import QtQuick; NumbersItem {"
             s+="light: "+light+";"
             s+="fixedWidth: "+model.fixedWidth+";"
             if(n.warn)s+="warning: "+n.warn+";"
@@ -99,9 +99,12 @@ ObjectModel {
             }else if(!f){
                 s+="value: v;"
             }
-            if(n.act){
+            if(n.act || n.warn || n.alarm){
                 s+="enabled: true;"
+            }
+            if(n.act || n.warm || n.alarm){
                 s+="onTriggered: {"+n.act+"}"
+                s+="HoverHandler {acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad; cursorShape: Qt.PointingHandCursor}"
             }
             s+="}"
             var obj = Qt.createQmlObject(s,model);

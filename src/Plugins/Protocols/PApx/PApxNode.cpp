@@ -407,7 +407,7 @@ void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
         _field_units.append(field.value("units").toString());
     }
 
-    qDebug() << title() << "dict from cache" << _field_names.size();
+    qDebug() << title() << "dict from cache" << dictID << _field_names.size();
 
     emit dictReceived(dict);
 }

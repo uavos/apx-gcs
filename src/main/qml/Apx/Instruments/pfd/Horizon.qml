@@ -49,7 +49,7 @@ Item {
     readonly property real m_slip: mandala.est.air.slip.value
     readonly property real m_cmd_slip: mandala.cmd.att.slip.value
 
-    readonly property bool m_att_ctr: mandala.cmd.reg.att.value
+    readonly property bool m_reg_tilt: mandala.cmd.reg.tilt.value
     readonly property int m_reg_yaw: mandala.cmd.reg.yaw.value
 
 
@@ -174,7 +174,7 @@ Item {
             id: sideslip_cmd
             elementName: m_reg_yaw==reg_yaw_slip?"sideslip-cmd":"sideslip-cmd-dash"
             rotation: m_cmd_slip
-            visible: m_reg_yaw > reg_yaw_hdg
+            visible: m_reg_yaw > reg_yaw_fixed
             Behavior on rotation { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration} }
             fillMode: Image.PreserveAspectFit
             width: roll_scale_image.width
@@ -238,8 +238,8 @@ Item {
         antialiasing: ui.smooth
         width: apx.limit(diagonal*0.006,2,8)
         height: parent.width*0.2
-        color: m_att_ctr?"magenta":"#ddd"
-        scale: m_att_ctr?1:0.7
+        color: m_reg_tilt?"magenta":"#ddd"
+        scale: m_reg_tilt?1:0.7
         property double pos: -(m_roll-m_cmd_roll)*rollDeg2img
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: apx.limit(pos,-parent.width*0.2,parent.width*0.2)
@@ -251,8 +251,8 @@ Item {
         antialiasing: ui.smooth
         height: apx.limit(diagonal*0.006,2,8)
         width: parent.width*0.2
-        color: m_att_ctr?"magenta":"#ddd"
-        scale: m_att_ctr?1:0.7
+        color: m_reg_tilt?"magenta":"#ddd"
+        scale: m_reg_tilt?1:0.7
         property double pos: (m_pitch-m_cmd_pitch)*pitchDeg2img
         anchors.centerIn: parent
         anchors.verticalCenterOffset: apx.limit(pos,-parent.height*0.4,parent.height*0.4)

@@ -49,13 +49,13 @@ MissionObject {
     property bool f_first: num === 0
     property bool f_warning: fact?fact.warning:false
     property bool f_reachable: fact?fact.reachable:false
-    property int f_type: fact?fact.type.value:0
+    property int f_xtrack: fact?fact.xtrack.value:0
     property var path: fact?fact.geoPath:0
     property int num: fact?fact.num:0
 
 
     //internal
-    property color cReachable: f_warning?Style.cLineYellow:f_type===0?Style.cLineCyan:Style.cLineBlue
+    property color cReachable: f_warning?Style.cLineYellow:f_xtrack?Style.cLineBlue:Style.cLineCyan
     property color pathColor: f_first?Style.cLineGreen: f_reachable?cReachable:Style.cLineRed
     property real pathWidth: Math.max(1,(f_first?2:4)*ui.scale)
 
