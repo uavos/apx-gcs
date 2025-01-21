@@ -23,37 +23,34 @@
 #include "MissionField.h"
 #include "UnitMission.h"
 #include <App/App.h>
+#include <ApxMisc/JsonHelpers.h>
 
 Waypoint::Waypoint(MissionGroup *parent)
     : MissionItem(parent, "w#", "", "")
-    , m_bearing(0)
-    , m_reachable(false)
-    , m_warning(false)
-    , m_chosen(ALT)
 {
-    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above home"), Int);
-    f_altitude->setUnits("m");
+    f_amsl = new MissionField(this, "amsl", tr("AMSL mode"), tr("Altitude above sea level"), Bool);
+
+    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);
+    _altUnits = "m";
+
     f_altitude->setOpt("editor", "EditorIntWithFeet.qml");
     f_altitude->setOpt("extrainfo", "ExtraInfoAltitude.qml");
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
 
     f_agl = new MissionField(this, "agl", tr("AGL"), tr("Altitude above ground level"), Int);
-    f_agl->setUnits("m");
+    // f_agl->setUnits("m");
     f_agl->setDefaultValue(0);
     f_agl->setOpt("editor", "EditorIntWithFeet.qml");
     f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
 
-    f_amsl = new MissionField(this, "amsl", tr("AMSL"), tr("Altitude above sea level"), Int);
-    f_amsl->setUnits("m");
-    f_amsl->setDefaultValue(0);
-    f_amsl->setOpt("editor", "EditorIntWithFeet.qml");
-    f_amsl->setOpt("extrainfo", "ExtraInfoAmsl.qml");
-    connect(f_amsl, &Fact::triggered, this, [this]() { this->setChosen(AMSL); });
+    f_atrack = new MissionField(this,
+                                "atrack",
+                                tr("Altitude tracking"),
+                                tr("Linear altitude control"),
+                                Bool);
 
-    f_type = new MissionField(this, "type", tr("Type"), tr("Maneuver type"), Enum);
-    f_type->setEnumStrings(QStringList() << "direct"
-                                         << "track");
+    f_xtrack = new MissionField(this, "xtrack", tr("Line tracking"), tr("Maintain path track"), Bool);
 
     //actions
     f_actions = new WaypointActions(this);
@@ -79,9 +76,19 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(this, &MissionItem::isFeetsChanged, this, &Waypoint::updateTitle);
     // Add feets options end
 
-    connect(f_type, &Fact::valueChanged, this, &Waypoint::updatePath);
+    connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
+    connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateTitle);
+    connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateDescr);
 
-    connect(f_type, &Fact::valueChanged, this, &Waypoint::updateTitle);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAMSL);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateTitle);
+    updateAMSL();
+
+    connect(f_xtrack, &Fact::valueChanged, this, &Waypoint::updatePath);
+
+    connect(f_xtrack, &Fact::valueChanged, this, &Waypoint::updateTitle);
+    connect(f_atrack, &Fact::valueChanged, this, &Waypoint::updateTitle);
+
     connect(f_altitude, &Fact::valueChanged, this, &Waypoint::updateTitle);
     updateTitle();
 
@@ -91,21 +98,80 @@ Waypoint::Waypoint(MissionGroup *parent)
     App::jsync(this);
 }
 
+QJsonValue Waypoint::toJson()
+{
+    auto jso = MissionItem::toJson().toObject();
+
+    // move all actions to object
+    auto jso_actions = jso.take("actions").toObject();
+    for (auto it = jso_actions.begin(); it != jso_actions.end(); ++it) {
+        jso.insert(it.key(), it.value());
+    }
+    return json::remove_empty(jso, true);
+}
+
+void Waypoint::fromJson(const QJsonValue &jsv)
+{
+    const auto jso = jsv.toObject();
+    for (auto i = jso.begin(); i != jso.end(); ++i) {
+        auto f = child(i.key());
+        if (f) {
+            f->fromJson(i.value());
+            continue;
+        }
+        f = f_actions->child(i.key());
+        if (f) {
+            f->fromJson(i.value());
+            continue;
+        }
+    }
+}
+
 void Waypoint::updateTitle()
 {
+    if (blockUpdates)
+        return;
+
     QStringList st;
     st.append(QString::number(num() + 1));
-    st.append(f_type->valueText().left(1).toUpper());
-    if (m_isFeets)
-        st.append(AppRoot::distanceToStringFt(f_altitude->opts().value("ft", 0).toInt()));
-    else
-        st.append(AppRoot::distanceToString(f_altitude->value().toInt()));
+    if (f_xtrack->value().toBool())
+        st.append("T");
+    if (f_atrack->value().toBool())
+        st.append("H");
+    st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
+
+    // TODO Feets changing
+    // if (m_isFeets)
+    //     st.append(AppRoot::distanceToStringFt(f_altitude->opts().value("ft", 0).toInt()));
+    // else
+    //     st.append(AppRoot::distanceToString(f_altitude->value().toInt()));
+
     setTitle(st.join(' '));
 }
 
 void Waypoint::updateDescr()
 {
+    if (blockUpdates)
+        return;
+
     setDescr(f_actions->value().toString());
+}
+
+void Waypoint::updateAMSL()
+{
+    if (blockUpdates)
+        return;
+
+    // auto m_ref_hmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
+    // const int href = m_ref_hmsl ? m_ref_hmsl->value().toInt() : 0;
+
+    if (f_amsl->value().toBool()) {
+        f_altitude->setUnits(QString("%1 %2").arg(_altUnits, tr("AMSL")));
+        // f_altitude->setValue(f_altitude->value().toInt() + href);
+    } else {
+        f_altitude->setUnits(_altUnits);
+        // f_altitude->setValue(f_altitude->value().toInt() - href);
+    }
 }
 
 QGeoPath Waypoint::getPath()
@@ -153,7 +219,7 @@ QGeoPath Waypoint::getPath()
             pt = prev->coordinate();
             if (prev->geoPath().path().size() > 1) {
                 crs = prev->bearing();
-                wptLine = f_type->text().toLower() == "track";
+                wptLine = f_xtrack->value().toBool();
             } else
                 wptLine = true;
         }

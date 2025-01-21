@@ -586,18 +586,23 @@ enum constants_e : uint8_t {
     nav_reg_off = 0,
     nav_reg_on = 1,
 
-    // cmd.nav.reg.att
-    reg_att_off = 0,
-    reg_att_on = 1,
+    // cmd.nav.reg.tilt
+    reg_tilt_off = 0,
+    reg_tilt_on = 1,
 
-    // cmd.nav.reg.pos
-    reg_pos_off = 0,
-    reg_pos_hdg = 1,
-    reg_pos_direct = 2,
-    reg_pos_track = 3,
-    reg_pos_runway = 4,
-    reg_pos_loiter = 5,
-    reg_pos_hover = 6,
+    // cmd.nav.reg.yaw
+    reg_yaw_off = 0,
+    reg_yaw_fixed = 1,
+    reg_yaw_slip = 2,
+    reg_yaw_taxi = 3,
+    reg_yaw_track = 4,
+
+    // cmd.nav.reg.hdg
+    reg_hdg_off = 0,
+    reg_hdg_fixed = 1,
+    reg_hdg_direct = 2,
+    reg_hdg_track = 3,
+    reg_hdg_loiter = 4,
 
     // cmd.nav.reg.spd
     reg_spd_off = 0,
@@ -612,12 +617,10 @@ enum constants_e : uint8_t {
     reg_eng_off = 0,
     reg_eng_on = 1,
 
-    // cmd.nav.reg.yaw
-    reg_yaw_off = 0,
-    reg_yaw_hdg = 1,
-    reg_yaw_slip = 2,
-    reg_yaw_taxi = 3,
-    reg_yaw_track = 4,
+    // cmd.nav.reg.hover
+    reg_hover_off = 0,
+    reg_hover_vel = 1,
+    reg_hover_pos = 2,
 
     // cmd.nav.reg.str
     reg_str_off = 0,
@@ -637,7 +640,8 @@ enum constants_e : uint8_t {
 
     // cmd.nav.reg.airbrk
     reg_airbrk_off = 0,
-    reg_airbrk_on = 1,
+    reg_airbrk_tecs = 1,
+    reg_airbrk_dist = 2,
 
     // cmd.nav.ins
     nav_ins_no = 0,
@@ -1100,6 +1104,13 @@ namespace ctr
             enum { pitch = 0x382 };
             enum { yaw = 0x383 };
         };
+        namespace haps
+        {
+            enum { ail1 = 0x391 };
+            enum { ail2 = 0x392 };
+            enum { elv1 = 0x393 };
+            enum { elv2 = 0x394 };
+        };
     };
 };
 namespace est
@@ -1172,11 +1183,12 @@ namespace est
             enum { aoa = 0x463 };
             enum { ld = 0x464 };
             enum { vse = 0x465 };
-            enum { rho = 0x466 };
-            enum { ktas = 0x467 };
-            enum { keas = 0x468 };
-            enum { stab = 0x469 };
-            enum { stall = 0x46a };
+            enum { tas = 0x466 };
+            enum { rho = 0x467 };
+            enum { ktas = 0x468 };
+            enum { keas = 0x469 };
+            enum { stab = 0x46a };
+            enum { stall = 0x46b };
         };
         namespace ins
         {
@@ -1206,10 +1218,12 @@ namespace est
             enum { status = 0x4a1 };
             enum { eta = 0x4a2 };
             enum { xtrack = 0x4a3 };
-            enum { delta = 0x4a4 };
-            enum { dist = 0x4a5 };
-            enum { hdg = 0x4a6 };
-            enum { thdg = 0x4a7 };
+            enum { ltrack = 0x4a4 };
+            enum { derr = 0x4a5 };
+            enum { dist = 0x4a6 };
+            enum { hdg = 0x4a7 };
+            enum { tdist = 0x4a8 };
+            enum { thdg = 0x4a9 };
         };
     };
     namespace env
@@ -1248,18 +1262,15 @@ namespace est
         namespace haps
         {
             enum { shape = 0x531 };
-            enum { cshape = 0x532 };
-            enum { roll = 0x533 };
-            enum { roll1 = 0x534 };
-            enum { roll2 = 0x535 };
-            enum { pitch1 = 0x536 };
-            enum { pitch2 = 0x537 };
-            enum { cpitch1 = 0x538 };
-            enum { cpitch2 = 0x539 };
-            enum { spd1 = 0x53a };
-            enum { spd2 = 0x53b };
-            enum { ail1 = 0x53c };
-            enum { ail2 = 0x53d };
+            enum { roll = 0x532 };
+            enum { roll1 = 0x533 };
+            enum { roll2 = 0x534 };
+            enum { pitch1 = 0x535 };
+            enum { pitch2 = 0x536 };
+            enum { yaw1 = 0x537 };
+            enum { yaw2 = 0x538 };
+            enum { spd1 = 0x539 };
+            enum { spd2 = 0x53a };
         };
         namespace usr
         {
@@ -1384,22 +1395,23 @@ namespace cmd
             enum { pi = 0x605 };
             enum { action = 0x606 };
             enum { adj = 0x607 };
-            enum { loops = 0x608 };
-            enum { timeout = 0x609 };
+            enum { orbs = 0x608 };
+            enum { time = 0x609 };
         };
         namespace reg
         {
-            enum { att = 0x611 };
-            enum { pos = 0x612 };
-            enum { spd = 0x613 };
-            enum { alt = 0x614 };
-            enum { eng = 0x615 };
-            enum { yaw = 0x616 };
-            enum { str = 0x617 };
-            enum { taxi = 0x618 };
-            enum { brk = 0x619 };
-            enum { flaps = 0x61a };
-            enum { airbrk = 0x61b };
+            enum { tilt = 0x611 };
+            enum { yaw = 0x612 };
+            enum { hdg = 0x613 };
+            enum { spd = 0x614 };
+            enum { alt = 0x615 };
+            enum { eng = 0x616 };
+            enum { hover = 0x617 };
+            enum { str = 0x618 };
+            enum { taxi = 0x619 };
+            enum { brk = 0x61a };
+            enum { flaps = 0x61b };
+            enum { airbrk = 0x61c };
         };
         namespace ins
         {
@@ -1483,6 +1495,12 @@ namespace cmd
             enum { p = 0x695 };
             enum { q = 0x696 };
             enum { r = 0x697 };
+        };
+        namespace haps
+        {
+            enum { cshape = 0x6a1 };
+            enum { cpitch1 = 0x6a2 };
+            enum { cpitch2 = 0x6a3 };
         };
     };
     namespace env

@@ -32,14 +32,6 @@ MissionItem::MissionItem(MissionGroup *parent,
                          const QString &descr)
     : Fact(parent, name, title, descr, Group | ModifiedGroup)
     , group(parent)
-    , blockUpdateCoordinate(false)
-    , m_bearing(0)
-    , m_time(0)
-    , m_distance(0)
-    , m_totalDistance(0)
-    , m_totalTime(0)
-    , m_selected(false)
-    , m_isFeets(false)
 {
     setOpt("pos", QPointF(0.25, 0.5));
 
@@ -89,6 +81,8 @@ MissionItem::MissionItem(MissionGroup *parent,
         setActive(group->f_activeIndex->value().toInt() == num());
     }
 
+    connect(this, &MissionItem::itemDataLoaded, this, &MissionItem::updateCoordinate);
+
     connect(f_latitude, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
     connect(f_longitude, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
 
@@ -128,6 +122,13 @@ QJsonValue MissionItem::toJson()
     jso.remove(f_order->name());
     return jso;
 }
+void MissionItem::fromJson(const QJsonValue &jsv)
+{
+    blockUpdates = true;
+    Fact::fromJson(jsv);
+    blockUpdates = false;
+    itemDataLoaded();
+}
 
 int MissionItem::missionItemType() const
 {
@@ -160,7 +161,7 @@ void MissionItem::updateStatus()
 
 void MissionItem::updateCoordinate()
 {
-    if (blockUpdateCoordinate)
+    if (blockUpdateCoordinate || blockUpdates)
         return;
     setCoordinate(QGeoCoordinate(f_latitude->value().toDouble(), f_longitude->value().toDouble()));
 }

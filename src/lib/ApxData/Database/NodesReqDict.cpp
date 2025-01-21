@@ -60,10 +60,11 @@ bool NodeSaveDict::run(QSqlQuery &query)
 
     if (query.next()) {
         // dictionary exists
-        qDebug() << "dict exists";
         auto dictID = query.value(0).toULongLong();
         if (cache.isNull())
             cache = query.value("cache");
+
+        qDebug() << "dict exists" << dictID << cache.toString();
 
         query.prepare("UPDATE NodeDict"
                       " SET time=?, name=?, version=?, hardware=?, cache=?"

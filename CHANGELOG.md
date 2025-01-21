@@ -1,3 +1,37 @@
+# [APX Ground Control v11.2.3](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.3) (01/16/25)
+
+> Branch: `main`\
+> Date: `01/16/25 21:30:20`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/210229fedcd6c1fd1b36fbf9d14bc57d89f07f51...fb21faad071edf3179ec34c86651b52e618751a0)
+
+## Bug Fixes
+* entitlements list
+* numbers warn colors
+* PFD hover indicator
+
+# [APX Ground Control v11.2.2](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.2) (01/06/25)
+
+> Branch: `main`\
+> Date: `01/06/25 19:17:09`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/04172f4f21c79c27c1d67d14f2312401f81d7cf6...0bd0cc48814f3df531041137bb45362cfdf24c15)
+
+## New Features
+* new mission protocol format
+* Waypoint options AMSL, xtrack, vtrack
+
+## Bug Fixes
+* restore latest node conf
+* script compiler enforce via option
+
+# [APX Ground Control v11.2.1](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.1) (12/19/24)
+
+> Branch: `main`\
+> Date: `12/19/24 12:25:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/9e27f473d97a10f9754d5292445d5d1b97f90208...a6087379eccbd203ada95a1ab1fb06c16303dde5)
+
+## Bug Fixes
+* memory leak for joystick plugin
+
 # [APX Ground Control v11.2.0](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.0) (12/18/24)
 
 > Branch: `main`\
