@@ -101,7 +101,6 @@ SpinBox {
         
         TextInput {
             id: textInputFt 
-            // property var units: fact.units=="m"?" ft":" ft/s"
             property var units: {
                 switch(fact.units) {
                     case "m":
@@ -121,7 +120,6 @@ SpinBox {
 
             color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
             text: opts.ft + units
-
             activeFocusOnTab: true
 
             width: Math.max(contentWidth, height*3)
@@ -131,7 +129,7 @@ SpinBox {
                 opts.ft = text
                 fact.opts = opts
                 fact.setValue(ft2m(text))
-                if(textInput.activeFocus)
+                if(textInputFt.activeFocus)
                     factButton.forceActiveFocus()
                 zeroCheck() // Temporary meters/feets stub for Runway and Point of interest
             }
