@@ -45,24 +45,24 @@ Item {
     implicitHeight: parent.height
     implicitWidth: Math.max(icon.width+text.implicitWidth, height*4)
         
-    MaterialIcon {
-        id: icon
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        name: "home-map-marker"
-        color: item.color
-        size: text.contentHeight
-        verticalAlignment: Text.AlignVCenter
-    }
-    Text {
-        id: text
-        anchors.left: icon.right
-        anchors.verticalCenter: parent.verticalCenter
-        verticalAlignment: Text.AlignVCenter
-        font: apx.font_narrow(Style.fontSize)
-        color: item.color
-        text: getHomeHmsl()
-    }
+    // MaterialIcon {
+    //     id: icon
+    //     anchors.left: parent.left
+    //     anchors.verticalCenter: parent.verticalCenter
+    //     name: "home-map-marker"
+    //     color: item.color
+    //     size: text.contentHeight
+    //     verticalAlignment: Text.AlignVCenter
+    // }
+    // Text {
+    //     id: text
+    //     anchors.left: icon.right
+    //     anchors.verticalCenter: parent.verticalCenter
+    //     verticalAlignment: Text.AlignVCenter
+    //     font: apx.font_narrow(Style.fontSize)
+    //     color: item.color
+    //     text: getHomeHmsl()
+    // }
 
     onChosenChanged: _editor.enabled = chosen
     onAglChanged: if(!chosen) altitudeProcessing()
