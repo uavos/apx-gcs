@@ -103,6 +103,9 @@ MissionItem::MissionItem(MissionGroup *parent,
 
     connect(this, &MissionItem::totalTimeChanged, this, &MissionItem::updateStatus);
     connect(this, &MissionItem::totalDistanceChanged, this, &MissionItem::updateStatus);
+    
+    // For feets functionality 
+    connect(this, &MissionItem::isFeetsChanged, this, &MissionItem::updateStatus);
     updateStatus();
 }
 

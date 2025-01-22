@@ -140,7 +140,7 @@ void Waypoint::updateTitle()
         st.append("H");
     // st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
 
-    // TODO Feets changing
+    // For feets functionality
     if (m_isFeets) {
         QString ftUnits = f_amsl->value().toBool() ? "ft AMSL" : "ft";
         st.append(f_altitude->opts().value("ft", 0).toString() + ftUnits);
