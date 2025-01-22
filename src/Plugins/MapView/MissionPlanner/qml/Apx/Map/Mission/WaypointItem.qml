@@ -131,6 +131,7 @@ MissionObject {
             // Feets 
             property var isFeets: fact?fact.isFeets:false
             property var opts: fact?fact.child("altitude").opts:""
+            property var amsl: fact?fact.child("amsl").value:""
            
             active: (!dragging) && (hover||selected)?1:0
             // asynchronous: true
@@ -138,7 +139,10 @@ MissionObject {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: isFeets? opts.ft + "ft" : f_altitude.toFixed()+"m"
+                    text: {
+                        var txt = isFeets? opts.ft + "ft" : f_altitude.toFixed()+"m"
+                        return !amsl?txt:txt+" AMSL"
+                    }
                 }
             }
         }
