@@ -65,23 +65,15 @@ Item {
     }
 
     onChosenChanged: _editor.enabled = chosen
-    onAglChanged: if(chosenFact == Waypoint.AGL) altitudeProcessing()
-    onAmslChanged: if(chosenFact == Waypoint.AMSL) altitudeProcessing()
-    onHomeHmslChanged: altitudeProcessing()
+    onAglChanged: if(!chosen) altitudeProcessing()
     
     Component.onCompleted: {
         _editor.enabled = chosen
         if(visible)
             elevation = map.getElevationByCoordinate(coordinate)
         
-        // Proposal to ON/OFF AGL and HTML when elevation map is disabled
-        if(!visible){
-            fact.parentFact.child("agl").visible = false
-            fact.parentFact.child("amsl").visible = false
-        } else {
-            fact.parentFact.child("agl").visible = true
-            fact.parentFact.child("amsl").visible = true
-        }    
+        fact.parentFact.child("agl").visible = visible
+        fact.parentFact.child("agl").visible = true
     }
 
     function altitudeProcessing() 
@@ -90,10 +82,9 @@ Item {
             return
         if(chosen)
             return
-        if (chosenFact == Waypoint.AGL)
-            fact.value = elevation + agl - homeHmsl
-        else if (chosenFact == Waypoint.AMSL) 
-            fact.value = amsl - homeHmsl
+        
+        var hAmsl = elevation + agl
+        fact.value = amsl?hAmsl:hAmsl - homeHmsl 
     }
 
     function getHomeHmsl()
@@ -104,22 +95,17 @@ Item {
     }
 
     // Feets processing
-    property var aglOpts: fact.parentFact.child("agl").opts
-    property var amslOpts: fact.parentFact.child("amsl").opts
     property var opts: fact.opts
+    property var aglOpts: fact.parentFact.child("agl").opts
 
-    onAglOptsChanged: if (chosenFact == Waypoint.AGL) altitudeFtProcessing()
-    onAmslOptsChanged: if (chosenFact == Waypoint.AMSL) altitudeFtProcessing()
+    onAglOptsChanged: if (!chosen) altitudeFtProcessing()
 
     function altitudeFtProcessing() {
         if(isNaN(elevation))
             return
-        if (chosenFact == Waypoint.AGL) {
-            opts.ft = parseInt(aglOpts.ft) + m2ft(elevation - homeHmsl)
-            fact.opts = opts
-        } else if (chosenFact == Waypoint.AMSL) {
-            opts.ft = parseInt(amslOpts.ft) - m2ft(homeHmsl)
-            fact.opts = opts
-        }
+
+        var hAmsl = parseInt(aglOpts.ft) +  m2ft(elevation)
+        opts.ft = amsl?hAmsl:hAmsl - m2ft(homeHmsl)
+        fact.opts = opts
     }
 }

@@ -31,8 +31,10 @@ Item {
     visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
     property var map: apx.tools.elevationmap
     property var altitude: fact.parentFact.child("altitude").value
+    property var amsl: fact.parentFact.child("amsl").value
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var coordinate: fact.parentFact.coordinate
+    property var value: fact.value
     property var elevation: NaN
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
     property var chosenFact: fact.parentFact.chosen
@@ -62,9 +64,11 @@ Item {
         text: isNaN(item.elevation) ? "NO" : getElevation()
     }
 
+    onValueChanged: factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
     onChosenChanged: _editor.enabled = chosen
-    onAltitudeChanged: if(chosenFact != Waypoint.AGL) aglProcessing()
+    onAltitudeChanged: if(!chosen) aglProcessing()
+    onAmslChanged: {calcAgl(); calcAglFt()}
     
     Component.onCompleted: {
         _editor.enabled = chosen
@@ -82,8 +86,12 @@ Item {
             fact.value = 0
             return
         }
-        fact.value = homeHmsl + altitude - elevation;
-        factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
+        calcAgl()
+    }
+
+    function calcAgl() {
+        var diff = altitude - elevation
+        fact.value = amsl?diff:homeHmsl+diff
     }
 
     function getElevation()
@@ -94,8 +102,8 @@ Item {
     }
 
     // Feets processing
-    property var altOpts: fact.parentFact.child("altitude").opts
     property var opts: fact.opts
+    property var altOpts: fact.parentFact.child("altitude").opts
     onAltOptsChanged: aglFtProcessing()
 
     function aglFtProcessing() {
@@ -108,7 +116,13 @@ Item {
             return
         }
 
-        opts.ft = parseInt(altOpts.ft) + m2ft(homeHmsl - elevation)
+        calcAglFt()
+    }
+
+    function calcAglFt() {
+        var diff = parseInt(altOpts.ft) - m2ft(elevation)
+        opts.ft = amsl?diff:m2ft(homeHmsl) + diff
         fact.opts = opts
     }
+
 }

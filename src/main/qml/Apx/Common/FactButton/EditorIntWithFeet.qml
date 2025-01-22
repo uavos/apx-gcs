@@ -83,7 +83,7 @@ SpinBox {
     onOptsChanged: zeroCheck()
     function zeroCheck()
     {
-        var names = ["hmsl", "dshot", "speed"]
+        var names = ["hmsl", "speed"]
         if(!names.includes(fact.name))
             return
         if(fact.parentFact.name == "p#" && opts.ft == 0)  // Point of interest
@@ -91,7 +91,7 @@ SpinBox {
         if(fact.parentFact.name == "r#" && opts.ft == 0)  // Runway
             opts.ft = "default"
         if(fact.parentFact.name == "actions" && opts.ft == 0)
-            if(fact.name == "dshot" || fact.name == "speed")
+            if(fact.name == "speed")
                 opts.ft = "off"
     }
     // Stub END 
@@ -100,8 +100,18 @@ SpinBox {
         implicitWidth: isFeets ? textInputFt.width : textInput.width
         
         TextInput {
-            id: textInputFt
-            property var units: fact.units=="m"?" ft":" ft/s"
+            id: textInputFt 
+            // property var units: fact.units=="m"?" ft":" ft/s"
+            property var units: {
+                switch(fact.units) {
+                    case "m":
+                        return " ft"
+                    case "m AMSL":
+                        return " ft AMSL"
+                    default:
+                        return " ft/s"
+                }
+            }
 
             visible: isFeets
             validator: IntValidator{bottom: editor.from; top: editor.to}

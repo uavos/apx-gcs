@@ -37,8 +37,8 @@ Waypoint::Waypoint(MissionGroup *parent)
     f_altitude->setOpt("extrainfo", "ExtraInfoAltitude.qml");
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
 
-    f_agl = new MissionField(this, "agl", tr("AGL"), tr("Altitude above ground level"), Int);
-    // f_agl->setUnits("m");
+    f_agl = new MissionField(this, "agl", tr("AGL"), tr("Height above ground level"), Int);
+    f_agl->setUnits("m");
     f_agl->setDefaultValue(0);
     f_agl->setOpt("editor", "EditorIntWithFeet.qml");
     f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
@@ -138,13 +138,15 @@ void Waypoint::updateTitle()
         st.append("T");
     if (f_atrack->value().toBool())
         st.append("H");
-    st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
+    // st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
 
     // TODO Feets changing
-    // if (m_isFeets)
-    //     st.append(AppRoot::distanceToStringFt(f_altitude->opts().value("ft", 0).toInt()));
-    // else
-    //     st.append(AppRoot::distanceToString(f_altitude->value().toInt()));
+    if (m_isFeets) {
+        QString ftUnits = f_amsl->value().toBool() ? "ft AMSL" : "ft";
+        st.append(f_altitude->opts().value("ft", 0).toString() + ftUnits);
+    } else {
+        st.append(f_altitude->valueText() + f_altitude->units());
+    }
 
     setTitle(st.join(' '));
 }
