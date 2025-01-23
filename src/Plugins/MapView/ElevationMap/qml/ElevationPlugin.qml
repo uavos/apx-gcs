@@ -31,6 +31,6 @@ AppPlugin {
 
     uiComponent: "main"
     onConfigure: {
-        ui.main.add(plugin, GroundControl.Layout.Main)
+    //    ui.main.add(plugin, GroundControl.Layout.Main)
     }
 }
