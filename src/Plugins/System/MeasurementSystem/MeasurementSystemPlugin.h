@@ -27,7 +27,7 @@
 #include <App/PluginInterface.h>
 #include <QtCore>
 
-class SoundsPlugin : public PluginInterface
+class MeasurementSystemPlugin : public PluginInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
