@@ -24,7 +24,6 @@ apx_lib(
     INCLUDES
     .
     DEPENDS
-    shared.common
     shared.crc
     shared.xbus
     shared.xbus.serial
