@@ -73,7 +73,6 @@ Item {
             elevation = map.getElevationByCoordinate(coordinate)
         
         fact.parentFact.child("agl").visible = visible
-        fact.parentFact.child("agl").visible = true
     }
 
     function altitudeProcessing() 
