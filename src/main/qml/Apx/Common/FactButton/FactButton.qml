@@ -257,7 +257,7 @@ ActionButton {
             // extrainfo
             Item {
                 id: _extrainfo
-                property var mrg: 10
+                property var mrg: 20
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.right: _data.left
@@ -268,7 +268,7 @@ ActionButton {
                     anchors.fill: parent
                     // Material.accent: Material.color(Material.Green)
                     source: active?getExtrainfoSource():""
-                    onLoaded: _extrainfo.mrg = item.implicitWidth + 10*Style.scale
+                    onLoaded: _extrainfo.mrg = item.implicitWidth + _extrainfo.mrg*ui.scale
                 }
             }
         }
