@@ -40,7 +40,6 @@ public:
     enum ChosenFact {
         ALT = 0,
         AGL,
-        AMSL,
     };
     Q_ENUM(ChosenFact)
 
@@ -49,6 +48,8 @@ public:
     Fact *f_altitude;
     Fact *f_amsl;
     Fact *f_agl;
+    Fact *f_elevationmap;
+    Fact *f_useAgl;
 
     Fact *f_atrack;
     Fact *f_xtrack;
@@ -68,6 +69,7 @@ private slots:
     void updateTitle() override;
     void updateDescr();
     void updateAMSL();
+    void updateAgl();
 
     //---------------------------------------
     // PROPERTIES

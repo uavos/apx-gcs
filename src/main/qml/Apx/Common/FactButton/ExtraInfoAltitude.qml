@@ -71,8 +71,6 @@ Item {
         _editor.enabled = chosen
         if(visible)
             elevation = map.getElevationByCoordinate(coordinate)
-        
-        fact.parentFact.child("agl").visible = visible
     }
 
     function altitudeProcessing() 
