@@ -28,8 +28,6 @@ import APX.Mission
 
 Item {
     id: item
-    visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
-
     property var map: apx.tools.elevationmap
     property var agl: fact.parentFact.child("agl").value
     property var amsl: fact.parentFact.child("amsl").value
@@ -69,8 +67,7 @@ Item {
     
     Component.onCompleted: {
         _editor.enabled = chosen
-        if(visible)
-            elevation = map.getElevationByCoordinate(coordinate)
+        elevation = map.getElevationByCoordinate(coordinate)
     }
 
     function altitudeProcessing() 

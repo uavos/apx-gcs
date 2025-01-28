@@ -28,7 +28,6 @@ import APX.Mission
 
 Item {
     id: item
-    visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
     property var map: apx.tools.elevationmap
     property var altitude: fact.parentFact.child("altitude").value
     property var amsl: fact.parentFact.child("amsl").value
@@ -67,13 +66,13 @@ Item {
     onValueChanged: factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
     onChosenChanged: _editor.enabled = chosen
+    onElevationChanged: fact.enabled = !isNaN(elevation)
     onAltitudeChanged: if(!chosen) aglProcessing()
     onAmslChanged: {calcAgl(); calcAglFt()}
     
     Component.onCompleted: {
         _editor.enabled = chosen
-        if(visible)
-            elevation = map.getElevationByCoordinate(coordinate)
+        elevation = map.getElevationByCoordinate(coordinate)
         aglProcessing()
         
         // Feets processing
