@@ -88,15 +88,15 @@ Unit::Unit(Fleet *fleet, PUnit *protocol)
     setMandala(f_mandala);
 
     //Mandala facts binfing
-    f_lat = f_mandala->fact(mandala::est::nav::pos::lat::uid);
-    f_lon = f_mandala->fact(mandala::est::nav::pos::lon::uid);
-    f_hmsl = f_mandala->fact(mandala::est::nav::pos::hmsl::uid);
+    f_lat = f_mandala->fact("est.pos.lat");
+    f_lon = f_mandala->fact("est.pos.lon");
+    f_hmsl = f_mandala->fact("est.pos.hmsl");
 
-    f_ref_hmsl = f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
+    f_ref_hmsl = f_mandala->fact("est.ref.hmsl");
 
-    f_vspeed = f_mandala->fact(mandala::est::nav::pos::vspeed::uid);
-    f_mode = f_mandala->fact(mandala::cmd::nav::proc::mode::uid);
-    f_stage = f_mandala->fact(mandala::cmd::nav::proc::stage::uid);
+    f_vspeed = f_mandala->fact("est.pos.vspeed");
+    f_mode = f_mandala->fact("cmd.proc.mode");
+    f_stage = f_mandala->fact("cmd.proc.stage");
 
     updateInfoTimer.setInterval(300);
     updateInfoTimer.setSingleShot(true);

@@ -104,12 +104,12 @@ HttpService::HttpService(QObject *parent)
 }
 void HttpService::unitSelected(Unit *unit)
 {
-    c_gps_lat = unit->f_mandala->fact(mandala::est::nav::pos::lat::uid);
-    c_gps_lon = unit->f_mandala->fact(mandala::est::nav::pos::lon::uid);
-    c_gps_hmsl = unit->f_mandala->fact(mandala::est::nav::pos::hmsl::uid);
-    c_bearing = unit->f_mandala->fact(mandala::est::nav::pos::bearing::uid);
-    c_roll = unit->f_mandala->fact(mandala::est::nav::att::roll::uid);
-    c_pitch = unit->f_mandala->fact(mandala::est::nav::att::pitch::uid);
+    c_gps_lat = unit->f_mandala->fact("est.pos.lat");
+    c_gps_lon = unit->f_mandala->fact("est.pos.lon");
+    c_gps_hmsl = unit->f_mandala->fact("est.pos.hmsl");
+    c_bearing = unit->f_mandala->fact("est.pos.bearing");
+    c_roll = unit->f_mandala->fact("est.att.roll");
+    c_pitch = unit->f_mandala->fact("est.att.pitch");
 }
 
 void HttpService::httpRequest(QTextStream &stream, QString req, const QTcpSocket *tcp)

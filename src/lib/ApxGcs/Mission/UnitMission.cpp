@@ -66,22 +66,18 @@ UnitMission::UnitMission(Unit *parent)
                             "rw",
                             tr("Runways"),
                             tr("Takeoff and Landing"),
-                            unit->f_mandala->fact(mandala::cmd::nav::proc::rw::uid));
+                            unit->f_mandala->fact("cmd.proc.rw"));
     f_waypoints = new Waypoints(this,
                                 "wp",
                                 tr("Waypoints"),
                                 "",
-                                unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
+                                unit->f_mandala->fact("cmd.proc.wp"));
     f_pois = new Pois(this,
                       "pi",
                       tr("Points"),
                       tr("Points of Interest"),
-                      unit->f_mandala->fact(mandala::cmd::nav::proc::pi::uid));
-    f_taxiways = new Taxiways(this,
-                              "tw",
-                              tr("Taxiways"),
-                              "",
-                              unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
+                      unit->f_mandala->fact("cmd.proc.pi"));
+    f_taxiways = new Taxiways(this, "tw", tr("Taxiways"), "", unit->f_mandala->fact("cmd.proc.wp"));
     f_areas = new Areas(this, "area", tr("Area"), tr("Airspace definitions"));
 
     foreach (MissionGroup *group, groups) {
