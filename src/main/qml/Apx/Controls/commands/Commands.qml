@@ -33,7 +33,7 @@ import APX.Fleet as APX
 Rectangle {
     id: root
 
-    readonly property var f_mode: mandala.cmd.proc.mode
+    readonly property var f_mode: mandala.fact("cmd.proc.mode")
 
     border.width: 0
     color: "#000"

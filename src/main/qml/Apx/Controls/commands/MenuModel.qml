@@ -25,7 +25,7 @@ import APX.Facts
 
 Fact {
     Fact {
-        title: mandala.ctr.title
+        title: qsTr("Controls")
         icon: "dip-switch"
         Fact { binding: mandala.fact("ctr.str.brake"); flags: Fact.Bool; }
         Fact { binding: mandala.fact("ctr.wing.flaps"); flags: Fact.Bool; }
@@ -40,7 +40,7 @@ Fact {
         }
     }
     Fact {
-        title: mandala.fact("ctr.eng").title
+        title: qsTr("Engine")
         icon: "engine"
         Fact { binding: mandala.fact("ctr.eng.choke"); flags: Fact.Bool; }
         Fact { binding: mandala.fact("cmd.eng.cut"); flags: Fact.Bool; }
@@ -69,7 +69,7 @@ Fact {
         }
     }
     Fact {
-        title: mandala.fact("ctr.pwr").title
+        title: qsTr("Power")
         icon: "power-standby"
         Fact { binding: mandala.fact("ctr.pwr.payload"); flags: Fact.Bool; }
         Fact { binding: mandala.fact("ctr.pwr.xpdr"); flags: Fact.Bool; }

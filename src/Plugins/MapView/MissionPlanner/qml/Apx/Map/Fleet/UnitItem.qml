@@ -37,15 +37,15 @@ MapQuickItem {  //to be used inside MapComponent only
 
     //Fact bindings
     readonly property var vm: unit.mandala
-    readonly property real f_roll: vm.est.att.roll.value
-    readonly property real f_pitch: vm.est.att.pitch.value
-    readonly property real f_yaw: vm.est.att.yaw.value
-    readonly property real f_altitude: vm.est.pos.altitude.value
-    readonly property real f_cmd_bearing: vm.cmd.pos.bearing.value
-    readonly property real f_bearing: vm.est.pos.bearing.value
-    readonly property real f_windHdg: vm.est.wind.heading.value
-    readonly property real f_windSpd: vm.est.wind.speed.value
-    readonly property int f_mode: vm.cmd.proc.mode.value
+    readonly property real f_roll: vm.fact("est.att.roll").value
+    readonly property real f_pitch: vm.fact("est.att.pitch").value
+    readonly property real f_yaw: vm.fact("est.att.yaw").value
+    readonly property real f_altitude: vm.fact("est.pos.altitude").value
+    readonly property real f_cmd_bearing: vm.fact("cmd.pos.bearing").value
+    readonly property real f_bearing: vm.fact("est.pos.bearing").value
+    readonly property real f_windHdg: vm.fact("est.wind.heading").value
+    readonly property real f_windSpd: vm.fact("est.wind.speed").value
+    readonly property int f_mode: vm.fact("cmd.proc.mode").value
 
     readonly property bool f_LDTO: f_mode === proc_mode_LANDING || f_mode === proc_mode_TAKEOFF
 
