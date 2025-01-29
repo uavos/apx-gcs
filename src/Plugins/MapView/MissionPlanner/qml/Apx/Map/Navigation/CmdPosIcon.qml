@@ -28,8 +28,8 @@ import Apx.Common
 MapQuickItem {
 
     //Fact bindings
-    property real cmd_lat: mandala.cmd.pos.lat.value
-    property real cmd_lon: mandala.cmd.pos.lon.value
+    readonly property real cmd_lat: mandala.fact("cmd.pos.lat").value
+    readonly property real cmd_lon: mandala.fact("cmd.pos.lon").value
 
     coordinate: QtPositioning.coordinate(cmd_lat,cmd_lon)
 

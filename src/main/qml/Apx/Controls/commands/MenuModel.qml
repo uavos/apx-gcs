@@ -27,41 +27,41 @@ Fact {
     Fact {
         title: mandala.ctr.title
         icon: "dip-switch"
-        Fact { binding: mandala.ctr.str.brake; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.wing.flaps; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.wing.airbrk; flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.str.brake"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.wing.flaps"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.wing.airbrk"); flags: Fact.Bool; }
         Fact {
-            title: mandala.ctr.light.title
-            Fact { binding: mandala.ctr.light.nav; flags: Fact.Bool; }
-            Fact { binding: mandala.ctr.light.taxi; flags: Fact.Bool; }
-            Fact { binding: mandala.ctr.light.strobe; flags: Fact.Bool; }
-            Fact { binding: mandala.ctr.light.beacon; flags: Fact.Bool; }
-            Fact { binding: mandala.ctr.light.landing; flags: Fact.Bool; }
+            title: mandala.fact("ctr.light").title
+            Fact { binding: mandala.fact("ctr.light.nav"); flags: Fact.Bool; }
+            Fact { binding: mandala.fact("ctr.light.taxi"); flags: Fact.Bool; }
+            Fact { binding: mandala.fact("ctr.light.strobe"); flags: Fact.Bool; }
+            Fact { binding: mandala.fact("ctr.light.beacon"); flags: Fact.Bool; }
+            Fact { binding: mandala.fact("ctr.light.landing"); flags: Fact.Bool; }
         }
     }
     Fact {
-        title: mandala.ctr.eng.title
+        title: mandala.fact("ctr.eng").title
         icon: "engine"
-        Fact { binding: mandala.ctr.eng.choke; flags: Fact.Bool; }
-        Fact { binding: mandala.cmd.eng.cut; flags: Fact.Bool; }
-        Fact { binding: mandala.cmd.eng.ovr; flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.eng.choke"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("cmd.eng.cut"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("cmd.eng.ovr"); flags: Fact.Bool; }
         Fact { enabled: false }
-        Fact { binding: mandala.ctr.pwr.eng; flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.eng"); flags: Fact.Bool; }
         Fact {
-            title: mandala.ctr.eng.starter.title;
-            descr: mandala.ctr.eng.starter.descr;
+            title: mandala.fact("ctr.eng.starter").title;
+            descr: mandala.fact("ctr.eng.starter").descr;
             flags: Fact.Bool;
-            active: mandala.ctr.eng.starter.value;
+            active: mandala.fact("ctr.eng.starter").value;
 
             onValueChanged: {
                 if(value){
-                    mandala.cmd.eng.mode.value = eng_mode_start
+                    mandala.fact("cmd.eng.mode").value = eng_mode_start
                 }else{
-                    mandala.ctr.eng.starter.value = false;
+                    mandala.fact("ctr.eng.starter").value = false;
                 }
             }
 
-            readonly property bool modeStart: mandala.cmd.eng.mode.value === eng_mode_start
+            readonly property bool modeStart: mandala.fact("cmd.eng.mode").value === eng_mode_start
             onModeStartChanged: {
                 if(!modeStart)
                     value=false
@@ -69,17 +69,17 @@ Fact {
         }
     }
     Fact {
-        title: mandala.ctr.pwr.title
+        title: mandala.fact("ctr.pwr").title
         icon: "power-standby"
-        Fact { binding: mandala.ctr.pwr.payload; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.pwr.xpdr; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.pwr.agl; flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.payload"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.xpdr"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.agl"); flags: Fact.Bool; }
         Fact { enabled: false }
-        Fact { binding: mandala.ctr.pwr.servo; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.pwr.satcom; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.pwr.rfamp; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.pwr.ice; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.pwr.las; flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.servo"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.satcom"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.rfamp"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.ice"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.pwr.las"); flags: Fact.Bool; }
     }
     Fact {
         title: qsTr("Service")
@@ -91,16 +91,16 @@ Fact {
             Fact { enabled: false }
             Fact { title: qsTr("Reset INS filter"); descr: "ins()"; onTriggered: application.jsexec(descr); }
             Fact { enabled: false }
-            Fact { binding: mandala.cmd.ins.inair }
-            Fact { binding: mandala.cmd.ins.nogps; flags: Fact.Bool; }
-            Fact { binding: mandala.cmd.ins.nomag; flags: Fact.Bool; }
-            Fact { binding: mandala.cmd.ins.hsel }
+            Fact { binding: mandala.fact("cmd.ins.inair") }
+            Fact { binding: mandala.fact("cmd.ins.nogps"); flags: Fact.Bool; }
+            Fact { binding: mandala.fact("cmd.ins.nomag"); flags: Fact.Bool; }
+            Fact { binding: mandala.fact("cmd.ins.hsel") }
         }
     }
     Fact {
         title: qsTr("Emergency")
         icon: "alert-box"
-        Fact { binding: mandala.ctr.ers.launch; flags: Fact.Bool; }
-        Fact { binding: mandala.ctr.ers.rel; flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.ers.launch"); flags: Fact.Bool; }
+        Fact { binding: mandala.fact("ctr.ers.rel"); flags: Fact.Bool; }
     }
 }

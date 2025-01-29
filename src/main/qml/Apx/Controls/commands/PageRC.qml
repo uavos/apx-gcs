@@ -30,10 +30,10 @@ Page {
         height: parent.height
         spacing: buttonSpacing*2
         model: ObjectModel {
-            CtrSlider { title: "R"; fact: mandala.cmd.rc.roll; width: listView.width }
-            CtrSlider { title: "P"; fact: mandala.cmd.rc.pitch; width: listView.width }
-            CtrSlider { title: "T"; fact: mandala.cmd.rc.thr; from: 0; width: listView.width }
-            CtrSlider { title: "Y"; fact: mandala.cmd.rc.yaw; width: listView.width }
+            CtrSlider { title: "R"; fact: mandala.fact("cmd.rc.roll"); width: listView.width }
+            CtrSlider { title: "P"; fact: mandala.fact("cmd.rc.pitch"); width: listView.width }
+            CtrSlider { title: "T"; fact: mandala.fact("cmd.rc.thr"); from: 0; width: listView.width }
+            CtrSlider { title: "Y"; fact: mandala.fact("cmd.rc.yaw"); width: listView.width }
         }
     }
 }

@@ -28,8 +28,8 @@ import Apx.Map.Common
 MissionObject {
     id: taxiwayItem
 
-    readonly property int m_twidx: mandala.cmd.proc.wp.value
-    readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_twidx: mandala.fact("cmd.proc.wp").value
+    readonly property int m_mode: mandala.fact("cmd.proc.mode").value
 
     color: Style.cTaxiway
     textColor: "white"

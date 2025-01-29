@@ -30,14 +30,14 @@ Loader {
     active: power_payload && camAlt>0 && (cam_roll!==0 || cam_pitch!==0 || cam_yaw!==0)
 
 
-    readonly property bool power_payload: mandala.ctr.pwr.payload.value === pwr_payload_on
+    readonly property bool power_payload: mandala.fact("ctr.pwr.payload").value === pwr_payload_on
 
-    readonly property real cam_roll: mandala.est.cam.roll.value
-    readonly property real cam_pitch: mandala.est.cam.pitch.value
-    readonly property real cam_yaw: mandala.est.cam.yaw.value
+    readonly property real cam_roll: mandala.fact("est.cam.roll").value
+    readonly property real cam_pitch: mandala.fact("est.cam.pitch").value
+    readonly property real cam_yaw: mandala.fact("est.cam.yaw").value
 
-    readonly property real hmsl: mandala.est.pos.hmsl.value
-    readonly property real home_hmsl: mandala.est.ref.hmsl.value
+    readonly property real hmsl: mandala.fact("est.pos.hmsl").value
+    readonly property real home_hmsl: mandala.fact("est.ref.hmsl").value
     readonly property real camAlt: hmsl-home_hmsl
 
     onItemChanged:
@@ -50,10 +50,10 @@ Loader {
 
         //Fact bindings
         //calculate
-        readonly property real yaw: mandala.est.att.yaw.value
+        readonly property real yaw: mandala.fact("est.att.yaw").value
 
-        readonly property real lat: mandala.est.pos.lat.value
-        readonly property real lon: mandala.est.pos.lon.value
+        readonly property real lat: mandala.fact("est.pos.lat").value
+        readonly property real lon: mandala.fact("est.pos.lon").value
 
         readonly property bool bCamFront: cam_roll !== 0
 

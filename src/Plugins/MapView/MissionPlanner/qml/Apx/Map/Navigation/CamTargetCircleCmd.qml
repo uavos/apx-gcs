@@ -30,9 +30,9 @@ MapIcon {
     name: "blur"
 
     //Fact bindings
-    property real lat: mandala.est.cam.lat.value
-    property real lon: mandala.est.cam.lon.value
-    property real hmsl: mandala.est.cam.hmsl.value
+    property real lat: mandala.fact("est.cam.lat").value
+    property real lon: mandala.fact("est.cam.lon").value
+    property real hmsl: mandala.fact("est.cam.hmsl").value
 
     coordinate: QtPositioning.coordinate(lat,lon,hmsl)
 }

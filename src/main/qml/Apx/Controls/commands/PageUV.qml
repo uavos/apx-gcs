@@ -28,17 +28,17 @@ import Apx.Common
 
 RowLayout {
 
-    readonly property var f_mode: mandala.cmd.proc.mode
-    readonly property var f_stage: mandala.cmd.proc.stage
-    readonly property var f_action: mandala.cmd.proc.action
-    readonly property var f_adj: mandala.cmd.proc.adj
+    readonly property var f_mode: mandala.fact("cmd.proc.mode")
+    readonly property var f_stage: mandala.fact("cmd.proc.stage")
+    readonly property var f_action: mandala.fact("cmd.proc.action")
+    readonly property var f_adj: mandala.fact("cmd.proc.adj")
 
-    readonly property var f_flaps: mandala.ctr.wing.flaps
-    readonly property var f_airbrk: mandala.ctr.wing.airbrk
-    readonly property var f_brake: mandala.ctr.str.brake
-    readonly property var f_thr: mandala.cmd.rc.thr
+    readonly property var f_flaps: mandala.fact("ctr.wing.flaps")
+    readonly property var f_airbrk: mandala.fact("ctr.wing.airbrk")
+    readonly property var f_brake: mandala.fact("ctr.str.brake")
+    readonly property var f_thr: mandala.fact("cmd.rc.thr")
 
-    readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
+    readonly property bool m_reg_taxi: mandala.fact("cmd.reg.taxi").value
 
     spacing: buttonSpacing*4
 

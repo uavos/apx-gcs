@@ -119,43 +119,43 @@ Rectangle {
             Layout.maximumHeight: 24*ui.scale
             SignalButton {
                 text: "R"
-                values: [ mandala.cmd.att.roll, mandala.est.att.roll ]
+                values: [ mandala.fact("cmd.att.roll"), mandala.fact("est.att.roll") ]
             }
             SignalButton {
                 text: "P"
-                values: [ mandala.cmd.att.pitch, mandala.est.att.pitch ]
+                values: [ mandala.fact("cmd.att.pitch"), mandala.fact("est.att.pitch") ]
             }
             SignalButton {
                 text: "Y"
-                values: [ mandala.cmd.pos.bearing, mandala.cmd.att.yaw, mandala.est.att.yaw ]
+                values: [ mandala.fact("cmd.pos.bearing"), mandala.fact("cmd.att.yaw"), mandala.fact("est.att.yaw") ]
             }
             SignalButton {
                 text: "Axy"
-                values: [ mandala.est.acc.x, mandala.est.acc.y ]
+                values: [ mandala.fact("est.acc.x"), mandala.fact("est.acc.y") ]
             }
             SignalButton {
                 text: "Az"
-                values: [ mandala.est.acc.z ]
+                values: [ mandala.fact("est.acc.z") ]
             }
             SignalButton {
                 text: "G"
-                values: [ mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z ]
+                values: [ mandala.fact("est.gyro.x"), mandala.fact("est.gyro.y"), mandala.fact("est.gyro.z") ]
             }
             SignalButton {
                 text: "Pt"
-                values: [ mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed ]
+                values: [ mandala.fact("est.pos.altitude"), mandala.fact("est.pos.vspeed"), mandala.fact("est.air.airspeed") ]
             }
             SignalButton {
                 text: "Ctr"
-                values: [ mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.att.rud, mandala.ctr.eng.thr, mandala.ctr.eng.prop, mandala.ctr.str.rud ]
+                values: [ mandala.fact("ctr.att.ail"), mandala.fact("ctr.att.elv"), mandala.fact("ctr.att.rud"), mandala.fact("ctr.eng.thr"), mandala.fact("ctr.eng.prop"), mandala.fact("ctr.str.rud") ]
             }
             SignalButton {
                 text: "RC"
-                values: [ mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.thr, mandala.cmd.rc.yaw ]
+                values: [ mandala.fact("cmd.rc.roll"), mandala.fact("cmd.rc.pitch"), mandala.fact("cmd.rc.thr"), mandala.fact("cmd.rc.yaw") ]
             }
             SignalButton {
                 text: "Usr"
-                values: [ mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6 ]
+                values: [ mandala.fact("est.usr.u1"), mandala.fact("est.usr.u2"), mandala.fact("est.usr.u3"), mandala.fact("est.usr.u4"), mandala.fact("est.usr.u5"), mandala.fact("est.usr.u6") ]
             }
 
             SignalButton {

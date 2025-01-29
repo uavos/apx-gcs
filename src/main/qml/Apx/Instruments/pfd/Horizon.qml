@@ -34,23 +34,23 @@ Item {
 
     readonly property APX.Unit unit: apx.fleet.current
 
-    readonly property real m_roll: mandala.est.att.roll.value
-    readonly property real m_pitch: mandala.est.att.pitch.value
+    readonly property real m_roll: mandala.fact("est.att.roll").value
+    readonly property real m_pitch: mandala.fact("est.att.pitch").value
 
-    readonly property real m_cmd_roll: mandala.cmd.att.roll.value
-    readonly property real m_cmd_pitch: mandala.cmd.att.pitch.value
+    readonly property real m_cmd_roll: mandala.fact("cmd.att.roll").value
+    readonly property real m_cmd_pitch: mandala.fact("cmd.att.pitch").value
 
-    readonly property var f_rc_roll: mandala.cmd.rc.roll
-    readonly property var f_rc_pitch: mandala.cmd.rc.pitch
+    readonly property var f_rc_roll: mandala.fact("cmd.rc.roll")
+    readonly property var f_rc_pitch: mandala.fact("cmd.rc.pitch")
 
-    readonly property real m_ail: mandala.ctr.att.ail.value
-    readonly property real m_elv: mandala.ctr.att.elv.value
+    readonly property real m_ail: mandala.fact("ctr.att.ail").value
+    readonly property real m_elv: mandala.fact("ctr.att.elv").value
 
-    readonly property real m_slip: mandala.est.air.slip.value
-    readonly property real m_cmd_slip: mandala.cmd.att.slip.value
+    readonly property real m_slip: mandala.fact("est.air.slip").value
+    readonly property real m_cmd_slip: mandala.fact("cmd.att.slip").value
 
-    readonly property bool m_reg_tilt: mandala.cmd.reg.tilt.value
-    readonly property int m_reg_yaw: mandala.cmd.reg.yaw.value
+    readonly property bool m_reg_tilt: mandala.fact("cmd.reg.tilt").value
+    readonly property int m_reg_yaw: mandala.fact("cmd.reg.yaw").value
 
 
     property bool showHeading: true

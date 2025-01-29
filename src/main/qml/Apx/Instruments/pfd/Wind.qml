@@ -25,9 +25,9 @@ import "."
 
 Item {
     id: wind_window
-    readonly property bool m_wind: mandala.est.wind.status.value > 0
-    readonly property real m_wspd: mandala.est.wind.speed.value
-    readonly property real m_whdg: mandala.est.wind.heading.value
+    readonly property bool m_wind: mandala.fact("est.wind.status").value > 0
+    readonly property real m_wspd: mandala.fact("est.wind.speed").value
+    readonly property real m_whdg: mandala.fact("est.wind.heading").value
 
     property real value: m_whdg
 

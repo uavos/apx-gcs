@@ -120,8 +120,11 @@ MandalaFact *Mandala::fact(mandala::uid_t uid) const
 MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
 {
     MandalaFact *f = nullptr;
-    if (mpath.isEmpty())
+    if (mpath.isEmpty()) {
+        qWarning() << "path is empty";
         return f;
+    }
+
     if (mpath.contains('.')) {
         f = static_cast<MandalaFact *>(findChild(mpath));
     }
@@ -133,6 +136,8 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
         if (!silent)
             apxMsgW() << "Mandala fact not found:" << mpath;
     }
+
+    qDebug() << mpath;
     return f;
 }
 

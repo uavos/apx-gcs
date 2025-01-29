@@ -25,13 +25,13 @@ import "../common"
 Item {
     id: ils_window
 
-    readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_mode: mandala.fact("cmd.proc.mode").value
 
-    readonly property var f_delta: mandala.est.wpt.derr
-    readonly property var f_xtrack: mandala.est.wpt.xtrack
+    readonly property var f_delta: mandala.fact("est.wpt.derr")
+    readonly property var f_xtrack: mandala.fact("est.wpt.xtrack")
 
-    readonly property int m_reg_hdg: mandala.cmd.reg.hdg.value
-    readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
+    readonly property int m_reg_hdg: mandala.fact("cmd.reg.hdg").value
+    readonly property bool m_reg_taxi: mandala.fact("cmd.reg.taxi").value
     property bool isTrack: m_reg_taxi || m_reg_hdg===reg_hdg_track || m_reg_hdg===reg_hdg_loiter
 
     property double anumation_duration: 1000

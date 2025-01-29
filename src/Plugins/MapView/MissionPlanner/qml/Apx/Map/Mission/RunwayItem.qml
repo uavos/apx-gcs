@@ -31,10 +31,10 @@ import APX.Mission as APX
 MissionObject {
     id: runwayItem
 
-    //readonly property int m_rwidx: mandala.cmd.proc.rw.value
-    readonly property int m_mode: mandala.cmd.proc.mode.value
-    readonly property real m_radius: mandala.cmd.pos.radius.value
-    readonly property real m_delta: mandala.est.wpt.derr.value
+    //readonly property int m_rwidx: mandala.fact("cmd.proc.rw").value
+    readonly property int m_mode: mandala.fact("cmd.proc.mode").value
+    readonly property real m_radius: mandala.fact("cmd.pos.radius").value
+    readonly property real m_delta: mandala.fact("est.wpt.derr").value
 
     color: Style.cRunway
     textColor: "white"

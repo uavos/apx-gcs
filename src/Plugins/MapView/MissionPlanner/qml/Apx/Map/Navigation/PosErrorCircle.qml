@@ -31,10 +31,10 @@ MapCircle {
     opacity: 0.2
 
     //Fact bindings
-    property real lat: mandala.est.pos.lat.value
-    property real lon: mandala.est.pos.lon.value
+    readonly property real lat: mandala.fact("est.pos.lat").value
+    readonly property real lon: mandala.fact("est.pos.lon").value
 
-    property real eph: mandala.est.ins.eph.value
+    readonly property real eph: mandala.fact("est.ins.eph").value
 
     //calculate circle
     visible: eph>5

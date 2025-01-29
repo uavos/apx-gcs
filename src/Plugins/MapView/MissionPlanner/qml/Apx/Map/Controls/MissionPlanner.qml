@@ -31,7 +31,7 @@ import Apx.Controls
 MapControl {
     id: missionPlanner
 
-    readonly property bool showWind: mandala.est.wind.status.value > 0 || mandala.est.wind.speed.value > 0
+    readonly property bool showWind: mandala.fact("est.wind.status").value > 0 || mandala.fact("est.wind.speed").value > 0
 
     readonly property real margins: Style.spacing
 

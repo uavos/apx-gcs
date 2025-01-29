@@ -36,15 +36,15 @@ MapCircle {
     property color cLoosing: "#A0FF0000"
 
     //Fact bindings
-    property real lat: mandala.est.pos.lat.value
-    property real lon: mandala.est.pos.lon.value
-    property real altitude: mandala.est.pos.altitude.value
-    property real ldratio: mandala.est.air.ld.value
-    property real windHdg: mandala.est.wind.heading.value
-    property real windSpd: mandala.est.wind.speed.value
-    property real airspeed: mandala.est.air.airspeed.value
-    property real cas2tas: mandala.est.air.ktas.value
-    property real venergy: mandala.est.air.vse.value
+    readonly property real lat: mandala.fact("est.pos.lat").value
+    readonly property real lon: mandala.fact("est.pos.lon").value
+    readonly property real altitude: mandala.fact("est.pos.altitude").value
+    readonly property real ldratio: mandala.fact("est.air.ld").value
+    readonly property real windHdg: mandala.fact("est.wind.heading").value
+    readonly property real windSpd: mandala.fact("est.wind.speed").value
+    readonly property real airspeed: mandala.fact("est.air.airspeed").value
+    readonly property real cas2tas: mandala.fact("est.air.ktas").value
+    readonly property real venergy: mandala.fact("est.air.vse").value
 
     //calculate Energy Circle
     property int range: altitude*ldratio

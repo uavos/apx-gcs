@@ -31,15 +31,15 @@ MapIcon {
     color: Style.cYellow
 
     //Fact bindings
-    property real lat: mandala.est.pos.lat.value
-    property real lon: mandala.est.pos.lon.value
-    property real hmsl: mandala.est.pos.hmsl.value
+    readonly property real lat: mandala.fact("est.pos.lat").value
+    readonly property real lon: mandala.fact("est.pos.lon").value
+    readonly property real hmsl: mandala.fact("est.pos.hmsl").value
 
-    property real dn: mandala.est.ins.dn.value
-    property real de: mandala.est.ins.de.value
-    property real dh: mandala.est.ins.dh.value
+    readonly property real dn: mandala.fact("est.ins.dn").value
+    readonly property real de: mandala.fact("est.ins.de").value
+    readonly property real dh: mandala.fact("est.ins.dh").value
 
-    property bool ins_nogps: mandala.cmd.ins.nogps.value
+    readonly property bool ins_nogps: mandala.fact("cmd.ins.nogps").value
 
 
     // calculated properties

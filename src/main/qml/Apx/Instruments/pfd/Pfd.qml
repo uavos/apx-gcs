@@ -32,87 +32,87 @@ Item {
 
     readonly property APX.Unit unit: apx.fleet.current
 
-    readonly property var f_mode: mandala.cmd.proc.mode
+    readonly property var f_mode: mandala.fact("cmd.proc.mode")
 
-    readonly property var f_yaw: mandala.est.att.yaw
-    readonly property var f_cmd_airspeed: mandala.cmd.pos.airspeed
-    readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
+    readonly property var f_yaw: mandala.fact("est.att.yaw")
+    readonly property var f_cmd_airspeed: mandala.fact("cmd.pos.airspeed")
+    readonly property var f_cmd_altitude: mandala.fact("cmd.pos.altitude")
 
-    readonly property var f_gps_src: mandala.sns.gps.src
-    readonly property var f_gps_fix: mandala.sns.gps.fix
-    readonly property var f_gps_emi: mandala.sns.gps.emi
-    readonly property var f_gps_su: mandala.sns.gps.su
-    readonly property var f_gps_sv: mandala.sns.gps.sv
-    readonly property var f_ref_status: mandala.est.ref.status
-    readonly property var f_ins_nogps: mandala.cmd.ins.nogps
+    readonly property var f_gps_src: mandala.fact("sns.gps.src")
+    readonly property var f_gps_fix: mandala.fact("sns.gps.fix")
+    readonly property var f_gps_emi: mandala.fact("sns.gps.emi")
+    readonly property var f_gps_su: mandala.fact("sns.gps.su")
+    readonly property var f_gps_sv: mandala.fact("sns.gps.sv")
+    readonly property var f_ref_status: mandala.fact("est.ref.status")
+    readonly property var f_ins_nogps: mandala.fact("cmd.ins.nogps")
 
 
-    readonly property var f_ktas: mandala.est.air.ktas
-    readonly property var f_ld: mandala.est.air.ld
+    readonly property var f_ktas: mandala.fact("est.air.ktas")
+    readonly property var f_ld: mandala.fact("est.air.ld")
 
-    readonly property var f_reg_thr: mandala.cmd.reg.eng
-    readonly property var f_reg_throvr: mandala.cmd.eng.ovr
-    readonly property var f_reg_thrcut: mandala.cmd.eng.cut
+    readonly property var f_reg_thr: mandala.fact("cmd.reg.eng")
+    readonly property var f_reg_throvr: mandala.fact("cmd.eng.ovr")
+    readonly property var f_reg_thrcut: mandala.fact("cmd.eng.cut")
 
-    readonly property var f_thr: mandala.ctr.eng.thr
-    readonly property var f_rc_thr: mandala.cmd.rc.thr
+    readonly property var f_thr: mandala.fact("ctr.eng.thr")
+    readonly property var f_rc_thr: mandala.fact("cmd.rc.thr")
 
-    readonly property var f_vsys: mandala.sns.pwr.vsys
-    readonly property var f_vsrv: mandala.sns.pwr.vsrv
-    readonly property var f_vpld: mandala.sns.pwr.vpld
-    readonly property var f_veng: mandala.sns.eng.voltage
+    readonly property var f_vsys: mandala.fact("sns.pwr.vsys")
+    readonly property var f_vsrv: mandala.fact("sns.pwr.vsrv")
+    readonly property var f_vpld: mandala.fact("sns.pwr.vpld")
+    readonly property var f_veng: mandala.fact("sns.eng.voltage")
 
-    readonly property var f_air_temp: mandala.sns.air.temp
-    readonly property var f_rt: mandala.sns.aux.rt
+    readonly property var f_air_temp: mandala.fact("sns.air.temp")
+    readonly property var f_rt: mandala.fact("sns.aux.rt")
 
-    readonly property var f_rpm: mandala.est.eng.rpm
-    readonly property var f_airbrk: mandala.ctr.wing.airbrk
-    readonly property var f_reg_airbrk: mandala.cmd.reg.airbrk
-    readonly property var f_tecs: mandala.cmd.pos.tecs
+    readonly property var f_rpm: mandala.fact("est.eng.rpm")
+    readonly property var f_airbrk: mandala.fact("ctr.wing.airbrk")
+    readonly property var f_reg_airbrk: mandala.fact("cmd.reg.airbrk")
+    readonly property var f_tecs: mandala.fact("cmd.pos.tecs")
 
-    readonly property var f_baro_status: mandala.sns.baro.status
-    readonly property var f_pwr_status: mandala.sns.pwr.status
+    readonly property var f_baro_status: mandala.fact("sns.baro.status")
+    readonly property var f_pwr_status: mandala.fact("sns.pwr.status")
 
-    readonly property var f_pitot_status: mandala.sns.pitot.status
+    readonly property var f_pitot_status: mandala.fact("sns.pitot.status")
 
-    readonly property var f_bat_status: mandala.sns.bat.status
+    readonly property var f_bat_status: mandala.fact("sns.bat.status")
 
-    readonly property var f_eng_status: mandala.est.eng.status
-    readonly property var f_eng_mode: mandala.cmd.eng.mode
-    readonly property var f_eng_tc: mandala.sns.eng.tc
-    readonly property var f_eng_starter: mandala.ctr.eng.starter
+    readonly property var f_eng_status: mandala.fact("est.eng.status")
+    readonly property var f_eng_mode: mandala.fact("cmd.eng.mode")
+    readonly property var f_eng_tc: mandala.fact("sns.eng.tc")
+    readonly property var f_eng_starter: mandala.fact("ctr.eng.starter")
 
-    readonly property var f_pwr_servo: mandala.ctr.pwr.servo
-    readonly property var f_pwr_payload: mandala.ctr.pwr.payload
+    readonly property var f_pwr_servo: mandala.fact("ctr.pwr.servo")
+    readonly property var f_pwr_payload: mandala.fact("ctr.pwr.payload")
 
-    readonly property var f_ers_status: mandala.sns.ers.status
-    readonly property var f_ers_block: mandala.sns.ers.block
+    readonly property var f_ers_status: mandala.fact("sns.ers.status")
+    readonly property var f_ers_block: mandala.fact("sns.ers.block")
 
-    readonly property var f_rc_mode: mandala.cmd.rc.mode
+    readonly property var f_rc_mode: mandala.fact("cmd.rc.mode")
 
-    readonly property var f_ref_hmsl: mandala.est.ref.hmsl
+    readonly property var f_ref_hmsl: mandala.fact("est.ref.hmsl")
 
-    readonly property var f_reg_hdg: mandala.cmd.reg.hdg
-    readonly property var f_reg_hover: mandala.cmd.reg.hover
-    readonly property bool m_wpt_status: mandala.est.wpt.status.value
+    readonly property var f_reg_hdg: mandala.fact("cmd.reg.hdg")
+    readonly property var f_reg_hover: mandala.fact("cmd.reg.hover")
+    readonly property bool m_wpt_status: mandala.fact("est.wpt.status").value
 
-    readonly property bool m_reg_spd: mandala.cmd.reg.spd.value
-    readonly property int m_reg_alt: mandala.cmd.reg.alt.value
+    readonly property bool m_reg_spd: mandala.fact("cmd.reg.spd").value
+    readonly property int m_reg_alt: mandala.fact("cmd.reg.alt").value
 
     // status flags and warnings
-    readonly property var f_att_status: mandala.est.att.status
-    readonly property var f_ins_rest: mandala.est.ins.rest
-    readonly property var f_pos_status: mandala.est.pos.status
-    readonly property var f_ins_href: mandala.est.ins.href
-    readonly property var f_lpos_status: mandala.est.lpos.status
-    readonly property var f_air_stall: mandala.est.air.stall
-    readonly property var f_ins_inair: mandala.cmd.ins.inair
-    readonly property var f_ins_hsel: mandala.cmd.ins.hsel
+    readonly property var f_att_status: mandala.fact("est.att.status")
+    readonly property var f_ins_rest: mandala.fact("est.ins.rest")
+    readonly property var f_pos_status: mandala.fact("est.pos.status")
+    readonly property var f_ins_href: mandala.fact("est.ins.href")
+    readonly property var f_lpos_status: mandala.fact("est.lpos.status")
+    readonly property var f_air_stall: mandala.fact("est.air.stall")
+    readonly property var f_ins_inair: mandala.fact("cmd.ins.inair")
+    readonly property var f_ins_hsel: mandala.fact("cmd.ins.hsel")
 
-    readonly property var f_att_valid: mandala.est.att.valid
-    readonly property var f_pos_valid: mandala.est.pos.valid
-    readonly property var f_gyro_valid: mandala.est.gyro.valid
-    readonly property var f_acc_valid: mandala.est.acc.valid
+    readonly property var f_att_valid: mandala.fact("est.att.valid")
+    readonly property var f_pos_valid: mandala.fact("est.pos.valid")
+    readonly property var f_gyro_valid: mandala.fact("est.gyro.valid")
+    readonly property var f_acc_valid: mandala.fact("est.acc.valid")
 
     readonly property bool isValid: f_att_status.value > 0
 

@@ -29,7 +29,7 @@ import Apx.Map.Common
 MissionObject {
     id: pointItem
 
-    readonly property int m_piidx: mandala.cmd.proc.pi.value
+    readonly property int m_piidx: mandala.fact("cmd.proc.pi").value
 
 
     color: Style.cPoint

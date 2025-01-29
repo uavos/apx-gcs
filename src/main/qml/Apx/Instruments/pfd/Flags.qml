@@ -24,17 +24,17 @@ import "../common"
 
 Column {
 
-    readonly property var f_flaps: mandala.ctr.wing.flaps
-    readonly property var f_brake: mandala.ctr.str.brake
-    readonly property var f_ers: mandala.ctr.ers.launch
-    readonly property var f_rel: mandala.ctr.ers.rel
+    readonly property var f_flaps: mandala.fact("ctr.wing.flaps")
+    readonly property var f_brake: mandala.fact("ctr.str.brake")
+    readonly property var f_ers: mandala.fact("ctr.ers.launch")
+    readonly property var f_rel: mandala.fact("ctr.ers.rel")
 
-    readonly property var f_eng: mandala.ctr.pwr.eng
-    readonly property var f_pld: mandala.ctr.pwr.payload
+    readonly property var f_eng: mandala.fact("ctr.pwr.eng")
+    readonly property var f_pld: mandala.fact("ctr.pwr.payload")
 
-    //readonly property var f_lights: mandala.ctr.light.taxi
+    //readonly property var f_lights: mandala.fact("ctr.light.taxi")
 
-    readonly property bool m_reg_brk: mandala.cmd.reg.brk.value
+    readonly property bool m_reg_brk: mandala.fact("cmd.reg.brk").value
 
 
     property double txtHeight

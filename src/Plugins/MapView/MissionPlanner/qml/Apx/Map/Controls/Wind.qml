@@ -26,9 +26,9 @@ import Apx.Common
 Item {
     id: control
 
-    readonly property bool m_status: mandala.est.wind.status.value > 0
-    readonly property real m_wspd: mandala.est.wind.speed.value
-    readonly property int m_whdg: mandala.est.wind.heading.value
+    readonly property bool m_status: mandala.fact("est.wind.status").value > 0
+    readonly property real m_wspd: mandala.fact("est.wind.speed").value
+    readonly property int m_whdg: mandala.fact("est.wind.heading").value
 
     implicitWidth: Style.buttonSize*2.5
     implicitHeight: implicitWidth

@@ -31,11 +31,11 @@ MapCircle {
     border.width: 1
 
     //Fact bindings
-    readonly property real cmd_lat: mandala.cmd.pos.lat.value
-    readonly property real cmd_lon: mandala.cmd.pos.lon.value
+    readonly property real cmd_lat: mandala.fact("cmd.pos.lat").value
+    readonly property real cmd_lon: mandala.fact("cmd.pos.lon").value
 
-    property real turnR: mandala.cmd.pos.radius.value
-    property bool landing: mandala.cmd.proc.mode.value === proc_mode_LANDING
+    readonly property real turnR: mandala.fact("cmd.pos.radius").value
+    readonly property bool landing: mandala.fact("cmd.proc.mode").value === proc_mode_LANDING
 
     center: QtPositioning.coordinate(cmd_lat,cmd_lon)
     radius: Math.max(landing?turnR:0,50)

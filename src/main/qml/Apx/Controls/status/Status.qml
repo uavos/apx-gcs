@@ -29,37 +29,37 @@ import Apx.Common
 
 Rectangle {
 
-    readonly property int m_mode: mandala.cmd.proc.mode.value
-    readonly property real m_adj: mandala.cmd.proc.adj.value
+    readonly property int m_mode: mandala.fact("cmd.proc.mode").value
+    readonly property real m_adj: mandala.fact("cmd.proc.adj").value
 
-    readonly property var f_hmsl: mandala.est.pos.hmsl
-    readonly property var f_eta: mandala.est.wpt.eta
-    readonly property var f_dist: mandala.est.wpt.dist
-    readonly property var f_fuel: mandala.est.sys.fuel
-    readonly property var f_wpidx: mandala.cmd.proc.wp
-    readonly property var f_loops: mandala.cmd.proc.orbs
-    readonly property var f_xtrack: mandala.est.wpt.xtrack
-    readonly property var f_radius: mandala.cmd.pos.radius
+    readonly property var f_hmsl: mandala.fact("est.pos.hmsl")
+    readonly property var f_eta: mandala.fact("est.wpt.eta")
+    readonly property var f_dist: mandala.fact("est.wpt.dist")
+    readonly property var f_fuel: mandala.fact("est.sys.fuel")
+    readonly property var f_wpidx: mandala.fact("cmd.proc.wp")
+    readonly property var f_loops: mandala.fact("cmd.proc.orbs")
+    readonly property var f_xtrack: mandala.fact("est.wpt.xtrack")
+    readonly property var f_radius: mandala.fact("cmd.pos.radius")
 
-    readonly property var f_agl: mandala.est.pos.agl
-    readonly property int m_agl_src: mandala.sns.agl.src.value
-    readonly property bool m_agl_status: mandala.sns.agl.status.value
-    readonly property bool m_pwr_agl: mandala.ctr.pwr.agl.value
-    readonly property bool m_ins_hagl: mandala.cmd.ins.hagl.value
+    readonly property var f_agl: mandala.fact("est.pos.agl")
+    readonly property int m_agl_src: mandala.fact("sns.agl.src").value
+    readonly property bool m_agl_status: mandala.fact("sns.agl.status").value
+    readonly property bool m_pwr_agl: mandala.fact("ctr.pwr.agl").value
+    readonly property bool m_ins_hagl: mandala.fact("cmd.ins.hagl").value
 
     readonly property bool m_agl_show: (m_agl_status || m_ins_hagl || m_pwr_agl || m_agl_src)
     readonly property bool m_agl_ready: m_agl_status
     readonly property bool m_agl_warning: m_ins_hagl && !m_agl_status
     readonly property bool m_agl_failure: m_pwr_agl && !m_agl_src
 
-    readonly property real m_cmd_lat: mandala.cmd.pos.lat.value
-    readonly property real m_cmd_lon: mandala.cmd.pos.lon.value
+    readonly property real m_cmd_lat: mandala.fact("cmd.pos.lat").value
+    readonly property real m_cmd_lon: mandala.fact("cmd.pos.lon").value
     readonly property real wp_dist: (m_cmd_lat!=0 && m_cmd_lon!=0)
                                     ? apx.fleet.current.coordinate.distanceTo(QtPositioning.coordinate(m_cmd_lat, m_cmd_lon))
                                     : 0
 
-    readonly property int m_reg_hdg: mandala.cmd.reg.hdg.value
-    readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
+    readonly property int m_reg_hdg: mandala.fact("cmd.reg.hdg").value
+    readonly property bool m_reg_taxi: mandala.fact("cmd.reg.taxi").value
     property bool isTrack: m_reg_taxi || m_reg_hdg===reg_hdg_track || m_reg_hdg===reg_hdg_loiter
 
     border.width: 0

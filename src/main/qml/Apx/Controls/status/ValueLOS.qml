@@ -33,10 +33,10 @@ ValueButton {
     text: qsTr("LOS")
     toolTip: qsTr("Line of Sight distance to Home")
 
-    readonly property real m_dist: QtPositioning.coordinate(mandala.est.ref.lat.value,mandala.est.ref.lon.value).distanceTo(apx.fleet.current.coordinate)
-    readonly property real m_hmsl: mandala.est.pos.hmsl.value
-    readonly property real m_ref_hmsl: mandala.est.ref.hmsl.value
-    readonly property real m_rss: mandala.sns.com.rss.value
+    readonly property real m_dist: QtPositioning.coordinate(mandala.fact("est.ref.lat").value,mandala.fact("est.ref.lon").value).distanceTo(apx.fleet.current.coordinate)
+    readonly property real m_hmsl: mandala.fact("est.pos.hmsl").value
+    readonly property real m_ref_hmsl: mandala.fact("est.ref.hmsl").value
+    readonly property real m_rss: mandala.fact("sns.com.rss").value
 
     property double v: Math.sqrt(Math.pow(m_dist,2) + Math.pow(m_hmsl-m_ref_hmsl,2))
     value: v>1000000?"--":apx.distanceToString(v)

@@ -28,7 +28,7 @@ import Apx.Common
 
 RowLayout {
 
-    readonly property var f_mode: mandala.cmd.proc.mode
+    readonly property var f_mode: mandala.fact("cmd.proc.mode")
 
 
     property real buttonHeight: root.buttonHeight*0.9

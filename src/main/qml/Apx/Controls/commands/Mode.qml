@@ -29,7 +29,7 @@ import Apx.Common
 ListView {
     id: listView
 
-    readonly property var f_mode: mandala.cmd.proc.mode
+    readonly property var f_mode: mandala.fact("cmd.proc.mode")
 
     implicitHeight: buttonHeight
 

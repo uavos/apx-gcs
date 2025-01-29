@@ -27,15 +27,15 @@ import "../common"
 
 ControlArea {
 
-    readonly property var f_altitude: mandala.est.pos.altitude
-    readonly property var f_cmd_altitude: mandala.cmd.pos.altitude
+    readonly property var f_altitude: mandala.fact("est.pos.altitude")
+    readonly property var f_cmd_altitude: mandala.fact("cmd.pos.altitude")
 
-    readonly property var f_ins_dh: mandala.est.ins.dh
+    readonly property var f_ins_dh: mandala.fact("est.ins.dh")
 
-    readonly property var f_agl: mandala.est.pos.agl
-    readonly property bool m_ins_hagl: mandala.cmd.ins.hagl.value
+    readonly property var f_agl: mandala.fact("est.pos.agl")
+    readonly property bool m_ins_hagl: mandala.fact("cmd.ins.hagl").value
 
-    readonly property int m_agl_status: mandala.sns.agl.status.value
+    readonly property int m_agl_status: mandala.fact("sns.agl.status").value
 
     readonly property bool m_agl_valid: m_ins_hagl
 

@@ -26,21 +26,21 @@ import "."
 Item {
     id: hdg_window
 
-    readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_mode: mandala.fact("cmd.proc.mode").value
 
-    readonly property var f_yaw: mandala.est.att.yaw
-    readonly property var f_bearing: mandala.est.pos.bearing
-    readonly property var f_cmd_bearing: mandala.cmd.pos.bearing
-    //readonly property var f_thdg: mandala.est.wpt.thdg
-    readonly property var f_adj: mandala.cmd.proc.adj
+    readonly property var f_yaw: mandala.fact("est.att.yaw")
+    readonly property var f_bearing: mandala.fact("est.pos.bearing")
+    readonly property var f_cmd_bearing: mandala.fact("cmd.pos.bearing")
+    //readonly property var f_thdg: mandala.fact("est.wpt.thdg")
+    readonly property var f_adj: mandala.fact("cmd.proc.adj")
 
-    readonly property var f_nomag: mandala.cmd.ins.nomag
-    readonly property var f_rud: mandala.ctr.att.rud
+    readonly property var f_nomag: mandala.fact("cmd.ins.nomag")
+    readonly property var f_rud: mandala.fact("ctr.att.rud")
 
-    readonly property var f_ins_mag: mandala.est.ins.mag
+    readonly property var f_ins_mag: mandala.fact("est.ins.mag")
 
-    readonly property int m_reg_hdg: mandala.cmd.reg.hdg.value
-    readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
+    readonly property int m_reg_hdg: mandala.fact("cmd.reg.hdg").value
+    readonly property bool m_reg_taxi: mandala.fact("cmd.reg.taxi").value
     property bool isTrack: m_reg_taxi || m_reg_hdg===reg_hdg_track || m_reg_hdg===reg_hdg_loiter
 
     readonly property bool isShiftControl: isTrack

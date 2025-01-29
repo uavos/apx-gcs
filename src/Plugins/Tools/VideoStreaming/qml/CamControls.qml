@@ -33,9 +33,9 @@ Item {
     property int w: 32
     property int ctrSize: Math.min(control.width,control.height)/1.5
 
-    property var f_cmdX: mandala.findChild(plugin.tune.controls.control_x.text)
-    property var f_cmdY: mandala.findChild(plugin.tune.controls.control_y.text)
-    property var f_zoom: mandala.cmd.cam.zoom
+    property var f_cmdX: mandala.fact(plugin.tune.controls.control_x.text)
+    property var f_cmdY: mandala.fact(plugin.tune.controls.control_y.text)
+    property var f_zoom: mandala.fact("cmd.cam.zoom")
 
     property real spanX: plugin.tune.controls.control_sx.value
     property real spanY: plugin.tune.controls.control_sy.value*(rev_y?1:-1)

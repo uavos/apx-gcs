@@ -24,28 +24,28 @@ import "../common"
 
 ControlArea {
 
-    readonly property var f_vspeed: mandala.est.pos.vspeed
+    readonly property var f_vspeed: mandala.fact("est.pos.vspeed")
     readonly property real m_vspeed: f_vspeed.value
 
-    readonly property var f_cmd_vspeed: mandala.cmd.pos.vspeed
+    readonly property var f_cmd_vspeed: mandala.fact("cmd.pos.vspeed")
     readonly property real m_cmd_vspeed: f_cmd_vspeed.value
 
-    //readonly property var f_vd: mandala.est.pos.vspeed
+    //readonly property var f_vd: mandala.fact("est.pos.vspeed")
     //readonly property real m_vd: f_vd.value
 
-    readonly property var f_vse: mandala.est.air.vse
+    readonly property var f_vse: mandala.fact("est.air.vse")
     readonly property real m_vse: f_vse.value
 
     readonly property real textSize: vsi_scale.height*0.1
 
-    readonly property bool m_reg_alt: mandala.cmd.reg.alt.value
-    readonly property bool m_reg_spd: mandala.cmd.reg.spd.value
-    readonly property real m_tecs: mandala.cmd.pos.tecs.value
+    readonly property bool m_reg_alt: mandala.fact("cmd.reg.alt").value
+    readonly property bool m_reg_spd: mandala.fact("cmd.reg.spd").value
+    readonly property real m_tecs: mandala.fact("cmd.pos.tecs").value
 
 
     readonly property bool show_vsi: m_reg_alt||(m_reg_spd && m_tecs<1)
 
-    mvar: mandala.cmd.rc.thr   //ControlArea
+    mvar: mandala.fact("cmd.rc.thr")   //ControlArea
     //speed: 0.8
 
     //instrument item

@@ -31,20 +31,20 @@ import APX.Facts
 Item {
     id: control
 
-    readonly property var f_time: mandala.est.sys.time
-    readonly property var f_gimbal_mode: mandala.cmd.gimbal.mode
-    readonly property var f_zoom: mandala.cmd.cam.zoom
-    readonly property var f_focus: mandala.cmd.cam.focus
-    readonly property var f_ch: mandala.cmd.cam.ch
-    readonly property var f_PF: mandala.cmd.cam.pf
-    readonly property var f_NIR: mandala.cmd.cam.nir
-    readonly property var f_FM: mandala.cmd.cam.fm
-    readonly property var f_FT: mandala.cmd.cam.ft
-    readonly property var f_RNG: mandala.cmd.cam.range
+    readonly property var f_time: mandala.fact("est.sys.time")
+    readonly property var f_gimbal_mode: mandala.fact("cmd.gimbal.mode")
+    readonly property var f_zoom: mandala.fact("cmd.cam.zoom")
+    readonly property var f_focus: mandala.fact("cmd.cam.focus")
+    readonly property var f_ch: mandala.fact("cmd.cam.ch")
+    readonly property var f_PF: mandala.fact("cmd.cam.pf")
+    readonly property var f_NIR: mandala.fact("cmd.cam.nir")
+    readonly property var f_FM: mandala.fact("cmd.cam.fm")
+    readonly property var f_FT: mandala.fact("cmd.cam.ft")
+    readonly property var f_RNG: mandala.fact("cmd.cam.range")
 
-    readonly property real m_lat: mandala.est.cam.lat.value
-    readonly property real m_lon: mandala.est.cam.lon.value
-    readonly property real m_hmsl: mandala.est.cam.hmsl.value
+    readonly property real m_lat: mandala.fact("est.cam.lat").value
+    readonly property real m_lon: mandala.fact("est.cam.lon").value
+    readonly property real m_hmsl: mandala.fact("est.cam.hmsl").value
 
     property bool interactive: false
     property bool alive: true

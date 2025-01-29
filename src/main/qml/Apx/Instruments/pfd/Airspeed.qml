@@ -25,9 +25,9 @@ import "../common"
 ControlArea {
 
 
-    readonly property var f_airspeed: mandala.est.air.airspeed
-    readonly property var f_cmd_airspeed: mandala.cmd.pos.airspeed
-    readonly property var f_speed: mandala.est.pos.speed
+    readonly property var f_airspeed: mandala.fact("est.air.airspeed")
+    readonly property var f_cmd_airspeed: mandala.fact("cmd.pos.airspeed")
+    readonly property var f_speed: mandala.fact("est.pos.speed")
 
 
     mvar: f_cmd_airspeed   //ControlArea

@@ -30,9 +30,9 @@ Page {
         height: parent.height
         spacing: buttonSpacing*2
         model: ObjectModel {
-            CtrSlider { title: "FLP"; fact: mandala.ctr.wing.flaps; from: 0; stepSize: 0.1; width: listView.width }
-            CtrSlider { title: "ABR"; fact: mandala.ctr.wing.airbrk; from: 0; stepSize: 0.1; width: listView.width }
-            CtrSlider { title: "BRK"; fact: mandala.ctr.str.brake; from: 0; stepSize: 0.1; width: listView.width }
+            CtrSlider { title: "FLP"; fact: mandala.fact("ctr.wing.flaps"); from: 0; stepSize: 0.1; width: listView.width }
+            CtrSlider { title: "ABR"; fact: mandala.fact("ctr.wing.airbrk"); from: 0; stepSize: 0.1; width: listView.width }
+            CtrSlider { title: "BRK"; fact: mandala.fact("ctr.str.brake"); from: 0; stepSize: 0.1; width: listView.width }
         }
     }
 }
