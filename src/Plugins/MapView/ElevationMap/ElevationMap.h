@@ -30,6 +30,10 @@
 #include <QGeoCoordinate>
 #include <QtCore>
 
+class Unit;
+class UnitMission;
+class MissionTools;
+
 class ElevationMap : public Fact
 {
     Q_OBJECT
@@ -42,6 +46,11 @@ public:
 
     Fact *f_use;
     Fact *f_path;
+    
+    Unit *unit() const;
+    UnitMission *mission() const;
+    MissionTools *missionTools() const;
+    Fact *aglset() const;
 
     double elevation() const;
     void setElevation(double v);
@@ -63,6 +72,8 @@ private:
 
 private slots:
     void onOpenTriggered();
+    void updateAglset();
+    void setMissionAgl();
 
 signals:
     void elevationChanged();

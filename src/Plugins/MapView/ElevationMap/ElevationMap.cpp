@@ -22,6 +22,10 @@
 
 #include "ElevationMap.h"
 #include <App/App.h>
+#include <Fleet/Fleet.h>
+#include <Mission/UnitMission.h>
+#include <Mission/MissionTools.h>
+#include <Mission/Waypoint.h>
 
 #include <QFileDialog>
 
@@ -46,9 +50,12 @@ ElevationMap::ElevationMap(Fact *parent)
                       Text | PersistentValue,
                       "import");
     f_path->setDefaultValue(path);
+
+    connect(Fleet::instance(), &Fleet::currentChanged, this, [this]() { updateAglset(); });
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
 
+    updateAglset();
     createElevationDatabase();
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
@@ -93,4 +100,46 @@ void ElevationMap::onOpenTriggered()
                                                      | QFileDialog::DontResolveSymlinks);
     if (!path.isEmpty())
         f_path->setValue(path);
+}
+
+Unit *ElevationMap::unit() const
+{
+    return Fleet::instance()->current();
+}
+
+UnitMission *ElevationMap::mission() const
+{
+    return unit()->f_mission;
+}
+
+MissionTools *ElevationMap::missionTools() const 
+{
+    return mission()->f_tools;
+}
+
+Fact *ElevationMap::aglset() const
+{
+    return missionTools()->f_aglset;
+}
+
+void ElevationMap::updateAglset()
+{
+    connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
+}
+
+void ElevationMap::setMissionAgl()
+{
+    auto m = mission();
+    auto agl = aglset();
+    for (int i = 0; i < m->f_waypoints->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        auto elevation = getElevationByCoordinate(wp->coordinate());
+        if (qIsNaN(elevation))
+            continue;
+
+        int v = agl->value().toInt();
+        v += static_cast<int>(elevation);
+        wp->f_amsl->setValue(true);
+        wp->f_altitude->setValue(v);
+    }
 }
