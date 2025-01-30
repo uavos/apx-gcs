@@ -28,6 +28,8 @@
 #include <MandalaBundles.h>
 #include <MandalaMetaTree.h>
 
+#include "UnitMandala.h"
+
 class Mandala : public Fact
 {
     Q_OBJECT
@@ -56,6 +58,8 @@ private:
 
     uint _total{};
     uint _used{};
+
+    UnitMandala *_unitMandala;
 
 private slots:
     void recordSendValue(mandala::uid_t uid, QVariant value);

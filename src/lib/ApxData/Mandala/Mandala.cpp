@@ -87,6 +87,8 @@ Mandala::Mandala(Fact *parent)
     }
 
     _total = _valueFacts.size();
+
+    _unitMandala = new UnitMandala(parent);
 }
 
 void Mandala::updateUsed(int adj)
@@ -119,6 +121,8 @@ MandalaFact *Mandala::fact(mandala::uid_t uid) const
 
 MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
 {
+    _unitMandala->fact(mpath, silent);
+
     MandalaFact *f = nullptr;
     if (mpath.isEmpty()) {
         qWarning() << "path is empty";
@@ -137,7 +141,6 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
             apxMsgW() << "Mandala fact not found:" << mpath;
     }
 
-    qDebug() << mpath;
     return f;
 }
 
