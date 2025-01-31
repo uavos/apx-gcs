@@ -78,18 +78,6 @@ Waypoint::Waypoint(MissionGroup *parent)
     // elevation map and agl
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
-    Fact* elevationmap = AppRoot::instance()->findChild("tools.elevationmap");
-    if (elevationmap) {
-        f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
-        if (f_elevationmap){
-            connect(f_elevationmap, &Fact::valueChanged, this, [this]() {this->updateAgl();});
-        }
-        f_useAgl = elevationmap->findChild("use");
-        if(f_useAgl) {
-            f_agl->setVisible(f_useAgl->value().toBool());
-            connect(f_useAgl, &Fact::valueChanged, this, [this]() { this->updateAgl();});
-        }
-    }
 
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateTitle);
@@ -350,17 +338,3 @@ int Waypoint::unsafeAgl() const
     return UNSAFE_AGL;
 }
 
-void Waypoint::updateAgl()
-{
-    if (!f_elevationmap || !f_useAgl) {
-        f_agl->setVisible(false);
-        return;
-    }
-    auto emState = f_elevationmap->value().toBool();
-    auto uaState = f_useAgl->value().toBool();
-    if (emState && uaState) {
-        f_agl->setVisible(true);
-    } else {
-        f_agl->setVisible(false);
-    }
-}

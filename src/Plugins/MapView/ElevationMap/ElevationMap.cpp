@@ -22,9 +22,10 @@
 
 #include "ElevationMap.h"
 #include <App/App.h>
+#include <App/AppSettings.h>
 #include <Fleet/Fleet.h>
-#include <Mission/UnitMission.h>
 #include <Mission/MissionTools.h>
+#include <Mission/UnitMission.h>
 #include <Mission/Waypoint.h>
 
 #include <QFileDialog>
@@ -51,11 +52,13 @@ ElevationMap::ElevationMap(Fact *parent)
                       "import");
     f_path->setDefaultValue(path);
 
-    connect(Fleet::instance(), &Fleet::currentChanged, this, [this]() { updateAglset(); });
+    connect(this, &Fact::pathChanged, this, &ElevationMap::getPluginEnableControl);
+    connect(Fleet::instance(), &Fleet::currentChanged, this, [this]() { updateMission(); });
+    connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
 
-    updateAglset();
+    updateMission();
     createElevationDatabase();
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
@@ -122,24 +125,61 @@ Fact *ElevationMap::aglset() const
     return missionTools()->f_aglset;
 }
 
-void ElevationMap::updateAglset()
+void ElevationMap::updateMission()
 {
+    connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
+    changeExternalsVisibility();
+}
+
+void ElevationMap::getPluginEnableControl()
+{
+    f_control = AppSettings::instance()->findChild("application.plugins.elevationmap");
+    if(f_control)
+        connect(f_control, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
 }
 
 void ElevationMap::setMissionAgl()
 {
     auto m = mission();
-    auto agl = aglset();
     for (int i = 0; i < m->f_waypoints->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
         auto elevation = getElevationByCoordinate(wp->coordinate());
         if (qIsNaN(elevation))
             continue;
 
-        int v = agl->value().toInt();
+        int v = aglset()->value().toInt();
         v += static_cast<int>(elevation);
         wp->f_amsl->setValue(true);
         wp->f_altitude->setValue(v);
     }
+}
+
+void ElevationMap::changeExternalsVisibility()
+{
+    if(!f_control || !f_use) {
+        setMissionValues(false);
+        return;
+    }
+    bool controlValue;
+    if(!f_control->busy())
+        controlValue = f_control->value().toBool();
+    auto useValue = f_use->value().toBool();
+    if (controlValue && useValue) {
+        setMissionValues(true);
+    } else {
+        setMissionValues(false);
+    }
+}
+
+void ElevationMap::setMissionValues(bool b)
+{
+    auto m = mission();
+    for (int i = 0; i < m->f_waypoints->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        wp->f_agl->setVisible(b);
+    }
+    auto aglset = missionTools()->child("aglset");
+    if (aglset)
+        aglset->setVisible(b);
 }

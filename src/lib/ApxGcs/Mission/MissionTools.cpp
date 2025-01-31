@@ -80,7 +80,7 @@ MissionTools::MissionTools(UnitMission *mission, Flags flags)
     f->setIcon("arrow-expand-vertical");
     f->setVisible(false);
     connect(f, &Fact::triggered, this, &MissionTools::updateMaxAltitude);
-    f_aglset = new Fact(f, "AGL", tr("AGL value"), "", Int);
+    f_aglset = new Fact(f, "agl", tr("AGL value"), "", Int);
     f_aglset->setUnits("m");
     f_aglset->setIcon(f->icon());
     f_aglset->setMin(0);
@@ -93,7 +93,6 @@ MissionTools::MissionTools(UnitMission *mission, Flags flags)
                              "",
                              Action | Apply | CloseOnTrigger | ShowDisabled);
     f_aglsetApply->setEnabled(false);
-    turnOnAglset();
 
     auto fvs = new UnitSelect(this, "copy", tr("Copy"), tr("Copy to unit"));
     f_copy = fvs;
@@ -143,37 +142,3 @@ void MissionTools::copyUnitSelected(Unit *unit)
     Fleet::instance()->selectUnit(unit);
 }
 
-void MissionTools::turnOnAglset()
-{
-    Fact *elevationmap = AppRoot::instance()->findChild("tools.elevationmap");
-    if (elevationmap) {
-        f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
-        if (f_elevationmap) {
-            connect(f_elevationmap, &Fact::valueChanged, this, [this]() {
-                this->updateAglsetVisible();
-            });
-        }
-        f_useAglset = elevationmap->findChild("use");
-        if (f_useAglset) {
-            auto aglsetParent = f_aglset->parentFact();
-            aglsetParent->setVisible(f_useAglset->value().toBool());
-            connect(f_useAglset, &Fact::valueChanged, this, [this]() { this->updateAglsetVisible(); });
-        }
-    }
-}
-
-void MissionTools::updateAglsetVisible()
-{
-    auto aglsetParent = f_aglset->parentFact();
-    if (!f_elevationmap || !f_useAglset) {
-        aglsetParent->setVisible(false);
-        return;
-    }
-    auto emState = f_elevationmap->value().toBool();
-    auto uasState = f_useAglset->value().toBool();
-    if (emState && uasState) {
-        aglsetParent->setVisible(true);
-    } else {
-        aglsetParent->setVisible(false);
-    }
-}

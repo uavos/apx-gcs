@@ -46,7 +46,8 @@ public:
 
     Fact *f_use;
     Fact *f_path;
-    
+    Fact *f_control;
+
     Unit *unit() const;
     UnitMission *mission() const;
     MissionTools *missionTools() const;
@@ -68,12 +69,15 @@ private:
     std::shared_ptr<AbstractElevationDB> m_elevationDB;
 
     void createElevationDatabase();
+    void setMissionValues(bool b);
     QObject *qml;
 
 private slots:
     void onOpenTriggered();
-    void updateAglset();
+    void updateMission();
     void setMissionAgl();
+    void getPluginEnableControl();
+    void changeExternalsVisibility();
 
 signals:
     void elevationChanged();

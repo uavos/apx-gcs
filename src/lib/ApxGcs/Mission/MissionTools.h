@@ -49,10 +49,8 @@ public:
 private slots:
     void altadjustTriggered();
     void altsetTriggered();
-    void turnOnAglset();
 
     void updateMaxAltitude();
-    void updateAglsetVisible();
 
     void copyUnitSelected(Unit *unit);
 };
