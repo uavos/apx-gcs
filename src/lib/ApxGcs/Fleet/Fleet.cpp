@@ -61,32 +61,6 @@ Fleet::Fleet(Fact *parent, Protocols *protocols)
 
     //JS register mandala
     Mandala *m = f_replay->f_mandala;
-    //register mandala constants for QML and JS
-    QHash<QString, QVariant> constants;
-    for (auto f : m->valueFacts()) {
-        if (f->dataType() != Enum)
-            continue;
-        auto st = f->enumStrings();
-        for (int i = 0; i < st.size(); ++i) {
-            auto s = st.at(i);
-            s = QString("%1_%2_%3").arg(f->parentFact()->name()).arg(f->name()).arg(s);
-
-            if (!constants.contains(s)) {
-                constants.insert(s, i);
-                continue;
-            }
-            if (constants.value(s) != i)
-                apxMsgW() << "enum:" << s << f->mpath();
-        }
-    }
-    for (auto s : constants.keys()) {
-        const QVariant &v = constants.value(s);
-        //JSEngine layer
-        App::setGlobalProperty(s, v);
-        //QmlEngine layer
-        App::setContextProperty(s, v);
-    }
-
     _jsSyncMandalaAccess(m, App::instance()->engine()->globalObject());
     for (auto f : m->facts()) {
         App::instance()->engine()->jsProtectObjects(static_cast<MandalaFact *>(f)->mpath());

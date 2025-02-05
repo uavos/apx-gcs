@@ -110,29 +110,29 @@ Rectangle {
                 var body
                 switch(f_mode.value){
                 default: modes=f_mode.enumStrings; break;
-                case proc_mode_EMG:
+                case f_mode.eval.EMG:
                     modes=["RPV","TAXI"]
                     body="EMG"
                     break
-                case proc_mode_RPV:
+                case f_mode.eval.RPV:
                     modes=["UAV","WPT"]
                     break
-                case proc_mode_UAV:
+                case f_mode.eval.UAV:
                     modes=["WPT","LANDING"]
                     break
-                case proc_mode_WPT:
+                case f_mode.eval.WPT:
                     modes=["STBY","LANDING"]
                     break
-                case proc_mode_STBY:
+                case f_mode.eval.STBY:
                     modes=["WPT","LANDING"]
                     break
-                case proc_mode_TAXI:
+                case f_mode.eval.TAXI:
                     modes=["TAKEOFF","EMG"]
                     break
-                case proc_mode_TAKEOFF:
+                case f_mode.eval.TAKEOFF:
                     modes=["WPT","STBY"]
                     break
-                case proc_mode_LANDING:
+                case f_mode.eval.LANDING:
                     modes=["WPT","STBY"]
                     break
                 }

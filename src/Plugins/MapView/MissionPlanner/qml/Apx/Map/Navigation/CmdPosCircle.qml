@@ -35,7 +35,9 @@ MapCircle {
     readonly property real cmd_lon: mandala.fact("cmd.pos.lon").value
 
     readonly property real turnR: mandala.fact("cmd.pos.radius").value
-    readonly property bool landing: mandala.fact("cmd.proc.mode").value === proc_mode_LANDING
+    
+    readonly property var f_mode: mandala.fact("cmd.proc.mode")
+    readonly property bool landing: f_mode.value == f_mode.eval.LANDING
 
     center: QtPositioning.coordinate(cmd_lat,cmd_lon)
     radius: Math.max(landing?turnR:0,50)

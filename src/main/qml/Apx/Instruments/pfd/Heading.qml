@@ -26,12 +26,9 @@ import "."
 Item {
     id: hdg_window
 
-    readonly property int m_mode: mandala.fact("cmd.proc.mode").value
-
     readonly property var f_yaw: mandala.fact("est.att.yaw")
     readonly property var f_bearing: mandala.fact("est.pos.bearing")
     readonly property var f_cmd_bearing: mandala.fact("cmd.pos.bearing")
-    //readonly property var f_thdg: mandala.fact("est.wpt.thdg")
     readonly property var f_adj: mandala.fact("cmd.proc.adj")
 
     readonly property var f_nomag: mandala.fact("cmd.ins.nomag")
@@ -39,14 +36,14 @@ Item {
 
     readonly property var f_ins_mag: mandala.fact("est.ins.mag")
 
-    readonly property int m_reg_hdg: mandala.fact("cmd.reg.hdg").value
-    readonly property bool m_reg_taxi: mandala.fact("cmd.reg.taxi").value
-    property bool isTrack: m_reg_taxi || m_reg_hdg===reg_hdg_track || m_reg_hdg===reg_hdg_loiter
+    readonly property var f_reg_hdg: mandala.fact("cmd.reg.hdg")
+    readonly property var f_reg_taxi: mandala.fact("cmd.reg.taxi")
+    property bool isTrack: f_reg_taxi.value > 0 || f_reg_hdg.value == f_reg_hdg.eval.track || f_reg_hdg.value == f_reg_hdg.eval.loiter
 
     readonly property bool isShiftControl: isTrack
 
 
-    readonly property bool nomag: f_nomag.value > 0 || f_ins_mag.value === ins_mag_blocked
+    readonly property bool nomag: f_nomag.value > 0 || f_ins_mag.value == f_ins_mag.eval.blocked
 
 
     //instrument item
@@ -324,9 +321,9 @@ Item {
         height: pfdScene.flagHeight
         fact: f_ins_mag
         text: qsTr("MAG")
-        status_warning: ins_mag_warning
-        status_reset: ins_mag_unknown
-        //status_show: ins_mag_blocked
+        status_warning: Number(f_ins_mag.eval.warning)
+        status_reset: Number(f_ins_mag.eval.unknown)
+        //status_show: Number(f_ins_mag.eval.blocked)
     }
     CleanText {
         anchors.top: parent.top
@@ -336,7 +333,7 @@ Item {
         height: pfdScene.flagHeight
         fact: f_ins_mag
         type: CleanText.Clean
-        show: fact.value > ins_mag_3D
+        show: fact.value > f_ins_mag.eval['3D']
     }
 
 }

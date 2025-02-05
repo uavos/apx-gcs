@@ -54,8 +54,8 @@ ListView {
         minimumWidth: size*3
         text: f_mode.text
         property int v: f_mode.value
-        property bool warning: v==proc_mode_EMG || v==proc_mode_RPV || v==proc_mode_TAXI
-        property bool active: v==proc_mode_LANDING || v==proc_mode_TAKEOFF
+        property bool warning: v == f_mode.eval.EMG || v == f_mode.eval.RPV || v == f_mode.eval.TAXI
+        property bool active: v == f_mode.eval.LANDING || v == f_mode.eval.TAKEOFF
         color: "#000"
         textColor: warning?Material.color(Material.Yellow):active?Material.color(Material.Blue):Qt.darker(Material.primaryTextColor,1.5)
         onTriggered: {

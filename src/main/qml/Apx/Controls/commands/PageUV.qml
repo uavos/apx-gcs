@@ -48,7 +48,7 @@ RowLayout {
         CtrNum { title: "THR"; fact: f_thr; min: 0; max: 100; mult: 100; stepSize: 1; }
         CtrNum { title: "FLP"; fact: f_flaps; min: 0; max: 100; mult: 100; stepSize: 10; }
         CtrNum { title: "ADJ"; fact: f_adj; }
-        CtrNum { title: "ABR"; fact: f_airbrk; min: 0; max: 100; mult: 100; stepSize: 10; visible: f_mode.value===proc_mode_LANDING}
+        CtrNum { title: "ABR"; fact: f_airbrk; min: 0; max: 100; mult: 100; stepSize: 10; visible: f_mode.value == f_mode.eval.LANDING}
     }
     CtrFlow {
         Layout.alignment: Qt.AlignTop
@@ -115,7 +115,7 @@ RowLayout {
             fact: f_action
             text: m_reg_taxi?"STOP":"AUTO"
             highlighted: m_reg_taxi
-            onTriggered: fact.value=m_reg_taxi?proc_action_reset:proc_action_next
+            onTriggered: fact.value = (m_reg_taxi?f_action.eval.reset:f_action.eval.next)
         }
     }
     Component {
@@ -123,7 +123,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "NEXT"
-            onTriggered: fact.value=proc_action_next
+            onTriggered: fact.value = f_action.eval.next
         }
     }
     Component {
@@ -131,7 +131,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "NEXT"
-            onTriggered: fact.value=proc_action_inc
+            onTriggered: fact.value = f_action.eval.inc
         }
     }
     Component {
@@ -139,7 +139,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "PREV"
-            onTriggered: fact.value=proc_action_dec
+            onTriggered: fact.value = f_action.eval.dec
         }
     }
     Component {
@@ -147,7 +147,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "CANCEL"
-            onTriggered: fact.value=proc_action_reset
+            onTriggered: fact.value = f_action.eval.reset
         }
     }
     Component {
@@ -155,7 +155,7 @@ RowLayout {
         CtrButton {
             fact: f_action
             text: "RESET"
-            onTriggered: fact.value=proc_action_reset
+            onTriggered: fact.value = f_action.eval.reset
         }
     }
 }

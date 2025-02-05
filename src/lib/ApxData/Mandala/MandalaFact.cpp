@@ -102,6 +102,10 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                     auto st = units().split(',');
                     setUnits(QString());
                     setEnumStrings(st);
+                    // enum values constants
+                    uint i = 0;
+                    for (auto s : st)
+                        m_eval.insert(s, i++);
                 } else {
                     setDataType(Int);
                     setMin(0);

@@ -28,8 +28,8 @@ import Apx.Map.Common
 MissionObject {
     id: taxiwayItem
 
+    readonly property var f_mode: mandala.fact("cmd.proc.mode")
     readonly property int m_twidx: mandala.fact("cmd.proc.wp").value
-    readonly property int m_mode: mandala.fact("cmd.proc.mode").value
 
     color: Style.cTaxiway
     textColor: "white"
@@ -42,7 +42,7 @@ MissionObject {
     //Fact bindings
     property real f_distance: fact?fact.distance:0
     property bool f_current: (m_twidx) === num
-    property bool f_taxi: m_mode === proc_mode_TAXI
+    property bool f_taxi: f_mode.value == f_mode.eval.TAXI
     property var path: fact?fact.geoPath:0
     property real f_bearing: fact?fact.bearing:0
     property bool f_first: num === 0

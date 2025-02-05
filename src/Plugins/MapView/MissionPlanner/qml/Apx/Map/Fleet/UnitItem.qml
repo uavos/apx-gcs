@@ -47,13 +47,13 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property real f_windSpd: vm.fact("est.wind.speed").value
     readonly property int f_mode: vm.fact("cmd.proc.mode").value
 
-    readonly property bool f_LDTO: f_mode === proc_mode_LANDING || f_mode === proc_mode_TAKEOFF
+    readonly property bool f_LDTO: f_mode == vm.proc_mode_LANDING || f_mode == vm.proc_mode_TAKEOFF
 
-    readonly property real m_xtrack: mandala.fact("est.wpt.xtrack").value
+    readonly property real m_xtrack: vm.fact("est.wpt.xtrack").value
 
-    readonly property int m_reg_hdg: mandala.fact("cmd.reg.hdg").value
-    readonly property bool m_reg_taxi: mandala.fact("cmd.reg.taxi").value
-    property bool isTrack: m_reg_taxi || m_reg_hdg===reg_hdg_track || m_reg_hdg===reg_hdg_loiter
+    readonly property int m_reg_hdg: vm.fact("cmd.reg.hdg").value
+    readonly property bool m_reg_taxi: vm.fact("cmd.reg.taxi").value
+    property bool isTrack: m_reg_taxi || m_reg_hdg == vm.reg_hdg_track || m_reg_hdg == vm.reg_hdg_loiter
 
     readonly property bool active: unit.active
 

@@ -30,7 +30,7 @@ Loader {
     active: power_payload && camAlt>0 && (cam_roll!==0 || cam_pitch!==0 || cam_yaw!==0)
 
 
-    readonly property bool power_payload: mandala.fact("ctr.pwr.payload").value === pwr_payload_on
+    readonly property bool power_payload: mandala.fact("ctr.pwr.payload").value > 0
 
     readonly property real cam_roll: mandala.fact("est.cam.roll").value
     readonly property real cam_pitch: mandala.fact("est.cam.pitch").value

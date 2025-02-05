@@ -48,20 +48,23 @@ Fact {
         Fact { enabled: false }
         Fact { binding: mandala.fact("ctr.pwr.eng"); flags: Fact.Bool; }
         Fact {
-            title: mandala.fact("ctr.eng.starter").title;
-            descr: mandala.fact("ctr.eng.starter").descr;
+            readonly property var f_starter: mandala.fact("ctr.eng.starter")
+            readonly property var f_mode: mandala.fact("cmd.eng.mode")
+            
+            title: f_starter.title;
+            descr: f_starter.descr;
             flags: Fact.Bool;
-            active: mandala.fact("ctr.eng.starter").value;
+            active: f_starter.value;
 
             onValueChanged: {
                 if(value){
-                    mandala.fact("cmd.eng.mode").value = eng_mode_start
+                    f_mode.value = f_mode.eval.start
                 }else{
-                    mandala.fact("ctr.eng.starter").value = false;
+                    f_starter.value = false;
                 }
             }
 
-            readonly property bool modeStart: mandala.fact("cmd.eng.mode").value === eng_mode_start
+            readonly property bool modeStart: f_mode.value == f_mode.eval.start
             onModeStartChanged: {
                 if(!modeStart)
                     value=false

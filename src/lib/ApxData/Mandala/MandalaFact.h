@@ -33,6 +33,7 @@ class MandalaFact : public Fact
     Q_OBJECT
     Q_PROPERTY(uint uid READ uid CONSTANT)
     Q_PROPERTY(bool everReceived READ everReceived NOTIFY everReceivedChanged)
+    Q_PROPERTY(QVariantMap eval READ eval CONSTANT)
 
 public:
     explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta);
@@ -83,6 +84,9 @@ private:
     Mandala *m_tree;
     const mandala::meta_s &m_meta;
     const mandala::fmt_s &m_fmt;
+
+    QVariantMap m_eval;
+    const auto &eval() const { return m_eval; }
 
     QList<MandalaConverter *> _converters;
 

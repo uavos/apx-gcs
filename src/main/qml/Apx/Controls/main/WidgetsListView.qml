@@ -73,6 +73,6 @@ ListView {
         }
         p.idx = plugins.length-1
         pluginsModel.insert(index, p)
-        plugin.active=false //settings.value(plugin.title,false)===true
+        plugin.active=false
     }
 }

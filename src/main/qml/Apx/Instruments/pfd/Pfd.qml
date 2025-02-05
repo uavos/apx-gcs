@@ -94,10 +94,10 @@ Item {
 
     readonly property var f_reg_hdg: mandala.fact("cmd.reg.hdg")
     readonly property var f_reg_hover: mandala.fact("cmd.reg.hover")
-    readonly property bool m_wpt_status: mandala.fact("est.wpt.status").value
+    readonly property var f_wpt_status: mandala.fact("est.wpt.status")
 
-    readonly property bool m_reg_spd: mandala.fact("cmd.reg.spd").value
-    readonly property int m_reg_alt: mandala.fact("cmd.reg.alt").value
+    readonly property var f_reg_spd: mandala.fact("cmd.reg.spd")
+    readonly property var f_reg_alt: mandala.fact("cmd.reg.alt")
 
     // status flags and warnings
     readonly property var f_att_status: mandala.fact("est.att.status")
@@ -129,7 +129,7 @@ Item {
     property bool showWind: true
     property alias flagHeight: pfdScene.flagHeight
 
-    readonly property bool m_err_pwr: f_pwr_status.value > pwr_status_ok
+    readonly property bool m_err_pwr: f_pwr_status.value > f_pwr_status.eval.ok
 
     Rectangle {
         color: "#777"
@@ -227,7 +227,7 @@ Item {
                 anchors.bottom: speed_window.top
                 anchors.topMargin: 3
                 anchors.leftMargin: parent.width*0.1
-                enabled: m_reg_spd
+                enabled: f_reg_spd.value > 0
             }
 
             Flags {
@@ -280,10 +280,10 @@ Item {
                     fact: f_ers_status
                     readonly property int status: f_ers_status.value
                     readonly property bool blocked: f_ers_block.value > 0
-                    readonly property bool ok: status == ers_status_ok
-                    readonly property bool disarmed: status == ers_status_disarmed
+                    readonly property bool ok: status == f_ers_status.eval.ok
+                    readonly property bool disarmed: status == f_ers_status.eval.disarmed
 
-                    visible: ui.test || status > ers_status_ok || blocked
+                    visible: ui.test || status > f_ers_status.eval.ok || blocked
 
                     type: disarmed
                           ? blocked
@@ -320,13 +320,13 @@ Item {
 
                     readonly property int emi: fact.value
 
-                    visible: ui.test || emi > gps_emi_ok
+                    visible: ui.test || emi > f_gps_emi.eval.ok
 
-                    type: (emi === gps_emi_warning)
+                    type: (emi == f_gps_emi.eval.warning)
                           ? CleanText.Normal
                           : CleanText.Red
 
-                    blinking: emi > gps_emi_warning
+                    blinking: emi > f_gps_emi.eval.warning
                 }
                 NumberText {
                     height: modeFlags.modeHeight
@@ -339,13 +339,13 @@ Item {
                     readonly property int fix_valid: f_gps_fix.everReceived
                     readonly property int su: f_gps_su.value
                     readonly property int sv: f_gps_sv.value
-                    readonly property bool ref: f_ref_status.value === ref_status_initialized
-                    readonly property bool avail: fix !== gps_fix_none
+                    readonly property bool ref: f_ref_status.value == f_ref_status.eval.initialized
+                    readonly property bool avail: fix !== f_gps_fix.eval.none
                     readonly property bool blocked: f_ins_nogps.value > 0
 
                     readonly property bool isOff: (!avail) && (!ref)
                     readonly property bool isErr: ref && (!avail) && fix_valid
-                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && (fix >= gps_fix_3D || !fix_valid)
+                    readonly property bool isOk:  ref && su>4 && su<=sv && (sv/su)<1.8 && (fix >= f_gps_fix.eval['3D'] || !fix_valid)
 
                     show: isValid || su>0 || sv>0 || fix>0 || src>0
 
@@ -356,7 +356,7 @@ Item {
                     textColor: isOk?"white":"yellow"
 
                     text: su+"/"+sv +(
-                              (!ui.test && (!avail || fix === gps_fix_3D))
+                              (!ui.test && (!avail || fix == f_gps_fix.eval['3D']))
                               ? ""
                               : (" "+f_gps_fix.text)
                               )
@@ -373,18 +373,18 @@ Item {
                     height: pfdScene.flagHeight
                     width: implicitWidth
                     fact: f_pos_status
-                    status_warning: pos_status_warning
-                    status_show: pos_status_busy
-                    status_reset: pos_status_unknown
+                    status_warning: Number(f_pos_status.eval.warning)
+                    status_show: Number(f_pos_status.eval.busy)
+                    status_reset: Number(f_pos_status.eval.unknown)
                     text: qsTr("GPS")
                 }
                 StatusFlag {
                     height: pfdScene.flagHeight
                     width: implicitWidth
                     fact: f_lpos_status
-                    status_warning: lpos_status_warning
-                    status_show: lpos_status_busy
-                    status_reset: lpos_status_unknown
+                    status_warning: Number(f_lpos_status.eval.warning)
+                    status_show: Number(f_lpos_status.eval.busy)
+                    status_reset: Number(f_lpos_status.eval.unknown)
                     text: qsTr("LPS")
                 }
             }
@@ -441,7 +441,7 @@ Item {
                 anchors.top: parent.top
                 anchors.bottom: altitude_window.top
                 anchors.topMargin: 3
-                enabled: m_reg_alt==reg_alt_on
+                enabled: f_reg_alt.value > 0
             }
             Row {
                 spacing: pfdScene.txtHeight/10
@@ -481,11 +481,11 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_reg_hdg
                 readonly property bool off_but_hover: !status && hoverFlag.status
-                readonly property bool always_hidden: status===reg_hdg_direct && m_wpt_status && !hoverFlag.status
+                readonly property bool always_hidden: status == f_reg_hdg.eval.direct && f_wpt_status.value > 0 && !hoverFlag.status
                 show: ui.test || (!always_hidden && !off_but_hover && isValid)
                 blinking: false
                 text: fact.text==="runway" ? "rw" : fact.text
-                type: status===reg_hdg_off || !m_wpt_status
+                type: status == f_reg_hdg.eval.off || !f_wpt_status.value
                       ? CleanText.White
                       : CleanText.Green
             }
@@ -494,9 +494,9 @@ Item {
                 height: pfdScene.flagHeight
                 fact: f_reg_hover
                 show: ui.test || (status && isValid)
-                blinking: status==reg_hover_vel
+                blinking: status == f_reg_hover.eval.vel
                 text: blinking?"HVEL":"HOVER"
-                type: (!m_wpt_status)
+                type: (!f_wpt_status.value)
                       ? CleanText.White
                       : blinking
                         ? CleanText.Yellow
@@ -564,16 +564,16 @@ Item {
                 id: flag_CAS
                 height: pfdScene.flagHeight
                 fact: f_pitot_status
-                status_warning: pitot_status_warning
-                status_reset: pitot_status_unknown
+                status_warning: Number(f_pitot_status.eval.warning)
+                status_reset: Number(f_pitot_status.eval.unknown)
             }
             StatusFlag { // inair status
                 height: pfdScene.flagHeight
                 fact: f_ins_inair
                 text: qsTr("AIR")
-                show: ui.test || ( fact.value != ins_inair_yes && isValid)
-                status_reset: ins_inair_yes
-                status_warning: ins_inair_hover
+                show: ui.test || ( fact.value != f_ins_inair.eval.yes && isValid)
+                status_reset: Number(f_ins_inair.eval.yes)
+                status_warning: Number(f_ins_inair.eval.hover)
             }
         }
 
@@ -587,8 +587,8 @@ Item {
             StatusFlag { // baro status
                 height: pfdScene.flagHeight
                 fact: f_baro_status
-                status_warning: baro_status_warning
-                status_reset: baro_status_unknown
+                status_warning: Number(f_baro_status.eval.warning)
+                status_reset: Number(f_baro_status.eval.unknown)
             }
         }
 
@@ -603,41 +603,41 @@ Item {
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_air_stall
-                status_warning: air_stall_warning
+                status_warning: Number(f_air_stall.eval.warning)
             }
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_att_status
-                status_warning: att_status_warning
-                status_show: att_status_busy
-                status_reset: att_status_unknown
+                status_warning: Number(f_att_status.eval.warning)
+                status_show: Number(f_att_status.eval.busy)
+                status_reset: Number(f_att_status.eval.unknown)
                 text: qsTr("INS")
             }
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_att_valid
-                show: ui.test || (status!==att_valid_yes && f_att_status.value>0)
+                show: ui.test || (status != f_att_valid.eval.yes && f_att_status.value>0)
                 failure: true
                 text: qsTr("ATT")
             }
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_pos_valid
-                show: ui.test || (status!==pos_valid_yes && f_pos_status.value>0)
+                show: ui.test || (status != f_pos_valid.eval.yes && f_pos_status.value>0)
                 failure: true
                 text: qsTr("POS")
             }
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_gyro_valid
-                show: ui.test || (status!==gyro_valid_yes && f_att_status.value>0)
+                show: ui.test || (status != f_gyro_valid.eval.yes && f_att_status.value>0)
                 failure: true
                 text: qsTr("GYRO")
             }
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_acc_valid
-                show: ui.test || (status!==acc_valid_yes && f_att_status.value>0)
+                show: ui.test || (status != f_acc_valid.eval.yes && f_att_status.value>0)
                 failure: true
                 text: qsTr("ACC")
             }
@@ -645,15 +645,15 @@ Item {
                 anchors.topMargin: pfdScene.flagHeight*2
                 height: pfdScene.flagHeight
                 fact: f_bat_status
-                status_warning: bat_status_warning
-                status_show: bat_status_shutdown
-                status_reset: bat_status_unknown
+                status_warning: Number(f_bat_status.eval.warning)
+                status_show: Number(f_bat_status.eval.shutdown)
+                status_reset: Number(f_bat_status.eval.unknown)
             }
             StatusFlag {
                 height: pfdScene.flagHeight
                 fact: f_rc_mode
                 text: qsTr("RC")
-                status_show: rc_mode_manual
+                status_show: Number(f_rc_mode.eval.manual)
                 blinking: true
                 type: CleanText.Yellow
             }
@@ -696,9 +696,9 @@ Item {
             NumberText {
                 id: rpm_number
                 readonly property int status: f_eng_status.value
-                readonly property bool ok: status > eng_status_idle
-                readonly property bool warn: status == eng_status_warning
-                readonly property bool err: status > eng_status_warning
+                readonly property bool ok: status > f_eng_status.eval.idle
+                readonly property bool warn: status == f_eng_status.eval.warning
+                readonly property bool err: status > f_eng_status.eval.warning
                 visible: ui.test || ok || err || value>0
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
@@ -718,13 +718,13 @@ Item {
 
                 BlinkingText { // turbocharger
                     property int v: fact.value
-                    visible: ui.test || v > eng_tc_off
+                    visible: ui.test || v > f_eng_tc.eval.off
                     height: pfdScene.txtHeight*0.7
                     fact: f_eng_tc
-                    type: v >= eng_tc_warning
+                    type: v >= f_eng_tc.eval.warning
                           ? CleanText.Red
                           : CleanText.Clean
-                    blinking: v > eng_tc_warning
+                    blinking: v > f_eng_tc.eval.warning
                 }
                 BlinkingText { // engine cmd mode
                     property int mode: fact.value
@@ -735,12 +735,12 @@ Item {
                     blinking: starter
                     visible: ui.test 
                         || starter 
-                        || mode >= eng_mode_start 
-                        || (status!=eng_status_ok && mode>eng_mode_auto)
+                        || mode >= f_eng_mode.eval.start 
+                        || (status != f_eng_status.eval.ok && mode > f_eng_mode.eval.auto)
 
                     type: starter
-                          ? (mode == eng_mode_start ? CleanText.Green : CleanText.Red )
-                          : status >= eng_status_warning || (status!=eng_status_ok && mode>eng_mode_auto)
+                          ? (mode == f_eng_mode.eval.start ? CleanText.Green : CleanText.Red )
+                          : status >= f_eng_status.eval.warning || (status != f_eng_status.eval.ok && mode > f_eng_mode.eval.auto)
                             ? CleanText.Red
                             : CleanText.Clean
                 }

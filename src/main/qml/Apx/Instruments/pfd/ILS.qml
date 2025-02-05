@@ -25,18 +25,19 @@ import "../common"
 Item {
     id: ils_window
 
-    readonly property int m_mode: mandala.fact("cmd.proc.mode").value
+    readonly property var f_mode: mandala.fact("cmd.proc.mode")
 
     readonly property var f_delta: mandala.fact("est.wpt.derr")
     readonly property var f_xtrack: mandala.fact("est.wpt.xtrack")
 
-    readonly property int m_reg_hdg: mandala.fact("cmd.reg.hdg").value
-    readonly property bool m_reg_taxi: mandala.fact("cmd.reg.taxi").value
-    property bool isTrack: m_reg_taxi || m_reg_hdg===reg_hdg_track || m_reg_hdg===reg_hdg_loiter
+    readonly property var f_reg_hdg: mandala.fact("cmd.reg.hdg")
+    
+    readonly property var f_reg_taxi: mandala.fact("cmd.reg.taxi")
+    property bool isTrack: f_reg_taxi.value || f_reg_hdg.value == f_reg_hdg.eval.track || f_reg_hdg.value == f_reg_hdg.eval.loiter
 
     property double anumation_duration: 1000
 
-    property bool isLanding: m_mode===proc_mode_LANDING
+    property bool isLanding: f_mode.value == f_mode.eval.LANDING
 
     property double sz: (width>height?height:width)*0.6
 
