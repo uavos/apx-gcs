@@ -45,15 +45,15 @@ MapQuickItem {  //to be used inside MapComponent only
     readonly property real f_bearing: vm.fact("est.pos.bearing").value
     readonly property real f_windHdg: vm.fact("est.wind.heading").value
     readonly property real f_windSpd: vm.fact("est.wind.speed").value
-    readonly property int f_mode: vm.fact("cmd.proc.mode").value
+    readonly property var f_mode: vm.fact("cmd.proc.mode")
 
-    readonly property bool f_LDTO: f_mode == vm.proc_mode_LANDING || f_mode == vm.proc_mode_TAKEOFF
+    readonly property bool f_LDTO: f_mode.value == f_mode.eval.LANDING || f_mode.value == f_mode.eval.TAKEOFF
 
     readonly property real m_xtrack: vm.fact("est.wpt.xtrack").value
 
-    readonly property int m_reg_hdg: vm.fact("cmd.reg.hdg").value
-    readonly property bool m_reg_taxi: vm.fact("cmd.reg.taxi").value
-    property bool isTrack: m_reg_taxi || m_reg_hdg == vm.reg_hdg_track || m_reg_hdg == vm.reg_hdg_loiter
+    readonly property var f_reg_hdg: vm.fact("cmd.reg.hdg")
+    readonly property var f_reg_taxi: vm.fact("cmd.reg.taxi")
+    property bool isTrack: f_reg_taxi.value > 0 || f_reg_hdg.value == f_reg_hdg.eval.track || f_reg_hdg.value == f_reg_hdg.eval.loiter
 
     readonly property bool active: unit.active
 

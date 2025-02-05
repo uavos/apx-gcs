@@ -34,8 +34,7 @@ ControlArea {
 
     readonly property var f_agl: mandala.fact("est.pos.agl")
     readonly property bool m_ins_hagl: mandala.fact("cmd.ins.hagl").value
-
-    readonly property int m_agl_status: mandala.fact("sns.agl.status").value
+    readonly property bool m_agl_status: mandala.fact("sns.agl.status").value
 
     readonly property bool m_agl_valid: m_ins_hagl
 
