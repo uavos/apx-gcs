@@ -37,6 +37,7 @@ class MandalaFact : public Fact
 
 public:
     explicit MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta);
+    explicit MandalaFact(Mandala *tree, Fact *parent, const QString &name, bool group);
 
     void addConverter(MandalaConverter *c) { _converters.append(c); }
     void removeConverter(MandalaConverter *c) { _converters.removeAll(c); }
@@ -44,15 +45,14 @@ public:
     // send value to uplink when set
     bool setValue(const QVariant &v) override;
 
-    Q_INVOKABLE mandala::uid_t uid() const;
+    Q_INVOKABLE mandala::uid_t uid() const { return m_uid; }
     Q_INVOKABLE void request();
     Q_INVOKABLE void send();
     Q_INVOKABLE void sendValue(QVariant v);
 
-    Q_INVOKABLE Fact *classFact() const;
     Q_INVOKABLE QString mpath() const;
 
-    Q_INVOKABLE mandala::uid_t offset() const;
+    Q_INVOKABLE mandala::uid_t offset() const { return m_uid - mandala::uid_base; }
 
     // units conversions
     void setValueFromStream(const QVariant &v);
@@ -72,6 +72,7 @@ public:
     inline const mandala::fmt_s &fmt() const { return m_fmt; }
 
 public:
+    auto level() const { return m_level; }
     bool isSystem() const;
     bool isGroup() const;
 
@@ -82,8 +83,11 @@ protected:
 
 private:
     Mandala *m_tree;
-    const mandala::meta_s &m_meta;
-    const mandala::fmt_s &m_fmt;
+    uint m_level;
+    mandala::uid_t m_uid{};
+
+    mandala::meta_s m_meta{};
+    mandala::fmt_s m_fmt{};
 
     QVariantMap m_eval;
     const auto &eval() const { return m_eval; }

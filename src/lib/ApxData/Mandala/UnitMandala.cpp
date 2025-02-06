@@ -42,21 +42,28 @@ Fact *UnitMandala::fact(const QString &mpath, bool silent)
 
     auto parts = mpath.split('.');
     Fact *p = this;
+    uint level = 0;
     for (const auto &s : parts) {
         if (s.isEmpty()) {
             apxMsgW() << "Empty part in path:" << mpath;
             return nullptr;
         }
+        level++;
         auto f = p->child(s);
         if (!f) {
             // attemt to create missing fact
-            qDebug() << "creating:" << QString("%1.%2").arg(p->path(this), s);
+            // qDebug() << "creating:" << QString("%1.%2").arg(p->path(this), s);
             if (parts.size() != 3) {
                 // only create facts for 3-level paths
                 apxMsgW() << "Invalid path:" << mpath;
                 return nullptr;
             }
             f = new Fact(p, s);
+            if (level < 3) {
+                f->setFlags(Group | FilterModel | ModifiedGroup);
+            } else {
+                f->setFlags(ModifiedGroup);
+            }
         }
         p = f;
     }

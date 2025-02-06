@@ -29,16 +29,30 @@
 
 #include <telemetry/TelemetryFormat.h>
 
-MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta)
-    : Fact(parent,
-           meta.name,
-           meta.title,
-           "",
-           meta.group ? Group | FilterModel | ModifiedGroup : ModifiedGroup)
+MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const QString &name, bool group)
+    : Fact(parent, name, {}, {}, group ? Group | FilterModel | ModifiedGroup : ModifiedGroup)
     , m_tree(tree)
-    , m_meta(meta)
-    , m_fmt(mandala::fmt(meta.uid))
 {
+    uint level = 0;
+    for (auto f = parentFact(); f && f != tree; f = f->parentFact())
+        level++;
+    m_level = level <= 2 ? level : 0;
+
+    if (name.toLower() != name) {
+        apxMsgW() << "uppercase:" << name;
+    }
+}
+
+MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &meta)
+    : MandalaFact(tree, parent, meta.name, meta.group)
+{
+    m_uid = meta.uid;
+    m_fmt = mandala::fmt(meta.uid);
+
+    memcpy(&m_meta, &meta, sizeof(meta));
+
+    setTitle(meta.title);
+
     if (name().toLower() != name()) {
         apxMsgW() << "uppercase:" << name();
     }
@@ -220,14 +234,6 @@ void MandalaFact::resetCounters()
     setModified(false);
 }
 
-mandala::uid_t MandalaFact::uid() const
-{
-    return m_meta.uid;
-}
-mandala::uid_t MandalaFact::offset() const
-{
-    return m_meta.uid - mandala::uid_base;
-}
 void MandalaFact::request()
 {
     sendValue(QVariant());
@@ -253,7 +259,7 @@ QVariant MandalaFact::data(int col, int role)
             if (!m_meta.descr[0])
                 s += QString(" %1").arg(m_meta.descr);
 
-            if (!m_meta.group) {
+            if (!isGroup()) {
                 s = QString("[%1/%2] %3")
                         .arg(opts().value("type").toString())
                         .arg(opts().value("fmt").toString())
@@ -263,9 +269,9 @@ QVariant MandalaFact::data(int col, int role)
             return s;
         }
         if (col == FACT_MODEL_COLUMN_VALUE) {
-            if (!m_meta.group)
+            if (!isGroup())
                 break;
-            if (m_meta.level == 0) {
+            if (level() == 0) {
                 QStringList slist;
                 QList<int> vlist;
                 for (auto i : facts()) {
@@ -280,19 +286,17 @@ QVariant MandalaFact::data(int col, int role)
                 QStringList st;
                 for (auto n : vlist)
                     st.append(QString::number(n));
-                int capacity = (1 << mandala::uid_bits[m_meta.level + 2]) - 1;
-                return QString("[%1/%2]").arg(st.join('/')).arg(capacity);
+                return QString("[%1]").arg(st.join('/'));
             }
-            if (m_meta.level == 2) {
-                int capacity = (1 << mandala::uid_bits[m_meta.level + 1]) - 1;
-                return QString("[%1/%2]").arg(size()).arg(capacity);
+            if (level() == 1) {
+                return QString("[%1]").arg(size());
             }
         }
         break;
     case Qt::BackgroundRole:
-        if (m_meta.level == 0)
+        if (level() == 0)
             return QColor(Qt::darkCyan).darker(300);
-        if (m_meta.level == 2 && isSystem())
+        if (isSystem() && level() == 2)
             return QColor(Qt::darkRed).darker(300);
 
         /*if (col == FACT_MODEL_COLUMN_DESCR && opts().contains("color")) {
@@ -322,24 +326,9 @@ bool MandalaFact::showThis(QRegularExpression re) const
     return false;
 }
 
-Fact *MandalaFact::classFact() const
-{
-    int level = m_meta.level;
-    if (level >= 1)
-        level--;
-    const Fact *f = this;
-    for (int i = 0; i < level; ++i) {
-        f = f->parentFact();
-    }
-    return const_cast<Fact *>(f);
-}
-
 QString MandalaFact::mpath() const
 {
-    int level = m_meta.level;
-    if (level >= 1)
-        level--;
-    return path(level);
+    return Fact::path(m_tree);
 }
 
 bool MandalaFact::isSystem() const
@@ -348,7 +337,7 @@ bool MandalaFact::isSystem() const
 }
 bool MandalaFact::isGroup() const
 {
-    return meta().group;
+    return treeType() == Group;
 }
 
 int MandalaFact::getPrecision()
@@ -435,10 +424,14 @@ int MandalaFact::getPrecision()
 
 QColor MandalaFact::getColor()
 {
-    QString sclass = classFact()->name();
     QString sub = parentFact()->name();
     QString sn = name();
     bool isEnum = !enumStrings().isEmpty();
+
+    QString sclass = name();
+    for (auto f = parentFact(); f && f != m_tree; f = f->parentFact()) {
+        sclass = f->name();
+    }
 
     int vectidx = -1;
     int vectfactor = -1;
