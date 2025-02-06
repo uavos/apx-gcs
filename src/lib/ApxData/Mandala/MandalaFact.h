@@ -68,7 +68,6 @@ public:
     auto tx_cnt() const { return _tx_cnt; }
     auto everSent() const { return _everSent; }
 
-    inline const mandala::meta_s &meta() const { return m_meta; }
     inline const mandala::fmt_s &fmt() const { return m_fmt; }
 
 public:
@@ -85,8 +84,8 @@ private:
     Mandala *m_tree;
     uint m_level;
     mandala::uid_t m_uid{};
+    QString m_info;
 
-    mandala::meta_s m_meta{};
     mandala::fmt_s m_fmt{};
 
     QVariantMap m_eval;

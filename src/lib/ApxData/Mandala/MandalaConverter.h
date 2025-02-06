@@ -47,7 +47,6 @@ public:
         } else if (units.size() >= 2) {
             fact->setUnits(fact->units().replace(units.at(0), units.at(1)));
         }
-        fact->setOpt("meta_units", fact->meta().units);
     }
 
     explicit MandalaConverter(MandalaFact *fact, QStringList units, double scale)

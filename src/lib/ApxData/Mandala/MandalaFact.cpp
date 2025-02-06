@@ -49,9 +49,8 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
     m_uid = meta.uid;
     m_fmt = mandala::fmt(meta.uid);
 
-    memcpy(&m_meta, &meta, sizeof(meta));
-
     setTitle(meta.title);
+    m_info = meta.descr;
 
     if (name().toLower() != name()) {
         apxMsgW() << "uppercase:" << name();
@@ -72,6 +71,9 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
     } else {
         if (!isSystem()) {
             setUnits(meta.units);
+            if (!units().isEmpty() && meta.units_cnt == 1)
+                setOpt("meta_units", units());
+
             switch (meta.type_id) {
             default:
                 apxMsgW() << "void:" << mpath();
@@ -80,7 +82,6 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                 setDataType(Float);
                 if (units().startsWith("rad")) {
                     new MandalaConverter(this, {"rad", "deg"}, qRadiansToDegrees(1.));
-                    setOpt("meta_units", meta.units);
                 }
                 setPrecision(getPrecision());
                 setDefaultValue(0.f);
@@ -94,7 +95,6 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                         [this](const QVariant &v) { return mandala::a32_to_deg(v.toUInt()); },
                         [this](const QVariant &v) { return mandala::deg_to_a32(v.toDouble()); });
 
-                    setOpt("meta_units", meta.units);
                     setPrecision(getPrecision());
                     setDefaultValue(0.f);
                     break;
@@ -256,8 +256,8 @@ QVariant MandalaFact::data(int col, int role)
             return name();
         if (col == FACT_MODEL_COLUMN_DESCR) {
             QString s = title();
-            if (!m_meta.descr[0])
-                s += QString(" %1").arg(m_meta.descr);
+            if (!m_info.isEmpty())
+                s.append(" " + m_info);
 
             if (!isGroup()) {
                 s = QString("[%1/%2] %3")
@@ -321,7 +321,7 @@ bool MandalaFact::showThis(QRegularExpression re) const
         return false;
     if (mpath().contains(re))
         return true;
-    if (m_meta.descr[0] && QString(m_meta.descr).contains(re))
+    if (!m_info.isEmpty() && m_info.contains(re))
         return true;
     return false;
 }
