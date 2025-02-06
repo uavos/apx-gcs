@@ -68,8 +68,6 @@ public:
     auto tx_cnt() const { return _tx_cnt; }
     auto everSent() const { return _everSent; }
 
-    inline const mandala::fmt_s &fmt() const { return m_fmt; }
-
 public:
     auto level() const { return m_level; }
     bool isSystem() const;
@@ -85,8 +83,6 @@ private:
     uint m_level;
     mandala::uid_t m_uid{};
     QString m_info;
-
-    mandala::fmt_s m_fmt{};
 
     QVariantMap m_eval;
     const auto &eval() const { return m_eval; }

@@ -47,7 +47,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
     : MandalaFact(tree, parent, meta.name, meta.group)
 {
     m_uid = meta.uid;
-    m_fmt = mandala::fmt(meta.uid);
+    auto fmt = mandala::fmt(meta.uid).fmt;
 
     setTitle(meta.title);
     m_info = meta.descr;
@@ -87,7 +87,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
                 setDefaultValue(0.f);
                 break;
             case mandala::type_dword:
-                if (m_fmt.fmt == mandala::fmt_a32) {
+                if (fmt == mandala::fmt_a32) {
                     setDataType(Float);
                     new MandalaConverter(
                         this,
@@ -143,7 +143,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
 
         if (!isSystem()) {
             setOpt("type", mandala::type_string(meta.type_id));
-            setOpt("fmt", mandala::fmt_string((mandala::fmt_e) m_fmt.fmt));
+            setOpt("fmt", mandala::fmt_string(fmt));
 
             connect(this, &Fact::modifiedChanged, this, &MandalaFact::updateCounters);
         }
