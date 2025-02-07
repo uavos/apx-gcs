@@ -109,17 +109,23 @@ void CompassFrame::unitSelected(Unit *unit)
 
 void CompassFrame::requestCalibrationData()
 {
-    PUnit *protocol = Fleet::instance()->current()->protocol();
-    if (!protocol)
+    auto unit = Fleet::instance()->current();
+    if (!unit->protocol())
         return;
+    _req_uid = unit->f_mandala->fact("sns.nav.mag")->uid();
+    if (!_req_uid) {
+        qWarning() << "uid not found";
+        return;
+    }
+
     QByteArray ba;
     ba.append((char) cbSelect.currentIndex());
-    protocol->data()->requestCalibration(mandala::sns::nav::mag::uid, ba);
+    unit->protocol()->data()->requestCalibration(_req_uid, ba);
 }
 
 void CompassFrame::calibrationData(mandala::uid_t uid, QByteArray data)
 {
-    if (uid != mandala::sns::nav::mag::uid)
+    if (!_req_uid || uid != _req_uid)
         return;
 
     PStreamReader stream(data);

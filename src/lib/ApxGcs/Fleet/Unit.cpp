@@ -356,7 +356,7 @@ void Unit::flyHere(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    emit f_mandala->sendValue(mandala::cmd::nav::pos::uid, value);
+    f_mandala->fact("cmd.pos")->sendValue(value);
 }
 void Unit::lookHere(QGeoCoordinate c)
 {
@@ -367,7 +367,7 @@ void Unit::lookHere(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    emit f_mandala->sendValue(mandala::cmd::nav::gimbal::uid, value);
+    f_mandala->fact("cmd.gimbal")->sendValue(value);
 }
 void Unit::setHomePoint(QGeoCoordinate c)
 {
@@ -378,7 +378,7 @@ void Unit::setHomePoint(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    emit f_mandala->sendValue(mandala::est::nav::ref::uid, value);
+    f_mandala->fact("est.ref")->sendValue(value);
 }
 void Unit::sendPositionFix(QGeoCoordinate c)
 {
@@ -389,7 +389,7 @@ void Unit::sendPositionFix(QGeoCoordinate c)
     QVariantList value;
     value << c.latitude();
     value << c.longitude();
-    emit f_mandala->sendValue(mandala::est::nav::pos::uid, value);
+    f_mandala->fact("est.pos")->sendValue(value);
 }
 
 void Unit::resetGeoPath()

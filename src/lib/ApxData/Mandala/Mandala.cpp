@@ -144,15 +144,6 @@ MandalaFact *Mandala::fact(const QString &mpath, bool silent) const
     return f;
 }
 
-mandala::uid_t Mandala::uid(const QString &mpath) // static
-{
-    for (const auto &d : mandala::meta) {
-        if (d.path == mpath)
-            return d.uid;
-    }
-    return {};
-}
-
 QString Mandala::mandalaToString(xbus::pid_raw_t pid_raw) const
 {
     xbus::pid_s pid(pid_raw);
@@ -170,6 +161,22 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
         return 0;
     xbus::pid_s pid(f->uid(), xbus::pri_final, 3);
     return pid.raw();
+}
+
+QString Mandala::mpath(mandala::uid_t uid) // static
+{
+    for (const auto &m : mandala::meta) {
+        if (m.level < 2)
+            continue;
+        if (m.uid != uid)
+            continue;
+        auto st = QString(m.path).split(".");
+        if (st.size() < 3)
+            break;
+        st.removeAt(1);
+        return st.join(".");
+    }
+    return {};
 }
 
 const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static

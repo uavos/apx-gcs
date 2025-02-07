@@ -67,7 +67,7 @@ public:
 
     // helpers
     static QLockFile *get_lock_file(QString fileName);
-    static telemetry::dspec_e dspec_for_uid(const mandala::uid_t uid);
+    static telemetry::dspec_e dspec_for_mpath(const QString &mpath);
 
 private:
     QString _name;

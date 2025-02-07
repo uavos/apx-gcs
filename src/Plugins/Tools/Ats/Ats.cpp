@@ -28,13 +28,7 @@ void Ats::onAtsTimer()
 
     PData *pdata{};
     if (current->isGroundControl()) {
-        auto protocol = current->protocol();
-        if (protocol) {
-            pdata = current->protocol()->data();
-            if (pdata) {
-                pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_manual);
-            }
-        }
+        current->f_mandala->fact("cmd.ats.mode")->sendValue(mandala::ats_mode_manual);
         return;
     }
 
@@ -46,8 +40,9 @@ void Ats::onAtsTimer()
             value << uav.latitude();
             value << uav.longitude();
             value << uav.altitude();
-            pdata->sendValue(mandala::cmd::nav::ats::uid, value);
-            pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_track);
+            current->f_mandala->fact("cmd.ats")->sendValue(value);
+
+            current->f_mandala->fact("cmd.ats.mode")->sendValue(mandala::ats_mode_track);
         }
     }
 }

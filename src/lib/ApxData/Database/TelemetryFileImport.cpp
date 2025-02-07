@@ -357,8 +357,8 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
         for (auto f : fields) {
             auto it = mandala::ALIAS_MAP.find(f.toStdString());
             if (it != mandala::ALIAS_MAP.end()) {
-                auto uid = it->second;
-                auto dspec = TelemetryFileWriter::dspec_for_uid(uid);
+                auto mpath = QString(it->second.c_str());
+                auto dspec = TelemetryFileWriter::dspec_for_mpath(mpath);
                 fields_stream.push_back({f, {}, dspec});
                 continue;
             }
@@ -921,17 +921,5 @@ QString TelemetryFileImport::import_mandala_bind(QString bind)
     auto it = mandala::ALIAS_MAP.find(bind.toStdString());
     if (it == mandala::ALIAS_MAP.end())
         return bind;
-    auto uid = it->second;
-    // find mandala path for uid
-    for (auto &i : mandala::meta) {
-        if (i.uid != uid)
-            continue;
-        auto s = QString(i.path).split('.');
-        if (s.size() != 4)
-            return bind;
-        // remove second part
-        s.removeAt(1);
-        return s.join('.');
-    }
-    return bind;
+    return QString(it->second.c_str());
 }

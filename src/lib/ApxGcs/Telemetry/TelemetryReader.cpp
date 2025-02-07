@@ -121,8 +121,8 @@ MandalaFact *TelemetryReader::fieldFact(const Field &field)
 {
     auto it = mandala::ALIAS_MAP.find(field.name.toStdString());
     if (it != mandala::ALIAS_MAP.end()) {
-        auto uid = it->second;
-        return Fleet::replay()->f_mandala->fact(uid);
+        auto mpath = it->second;
+        return Fleet::replay()->f_mandala->fact(mpath.c_str());
     }
     return Fleet::replay()->f_mandala->fact(field.name, true);
 }

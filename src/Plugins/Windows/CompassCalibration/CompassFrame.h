@@ -56,6 +56,7 @@ private:
 
     QList<QMetaObject::Connection> clist;
 
+    mandala::uid_t _req_uid{};
     QTimer reqTimer;
 
 private slots:

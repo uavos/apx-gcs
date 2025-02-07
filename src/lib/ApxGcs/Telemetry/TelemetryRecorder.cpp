@@ -46,9 +46,8 @@ TelemetryRecorder::TelemetryRecorder(Unit *unit, Fact *parent)
     // prepare fields map
     for (auto f : _unit->f_mandala->valueFacts()) {
         // guess best field storage format
-        auto uid = f->uid();
-        auto dspec = TelemetryFileWriter::dspec_for_uid(uid);
-        _fields_map[uid] = {f->mpath(), {f->title(), f->units()}, dspec};
+        auto dspec = TelemetryFileWriter::dspec_for_mpath(f->mpath());
+        _fields_map[f->uid()] = {f->mpath(), {f->title(), f->units()}, dspec};
     }
 
     // record doenlink/uplink

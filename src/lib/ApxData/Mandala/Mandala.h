@@ -40,8 +40,9 @@ public:
     Q_INVOKABLE MandalaFact *fact(mandala::uid_t uid) const;
     Q_INVOKABLE MandalaFact *fact(const QString &mpath, bool silent = false) const;
 
+    static QString mpath(mandala::uid_t uid);
+
     static const mandala::meta_s &meta(mandala::uid_t uid);
-    static mandala::uid_t uid(const QString &mpath);
 
     QList<MandalaFact *> valueFacts() const { return _valueFacts; }
 

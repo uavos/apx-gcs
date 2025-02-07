@@ -56,20 +56,31 @@ QLockFile *TelemetryFileWriter::get_lock_file(QString name)
     return lock_file;
 }
 
-telemetry::dspec_e TelemetryFileWriter::dspec_for_uid(const mandala::uid_t uid)
+telemetry::dspec_e TelemetryFileWriter::dspec_for_mpath(const QString &mpath)
 {
-    mandala::type_id_e type_id = {};
+    mandala::type_id_e type_id;
+    mandala::uid_t uid;
 
-    bool ok = false;
+    bool found = false;
     for (const auto &m : mandala::meta) {
-        if (m.uid != uid)
+        if (m.level != 3)
             continue;
 
+        // check if mpath matches
+        auto st = QString(m.path).split(".");
+        if (st.size() != 4)
+            break;
+        st.removeAt(1);
+        const auto p = st.join(".");
+        if (p != mpath)
+            continue;
+
+        uid = m.uid;
         type_id = m.type_id;
-        ok = true;
+        found = true;
         break;
     }
-    if (!ok)
+    if (!found)
         return telemetry::dspec_e::f32;
 
     // guess float types

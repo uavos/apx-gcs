@@ -24,6 +24,8 @@
 #include <Fleet/Fleet.h>
 #include <Mandala/Mandala.h>
 
+static QStringList path_pos_ll{"cmd.pos", "est.pos", "est.ref"};
+
 PApxData::PApxData(PApxUnit *parent)
     : PData(parent)
     , _req(parent)
@@ -32,30 +34,24 @@ PApxData::PApxData(PApxUnit *parent)
 bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 {
     bool is_request = pid.pri == xbus::pri_request;
+    const auto uid = pid.uid;
     do {
-        if (pid.uid < mandala::cmd::env::uid) {
+        if (uid < mandala::cmd::env::uid) {
             if (is_request)
                 return true;
 
             // check for bundles sent from other GCS
-            static const QHash<mandala::uid_t, QString> bundleFactsNamePathsMap{
-                {mandala::cmd::nav::pos::uid, "cmd.pos"},
-                {mandala::est::nav::pos::uid, "est.pos"},
-                {mandala::est::nav::ref::uid, "est.ref"},
-            };
-            if (mandala::is_bundle(pid.uid) && bundleFactsNamePathsMap.contains(pid.uid)) {
-                Mandala *mandalaInstance = Fleet::instance()->current()->f_mandala;
-                mandala::bundle::pos_ll_s bundlePos;
-                stream.read(&bundlePos, 8);
+            const auto path = Mandala::mpath(uid);
+            if (mandala::is_bundle(uid) && path_pos_ll.contains(path)) {
+                mandala::bundle::pos_ll_s d;
+                stream.read(&d, sizeof(d));
 
-                auto factNamePath = bundleFactsNamePathsMap.value(pid.uid);
-                auto lat = qobject_cast<MandalaFact *>(
-                    mandalaInstance->findChild(factNamePath + ".lat"));
-                auto lon = qobject_cast<MandalaFact *>(
-                    mandalaInstance->findChild(factNamePath + ".lon"));
+                auto m = Fleet::instance()->current()->f_mandala;
+                auto lat = qobject_cast<MandalaFact *>(m->fact(path + ".lat"));
+                auto lon = qobject_cast<MandalaFact *>(m->fact(path + ".lon"));
                 if (lat && lon) {
-                    lat->setRawValueLocal(mandala::a32_to_deg(bundlePos.lat));
-                    lon->setRawValueLocal(mandala::a32_to_deg(bundlePos.lon));
+                    lat->setRawValueLocal(mandala::a32_to_deg(d.lat));
+                    lon->setRawValueLocal(mandala::a32_to_deg(d.lon));
                 }
                 return true;
             }
@@ -81,7 +77,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             return true;
         }
 
-        switch (pid.uid) {
+        switch (uid) {
         default:
             return false;
         case mandala::cmd::env::stream::vcp::uid:
@@ -209,33 +205,6 @@ PBase::Values PApxData::unpack(const xbus::pid_s &pid,
         qWarning() << "pri:" << pid.pri << Mandala::meta(pid.uid).path;
     }
 
-    /*if (spec.type >= mandala::type_bundle) {
-        int vcnt = 0;
-        switch (spec.type) {
-        default:
-            break;
-        case mandala::type_vec2:
-            vcnt = 2;
-            break;
-        case mandala::type_vec3:
-            vcnt = 3;
-            break;
-        }
-        mandala::spec_s vspec{};
-        xbus::pid_s vpid(pid);
-        for (int i = 0; i < vcnt; ++i) {
-            vspec.type = Mandala::meta(vpid.uid).type_id;
-            PBase::Values vlist = unpack(vpid, vspec, stream);
-            if (vlist.isEmpty())
-                break;
-            values.insert(vlist);
-            vpid.uid++;
-        }
-        if (values.size() != vcnt)
-            values.clear();
-        return values;
-    }*/
-
     //qDebug() << Mandala::meta(pid.uid).name << stream->dump_payload();
     QVariant v;
     switch (spec.type) {
@@ -266,31 +235,27 @@ PBase::Values PApxData::unpack(const xbus::pid_s &pid,
 
 void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
 {
-    switch (uid) {
-    default:
-        break;
-    case mandala::cmd::nav::pos::uid: // fly to
-    case mandala::est::nav::pos::uid: // pos fix
-    case mandala::est::nav::ref::uid: // set home
-    {
+    const auto path = Mandala::mpath(uid);
+    if (path_pos_ll.contains(path)) {
         QVariantList v = value.value<QVariantList>();
         if (v.size() != 2)
-            break;
+            return;
         sendBundleT<mandala::bundle::pos_ll_s>(uid,
                                                {mandala::deg_to_a32(v.at(0).toDouble()),
                                                 mandala::deg_to_a32(v.at(1).toDouble())});
         return;
     }
-    case mandala::cmd::nav::ats::uid: {
+
+    if (path == "cmd.nav.ats") {
         QVariantList v = value.value<QVariantList>();
         if (v.size() != 3)
-            break;
+            return;
         sendBundleT<mandala::bundle::pos_llh_s>(uid,
                                                 {mandala::deg_to_a32(v.at(0).toDouble()),
                                                  mandala::deg_to_a32(v.at(1).toDouble()),
                                                  v.at(2).toFloat()});
         return;
     }
-    }
+
     _nimp(__FUNCTION__);
 }

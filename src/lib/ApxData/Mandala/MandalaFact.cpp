@@ -63,7 +63,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
 
     setDescr(mpath());
 
-    if (meta.group) {
+    if (isGroup()) {
         /*connect(this, &Fact::sizeChanged, this, &Fact::valueChanged);
         if (meta.level == 2) {
             connect(this, &Fact::sectionChanged, parent, &Fact::textChanged);
