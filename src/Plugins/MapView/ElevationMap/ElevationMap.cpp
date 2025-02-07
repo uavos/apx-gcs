@@ -58,6 +58,7 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
 
+    getPluginEnableControl();
     updateMission();
     createElevationDatabase();
     qml = loadQml("qrc:/ElevationPlugin.qml");
@@ -157,19 +158,16 @@ void ElevationMap::setMissionAgl()
 
 void ElevationMap::changeExternalsVisibility()
 {
-    if(!f_control || !f_use) {
-        setMissionValues(false);
-        return;
-    }
-    bool controlValue;
-    if(!f_control->busy())
+    bool useValue{false};
+    bool controlValue{false};
+    if(f_control && !f_control->busy())
         controlValue = f_control->value().toBool();
-    auto useValue = f_use->value().toBool();
-    if (controlValue && useValue) {
+    if (f_use)
+        useValue = f_use->value().toBool();
+    if (controlValue && useValue)
         setMissionValues(true);
-    } else {
+    else
         setMissionValues(false);
-    }
 }
 
 void ElevationMap::setMissionValues(bool b)
