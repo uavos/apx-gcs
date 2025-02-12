@@ -68,9 +68,6 @@ Waypoint::Waypoint(MissionGroup *parent)
     ft = std::round(f_agl->value().toInt() * M2FT_COEF);
     f_agl->setOpt("ft", ft);
 
-    ft = std::round(f_amsl->value().toInt() * M2FT_COEF);
-    f_amsl->setOpt("ft", ft);
-
     connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
     connect(this, &MissionItem::isFeetsChanged, this, &Waypoint::updateTitle);
     // Add feets options end
@@ -128,6 +125,10 @@ void Waypoint::fromJson(const QJsonValue &jsv)
             continue;
         }
     }
+
+    // Add feets options
+    auto ft = std::round(f_altitude->value().toInt() * M2FT_COEF);
+    f_altitude->setOpt("ft", ft);
 }
 
 void Waypoint::updateTitle()
