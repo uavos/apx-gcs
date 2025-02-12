@@ -388,6 +388,15 @@ ActionButton {
     function ft2m(value) {
         return Math.round(value / m2ft_coef)
     }
+
+    // Knots / meters per second conversion
+    property var mps2kn_coef: 1.9438
+
+    function mps2kn(value) {
+        return Math.round(value * mps2kn_coef)
+    }
+
+    function kn2mps(value) {
+        return Math.round(value / mps2kn_coef)
+    }
 }
-
-

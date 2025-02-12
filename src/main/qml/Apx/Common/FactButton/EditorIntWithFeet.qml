@@ -79,6 +79,17 @@ SpinBox {
                 ? 10
                 : 1
 
+    // conversion from metric to US customary
+    function cvtUS2M (value) 
+    {
+        return fact.name!=="speed"?ft2m(value):kn2mps(value) 
+    }
+
+    function cvtM2US (value)
+    {
+        return fact.name!=="speed"?m2ft(value):mps2kn(fact.value)
+    }
+
     // Temporary meters/feets stub for Runway and Point of interest
     onOptsChanged: zeroCheck()
     function zeroCheck()
@@ -108,7 +119,7 @@ SpinBox {
                     case "m AMSL":
                         return " ft AMSL"
                     default:
-                        return " ft/s"
+                        return " kn"
                 }
             }
 
@@ -172,7 +183,7 @@ SpinBox {
             selectByMouse: true
             onEditingFinished: {
                 fact.setValue(text)
-                opts.ft = m2ft(fact.value)
+                opts.ft = cvtM2US(fact.value)
                 fact.opts = opts;
                 if(textInput.activeFocus)
                     factButton.forceActiveFocus();
@@ -187,7 +198,7 @@ SpinBox {
             }
             onFactValueChanged:{
                 if(!isFeets)
-                    opts.ft = m2ft(fact.value)
+                    opts.ft = cvtM2US(fact.value)
                     fact.opts = opts;
             }
             horizontalAlignment: Qt.AlignHCenter
@@ -231,18 +242,17 @@ SpinBox {
         v /= div
         if(!isFeets) {
             fact.setValue(v)
-            opts.ft = m2ft(v)
+            opts.ft = cvtM2US(v)
             fact.opts = opts
         } else {
             opts.ft = v
             fact.opts = opts
-            fact.setValue(ft2m(v))
+            fact.setValue(cvtUS2M(v))
         }
         value=Qt.binding(function(){return Math.round(!isFeets ? fact.value*div : opts.ft*div)})   
         // accelerate
         elapsed = startTime>0?(new Date().getTime()-startTime)/1000:0
     }
-
 
     ToolTip {
         parent: editor

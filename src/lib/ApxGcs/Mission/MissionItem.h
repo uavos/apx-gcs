@@ -60,6 +60,7 @@ public:
     int missionItemType() const;
 
     static constexpr float M2FT_COEF = 3.2808; // conversion coefficient feets to meter
+    static constexpr float M2KN_COEF = 1.9438; // conversion coefficient meter per secont to knots
     Fact *f_order;
     Fact *f_latitude;
     Fact *f_longitude;
