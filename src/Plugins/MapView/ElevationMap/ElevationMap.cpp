@@ -153,6 +153,10 @@ void ElevationMap::setMissionAgl()
         v += static_cast<int>(elevation);
         wp->f_amsl->setValue(true);
         wp->f_altitude->setValue(v);
+
+        // Add feets option
+        v *= wp->M2FT_COEF;
+        wp->f_altitude->setOpt("ft", v);
     }
 }
 
