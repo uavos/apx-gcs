@@ -51,6 +51,17 @@ WaypointActions::WaypointActions(Waypoint *parent)
                                 tr("Execute VM script (@function) on waypoint"),
                                 Text);
 
+    // Add feets options
+    m_isFeets = parent->isFeets();
+    auto kn = std::round(f_speed->value().toInt() * parent->M2KN_COEF);
+    f_speed->setOpt("editor", "EditorIntWithFeet.qml");
+    f_speed->setOpt("ft", kn);
+    
+    connect(f_speed, &Fact::optsChanged, this, &WaypointActions::updateActionsValue);
+    connect(parent, &Waypoint::isFeetsChanged, this, [this]() { setIsFeets(!m_isFeets); });
+    connect(this, &WaypointActions::isFeetsChanged, this, &WaypointActions::updateActionsValue);
+    // feets end
+
     connect(this, &Fact::valueChanged, this, &WaypointActions::actionsValueChanged);
     updateActionsValue();
 

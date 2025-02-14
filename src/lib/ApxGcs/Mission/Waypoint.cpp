@@ -33,6 +33,16 @@ Waypoint::Waypoint(MissionGroup *parent)
     f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);
     _altUnits = "m";
 
+    f_altitude->setOpt("editor", "EditorIntWithFeet.qml");
+    f_altitude->setOpt("extrainfo", "ExtraInfoAltitude.qml");
+
+    f_agl = new MissionField(this, "agl", tr("AGL"), tr("Height above ground level"), Int);
+    f_agl->setUnits("m");
+    f_agl->setVisible(false);
+    f_agl->setDefaultValue(0);
+    f_agl->setOpt("editor", "EditorIntWithFeet.qml");
+    f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
+
     f_atrack = new MissionField(this,
                                 "atrack",
                                 tr("Altitude tracking"),
@@ -55,9 +65,16 @@ Waypoint::Waypoint(MissionGroup *parent)
     auto ft = std::round(f_altitude->value().toInt() * M2FT_COEF);
     f_altitude->setOpt("ft", ft);
 
+    ft = std::round(f_agl->value().toInt() * M2FT_COEF);
+    f_agl->setOpt("ft", ft);
+
     connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
     connect(this, &MissionItem::isFeetsChanged, this, &Waypoint::updateTitle);
     // Add feets options end
+
+    // elevation map and agl
+    connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
+    connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
 
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateTitle);
@@ -108,6 +125,10 @@ void Waypoint::fromJson(const QJsonValue &jsv)
             continue;
         }
     }
+
+    // Add feets options
+    auto ft = std::round(f_altitude->value().toInt() * M2FT_COEF);
+    f_altitude->setOpt("ft", ft);
 }
 
 void Waypoint::updateTitle()
@@ -117,15 +138,20 @@ void Waypoint::updateTitle()
 
     QStringList st;
     st.append(QString::number(num() + 1));
-    if (m_isFeets)
-        st.append(AppRoot::distanceToStringFt(f_altitude->opts().value("ft", 0).toInt()));
-    else
-        st.append(AppRoot::distanceToString(f_altitude->value().toInt()));
     if (f_xtrack->value().toBool())
         st.append("T");
     if (f_atrack->value().toBool())
         st.append("H");
-    st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
+    // st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
+
+    // For feets functionality
+    if (m_isFeets) {
+        QString ftUnits = f_amsl->value().toBool() ? "ft AMSL" : "ft";
+        st.append(f_altitude->opts().value("ft", 0).toString() + ftUnits);
+    } else {
+        st.append(f_altitude->valueText() + f_altitude->units());
+    }
+
     setTitle(st.join(' '));
 }
 
@@ -312,3 +338,4 @@ int Waypoint::unsafeAgl() const
 {
     return UNSAFE_AGL;
 }
+

@@ -65,7 +65,6 @@ Runway::Runway(MissionGroup *parent)
     f_dE->setValue(300);
 
     // Add feets option
-    // 3.2808 - conversion coefficient feets to meters
     f_approach->setOpt("editor", "EditorIntWithFeet.qml");
     f_hmsl->setOpt("editor", "EditorIntWithFeet.qml");
     f_dN->setOpt("editor", "EditorIntWithFeet.qml");

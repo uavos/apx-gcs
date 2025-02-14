@@ -49,7 +49,7 @@ Poi::Poi(MissionGroup *parent)
     f_time->setEnumStrings(QStringList() << "default");
     f_time->setUnits("min");
     f_time->setMin(0);
-    f_time->setMax(0xFFFF / 60);
+    f_time->setMax(0xFFFF);
 
     // Add feets option
     f_hmsl->setOpt("editor", "EditorIntWithFeet.qml");
@@ -106,7 +106,6 @@ void Poi::updateDescr()
 {
     QStringList st;
     QString sts;
-
     // Add feets option
     if (m_isFeets) {
         if (f_hmsl->opts().value("ft").toInt() != 0) {
@@ -119,6 +118,10 @@ void Poi::updateDescr()
             sts.append("H");
         }
     }
+    // if (!f_hmsl->isZero()) {
+    //     st.append("MSL" + f_hmsl->valueText());
+    //     sts.append("H");
+    // }
     if (!f_orbs->isZero()) {
         st.append("R" + f_orbs->valueText());
         sts.append("R");

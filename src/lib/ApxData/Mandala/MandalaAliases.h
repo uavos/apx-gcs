@@ -277,18 +277,18 @@ const std::map<std::string, mandala::uid_t> ALIAS_MAP = {
 
     malias<mandala::est::env::haps::roll1>("ls_roll"),
     malias<mandala::est::env::haps::pitch1>("ls_pitch"),
-    malias<mandala::est::env::haps::cpitch1>("ls_cp"),
+    malias<mandala::cmd::nav::haps::cpitch1>("ls_cp"),
     malias<mandala::est::env::haps::spd1>("ls_spd"),
-    malias<mandala::est::env::haps::ail1>("ls_ail"),
+    malias<mandala::ctr::env::haps::ail1>("ls_ail"),
 
     malias<mandala::est::env::haps::roll2>("rs_roll"),
     malias<mandala::est::env::haps::pitch2>("rs_pitch"),
-    malias<mandala::est::env::haps::cpitch2>("rs_cp"),
+    malias<mandala::cmd::nav::haps::cpitch2>("rs_cp"),
     malias<mandala::est::env::haps::spd2>("rs_spd"),
-    malias<mandala::est::env::haps::ail2>("rs_ail"),
+    malias<mandala::ctr::env::haps::ail2>("rs_ail"),
 
     malias<mandala::est::env::haps::shape>("vshape"),
-    malias<mandala::est::env::haps::cshape>("cmd_vshape"),
+    malias<mandala::cmd::nav::haps::cshape>("cmd_vshape"),
     malias<mandala::est::env::haps::roll>("lrs_croll"),
 
     // malias<mandala::est::nav::local::pos::north>("local"),

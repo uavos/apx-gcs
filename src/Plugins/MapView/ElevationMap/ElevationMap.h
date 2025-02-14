@@ -35,6 +35,10 @@
 #include <QPointF>
 // ===================================
 
+class Unit;
+class UnitMission;
+class MissionTools;
+
 class ElevationMap : public Fact
 {
     Q_OBJECT
@@ -47,6 +51,12 @@ public:
 
     Fact *f_use;
     Fact *f_path;
+    Fact *f_control;
+
+    Unit *unit() const;
+    UnitMission *mission() const;
+    MissionTools *missionTools() const;
+    Fact *aglset() const;
 
     double elevation() const;
     void setElevation(double v);
@@ -71,10 +81,15 @@ private:
     std::shared_ptr<AbstractElevationDB> m_elevationDB;
 
     void createElevationDatabase();
+    void setMissionValues(bool b);
     QObject *qml;
 
 private slots:
     void onOpenTriggered();
+    void updateMission();
+    void setMissionAgl();
+    void getPluginEnableControl();
+    void changeExternalsVisibility();
 
 signals:
     void elevationChanged();

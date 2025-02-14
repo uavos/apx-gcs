@@ -79,11 +79,22 @@ SpinBox {
                 ? 10
                 : 1
 
+    // conversion from metric to US customary
+    function cvtUS2M (value) 
+    {
+        return fact.name!=="speed"?ft2m(value):kn2mps(value) 
+    }
+
+    function cvtM2US (value)
+    {
+        return fact.name!=="speed"?m2ft(value):mps2kn(fact.value)
+    }
+
     // Temporary meters/feets stub for Runway and Point of interest
     onOptsChanged: zeroCheck()
     function zeroCheck()
     {
-        var names = ["hmsl", "dshot", "speed"]
+        var names = ["hmsl", "speed"]
         if(!names.includes(fact.name))
             return
         if(fact.parentFact.name == "p#" && opts.ft == 0)  // Point of interest
@@ -91,7 +102,7 @@ SpinBox {
         if(fact.parentFact.name == "r#" && opts.ft == 0)  // Runway
             opts.ft = "default"
         if(fact.parentFact.name == "actions" && opts.ft == 0)
-            if(fact.name == "dshot" || fact.name == "speed")
+            if(fact.name == "speed")
                 opts.ft = "off"
     }
     // Stub END 
@@ -100,8 +111,17 @@ SpinBox {
         implicitWidth: isFeets ? textInputFt.width : textInput.width
         
         TextInput {
-            id: textInputFt
-            property var units: fact.units=="m"?" ft":" ft/s"
+            id: textInputFt 
+            property var units: {
+                switch(fact.units) {
+                    case "m":
+                        return " ft"
+                    case "m AMSL":
+                        return " ft AMSL"
+                    default:
+                        return " kn"
+                }
+            }
 
             visible: isFeets
             validator: IntValidator{bottom: editor.from; top: editor.to}
@@ -111,7 +131,6 @@ SpinBox {
 
             color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
             text: opts.ft + units
-
             activeFocusOnTab: true
 
             width: Math.max(contentWidth, height*3)
@@ -121,7 +140,7 @@ SpinBox {
                 opts.ft = text
                 fact.opts = opts
                 fact.setValue(ft2m(text))
-                if(textInput.activeFocus)
+                if(textInputFt.activeFocus)
                     factButton.forceActiveFocus()
                 zeroCheck() // Temporary meters/feets stub for Runway and Point of interest
             }
@@ -164,7 +183,7 @@ SpinBox {
             selectByMouse: true
             onEditingFinished: {
                 fact.setValue(text)
-                opts.ft = m2ft(fact.value)
+                opts.ft = cvtM2US(fact.value)
                 fact.opts = opts;
                 if(textInput.activeFocus)
                     factButton.forceActiveFocus();
@@ -179,7 +198,7 @@ SpinBox {
             }
             onFactValueChanged:{
                 if(!isFeets)
-                    opts.ft = m2ft(fact.value)
+                    opts.ft = cvtM2US(fact.value)
                     fact.opts = opts;
             }
             horizontalAlignment: Qt.AlignHCenter
@@ -223,18 +242,17 @@ SpinBox {
         v /= div
         if(!isFeets) {
             fact.setValue(v)
-            opts.ft = m2ft(v)
+            opts.ft = cvtM2US(v)
             fact.opts = opts
         } else {
             opts.ft = v
             fact.opts = opts
-            fact.setValue(ft2m(v))
+            fact.setValue(cvtUS2M(v))
         }
         value=Qt.binding(function(){return Math.round(!isFeets ? fact.value*div : opts.ft*div)})   
         // accelerate
         elapsed = startTime>0?(new Date().getTime()-startTime)/1000:0
     }
-
 
     ToolTip {
         parent: editor

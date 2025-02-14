@@ -22,6 +22,11 @@
 
 #include "ElevationMap.h"
 #include <App/App.h>
+#include <App/AppSettings.h>
+#include <Fleet/Fleet.h>
+#include <Mission/MissionTools.h>
+#include <Mission/UnitMission.h>
+#include <Mission/Waypoint.h>
 
 #include <QFileDialog>
 
@@ -46,9 +51,15 @@ ElevationMap::ElevationMap(Fact *parent)
                       Text | PersistentValue,
                       "import");
     f_path->setDefaultValue(path);
+
+    connect(this, &Fact::pathChanged, this, &ElevationMap::getPluginEnableControl);
+    connect(Fleet::instance(), &Fleet::currentChanged, this, [this]() { updateMission(); });
+    connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
 
+    getPluginEnableControl();
+    updateMission();
     createElevationDatabase();
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
@@ -93,6 +104,86 @@ void ElevationMap::onOpenTriggered()
                                                      | QFileDialog::DontResolveSymlinks);
     if (!path.isEmpty())
         f_path->setValue(path);
+}
+
+Unit *ElevationMap::unit() const
+{
+    return Fleet::instance()->current();
+}
+
+UnitMission *ElevationMap::mission() const
+{
+    return unit()->f_mission;
+}
+
+MissionTools *ElevationMap::missionTools() const 
+{
+    return mission()->f_tools;
+}
+
+Fact *ElevationMap::aglset() const
+{
+    return missionTools()->f_aglset;
+}
+
+void ElevationMap::updateMission()
+{
+    connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::changeExternalsVisibility);
+    connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
+    changeExternalsVisibility();
+}
+
+void ElevationMap::getPluginEnableControl()
+{
+    f_control = AppSettings::instance()->findChild("application.plugins.elevationmap");
+    if(f_control)
+        connect(f_control, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
+}
+
+void ElevationMap::setMissionAgl()
+{
+    auto m = mission();
+    for (int i = 0; i < m->f_waypoints->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        auto elevation = getElevationByCoordinate(wp->coordinate());
+        if (qIsNaN(elevation))
+            continue;
+
+        int v = aglset()->value().toInt();
+        v += static_cast<int>(elevation);
+        wp->f_amsl->setValue(true);
+        wp->f_altitude->setValue(v);
+
+        // Add feets option
+        v *= wp->M2FT_COEF;
+        wp->f_altitude->setOpt("ft", v);
+    }
+}
+
+void ElevationMap::changeExternalsVisibility()
+{
+    bool useValue{false};
+    bool controlValue{false};
+    if(f_control && !f_control->busy())
+        controlValue = f_control->value().toBool();
+    if (f_use)
+        useValue = f_use->value().toBool();
+    if (controlValue && useValue)
+        setMissionValues(true);
+    else
+        setMissionValues(false);
+}
+
+void ElevationMap::setMissionValues(bool b)
+{
+    auto m = mission();
+    for (int i = 0; i < m->f_waypoints->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        wp->f_agl->setVisible(b);
+    }
+    auto aglset = missionTools()->child("aglset");
+    if (aglset)
+        aglset->setVisible(b);
 }
 
 QVariantList ElevationMap::getElevationProfile(const QGeoPath &geoPath)

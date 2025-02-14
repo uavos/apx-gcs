@@ -40,7 +40,6 @@ public:
     enum ChosenFact {
         ALT = 0,
         AGL,
-        AMSL,
     };
     Q_ENUM(ChosenFact)
 
@@ -48,6 +47,9 @@ public:
 
     Fact *f_altitude;
     Fact *f_amsl;
+    Fact *f_agl;
+    Fact *f_elevationmap;
+    Fact *f_useAgl;
 
     Fact *f_atrack;
     Fact *f_xtrack;
@@ -84,9 +86,9 @@ public:
 
 protected:
     static const int UNSAFE_AGL = 100; // Suggested by the CEO
-    ChosenFact m_chosen;
-    bool m_reachable;
-    bool m_warning;
+    ChosenFact m_chosen{ALT};
+    bool m_reachable{};
+    bool m_warning{};
 
 signals:
     void reachableChanged();
