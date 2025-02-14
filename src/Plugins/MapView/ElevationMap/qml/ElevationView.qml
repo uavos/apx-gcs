@@ -27,7 +27,7 @@ import QtQml
 
 import QtQml.Models
 
-// import Apx.Common
+import Apx.Common
 // import Apx.Controls
 // import Apx.Instruments
 // import Apx.Application
@@ -82,13 +82,41 @@ Window {
         height: elevationView.height
         width: elevationView.width
 
+        Rectangle {
+            id: alarm
+            property int margin: 5
+
+            height: txt.height
+            width: txt.width + margin
+            color: "red"
+            radius: 2
+            border.width: radius
+            border.color: "white"
+            visible: false
+            anchors {
+                top: parent.top
+                left: parent.left
+                topMargin: margin
+                leftMargin: margin
+            }
+
+            Text {
+                id: txt
+                text: "Alarm"
+                color: "white"
+                font.bold: true
+                font.pixelSize: Style.fontSize*0.8
+                anchors.centerIn: parent
+            }
+        }
+
         ChartView {
             id: chartView
             property int margin: 5
             property var distance: mission.wp.distance
 
             anchors.fill: parent
-            margins.top: margin
+            margins.top: alarm.height
             margins.right: margin
             margins.bottom: margin
             margins.left: 2*margin
