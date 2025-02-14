@@ -53,6 +53,13 @@ Window {
     y: Screen.desktopAvailableHeight - height - 50
 
     onClosing: plugin.active=false
+    onVisibleChanged: timer.restart()
+
+    Timer {
+        id: timer
+        interval: 500
+        onTriggered: loader.active=elevationView.visible
+    }
 
     Label {
         id: axisYLabel
@@ -159,7 +166,8 @@ Window {
             }
         }
         Loader {
-            active: elevationView.visible
+            id: loader
+            active: false
             anchors.fill: parent
             asynchronous: true
             sourceComponent: Component { ElevationChart { } }
