@@ -63,6 +63,8 @@ Fact *UnitMandala::fact(const QString &mpath, bool silent)
                 f->setFlags(Group | FilterModel | ModifiedGroup);
             } else {
                 f->setFlags(ModifiedGroup);
+                _valueFacts.append(f);
+                setDescr(QString("[%1]").arg(_valueFacts.size()));
             }
         }
         p = f;

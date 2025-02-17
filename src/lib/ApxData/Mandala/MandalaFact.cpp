@@ -296,7 +296,7 @@ QVariant MandalaFact::data(int col, int role)
     case Qt::BackgroundRole:
         if (level() == 0)
             return QColor(Qt::darkCyan).darker(300);
-        if (isSystem() && level() == 2)
+        if (isSystem() && level() == 1)
             return QColor(Qt::darkRed).darker(300);
 
         /*if (col == FACT_MODEL_COLUMN_DESCR && opts().contains("color")) {

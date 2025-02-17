@@ -31,4 +31,7 @@ public:
     explicit UnitMandala(Fact *parent = nullptr);
 
     Q_INVOKABLE Fact *fact(const QString &mpath, bool silent = false);
+
+private:
+    QList<Fact *> _valueFacts;
 };
