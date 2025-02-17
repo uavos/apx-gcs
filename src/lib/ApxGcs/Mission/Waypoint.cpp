@@ -30,7 +30,11 @@ Waypoint::Waypoint(MissionGroup *parent)
 {
     f_amsl = new MissionField(this, "amsl", tr("AMSL mode"), tr("Altitude above sea level"), Bool);
 
-    f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);
+    f_altitude = new MissionField(this,
+                                  "altitude",
+                                  tr("Altitude"),
+                                  tr("Altitude above takeoff point"),
+                                  Int);
     _altUnits = "m";
 
     f_altitude->setOpt("editor", "EditorIntWithFeet.qml");
@@ -82,6 +86,7 @@ Waypoint::Waypoint(MissionGroup *parent)
 
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAMSL);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateTitle);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAltDescr);
     updateAMSL();
 
     connect(f_xtrack, &Fact::valueChanged, this, &Waypoint::updatePath);
@@ -339,3 +344,9 @@ int Waypoint::unsafeAgl() const
     return UNSAFE_AGL;
 }
 
+void Waypoint::updateAltDescr() {
+    if(f_amsl->value().toBool())
+        f_altitude->setDescr("Altitude above mean sea level");
+    else
+        f_altitude->setDescr("Altitude above takeoff point");
+}

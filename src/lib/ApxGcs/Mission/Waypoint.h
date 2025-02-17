@@ -69,6 +69,7 @@ private slots:
     void updateTitle() override;
     void updateDescr();
     void updateAMSL();
+    void updateAltDescr();
 
     //---------------------------------------
     // PROPERTIES
