@@ -1,3 +1,19 @@
+# [APX Ground Control v11.2.4](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.4) (02/17/25)
+
+> Branch: `main`\
+> Date: `02/17/25 08:58:38`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/757f338089034edbe03bb65e86405eedc05b49e6...6db16c4e192a8f69b742d1c7e4c4f570c6f4f9f1)
+
+## New Features
+* PFD airbrk instrument
+* HAPS vars
+
+## Bug Fixes
+* servo config plugin crash
+
+## Performance Enhancements
+* datalink fifo via QQueue
+
 # [APX Ground Control v11.2.3](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.3) (01/16/25)
 
 > Branch: `main`\
