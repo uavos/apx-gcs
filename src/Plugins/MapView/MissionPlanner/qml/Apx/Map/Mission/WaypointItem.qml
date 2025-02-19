@@ -65,16 +65,18 @@ MissionObject {
     // Unsafe AGL alarm
     property var alarmOn: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
     property var coordinate: fact?fact.coordinate:0
+    property var amsl: fact?fact.child("amsl").value:false
     property var altitude: fact?fact.child("altitude").value:0
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var agl: fact?fact.child("agl").value:0
     property var elevation: NaN
 
-    onCoordinateChanged: alarmed = alarm()
-    onAltitudeChanged: alarmed = alarm()
-    onHomeHmslChanged: alarmed = alarm()
-    onAlarmOnChanged: alarmed = alarm()
-    
+    onCoordinateChanged: timer.restart()
+    onAltitudeChanged: timer.restart()
+    onHomeHmslChanged: timer.restart()
+    onAlarmOnChanged: timer.restart()
+    onAmslChanged: timer.restart()
+        
     function alarm() 
     {   
         if(!fact)
@@ -84,8 +86,14 @@ MissionObject {
         elevation = apx.tools.elevationmap.getElevationByCoordinate(coordinate)
         if(isNaN(elevation))
             return false
-        agl = homeHmsl + altitude - elevation
+        agl = amsl?(altitude - elevation):(homeHmsl + altitude - elevation)
         return agl < fact.unsafeAgl
+    }
+
+    Timer {
+        id: timer
+        interval: 50 // should be 500-1000 for online mode
+        onTriggered: alarmed = alarm() 
     }
 
     //property bool pathVisibleOnMap: true

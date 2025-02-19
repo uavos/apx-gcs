@@ -62,6 +62,14 @@ Item {
         color: item.color
         text: isNaN(item.elevation) ? "NO" : getElevation()
     }
+    Timer {
+        id: timer
+        interval: 50 // should be 500-1000 for online mode
+        onTriggered: {
+            elevation = map.getElevationByCoordinate(coordinate)
+            updateAgl()
+        }
+    }
 
     onValueChanged: factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
@@ -69,10 +77,17 @@ Item {
     onElevationChanged: fact.enabled = !isNaN(elevation)
     onAltitudeChanged: if(!chosen) aglProcessing()
     onAmslChanged: {calcAgl(); calcAglFt()}
-    
+    onCoordinateChanged: timer.restart()
+    onHomeHmslChanged: if(!amsl) updateAgl()
+
     Component.onCompleted: {
         _editor.enabled = chosen
         elevation = map.getElevationByCoordinate(coordinate)
+        updateAgl() 
+    }
+
+    function updateAgl() 
+    {
         aglProcessing()
         
         // Feets processing
