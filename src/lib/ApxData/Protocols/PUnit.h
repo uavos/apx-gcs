@@ -52,7 +52,7 @@ public:
 
     enum StreamType {
         OFFLINE = 0, // no data received
-        NMT,         // network management packets only
+        SYS,         // system packets only
         DATA,        // data packets from nodes with some mandala parameters
         XPDR,        // low-bandwidth limited telemetry data stream and C2
         TELEMETRY    // full telemetry data stream is available

@@ -77,8 +77,8 @@ void PApx::process_downlink(QByteArray packet)
         break;
 
     case mandala::cmd::env::unit::ident::uid: {
-        if (pid.pri != xbus::pri_response)
-            return;
+        if (pid.pri == xbus::pri_request)
+            return; // drop req from other GCS
         if (stream.available() <= sizeof(xbus::unit::squawk_t))
             return;
         const auto squawk = stream.read<xbus::unit::squawk_t>();
@@ -329,30 +329,13 @@ void PApx::trace_pid(const xbus::pid_s &pid)
 
     trace_uid(pid.uid);
 
+    if (pid.ext)
+        trace()->block(QString("+%1").arg(pid.ext));
+
     QString s;
-    switch (pid.pri) {
-    case xbus::pri_final:
-        s = "F";
-        break;
-    case xbus::pri_primary:
-        s = "P";
-        break;
-    case xbus::pri_secondary:
-        s = "S";
-        break;
-    case xbus::pri_failsafe:
-        s = "E";
-        break;
-    case xbus::pri_response:
-        s = "R";
-        break;
-    case xbus::pri_request:
-        s = "Q";
-        break;
-    default:
-        s = QString::number(static_cast<int>(pid.pri));
-    }
-    s = QString("%1%2").arg(s).arg(QString::number(static_cast<int>(pid.seq)));
+    if (pid.pri == xbus::pri_request)
+        s.append("Q");
+    s.append(QString::number(static_cast<int>(pid.seq)));
     trace()->block(s);
 }
 void PApx::trace_uid(mandala::uid_t uid)

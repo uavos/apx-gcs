@@ -80,10 +80,10 @@ static struct
 
 static mandala::bundle::sim_s sim_bundle{};
 
-static xbus::pid_s sim_pid{mandala::cmd::env::sim::sns::uid, xbus::pri_final, 0};
+static xbus::pid_s sim_pid{mandala::cmd::env::sim::sns::uid, xbus::pri_broadcast, 0};
 static xbus::pid_s cfg_pid{mandala::cmd::env::sim::cfg::uid, xbus::pri_request, 0};
 
-static xbus::pid_s usr_pid_f{mandala::cmd::env::sim::usr::uid, xbus::pri_final, 0};
+static xbus::pid_s usr_pid_f{mandala::cmd::env::sim::usr::uid, xbus::pri_broadcast, 0};
 static xbus::pid_s usr_pid_r{mandala::cmd::env::sim::usr::uid, xbus::pri_request, 0};
 struct XplChannel
 {
@@ -339,7 +339,8 @@ static void parse_rx(const void *data, size_t size)
 
     switch (uid) {
     case mandala::cmd::env::sim::ctr::uid: {
-        if (pid.pri != xbus::pri_final)
+        // servo controls received from AP
+        if (pid.pri == xbus::pri_request)
             break;
         if (!xpl_channels.count_valid)
             break;
@@ -349,12 +350,14 @@ static void parse_rx(const void *data, size_t size)
         }
     } break;
     case mandala::cmd::env::sim::cfg::uid: {
-        if (pid.pri != xbus::pri_response)
+        // controls mapping received from AP
+        if (pid.pri == xbus::pri_request)
             break;
         process_xpl_channels(&stream, &xpl_channels);
     } break;
     case mandala::cmd::env::sim::usr::uid: {
-        if (pid.pri != xbus::pri_response)
+        // user data mapping from AP
+        if (pid.pri == xbus::pri_request)
             break;
         process_xpl_channels(&stream, &xpl_users);
     } break;
@@ -498,13 +501,13 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
 
         if (now - channels_timeout > 2.f && !xpl_channels.count_valid) {
             channels_timeout = now;
-            printf("X-Plane controls request\n");
+            printf("X-Plane controls map request\n");
             request(cfg_pid);
         }
 
         if (now - users_timeout > 3.f && !xpl_users.count_valid) {
             users_timeout = now;
-            printf("X-Plane user data request\n");
+            printf("X-Plane user data map request\n");
             request(usr_pid_r);
         }
 

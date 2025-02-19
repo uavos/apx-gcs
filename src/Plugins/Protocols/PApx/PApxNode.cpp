@@ -70,9 +70,10 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     mandala::uid_t uid = pid.uid;
 
     if (uid == mandala::cmd::env::nmt::search::uid) {
-        if (upgrading())
-            return;
         if (pid.pri != xbus::pri_response)
+            return;
+
+        if (upgrading())
             return;
 
         requestIdent();
@@ -83,8 +84,11 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     if (stream.available() == 0)
         return;
 
+    auto pos_s = stream.pos();
+
     // file ops - make them download data from any source
-    if (uid == mandala::cmd::env::nmt::file::uid) {
+    switch (uid) {
+    case mandala::cmd::env::nmt::file::uid: {
         // accept both pid requests and responses
         size_t spos = stream.pos();
 
@@ -111,16 +115,13 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
         f->process_downlink(op, stream);
 
-        stream.reset(spos);
-    }
+    } break;
 
     // field updates from remote gcs
-    if (uid == mandala::cmd::env::nmt::upd::uid) {
+    case mandala::cmd::env::nmt::upd::uid: {
         // qDebug() << stream.available();
         if (stream.available() < sizeof(xbus::node::conf::fid_t))
             return;
-
-        auto pos_s = stream.pos();
 
         xbus::node::conf::fid_t fid;
         stream >> fid;
@@ -128,13 +129,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         trace()->block(QString::number(fid & 0xFF));
         trace()->data(stream.payload());
 
-        if (pid.pri == xbus::pri_response) {
-            // intrercept conf saved response
-            stream.reset(pos_s);
-            if (fid == 0xFFFFFFFF) {
-                emit confSaved();
-            }
-        } else if (pid.pri == xbus::pri_request) {
+        if (pid.pri == xbus::pri_request) { // upd field from another GCS
             auto fidx = fid >> 8;
             if (fidx >= _field_types.size())
                 return;
@@ -153,12 +148,17 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             values[name] = QJsonValue::fromVariant(value);
             emit confUpdated(values);
             return;
-        } else
-            return;
-    }
+        }
+
+        // intrercept conf saved response
+        if (fid == 0xFFFFFFFF) {
+            emit confSaved();
+        }
+
+    } break;
 
     // node messages
-    if (uid == mandala::cmd::env::nmt::msg::uid) {
+    case mandala::cmd::env::nmt::msg::uid: {
         if (stream.available() < (sizeof(xbus::node::msg::type_e) + 1))
             return;
 
@@ -193,16 +193,15 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
         if (msg_init && !(_nodes->local() || _nodes->upgrading()))
             requestIdent();
-
         return;
     }
-
-    // check for requests responses
-    if (pid.pri != xbus::pri_response) {
-        // a request from another GCS?
-        return;
     }
 
+    // finish requests
+    if (pid.pri == xbus::pri_request) // must be a response
+        return;
+
+    stream.reset(pos_s);
     // check for pending request's response
     for (auto req : _requests) {
         if (req->uid() != uid)

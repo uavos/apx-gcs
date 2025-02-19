@@ -81,7 +81,7 @@ void PApxUnit::process_downlink(PStreamReader &stream)
     emit packetReceived(uid);
 
     if (static_cast<PApxNodes *>(m_nodes)->process_downlink(pid, stream)) {
-        setStreamType(NMT);
+        setStreamType(SYS);
         return;
     }
 

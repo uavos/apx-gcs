@@ -181,7 +181,7 @@ void PApxData::sendValue(mandala::uid_t uid, QVariant value)
         return;
     }
 
-    _req.request(uid, value.isNull() ? xbus::pri_request : xbus::pri_final);
+    _req.request(uid, value.isNull() ? xbus::pri_request : xbus::pri_broadcast);
     mandala::spec_s spec{};
     spec.type = Mandala::meta(uid).type_id;
     spec.write(&_req);

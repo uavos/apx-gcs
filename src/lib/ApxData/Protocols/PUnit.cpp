@@ -66,7 +66,7 @@ void PUnit::setStreamType(StreamType type)
             time_xpdr.start();
             break;
 
-        case NMT:
+        case SYS:
         case DATA:
             if (time_telemetry.elapsed() < 2000 || time_xpdr.elapsed() < 3000)
                 return;

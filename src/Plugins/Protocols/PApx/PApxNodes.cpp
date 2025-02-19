@@ -217,7 +217,7 @@ void PApxNodes::request_timeout()
 
     if (!_retry) {
         if (!_request->silent) {
-            apxMsgW() << tr("NMT request dropped").append(':') << _request->title();
+            apxMsgW() << tr("SYS request dropped").append(':') << _request->title();
         }
 
         // clear all node requests
@@ -227,7 +227,7 @@ void PApxNodes::request_timeout()
 
     _retry--;
     if (!_request->silent) {
-        apxMsgW() << tr("NMT timeout").append(':') << _request->title()
+        apxMsgW() << tr("SYS timeout").append(':') << _request->title()
                   << QString("(%1/%2)")
                          .arg(PApxNodeRequest::retries - _retry)
                          .arg(PApxNodeRequest::retries);
