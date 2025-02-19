@@ -138,6 +138,13 @@ MapQuickItem {  //to be used inside MapComponent only
         }
     }
 
+    onHoverChanged: {
+        if(!hover)
+            return
+        if(apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value)
+                apx.tools.elevationmap.setElevationByCoordinate(mapObject.coordinate)
+    }
+
     //position
     coordinate: implicitCoordinate?implicitCoordinate:QtPositioning.coordinate()
     anchorPoint.x: textItem.width/2
