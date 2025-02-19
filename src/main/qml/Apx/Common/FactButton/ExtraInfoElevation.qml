@@ -56,6 +56,14 @@ Item {
         color: item.color
         text: isNaN(item.elevation) ? "NO" : getElevation()
     }
+    Timer {
+        id: timer
+        interval: 50 // should be 500-1000 for online mode
+        onTriggered: elevation = map.getElevationByCoordinate(coordinate)
+    }
+
+    onCoordinateChanged: timer.restart()
+
     Component.onCompleted: elevation = map.getElevationByCoordinate(coordinate)
 
     function getElevation()
