@@ -40,11 +40,9 @@ private:
     template<typename S>
     void sendBundleT(mandala::uid_t uid, const S &data)
     {
-        _req.request(uid);
-        _req.write(&data, sizeof(S));
-        trace()->raw(data);
-        _req.send();
+        sendBundle(uid, QByteArray::fromRawData(reinterpret_cast<const char *>(&data), sizeof(S)));
     }
+
     static void pack(const QVariant &v, mandala::type_id_e type, PStreamWriter &stream);
 
     template<typename T>
@@ -63,7 +61,7 @@ private:
 protected:
     void sendValue(mandala::uid_t uid, QVariant value) override;
 
-    void requestCalibration(mandala::uid_t uid, QByteArray data) override;
+    void sendBundle(mandala::uid_t uid, QByteArray data) override;
     void requestScript(QString func) override;
     void sendSerial(quint8 portID, QByteArray data) override;
 };

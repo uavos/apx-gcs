@@ -29,7 +29,7 @@
 
 SimMods::SimMods(Fact *parent)
     : Fact(parent, "mods", tr("Jamming"), tr("Alter sensors data"), Group)
-    , _pid_sim_rx(mandala::cmd::env::sim::uid)
+    , _pid_sim_sns(xbus::cmd::sim::sns)
 {
     QString sect = tr("Jamming");
 
@@ -157,7 +157,7 @@ void SimMods::parse_sim_rx(const void *data, size_t size)
     pid.read(&stream);
 
     mandala::uid_t uid = pid.uid;
-    if (!mandala::cmd::env::sim::match(uid))
+    if (!xbus::cmd::sim::match(uid))
         return;
 
     // qDebug() << "RX" << size << uid;
@@ -166,14 +166,14 @@ void SimMods::parse_sim_rx(const void *data, size_t size)
     default:
         qDebug() << "RX" << size << uid;
         break;
-    case mandala::cmd::env::sim::sns::uid:
+    case xbus::cmd::sim::sns:
         if (stream.available() < sizeof(mandala::bundle::sim_s)) {
             qWarning() << "RX" << size << uid << "too small";
             return;
         }
 
         // read simulated sensors data structure
-        _pid_sim_rx = pid; // save for tx
+        _pid_sim_sns = pid; // save for tx
         auto d = (mandala::bundle::sim_s *) stream.ptr();
 
         // apply modifications
@@ -288,7 +288,7 @@ void SimMods::jsonRead()
 
         // send modified structure to the autopilot
         XbusStreamWriter stream(_buf_sim_tx, sizeof(_buf_sim_tx));
-        _pid_sim_rx.write(&stream); // saved from rx
+        _pid_sim_sns.write(&stream); // saved from rx
         stream.write(&d, sizeof(d));
 
         forwardToAP(stream.buffer(), stream.pos());

@@ -41,14 +41,14 @@ private slots:
 public slots:
     virtual void sendValue(mandala::uid_t uid, QVariant value) { _nimp(__FUNCTION__); }
 
-    virtual void requestCalibration(mandala::uid_t uid, QByteArray data) { _nimp(__FUNCTION__); }
+    virtual void sendBundle(mandala::uid_t uid, QByteArray data) { _nimp(__FUNCTION__); }
     virtual void requestScript(QString func) { _nimp(__FUNCTION__); }
     virtual void sendSerial(quint8 portID, QByteArray data) { _nimp(__FUNCTION__); }
 
 signals:
     void valuesData(PBase::Values values);
 
-    void calibrationData(mandala::uid_t uid, QByteArray data);
+    void bundleData(mandala::uid_t uid, QByteArray data);
     void serialData(quint8 portID, QByteArray data);
     void jsexecData(QString script);
 };

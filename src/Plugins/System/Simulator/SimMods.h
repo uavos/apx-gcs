@@ -57,7 +57,7 @@ private:
     CobsEncoder<> _enc;
 
     // tx to sim
-    xbus::pid_s _pid_sim_rx;
+    xbus::pid_s _pid_sim_sns;
     uint8_t _buf_sim_tx[xbus::size_packet_max];
 
     // JSON rx timeout

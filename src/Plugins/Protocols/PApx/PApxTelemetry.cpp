@@ -79,7 +79,7 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
     default:
         return false;
 
-    case mandala::cmd::env::telemetry::format::uid:
+    case xbus::cmd::telemetry::format:
         trace()->data(stream.payload());
         if (pid.pri == xbus::pri_response) {
             _request_format_part = 0;
@@ -112,8 +112,8 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
         }
         return true; // anyway accept the packet
 
-    case mandala::cmd::env::telemetry::data::uid: // telemetry data stream
-    case mandala::cmd::env::telemetry::xpdr::uid: // XPDR data pack
+    case xbus::cmd::telemetry::data: // telemetry data stream
+    case xbus::cmd::telemetry::xpdr: // XPDR data pack
         if (stream.available() < xbus::telemetry::hdr_s::psize()) {
             qWarning() << stream.available();
             break;
@@ -207,7 +207,7 @@ bool PApxTelemetry::unpack(const xbus::pid_s &pid, PStreamReader &stream)
     // collect updated values
     PBase::Values values;
 
-    if (pid.uid == mandala::cmd::env::telemetry::xpdr::uid) {
+    if (pid.uid == xbus::cmd::telemetry::xpdr) {
         for (size_t i = 0; i < decoder.xpdr_slots_cnt(); ++i) {
             auto raw = decoder.xpdr_slots().value[i];
             auto type = decoder.xpdr_slots().value_type[i];
@@ -254,7 +254,7 @@ void PApxTelemetry::request_format(uint8_t part)
 {
     //qDebug() << part;
     _request_format_time.start();
-    _req.request(mandala::cmd::env::telemetry::format::uid);
+    _req.request(xbus::cmd::telemetry::format);
     xbus::telemetry::format_req_s r{xbus::telemetry::fmt_version, part};
     r.write(&_req);
     trace()->block(QString::number(part));
@@ -263,6 +263,6 @@ void PApxTelemetry::request_format(uint8_t part)
 
 void PApxTelemetry::requestTelemetry()
 {
-    _req.request(mandala::cmd::env::telemetry::data::uid);
+    _req.request(xbus::cmd::telemetry::data);
     _req.send();
 }

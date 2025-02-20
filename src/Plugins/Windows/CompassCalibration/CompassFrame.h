@@ -62,7 +62,7 @@ private:
 private slots:
     void unitSelected(Unit *unit);
 
-    void calibrationData(mandala::uid_t uid, QByteArray data);
+    void bundleData(mandala::uid_t uid, QByteArray data);
 
     void action_toggled(bool);
     void oncheckBoxTraceChange(int);

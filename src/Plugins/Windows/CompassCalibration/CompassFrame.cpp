@@ -103,8 +103,7 @@ void CompassFrame::unitSelected(Unit *unit)
     if (!protocol)
         return;
 
-    clist.append(
-        connect(protocol->data(), &PData::calibrationData, this, &CompassFrame::calibrationData));
+    clist.append(connect(protocol->data(), &PData::bundleData, this, &CompassFrame::bundleData));
 }
 
 void CompassFrame::requestCalibrationData()
@@ -120,10 +119,10 @@ void CompassFrame::requestCalibrationData()
 
     QByteArray ba;
     ba.append((char) cbSelect.currentIndex());
-    unit->protocol()->data()->requestCalibration(_req_uid, ba);
+    unit->protocol()->data()->sendBundle(_req_uid, ba);
 }
 
-void CompassFrame::calibrationData(mandala::uid_t uid, QByteArray data)
+void CompassFrame::bundleData(mandala::uid_t uid, QByteArray data)
 {
     if (!_req_uid || uid != _req_uid)
         return;

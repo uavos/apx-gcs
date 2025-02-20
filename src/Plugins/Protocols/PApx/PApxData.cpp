@@ -38,6 +38,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     do {
         if (uid < xbus::cmd::uid) {
             // data value received
+            // just drop it as we don't have UID mappings
             if (is_request)
                 return true;
 
@@ -81,7 +82,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         switch (uid) {
         default:
             return false;
-        case mandala::cmd::env::stream::vcp::uid:
+        case xbus::cmd::aux::vcp:
             if (stream.available() > 1) {
                 uint8_t port_id = stream.read<uint8_t>();
                 trace()->block(QString::number(port_id));
@@ -91,7 +92,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             }
             qWarning() << "Empty serial data received";
             break;
-        case mandala::cmd::env::script::jsexec::uid:
+        case xbus::cmd::aux::jsexec:
             if (stream.available() > 2) {
                 QString script = stream.payload().trimmed();
                 trace()->block(script);
@@ -101,19 +102,6 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
                 }
             }
             qWarning() << "Empty jsexec data received" << stream.dump_payload();
-            break;
-        case mandala::cmd::env::stream::calib::uid:
-            if (is_request)
-                return true;
-            if (stream.available() > sizeof(mandala::uid_t)) {
-                mandala::uid_t uid;
-                stream >> uid;
-                findParent<PApx>()->trace_uid(uid);
-                trace()->data(stream.payload());
-                emit calibrationData(uid, stream.payload());
-                return true;
-            }
-            qWarning() << "Empty calibration data received";
             break;
         }
     } while (0);
@@ -126,11 +114,9 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     return true;
 }
 
-void PApxData::requestCalibration(mandala::uid_t uid, QByteArray data)
+void PApxData::sendBundle(mandala::uid_t uid, QByteArray data)
 {
-    _req.request(mandala::cmd::env::stream::calib::uid);
-    _req << uid;
-    findParent<PApx>()->trace_uid(uid);
+    _req.request(uid);
     _req.append(data);
     trace()->data(data);
     _req.send();
@@ -141,7 +127,7 @@ void PApxData::requestScript(QString func)
     func = func.simplified().trimmed();
     if (func.isEmpty())
         return;
-    _req.request(mandala::cmd::env::script::vmexec::uid);
+    _req.request(xbus::cmd::aux::vmexec);
     _req.append(func.toUtf8());
     trace()->block(func);
     _req.send();
@@ -149,7 +135,7 @@ void PApxData::requestScript(QString func)
 
 void PApxData::sendSerial(quint8 portID, QByteArray data)
 {
-    _req.request(mandala::cmd::env::stream::vcp::uid);
+    _req.request(xbus::cmd::aux::vcp);
     _req.write<uint8_t>(portID);
     trace()->block(QString::number(portID));
     _req.append(data);

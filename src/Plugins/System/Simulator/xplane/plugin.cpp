@@ -80,11 +80,9 @@ static struct
 
 static mandala::bundle::sim_s sim_bundle{};
 
-static xbus::pid_s sim_pid{mandala::cmd::env::sim::sns::uid};
-static xbus::pid_s cfg_pid{mandala::cmd::env::sim::cfg::uid, xbus::pri_request};
+static xbus::pid_s sns_pid{xbus::cmd::sim::sns};
+static xbus::pid_s cfg_pid{xbus::cmd::sim::cfg, xbus::pri_request};
 
-static xbus::pid_s usr_pid_f{mandala::cmd::env::sim::usr::uid};
-static xbus::pid_s usr_pid_r{mandala::cmd::env::sim::usr::uid, xbus::pri_request};
 struct XplChannel
 {
     xbus::node::conf::text_t xpl;
@@ -163,7 +161,7 @@ struct XplChannel
 struct XplChannels
 {
     XplChannel *channels = nullptr;
-    uint8_t count_channels;
+    const uint8_t count_channels;
     uint8_t count_valid{0};
 
     explicit XplChannels(uint8_t count)
@@ -208,23 +206,21 @@ static void request(xbus::pid_s &_pid)
 static void send_sns_bundle()
 {
     XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
-    sim_pid.write(&stream);
-    stream.write(&sim_bundle, sizeof(sim_bundle));
-    send_packet(&stream);
-    sim_pid.seq++;
-}
+    sns_pid.write(&stream);
 
-static void send_users_bundle()
-{
-    XbusStreamWriter stream(packet_buf, sizeof(packet_buf));
-    usr_pid_f.write(&stream);
-    stream << xpl_users.count_valid;
-    for (uint8_t i = 0; i < xpl_users.count_valid; ++i) {
-        float val = xpl_users.channels[i].get_data();
-        stream << val;
+    // write sim sensors
+    stream.write(&sim_bundle, sizeof(sim_bundle));
+
+    // write user sensors <cnt8>[float32]..
+    if (xpl_users.count_valid > 0) {
+        stream << xpl_users.count_valid;
+        for (uint8_t i = 0; i < xpl_users.count_valid; ++i) {
+            stream << xpl_users.channels[i].get_data();
+        }
     }
+
     send_packet(&stream);
-    usr_pid_f.seq++;
+    sns_pid.seq++;
 }
 
 void parse_sensors(void)
@@ -279,6 +275,7 @@ static void process_xpl_channels(XbusStreamReader *stream, XplChannels *data)
     uint8_t count = data->count_channels;
     uint8_t &ch = data->count_valid;
 
+    // copy assigned dataref strings
     for (ch = 0; ch < count; ++ch) {
         uint8_t cp_size = sizeof(data->channels[0].xpl);
         const char *s = stream->read_string(cp_size);
@@ -287,8 +284,6 @@ static void process_xpl_channels(XbusStreamReader *stream, XplChannels *data)
         }
         strncpy(data->channels[ch].xpl, s, cp_size);
     }
-
-    printf("X-Plane controls updated (%u)\n", data->count_valid);
 
     data->clear();
 
@@ -334,11 +329,11 @@ static void parse_rx(const void *data, size_t size)
     pid.read(&stream);
 
     mandala::uid_t uid = pid.uid;
-    if (!mandala::cmd::env::sim::match(uid))
+    if (!xbus::cmd::sim::match(uid))
         return;
 
     switch (uid) {
-    case mandala::cmd::env::sim::ctr::uid: {
+    case xbus::cmd::sim::ctr: {
         // servo controls received from AP
         if (pid.pri == xbus::pri_request)
             break;
@@ -349,17 +344,16 @@ static void parse_rx(const void *data, size_t size)
             xpl_channels.channels[i].set_data(v);
         }
     } break;
-    case mandala::cmd::env::sim::cfg::uid: {
-        // controls mapping received from AP
+    case xbus::cmd::sim::cfg: {
+        // datarefs mapping received from AP
         if (pid.pri == xbus::pri_request)
             break;
         process_xpl_channels(&stream, &xpl_channels);
-    } break;
-    case mandala::cmd::env::sim::usr::uid: {
-        // user data mapping from AP
-        if (pid.pri == xbus::pri_request)
-            break;
         process_xpl_channels(&stream, &xpl_users);
+
+        printf("X-Plane DataRefs updated (%u,%u)\n",
+               xpl_channels.count_valid,
+               xpl_users.count_valid);
     } break;
     }
 }
@@ -441,8 +435,6 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
 {
     float now = XPLMGetElapsedTime();
     static float channels_timeout = 0.f;
-    static float users_timeout = 0.f;
-    static float users_pub_timeout = 0.f;
     static uint ap_link_timeout = 0;
 
     if (ap_link_timeout++ > 3) {
@@ -505,25 +497,12 @@ static float flightLoopCallback(float inElapsedSinceLastCall,
             request(cfg_pid);
         }
 
-        if (now - users_timeout > 3.f && !xpl_users.count_valid) {
-            users_timeout = now;
-            printf("X-Plane user data map request\n");
-            request(usr_pid_r);
-        }
-
     } while (0);
 
     float loop = 2.f;
     if (xpl_channels.count_valid) {
         parse_sensors();
         send_sns_bundle();
-        loop = -1.f;
-    }
-
-    //10Hz
-    if (now - users_pub_timeout > 0.1f && xpl_users.count_valid) {
-        users_pub_timeout = now;
-        send_users_bundle();
         loop = -1.f;
     }
 

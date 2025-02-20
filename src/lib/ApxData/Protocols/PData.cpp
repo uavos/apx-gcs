@@ -28,7 +28,7 @@ PData::PData(PUnit *parent)
     , _unit(parent)
 {
     connect(this, &PData::valuesData, this, &PData::updateStreamType);
-    connect(this, &PData::calibrationData, this, &PData::updateStreamType);
+    connect(this, &PData::bundleData, this, &PData::updateStreamType);
     connect(this, &PData::serialData, this, &PData::updateStreamType);
     connect(this, &PData::jsexecData, this, &PData::updateStreamType);
 }
