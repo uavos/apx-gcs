@@ -33,7 +33,7 @@ PApxData::PApxData(PApxUnit *parent)
 
 bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 {
-    bool is_request = pid.pri == xbus::pri_request;
+    bool is_request = pid.req;
     const auto uid = pid.uid;
     do {
         if (uid < xbus::cmd::uid) {
@@ -187,10 +187,6 @@ PBase::Values PApxData::unpack(const xbus::pid_s &pid,
                                PStreamReader &stream)
 {
     PBase::Values values;
-
-    if (pid.pri > 0) {
-        qWarning() << "pri:" << pid.pri << Mandala::meta(pid.uid).path;
-    }
 
     //qDebug() << Mandala::meta(pid.uid).name << stream->dump_payload();
     QVariant v;

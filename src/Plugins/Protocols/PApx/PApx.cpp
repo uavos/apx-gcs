@@ -80,7 +80,7 @@ void PApx::process_downlink(QByteArray packet)
     trace()->block(squawkText);
     stream.trim();
 
-    if (pid.pri == xbus::pri_request) {
+    if (pid.req) {
         // received uplink request from another GCS instance
         auto v = _squawk_map.value(squawk);
         if (!v)
@@ -304,7 +304,7 @@ void PApx::trace_pid(const xbus::pid_s &pid)
         trace()->block(QString("+%1").arg(pid.eid));
 
     QString s;
-    if (pid.pri == xbus::pri_request)
+    if (pid.req)
         s.append("Q");
     s.append(QString::number(static_cast<int>(pid.seq)));
     trace()->block(s);

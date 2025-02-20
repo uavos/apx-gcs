@@ -27,11 +27,11 @@ PApxRequest::PApxRequest(PTreeBase *parent)
     , _parent(parent)
 {}
 
-void PApxRequest::request(mandala::uid_t uid, xbus::pri_e pri)
+void PApxRequest::request(mandala::uid_t uid, bool req)
 {
     pid.uid = uid;
     pid.eid = xbus::eid_none;
-    pid.pri = pri;
+    pid.req = req;
 
     request(pid);
 }

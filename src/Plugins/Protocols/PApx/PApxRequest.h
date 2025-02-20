@@ -29,7 +29,7 @@ class PApxRequest : public PStreamWriter
 public:
     explicit PApxRequest(PTreeBase *parent);
 
-    void request(mandala::uid_t uid, xbus::pri_e pri = xbus::pri_request);
+    void request(mandala::uid_t uid, bool req = true);
     void request(const xbus::pid_s &pid);
 
     virtual void send();

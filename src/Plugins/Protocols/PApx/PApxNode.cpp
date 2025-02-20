@@ -70,7 +70,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     mandala::uid_t uid = pid.uid;
 
     if (uid == xbus::cmd::node::search) {
-        if (pid.pri != xbus::pri_response)
+        if (pid.req)
             return;
 
         if (upgrading())
@@ -129,7 +129,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         trace()->block(QString::number(fid & 0xFF));
         trace()->data(stream.payload());
 
-        if (pid.pri == xbus::pri_request) { // upd field from another GCS
+        if (pid.req) { // upd field from another GCS
             auto fidx = fid >> 8;
             if (fidx >= _field_types.size())
                 return;
@@ -198,7 +198,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     }
 
     // finish requests
-    if (pid.pri == xbus::pri_request) // must be a response
+    if (pid.req) // must be a response
         return;
 
     stream.reset(pos_s);

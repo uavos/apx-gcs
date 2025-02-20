@@ -74,43 +74,51 @@ void PApxTelemetry::report()
 
 bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 {
+    if (!xbus::cmd::telemetry::match(pid.uid)) {
+        return false;
+    }
+
+    // ignore requests from other GCS
+    if (pid.req)
+        return true;
+
     // telemetry section uid
     switch (pid.uid) {
     default:
         return false;
 
-    case xbus::cmd::telemetry::format:
+    case xbus::cmd::telemetry::format: {
         trace()->data(stream.payload());
-        if (pid.pri == xbus::pri_response) {
-            _request_format_part = 0;
+        _request_format_part = 0;
 
-            xbus::telemetry::format_resp_hdr_s h{};
-            if (!decoder.decode_format(stream, &h)) {
-                qWarning() << decoder.valid() << decoder.slots_cnt() << h.part << h.pcnt
-                           << stream.available();
-                break;
-            }
-            //qDebug() << "format:" << h.part << h.total << stream.available();
-
-            if (decoder.valid()) {
-                // decoder not yet valid
-                return true;
-            }
-            if (h.pcnt <= 1) {
-                // some already available parts are downloaded
-                return true;
-            }
-
-            if (++h.part >= h.pcnt) {
-                // extra parts error?
-                qWarning() << "format done" << h.part << h.pcnt;
-                _request_format_part = 0;
-                break;
-            }
-            _request_format_part = h.part;
-            request_format(h.part);
+        xbus::telemetry::format_resp_hdr_s h{};
+        if (!decoder.decode_format(stream, &h)) {
+            qWarning() << decoder.valid() << decoder.slots_cnt() << h.part << h.pcnt
+                       << stream.available();
+            break;
         }
+        //qDebug() << "format:" << h.part << h.total << stream.available();
+
+        if (decoder.valid()) {
+            // decoder not yet valid
+            return true;
+        }
+        if (h.pcnt <= 1) {
+            // some already available parts are downloaded
+            return true;
+        }
+
+        if (++h.part >= h.pcnt) {
+            // extra parts error?
+            qWarning() << "format done" << h.part << h.pcnt;
+            _request_format_part = 0;
+            break;
+        }
+        _request_format_part = h.part;
+        request_format(h.part);
+
         return true; // anyway accept the packet
+    }
 
     case xbus::cmd::telemetry::data: // telemetry data stream
     case xbus::cmd::telemetry::xpdr: // XPDR data pack
@@ -128,6 +136,7 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
         _unit->setStreamType(PUnit::DATA);
         break;
     }
+
     //error
     trace()->block("ERR:");
     trace()->data(stream.payload());

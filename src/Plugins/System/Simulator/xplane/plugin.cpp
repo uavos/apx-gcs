@@ -80,8 +80,8 @@ static struct
 
 static mandala::bundle::sim_s sim_bundle{};
 
-static xbus::pid_s sns_pid{xbus::cmd::sim::sns};
-static xbus::pid_s cfg_pid{xbus::cmd::sim::cfg, xbus::pri_request};
+static xbus::pid_s sns_pid{xbus::cmd::sim::sns, false, 0};
+static xbus::pid_s cfg_pid{xbus::cmd::sim::cfg, true, 0};
 
 struct XplChannel
 {
@@ -335,7 +335,7 @@ static void parse_rx(const void *data, size_t size)
     switch (uid) {
     case xbus::cmd::sim::ctr: {
         // servo controls received from AP
-        if (pid.pri == xbus::pri_request)
+        if (pid.req)
             break;
         if (!xpl_channels.count_valid)
             break;
@@ -346,7 +346,7 @@ static void parse_rx(const void *data, size_t size)
     } break;
     case xbus::cmd::sim::cfg: {
         // datarefs mapping received from AP
-        if (pid.pri == xbus::pri_request)
+        if (pid.req)
             break;
         process_xpl_channels(&stream, &xpl_channels);
         process_xpl_channels(&stream, &xpl_users);

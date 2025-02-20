@@ -75,7 +75,7 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     }
 
     if (stream.available() < sizeof(xbus::node::guid_t)) {
-        if (pid.pri != xbus::pri_request)
+        if (!pid.req)
             qDebug() << "missing guid" << stream.available();
         return true;
     }
@@ -99,9 +99,10 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
     node->process_downlink(pid, stream);
 
-    if (pid.pri == xbus::pri_response)
-        emit node_response(node);
+    if (pid.req)
+        return true;
 
+    emit node_response(node);
     return true;
 }
 
