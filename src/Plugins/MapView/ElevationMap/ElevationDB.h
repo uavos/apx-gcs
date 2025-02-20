@@ -29,8 +29,14 @@ class AbstractElevationDB : public QObject
     Q_OBJECT
 
 public:
+    enum Utility {
+        NONE = 0,
+        GDALLOCATIONINFO,
+    };
+
     AbstractElevationDB() = default;
     virtual double getElevation(double latitude, double longitude) = 0;
+    virtual void setUtility(Utility u) = 0;
 };
 
 class OfflineElevationDB : public AbstractElevationDB
@@ -40,13 +46,18 @@ class OfflineElevationDB : public AbstractElevationDB
 public:
     OfflineElevationDB(QString &path);
     double getElevation(double latitude, double longitude) override;
-    double getElevationASTER(double latitude,
-                             double longitude); // Return NaN if the elevation is undefined
+    double getElevationASTER(double latitude, double longitude); // Return NaN if the elevation is undefined
+    void setUtility(Utility u) override;
 
 private:
     QString m_dbPath;
+    AbstractElevationDB::Utility m_utility;
 
     QString createASTERFileName(double latitude, double longitude);
     double getElevationFromGeoFile(QString fileName, double latitude, double longitude);
     char *SanitizeSRS(const char *userInput);
+
+    bool checkGdallocationInfo();
+    double getElevationFromGdallocationInfo(QString &fileName, double latitude, double longitude);
+    QString getDataFromGdallocationInfo(QString &command);
 };

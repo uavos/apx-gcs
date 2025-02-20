@@ -46,6 +46,7 @@ public:
 
     Fact *f_use;
     Fact *f_path;
+    Fact *f_utility;
     Fact *f_control;
 
     Unit *unit() const;
@@ -78,6 +79,7 @@ private slots:
     void setMissionAgl();
     void getPluginEnableControl();
     void changeExternalsVisibility();
+    void updateDBUtility();
 
 signals:
     void elevationChanged();

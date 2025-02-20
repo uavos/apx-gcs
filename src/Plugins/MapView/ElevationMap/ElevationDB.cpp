@@ -25,13 +25,17 @@
 
 #include <QFile>
 
+#include <cmath>
+#include <vector>
+
+#ifdef Q_OS_LINUX
 #include "cpl_minixml.h"
 #include "cpl_string.h"
 #include "gdal.h"
 #include "gdal_version.h"
 #include "ogr_spatialref.h"
-#include <cmath>
-#include <vector>
+#endif
+
 
 OfflineElevationDB::OfflineElevationDB(QString &path)
     : m_dbPath(path)
@@ -45,7 +49,11 @@ double OfflineElevationDB::getElevationASTER(double latitude, double longitude)
         return elevation;
     }
 
-    elevation = getElevationFromGeoFile(fileName, latitude, longitude);
+    if (m_utility == GDALLOCATIONINFO)
+        elevation = getElevationFromGdallocationInfo(fileName, latitude, longitude);
+    else
+        elevation = getElevationFromGeoFile(fileName, latitude, longitude);
+
     return elevation;
 }
 
@@ -68,13 +76,21 @@ double OfflineElevationDB::getElevation(double latitude, double longitude)
     return getElevationASTER(latitude, longitude);
 }
 
+void OfflineElevationDB::setUtility(Utility u)
+{
+    if (m_utility != u)
+        m_utility = u;
+}
+
 double OfflineElevationDB::getElevationFromGeoFile(QString fileName,
                                                    double latitude,
                                                    double longitude)
 {
+    double elevation{NAN};
+
+#ifdef Q_OS_LINUX
     char *srcSRS = nullptr;
     std::vector<int> anBandList;
-    double elevation{NAN};
     int nOverview = -1;
 
     GDALAllRegister();
@@ -237,15 +253,17 @@ double OfflineElevationDB::getElevationFromGeoFile(QString fileName,
     GDALDumpOpenDatasets(stderr);
     GDALDestroyDriverManager();
     CPLFree(srcSRS);
+#endif
 
     return elevation;
 }
 
 char *OfflineElevationDB::SanitizeSRS(const char *userInput)
 {
-    OGRSpatialReferenceH hSRS = OSRNewSpatialReference(nullptr);
     char *result = nullptr;
 
+#ifdef Q_OS_LINUX
+    OGRSpatialReferenceH hSRS = OSRNewSpatialReference(nullptr);
     if (OSRSetFromUserInput(hSRS, userInput) == OGRERR_NONE)
         OSRExportToWkt(hSRS, &result);
     else {
@@ -256,6 +274,48 @@ char *OfflineElevationDB::SanitizeSRS(const char *userInput)
     }
 
     OSRDestroySpatialReference(hSRS);
+#endif
 
     return result;
+}
+
+// Command example: "gdallocationinfo -wgs84 -valonly ASTGTMV003_N27E070_dem.tif 70.50 27.05"
+// ATTENTION! Input order longitude-latitude: "gdallocationinfo <report parameters> <filename> <longitude> <latitude>"
+// Documentation https://gdal.org/programs/gdallocationinfo.html
+double OfflineElevationDB::getElevationFromGdallocationInfo(QString &fileName, double latitude, double longitude)
+{
+    if(!checkGdallocationInfo()) {
+        apxMsgW() << "Utility gdallocationinfo not found!";
+        return NAN;
+    }
+    bool ok{false};
+    auto command = QString("gdallocationinfo -wgs84 -valonly %1 %2 %3")
+                       .arg(fileName)
+                       .arg(longitude)
+                       .arg(latitude);
+    auto result = getDataFromGdallocationInfo(command);
+    double elevation = result.toDouble(&ok);
+    return ok ? elevation : NAN;
+}
+
+QString OfflineElevationDB::getDataFromGdallocationInfo(QString &command)
+{
+    QProcess p;
+    p.startCommand(command);
+    p.waitForFinished();
+    auto result = QString(p.readAllStandardOutput());
+    if (result.isEmpty())
+        apxMsgW() << tr("Gdallocationinfo empty report! Command line: %1").arg(command);
+
+    return result;
+}
+
+bool OfflineElevationDB::checkGdallocationInfo()
+{
+    QProcess p;
+    QString command = "which gdallocationinfo";
+    p.startCommand(command);
+    p.waitForFinished();
+    auto result = QString(p.readAllStandardOutput());
+    return !result.isEmpty();
 }
