@@ -59,20 +59,9 @@ QString PApxUnit::uidText(const xbus::unit::uid_t *uid_raw)
         .toUpper();
 }
 
-void PApxUnit::process_downlink(PStreamReader &stream)
+void PApxUnit::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 {
-    if (stream.available() < xbus::pid_s::psize()) {
-        qWarning() << "packet" << stream.dump_payload();
-        return;
-    }
-    stream.trim();
-
-    xbus::pid_s pid;
-    pid.read(&stream);
-
-    _papx->trace_pid(pid);
-
-    mandala::uid_t uid = pid.uid;
+    const auto uid = pid.uid;
 
     if (uid > mandala::uid_max) {
         qWarning() << "wrong uid" << uid << stream.dump_payload();
@@ -107,12 +96,21 @@ void PApxUnit::send_uplink(QByteArray packet)
         return;
     }
 
-    _req.request(mandala::cmd::env::unit::uplink::uid);
+    PStreamReader stream(packet);
+    if (stream.available() < xbus::pid_s::psize()) {
+        qWarning() << "packet" << packet.toHex().toUpper();
+        return;
+    }
+    xbus::pid_s pid;
+    pid.read(&stream);
+    pid.eid = xbus::eid_unit; // mark addressed unit
+
+    _req.request(pid);
 
     _req.write<xbus::unit::squawk_t>(_squawk);
     trace()->block(PApx::squawkText(_squawk));
     trace()->block(title().append(':'));
-    _req.append(packet);
+    _req.append(stream.payload());
 
     _req.send();
 }

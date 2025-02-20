@@ -29,9 +29,16 @@ PApxRequest::PApxRequest(PTreeBase *parent)
 
 void PApxRequest::request(mandala::uid_t uid, xbus::pri_e pri)
 {
-    reset();
     pid.uid = uid;
     pid.pri = pri;
+
+    request(pid);
+}
+
+void PApxRequest::request(const xbus::pid_s &pid)
+{
+    reset();
+    this->pid = pid;
     pid.write(this);
 
     PTrace *t = _parent->trace();

@@ -36,7 +36,7 @@ public:
                       const xbus::unit::uid_t *uid_raw,
                       xbus::unit::squawk_t squawk);
 
-    void process_downlink(PStreamReader &stream);
+    void process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
 
     void send_uplink(QByteArray packet) override;
 
