@@ -159,7 +159,7 @@ xbus::pid_raw_t Mandala::stringToMandala(const QString &s) const
     MandalaFact *f = fact(s);
     if (!f)
         return 0;
-    xbus::pid_s pid(f->uid(), xbus::pri_broadcast, 3);
+    xbus::pid_s pid(f->uid(), 3);
     return pid.raw();
 }
 
@@ -185,7 +185,7 @@ const mandala::meta_s &Mandala::meta(mandala::uid_t uid) // static
         if (d.uid == uid)
             return d;
     }
-    return mandala::cmd::env::nmt::meta;
+    return mandala::cmd::meta;
 }
 
 void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)

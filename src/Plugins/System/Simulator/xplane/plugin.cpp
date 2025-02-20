@@ -80,11 +80,11 @@ static struct
 
 static mandala::bundle::sim_s sim_bundle{};
 
-static xbus::pid_s sim_pid{mandala::cmd::env::sim::sns::uid, xbus::pri_broadcast, 0};
-static xbus::pid_s cfg_pid{mandala::cmd::env::sim::cfg::uid, xbus::pri_request, 0};
+static xbus::pid_s sim_pid{mandala::cmd::env::sim::sns::uid};
+static xbus::pid_s cfg_pid{mandala::cmd::env::sim::cfg::uid, xbus::pri_request};
 
-static xbus::pid_s usr_pid_f{mandala::cmd::env::sim::usr::uid, xbus::pri_broadcast, 0};
-static xbus::pid_s usr_pid_r{mandala::cmd::env::sim::usr::uid, xbus::pri_request, 0};
+static xbus::pid_s usr_pid_f{mandala::cmd::env::sim::usr::uid};
+static xbus::pid_s usr_pid_r{mandala::cmd::env::sim::usr::uid, xbus::pri_request};
 struct XplChannel
 {
     xbus::node::conf::text_t xpl;

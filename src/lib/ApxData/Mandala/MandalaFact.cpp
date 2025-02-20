@@ -333,7 +333,7 @@ QString MandalaFact::mpath() const
 
 bool MandalaFact::isSystem() const
 {
-    return mandala::cmd::env::match(uid());
+    return xbus::cmd::match(uid());
 }
 bool MandalaFact::isGroup() const
 {

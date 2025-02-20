@@ -36,7 +36,8 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     bool is_request = pid.pri == xbus::pri_request;
     const auto uid = pid.uid;
     do {
-        if (uid < mandala::cmd::env::uid) {
+        if (uid < xbus::cmd::uid) {
+            // data value received
             if (is_request)
                 return true;
 
@@ -181,7 +182,7 @@ void PApxData::sendValue(mandala::uid_t uid, QVariant value)
         return;
     }
 
-    _req.request(uid, value.isNull() ? xbus::pri_request : xbus::pri_broadcast);
+    _req.request(uid);
     mandala::spec_s spec{};
     spec.type = Mandala::meta(uid).type_id;
     spec.write(&_req);

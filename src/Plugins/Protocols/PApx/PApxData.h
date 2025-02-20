@@ -40,7 +40,7 @@ private:
     template<typename S>
     void sendBundleT(mandala::uid_t uid, const S &data)
     {
-        _req.request(uid, xbus::pri_broadcast);
+        _req.request(uid);
         _req.write(&data, sizeof(S));
         trace()->raw(data);
         _req.send();

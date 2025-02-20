@@ -187,7 +187,7 @@ Unit::Unit(Fleet *fleet, PUnit *protocol)
 
 void Unit::packetReceived(mandala::uid_t uid)
 {
-    if (mandala::cmd::env::match(uid)) {
+    if (xbus::cmd::match(uid)) {
         MandalaFact *f = f_mandala->fact(uid);
         if (f)
             f->increment_rx_cnt();

@@ -235,7 +235,7 @@ bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
 
     auto uid = pid.uid;
 
-    if (mandala::cmd::env::nmt::match(uid))
+    if (xbus::cmd::node::match(uid))
         return false;
     if (mandala::cmd::env::unit::ident::match(uid))
         return false;

@@ -69,7 +69,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 {
     mandala::uid_t uid = pid.uid;
 
-    if (uid == mandala::cmd::env::nmt::search::uid) {
+    if (uid == xbus::cmd::node::search) {
         if (pid.pri != xbus::pri_response)
             return;
 
@@ -88,7 +88,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
     // file ops - make them download data from any source
     switch (uid) {
-    case mandala::cmd::env::nmt::file::uid: {
+    case xbus::cmd::node::file: {
         // accept both pid requests and responses
         size_t spos = stream.pos();
 
@@ -118,7 +118,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     } break;
 
     // field updates from remote gcs
-    case mandala::cmd::env::nmt::upd::uid: {
+    case xbus::cmd::node::upd: {
         // qDebug() << stream.available();
         if (stream.available() < sizeof(xbus::node::conf::fid_t))
             return;
@@ -158,7 +158,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     } break;
 
     // node messages
-    case mandala::cmd::env::nmt::msg::uid: {
+    case xbus::cmd::node::msg: {
         if (stream.available() < (sizeof(xbus::node::msg::type_e) + 1))
             return;
 
@@ -220,7 +220,7 @@ void PApxNode::schedule_request(PApxNodeRequest *req)
     for (auto i : _requests) {
         if (i->equals(req)) {
             // the most recent for the uid is the only valid
-            if (uid == mandala::cmd::env::nmt::ident::uid || i->active()) {
+            if (uid == xbus::cmd::node::ident || i->active()) {
                 delete_request(req);
                 return;
             }
@@ -279,7 +279,7 @@ void PApxNode::updateFiles(QStringList fnames)
     }
     _files_map.clear();
     for (auto i : _requests) {
-        if (i->uid() == mandala::cmd::env::nmt::file::uid)
+        if (i->uid() == xbus::cmd::node::file)
             delete_request(i);
     }
     for (auto i : fnames) {

@@ -75,7 +75,7 @@ class PApxNodeRequestReboot : public PApxNodeRequest
 public:
     explicit PApxNodeRequestReboot(PApxNode *node,
                                    xbus::node::reboot::type_e type = xbus::node::reboot::firmware)
-        : PApxNodeRequest(node, mandala::cmd::env::nmt::reboot::uid)
+        : PApxNodeRequest(node, xbus::cmd::node::reboot)
         , _type(type)
     {}
 
@@ -90,7 +90,7 @@ public:
                                 PNode::mod_cmd_e cmd,
                                 QByteArray adr,
                                 QStringList data)
-        : PApxNodeRequest(node, mandala::cmd::env::nmt::mod::uid)
+        : PApxNodeRequest(node, xbus::cmd::node::mod)
         , _cmd(cmd)
         , _adr(adr)
         , _data(data)
@@ -111,7 +111,7 @@ class PApxNodeRequestUsr : public PApxNodeRequest
 {
 public:
     explicit PApxNodeRequestUsr(PApxNode *node, quint8 cmd, QByteArray data)
-        : PApxNodeRequest(node, mandala::cmd::env::nmt::usr::uid, 0)
+        : PApxNodeRequest(node, xbus::cmd::node::usr, 0)
         , _cmd(cmd)
         , _data(data)
     {}
@@ -126,7 +126,7 @@ class PApxNodeRequestIdent : public PApxNodeRequest
 {
 public:
     explicit PApxNodeRequestIdent(PApxNode *node)
-        : PApxNodeRequest(node, mandala::cmd::env::nmt::ident::uid)
+        : PApxNodeRequest(node, xbus::cmd::node::ident)
     {}
     bool response(PStreamReader &stream) override;
 };
@@ -135,7 +135,7 @@ class PApxNodeRequestUpdate : public PApxNodeRequest
 {
 public:
     explicit PApxNodeRequestUpdate(PApxNode *node, const QJsonObject &values)
-        : PApxNodeRequest(node, mandala::cmd::env::nmt::upd::uid)
+        : PApxNodeRequest(node, xbus::cmd::node::upd)
         , _values(values)
     {}
 
@@ -156,7 +156,7 @@ public:
                                  QString name,
                                  xbus::node::file::op_e op_init,
                                  xbus::node::file::op_e op_file = xbus::node::file::info)
-        : PApxNodeRequest(node, mandala::cmd::env::nmt::file::uid)
+        : PApxNodeRequest(node, xbus::cmd::node::file)
         , _name(name)
         , _op_init(op_init)
         , _op_file(op_file)

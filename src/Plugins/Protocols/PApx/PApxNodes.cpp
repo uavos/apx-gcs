@@ -62,7 +62,7 @@ void PApxNodes::updateActive()
 
 bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 {
-    if (!mandala::cmd::env::nmt::match(pid.uid))
+    if (!xbus::cmd::node::match(pid.uid))
         return false;
 
     // if upgrading - forward all to local
@@ -130,7 +130,7 @@ PApxNode *PApxNodes::getNode(QString uid, bool createNew)
 
 void PApxNodes::requestSearch()
 {
-    _req.request(mandala::cmd::env::nmt::search::uid);
+    _req.request(xbus::cmd::node::search);
     _req.send();
 }
 

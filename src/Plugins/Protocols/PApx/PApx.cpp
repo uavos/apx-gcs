@@ -211,7 +211,7 @@ void PApx::process_downlink(QByteArray packet)
         // new unit detected
         auto pos_s = stream.pos();
         pid.read(&stream);
-        if (mandala::cmd::env::nmt::msg::match(pid.uid)) {
+        if (pid.uid == xbus::cmd::node::msg) {
             // allow messages from unknown units
             stream.reset(pos_s);
             m_local->process_downlink(stream);
@@ -329,8 +329,8 @@ void PApx::trace_pid(const xbus::pid_s &pid)
 
     trace_uid(pid.uid);
 
-    if (pid.ext)
-        trace()->block(QString("+%1").arg(pid.ext));
+    if (pid.eid)
+        trace()->block(QString("+%1").arg(pid.eid));
 
     QString s;
     if (pid.pri == xbus::pri_request)
