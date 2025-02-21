@@ -64,6 +64,15 @@ Item {
 
     onChosenChanged: _editor.enabled = chosen
     onAglChanged: if(!chosen) altitudeProcessing()
+    onAmslChanged: {
+        if(status != Component.Ready)
+            return
+        if(fact.parentFact.isFeets) {
+            opts.ft += amsl?m2ft(homeHmsl):m2ft(-homeHmsl)
+            fact.opts = opts
+        }
+        fact.value += amsl?homeHmsl:-homeHmsl
+    }
     
     Component.onCompleted: {
         _editor.enabled = chosen
