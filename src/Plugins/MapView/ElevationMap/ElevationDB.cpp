@@ -39,7 +39,13 @@
 
 OfflineElevationDB::OfflineElevationDB(QString &path)
     : m_dbPath(path)
-{}
+{
+    m_paths << "/usr/bin/"
+            << "/usr/local/bin/"
+            << "/opt/bin/"
+            << "/opt/homebrew/bin/";
+    connect(this, &OfflineElevationDB::utilChanged, this, &OfflineElevationDB::updateUtilPath);
+}
 
 double OfflineElevationDB::getElevationASTER(double latitude, double longitude)
 {
@@ -49,7 +55,7 @@ double OfflineElevationDB::getElevationASTER(double latitude, double longitude)
         return elevation;
     }
 
-    if (m_utility == GDALLOCATIONINFO)
+    if (m_util == GDALLOCATIONINFO)
         elevation = getElevationFromGdallocationInfo(fileName, latitude, longitude);
     else
         elevation = getElevationFromGeoFile(fileName, latitude, longitude);
@@ -76,10 +82,13 @@ double OfflineElevationDB::getElevation(double latitude, double longitude)
     return getElevationASTER(latitude, longitude);
 }
 
-void OfflineElevationDB::setUtility(Utility u)
+void OfflineElevationDB::setUtil(Util util)
 {
-    if (m_utility != u)
-        m_utility = u;
+    if (m_util == util)
+        return;
+    
+    m_util = util;
+    emit utilChanged();
 }
 
 double OfflineElevationDB::getElevationFromGeoFile(QString fileName,
@@ -284,12 +293,11 @@ char *OfflineElevationDB::SanitizeSRS(const char *userInput)
 // Documentation https://gdal.org/programs/gdallocationinfo.html
 double OfflineElevationDB::getElevationFromGdallocationInfo(QString &fileName, double latitude, double longitude)
 {
-    if(!checkGdallocationInfo()) {
-        apxMsgW() << "Utility gdallocationinfo not found!";
+    if (m_utilPath.isEmpty())
         return NAN;
-    }
     bool ok{false};
-    auto command = QString("gdallocationinfo -wgs84 -valonly %1 %2 %3")
+    auto command = QString("%1 -wgs84 -valonly %2 %3 %4")
+                       .arg(m_utilPath)
                        .arg(fileName)
                        .arg(longitude)
                        .arg(latitude);
@@ -310,12 +318,26 @@ QString OfflineElevationDB::getDataFromGdallocationInfo(QString &command)
     return result;
 }
 
-bool OfflineElevationDB::checkGdallocationInfo()
+QString OfflineElevationDB::searchUtil(QString name)
 {
     QProcess p;
-    QString command = "which gdallocationinfo";
+    auto command = QString("which %1").arg(name);
     p.startCommand(command);
     p.waitForFinished();
     auto result = QString(p.readAllStandardOutput());
-    return !result.isEmpty();
+    if (!result.isEmpty())
+        return result;
+    for (const auto &p : m_paths)
+        if (QFile::exists(p + name))
+            return p + name;
+    apxMsgW() << tr("Util %1 not found!").arg(name);
+    return result;
+}
+
+void OfflineElevationDB::updateUtilPath() {
+    m_utilPath = "";
+    if(m_util == GDALLOCATIONINFO)
+        m_utilPath = searchUtil("gdallocationinfo");
+    if (!m_utilPath.isEmpty())
+        apxMsg() << tr("The gdallocationinfo util is used");
 }

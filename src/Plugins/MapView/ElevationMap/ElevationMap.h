@@ -46,7 +46,7 @@ public:
 
     Fact *f_use;
     Fact *f_path;
-    Fact *f_utility;
+    Fact *f_util;
     Fact *f_control;
 
     Unit *unit() const;

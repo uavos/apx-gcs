@@ -51,18 +51,18 @@ ElevationMap::ElevationMap(Fact *parent)
                       Text | PersistentValue,
                       "import");
     f_path->setDefaultValue(path);
-    f_utility = new Fact(this,
-                         "utility",
-                         tr("Use utility"),
-                         tr("Use the special utility"), 
+    f_util = new Fact(this,
+                         "util",
+                         tr("Use util"),
+                         tr("Use the special util"), 
                          Enum | PersistentValue,
                          "tools");
-    f_utility->setEnumStrings({"none", "gdallocationinfo"});
+    f_util->setEnumStrings({"none", "gdallocationinfo"});
 
 #ifdef Q_OS_LINUX
-    f_utility->setDefaultValue("none");
+    f_util->setDefaultValue("none");
 #else
-    f_utility->setDefaultValue("gdallocationinfo");
+    f_util->setDefaultValue("gdallocationinfo");
 #endif
 
     connect(this, &Fact::pathChanged, this, &ElevationMap::getPluginEnableControl);
@@ -70,7 +70,7 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
-    connect(f_utility, &Fact::valueChanged, this, &ElevationMap::updateDBUtility);
+    connect(f_util, &Fact::valueChanged, this, &ElevationMap::updateDBUtility);
     updateMission();
     createElevationDatabase();
     qml = loadQml("qrc:/ElevationPlugin.qml");
@@ -109,7 +109,7 @@ void ElevationMap::createElevationDatabase()
 
 void ElevationMap::updateDBUtility()
 {
-    m_elevationDB->setUtility(static_cast<AbstractElevationDB::Utility>(f_utility->value().toInt()));
+    m_elevationDB->setUtil(static_cast<AbstractElevationDB::Util>(f_util->value().toInt()));
 }
 
 void ElevationMap::onOpenTriggered()
