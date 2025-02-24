@@ -73,6 +73,7 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(f_util, &Fact::valueChanged, this, &ElevationMap::updateDBUtility);
     updateMission();
     createElevationDatabase();
+    updateDBUtility();
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
 

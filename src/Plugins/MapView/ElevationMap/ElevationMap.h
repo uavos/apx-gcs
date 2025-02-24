@@ -47,7 +47,7 @@ public:
     Fact *f_use;
     Fact *f_path;
     Fact *f_util;
-    Fact *f_control;
+    Fact *f_control{nullptr};
 
     Unit *unit() const;
     UnitMission *mission() const;
