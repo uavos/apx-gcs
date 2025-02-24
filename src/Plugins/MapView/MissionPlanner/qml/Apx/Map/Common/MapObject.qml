@@ -136,7 +136,7 @@ MapQuickItem {  //to be used inside MapComponent only
             apx.tools.elevationmap.setElevationByCoordinate(mapObject.coordinate)
     }
     
-    onHoverChanged: if(hover) updateMapInfoElevation()
+    onHoverChanged: if(hover && !dragging) updateMapInfoElevation()
     onDraggingChanged: {
         if(dragging){
             if(!selected) select()
@@ -270,7 +270,7 @@ MapQuickItem {  //to be used inside MapComponent only
     // object elevation view when dragging support
     Timer {
         id: timer
-        interval: 50
+        interval: 100
         repeat: true
         onTriggered: updateMapInfoElevation()
     }
