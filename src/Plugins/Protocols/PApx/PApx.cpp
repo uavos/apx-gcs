@@ -62,13 +62,13 @@ void PApx::process_downlink(QByteArray packet)
     pid.read(&stream);
     stream.trim();
 
+    trace_pid(pid);
+
     if (pid.eid == xbus::eid_none) {
         // is not unit wrapped format - forward to local
         m_local->process_downlink(pid, stream);
         return;
     }
-
-    trace_pid(pid);
 
     // unit addressed packets only
 
@@ -313,5 +313,12 @@ void PApx::trace_uid(mandala::uid_t uid)
 {
     if (!trace()->enabled())
         return;
-    trace()->block(QString("$%1").arg(Mandala::meta(uid).path));
+
+    QString s;
+    if (xbus::cmd::match(uid) || true) {
+        s = QString("cmd:0x%1").arg(uid, 0, 16);
+    } else {
+        s = Mandala::meta(uid).path;
+    }
+    trace()->block(QString("$%1").arg(s));
 }
