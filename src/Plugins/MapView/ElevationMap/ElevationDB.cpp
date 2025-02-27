@@ -37,7 +37,7 @@
 #endif
 
 
-OfflineElevationDB::OfflineElevationDB(QString &path)
+OfflineElevationDB::OfflineElevationDB(const QString &path)
     : m_dbPath(path)
 {
     m_paths << "/usr/bin/"
@@ -51,15 +51,47 @@ double OfflineElevationDB::getElevationASTER(double latitude, double longitude)
 {
     double elevation{NAN};
     auto fileName = createASTERFileName(latitude, longitude);
-    if (!QFile::exists(fileName)) {
+    if (!QFile::exists(fileName))
         return elevation;
-    }
 
     if (m_util == GDALLOCATIONINFO)
         elevation = getElevationFromGdallocationInfo(fileName, latitude, longitude);
     else
-        elevation = getElevationFromGeoFile(fileName, latitude, longitude);
+        elevation = getElevationFromTiffASTER(fileName, latitude, longitude);
 
+    return elevation;
+}
+
+double OfflineElevationDB::getElevationFromTiffASTER(const QString &fileName, double latitude, double longitude)
+{
+    double elevation{NAN};
+    if(fileName.isEmpty())
+        return elevation;
+
+    if(m_fileName != fileName) {
+        m_fileName = fileName;
+        m_image = QImage(m_fileName);
+    }
+
+    double temp;
+    auto modY = std::modf(latitude, &temp);
+    auto modX = std::modf(longitude, &temp);
+    if (modY < 0)
+        modY++;
+    if (modX < 0)
+        modX++;
+    auto imageHeight = m_image.height();
+    auto imageWidht = m_image.width();
+    int pixelY = static_cast<int>(0.5 + (imageHeight - 1) * (1 - modY));
+    int pixelX = static_cast<int>(0.5 + std::abs((imageWidht - 1) * modX));
+    if (pixelY >= imageHeight)
+        pixelY = imageHeight - 1;
+    if (pixelX >= imageWidht)
+        pixelX = imageWidht - 1;
+
+    const short *line = reinterpret_cast<short *>(m_image.scanLine(pixelY));
+    elevation = static_cast<double>(line[pixelX]);
+    
     return elevation;
 }
 
@@ -91,9 +123,7 @@ void OfflineElevationDB::setUtil(Util util)
     emit utilChanged();
 }
 
-double OfflineElevationDB::getElevationFromGeoFile(QString fileName,
-                                                   double latitude,
-                                                   double longitude)
+double OfflineElevationDB::getElevationFromGeoFile(QString fileName, double latitude, double longitude)
 {
     double elevation{NAN};
 
@@ -291,7 +321,7 @@ char *OfflineElevationDB::SanitizeSRS(const char *userInput)
 // Command example: "gdallocationinfo -wgs84 -valonly ASTGTMV003_N27E070_dem.tif 70.50 27.05"
 // ATTENTION! Input order longitude-latitude: "gdallocationinfo <report parameters> <filename> <longitude> <latitude>"
 // Documentation https://gdal.org/programs/gdallocationinfo.html
-double OfflineElevationDB::getElevationFromGdallocationInfo(QString &fileName, double latitude, double longitude)
+double OfflineElevationDB::getElevationFromGdallocationInfo(const QString &fileName, double latitude, double longitude)
 {
     if (m_utilPath.isEmpty())
         return NAN;
@@ -306,7 +336,7 @@ double OfflineElevationDB::getElevationFromGdallocationInfo(QString &fileName, d
     return ok ? elevation : NAN;
 }
 
-QString OfflineElevationDB::getDataFromGdallocationInfo(QString &command)
+QString OfflineElevationDB::getDataFromGdallocationInfo(const QString &command)
 {
     QProcess p;
     p.startCommand(command);
@@ -318,7 +348,7 @@ QString OfflineElevationDB::getDataFromGdallocationInfo(QString &command)
     return result;
 }
 
-QString OfflineElevationDB::searchUtil(QString name)
+QString OfflineElevationDB::searchUtil(const QString &name)
 {
     QProcess p;
     auto command = QString("which %1").arg(name);
