@@ -80,9 +80,15 @@ double OfflineElevationDB::getElevationFromTiffASTER(const QString &fileName, do
         modY++;
     if (modX < 0)
         modX++;
+
     auto imageHeight = m_image.height();
     auto imageWidht = m_image.width();
-    int pixelY = static_cast<int>(0.5 + (imageHeight - 1) * (1 - modY));
+    if (imageHeight == 0 || imageWidht == 0) {
+        apxMsgW() << tr("Location is off this file").append(": ") << fileName;
+        return elevation;
+    }
+
+    int pixelY = static_cast<int>(0.5 + std::abs((imageHeight - 1) * (1 - modY)));
     int pixelX = static_cast<int>(0.5 + std::abs((imageWidht - 1) * modX));
     if (pixelY >= imageHeight)
         pixelY = imageHeight - 1;
