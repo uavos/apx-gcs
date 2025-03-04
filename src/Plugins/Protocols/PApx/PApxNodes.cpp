@@ -65,6 +65,8 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     if (!xbus::cmd::node::match(pid.uid))
         return false;
 
+    trace()->data(stream.payload());
+
     // if upgrading - forward all to local
     if (upgrading() && !_local) {
         auto local = findParent<PApx>()->local();

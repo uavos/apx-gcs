@@ -316,7 +316,7 @@ void PApx::trace_uid(mandala::uid_t uid)
 
     QString s;
     if (xbus::cmd::match(uid) || true) {
-        s = QString("cmd:0x%1").arg(uid, 0, 16);
+        s = QString("cmd:") + QString::number(uid - xbus::cmd::uid, 16).toUpper();
     } else {
         s = Mandala::meta(uid).path;
     }
