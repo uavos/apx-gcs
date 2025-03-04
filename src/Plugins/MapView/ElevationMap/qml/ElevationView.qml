@@ -58,7 +58,7 @@ Window {
     Timer {
         id: timer
         interval: 500
-        onTriggered: loader.active=elevationView.visible
+        onTriggered: epLoader.active=elevationView.visible
     }
 
     Label {
@@ -194,7 +194,15 @@ Window {
             }
         }
         Loader {
-            id: loader
+            id: wpLoader
+            z: 1
+            active: true
+            anchors.fill: parent
+            asynchronous: true
+            sourceComponent: Component { WaypointsChart { } }
+        }
+        Loader {
+            id: epLoader
             active: false
             anchors.fill: parent
             asynchronous: true
