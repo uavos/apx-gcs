@@ -93,8 +93,9 @@ void ElevationMap::setElevation(double v)
 
 void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &v)
 {
-    auto elevation = m_elevationDB->getElevation(v.latitude(), v.longitude());
-    setElevation(elevation);
+    // auto elevation = m_elevationDB->getElevation(v.latitude(), v.longitude());
+    // setElevation(elevation);
+    m_elevationDB->requestCoordinate(v.latitude(), v.longitude());
 }
 
 double ElevationMap::getElevationByCoordinate(const QGeoCoordinate &v)
@@ -105,7 +106,11 @@ double ElevationMap::getElevationByCoordinate(const QGeoCoordinate &v)
 void ElevationMap::createElevationDatabase()
 {
     auto path = f_path->value().toString();
-    m_elevationDB = std::make_shared<OfflineElevationDB>(path);
+
+    m_elevationDB = QSharedPointer<OfflineElevationDB>::create(path);
+    // m_elevationDB = std::make_shared<OfflineElevationDB>(path);
+    // ===== New functionality ======
+    connect(m_elevationDB.data(), &OfflineElevationDB::coordinateReceived, this, &ElevationMap::setCoordinate);
 }
 
 void ElevationMap::updateDBUtility()
@@ -202,4 +207,22 @@ void ElevationMap::setMissionValues(bool b)
     auto aglset = missionTools()->child("aglset");
     if (aglset)
         aglset->setVisible(b);
+}
+
+// ====== New functionality ========
+void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
+    if(m_coordinate == coordinate)
+        return;
+
+    qDebug() << "===>Catch coordinate - " << coordinate.toString();
+    // ======= New functionality ========
+    setElevation(coordinate.altitude());
+
+    m_coordinate = coordinate;
+    emit coordinateChanged();
+}
+
+QGeoCoordinate ElevationMap::coordinate()
+{
+    return m_coordinate;
 }

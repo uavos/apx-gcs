@@ -24,6 +24,8 @@
 #include <QString>
 #include <QImage>
 #include <QtCore>
+#include <QGeoCoordinate>
+#include <QFutureWatcher>
 
 class AbstractElevationDB : public QObject
 {
@@ -37,7 +39,15 @@ public:
 
     AbstractElevationDB() = default;
     virtual double getElevation(double latitude, double longitude) = 0;
+    virtual void requestCoordinate(double latitude, double longitude) = 0;
     virtual void setUtil(Util u) = 0;
+
+protected:
+    QFutureWatcher<QGeoCoordinate> watcher;
+    virtual void receiveCoordinate();
+
+signals:
+    void coordinateReceived(QGeoCoordinate coordinate);
 };
 
 class OfflineElevationDB : public AbstractElevationDB
@@ -49,6 +59,14 @@ public:
     double getElevation(double latitude, double longitude) override;
     double getElevationASTER(double latitude, double longitude); // Return NaN if the elevation is undefined
     void setUtil(Util u) override;
+
+    // ===== request QGeoCoordinate ========
+    void requestCoordinate(double latitude, double longitude);
+    void requestCoordinateASTER(double latitude, double longitude);
+    static QGeoCoordinate requestCoordinateFromGdallocationInfo(const QString &utilPath,
+                                                        const QString &fileName,
+                                                        double latitude,
+                                                        double longitude);
 
 private:
     QImage m_image;

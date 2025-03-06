@@ -38,8 +38,7 @@ class ElevationMap : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(double elevation READ elevation WRITE setElevation NOTIFY elevationChanged)
-    // Q_PROPERTY(QGeoCoordinate clickCoordinate READ clickCoordinate WRITE setClickCoordinate NOTIFY
-    //                clickCoordinateChanged)
+    Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
 public:
     explicit ElevationMap(Fact *parent = nullptr);
@@ -62,12 +61,18 @@ public:
     Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &v);
     Q_INVOKABLE double getElevationByCoordinate(const QGeoCoordinate &v);
 
+
+    // ====== New functionality ========
+    QGeoCoordinate coordinate();
+    void setCoordinate(const QGeoCoordinate &coordinate);
+
 protected:
     double m_elevation;
-    // QGeoCoordinate m_clickCoordinate;
+    QGeoCoordinate m_coordinate;
 
 private:
-    std::shared_ptr<AbstractElevationDB> m_elevationDB;
+    // std::shared_ptr<AbstractElevationDB> m_elevationDB;
+    QSharedPointer<AbstractElevationDB> m_elevationDB;
 
     void createElevationDatabase();
     void setMissionValues(bool b);
@@ -83,4 +88,7 @@ private slots:
 
 signals:
     void elevationChanged();
+
+    // ==== New Functionality ====
+    void coordinateChanged();
 };

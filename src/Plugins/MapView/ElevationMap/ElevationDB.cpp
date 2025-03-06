@@ -24,6 +24,8 @@
 #include <App/AppLog.h>
 
 #include <QFile>
+#include <QFuture>
+#include <QtConcurrent>
 
 #include <cmath>
 #include <vector>
@@ -36,6 +38,12 @@
 #include "ogr_spatialref.h"
 #endif
 
+void AbstractElevationDB::receiveCoordinate() 
+{
+    auto coordinate = watcher.result();
+    if(coordinate.isValid())
+        emit coordinateReceived(coordinate);
+}
 
 OfflineElevationDB::OfflineElevationDB(const QString &path)
     : m_dbPath(path)
@@ -45,6 +53,10 @@ OfflineElevationDB::OfflineElevationDB(const QString &path)
             << "/opt/bin/"
             << "/opt/homebrew/bin/";
     connect(this, &OfflineElevationDB::utilChanged, this, &OfflineElevationDB::updateUtilPath);
+    connect(&watcher,
+            &QFutureWatcher<QGeoCoordinate>::finished,
+            this,
+            &OfflineElevationDB::receiveCoordinate);
 }
 
 double OfflineElevationDB::getElevationASTER(double latitude, double longitude)
@@ -346,6 +358,8 @@ QString OfflineElevationDB::getDataFromGdallocationInfo(const QString &command)
 {
     QProcess p;
     p.startCommand(command);
+
+    qDebug() << "!!!!sendCommand: " << command;
     p.waitForFinished();
     auto result = QString(p.readAllStandardOutput());
     if (result.isEmpty())
@@ -376,4 +390,57 @@ void OfflineElevationDB::updateUtilPath() {
         m_utilPath = searchUtil("gdallocationinfo");
     if (!m_utilPath.isEmpty())
         apxMsg() << tr("The gdallocationinfo util is used");
+}
+
+
+// ========= New request logic ==========
+void OfflineElevationDB::requestCoordinate(double latitude, double longitude) {
+    qDebug() << "===>OfflineElevationDB::requestCoordinate";
+    requestCoordinateASTER(latitude, longitude);
+}
+
+void OfflineElevationDB::requestCoordinateASTER(double latitude, double longitude)
+{
+    qDebug() << "===>OfflineElevationDB::requestCoordinateASTER";
+    auto fileName = createASTERFileName(latitude, longitude);
+    if (!QFile::exists(fileName))
+        return;
+
+    // if (m_util == GDALLOCATIONINFO)
+    QFuture<QGeoCoordinate> future = QtConcurrent::run(requestCoordinateFromGdallocationInfo,
+                                             m_utilPath,
+                                             fileName,
+                                             latitude,
+                                             longitude);
+    watcher.setFuture(future);
+    // else
+    //    requestElevationFromTiffASTER(fileName, latitude, longitude);
+}
+
+
+
+QGeoCoordinate OfflineElevationDB::requestCoordinateFromGdallocationInfo(
+                                                            const QString &utilPath,
+                                                            const QString &fileName,
+                                                            double latitude,
+                                                            double longitude)
+{
+    qDebug() << "===>OfflineElevationDB::requestCoordinateFromGdallocationInfo";
+    QGeoCoordinate coordinate(latitude, longitude);
+
+    // if (m_utilPath.isEmpty())
+    //     return coordinate;
+  
+    bool ok{false};
+    auto command = QString("%1 -wgs84 -valonly %2 %3 %4")
+                       .arg(utilPath)
+                       .arg(fileName)
+                       .arg(longitude)
+                       .arg(latitude);
+    auto result = getDataFromGdallocationInfo(command);
+    double elevation = result.toDouble(&ok);
+    if(ok)
+        coordinate.setAltitude(elevation);
+
+    return coordinate;
 }
