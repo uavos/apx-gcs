@@ -71,7 +71,6 @@ protected:
     QGeoCoordinate m_coordinate;
 
 private:
-    // std::shared_ptr<AbstractElevationDB> m_elevationDB;
     QSharedPointer<AbstractElevationDB> m_elevationDB;
 
     void createElevationDatabase();

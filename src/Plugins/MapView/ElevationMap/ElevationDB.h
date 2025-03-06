@@ -63,10 +63,9 @@ public:
     // ===== request QGeoCoordinate ========
     void requestCoordinate(double latitude, double longitude);
     void requestCoordinateASTER(double latitude, double longitude);
-    static QGeoCoordinate requestCoordinateFromGdallocationInfo(const QString &utilPath,
-                                                        const QString &fileName,
-                                                        double latitude,
-                                                        double longitude);
+    static QGeoCoordinate requestCoordinateGdallocationInfo(const QString &utilPath, const QString &fileName, double latitude, double longitude);
+    static QGeoCoordinate requestCoordinateTiffASTER(const QImage &image, const QString &fileName, double latitude, double longitude);
+    void setImage(const QString &fileName);
 
 private:
     QImage m_image;
@@ -80,7 +79,7 @@ private:
     double getElevationFromTiffASTER(const QString &fileName, double latitude, double longitude);
 
     double getElevationFromGdallocationInfo(const QString &fileName, double latitude, double longitude);
-    static QString getDataFromGdallocationInfo(const QString &command);
+    static QString getDataFromGdallocationInfo(const QString &command); // TODO Rename to getElevationFromGdallocationInfo
     QString searchUtil(const QString &name);
     void updateUtilPath();
 

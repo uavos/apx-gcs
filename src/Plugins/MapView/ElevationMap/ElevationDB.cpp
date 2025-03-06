@@ -395,41 +395,80 @@ void OfflineElevationDB::updateUtilPath() {
 
 // ========= New request logic ==========
 void OfflineElevationDB::requestCoordinate(double latitude, double longitude) {
-    qDebug() << "===>OfflineElevationDB::requestCoordinate";
     requestCoordinateASTER(latitude, longitude);
 }
 
 void OfflineElevationDB::requestCoordinateASTER(double latitude, double longitude)
 {
-    qDebug() << "===>OfflineElevationDB::requestCoordinateASTER";
     auto fileName = createASTERFileName(latitude, longitude);
     if (!QFile::exists(fileName))
         return;
 
-    // if (m_util == GDALLOCATIONINFO)
-    QFuture<QGeoCoordinate> future = QtConcurrent::run(requestCoordinateFromGdallocationInfo,
-                                             m_utilPath,
-                                             fileName,
-                                             latitude,
-                                             longitude);
+    QFuture<QGeoCoordinate> future;
+    if (m_util == GDALLOCATIONINFO) {
+        future = QtConcurrent::run(requestCoordinateGdallocationInfo, m_utilPath, fileName, latitude, longitude);
+    } else {
+        setImage(fileName);
+        future = QtConcurrent::run(requestCoordinateTiffASTER, m_image, fileName, latitude, longitude);
+    }
     watcher.setFuture(future);
-    // else
-    //    requestElevationFromTiffASTER(fileName, latitude, longitude);
 }
 
+void OfflineElevationDB::setImage(const QString &fileName)
+{
+    if (fileName.isEmpty())
+        return;
 
+    if (m_fileName != fileName) {
+        m_fileName = fileName;
+        m_image = QImage(m_fileName);
+    }
+}
 
-QGeoCoordinate OfflineElevationDB::requestCoordinateFromGdallocationInfo(
+QGeoCoordinate OfflineElevationDB::requestCoordinateTiffASTER(const QImage &image,
+                                                                  const QString &fileName,
+                                                                  double latitude,
+                                                                  double longitude)
+{
+    double temp;
+    auto modY = std::modf(latitude, &temp);
+    auto modX = std::modf(longitude, &temp);
+    if (modY < 0)
+        modY++;
+    if (modX < 0)
+        modX++;
+
+    auto imageHeight = image.height();
+    auto imageWidht = image.width();
+    QGeoCoordinate coordinate(latitude, longitude);
+    if (imageHeight == 0 || imageWidht == 0) {
+        apxMsgW() << tr("Location is off this file").append(": ") << fileName;
+        return coordinate;
+    }
+
+    int pixelY = static_cast<int>(0.5 + std::abs((imageHeight - 1) * (1 - modY)));
+    int pixelX = static_cast<int>(0.5 + std::abs((imageWidht - 1) * modX));
+    if (pixelY >= imageHeight)
+        pixelY = imageHeight - 1;
+    if (pixelX >= imageWidht)
+        pixelX = imageWidht - 1;
+
+    uchar *src = const_cast<uchar *>(image.scanLine(pixelY));
+    const short *line = reinterpret_cast<short *>(src);
+    coordinate.setAltitude(line[pixelX]);
+
+    return coordinate;
+}
+
+QGeoCoordinate OfflineElevationDB::requestCoordinateGdallocationInfo(
                                                             const QString &utilPath,
                                                             const QString &fileName,
                                                             double latitude,
                                                             double longitude)
 {
-    qDebug() << "===>OfflineElevationDB::requestCoordinateFromGdallocationInfo";
     QGeoCoordinate coordinate(latitude, longitude);
-
-    // if (m_utilPath.isEmpty())
-    //     return coordinate;
+    if (utilPath.isEmpty())
+        return coordinate;
   
     bool ok{false};
     auto command = QString("%1 -wgs84 -valonly %2 %3 %4")
@@ -437,7 +476,7 @@ QGeoCoordinate OfflineElevationDB::requestCoordinateFromGdallocationInfo(
                        .arg(fileName)
                        .arg(longitude)
                        .arg(latitude);
-    auto result = getDataFromGdallocationInfo(command);
+    auto result = getDataFromGdallocationInfo(command); // TODO rename to getElevationFromGdallocationInfo
     double elevation = result.toDouble(&ok);
     if(ok)
         coordinate.setAltitude(elevation);

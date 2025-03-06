@@ -106,10 +106,7 @@ double ElevationMap::getElevationByCoordinate(const QGeoCoordinate &v)
 void ElevationMap::createElevationDatabase()
 {
     auto path = f_path->value().toString();
-
     m_elevationDB = QSharedPointer<OfflineElevationDB>::create(path);
-    // m_elevationDB = std::make_shared<OfflineElevationDB>(path);
-    // ===== New functionality ======
     connect(m_elevationDB.data(), &OfflineElevationDB::coordinateReceived, this, &ElevationMap::setCoordinate);
 }
 
