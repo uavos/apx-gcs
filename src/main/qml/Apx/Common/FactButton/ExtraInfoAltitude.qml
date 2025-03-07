@@ -34,7 +34,7 @@ Item {
     property var coordinate: fact.parentFact.coordinate
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var color: "#dcdcdc"
-    property var elevation: NaN
+    property var elevation: fact.parentFact.elevation
     property var chosenFact: fact.parentFact.chosen
     property bool chosen: chosenFact == Waypoint.ALT
     
@@ -74,10 +74,7 @@ Item {
         fact.value += amsl?homeHmsl:-homeHmsl
     }
     
-    Component.onCompleted: {
-        _editor.enabled = chosen
-        elevation = map.getElevationByCoordinate(coordinate)
-    }
+    Component.onCompleted: _editor.enabled = chosen
 
     function altitudeProcessing() 
     {   

@@ -190,7 +190,7 @@ RowLayout {
         property var plugin: apx.settings.application.plugins.elevationmap
         property bool pluginEnable: plugin?plugin.value:false
         property int size: apx.tools?apx.tools.size:0
-        property var elevation: visible ? apx.tools.elevationmap.elevation : NaN
+        property var elevation: visible ? apx.tools.elevationmap.coordinate.altitude : NaN
         property var color: isNaN(elevation) ? "#f00" : "#fff"
         
         visible: false

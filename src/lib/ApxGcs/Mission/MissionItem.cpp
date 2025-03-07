@@ -251,7 +251,7 @@ void MissionItem::setCoordinate(const QGeoCoordinate &v)
     if (m_coordinate == v)
         return;
     m_coordinate = v;
-    emit coordinateChanged();
+    emit coordinateChanged(v);
     blockUpdateCoordinate = true;
     f_latitude->setValue(v.latitude());
     f_longitude->setValue(v.longitude());
@@ -268,6 +268,20 @@ void MissionItem::setGeoPath(const QGeoPath &v)
     m_geoPath = v;
     emit geoPathChanged();
 }
+double MissionItem::elevation() const
+{
+    return m_elevation;
+}
+void MissionItem::setElevation(double v)
+{
+    if (m_elevation == v)
+        return;
+    m_elevation = v;
+    emit elevationChanged();
+
+    qDebug() << "===>Elevation changed -" <<  m_elevation;
+}
+
 double MissionItem::bearing() const
 {
     return m_bearing;
@@ -337,6 +351,15 @@ void MissionItem::setSelected(bool v)
         group->mission->setSelectedItem(this);
     else if (group->mission->selectedItem() == this)
         group->mission->setSelectedItem(nullptr);
+}
+
+void MissionItem::extractElevation(const QGeoCoordinate &coordinate)
+{
+    auto latDiff = std::abs(m_coordinate.latitude() - coordinate.latitude());
+    auto lonDiff = std::abs(m_coordinate.longitude() - coordinate.longitude());
+    if(latDiff > EPS || lonDiff > EPS)
+        return;    
+    setElevation(coordinate.altitude());
 }
 
 bool MissionItem::isFeets() const

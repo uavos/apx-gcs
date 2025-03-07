@@ -79,7 +79,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     // elevation map and agl
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
-
+    
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateTitle);
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateDescr);

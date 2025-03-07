@@ -38,8 +38,7 @@ public:
     };
 
     AbstractElevationDB() = default;
-    virtual double getElevation(double latitude, double longitude) = 0;
-    virtual void requestCoordinate(double latitude, double longitude) = 0;
+    virtual void requestCoordinate(double lat, double lon) = 0;
     virtual void setUtil(Util u) = 0;
 
 protected:
@@ -56,16 +55,9 @@ class OfflineElevationDB : public AbstractElevationDB
 
 public:
     OfflineElevationDB(const QString &path);
-    double getElevation(double latitude, double longitude) override;
-    double getElevationASTER(double latitude, double longitude); // Return NaN if the elevation is undefined
+    void requestCoordinate(double lat, double lon) override;
+    double getElevationASTER(double lat, double lon); // Return NaN if the elevation is undefined
     void setUtil(Util u) override;
-
-    // ===== request QGeoCoordinate ========
-    void requestCoordinate(double latitude, double longitude);
-    void requestCoordinateASTER(double latitude, double longitude);
-    static QGeoCoordinate requestCoordinateGdallocationInfo(const QString &utilPath, const QString &fileName, double latitude, double longitude);
-    static QGeoCoordinate requestCoordinateTiffASTER(const QImage &image, const QString &fileName, double latitude, double longitude);
-    void setImage(const QString &fileName);
 
 private:
     QImage m_image;
@@ -75,18 +67,21 @@ private:
     QStringList m_paths;
     AbstractElevationDB::Util m_util;
 
-    QString createASTERFileName(double latitude, double longitude);
-    double getElevationFromTiffASTER(const QString &fileName, double latitude, double longitude);
-
-    double getElevationFromGdallocationInfo(const QString &fileName, double latitude, double longitude);
-    static QString getDataFromGdallocationInfo(const QString &command); // TODO Rename to getElevationFromGdallocationInfo
-    QString searchUtil(const QString &name);
     void updateUtilPath();
+    void setImage(const QString &file);
+    void requestCoordinateASTER(double lat, double lon);
+    QString createASTERFileName(double lat, double lon);
+    QString searchUtil(const QString &name);
+    static QGeoCoordinate requestCoordinateGdallocationInfo(const QString &util, const QString &file, double lat, double lon);
+    static QGeoCoordinate requestCoordinateTiffASTER(const QImage &image, const QString &file, double lat, double lon);
+    static double getElevationTiffASTER(const QImage &image, const QString &file, double lat, double lon);
+    static double getElevationGdallocationInfo(const QString &util, const QString &file, double lat, double lon);
+    static QString getDataFromGdallocationInfo(const QString &command);
 
     // Getting data from a geofile. 
     // Uses the gdal library, which supports the main geofile formats.
     // To use it, you need to include the gdal library in the project.
-    double getElevationFromGeoFile(QString fileName, double latitude, double longitude);
+    double getElevationFromGeoFile(QString file, double lat, double lon);
     char *SanitizeSRS(const char *userInput);
 
 signals:

@@ -69,7 +69,7 @@ MissionObject {
     property var altitude: fact?fact.child("altitude").value:0
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var agl: fact?fact.child("agl").value:0
-    property var elevation: NaN
+    property var elevation: fact?fact.elevation:NaN
 
     onCoordinateChanged: timer.restart()
     onAltitudeChanged: timer.restart()
@@ -83,7 +83,6 @@ MissionObject {
             return false
         if(!alarmOn)
             return false
-        elevation = apx.tools.elevationmap.getElevationByCoordinate(coordinate)
         if(isNaN(elevation))
             return false
         agl = amsl?(altitude - elevation):(homeHmsl + altitude - elevation)

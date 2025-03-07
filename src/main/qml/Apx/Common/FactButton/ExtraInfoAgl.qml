@@ -34,7 +34,7 @@ Item {
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var coordinate: fact.parentFact.coordinate
     property var value: fact.value
-    property var elevation: NaN
+    property var elevation: fact.parentFact.elevation
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
     property var chosenFact: fact.parentFact.chosen
     property bool chosen: chosenFact == Waypoint.AGL
@@ -65,10 +65,7 @@ Item {
     Timer {
         id: timer
         interval: 50 // should be 500-1000 for online mode
-        onTriggered: {
-            elevation = map.getElevationByCoordinate(coordinate)
-            updateAgl()
-        }
+        onTriggered: updateAgl()
     }
 
     onValueChanged: factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
@@ -82,7 +79,6 @@ Item {
 
     Component.onCompleted: {
         _editor.enabled = chosen
-        elevation = map.getElevationByCoordinate(coordinate)
         updateAgl() 
     }
 

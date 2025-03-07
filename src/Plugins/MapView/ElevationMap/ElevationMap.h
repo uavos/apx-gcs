@@ -30,6 +30,8 @@
 #include <QGeoCoordinate>
 #include <QtCore>
 
+#include <Mission/MissionItem.h>
+
 class Unit;
 class UnitMission;
 class MissionTools;
@@ -37,7 +39,6 @@ class MissionTools;
 class ElevationMap : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(double elevation READ elevation WRITE setElevation NOTIFY elevationChanged)
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
 public:
@@ -53,21 +54,12 @@ public:
     MissionTools *missionTools() const;
     Fact *aglset() const;
 
-    double elevation() const;
-    void setElevation(double v);
-    // QGeoCoordinate clickCoordinate() const;
-    // void setClickCoordinate(const QGeoCoordinate &v);
-
     Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &v);
-    Q_INVOKABLE double getElevationByCoordinate(const QGeoCoordinate &v);
 
-
-    // ====== New functionality ========
     QGeoCoordinate coordinate();
     void setCoordinate(const QGeoCoordinate &coordinate);
 
 protected:
-    double m_elevation;
     QGeoCoordinate m_coordinate;
 
 private:
@@ -86,8 +78,5 @@ private slots:
     void updateDBUtility();
 
 signals:
-    void elevationChanged();
-
-    // ==== New Functionality ====
-    void coordinateChanged();
+    void coordinateChanged(QGeoCoordinate coordinate);
 };
