@@ -79,7 +79,8 @@ Waypoint::Waypoint(MissionGroup *parent)
     // elevation map and agl
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
-    
+    connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude); // IF elevation map
+
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateTitle);
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateDescr);
@@ -87,6 +88,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAMSL);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateTitle);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAltDescr);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude);
     updateAMSL();
 
     connect(f_xtrack, &Fact::valueChanged, this, &Waypoint::updatePath);
@@ -349,4 +351,27 @@ void Waypoint::updateAltDescr() {
         f_altitude->setDescr("Altitude above mean sea level");
     else
         f_altitude->setDescr("Altitude above takeoff point");
+}
+
+void Waypoint::calcAltitude()
+{
+    if (std::isnan(m_elevation))
+        return;
+    if (m_chosen != AGL)
+        return;
+   
+    auto heightAmsl = m_elevation + f_agl->value().toDouble();
+    auto refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid)->value().toDouble();
+    if(f_amsl->value().toBool())
+        f_altitude->setValue(heightAmsl);
+    else
+        f_altitude->setValue((heightAmsl - refHmsl));
+}
+
+void Waypoint::recalcAltitude()
+{
+    auto alt = f_altitude->value().toDouble();
+    auto refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid)->value().toDouble();
+    alt += f_amsl->value().toBool() ? refHmsl : -refHmsl;
+    f_altitude->setValue(alt);
 }

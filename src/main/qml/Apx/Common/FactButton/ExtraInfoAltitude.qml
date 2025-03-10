@@ -63,7 +63,6 @@ Item {
     // }
 
     onChosenChanged: _editor.enabled = chosen
-    onAglChanged: if(!chosen) altitudeProcessing()
     onAmslChanged: {
         if(status != Component.Ready)
             return
@@ -71,21 +70,10 @@ Item {
             opts.ft += amsl?m2ft(homeHmsl):m2ft(-homeHmsl)
             fact.opts = opts
         }
-        fact.value += amsl?homeHmsl:-homeHmsl
     }
     
     Component.onCompleted: _editor.enabled = chosen
 
-    function altitudeProcessing() 
-    {   
-        if(isNaN(elevation))
-            return
-        if(chosen)
-            return
-        
-        var hAmsl = elevation + agl
-        fact.value = amsl?hAmsl:hAmsl - homeHmsl 
-    }
 
     function getHomeHmsl()
     {
