@@ -63,10 +63,14 @@ protected:
     void initElevationMap();
     void calcAltitude();
     void recalcAltitude();
+    void processAgl();
     void calcAgl();
+    void updateAgl();
 
     // Feets processing
-     void calcAltitudeFt();
+    void calcAltitudeFt();
+    void processAglFt();
+    void calcAglFt();
 
 private:
     QString _altUnits;

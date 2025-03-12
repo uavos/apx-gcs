@@ -28,12 +28,9 @@ import APX.Mission
 
 Item {
     id: item
-    property var map: apx.tools.elevationmap
-    property var altitude: fact.parentFact.child("altitude").value
-    property var amsl: fact.parentFact.child("amsl").value
-    property var homeHmsl: mandala.est.ref.hmsl.value
-    property var coordinate: fact.parentFact.coordinate
+
     property var value: fact.value
+    property var unsafeAgl: fact.parentFact.unsafeAgl
     property var elevation: fact.parentFact.elevation
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
     property var chosenFact: fact.parentFact.chosen
@@ -62,30 +59,12 @@ Item {
         color: item.color
         text: isNaN(item.elevation) ? "NO" : getElevation()
     }
-    Timer {
-        id: timer
-        interval: 50 // should be 500-1000 for online mode
-        onTriggered: updateAgl()
-    }
 
-    onValueChanged: factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
+    onValueChanged: factButton.color = value < unsafeAgl ? Material.color(Material.Red) : action_color()
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
     onChosenChanged: _editor.enabled = chosen
-    onAmslChanged: {/*calcAgl();*/ calcAglFt()}     // TODO Move to backend
 
-    onCoordinateChanged: timer.restart()
-    onHomeHmslChanged: if(!amsl) updateAgl()    // TODO Move to backend
-
-    Component.onCompleted: {
-        _editor.enabled = chosen
-        updateAgl() 
-    }
-
-    function updateAgl() 
-    {
-        // Feets processing
-        aglFtProcessing()
-    }
+    Component.onCompleted: _editor.enabled = chosen
 
     function getElevation()
     {
@@ -93,29 +72,4 @@ Item {
             return m2ft(item.elevation) + "ft"
         return Math.round(item.elevation) + "m"     
     }
-
-    // Feets processing
-    property var opts: fact.opts
-    property var altOpts: fact.parentFact.child("altitude").opts
-    onAltOptsChanged: aglFtProcessing()
-
-    function aglFtProcessing() {
-        if(chosen)
-            return
-
-        if(isNaN(elevation)) {
-            opts.ft = 0
-            fact.opts = opts
-            return
-        }
-
-        calcAglFt()
-    }
-
-    function calcAglFt() {
-        var diff = parseInt(altOpts.ft) - m2ft(elevation)
-        opts.ft = amsl?diff:m2ft(homeHmsl) + diff
-        fact.opts = opts
-    }
-
 }

@@ -28,13 +28,9 @@ import APX.Mission
 
 Item {
     id: item
-    property var map: apx.tools.elevationmap
-    property var agl: fact.parentFact.child("agl").value
-    property var amsl: fact.parentFact.child("amsl").value
-    property var coordinate: fact.parentFact.coordinate
+
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var color: "#dcdcdc"
-    property var elevation: fact.parentFact.elevation
     property var chosenFact: fact.parentFact.chosen
     property bool chosen: chosenFact == Waypoint.ALT
     
@@ -73,19 +69,4 @@ Item {
             return m2ft(homeHmsl) + "ft"
         return Math.round(homeHmsl) + "m"     
     }
-
-    // Feets processing
-    // property var opts: fact.opts
-    // property var aglOpts: fact.parentFact.child("agl").opts
-
-    // onAglOptsChanged: if (!chosen) altitudeFtProcessing()
-
-    // function altitudeFtProcessing() {
-        // if(isNaN(elevation))
-        //     return
-
-        // var hAmsl = parseInt(aglOpts.ft) +  m2ft(elevation)
-        // opts.ft = amsl?hAmsl:hAmsl - m2ft(homeHmsl)
-        // fact.opts = opts
-    // }
 }

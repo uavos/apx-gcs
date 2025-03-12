@@ -72,15 +72,16 @@ Waypoint::Waypoint(MissionGroup *parent)
     ft = std::round(f_agl->value().toInt() * M2FT_COEF);
     f_agl->setOpt("ft", ft);
 
-    connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
     connect(this, &MissionItem::isFeetsChanged, this, &Waypoint::updateTitle);
+    connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
+    connect(f_altitude, &Fact::optsChanged, this, &Waypoint::processAglFt);
     connect(f_agl, &Fact::optsChanged, this, [this]() {if (this->chosen() == AGL) calcAltitudeFt();});
     // Add feets options end
 
     // elevation map and agl
     connect(f_altitude, &Fact::valueChanged, this, [this]() { if (this->chosen() == ALT) calcAgl();});
-    connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude);
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
+    connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude);
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
     initElevationMap();
 
@@ -113,14 +114,17 @@ void Waypoint::initElevationMap()
     if(!f_elevationmap)
         return;
     f_refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
-    connect(f_refHmsl, &Fact::valueChanged, this, &Waypoint::calcAgl);
+    connect(f_refHmsl, &Fact::valueChanged, this, &Waypoint::updateAgl);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::calcAgl);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAgl);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAglFt);
+    connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl);
     connect(this, &MissionItem::elevationChanged, this, [this]() {
         f_agl->setEnabled(!std::isnan(m_elevation));
     });
 
-    calcAgl();
+    updateAgl();
 }
 
 QJsonValue Waypoint::toJson()
@@ -400,26 +404,62 @@ void Waypoint::recalcAltitude()
     f_altitude->setValue(alt);
 }
 
-void Waypoint::calcAgl()
+void Waypoint::processAgl()
 {
     if (std::isnan(m_elevation)) {
         f_agl->setValue(0);
         return;
     }
 
-    double diff = f_altitude->value().toDouble() - m_elevation;
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    calcAgl();
+}
+
+void Waypoint::calcAgl()
+{
+    int diff = f_altitude->value().toInt() - static_cast<int>(m_elevation);
+    int refHmsl = f_refHmsl ? f_refHmsl->value().toInt() : 0;
     if (!f_amsl->value().toBool())
         diff += refHmsl;
     f_agl->setValue(diff);
 }
 
+
+// Feets processing
 void Waypoint::calcAltitudeFt() {
-    if(std::isnan(m_elevation))
+    if (std::isnan(m_elevation))
         return;
+
     auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
     int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
-    int hAmsl = static_cast<int>(f_agl->opts().value("ft", 0).toInt() + m_elevation * M2FT_COEF);
+    int hAmsl = static_cast<int>(f_agl->opts().value("ft", 0).toInt() + std::round(m_elevation * M2FT_COEF));
     int ft = f_amsl->value().toBool() ? hAmsl : hAmsl - refHmslFt;
     f_altitude->setOpt("ft", ft);
+}
+
+void Waypoint::processAglFt()
+{
+    if (chosen() == AGL)
+        return;
+
+    if(std::isnan(m_elevation)) {
+        f_agl->setOpt("ft", 0);
+        return;
+    }
+
+    calcAglFt();
+}
+
+void Waypoint::calcAglFt()
+{
+    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
+    int diff = static_cast<int>(f_altitude->opts().value("ft", 0).toInt() - std::round(m_elevation * M2FT_COEF));
+    int ft = f_amsl->value().toBool() ? diff : refHmslFt + diff;
+    f_agl->setOpt("ft", ft);
+}
+
+void Waypoint::updateAgl()
+{
+    processAgl();
+    processAglFt();
 }

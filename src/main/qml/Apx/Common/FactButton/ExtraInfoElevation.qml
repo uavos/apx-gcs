@@ -28,8 +28,6 @@ import Apx.Common
 Item {
     id: item
     visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
-    property var map: apx.tools.elevationmap
-    property var coordinate: fact.parentFact.coordinate
     property var elevation: fact.parentFact.elevation
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32" 
 
