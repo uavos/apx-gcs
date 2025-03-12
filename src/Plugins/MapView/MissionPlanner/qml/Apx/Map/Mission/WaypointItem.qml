@@ -71,7 +71,7 @@ MissionObject {
     property var agl: fact?fact.child("agl").value:0
     property var elevation: fact?fact.elevation:NaN
 
-    onCoordinateChanged: timer.restart()
+    onElevationChanged: timer.restart()
     onAltitudeChanged: timer.restart()
     onHomeHmslChanged: timer.restart()
     onAlarmOnChanged: timer.restart()

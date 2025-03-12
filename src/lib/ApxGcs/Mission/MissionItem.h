@@ -68,6 +68,7 @@ public:
     Fact *f_latitude;
     Fact *f_longitude;
 
+    Fact *f_elevationmap{nullptr};
     Fact *f_remove;
     Fact *f_feets;
 

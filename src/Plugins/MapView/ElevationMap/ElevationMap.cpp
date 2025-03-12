@@ -31,6 +31,7 @@
 #include <Mission/Poi.h>
 
 #include <QFileDialog>
+#include <QMap>
 
 ElevationMap::ElevationMap(Fact *parent)
     : Fact(parent,
@@ -177,6 +178,7 @@ void ElevationMap::changeExternalsVisibility()
 void ElevationMap::setMissionValues(bool b)
 {
     auto m = mission();
+    QMap<QString, int> tempMap;
     for (int i = 0; i < m->f_waypoints->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
         wp->f_agl->setVisible(b);
@@ -184,22 +186,42 @@ void ElevationMap::setMissionValues(bool b)
             continue;
         connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation);
         connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
+        auto str = wp->coordinate().toString();
+        auto alt = wp->f_altitude->value().toInt();
+        if (!m_waypoints.contains(str) || m_waypoints[str] != alt) {
+            setElevationByCoordinate(wp->coordinate());
+        }
+        tempMap[str] = alt;
     }
+    m_waypoints = tempMap;
+    QSet<QString> tempSet;
     for (int i = 0; i < m->f_pois->size(); ++i) {
         if (!b)
             continue;
         auto poi = static_cast<Poi *>(m->f_pois->child(i));
         connect(this, &ElevationMap::coordinateChanged, poi, &Poi::extractElevation);
         connect(poi, &Poi::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
+        auto str = poi->coordinate().toString();
+        if (!m_pois.contains(str)) {
+            setElevationByCoordinate(poi->coordinate());
+        }
+        tempSet.insert(str);
     }
+    m_pois = tempSet;
+    tempSet.clear();
     for (int i = 0; i < m->f_runways->size(); ++i) {
         if(!b)
             continue;
         auto runway = static_cast<Runway *>(m->f_runways->child(i));
         connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation);
         connect(runway, &Runway::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
+        auto str = runway->coordinate().toString();
+        if (!m_runways.contains(str)) {
+            setElevationByCoordinate(runway->coordinate());
+        }
+        tempSet.insert(str);
     }
-
+    m_runways = tempSet;
     auto aglset = missionTools()->child("aglset");
     if (aglset)
         aglset->setVisible(b);

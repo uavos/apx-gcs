@@ -296,7 +296,8 @@ Map {
             if(apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value) {
                 if(timer.running)
                     return
-                apx.tools.elevationmap.setElevationByCoordinate(toCoordinate(Qt.point(mouse.x, mouse.y)));
+                // apx.tools.elevationmap.setElevationByCoordinate(toCoordinate(Qt.point(mouse.x, mouse.y)));
+                timer.pos = Qt.point(mouse.x, mouse.y)
                 timer.start()
             }
         }
@@ -336,7 +337,9 @@ Map {
 
         Timer {
             id: timer
-            interval: 50
+            property point pos: Qt.point(0, 0)
+            interval: 500 // Different interval for varios services will be implemented.
+            onTriggered: apx.tools.elevationmap.setElevationByCoordinate(toCoordinate(pos));
         }
     }
 }

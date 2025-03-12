@@ -29,6 +29,8 @@
 #include <QQmlComponent>
 #include <QGeoCoordinate>
 #include <QtCore>
+#include <QMap>
+#include <QSet>
 
 #include <Mission/MissionItem.h>
 
@@ -64,6 +66,9 @@ protected:
 
 private:
     QSharedPointer<AbstractElevationDB> m_elevationDB;
+    QMap<QString, int> m_waypoints;
+    QSet<QString> m_runways;
+    QSet<QString> m_pois;
 
     void createElevationDatabase();
     void setMissionValues(bool b);

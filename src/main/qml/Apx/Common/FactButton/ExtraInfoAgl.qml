@@ -71,11 +71,10 @@ Item {
     onValueChanged: factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
     onChosenChanged: _editor.enabled = chosen
-    onElevationChanged: fact.enabled = !isNaN(elevation)
-    onAltitudeChanged: if(!chosen) aglProcessing()
-    onAmslChanged: {calcAgl(); calcAglFt()}
+    onAmslChanged: {/*calcAgl();*/ calcAglFt()}     // TODO Move to backend
+
     onCoordinateChanged: timer.restart()
-    onHomeHmslChanged: if(!amsl) updateAgl()
+    onHomeHmslChanged: if(!amsl) updateAgl()    // TODO Move to backend
 
     Component.onCompleted: {
         _editor.enabled = chosen
@@ -84,24 +83,8 @@ Item {
 
     function updateAgl() 
     {
-        aglProcessing()
-        
         // Feets processing
         aglFtProcessing()
-    }
-
-    function aglProcessing() 
-    {   
-        if(isNaN(elevation)) {
-            fact.value = 0
-            return
-        }
-        calcAgl()
-    }
-
-    function calcAgl() {
-        var diff = altitude - elevation
-        fact.value = amsl?diff:homeHmsl+diff
     }
 
     function getElevation()

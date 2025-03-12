@@ -278,8 +278,6 @@ void MissionItem::setElevation(double v)
         return;
     m_elevation = v;
     emit elevationChanged();
-
-    qDebug() << "===>Elevation changed -" <<  m_elevation;
 }
 
 double MissionItem::bearing() const
