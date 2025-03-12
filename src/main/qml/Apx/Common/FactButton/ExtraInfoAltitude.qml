@@ -63,15 +63,7 @@ Item {
     // }
 
     onChosenChanged: _editor.enabled = chosen
-    onAmslChanged: {
-        if(status != Component.Ready)
-            return
-        if(fact.parentFact.isFeets) {
-            opts.ft += amsl?m2ft(homeHmsl):m2ft(-homeHmsl)
-            fact.opts = opts
-        }
-    }
-    
+
     Component.onCompleted: _editor.enabled = chosen
 
 
@@ -83,17 +75,17 @@ Item {
     }
 
     // Feets processing
-    property var opts: fact.opts
-    property var aglOpts: fact.parentFact.child("agl").opts
+    // property var opts: fact.opts
+    // property var aglOpts: fact.parentFact.child("agl").opts
 
-    onAglOptsChanged: if (!chosen) altitudeFtProcessing()
+    // onAglOptsChanged: if (!chosen) altitudeFtProcessing()
 
-    function altitudeFtProcessing() {
-        if(isNaN(elevation))
-            return
+    // function altitudeFtProcessing() {
+        // if(isNaN(elevation))
+        //     return
 
-        var hAmsl = parseInt(aglOpts.ft) +  m2ft(elevation)
-        opts.ft = amsl?hAmsl:hAmsl - m2ft(homeHmsl)
-        fact.opts = opts
-    }
+        // var hAmsl = parseInt(aglOpts.ft) +  m2ft(elevation)
+        // opts.ft = amsl?hAmsl:hAmsl - m2ft(homeHmsl)
+        // fact.opts = opts
+    // }
 }

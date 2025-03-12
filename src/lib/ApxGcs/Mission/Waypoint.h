@@ -65,6 +65,9 @@ protected:
     void recalcAltitude();
     void calcAgl();
 
+    // Feets processing
+     void calcAltitudeFt();
+
 private:
     QString _altUnits;
 

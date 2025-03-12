@@ -74,12 +74,12 @@ Waypoint::Waypoint(MissionGroup *parent)
 
     connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
     connect(this, &MissionItem::isFeetsChanged, this, &Waypoint::updateTitle);
-    connect(f_altitude, &Fact::valueChanged, this, [this]() {if (this->m_chosen == ALT) calcAgl();});
-    connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude);
-
+    connect(f_agl, &Fact::optsChanged, this, [this]() {if (this->chosen() == AGL) calcAltitudeFt();});
     // Add feets options end
 
     // elevation map and agl
+    connect(f_altitude, &Fact::valueChanged, this, [this]() { if (this->chosen() == ALT) calcAgl();});
+    connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude);
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
     initElevationMap();
@@ -388,8 +388,14 @@ void Waypoint::calcAltitude()
 
 void Waypoint::recalcAltitude()
 {
-    auto alt = f_altitude->value().toDouble();
     auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    if (m_isFeets) {
+        int ft = f_altitude->opts().value("ft", 0).toInt();
+        int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
+        ft += f_amsl->value().toBool() ? refHmslFt : -refHmslFt;
+        f_altitude->setOpt("ft", ft);
+    }
+    auto alt = f_altitude->value().toDouble();
     alt += f_amsl->value().toBool() ? refHmsl : -refHmsl;
     f_altitude->setValue(alt);
 }
@@ -406,4 +412,14 @@ void Waypoint::calcAgl()
     if (!f_amsl->value().toBool())
         diff += refHmsl;
     f_agl->setValue(diff);
+}
+
+void Waypoint::calcAltitudeFt() {
+    if(std::isnan(m_elevation))
+        return;
+    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
+    int hAmsl = static_cast<int>(f_agl->opts().value("ft", 0).toInt() + m_elevation * M2FT_COEF);
+    int ft = f_amsl->value().toBool() ? hAmsl : hAmsl - refHmslFt;
+    f_altitude->setOpt("ft", ft);
 }
