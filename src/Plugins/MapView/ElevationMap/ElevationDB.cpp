@@ -222,7 +222,7 @@ void OfflineElevationDB::requestCoordinateASTER(double latitude, double longitud
 {
     auto fileName = createASTERFileName(latitude, longitude);
     if (!QFile::exists(fileName)) {
-        emit elevationReceived(QGeoCoordinate(latitude, longitude));
+        emit coordinateReceived(QGeoCoordinate(latitude, longitude));
         return;
     }
 
