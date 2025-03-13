@@ -38,6 +38,7 @@ public:
     };
 
     AbstractElevationDB() = default;
+    virtual void requestElevation(double lat, double lon) = 0;
     virtual void requestCoordinate(double lat, double lon) = 0;
     virtual void setUtil(Util u) = 0;
 
@@ -46,6 +47,7 @@ protected:
 
 signals:
     void coordinateReceived(QGeoCoordinate coordinate);
+    void elevationReceived(double elevation);
 };
 
 class OfflineElevationDB : public AbstractElevationDB
@@ -54,6 +56,7 @@ class OfflineElevationDB : public AbstractElevationDB
 
 public:
     OfflineElevationDB(const QString &path);
+    void requestElevation(double lat, double lon) override;
     void requestCoordinate(double lat, double lon) override;
     double getElevationASTER(double lat, double lon); // Return NaN if the elevation is undefined
     void setUtil(Util u) override;
@@ -68,6 +71,7 @@ private:
 
     void updateUtilPath();
     void setImage(const QString &file);
+    void requestElevationASTER(double lat, double lon);
     void requestCoordinateASTER(double lat, double lon);
     QString createASTERFileName(double lat, double lon);
     QString searchUtil(const QString &name);

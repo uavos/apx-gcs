@@ -136,15 +136,16 @@ MapQuickItem {  //to be used inside MapComponent only
             apx.tools.elevationmap.setElevationByCoordinate(mapObject.coordinate)
     }
     
-    onHoverChanged: if(hover && !dragging) updateMapInfoElevation()
+    onHoverChanged: if(hover && !dragging) timer.start() // updateMapInfoElevation()
     onDraggingChanged: {
         if(dragging){
             if(!selected) select()
+            timer.repeat = true;
             timer.start()
         }else{
             movingFinished()
             if(implicitCoordinate) coordinate=Qt.binding(function(){return implicitCoordinate})
-            timer.stop()
+            timer.repeat = false;
         }
     }
 
@@ -270,8 +271,7 @@ MapQuickItem {  //to be used inside MapComponent only
     // object elevation view when dragging support
     Timer {
         id: timer
-        interval: 100
-        repeat: true
+        interval: 750
         onTriggered: updateMapInfoElevation()
     }
 }

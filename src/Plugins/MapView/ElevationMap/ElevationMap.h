@@ -41,6 +41,7 @@ class MissionTools;
 class ElevationMap : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(double elevation READ elevation WRITE setElevation NOTIFY elevationChanged)
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
 public:
@@ -56,13 +57,17 @@ public:
     MissionTools *missionTools() const;
     Fact *aglset() const;
 
-    Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &v);
+    Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &coordinate);
+    void setCoordinateWithElevation(const QGeoCoordinate &coordinate);
 
-    QGeoCoordinate coordinate();
+    QGeoCoordinate coordinate() const;
     void setCoordinate(const QGeoCoordinate &coordinate);
+    double elevation() const;
+    void setElevation(double v);
 
 protected:
     QGeoCoordinate m_coordinate;
+    double m_elevation;
 
 private:
     QSharedPointer<AbstractElevationDB> m_elevationDB;
@@ -88,4 +93,5 @@ private slots:
 
 signals:
     void coordinateChanged(QGeoCoordinate coordinate);
+    void elevationChanged();
 };

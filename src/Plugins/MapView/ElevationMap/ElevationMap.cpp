@@ -79,9 +79,14 @@ ElevationMap::ElevationMap(Fact *parent)
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
 
-void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &v)
+void ElevationMap::setCoordinateWithElevation(const QGeoCoordinate &coordinate)
 {
-    m_elevationDB->requestCoordinate(v.latitude(), v.longitude());
+    m_elevationDB->requestCoordinate(coordinate.latitude(), coordinate.longitude());
+}
+
+void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &coordinate)
+{
+    m_elevationDB->requestElevation(coordinate.latitude(), coordinate.longitude());
 }
 
 void ElevationMap::createElevationDatabase()
@@ -89,6 +94,7 @@ void ElevationMap::createElevationDatabase()
     auto path = f_path->value().toString();
     m_elevationDB = QSharedPointer<OfflineElevationDB>::create(path);
     connect(m_elevationDB.data(), &OfflineElevationDB::coordinateReceived, this, &ElevationMap::setCoordinate);
+    connect(m_elevationDB.data(), &OfflineElevationDB::elevationReceived, this, &ElevationMap::setElevation);
 }
 
 void ElevationMap::updateDBUtility()
@@ -193,6 +199,11 @@ void ElevationMap::setMissionValues(bool b)
     setPoisValues(b);
 }
 
+QGeoCoordinate ElevationMap::coordinate() const
+{
+    return m_coordinate;
+}
+
 void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
     if(m_coordinate == coordinate)
         return;
@@ -200,9 +211,18 @@ void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
     emit coordinateChanged(m_coordinate);
 }
 
-QGeoCoordinate ElevationMap::coordinate()
+double ElevationMap::elevation() const
 {
-    return m_coordinate;
+    return m_elevation;
+}
+
+void ElevationMap::setElevation(double v)
+{
+    if (m_elevation == v)
+        return;
+
+    m_elevation = v;
+    emit elevationChanged();
 }
 
 void ElevationMap::setWaypointsValues(bool b)
@@ -219,7 +239,7 @@ void ElevationMap::setWaypointsValues(bool b)
         auto str = wp->coordinate().toString();
         auto alt = wp->f_altitude->value().toInt();
         if (!m_waypoints.contains(str) || m_waypoints[str] != alt) {
-            setElevationByCoordinate(wp->coordinate());
+            setCoordinateWithElevation(wp->coordinate());
         }
         tempMap[str] = alt;
     }
@@ -237,7 +257,7 @@ void ElevationMap::setRunwaysValues(bool b) {
         connect(runway, &Runway::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
         auto str = runway->coordinate().toString();
         if (!m_runways.contains(str)) {
-            setElevationByCoordinate(runway->coordinate());
+            setCoordinateWithElevation(runway->coordinate());
         }
         tempSet.insert(str);
     }
@@ -256,7 +276,7 @@ void ElevationMap::setPoisValues(bool b) {
         connect(poi, &Poi::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
         auto str = poi->coordinate().toString();
         if (!m_pois.contains(str)) {
-            setElevationByCoordinate(poi->coordinate());
+            setCoordinateWithElevation(poi->coordinate());
         }
         tempSet.insert(str);
     }

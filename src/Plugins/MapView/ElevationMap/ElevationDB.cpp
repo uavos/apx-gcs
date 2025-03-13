@@ -185,16 +185,44 @@ void OfflineElevationDB::updateUtilPath() {
         apxMsg() << tr("The gdallocationinfo util is used");
 }
 
+void OfflineElevationDB::requestElevation(double latitude, double longitude)
+{
+    requestElevationASTER(latitude, longitude);
+}
 
 void OfflineElevationDB::requestCoordinate(double latitude, double longitude) {
     requestCoordinateASTER(latitude, longitude);
+}
+
+void OfflineElevationDB::requestElevationASTER(double latitude, double longitude)
+{
+    auto fileName = createASTERFileName(latitude, longitude);
+    if (!QFile::exists(fileName)) {
+        emit elevationReceived(qQNaN());
+        return;
+    }
+
+    QFuture<double> future;
+    if (m_util == GDALLOCATIONINFO) {
+        future = QtConcurrent::run(getElevationGdallocationInfo, m_utilPath, fileName, latitude, longitude);
+    } else {
+        setImage(fileName);
+        future = QtConcurrent::run(getElevationTiffASTER, m_image, fileName, latitude, longitude);
+    }
+    QFutureWatcher<double> *watcher = new QFutureWatcher<double>(this);
+    connect(watcher, &QFutureWatcher<QGeoCoordinate>::finished, this, [watcher, this]() {
+        auto result = watcher->result();
+        emit elevationReceived(result);
+        watcher->deleteLater();
+    });
+    watcher->setFuture(future);
 }
 
 void OfflineElevationDB::requestCoordinateASTER(double latitude, double longitude)
 {
     auto fileName = createASTERFileName(latitude, longitude);
     if (!QFile::exists(fileName)) {
-        emit coordinateReceived(QGeoCoordinate(latitude,longitude));
+        emit elevationReceived(QGeoCoordinate(latitude, longitude));
         return;
     }
 
