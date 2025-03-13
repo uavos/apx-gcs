@@ -42,8 +42,7 @@ public:
     virtual void setUtil(Util u) = 0;
 
 protected:
-    QFutureWatcher<QGeoCoordinate> watcher;
-    virtual void receiveCoordinate();
+    virtual void receiveCoordinate(const QGeoCoordinate &coordinate);
 
 signals:
     void coordinateReceived(QGeoCoordinate coordinate);

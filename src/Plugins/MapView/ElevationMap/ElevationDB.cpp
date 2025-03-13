@@ -38,9 +38,8 @@
 #include "ogr_spatialref.h"
 #endif
 
-void AbstractElevationDB::receiveCoordinate() 
+void AbstractElevationDB::receiveCoordinate(const QGeoCoordinate &coordinate)
 {
-    auto coordinate = watcher.result();
     if(!coordinate.isValid()) {
         QGeoCoordinate checking(coordinate.latitude(), coordinate.longitude());
         if(!checking.isValid()) {
@@ -51,7 +50,6 @@ void AbstractElevationDB::receiveCoordinate()
             return;
         }
     }
-
     emit coordinateReceived(coordinate);
 }
 
@@ -63,7 +61,6 @@ OfflineElevationDB::OfflineElevationDB(const QString &path)
             << "/opt/bin/"
             << "/opt/homebrew/bin/";
     connect(this, &OfflineElevationDB::utilChanged, this, &OfflineElevationDB::updateUtilPath);
-    connect(&watcher, &QFutureWatcher<QGeoCoordinate>::finished, this, &OfflineElevationDB::receiveCoordinate);
 }
 
 
@@ -149,6 +146,83 @@ QGeoCoordinate OfflineElevationDB::requestCoordinateGdallocationInfo(const QStri
 {
     double elv = getElevationGdallocationInfo(util, file, lat, lon);
     return QGeoCoordinate(lat, lon, elv);
+}
+
+QString OfflineElevationDB::getDataFromGdallocationInfo(const QString &command)
+{
+    QProcess p;
+    p.startCommand(command);
+
+    p.waitForFinished();
+    auto result = QString(p.readAllStandardOutput());
+    if (result.isEmpty())
+        apxMsgW() << tr("Gdallocationinfo empty report! Command line: %1").arg(command);
+
+    return result;
+}
+
+QString OfflineElevationDB::searchUtil(const QString &name)
+{
+    QProcess p;
+    auto command = QString("which %1").arg(name);
+    p.startCommand(command);
+    p.waitForFinished();
+    auto result = QString(p.readAllStandardOutput());
+    if (!result.isEmpty())
+        return result;
+    for (const auto &p : m_paths)
+        if (QFile::exists(p + name))
+            return p + name;
+    apxMsgW() << tr("Util %1 not found!").arg(name);
+    return result;
+}
+
+void OfflineElevationDB::updateUtilPath() {
+    m_utilPath = "";
+    if(m_util == GDALLOCATIONINFO)
+        m_utilPath = searchUtil("gdallocationinfo");
+    if (!m_utilPath.isEmpty())
+        apxMsg() << tr("The gdallocationinfo util is used");
+}
+
+
+void OfflineElevationDB::requestCoordinate(double latitude, double longitude) {
+    requestCoordinateASTER(latitude, longitude);
+}
+
+void OfflineElevationDB::requestCoordinateASTER(double latitude, double longitude)
+{
+    auto fileName = createASTERFileName(latitude, longitude);
+    if (!QFile::exists(fileName)) {
+        emit coordinateReceived(QGeoCoordinate(latitude,longitude));
+        return;
+    }
+
+    QFuture<QGeoCoordinate> future;
+    if (m_util == GDALLOCATIONINFO) {
+        future = QtConcurrent::run(requestCoordinateGdallocationInfo, m_utilPath, fileName, latitude, longitude);
+    } else {
+        setImage(fileName);
+        future = QtConcurrent::run(requestCoordinateTiffASTER, m_image, fileName, latitude, longitude);
+    }
+    QFutureWatcher<QGeoCoordinate> *watcher = new QFutureWatcher<QGeoCoordinate>(this);
+    connect(watcher, &QFutureWatcher<QGeoCoordinate>::finished, this, [watcher, this]() {
+        auto result = watcher->result();
+        this->receiveCoordinate(result);
+        watcher->deleteLater();
+    });
+    watcher->setFuture(future);
+}
+
+void OfflineElevationDB::setImage(const QString &fileName)
+{
+    if (fileName.isEmpty())
+        return;
+
+    if (m_fileName != fileName) {
+        m_fileName = fileName;
+        m_image = QImage(m_fileName);
+    }
 }
 
 double OfflineElevationDB::getElevationFromGeoFile(QString file, double lat, double lon)
@@ -304,8 +378,7 @@ double OfflineElevationDB::getElevationFromGeoFile(QString file, double lat, dou
             }
         }
 
-        if ((lat != NAN && lon != NAN)
-            || (fscanf(stdin, "%lf %lf", &dfGeoX, &dfGeoY) != 2)) {
+        if ((lat != NAN && lon != NAN) || (fscanf(stdin, "%lf %lf", &dfGeoX, &dfGeoY) != 2)) {
             inputAvailable = false;
         }
     }
@@ -345,76 +418,3 @@ char *OfflineElevationDB::SanitizeSRS(const char *userInput)
 
     return result;
 }
-
-
-QString OfflineElevationDB::getDataFromGdallocationInfo(const QString &command)
-{
-    QProcess p;
-    p.startCommand(command);
-
-    p.waitForFinished();
-    auto result = QString(p.readAllStandardOutput());
-    if (result.isEmpty())
-        apxMsgW() << tr("Gdallocationinfo empty report! Command line: %1").arg(command);
-
-    return result;
-}
-
-QString OfflineElevationDB::searchUtil(const QString &name)
-{
-    QProcess p;
-    auto command = QString("which %1").arg(name);
-    p.startCommand(command);
-    p.waitForFinished();
-    auto result = QString(p.readAllStandardOutput());
-    if (!result.isEmpty())
-        return result;
-    for (const auto &p : m_paths)
-        if (QFile::exists(p + name))
-            return p + name;
-    apxMsgW() << tr("Util %1 not found!").arg(name);
-    return result;
-}
-
-void OfflineElevationDB::updateUtilPath() {
-    m_utilPath = "";
-    if(m_util == GDALLOCATIONINFO)
-        m_utilPath = searchUtil("gdallocationinfo");
-    if (!m_utilPath.isEmpty())
-        apxMsg() << tr("The gdallocationinfo util is used");
-}
-
-
-void OfflineElevationDB::requestCoordinate(double latitude, double longitude) {
-    requestCoordinateASTER(latitude, longitude);
-}
-
-void OfflineElevationDB::requestCoordinateASTER(double latitude, double longitude)
-{
-    auto fileName = createASTERFileName(latitude, longitude);
-    if (!QFile::exists(fileName)) {
-        emit coordinateReceived(QGeoCoordinate(latitude,longitude));
-        return;
-    }
-
-    QFuture<QGeoCoordinate> future;
-    if (m_util == GDALLOCATIONINFO) {
-        future = QtConcurrent::run(requestCoordinateGdallocationInfo, m_utilPath, fileName, latitude, longitude);
-    } else {
-        setImage(fileName);
-        future = QtConcurrent::run(requestCoordinateTiffASTER, m_image, fileName, latitude, longitude);
-    }
-    watcher.setFuture(future);
-}
-
-void OfflineElevationDB::setImage(const QString &fileName)
-{
-    if (fileName.isEmpty())
-        return;
-
-    if (m_fileName != fileName) {
-        m_fileName = fileName;
-        m_image = QImage(m_fileName);
-    }
-}
-
