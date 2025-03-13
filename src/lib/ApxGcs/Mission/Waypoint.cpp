@@ -115,15 +115,18 @@ void Waypoint::initElevationMap()
         return;
     f_refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
     connect(f_refHmsl, &Fact::valueChanged, this, &Waypoint::updateAgl);
-    connect(this, &MissionItem::elevationChanged, this, &Waypoint::calcAgl);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAgl);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAglFt);
+    connect(this, &MissionItem::elevationChanged, this, &Waypoint::calcAgl);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl);
     connect(this, &MissionItem::elevationChanged, this, [this]() {
         f_agl->setEnabled(!std::isnan(m_elevation));
     });
-
+    m_timer.setInterval(TIMEOUT);
+    m_timer.setSingleShot(true);
+    connect(this, &MissionItem::coordinateChanged, this, [this]() {if (!m_timer.isActive()) m_timer.start();});
+    connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestElevation(m_coordinate);});
     updateAgl();
 }
 

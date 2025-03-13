@@ -235,7 +235,8 @@ void ElevationMap::setWaypointsValues(bool b)
         if (!b)
             continue;
         connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation);
-        connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
+        connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+        // connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
         auto str = wp->coordinate().toString();
         auto alt = wp->f_altitude->value().toInt();
         if (!m_waypoints.contains(str) || m_waypoints[str] != alt) {
@@ -254,7 +255,8 @@ void ElevationMap::setRunwaysValues(bool b) {
             continue;
         auto runway = static_cast<Runway *>(m->f_runways->child(i));
         connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation);
-        connect(runway, &Runway::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
+        connect(runway, &Runway::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+        // connect(runway, &Runway::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);// for fast processing
         auto str = runway->coordinate().toString();
         if (!m_runways.contains(str)) {
             setCoordinateWithElevation(runway->coordinate());
@@ -273,7 +275,8 @@ void ElevationMap::setPoisValues(bool b) {
             continue;
         auto poi = static_cast<Poi *>(m->f_pois->child(i));
         connect(this, &ElevationMap::coordinateChanged, poi, &Poi::extractElevation);
-        connect(poi, &Poi::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
+        connect(poi, &Poi::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+        // connect(poi, &Poi::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
         auto str = poi->coordinate().toString();
         if (!m_pois.contains(str)) {
             setCoordinateWithElevation(poi->coordinate());

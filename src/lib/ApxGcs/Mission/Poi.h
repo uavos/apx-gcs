@@ -54,6 +54,8 @@ public:
     void setRadiusPoint(const QGeoCoordinate &v);
 
 protected:
+    void initElevationMap();
+    
 signals:
     void radiusPointChanged();
 };

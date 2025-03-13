@@ -78,7 +78,20 @@ Poi::Poi(MissionGroup *parent)
     connect(f_time, &Fact::valueChanged, this, &Poi::updateDescr);
     updateDescr();
 
+    initElevationMap();
+
     App::jsync(this);
+}
+
+void Poi::initElevationMap()
+{
+    f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
+    if (!f_elevationmap)
+        return;
+    m_timer.setInterval(TIMEOUT);
+    m_timer.setSingleShot(true);
+    connect(&m_timer, &QTimer::timeout, this, [this]() { emit requestElevation(m_coordinate); });
+    connect(this, &MissionItem::coordinateChanged, this, [this]() { if (!m_timer.isActive()) m_timer.start();});
 }
 
 void Poi::updateTitle()

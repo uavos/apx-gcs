@@ -29,6 +29,7 @@
 #include <QGeoPath>
 #include <QGeoRectangle>
 #include <QtCore>
+#include <QTimer>
 
 #include <XbusMission.h>
 #include <cmath>
@@ -62,8 +63,9 @@ public:
     int missionItemType() const;
 
     static constexpr double EPS = 0.00000001;
-    static constexpr float M2FT_COEF = 3.2808; // conversion coefficient feets to meter
-    static constexpr float M2KN_COEF = 1.9438; // conversion coefficient meter per secont to knots
+    static constexpr float M2FT_COEF = 3.2808;  // conversion coefficient feets to meter
+    static constexpr float M2KN_COEF = 1.9438;  // conversion coefficient meter per secont to knots
+    static constexpr int TIMEOUT = 500;         // elevation update timeout
     Fact *f_order;
     Fact *f_latitude;
     Fact *f_longitude;
@@ -145,6 +147,7 @@ public:
     void changeFeetMeters();
 
 protected:
+    QTimer m_timer;
     QGeoCoordinate m_coordinate;
     QGeoPath m_geoPath;
     double m_elevation{NAN};
@@ -170,5 +173,6 @@ signals:
     void totalTimeChanged();
 
     void selectedChanged();
+    void requestElevation(QGeoCoordinate v);
     void isFeetsChanged();
 };
