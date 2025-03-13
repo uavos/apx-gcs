@@ -177,12 +177,42 @@ void ElevationMap::changeExternalsVisibility()
 
 void ElevationMap::setMissionValues(bool b)
 {
+    auto aglset = missionTools()->child("aglset");
+    if (aglset)
+        aglset->setVisible(b);
+
+    // Signal missionSizeChanged is sent before mission is cleared
+    auto m = mission();
+    if(!m->missionSize() > 0) {
+        clearMissionPoints(); 
+        return;
+    }
+
+    setWaypointsValues(b);
+    setRunwaysValues(b);
+    setPoisValues(b);
+}
+
+void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
+    if(m_coordinate == coordinate)
+        return;
+    m_coordinate = coordinate;
+    emit coordinateChanged(m_coordinate);
+}
+
+QGeoCoordinate ElevationMap::coordinate()
+{
+    return m_coordinate;
+}
+
+void ElevationMap::setWaypointsValues(bool b)
+{
     auto m = mission();
     QMap<QString, int> tempMap;
     for (int i = 0; i < m->f_waypoints->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
         wp->f_agl->setVisible(b);
-        if (!b) 
+        if (!b)
             continue;
         connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation);
         connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
@@ -194,6 +224,29 @@ void ElevationMap::setMissionValues(bool b)
         tempMap[str] = alt;
     }
     m_waypoints = tempMap;
+}
+
+void ElevationMap::setRunwaysValues(bool b) {
+    auto m = mission();
+    QSet<QString> tempSet;
+    for (int i = 0; i < m->f_runways->size(); ++i) {
+        if (!b)
+            continue;
+        auto runway = static_cast<Runway *>(m->f_runways->child(i));
+        connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation);
+        connect(runway, &Runway::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
+        auto str = runway->coordinate().toString();
+        if (!m_runways.contains(str)) {
+            setElevationByCoordinate(runway->coordinate());
+        }
+        tempSet.insert(str);
+    }
+    m_runways = tempSet;
+}
+
+void ElevationMap::setPoisValues(bool b) {
+    
+    auto m = mission();
     QSet<QString> tempSet;
     for (int i = 0; i < m->f_pois->size(); ++i) {
         if (!b)
@@ -208,33 +261,11 @@ void ElevationMap::setMissionValues(bool b)
         tempSet.insert(str);
     }
     m_pois = tempSet;
-    tempSet.clear();
-    for (int i = 0; i < m->f_runways->size(); ++i) {
-        if(!b)
-            continue;
-        auto runway = static_cast<Runway *>(m->f_runways->child(i));
-        connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation);
-        connect(runway, &Runway::coordinateChanged, this, &ElevationMap::setElevationByCoordinate);
-        auto str = runway->coordinate().toString();
-        if (!m_runways.contains(str)) {
-            setElevationByCoordinate(runway->coordinate());
-        }
-        tempSet.insert(str);
-    }
-    m_runways = tempSet;
-    auto aglset = missionTools()->child("aglset");
-    if (aglset)
-        aglset->setVisible(b);
 }
 
-void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
-    if(m_coordinate == coordinate)
-        return;
-    m_coordinate = coordinate;
-    emit coordinateChanged(m_coordinate);
-}
-
-QGeoCoordinate ElevationMap::coordinate()
+void ElevationMap::clearMissionPoints()
 {
-    return m_coordinate;
+    m_waypoints.clear();
+    m_runways.clear();
+    m_pois.clear();
 }

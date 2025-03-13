@@ -72,6 +72,10 @@ private:
 
     void createElevationDatabase();
     void setMissionValues(bool b);
+    void setWaypointsValues(bool b);
+    void setRunwaysValues(bool b);
+    void setPoisValues(bool b);
+    void clearMissionPoints();
     QObject *qml;
 
 private slots:
