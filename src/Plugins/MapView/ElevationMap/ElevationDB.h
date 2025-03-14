@@ -84,8 +84,9 @@ private:
     // Getting data from a geofile. 
     // Uses the gdal library, which supports the main geofile formats.
     // To use it, you need to include the gdal library in the project.
-    double getElevationFromGeoFile(QString file, double lat, double lon);
-    char *SanitizeSRS(const char *userInput);
+    static QGeoCoordinate requestCoordinateFromGeoFile(const QString &file, double lat, double lon);
+    static double getElevationFromGeoFile(QString file, double lat, double lon);
+    static char *SanitizeSRS(const char *userInput);
 
 signals:
     void utilChanged();

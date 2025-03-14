@@ -31,11 +31,11 @@
 #include <vector>
 
 #ifdef Q_OS_LINUX
-#include "cpl_minixml.h"
-#include "cpl_string.h"
-#include "gdal.h"
-#include "gdal_version.h"
-#include "ogr_spatialref.h"
+// #include "cpl_minixml.h"
+// #include "cpl_string.h"
+// #include "gdal.h"
+// #include "gdal_version.h"
+// #include "ogr_spatialref.h"
 #endif
 
 void AbstractElevationDB::receiveCoordinate(const QGeoCoordinate &coordinate)
@@ -145,6 +145,12 @@ QGeoCoordinate OfflineElevationDB::requestCoordinateTiffASTER(const QImage &imag
 QGeoCoordinate OfflineElevationDB::requestCoordinateGdallocationInfo(const QString &util, const QString &file, double lat, double lon)
 {
     double elv = getElevationGdallocationInfo(util, file, lat, lon);
+    return QGeoCoordinate(lat, lon, elv);
+}
+
+QGeoCoordinate OfflineElevationDB::requestCoordinateFromGeoFile(const QString &file, double lat, double lon)
+{
+    double elv = getElevationFromGeoFile(file, lat, lon);
     return QGeoCoordinate(lat, lon, elv);
 }
 
@@ -258,169 +264,169 @@ double OfflineElevationDB::getElevationFromGeoFile(QString file, double lat, dou
     double elevation{NAN};
 
 #ifdef Q_OS_LINUX
-    char *srcSRS = nullptr;
-    std::vector<int> anBandList;
-    int nOverview = -1;
+    // char *srcSRS = nullptr;
+    // std::vector<int> anBandList;
+    // int nOverview = -1;
 
-    GDALAllRegister();
-    CPLFree(srcSRS);
-    srcSRS = SanitizeSRS("WGS84");
+    // GDALAllRegister();
+    // CPLFree(srcSRS);
+    // srcSRS = SanitizeSRS("WGS84");
 
-    if (!srcSRS)
-        return NAN;
+    // if (!srcSRS)
+    //     return NAN;
 
-    auto src = file.toStdString();
-    auto srcFilename = src.c_str();
+    // auto src = file.toStdString();
+    // auto srcFilename = src.c_str();
 
-    // Open source file
-    GDALDatasetH hSrcDS = GDALOpenEx(srcFilename,
-                                     GDAL_OF_RASTER | GDAL_OF_VERBOSE_ERROR,
-                                     nullptr,
-                                     nullptr,
-                                     nullptr);
+    // // Open source file
+    // GDALDatasetH hSrcDS = GDALOpenEx(srcFilename,
+    //                                  GDAL_OF_RASTER | GDAL_OF_VERBOSE_ERROR,
+    //                                  nullptr,
+    //                                  nullptr,
+    //                                  nullptr);
 
-    if (hSrcDS == nullptr)
-        return NAN;
+    // if (hSrcDS == nullptr)
+    //     return NAN;
 
-    // Setup coordinate transformation, if required
-    OGRSpatialReferenceH hSrcSRS = nullptr;
-    OGRCoordinateTransformationH hCT = nullptr;
-    if (srcSRS != nullptr && !EQUAL(srcSRS, "-geoloc")) {
-        hSrcSRS = OSRNewSpatialReference(srcSRS);
-        OSRSetAxisMappingStrategy(hSrcSRS, OAMS_TRADITIONAL_GIS_ORDER);
-        auto hTrgSRS = GDALGetSpatialRef(hSrcDS);
-        if (!hTrgSRS)
-            return NAN;
+    // // Setup coordinate transformation, if required
+    // OGRSpatialReferenceH hSrcSRS = nullptr;
+    // OGRCoordinateTransformationH hCT = nullptr;
+    // if (srcSRS != nullptr && !EQUAL(srcSRS, "-geoloc")) {
+    //     hSrcSRS = OSRNewSpatialReference(srcSRS);
+    //     OSRSetAxisMappingStrategy(hSrcSRS, OAMS_TRADITIONAL_GIS_ORDER);
+    //     auto hTrgSRS = GDALGetSpatialRef(hSrcDS);
+    //     if (!hTrgSRS)
+    //         return NAN;
 
-        hCT = OCTNewCoordinateTransformation(hSrcSRS, hTrgSRS);
-        if (hCT == nullptr)
-            return NAN;
-    }
+    //     hCT = OCTNewCoordinateTransformation(hSrcSRS, hTrgSRS);
+    //     if (hCT == nullptr)
+    //         return NAN;
+    // }
 
-    // If no bands were requested, we will query them all
-    if (anBandList.empty()) {
-        for (int i = 0; i < GDALGetRasterCount(hSrcDS); i++)
-            anBandList.push_back(i + 1);
-    }
+    // // If no bands were requested, we will query them all
+    // if (anBandList.empty()) {
+    //     for (int i = 0; i < GDALGetRasterCount(hSrcDS); i++)
+    //         anBandList.push_back(i + 1);
+    // }
 
-    // Turn the location into a pixel and line location.
-    bool inputAvailable = true;
-    double dfGeoX = lon;
-    double dfGeoY = lat;
+    // // Turn the location into a pixel and line location.
+    // bool inputAvailable = true;
+    // double dfGeoX = lon;
+    // double dfGeoY = lat;
 
-    while (inputAvailable) {
-        int iPixel;
-        int iLine;
+    // while (inputAvailable) {
+    //     int iPixel;
+    //     int iLine;
 
-        if (hCT) {
-            if (!OCTTransform(hCT, 1, &dfGeoX, &dfGeoY, nullptr))
-                return NAN;
-        }
+    //     if (hCT) {
+    //         if (!OCTTransform(hCT, 1, &dfGeoX, &dfGeoY, nullptr))
+    //             return NAN;
+    //     }
 
-        if (srcSRS != nullptr) {
-            double adfGeoTransform[6] = {};
-            if (GDALGetGeoTransform(hSrcDS, adfGeoTransform) != CE_None) {
-                apxMsgW() << tr("Error %1. Cannot get geotransform.").arg(CPLE_AppDefined);
-                return NAN;
-            }
+    //     if (srcSRS != nullptr) {
+    //         double adfGeoTransform[6] = {};
+    //         if (GDALGetGeoTransform(hSrcDS, adfGeoTransform) != CE_None) {
+    //             apxMsgW() << tr("Error %1. Cannot get geotransform.").arg(CPLE_AppDefined);
+    //             return NAN;
+    //         }
 
-            double adfInvGeoTransform[6] = {};
-            if (!GDALInvGeoTransform(adfGeoTransform, adfInvGeoTransform)) {
-                apxMsgW() << tr("Error %1. Cannot invert geotransform.").arg(CPLE_AppDefined);
-                return NAN;
-            }
+    //         double adfInvGeoTransform[6] = {};
+    //         if (!GDALInvGeoTransform(adfGeoTransform, adfInvGeoTransform)) {
+    //             apxMsgW() << tr("Error %1. Cannot invert geotransform.").arg(CPLE_AppDefined);
+    //             return NAN;
+    //         }
 
-            iPixel = static_cast<int>(floor(adfInvGeoTransform[0] + adfInvGeoTransform[1] * dfGeoX
-                                            + adfInvGeoTransform[2] * dfGeoY));
-            iLine = static_cast<int>(floor(adfInvGeoTransform[3] + adfInvGeoTransform[4] * dfGeoX
-                                           + adfInvGeoTransform[5] * dfGeoY));
-        } else {
-            iPixel = static_cast<int>(floor(dfGeoX));
-            iLine = static_cast<int>(floor(dfGeoY));
-        }
+    //         iPixel = static_cast<int>(floor(adfInvGeoTransform[0] + adfInvGeoTransform[1] * dfGeoX
+    //                                         + adfInvGeoTransform[2] * dfGeoY));
+    //         iLine = static_cast<int>(floor(adfInvGeoTransform[3] + adfInvGeoTransform[4] * dfGeoX
+    //                                        + adfInvGeoTransform[5] * dfGeoY));
+    //     } else {
+    //         iPixel = static_cast<int>(floor(dfGeoX));
+    //         iLine = static_cast<int>(floor(dfGeoY));
+    //     }
 
-        CPLString osLine;
-        bool bPixelReport = true;
+    //     CPLString osLine;
+    //     bool bPixelReport = true;
 
-        if (iPixel < 0 || iLine < 0 || iPixel >= GDALGetRasterXSize(hSrcDS)
-            || iLine >= GDALGetRasterYSize(hSrcDS)) {
-            apxMsgW() << tr("Location is off this file! No further details to report.");
-            bPixelReport = false;
-        }
+    //     if (iPixel < 0 || iLine < 0 || iPixel >= GDALGetRasterXSize(hSrcDS)
+    //         || iLine >= GDALGetRasterYSize(hSrcDS)) {
+    //         apxMsgW() << tr("Location is off this file! No further details to report.");
+    //         bPixelReport = false;
+    //     }
 
-        // Process each band
-        for (int i = 0; bPixelReport && i < static_cast<int>(anBandList.size()); i++) {
-            GDALRasterBandH hBand = GDALGetRasterBand(hSrcDS, anBandList[i]);
-            int iPixelToQuery = iPixel;
-            int iLineToQuery = iLine;
+    //     // Process each band
+    //     for (int i = 0; bPixelReport && i < static_cast<int>(anBandList.size()); i++) {
+    //         GDALRasterBandH hBand = GDALGetRasterBand(hSrcDS, anBandList[i]);
+    //         int iPixelToQuery = iPixel;
+    //         int iLineToQuery = iLine;
 
-            if (nOverview >= 0 && hBand != nullptr) {
-                GDALRasterBandH hOvrBand = GDALGetOverview(hBand, nOverview);
-                if (hOvrBand != nullptr) {
-                    auto nOvrXSize = GDALGetRasterBandXSize(hOvrBand);
-                    auto nOvrYSize = GDALGetRasterBandYSize(hOvrBand);
-                    iPixelToQuery = static_cast<int>(
-                        0.5 + 1.0 * iPixel / GDALGetRasterXSize(hSrcDS) * nOvrXSize);
-                    iLineToQuery = static_cast<int>(
-                        0.5 + 1.0 * iLine / GDALGetRasterYSize(hSrcDS) * nOvrYSize);
-                    if (iPixelToQuery >= nOvrXSize)
-                        iPixelToQuery = nOvrXSize - 1;
-                    if (iLineToQuery >= nOvrYSize)
-                        iLineToQuery = nOvrYSize - 1;
-                } else {
-                    apxMsgW() << tr("Error %1. Cannot get overview %2 of band %3")
-                                     .arg(CPLE_AppDefined)
-                                     .arg(nOverview + 1)
-                                     .arg(anBandList[i]);
-                }
-                hBand = hOvrBand;
-            }
+    //         if (nOverview >= 0 && hBand != nullptr) {
+    //             GDALRasterBandH hOvrBand = GDALGetOverview(hBand, nOverview);
+    //             if (hOvrBand != nullptr) {
+    //                 auto nOvrXSize = GDALGetRasterBandXSize(hOvrBand);
+    //                 auto nOvrYSize = GDALGetRasterBandYSize(hOvrBand);
+    //                 iPixelToQuery = static_cast<int>(
+    //                     0.5 + 1.0 * iPixel / GDALGetRasterXSize(hSrcDS) * nOvrXSize);
+    //                 iLineToQuery = static_cast<int>(
+    //                     0.5 + 1.0 * iLine / GDALGetRasterYSize(hSrcDS) * nOvrYSize);
+    //                 if (iPixelToQuery >= nOvrXSize)
+    //                     iPixelToQuery = nOvrXSize - 1;
+    //                 if (iLineToQuery >= nOvrYSize)
+    //                     iLineToQuery = nOvrYSize - 1;
+    //             } else {
+    //                 apxMsgW() << tr("Error %1. Cannot get overview %2 of band %3")
+    //                                  .arg(CPLE_AppDefined)
+    //                                  .arg(nOverview + 1)
+    //                                  .arg(anBandList[i]);
+    //             }
+    //             hBand = hOvrBand;
+    //         }
 
-            if (hBand == nullptr)
-                continue;
+    //         if (hBand == nullptr)
+    //             continue;
 
-            double adfPixel[2] = {0, 0};
-            const bool bIsComplex = CPL_TO_BOOL(GDALDataTypeIsComplex(GDALGetRasterDataType(hBand)));
+    //         double adfPixel[2] = {0, 0};
+    //         const bool bIsComplex = CPL_TO_BOOL(GDALDataTypeIsComplex(GDALGetRasterDataType(hBand)));
 
-            if (GDALRasterIO(hBand,
-                             GF_Read,
-                             iPixelToQuery,
-                             iLineToQuery,
-                             1,
-                             1,
-                             adfPixel,
-                             1,
-                             1,
-                             bIsComplex ? GDT_CFloat64 : GDT_Float64,
-                             0,
-                             0)
-                == CE_None) {
-                CPLString osValue;
+    //         if (GDALRasterIO(hBand,
+    //                          GF_Read,
+    //                          iPixelToQuery,
+    //                          iLineToQuery,
+    //                          1,
+    //                          1,
+    //                          adfPixel,
+    //                          1,
+    //                          1,
+    //                          bIsComplex ? GDT_CFloat64 : GDT_Float64,
+    //                          0,
+    //                          0)
+    //             == CE_None) {
+    //             CPLString osValue;
 
-                if (bIsComplex)
-                    osValue.Printf("%.15g+%.15gi", adfPixel[0], adfPixel[1]);
-                else
-                    osValue.Printf("%.15g", adfPixel[0]);
+    //             if (bIsComplex)
+    //                 osValue.Printf("%.15g+%.15gi", adfPixel[0], adfPixel[1]);
+    //             else
+    //                 osValue.Printf("%.15g", adfPixel[0]);
 
-                elevation = std::stod(osValue.c_str());
-            }
-        }
+    //             elevation = std::stod(osValue.c_str());
+    //         }
+    //     }
 
-        if ((lat != NAN && lon != NAN) || (fscanf(stdin, "%lf %lf", &dfGeoX, &dfGeoY) != 2)) {
-            inputAvailable = false;
-        }
-    }
+    //     if ((lat != NAN && lon != NAN) || (fscanf(stdin, "%lf %lf", &dfGeoX, &dfGeoY) != 2)) {
+    //         inputAvailable = false;
+    //     }
+    // }
 
-    // Cleanup
-    if (hCT) {
-        OSRDestroySpatialReference(hSrcSRS);
-        OCTDestroyCoordinateTransformation(hCT);
-    }
+    // // Cleanup
+    // if (hCT) {
+    //     OSRDestroySpatialReference(hSrcSRS);
+    //     OCTDestroyCoordinateTransformation(hCT);
+    // }
 
-    GDALClose(hSrcDS);
-    GDALDumpOpenDatasets(stderr);
-    GDALDestroyDriverManager();
-    CPLFree(srcSRS);
+    // GDALClose(hSrcDS);
+    // GDALDumpOpenDatasets(stderr);
+    // GDALDestroyDriverManager();
+    // CPLFree(srcSRS);
 #endif
 
     return elevation;
@@ -431,17 +437,17 @@ char *OfflineElevationDB::SanitizeSRS(const char *userInput)
     char *result = nullptr;
 
 #ifdef Q_OS_LINUX
-    OGRSpatialReferenceH hSRS = OSRNewSpatialReference(nullptr);
-    if (OSRSetFromUserInput(hSRS, userInput) == OGRERR_NONE)
-        OSRExportToWkt(hSRS, &result);
-    else {
-        apxMsgW() << tr("Error %1. Translating source or target SRS failed: %2")
-                         .arg(CPLE_AppDefined)
-                         .arg(userInput);
-        return nullptr;
-    }
+    // OGRSpatialReferenceH hSRS = OSRNewSpatialReference(nullptr);
+    // if (OSRSetFromUserInput(hSRS, userInput) == OGRERR_NONE)
+    //     OSRExportToWkt(hSRS, &result);
+    // else {
+    //     apxMsgW() << tr("Error %1. Translating source or target SRS failed: %2")
+    //                      .arg(CPLE_AppDefined)
+    //                      .arg(userInput);
+    //     return nullptr;
+    // }
 
-    OSRDestroySpatialReference(hSRS);
+    // OSRDestroySpatialReference(hSRS);
 #endif
 
     return result;
