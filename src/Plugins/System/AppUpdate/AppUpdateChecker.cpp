@@ -323,7 +323,7 @@ void AppUpdateChecker::hdutilFinished(int exitCode, QProcess::ExitStatus exitSta
         it.next();
         const auto fileInfo = it.fileInfo();
 
-        if (fileInfo.isHidden())
+        if (fileInfo.fileName() == "." || fileInfo.fileName() == "..")
             continue; //filters dot and dotdot
 
         const QString subPathStructure = fileInfo.absoluteFilePath().mid(absSourcePathLength);
