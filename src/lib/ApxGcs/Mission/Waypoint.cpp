@@ -134,6 +134,9 @@ QJsonValue Waypoint::toJson()
 {
     auto jso = MissionItem::toJson().toObject();
 
+    // remove agl from oblect
+    jso.remove(f_agl->name());
+
     // move all actions to object
     auto jso_actions = jso.take("actions").toObject();
     for (auto it = jso_actions.begin(); it != jso_actions.end(); ++it) {
