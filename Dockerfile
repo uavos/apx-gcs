@@ -92,7 +92,7 @@ RUN apt install -y --no-install-recommends \
 ARG VERSION_QT=6.7.1
 RUN pip install aqtinstall &&\
     aqt install-qt linux$(cat /arch_qt) desktop ${VERSION_QT} -m \
-    qtshadertools qt5compat qtcharts qtmultimedia \
+    qtshadertools qt5compat qtcharts qtmultimedia qtimageformats\
     qtspeech qtlocation qtpositioning qtserialport &&\
     rsync -av /${VERSION_QT}/*/ /usr/local/ && rm -Rf /${VERSION_QT}
 
