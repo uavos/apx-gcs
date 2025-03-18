@@ -29,6 +29,10 @@
 #include <QQmlComponent>
 #include <QGeoCoordinate>
 #include <QtCore>
+#include <QMap>
+#include <QSet>
+
+#include <Mission/MissionItem.h>
 
 // ===== Analyze elevation route =====
 #include <QGeoPath>
@@ -43,28 +47,28 @@ class ElevationMap : public Fact
 {
     Q_OBJECT
     Q_PROPERTY(double elevation READ elevation WRITE setElevation NOTIFY elevationChanged)
-    // Q_PROPERTY(QGeoCoordinate clickCoordinate READ clickCoordinate WRITE setClickCoordinate NOTIFY
-    //                clickCoordinateChanged)
+    Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
 public:
     explicit ElevationMap(Fact *parent = nullptr);
 
     Fact *f_use;
     Fact *f_path;
-    Fact *f_control;
+    Fact *f_util;
+    Fact *f_control{nullptr};
 
     Unit *unit() const;
     UnitMission *mission() const;
     MissionTools *missionTools() const;
     Fact *aglset() const;
 
+    Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &coordinate);
+    void setCoordinateWithElevation(const QGeoCoordinate &coordinate);
+
+    QGeoCoordinate coordinate() const;
+    void setCoordinate(const QGeoCoordinate &coordinate);
     double elevation() const;
     void setElevation(double v);
-    // QGeoCoordinate clickCoordinate() const;
-    // void setClickCoordinate(const QGeoCoordinate &v);
-
-    Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &v);
-    Q_INVOKABLE double getElevationByCoordinate(const QGeoCoordinate &v);
     Q_INVOKABLE bool isRoutHasCollision(QVariantList &elevationProfile, double startHAMSL, double endHAMSL);
 
     // ===== Analyze elevation route =====
@@ -74,14 +78,21 @@ public:
     // ===================================
 
 protected:
+    QGeoCoordinate m_coordinate;
     double m_elevation;
-    // QGeoCoordinate m_clickCoordinate;
 
 private:
-    std::shared_ptr<AbstractElevationDB> m_elevationDB;
+    QSharedPointer<AbstractElevationDB> m_elevationDB;
+    QMap<QString, int> m_waypoints;
+    QSet<QString> m_runways;
+    QSet<QString> m_pois;
 
     void createElevationDatabase();
     void setMissionValues(bool b);
+    void setWaypointsValues(bool b);
+    void setRunwaysValues(bool b);
+    void setPoisValues(bool b);
+    void clearMissionPoints();
     QObject *qml;
 
 private slots:
@@ -90,7 +101,9 @@ private slots:
     void setMissionAgl();
     void getPluginEnableControl();
     void changeExternalsVisibility();
+    void updateDBUtility();
 
 signals:
+    void coordinateChanged(QGeoCoordinate coordinate);
     void elevationChanged();
 };

@@ -28,13 +28,10 @@ import APX.Mission
 
 Item {
     id: item
-    property var map: apx.tools.elevationmap
-    property var altitude: fact.parentFact.child("altitude").value
-    property var amsl: fact.parentFact.child("amsl").value
-    property var homeHmsl: mandala.est.ref.hmsl.value
-    property var coordinate: fact.parentFact.coordinate
+
     property var value: fact.value
-    property var elevation: NaN
+    property var unsafeAgl: fact.parentFact.unsafeAgl
+    property var elevation: fact.parentFact.elevation
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
     property var chosenFact: fact.parentFact.chosen
     property bool chosen: chosenFact == Waypoint.AGL
@@ -63,35 +60,11 @@ Item {
         text: isNaN(item.elevation) ? "NO" : getElevation()
     }
 
-    onValueChanged: factButton.color = fact.value < fact.parentFact.unsafeAgl ? Material.color(Material.Red) : action_color()
+    onValueChanged: factButton.color = value < unsafeAgl ? Material.color(Material.Red) : action_color()
     onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
     onChosenChanged: _editor.enabled = chosen
-    onElevationChanged: fact.enabled = !isNaN(elevation)
-    onAltitudeChanged: if(!chosen) aglProcessing()
-    onAmslChanged: {calcAgl(); calcAglFt()}
-    
-    Component.onCompleted: {
-        _editor.enabled = chosen
-        elevation = map.getElevationByCoordinate(coordinate)
-        aglProcessing()
-        
-        // Feets processing
-        aglFtProcessing()
-    }
 
-    function aglProcessing() 
-    {   
-        if(isNaN(elevation)) {
-            fact.value = 0
-            return
-        }
-        calcAgl()
-    }
-
-    function calcAgl() {
-        var diff = altitude - elevation
-        fact.value = amsl?diff:homeHmsl+diff
-    }
+    Component.onCompleted: _editor.enabled = chosen
 
     function getElevation()
     {
@@ -99,29 +72,4 @@ Item {
             return m2ft(item.elevation) + "ft"
         return Math.round(item.elevation) + "m"     
     }
-
-    // Feets processing
-    property var opts: fact.opts
-    property var altOpts: fact.parentFact.child("altitude").opts
-    onAltOptsChanged: aglFtProcessing()
-
-    function aglFtProcessing() {
-        if(chosen)
-            return
-
-        if(isNaN(elevation)) {
-            opts.ft = 0
-            fact.opts = opts
-            return
-        }
-
-        calcAglFt()
-    }
-
-    function calcAglFt() {
-        var diff = parseInt(altOpts.ft) - m2ft(elevation)
-        opts.ft = amsl?diff:m2ft(homeHmsl) + diff
-        fact.opts = opts
-    }
-
 }

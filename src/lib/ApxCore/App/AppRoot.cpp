@@ -205,11 +205,11 @@ QString AppRoot::distanceToString(uint v, bool units)
 
 QString AppRoot::distanceToStringFt(uint v, bool units)
 {
-    QString s, su = "ml";
-    if (v >= 5280000)
-        s = QString("%1").arg(v / 5280.0, 0, 'f', 0);
-    else if (v >= 5280)
-        s = QString("%1").arg(v / 5280.0, 0, 'f', 1);
+    QString s, su = "nm";
+    if (v >= 6076120)
+        s = QString("%1").arg(v / 6076.12, 0, 'f', 0);
+    else if (v >= 6076.12)
+        s = QString("%1").arg(v / 6076.12, 0, 'f', 1);
     else {
         s = QString("%1").arg(static_cast<ulong>(v));
         su = "ft";

@@ -29,8 +29,10 @@
 #include <QGeoPath>
 #include <QGeoRectangle>
 #include <QtCore>
+#include <QTimer>
 
 #include <XbusMission.h>
+#include <cmath>
 
 class MissionItem : public Fact
 {
@@ -41,6 +43,7 @@ class MissionItem : public Fact
 
     Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
     Q_PROPERTY(double bearing READ bearing NOTIFY bearingChanged)
+    Q_PROPERTY(double elevation READ elevation NOTIFY elevationChanged)
     Q_PROPERTY(uint time READ time NOTIFY timeChanged)
     Q_PROPERTY(uint distance READ distance NOTIFY distanceChanged)
 
@@ -59,12 +62,15 @@ public:
     MissionGroup *group;
     int missionItemType() const;
 
-    static constexpr float M2FT_COEF = 3.2808; // conversion coefficient feets to meter
-    static constexpr float M2KN_COEF = 1.9438; // conversion coefficient meter per secont to knots
+    static constexpr double EPS = 0.00000001;
+    static constexpr float M2FT_COEF = 3.2808;  // conversion coefficient feets to meter
+    static constexpr float M2KN_COEF = 1.9438;  // conversion coefficient meter per secont to knots
+    static constexpr int TIMEOUT = 500;         // elevation update timeout
     Fact *f_order;
     Fact *f_latitude;
     Fact *f_longitude;
 
+    Fact *f_elevationmap{nullptr};
     Fact *f_remove;
     Fact *f_feets;
 
@@ -74,6 +80,7 @@ public:
     void fromJson(const QJsonValue &jsv) override;
 
 public slots:
+    void extractElevation(const QGeoCoordinate &coordinate);
     void updatePath();
     void resetPath();
 
@@ -113,6 +120,9 @@ public:
     QGeoPath geoPath() const;
     void setGeoPath(const QGeoPath &v);
 
+    double elevation() const; // terrain elevation in current wp
+    void setElevation(double elevation);
+
     double bearing() const;
     void setBearing(const double &v);
 
@@ -137,8 +147,10 @@ public:
     void changeFeetMeters();
 
 protected:
+    QTimer m_timer;
     QGeoCoordinate m_coordinate;
     QGeoPath m_geoPath;
+    double m_elevation{NAN};
     double m_bearing{};
     uint m_time{};
     uint m_distance{};
@@ -150,8 +162,9 @@ protected:
     bool m_isFeets{};
 
 signals:
-    void coordinateChanged();
+    void coordinateChanged(QGeoCoordinate v);
     void geoPathChanged();
+    void elevationChanged();
     void bearingChanged();
     void timeChanged();
     void distanceChanged();
@@ -160,5 +173,6 @@ signals:
     void totalTimeChanged();
 
     void selectedChanged();
+    void requestElevation(QGeoCoordinate v);
     void isFeetsChanged();
 };

@@ -48,8 +48,7 @@ public:
     Fact *f_altitude;
     Fact *f_amsl;
     Fact *f_agl;
-    Fact *f_elevationmap;
-    Fact *f_useAgl;
+    Fact *f_refHmsl{nullptr};
 
     Fact *f_atrack;
     Fact *f_xtrack;
@@ -61,6 +60,17 @@ public:
 
 protected:
     QGeoPath getPath() override;
+    void initElevationMap();
+    void calcAltitude();
+    void recalcAltitude();
+    void processAgl();
+    void calcAgl();
+    void updateAgl();
+
+    // Feets processing
+    void calcAltitudeFt();
+    void processAglFt();
+    void calcAglFt();
 
 private:
     QString _altUnits;
@@ -69,6 +79,7 @@ private slots:
     void updateTitle() override;
     void updateDescr();
     void updateAMSL();
+    void updateAltDescr();
 
     //---------------------------------------
     // PROPERTIES

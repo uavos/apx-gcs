@@ -27,8 +27,11 @@
 #include <Mission/MissionTools.h>
 #include <Mission/UnitMission.h>
 #include <Mission/Waypoint.h>
+#include <Mission/Runway.h>
+#include <Mission/Poi.h>
 
 #include <QFileDialog>
+#include <QMap>
 
 ElevationMap::ElevationMap(Fact *parent)
     : Fact(parent,
@@ -38,7 +41,6 @@ ElevationMap::ElevationMap(Fact *parent)
            Group | FlatModel,
            "elevation-rise")
 {
-    m_elevation = qQNaN();
     auto path = AppDirs::db().absolutePath() + "/Elevation";
 
     f_use = new Fact(this, "use", tr("Use elevation map"), "", Fact::Bool, "check");
@@ -51,48 +53,53 @@ ElevationMap::ElevationMap(Fact *parent)
                       Text | PersistentValue,
                       "import");
     f_path->setDefaultValue(path);
+    f_util = new Fact(this,
+                         "util",
+                         tr("Use util"),
+                         tr("Use the special util"), 
+                         Enum | PersistentValue,
+                         "tools");
+    f_util->setEnumStrings({"none", "gdallocationinfo"});
+
+#ifdef Q_OS_LINUX
+    f_util->setDefaultValue("none");
+#else
+    f_util->setDefaultValue("gdallocationinfo");
+#endif
 
     connect(this, &Fact::pathChanged, this, &ElevationMap::getPluginEnableControl);
     connect(Fleet::instance(), &Fleet::currentChanged, this, [this]() { updateMission(); });
     connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
-
-    getPluginEnableControl();
+    connect(f_util, &Fact::valueChanged, this, &ElevationMap::updateDBUtility);
     updateMission();
     createElevationDatabase();
+    updateDBUtility();
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
 
-double ElevationMap::elevation() const
+void ElevationMap::setCoordinateWithElevation(const QGeoCoordinate &coordinate)
 {
-    return m_elevation;
+    m_elevationDB->requestCoordinate(coordinate.latitude(), coordinate.longitude());
 }
 
-void ElevationMap::setElevation(double v)
+void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &coordinate)
 {
-    if (m_elevation == v)
-        return;
-
-    m_elevation = v;
-    emit elevationChanged();
-}
-
-void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &v)
-{
-    auto elevation = m_elevationDB->getElevation(v.latitude(), v.longitude());
-    setElevation(elevation);
-}
-
-double ElevationMap::getElevationByCoordinate(const QGeoCoordinate &v)
-{
-    return m_elevationDB->getElevation(v.latitude(), v.longitude());
+    m_elevationDB->requestElevation(coordinate.latitude(), coordinate.longitude());
 }
 
 void ElevationMap::createElevationDatabase()
 {
     auto path = f_path->value().toString();
-    m_elevationDB = std::make_shared<OfflineElevationDB>(path);
+    m_elevationDB = QSharedPointer<OfflineElevationDB>::create(path);
+    connect(m_elevationDB.data(), &OfflineElevationDB::coordinateReceived, this, &ElevationMap::setCoordinate);
+    connect(m_elevationDB.data(), &OfflineElevationDB::elevationReceived, this, &ElevationMap::setElevation);
+}
+
+void ElevationMap::updateDBUtility()
+{
+    m_elevationDB->setUtil(static_cast<AbstractElevationDB::Util>(f_util->value().toInt()));
 }
 
 void ElevationMap::onOpenTriggered()
@@ -145,7 +152,7 @@ void ElevationMap::setMissionAgl()
     auto m = mission();
     for (int i = 0; i < m->f_waypoints->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
-        auto elevation = getElevationByCoordinate(wp->coordinate());
+        auto elevation = wp->elevation();
         if (qIsNaN(elevation))
             continue;
 
@@ -176,14 +183,114 @@ void ElevationMap::changeExternalsVisibility()
 
 void ElevationMap::setMissionValues(bool b)
 {
-    auto m = mission();
-    for (int i = 0; i < m->f_waypoints->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
-        wp->f_agl->setVisible(b);
-    }
     auto aglset = missionTools()->child("aglset");
     if (aglset)
         aglset->setVisible(b);
+
+    // Signal missionSizeChanged is sent before mission is cleared
+    auto m = mission();
+    if(!m->missionSize() > 0) {
+        clearMissionPoints(); 
+        return;
+    }
+
+    setWaypointsValues(b);
+    setRunwaysValues(b);
+    setPoisValues(b);
+}
+
+QGeoCoordinate ElevationMap::coordinate() const
+{
+    return m_coordinate;
+}
+
+void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
+    if(m_coordinate == coordinate)
+        return;
+    m_coordinate = coordinate;
+    emit coordinateChanged(m_coordinate);
+}
+
+double ElevationMap::elevation() const
+{
+    return m_elevation;
+}
+
+void ElevationMap::setElevation(double v)
+{
+    if (m_elevation == v)
+        return;
+
+    m_elevation = v;
+    emit elevationChanged();
+}
+
+void ElevationMap::setWaypointsValues(bool b)
+{
+    auto m = mission();
+    QMap<QString, int> tempMap;
+    for (int i = 0; i < m->f_waypoints->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        wp->f_agl->setVisible(b);
+        if (!b)
+            continue;
+        connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation);
+        connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+        // connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
+        auto str = wp->coordinate().toString();
+        auto alt = wp->f_altitude->value().toInt();
+        if (!m_waypoints.contains(str) || m_waypoints[str] != alt) {
+            setCoordinateWithElevation(wp->coordinate());
+        }
+        tempMap[str] = alt;
+    }
+    m_waypoints = tempMap;
+}
+
+void ElevationMap::setRunwaysValues(bool b) {
+    auto m = mission();
+    QSet<QString> tempSet;
+    for (int i = 0; i < m->f_runways->size(); ++i) {
+        if (!b)
+            continue;
+        auto runway = static_cast<Runway *>(m->f_runways->child(i));
+        connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation);
+        connect(runway, &Runway::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+        // connect(runway, &Runway::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);// for fast processing
+        auto str = runway->coordinate().toString();
+        if (!m_runways.contains(str)) {
+            setCoordinateWithElevation(runway->coordinate());
+        }
+        tempSet.insert(str);
+    }
+    m_runways = tempSet;
+}
+
+void ElevationMap::setPoisValues(bool b) {
+    
+    auto m = mission();
+    QSet<QString> tempSet;
+    for (int i = 0; i < m->f_pois->size(); ++i) {
+        if (!b)
+            continue;
+        auto poi = static_cast<Poi *>(m->f_pois->child(i));
+        connect(this, &ElevationMap::coordinateChanged, poi, &Poi::extractElevation);
+        connect(poi, &Poi::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+        // connect(poi, &Poi::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
+        auto str = poi->coordinate().toString();
+        if (!m_pois.contains(str)) {
+            setCoordinateWithElevation(poi->coordinate());
+        }
+        tempSet.insert(str);
+    }
+    m_pois = tempSet;
+}
+
+void ElevationMap::clearMissionPoints()
+{
+    m_waypoints.clear();
+    m_runways.clear();
+    m_pois.clear();
 }
 
 QVariantList ElevationMap::getElevationProfile(const QGeoPath &geoPath)

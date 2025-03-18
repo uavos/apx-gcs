@@ -28,13 +28,9 @@ import APX.Mission
 
 Item {
     id: item
-    property var map: apx.tools.elevationmap
-    property var agl: fact.parentFact.child("agl").value
-    property var amsl: fact.parentFact.child("amsl").value
-    property var coordinate: fact.parentFact.coordinate
+
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var color: "#dcdcdc"
-    property var elevation: NaN
     property var chosenFact: fact.parentFact.chosen
     property bool chosen: chosenFact == Waypoint.ALT
     
@@ -63,43 +59,14 @@ Item {
     // }
 
     onChosenChanged: _editor.enabled = chosen
-    onAglChanged: if(!chosen) altitudeProcessing()
-    
-    Component.onCompleted: {
-        _editor.enabled = chosen
-        elevation = map.getElevationByCoordinate(coordinate)
-    }
 
-    function altitudeProcessing() 
-    {   
-        if(isNaN(elevation))
-            return
-        if(chosen)
-            return
-        
-        var hAmsl = elevation + agl
-        fact.value = amsl?hAmsl:hAmsl - homeHmsl 
-    }
+    Component.onCompleted: _editor.enabled = chosen
+
 
     function getHomeHmsl()
     {
         if(fact.parentFact.isFeets)
             return m2ft(homeHmsl) + "ft"
         return Math.round(homeHmsl) + "m"     
-    }
-
-    // Feets processing
-    property var opts: fact.opts
-    property var aglOpts: fact.parentFact.child("agl").opts
-
-    onAglOptsChanged: if (!chosen) altitudeFtProcessing()
-
-    function altitudeFtProcessing() {
-        if(isNaN(elevation))
-            return
-
-        var hAmsl = parseInt(aglOpts.ft) +  m2ft(elevation)
-        opts.ft = amsl?hAmsl:hAmsl - m2ft(homeHmsl)
-        fact.opts = opts
     }
 }

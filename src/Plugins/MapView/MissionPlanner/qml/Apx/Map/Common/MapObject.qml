@@ -129,12 +129,23 @@ MapQuickItem {  //to be used inside MapComponent only
             map.flickToCoordinate(coordinate)
         }
     }
+
+    // object elevation view when dragging and hovered support
+    function updateMapInfoElevation() {
+        if(apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value)
+            apx.tools.elevationmap.setElevationByCoordinate(mapObject.coordinate)
+    }
+    
+    onHoverChanged: if(hover && !dragging) timer.start() // updateMapInfoElevation()
     onDraggingChanged: {
         if(dragging){
             if(!selected) select()
+            timer.repeat = true;
+            timer.start()
         }else{
             movingFinished()
             if(implicitCoordinate) coordinate=Qt.binding(function(){return implicitCoordinate})
+            timer.repeat = false;
         }
     }
 
@@ -257,4 +268,10 @@ MapQuickItem {  //to be used inside MapComponent only
         }
     }
 
+    // object elevation view when dragging support
+    Timer {
+        id: timer
+        interval: 750
+        onTriggered: updateMapInfoElevation()
+    }
 }

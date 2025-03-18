@@ -62,6 +62,8 @@ public:
     double heading() const;
 
 protected:
+    void initElevationMap();
+    
 signals:
     void endPointChanged();
     void appPointChanged();

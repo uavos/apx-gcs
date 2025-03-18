@@ -28,9 +28,7 @@ import Apx.Common
 Item {
     id: item
     visible: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
-    property var map: apx.tools.elevationmap
-    property var coordinate: fact.parentFact.coordinate
-    property var elevation: NaN
+    property var elevation: fact.parentFact.elevation
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32" 
 
     anchors.fill: parent
@@ -56,7 +54,6 @@ Item {
         color: item.color
         text: isNaN(item.elevation) ? "NO" : getElevation()
     }
-    Component.onCompleted: elevation = map.getElevationByCoordinate(coordinate)
 
     function getElevation()
     {
@@ -64,10 +61,4 @@ Item {
             return m2ft(item.elevation) + "ft"
         return Math.round(item.elevation) + "m"
     }
-
-    // For hmsl of runway and poi updating when elevation changed
-    // onElevationChanged: {
-    //     if(fact.name === "hmsl" && !isNaN(item.elevation))
-    //         fact.value = item.isFeets?m2ft(item.elevation):item.elevation
-    // } 
 }
