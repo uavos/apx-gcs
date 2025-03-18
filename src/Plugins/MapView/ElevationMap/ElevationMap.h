@@ -63,7 +63,7 @@ public:
     Fact *aglset() const;
 
     Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &coordinate);
-    void setCoordinateWithElevation(const QGeoCoordinate &coordinate);
+    Q_INVOKABLE void setCoordinateWithElevation(const QGeoCoordinate &coordinate);
 
     QGeoCoordinate coordinate() const;
     void setCoordinate(const QGeoCoordinate &coordinate);
@@ -101,6 +101,7 @@ private slots:
     void setMissionAgl();
     void getPluginEnableControl();
     void changeExternalsVisibility();
+    void setStartPointElevation();
     void updateDBUtility();
 
 signals:

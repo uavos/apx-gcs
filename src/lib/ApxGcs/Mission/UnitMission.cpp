@@ -493,3 +493,18 @@ void UnitMission::setSelectedItem(Fact *v)
     m_selectedItem = v;
     emit selectedItemChanged();
 }
+
+// ===== Mission Analyze =====
+
+double UnitMission::startElevation() const
+{
+    return m_startElevation;
+}
+
+void UnitMission::setStartElevation(const double v)
+{
+    if(m_startElevation == v)
+        return;
+    m_startElevation = v;
+    emit startElevationChanged();
+}

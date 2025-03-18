@@ -46,6 +46,7 @@ class UnitMission : public Fact
     Q_ENUMS(MissionItemType)
 
     Q_PROPERTY(QGeoCoordinate startPoint READ startPoint WRITE setStartPoint NOTIFY startPointChanged)
+    Q_PROPERTY(double startElevation READ startElevation WRITE setStartElevation NOTIFY startElevationChanged)
     Q_PROPERTY(double startHeading READ startHeading WRITE setStartHeading NOTIFY startHeadingChanged)
     Q_PROPERTY(double startLength READ startLength WRITE setStartLength NOTIFY startLengthChanged)
 
@@ -171,8 +172,13 @@ public:
     Fact *selectedItem() const;
     void setSelectedItem(Fact *v);
 
+    // ==== Mission analyze ======
+    double startElevation() const;
+    void setStartElevation(const double v);
+
 protected:
     QGeoCoordinate m_startPoint;
+    double m_startElevation{};
     double m_startHeading;
     double m_startLength;
 
@@ -191,6 +197,7 @@ protected:
 
 signals:
     void startPointChanged();
+    void startElevationChanged();
     void startHeadingChanged();
     void startLengthChanged();
     void missionSizeChanged();

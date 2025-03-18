@@ -26,6 +26,9 @@
 #include <App/AppRoot.h>
 #include <QGeoCircle>
 
+// Mission analyze
+#include <QPointF>
+
 MissionItem::MissionItem(MissionGroup *parent,
                          const QString &name,
                          const QString &title,
@@ -103,6 +106,10 @@ MissionItem::MissionItem(MissionGroup *parent,
     // For feets functionality 
     connect(this, &MissionItem::isFeetsChanged, this, &MissionItem::updateStatus);
     updateStatus();
+
+    // Mission Analyze
+    m_terrainProfile = QSharedPointer<QLineSeries>::create();
+    connect(this, &MissionItem::geoPathChanged, this, &MissionItem::createTerrainProfile); // TODO move to ElevationMap
 }
 
 void MissionItem::hashData(QCryptographicHash *h) const
@@ -372,4 +379,18 @@ void MissionItem::setIsFeets(bool v)
 void MissionItem::changeFeetMeters()
 {
     setIsFeets(!m_isFeets);
+}
+
+
+// ===== Mission analyze =====
+QLineSeries *MissionItem::terrainProfile() const {
+    return m_terrainProfile.data();
+}
+
+void MissionItem::createTerrainProfile() {
+    // Temp stub for test
+    m_terrainProfile->clear();
+    m_terrainProfile->append(QPoint(0, 200));
+    m_terrainProfile->append(QPointF(m_geoPath.length(), 200));
+    emit terrainProfileChanged();
 }

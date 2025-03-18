@@ -136,6 +136,7 @@ Fact *ElevationMap::aglset() const
 void ElevationMap::updateMission()
 {
     connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::changeExternalsVisibility);
+    connect(mission(), &UnitMission::startPointChanged, this, &ElevationMap::setStartPointElevation);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
     changeExternalsVisibility();
 }
@@ -293,34 +294,58 @@ void ElevationMap::clearMissionPoints()
     m_pois.clear();
 }
 
+// ==== Mission analize
+void ElevationMap::setStartPointElevation()
+{
+    auto m = mission();
+    auto startPoint = m->startPoint();
+    for (int i = 0; i < m->f_runways->size(); ++i) {
+        auto runway = static_cast<Runway *>(m->f_runways->child(i));
+        if (startPoint != runway->endPoint()) {
+            continue;
+        }
+        auto rwHmsl = runway->f_hmsl;
+        auto value = rwHmsl->value().toInt();
+        auto elevation = (value != 0) ? value : runway->elevation();
+        m->setStartElevation(elevation);
+        connect(rwHmsl, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation);
+        connect(runway, &Fact::removed, this, [this]() { mission()->setStartElevation(0); });
+    }
+}
+
 QVariantList ElevationMap::getElevationProfile(const QGeoPath &geoPath)
 {
     double distance{0};
     double elevation{0};
     QVariantList elevationProfile;
-    auto path = geoPath.path();
+    // // auto path = geoPath.path();
+ 
+    // // Add path points
+    // for (int i = 0; i < path.size()-1; ++i) {
+    //     auto plotLenght = path[i].distanceTo(path[i+1]);
+    //     if (plotLenght > TERRAIN_STEP) {
+    //         double lenght{0};
+    //         auto azimuth = path[i].azimuthTo(path[i + 1]);
+    //         while (lenght < plotLenght) {
+    //             auto point = path[i].atDistanceAndAzimuth(lenght, azimuth);
+    //             // elevation = getElevationByCoordinate(point);                
+    //             elevationProfile.append(QPointF(distance + lenght, elevation));
+    //             lenght += TERRAIN_STEP;
+    //         }
+    //     } else {
+    //         elevation = getElevationByCoordinate(path[i]);
+    //         elevationProfile.append(QPointF(distance, elevation));
+    //     }
+    //     distance += plotLenght;
+    // }
+    // // Add last point
+    // elevation = getElevationByCoordinate(path.last());
+    // elevationProfile.append(QPointF(distance, elevation));
 
-    // Add path points
-    for (int i = 0; i < path.size()-1; ++i) {
-        auto plotLenght = path[i].distanceTo(path[i+1]);
-        if (plotLenght > TERRAIN_STEP) {
-            double lenght{0};
-            auto azimuth = path[i].azimuthTo(path[i + 1]);
-            while (lenght < plotLenght) {
-                auto point = path[i].atDistanceAndAzimuth(lenght, azimuth);
-                elevation = getElevationByCoordinate(point);                
-                elevationProfile.append(QPointF(distance + lenght, elevation));
-                lenght += TERRAIN_STEP;
-            }
-        } else {
-            elevation = getElevationByCoordinate(path[i]);
-            elevationProfile.append(QPointF(distance, elevation));
-        }
-        distance += plotLenght;
-    }
-    // Add last point
-    elevation = getElevationByCoordinate(path.last());
-    elevationProfile.append(QPointF(distance, elevation));
+
+    // ==== Temporary stub ====
+    elevationProfile.append(QPointF(0, 200));
+    elevationProfile.append(QPointF(geoPath.length(), 200));
 
     return elevationProfile;
 }

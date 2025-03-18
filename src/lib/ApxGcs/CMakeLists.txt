@@ -10,4 +10,5 @@ apx_lib(
     Widgets
     SerialPort
     Positioning
+    Charts
 )

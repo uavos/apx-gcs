@@ -160,8 +160,8 @@ Window {
         Item {
             id: startPoint
             property var coordinate: mission.startPoint
+            property var elevation: mission.startElevation
             property var elevationmap: apx.tools.elevationmap
-            property var elevation: elevationmap.getElevationByCoordinate(coordinate)
             property var chartHeight: chartView.plotArea.height
             property var scaleY: axisY.max/chartHeight
             property var hStartPoint: !isNaN(elevation)?(elevation/scaleY):0

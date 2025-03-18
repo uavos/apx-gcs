@@ -73,13 +73,12 @@ Repeater {
                     upperSeries: LineSeries {
                         id: epLineSeries
                     }
-
                 }
             }
             Component.onCompleted: setLineSeriesData()
             function setLineSeriesData() {
-                var elevationProfile =  startPoint.elevationmap.getElevationProfile(modelData.geoPath)
-                elevationProfile.forEach((ep)=>{epLineSeries.append(ep.x, ep.y)})
+            //    var elevationProfile =  startPoint.elevationmap.getElevationProfile(modelData.geoPath)
+            //    elevationProfile.forEach((ep)=>{epLineSeries.append(ep.x, ep.y)})
             }
         }
     }

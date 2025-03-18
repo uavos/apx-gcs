@@ -34,6 +34,9 @@
 #include <XbusMission.h>
 #include <cmath>
 
+// ==== Mission Analize ======
+#include <QLineSeries>
+
 class MissionItem : public Fact
 {
     Q_OBJECT
@@ -52,6 +55,9 @@ class MissionItem : public Fact
 
     Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectedChanged)
     Q_PROPERTY(bool isFeets READ isFeets WRITE setIsFeets NOTIFY isFeetsChanged)
+
+    // ===== Mission analyze =======
+    Q_PROPERTY(QLineSeries* terrainProfile READ terrainProfile NOTIFY terrainProfileChanged)
 
 public:
     explicit MissionItem(MissionGroup *parent,
@@ -146,9 +152,14 @@ public:
 
     void changeFeetMeters();
 
+    // ===== Mission analyze ======
+    QLineSeries* terrainProfile() const;
+    void createTerrainProfile();
+
 protected:
     QTimer m_timer;
     QGeoCoordinate m_coordinate;
+    QSharedPointer<QLineSeries> m_terrainProfile;
     QGeoPath m_geoPath;
     double m_elevation{NAN};
     double m_bearing{};
@@ -175,4 +186,7 @@ signals:
     void selectedChanged();
     void requestElevation(QGeoCoordinate v);
     void isFeetsChanged();
+
+    // ===== Mission analyze ======
+    void terrainProfileChanged();
 };
