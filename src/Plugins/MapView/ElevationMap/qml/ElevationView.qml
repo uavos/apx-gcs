@@ -160,11 +160,11 @@ Window {
         Item {
             id: startPoint
             property var coordinate: mission.startPoint
-            property var elevation: mission.startElevation
             property var elevationmap: apx.tools.elevationmap
             property var chartHeight: chartView.plotArea.height
             property var scaleY: axisY.max/chartHeight
-            property var hStartPoint: !isNaN(elevation)?(elevation/scaleY):0
+            property var startElevation: mission.startElevation
+            property var hStartPoint: !isNaN(startElevation)?(startElevation/scaleY):0
 
             x: chartView.plotArea.x
             y: chartView.plotArea.y + chartHeight
@@ -187,10 +187,14 @@ Window {
             }
             Component.onCompleted: updateStartPoint()
             onCoordinateChanged: updateStartPoint()
+            onStartElevationChanged: updateStartPoint()
             function updateStartPoint()
             {
+                if(hStartPoint === undefined)
+                    return;
                 var point = lineSeries.at(0)
-                lineSeries.replace(point.x, point.y, point.x, elevation)
+                //  console.log("===>", axisY.max, "-", chartHeight, "-", mission.startElevation, "-", hStartPoint)
+                lineSeries.replace(point.x, point.y, point.x, hStartPoint)
             }
         }
         Loader {
@@ -203,10 +207,10 @@ Window {
         }
         Loader {
             id: epLoader
-            active: false
-            anchors.fill: parent
-            asynchronous: true
-            sourceComponent: Component { ElevationChart { } }
+            // active: false
+            // anchors.fill: parent
+            // asynchronous: true
+            // sourceComponent: Component { ElevationChart { } }
         }
     }
 }
