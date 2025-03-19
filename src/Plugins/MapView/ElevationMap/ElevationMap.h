@@ -41,8 +41,9 @@ class MissionTools;
 class ElevationMap : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(double elevation READ elevation WRITE setElevation NOTIFY elevationChanged)
+    Q_PROPERTY(QGeoPath geoPath READ geoPath WRITE setGeoPath NOTIFY geoPathChanged)
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
+    Q_PROPERTY(double elevation READ elevation WRITE setElevation NOTIFY elevationChanged)
 
 public:
     explicit ElevationMap(Fact *parent = nullptr);
@@ -59,6 +60,10 @@ public:
 
     Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &coordinate);
     void setCoordinateWithElevation(const QGeoCoordinate &coordinate);
+    void setTerrainProfile(const QGeoPath &path);
+
+    QGeoPath geoPath() const;
+    void setGeoPath(const QGeoPath &v);
 
     QGeoCoordinate coordinate() const;
     void setCoordinate(const QGeoCoordinate &coordinate);
@@ -66,6 +71,7 @@ public:
     void setElevation(double v);
 
 protected:
+    QGeoPath m_geoPath;
     QGeoCoordinate m_coordinate;
     double m_elevation;
 
@@ -93,5 +99,6 @@ private slots:
 
 signals:
     void coordinateChanged(QGeoCoordinate coordinate);
+    void geoPathChanged(QGeoPath geoPath);
     void elevationChanged();
 };

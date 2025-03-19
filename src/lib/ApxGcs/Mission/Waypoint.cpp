@@ -127,6 +127,14 @@ void Waypoint::initElevationMap()
     m_timer.setSingleShot(true);
     connect(this, &MissionItem::coordinateChanged, this, [this]() {if (!m_timer.isActive()) m_timer.start();});
     connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestElevation(m_coordinate);});
+    connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
+    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
+    Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
+    if(prevWp) {
+        Fact *prevAltitude = prevWp->f_altitude;
+        connect(prevAltitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
+    }
+
     updateAgl();
 }
 
@@ -356,6 +364,18 @@ void Waypoint::setWarning(bool v)
     emit warningChanged();
 }
 
+bool Waypoint::collision() const
+{
+    return m_collision;
+}
+
+void Waypoint::setCollision(bool v){
+    if(m_collision == v)
+        return;
+    m_collision = v;
+    emit collisionChanged();
+}
+
 Waypoint::ChosenFact Waypoint::chosen() const
 {
     return m_chosen;
@@ -468,4 +488,80 @@ void Waypoint::updateAgl()
 {
     processAgl();
     processAglFt();
+}
+
+void Waypoint::buildTerrainProfile(const QGeoPath &path)
+{
+    auto end = m_geoPath.size() - 1;
+    auto first = m_geoPath.coordinateAt(0);
+    auto last = m_geoPath.coordinateAt(end);
+
+    end = path.size() - 1;
+    auto firstIn = path.coordinateAt(0);
+    auto lastIn = path.coordinateAt(end);
+
+    first.setAltitude(0);
+    last.setAltitude(0);
+    firstIn.setAltitude(0);
+    lastIn.setAltitude(0);
+
+    if(first != firstIn || last != lastIn)
+        return;
+
+    qDebug() << "Success!!!";
+
+    m_terrainProfile.clear();
+
+    QPointF pt;
+    double ptDistance{0};
+    double ptElevation{0};
+    QGeoCoordinate current;
+    QGeoCoordinate next;
+
+    auto lastIndex = path.size() - 1;
+    for (qsizetype i = 0; i < lastIndex; ++i) {
+        current = path.coordinateAt(i);
+        next = path.coordinateAt(i + 1);
+        ptElevation = current.altitude();
+        m_terrainProfile.append(QPointF(ptDistance, ptElevation));
+        ptDistance += current.distanceTo(next);
+    }
+    ptElevation = path.coordinateAt(lastIndex).altitude();
+    m_terrainProfile.append(QPointF(ptDistance, ptElevation));
+
+    qDebug() << "End build!!!" << m_geoPath.length() << "-" << path.length() << "-" << ptDistance << "-" << distance();
+    
+    checkCollision();
+}
+
+void Waypoint::checkCollision()
+{
+    Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
+    if (!prevWp) {
+        bool collision = (f_agl->value().toInt() > UNSAFE_AGL);
+        setCollision(collision);
+        return;
+    }
+
+    auto prevAlt = prevWp->f_altitude->value().toInt();
+    auto prevAmsl = prevWp->f_amsl->value().toBool();
+    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    if (!prevAmsl)
+        prevAlt += refHmsl;
+
+    auto alt = f_altitude->value().toInt();
+    auto amsl = f_amsl->value().toBool();
+    if (!amsl)
+        alt += refHmsl;
+
+    auto tan = (alt - prevAlt) / distance();
+    for(const auto tp : m_terrainProfile) {
+        auto safeHeight = tp.y() + UNSAFE_AGL;
+        auto routeHeight = prevAlt + tp.x() * tan;
+        if (routeHeight < safeHeight) {
+            setCollision(true);
+            return;
+        }
+    }
+    setCollision(false);
 }

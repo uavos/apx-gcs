@@ -70,6 +70,7 @@ MissionObject {
     property var homeHmsl: mandala.est.ref.hmsl.value
     property var agl: fact?fact.child("agl").value:0
     property var elevation: fact?fact.elevation:NaN
+    property var collision: fact?fact.collision:false
 
     onElevationChanged: timer.restart()
     onAltitudeChanged: timer.restart()
@@ -213,7 +214,7 @@ MissionObject {
                 opacity: ui.effects?0.6:1
                 //smooth: ui.antialiasing
                 line.width: waypointItem.pathWidth
-                line.color: waypointItem.pathColor
+                line.color: !waypointItem.collision?waypointItem.pathColor : "red"
                 function updatePath()
                 {
                     if(waypointItem.path){
@@ -228,6 +229,4 @@ MissionObject {
             }
         }
     }
-
-
 }

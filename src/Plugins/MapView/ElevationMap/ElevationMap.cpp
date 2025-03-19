@@ -89,12 +89,18 @@ void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &coordinate)
     m_elevationDB->requestElevation(coordinate.latitude(), coordinate.longitude());
 }
 
+void ElevationMap::setTerrainProfile(const QGeoPath &path)
+{
+    m_elevationDB->requestTerrainProfile(path);
+}
+
 void ElevationMap::createElevationDatabase()
 {
     auto path = f_path->value().toString();
     m_elevationDB = QSharedPointer<OfflineElevationDB>::create(path);
     connect(m_elevationDB.data(), &OfflineElevationDB::coordinateReceived, this, &ElevationMap::setCoordinate);
     connect(m_elevationDB.data(), &OfflineElevationDB::elevationReceived, this, &ElevationMap::setElevation);
+    connect(m_elevationDB.data(), &OfflineElevationDB::terrainProfileReceived, this, &ElevationMap::setGeoPath);
 }
 
 void ElevationMap::updateDBUtility()
@@ -199,9 +205,17 @@ void ElevationMap::setMissionValues(bool b)
     setPoisValues(b);
 }
 
-QGeoCoordinate ElevationMap::coordinate() const
+void ElevationMap::setGeoPath(const QGeoPath &v)
 {
-    return m_coordinate;
+    if (m_geoPath == v)
+        return;
+    m_geoPath = v;
+    emit geoPathChanged(m_geoPath);
+}
+
+QGeoPath ElevationMap::geoPath() const
+{
+    return m_geoPath;
 }
 
 void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
@@ -236,6 +250,8 @@ void ElevationMap::setWaypointsValues(bool b)
             continue;
         connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation);
         connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+        connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile);
+        connect(this, &ElevationMap::geoPathChanged, wp, &Waypoint::buildTerrainProfile);
         // connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
         auto str = wp->coordinate().toString();
         auto alt = wp->f_altitude->value().toInt();
