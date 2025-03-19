@@ -169,11 +169,18 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         bool msg_init = false;
 
         while (stream.available() > 0) {
-            auto s = stream.read_string(stream.available());
-            QString msg(QString(s).trimmed());
+            auto p = reinterpret_cast<const char *>(stream.ptr());
+            auto sz = stream.available();
+            stream.skip(sz);
 
-            msg.replace("\r", "\n");
-            msg = msg.trimmed();
+            // remove trailing zeros
+            while (sz > 0 && p[sz - 1] == 0)
+                sz--;
+            if (!sz)
+                continue;
+
+            auto msg = QString::fromUtf8(p, sz);
+            msg = msg.replace('\r', '\n').trimmed();
 
             auto msg_lines = msg.split('\n', Qt::SkipEmptyParts);
             trace()->block(msg_lines.join(" | "));
