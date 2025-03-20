@@ -374,7 +374,6 @@ bool Waypoint::collision() const
 }
 
 void Waypoint::setCollision(bool v){
-    qDebug() << "===>Set collision: " << f_order->value().toInt() << " - " << v;
     if(m_collision == v)
         return;
     m_collision = v;

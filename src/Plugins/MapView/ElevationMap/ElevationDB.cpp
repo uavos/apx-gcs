@@ -21,6 +21,7 @@
  */
 
 #include "ElevationDB.h"
+#include <App/App.h>
 #include <App/AppLog.h>
 
 #include <QFile>
@@ -62,7 +63,6 @@ OfflineElevationDB::OfflineElevationDB(const QString &path)
             << "/opt/homebrew/bin/";
     connect(this, &OfflineElevationDB::utilChanged, this, &OfflineElevationDB::updateUtilPath);
 }
-
 
 QString OfflineElevationDB::createASTERFileName(double lat, double lon)
 {
@@ -274,15 +274,21 @@ void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path) {
         emit terrainProfileReceived(result);
         watcher->deleteLater();
     });
+    connect(App::instance(), &App::appQuit, watcher, &QFutureWatcher<QGeoPath>::cancel);
     watcher->setFuture(future);
 }
 
-QGeoPath OfflineElevationDB::requestTerrainProfileASTER(const QGeoPath &path, const QString &dbPath, const QString &utilPath, Util util)
+void OfflineElevationDB::requestTerrainProfileASTER(QPromise<QGeoPath> &promise,const QGeoPath &path, const QString &dbPath, const QString &utilPath, Util util)
 {
     QImage image;
     QString fileName;
     QGeoPath route = prepareRoute(path);
     for (qsizetype i = 0; i < route.size(); ++i) {
+        // Stop request (if app closed)
+        promise.suspendIfRequested();
+        if (promise.isCanceled()) {
+            return;
+        }
         auto point = route.coordinateAt(i);
         double elevation{0};
         double latitude = point.latitude();
@@ -291,7 +297,8 @@ QGeoPath OfflineElevationDB::requestTerrainProfileASTER(const QGeoPath &path, co
         auto name = createASTERFileName(latitude, longitude);
         auto filePath = QString("%1/%2").arg(dbPath).arg(name);
         if (!QFile::exists(filePath)) {
-            return QGeoPath();
+            promise.addResult(QGeoPath());
+            return;
         }
 
         if (util == GDALLOCATIONINFO) {
@@ -306,7 +313,7 @@ QGeoPath OfflineElevationDB::requestTerrainProfileASTER(const QGeoPath &path, co
         point.setAltitude(elevation);
         route.replaceCoordinate(i, point);
     }
-    return route;
+    promise.addResult(route);
 }
 
 QGeoPath OfflineElevationDB::prepareRoute(const QGeoPath &path)
