@@ -295,7 +295,7 @@ QGeoPath OfflineElevationDB::requestTerrainProfileASTER(const QGeoPath &path, co
         }
 
         if (util == GDALLOCATIONINFO) {
-            elevation = getElevationGdallocationInfo(utilPath, fileName, latitude, longitude);
+            elevation = getElevationGdallocationInfo(utilPath, filePath, latitude, longitude);
         } else {
             if(fileName != filePath) {
                 fileName = filePath;
