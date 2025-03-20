@@ -132,7 +132,6 @@ void Waypoint::initElevationMap()
     m_geoPathTimer.setInterval(TIMEOUT);
     connect(this, &MissionItem::geoPathChanged, this, [this]() {m_geoPathTimer.start();});
     connect(&m_geoPathTimer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
-    
     connect(f_altitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if(prevWp) {
@@ -375,6 +374,7 @@ bool Waypoint::collision() const
 }
 
 void Waypoint::setCollision(bool v){
+    qDebug() << "===>Set collision: " << f_order->value().toInt() << " - " << v;
     if(m_collision == v)
         return;
     m_collision = v;
@@ -571,7 +571,7 @@ void Waypoint::checkCollision()
     if (!amsl)
         alt += refHmsl;
 
-    auto tan = (alt - prevAlt) / dst;
+    auto tan = static_cast<double>(alt - prevAlt) / dst;
     for(const auto &tp : m_terrainProfile) {
         auto safeHeight = tp.y() + UNSAFE_AGL;
         auto routeHeight = prevAlt + tp.x() * tan;
