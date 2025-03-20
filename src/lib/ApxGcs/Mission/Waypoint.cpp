@@ -127,9 +127,13 @@ void Waypoint::initElevationMap()
     m_timer.setInterval(TIMEOUT);
     connect(this, &MissionItem::coordinateChanged, this, [this]() {if (!m_timer.isActive()) m_timer.start();});
     connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestElevation(m_coordinate);});
-    connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
-    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
+   
+    m_geoPathTimer.setSingleShot(true);
+    m_geoPathTimer.setInterval(TIMEOUT);
+    connect(this, &MissionItem::geoPathChanged, this, [this]() {m_geoPathTimer.start();});
+    connect(&m_geoPathTimer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
     
+    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if(prevWp) {
         Fact *prevAltitude = prevWp->f_altitude;

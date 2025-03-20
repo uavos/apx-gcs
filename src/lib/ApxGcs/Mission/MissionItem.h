@@ -148,6 +148,7 @@ public:
 
 protected:
     QTimer m_timer;
+    QTimer m_geoPathTimer;
     QGeoCoordinate m_coordinate;
     QGeoPath m_geoPath;
     double m_elevation{NAN};
