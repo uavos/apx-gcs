@@ -123,12 +123,13 @@ void Waypoint::initElevationMap()
     connect(this, &MissionItem::elevationChanged, this, [this]() {
         f_agl->setEnabled(!std::isnan(m_elevation));
     });
-    m_timer.setInterval(TIMEOUT);
     m_timer.setSingleShot(true);
+    m_timer.setInterval(TIMEOUT);
     connect(this, &MissionItem::coordinateChanged, this, [this]() {if (!m_timer.isActive()) m_timer.start();});
     connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestElevation(m_coordinate);});
     connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
     connect(f_altitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
+    
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if(prevWp) {
         Fact *prevAltitude = prevWp->f_altitude;
@@ -508,8 +509,6 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     if(first != firstIn || last != lastIn)
         return;
 
-    qDebug() << "Success!!!";
-
     m_terrainProfile.clear();
 
     QPointF pt;
@@ -526,19 +525,33 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
         m_terrainProfile.append(QPointF(ptDistance, ptElevation));
         ptDistance += current.distanceTo(next);
     }
+    
     ptElevation = path.coordinateAt(lastIndex).altitude();
     m_terrainProfile.append(QPointF(ptDistance, ptElevation));
-
-    qDebug() << "End build!!!" << m_geoPath.length() << "-" << path.length() << "-" << ptDistance << "-" << distance();
-    
     checkCollision();
 }
 
 void Waypoint::checkCollision()
 {
+    if(m_terrainProfile.empty()) {
+        setCollision(false);
+        return;
+    }
+
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
+    // Checking the first point
     if (!prevWp) {
-        bool collision = (f_agl->value().toInt() > UNSAFE_AGL);
+        bool collision = (f_agl->value().toInt() < UNSAFE_AGL);
+        setCollision(collision);
+        return;
+    }
+
+    // Checking points on top of each other
+    auto dst = distance();
+    if(dst == 0) {
+        bool currentCollision = (f_agl->value().toInt() < UNSAFE_AGL);
+        bool prevCollision = (prevWp->f_agl->value().toInt() < UNSAFE_AGL);
+        bool collision = currentCollision && prevCollision;
         setCollision(collision);
         return;
     }
@@ -554,8 +567,8 @@ void Waypoint::checkCollision()
     if (!amsl)
         alt += refHmsl;
 
-    auto tan = (alt - prevAlt) / distance();
-    for(const auto tp : m_terrainProfile) {
+    auto tan = (alt - prevAlt) / dst;
+    for(const auto &tp : m_terrainProfile) {
         auto safeHeight = tp.y() + UNSAFE_AGL;
         auto routeHeight = prevAlt + tp.x() * tan;
         if (routeHeight < safeHeight) {
