@@ -86,7 +86,7 @@ MissionObject {
             return false
         if(isNaN(elevation))
             return false
-        agl = amsl?(altitude - elevation):(homeHmsl + altitude - elevation)
+        // agl = amsl?(altitude - elevation):(homeHmsl + altitude - elevation)
         return agl < fact.unsafeAgl
     }
 
