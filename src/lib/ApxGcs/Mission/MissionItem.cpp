@@ -106,10 +106,6 @@ MissionItem::MissionItem(MissionGroup *parent,
     // For feets functionality 
     connect(this, &MissionItem::isFeetsChanged, this, &MissionItem::updateStatus);
     updateStatus();
-
-    // Mission Analyze
-    m_terrainProfile = QSharedPointer<QLineSeries>::create();
-    connect(this, &MissionItem::geoPathChanged, this, &MissionItem::createTerrainProfile); // TODO move to ElevationMap
 }
 
 void MissionItem::hashData(QCryptographicHash *h) const
@@ -383,14 +379,14 @@ void MissionItem::changeFeetMeters()
 
 
 // ===== Mission analyze =====
-QLineSeries *MissionItem::terrainProfile() const {
-    return m_terrainProfile.data();
+QList<QPointF> MissionItem::terrainProfile() const
+{
+    return m_terrainProfile;
 }
 
-void MissionItem::createTerrainProfile() {
-    // Temp stub for test
-    m_terrainProfile->clear();
-    m_terrainProfile->append(QPoint(0, 200));
-    m_terrainProfile->append(QPointF(m_geoPath.length(), 200));
+void MissionItem::setTerrainProfile(const QList<QPointF> &v) {
+    if(m_terrainProfile == v)
+        return;
+    m_terrainProfile = v;
     emit terrainProfileChanged();
 }

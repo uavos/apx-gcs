@@ -111,7 +111,6 @@ public:
 
 protected:
     static const int UNSAFE_AGL = 100; // Suggested by the CEO
-    QList<QPointF> m_terrainProfile;
     QPair<int, int> m_minmax;
     ChosenFact m_chosen{ALT};
     bool m_reachable{};

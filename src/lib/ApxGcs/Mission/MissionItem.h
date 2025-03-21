@@ -35,7 +35,7 @@
 #include <cmath>
 
 // ==== Mission Analize ======
-#include <QLineSeries>
+#include <QPointF>
 
 class MissionItem : public Fact
 {
@@ -57,7 +57,7 @@ class MissionItem : public Fact
     Q_PROPERTY(bool isFeets READ isFeets WRITE setIsFeets NOTIFY isFeetsChanged)
 
     // ===== Mission analyze =======
-    Q_PROPERTY(QLineSeries* terrainProfile READ terrainProfile NOTIFY terrainProfileChanged)
+    Q_PROPERTY(QList<QPointF> terrainProfile READ terrainProfile NOTIFY terrainProfileChanged)
 
 public:
     explicit MissionItem(MissionGroup *parent,
@@ -153,14 +153,14 @@ public:
     void changeFeetMeters();
 
     // ===== Mission analyze ======
-    QLineSeries* terrainProfile() const;
-    void createTerrainProfile();
+    QList<QPointF> terrainProfile() const;
+    void setTerrainProfile(const QList<QPointF> &v);
 
 protected:
     QTimer m_timer;
     QTimer m_geoPathTimer;
     QGeoCoordinate m_coordinate;
-    QSharedPointer<QLineSeries> m_terrainProfile;
+    QList<QPointF> m_terrainProfile;
     QGeoPath m_geoPath;
     double m_elevation{NAN};
     double m_bearing{};

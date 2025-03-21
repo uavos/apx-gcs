@@ -548,6 +548,8 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     
     ptElevation = path.coordinateAt(lastIndex).altitude();
     m_terrainProfile.append(QPointF(ptDistance, ptElevation));
+    emit terrainProfileChanged();
+    
     checkCollision();
 }
 
