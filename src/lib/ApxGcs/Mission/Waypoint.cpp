@@ -113,8 +113,14 @@ void Waypoint::initElevationMap()
     f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
     if(!f_elevationmap)
         return;
+
+    // Get refpoint data    
     f_refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
-    connect(f_refHmsl, &Fact::valueChanged, this, &Waypoint::updateAgl);
+    f_refStatus = unit()->f_mandala->fact(mandala::est::nav::ref::status::uid);
+    if (f_refHmsl && f_refStatus) {
+        connect(f_refHmsl, &Fact::valueChanged, this, &Waypoint::updateAgl);
+        connect(f_refStatus, &Fact::valueChanged, this, &Waypoint::updateAgl);
+    }
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAgl);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAglFt);
@@ -123,10 +129,22 @@ void Waypoint::initElevationMap()
     connect(this, &MissionItem::elevationChanged, this, [this]() {
         f_agl->setEnabled(!std::isnan(m_elevation));
     });
-    m_timer.setInterval(TIMEOUT);
     m_timer.setSingleShot(true);
+    m_timer.setInterval(TIMEOUT);
     connect(this, &MissionItem::coordinateChanged, this, [this]() {if (!m_timer.isActive()) m_timer.start();});
     connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestElevation(m_coordinate);});
+   
+    m_geoPathTimer.setSingleShot(true);
+    m_geoPathTimer.setInterval(TIMEOUT);
+    connect(this, &MissionItem::geoPathChanged, this, [this]() {m_geoPathTimer.start();});
+    connect(&m_geoPathTimer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
+    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
+    Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
+    if(prevWp) {
+        Fact *prevAltitude = prevWp->f_altitude;
+        connect(prevAltitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
+    }
+
     updateAgl();
 }
 
@@ -344,6 +362,19 @@ void Waypoint::setReachable(bool v)
     m_reachable = v;
     emit reachableChanged();
 }
+
+QPair<int, int> Waypoint::minmax() const
+{
+    return m_minmax;
+}
+void Waypoint::setMinmax(const QPair<int, int> &v)
+{
+    if (m_minmax == v)
+        return;
+    m_minmax = v;
+    emit minmaxChanged();
+}
+
 bool Waypoint::warning() const
 {
     return m_warning;
@@ -356,11 +387,21 @@ void Waypoint::setWarning(bool v)
     emit warningChanged();
 }
 
+bool Waypoint::collision() const
+{
+    return m_collision;
+}
+void Waypoint::setCollision(bool v){
+    if(m_collision == v)
+        return;
+    m_collision = v;
+    emit collisionChanged();
+}
+
 Waypoint::ChosenFact Waypoint::chosen() const
 {
     return m_chosen;
 }
-
 void Waypoint::setChosen(ChosenFact v)
 {
     if (m_chosen == v)
@@ -389,24 +430,24 @@ void Waypoint::calcAltitude()
         return;
    
     auto heightAmsl = m_elevation + f_agl->value().toDouble();
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    auto startHmsl = calcStartHMSL();
     if (f_amsl->value().toBool())
         f_altitude->setValue(heightAmsl);
     else
-        f_altitude->setValue((heightAmsl - refHmsl));
+        f_altitude->setValue((heightAmsl - startHmsl));
 }
 
 void Waypoint::recalcAltitude()
 {
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    auto startHmsl = calcStartHMSL();
     if (m_isFeets) {
         int ft = f_altitude->opts().value("ft", 0).toInt();
-        int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
-        ft += f_amsl->value().toBool() ? refHmslFt : -refHmslFt;
+        int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
+        ft += f_amsl->value().toBool() ? startHmslFt : -startHmslFt;
         f_altitude->setOpt("ft", ft);
     }
     auto alt = f_altitude->value().toDouble();
-    alt += f_amsl->value().toBool() ? refHmsl : -refHmsl;
+    alt += f_amsl->value().toBool() ? startHmsl : -startHmsl;
     f_altitude->setValue(alt);
 }
 
@@ -423,9 +464,9 @@ void Waypoint::processAgl()
 void Waypoint::calcAgl()
 {
     int diff = f_altitude->value().toInt() - static_cast<int>(m_elevation);
-    int refHmsl = f_refHmsl ? f_refHmsl->value().toInt() : 0;
+    auto startHmsl = calcStartHMSL();
     if (!f_amsl->value().toBool())
-        diff += refHmsl;
+        diff += startHmsl;
     f_agl->setValue(diff);
 }
 
@@ -435,10 +476,10 @@ void Waypoint::calcAltitudeFt() {
     if (std::isnan(m_elevation))
         return;
 
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
-    int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
+    auto startHmsl = calcStartHMSL();
+    int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
     int hAmsl = static_cast<int>(f_agl->opts().value("ft", 0).toInt() + std::round(m_elevation * M2FT_COEF));
-    int ft = f_amsl->value().toBool() ? hAmsl : hAmsl - refHmslFt;
+    int ft = f_amsl->value().toBool() ? hAmsl : hAmsl - startHmslFt;
     f_altitude->setOpt("ft", ft);
 }
 
@@ -457,10 +498,10 @@ void Waypoint::processAglFt()
 
 void Waypoint::calcAglFt()
 {
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
-    int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
+    auto startHmsl = calcStartHMSL();
+    int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
     int diff = static_cast<int>(f_altitude->opts().value("ft", 0).toInt() - std::round(m_elevation * M2FT_COEF));
-    int ft = f_amsl->value().toBool() ? diff : refHmslFt + diff;
+    int ft = f_amsl->value().toBool() ? diff : startHmslFt + diff;
     f_agl->setOpt("ft", ft);
 }
 
@@ -468,4 +509,131 @@ void Waypoint::updateAgl()
 {
     processAgl();
     processAglFt();
+}
+
+void Waypoint::buildTerrainProfile(const QGeoPath &path)
+{
+    auto end = m_geoPath.size() - 1;
+    auto first = m_geoPath.coordinateAt(0);
+    auto last = m_geoPath.coordinateAt(end);
+
+    end = path.size() - 1;
+    auto firstIn = path.coordinateAt(0);
+    auto lastIn = path.coordinateAt(end);
+
+    first.setAltitude(0);
+    last.setAltitude(0);
+    firstIn.setAltitude(0);
+    lastIn.setAltitude(0);
+
+    if(first != firstIn || last != lastIn)
+        return;
+
+    m_terrainProfile.clear();
+
+    QPointF pt;
+    double ptDistance{0};
+    double ptElevation{0};
+    QGeoCoordinate current;
+    QGeoCoordinate next;
+
+    auto lastIndex = path.size() - 1;
+    for (qsizetype i = 0; i < lastIndex; ++i) {
+        current = path.coordinateAt(i);
+        next = path.coordinateAt(i + 1);
+        ptElevation = current.altitude();
+        m_terrainProfile.append(QPointF(ptDistance, ptElevation));
+        ptDistance += current.distanceTo(next);
+    }
+    
+    ptElevation = path.coordinateAt(lastIndex).altitude();
+    m_terrainProfile.append(QPointF(ptDistance, ptElevation));
+    checkCollision();
+}
+
+void Waypoint::checkCollision()
+{
+    if(m_terrainProfile.empty()) {
+        setCollision(false);
+        return;
+    }
+
+    Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
+    // Checking the first point
+    if (!prevWp) {
+        bool collision = (f_agl->value().toInt() < UNSAFE_AGL);
+        setCollision(collision);
+        return;
+    }
+
+    // Checking points on top of each other
+    auto dst = distance();
+    if(dst == 0) {
+        bool currentCollision = (f_agl->value().toInt() < UNSAFE_AGL);
+        bool prevCollision = (prevWp->f_agl->value().toInt() < UNSAFE_AGL);
+        bool collision = currentCollision && prevCollision;
+        setCollision(collision);
+        return;
+    }
+
+    auto prevAlt = prevWp->f_altitude->value().toInt();
+    auto prevAmsl = prevWp->f_amsl->value().toBool();
+    auto startHmsl = calcStartHMSL();
+    if (!prevAmsl)
+        prevAlt += startHmsl;
+
+    auto alt = f_altitude->value().toInt();
+    auto amsl = f_amsl->value().toBool();
+    if (!amsl)
+        alt += startHmsl;
+
+    auto tan = static_cast<double>(alt - prevAlt) / dst;
+    for(const auto &tp : m_terrainProfile) {
+        auto safeHeight = tp.y() + UNSAFE_AGL;
+        auto routeHeight = prevAlt + tp.x() * tan;
+        if (routeHeight < safeHeight) {
+            setCollision(true);
+            return;
+        }
+    }
+    setCollision(false);
+}
+
+double Waypoint::calcStartHMSL()
+{
+    double hHmsl{0};
+    if (group->mission->f_runways->size() > 0) {
+        MissionItem* runway = static_cast<MissionItem *>(group->mission->f_runways->child(0));
+        auto rwHmsl = runway->findChild("hmsl")->value().toInt();
+        hHmsl = rwHmsl;
+        // If hmsl default
+        if (rwHmsl == 0) {
+            // If runway has elevation
+            auto rwElevation = runway->elevation();
+            if (!std::isnan(rwElevation))
+                hHmsl = rwElevation;
+
+            // If refpoint initialized
+            auto refHmsl = getRefPointHmsl();
+            if (refHmsl != 0)
+                hHmsl = refHmsl;
+        }
+    } else {
+        //  If there are no runways
+        hHmsl = getRefPointHmsl();
+    }
+    return hHmsl;
+}
+
+double Waypoint::getRefPointHmsl()
+{
+    double refPointHmsl{0};
+    if (!f_refStatus)
+        return refPointHmsl;
+    if (!f_refHmsl)
+        return refPointHmsl;
+    if (f_refStatus->value().toInt() != mandala::ref_status_initialized)
+        return refPointHmsl;
+    refPointHmsl = f_refHmsl->value().toDouble();
+    return refPointHmsl;
 }

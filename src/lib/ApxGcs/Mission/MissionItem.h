@@ -158,6 +158,7 @@ public:
 
 protected:
     QTimer m_timer;
+    QTimer m_geoPathTimer;
     QGeoCoordinate m_coordinate;
     QSharedPointer<QLineSeries> m_terrainProfile;
     QGeoPath m_geoPath;

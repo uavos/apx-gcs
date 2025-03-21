@@ -21,11 +21,12 @@
  */
 #pragma once
 
-#include <QString>
-#include <QImage>
-#include <QtCore>
-#include <QGeoCoordinate>
 #include <QFutureWatcher>
+#include <QGeoCoordinate>
+#include <QGeoPath>
+#include <QImage>
+#include <QString>
+#include <QtCore>
 
 class AbstractElevationDB : public QObject
 {
@@ -40,6 +41,7 @@ public:
     AbstractElevationDB() = default;
     virtual void requestElevation(double lat, double lon) = 0;
     virtual void requestCoordinate(double lat, double lon) = 0;
+    virtual void requestTerrainProfile(const QGeoPath &path) = 0;
     virtual void setUtil(Util u) = 0;
 
 protected:
@@ -48,6 +50,7 @@ protected:
 signals:
     void coordinateReceived(QGeoCoordinate coordinate);
     void elevationReceived(double elevation);
+    void terrainProfileReceived(QGeoPath path);
 };
 
 class OfflineElevationDB : public AbstractElevationDB
@@ -58,10 +61,12 @@ public:
     OfflineElevationDB(const QString &path);
     void requestElevation(double lat, double lon) override;
     void requestCoordinate(double lat, double lon) override;
+    void requestTerrainProfile(const QGeoPath &path) override;
     double getElevationASTER(double lat, double lon); // Return NaN if the elevation is undefined
     void setUtil(Util u) override;
 
 private:
+    static constexpr int TERRAIN_STEP = 15; // terrain profile step in meters
     QImage m_image;
     QString m_dbPath;
     QString m_fileName;
@@ -73,8 +78,8 @@ private:
     void setImage(const QString &file);
     void requestElevationASTER(double lat, double lon);
     void requestCoordinateASTER(double lat, double lon);
-    QString createASTERFileName(double lat, double lon);
     QString searchUtil(const QString &name);
+    static QString createASTERFileName(double lat, double lon);
     static QGeoCoordinate requestCoordinateGdallocationInfo(const QString &util, const QString &file, double lat, double lon);
     static QGeoCoordinate requestCoordinateTiffASTER(const QImage &image, const QString &file, double lat, double lon);
     static double getElevationTiffASTER(const QImage &image, const QString &file, double lat, double lon);
@@ -87,6 +92,10 @@ private:
     static QGeoCoordinate requestCoordinateFromGeoFile(const QString &file, double lat, double lon);
     static double getElevationFromGeoFile(QString file, double lat, double lon);
     static char *SanitizeSRS(const char *userInput);
+
+    // Add route analizy
+    static QGeoPath prepareRoute(const QGeoPath &path);
+    static void requestTerrainProfileASTER(QPromise<QGeoPath> &promise, const QGeoPath &path, const QString &db, const QString &util, Util u);
 
 signals:
     void utilChanged();

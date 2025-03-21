@@ -33,6 +33,7 @@ class Waypoint : public MissionItem
 
     Q_PROPERTY(bool reachable READ reachable WRITE setReachable NOTIFY reachableChanged)
     Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
+    Q_PROPERTY(bool collision READ collision WRITE setCollision NOTIFY collisionChanged)
     Q_PROPERTY(ChosenFact chosen READ chosen WRITE setChosen NOTIFY chosenChanged)
     Q_PROPERTY(int unsafeAgl READ unsafeAgl CONSTANT)
 
@@ -49,6 +50,7 @@ public:
     Fact *f_amsl;
     Fact *f_agl;
     Fact *f_refHmsl{nullptr};
+    Fact *f_refStatus{nullptr};
 
     Fact *f_atrack;
     Fact *f_xtrack;
@@ -65,7 +67,6 @@ protected:
     void recalcAltitude();
     void processAgl();
     void calcAgl();
-    void updateAgl();
 
     // Feets processing
     void calcAltitudeFt();
@@ -76,10 +77,17 @@ private:
     QString _altUnits;
 
 private slots:
+    double calcStartHMSL();
+    double getRefPointHmsl();
     void updateTitle() override;
     void updateDescr();
     void updateAMSL();
     void updateAltDescr();
+
+public slots:
+    void updateAgl();
+    void buildTerrainProfile(const QGeoPath &path);
+    void checkCollision();
 
     //---------------------------------------
     // PROPERTIES
@@ -87,8 +95,14 @@ public:
     bool reachable() const;
     void setReachable(bool v);
 
+    QPair<int, int> minmax() const;
+    void setMinmax(const QPair<int, int> &v);
+
     bool warning() const;
     void setWarning(bool v);
+
+    bool collision() const;
+    void setCollision(bool v);
 
     ChosenFact chosen() const;
     void setChosen(ChosenFact v);
@@ -97,12 +111,18 @@ public:
 
 protected:
     static const int UNSAFE_AGL = 100; // Suggested by the CEO
+    QList<QPointF> m_terrainProfile;
+    QPair<int, int> m_minmax;
     ChosenFact m_chosen{ALT};
     bool m_reachable{};
     bool m_warning{};
+    bool m_collision{};
 
 signals:
+    void requestTerrainProfile(QGeoPath v);
     void reachableChanged();
+    void collisionChanged();
     void warningChanged();
     void chosenChanged();
+    void minmaxChanged();
 };

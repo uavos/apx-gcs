@@ -21,6 +21,7 @@
  */
 
 #include "ElevationDB.h"
+#include <App/App.h>
 #include <App/AppLog.h>
 
 #include <QFile>
@@ -63,7 +64,6 @@ OfflineElevationDB::OfflineElevationDB(const QString &path)
     connect(this, &OfflineElevationDB::utilChanged, this, &OfflineElevationDB::updateUtilPath);
 }
 
-
 QString OfflineElevationDB::createASTERFileName(double lat, double lon)
 {
     int la = fabs(static_cast<int>(lat));
@@ -73,9 +73,7 @@ QString OfflineElevationDB::createASTERFileName(double lat, double lon)
                         .arg((lat >= 0 ? la : ++la), 2, 10, QChar('0'))
                         .arg((lon >= 0) ? 'E' : 'W')
                         .arg((lon >= 0 ? lo : ++lo), 3, 10, QChar('0'));
-
-    auto path = QString("%1/%2").arg(m_dbPath).arg(fileName);
-    return path;
+    return fileName;
 }
 
 void OfflineElevationDB::setUtil(Util util)
@@ -202,18 +200,19 @@ void OfflineElevationDB::requestCoordinate(double latitude, double longitude) {
 
 void OfflineElevationDB::requestElevationASTER(double latitude, double longitude)
 {
-    auto fileName = createASTERFileName(latitude, longitude);
-    if (!QFile::exists(fileName)) {
+    auto name = createASTERFileName(latitude, longitude);
+    auto filePath = QString("%1/%2").arg(m_dbPath).arg(name);
+    if (!QFile::exists(filePath)) {
         emit elevationReceived(qQNaN());
         return;
     }
 
     QFuture<double> future;
     if (m_util == GDALLOCATIONINFO) {
-        future = QtConcurrent::run(getElevationGdallocationInfo, m_utilPath, fileName, latitude, longitude);
+        future = QtConcurrent::run(getElevationGdallocationInfo, m_utilPath, filePath, latitude, longitude);
     } else {
-        setImage(fileName);
-        future = QtConcurrent::run(getElevationTiffASTER, m_image, fileName, latitude, longitude);
+        setImage(filePath);
+        future = QtConcurrent::run(getElevationTiffASTER, m_image, filePath, latitude, longitude);
     }
     QFutureWatcher<double> *watcher = new QFutureWatcher<double>(this);
     connect(watcher, &QFutureWatcher<QGeoCoordinate>::finished, this, [watcher, this]() {
@@ -226,18 +225,19 @@ void OfflineElevationDB::requestElevationASTER(double latitude, double longitude
 
 void OfflineElevationDB::requestCoordinateASTER(double latitude, double longitude)
 {
-    auto fileName = createASTERFileName(latitude, longitude);
-    if (!QFile::exists(fileName)) {
+    auto name = createASTERFileName(latitude, longitude);
+    auto filePath = QString("%1/%2").arg(m_dbPath).arg(name);
+    if (!QFile::exists(filePath)) {
         emit coordinateReceived(QGeoCoordinate(latitude, longitude));
         return;
     }
 
     QFuture<QGeoCoordinate> future;
     if (m_util == GDALLOCATIONINFO) {
-        future = QtConcurrent::run(requestCoordinateGdallocationInfo, m_utilPath, fileName, latitude, longitude);
+        future = QtConcurrent::run(requestCoordinateGdallocationInfo, m_utilPath, filePath, latitude, longitude);
     } else {
-        setImage(fileName);
-        future = QtConcurrent::run(requestCoordinateTiffASTER, m_image, fileName, latitude, longitude);
+        setImage(filePath);
+        future = QtConcurrent::run(requestCoordinateTiffASTER, m_image, filePath, latitude, longitude);
     }
     QFutureWatcher<QGeoCoordinate> *watcher = new QFutureWatcher<QGeoCoordinate>(this);
     connect(watcher, &QFutureWatcher<QGeoCoordinate>::finished, this, [watcher, this]() {
@@ -248,16 +248,92 @@ void OfflineElevationDB::requestCoordinateASTER(double latitude, double longitud
     watcher->setFuture(future);
 }
 
-void OfflineElevationDB::setImage(const QString &fileName)
+void OfflineElevationDB::setImage(const QString &file)
 {
-    if (fileName.isEmpty())
+    if (file.isEmpty())
         return;
 
-    if (m_fileName != fileName) {
-        m_fileName = fileName;
+    if (m_fileName != file) {
+        m_fileName = file;
         m_image = QImage(m_fileName);
     }
 }
+
+// ===== Add route analyze ======
+void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path) {
+    QFuture<QGeoPath> future;
+    future = QtConcurrent::run(requestTerrainProfileASTER, path, m_dbPath, m_utilPath, m_util);
+    QFutureWatcher<QGeoPath> *watcher = new QFutureWatcher<QGeoPath>(this);
+    connect(watcher, &QFutureWatcher<QGeoPath>::finished, this, [watcher, this]() {
+        auto result = watcher->result();
+        emit terrainProfileReceived(result);
+        watcher->deleteLater();
+    });
+    connect(App::instance(), &App::appQuit, watcher, &QFutureWatcher<QGeoPath>::cancel);
+    watcher->setFuture(future);
+}
+
+void OfflineElevationDB::requestTerrainProfileASTER(QPromise<QGeoPath> &promise,const QGeoPath &path, const QString &db, const QString &util, Util u)
+{
+    QImage image;
+    QString imageFile;
+    QGeoPath route = prepareRoute(path);
+    for (qsizetype i = 0; i < route.size(); ++i) {
+        // Stop request (if app closed)
+        promise.suspendIfRequested();
+        if (promise.isCanceled()) {
+            return;
+        }
+        auto point = route.coordinateAt(i);
+        double latitude = point.latitude();
+        double longitude = point.longitude();
+        
+        auto file = createASTERFileName(latitude, longitude);
+        auto filePath = QString("%1/%2").arg(db).arg(file);
+        if (!QFile::exists(filePath)) {
+            promise.addResult(QGeoPath());
+            return;
+        }
+
+        double elevation{0};
+        if (u == GDALLOCATIONINFO) {
+            elevation = getElevationGdallocationInfo(util, filePath, latitude, longitude);
+        } else {
+            if (imageFile != filePath) {
+                imageFile = filePath;
+                image = QImage(imageFile);
+            }
+            elevation = getElevationTiffASTER(image, filePath, latitude, longitude);
+        }
+        point.setAltitude(elevation);
+        route.replaceCoordinate(i, point);
+    }
+    promise.addResult(route);
+}
+
+QGeoPath OfflineElevationDB::prepareRoute(const QGeoPath &path)
+{
+    QGeoPath route;
+    auto points = path.path();
+    // Add path points
+    for (int i = 0; i < points.size() - 1; ++i) {
+        route.addCoordinate(points[i]);
+        auto plotLenght = points[i].distanceTo(points[i + 1]);
+        if (plotLenght > TERRAIN_STEP) {
+            double lenght{TERRAIN_STEP};
+            auto azimuth = points[i].azimuthTo(points[i + 1]);
+            while (lenght < plotLenght) {
+                auto point = points[i].atDistanceAndAzimuth(lenght, azimuth);
+                route.addCoordinate(point);
+                lenght += TERRAIN_STEP;
+            }
+        }
+    }
+    // Add last point
+    route.addCoordinate(points.last());
+    return route;
+}
+// ===== Add route analyze =====
 
 double OfflineElevationDB::getElevationFromGeoFile(QString file, double lat, double lon)
 {
