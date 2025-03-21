@@ -276,7 +276,7 @@ void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path) {
 void OfflineElevationDB::requestTerrainProfileASTER(QPromise<QGeoPath> &promise,const QGeoPath &path, const QString &db, const QString &util, Util u)
 {
     QImage image;
-    QString file;
+    QString imageFile;
     QGeoPath route = prepareRoute(path);
     for (qsizetype i = 0; i < route.size(); ++i) {
         // Stop request (if app closed)
@@ -299,11 +299,11 @@ void OfflineElevationDB::requestTerrainProfileASTER(QPromise<QGeoPath> &promise,
         if (u == GDALLOCATIONINFO) {
             elevation = getElevationGdallocationInfo(util, filePath, latitude, longitude);
         } else {
-            if(file != filePath) {
-                file = filePath;
-                image = QImage(file);
+            if (imageFile != filePath) {
+                imageFile = filePath;
+                image = QImage(imageFile);
             }
-            elevation = getElevationTiffASTER(image, file, latitude, longitude);
+            elevation = getElevationTiffASTER(image, filePath, latitude, longitude);
         }
         point.setAltitude(elevation);
         route.replaceCoordinate(i, point);
