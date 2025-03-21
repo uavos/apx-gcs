@@ -252,13 +252,14 @@ void ElevationMap::setWaypointsValues(bool b)
         connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
         connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile);
         connect(this, &ElevationMap::geoPathChanged, wp, &Waypoint::buildTerrainProfile);
-         // connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
+        // connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
+        // For start point height update
         if(m->f_runways->size() > 0) {
-            // For start point height update
             auto rw0 = static_cast<Runway *>(m->f_runways->child(0));
             auto rw0Hmsl = rw0->f_hmsl;
             connect(rw0, &Runway::elevationChanged, wp, &Waypoint::updateAgl);
             connect(rw0Hmsl, &Fact::valueChanged, wp, &Waypoint::updateAgl);
+            wp->updateAgl();
         }
         auto str = wp->coordinate().toString();
         auto alt = wp->f_altitude->value().toInt();

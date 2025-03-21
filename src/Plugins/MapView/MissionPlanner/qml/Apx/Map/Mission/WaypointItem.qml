@@ -65,19 +65,13 @@ MissionObject {
     // Unsafe AGL alarm
     property var alarmOn: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
     property var coordinate: fact?fact.coordinate:0
-    property var amsl: fact?fact.child("amsl").value:false
-    property var altitude: fact?fact.child("altitude").value:0
-    property var homeHmsl: mandala.est.ref.hmsl.value
     property var agl: fact?fact.child("agl").value:0
     property var elevation: fact?fact.elevation:NaN
     property var collision: fact?fact.collision:false
 
-    onElevationChanged: timer.restart()
-    onAltitudeChanged: timer.restart()
-    onHomeHmslChanged: timer.restart()
+    onAglChanged: timer.restart()
     onAlarmOnChanged: timer.restart()
-    onAmslChanged: timer.restart()
-        
+     
     function alarm() 
     {   
         if(!fact)
@@ -86,7 +80,6 @@ MissionObject {
             return false
         if(isNaN(elevation))
             return false
-        // agl = amsl?(altitude - elevation):(homeHmsl + altitude - elevation)
         return agl < fact.unsafeAgl
     }
 
