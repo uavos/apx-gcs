@@ -95,7 +95,7 @@ private:
 
     // Add route analizy
     static QGeoPath prepareRoute(const QGeoPath &path);
-    static void requestTerrainProfileASTER(QPromise<QGeoPath> &promise, const QGeoPath &path, const QString &dbPath, const QString &utilPath, Util util);
+    static void requestTerrainProfileASTER(QPromise<QGeoPath> &promise, const QGeoPath &path, const QString &db, const QString &util, Util u);
 
 signals:
     void utilChanged();
