@@ -193,8 +193,7 @@ Window {
                 if(hStartPoint === undefined)
                     return;
                 var point = lineSeries.at(0)
-                //  console.log("===>", axisY.max, "-", chartHeight, "-", mission.startElevation, "-", hStartPoint)
-                lineSeries.replace(point.x, point.y, point.x, hStartPoint)
+               lineSeries.replace(point.x, point.y, point.x, hStartPoint)
             }
         }
         Loader {
@@ -207,10 +206,10 @@ Window {
         }
         Loader {
             id: epLoader
-            // active: false
-            // anchors.fill: parent
-            // asynchronous: true
-            // sourceComponent: Component { ElevationChart { } }
+            active: false
+            anchors.fill: parent
+            asynchronous: true
+            sourceComponent: Component { ElevationChart { } }
         }
     }
 }

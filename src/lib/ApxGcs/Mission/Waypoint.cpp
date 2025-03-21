@@ -136,6 +136,7 @@ void Waypoint::initElevationMap()
    
     m_geoPathTimer.setSingleShot(true);
     m_geoPathTimer.setInterval(TIMEOUT);
+    // connect(this, &MissionItem::geoPathChanged, this, &MissionItem::clearTerrainProfile);
     connect(this, &MissionItem::geoPathChanged, this, [this]() {m_geoPathTimer.start();});
     connect(&m_geoPathTimer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
     connect(f_altitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
@@ -529,7 +530,7 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     if(first != firstIn || last != lastIn)
         return;
 
-    m_terrainProfile.clear();
+    clearTerrainProfile();
 
     QPointF pt;
     double ptDistance{0};

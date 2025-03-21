@@ -27,6 +27,7 @@ Repeater {
             id: epItem
             property var scaleX: axisX.max/chartView.plotArea.width
             property var scaleY: axisY.max/chartView.plotArea.height
+            property var terrainProfile: modelData.terrainProfile
 
             height: chartView.plotArea.height
             width: modelData.distance/scaleX
@@ -67,18 +68,21 @@ Repeater {
                     id: areaSeries
                     axisX: epAxisX
                     axisY: epAxisY
-                    color: "#00FF00"
-                    borderColor: "#00FF00"
+                    color: modelData.collision ? "#FF0000" : "#00FF00"
+                    borderColor: modelData.collision ? "#FF0000" : "#00FF00"
                     opacity: 0.25
                     upperSeries: LineSeries {
                         id: epLineSeries
                     }
                 }
             }
-            Component.onCompleted: setLineSeriesData()
-            function setLineSeriesData() {
-            //    var elevationProfile =  startPoint.elevationmap.getElevationProfile(modelData.geoPath)
-            //    elevationProfile.forEach((ep)=>{epLineSeries.append(ep.x, ep.y)})
+            onTerrainProfileChanged: updateLineSeriesData()
+            function updateLineSeriesData() {
+                if(terrainProfile.lenght == 0)
+                    return;
+                if(epLineSeries.count > 0)
+                    epLineSeries.removePoints(0, epLineSeries.count)
+               terrainProfile.forEach((ep)=>{epLineSeries.append(ep.x, ep.y)})
             }
         }
     }

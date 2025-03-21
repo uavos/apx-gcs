@@ -155,6 +155,7 @@ public:
     // ===== Mission analyze ======
     QList<QPointF> terrainProfile() const;
     void setTerrainProfile(const QList<QPointF> &v);
+    void clearTerrainProfile();
 
 protected:
     QTimer m_timer;

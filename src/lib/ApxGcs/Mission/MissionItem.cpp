@@ -390,3 +390,9 @@ void MissionItem::setTerrainProfile(const QList<QPointF> &v) {
     m_terrainProfile = v;
     emit terrainProfileChanged();
 }
+
+void MissionItem::clearTerrainProfile()
+{
+    m_terrainProfile.clear();
+    emit terrainProfileChanged();
+}
