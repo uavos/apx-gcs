@@ -113,8 +113,14 @@ void Waypoint::initElevationMap()
     f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
     if(!f_elevationmap)
         return;
+
+    // Get refpoint data    
     f_refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
-    connect(f_refHmsl, &Fact::valueChanged, this, &Waypoint::updateAgl);
+    f_refStatus = unit()->f_mandala->fact(mandala::est::nav::ref::status::uid);
+    if (f_refHmsl && f_refStatus) {
+        connect(f_refHmsl, &Fact::valueChanged, this, &Waypoint::updateAgl);
+        connect(f_refStatus, &Fact::valueChanged, this, &Waypoint::updateAgl);
+    }
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAgl);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAglFt);
@@ -356,6 +362,19 @@ void Waypoint::setReachable(bool v)
     m_reachable = v;
     emit reachableChanged();
 }
+
+QPair<int, int> Waypoint::minmax() const
+{
+    return m_minmax;
+}
+void Waypoint::setMinmax(const QPair<int, int> &v)
+{
+    if (m_minmax == v)
+        return;
+    m_minmax = v;
+    emit minmaxChanged();
+}
+
 bool Waypoint::warning() const
 {
     return m_warning;
@@ -372,7 +391,6 @@ bool Waypoint::collision() const
 {
     return m_collision;
 }
-
 void Waypoint::setCollision(bool v){
     if(m_collision == v)
         return;
@@ -384,7 +402,6 @@ Waypoint::ChosenFact Waypoint::chosen() const
 {
     return m_chosen;
 }
-
 void Waypoint::setChosen(ChosenFact v)
 {
     if (m_chosen == v)
@@ -413,24 +430,24 @@ void Waypoint::calcAltitude()
         return;
    
     auto heightAmsl = m_elevation + f_agl->value().toDouble();
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    auto startHmsl = calcStartHMSL();
     if (f_amsl->value().toBool())
         f_altitude->setValue(heightAmsl);
     else
-        f_altitude->setValue((heightAmsl - refHmsl));
+        f_altitude->setValue((heightAmsl - startHmsl));
 }
 
 void Waypoint::recalcAltitude()
 {
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    auto startHmsl = calcStartHMSL();
     if (m_isFeets) {
         int ft = f_altitude->opts().value("ft", 0).toInt();
-        int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
-        ft += f_amsl->value().toBool() ? refHmslFt : -refHmslFt;
+        int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
+        ft += f_amsl->value().toBool() ? startHmslFt : -startHmslFt;
         f_altitude->setOpt("ft", ft);
     }
     auto alt = f_altitude->value().toDouble();
-    alt += f_amsl->value().toBool() ? refHmsl : -refHmsl;
+    alt += f_amsl->value().toBool() ? startHmsl : -startHmsl;
     f_altitude->setValue(alt);
 }
 
@@ -447,9 +464,9 @@ void Waypoint::processAgl()
 void Waypoint::calcAgl()
 {
     int diff = f_altitude->value().toInt() - static_cast<int>(m_elevation);
-    int refHmsl = f_refHmsl ? f_refHmsl->value().toInt() : 0;
+    auto startHmsl = calcStartHMSL();
     if (!f_amsl->value().toBool())
-        diff += refHmsl;
+        diff += startHmsl;
     f_agl->setValue(diff);
 }
 
@@ -459,10 +476,10 @@ void Waypoint::calcAltitudeFt() {
     if (std::isnan(m_elevation))
         return;
 
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
-    int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
+    auto startHmsl = calcStartHMSL();
+    int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
     int hAmsl = static_cast<int>(f_agl->opts().value("ft", 0).toInt() + std::round(m_elevation * M2FT_COEF));
-    int ft = f_amsl->value().toBool() ? hAmsl : hAmsl - refHmslFt;
+    int ft = f_amsl->value().toBool() ? hAmsl : hAmsl - startHmslFt;
     f_altitude->setOpt("ft", ft);
 }
 
@@ -481,10 +498,10 @@ void Waypoint::processAglFt()
 
 void Waypoint::calcAglFt()
 {
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
-    int refHmslFt = static_cast<int>(refHmsl * M2FT_COEF);
+    auto startHmsl = calcStartHMSL();
+    int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
     int diff = static_cast<int>(f_altitude->opts().value("ft", 0).toInt() - std::round(m_elevation * M2FT_COEF));
-    int ft = f_amsl->value().toBool() ? diff : refHmslFt + diff;
+    int ft = f_amsl->value().toBool() ? diff : startHmslFt + diff;
     f_agl->setOpt("ft", ft);
 }
 
@@ -561,14 +578,14 @@ void Waypoint::checkCollision()
 
     auto prevAlt = prevWp->f_altitude->value().toInt();
     auto prevAmsl = prevWp->f_amsl->value().toBool();
-    auto refHmsl = f_refHmsl ? f_refHmsl->value().toDouble() : 0;
+    auto startHmsl = calcStartHMSL();
     if (!prevAmsl)
-        prevAlt += refHmsl;
+        prevAlt += startHmsl;
 
     auto alt = f_altitude->value().toInt();
     auto amsl = f_amsl->value().toBool();
     if (!amsl)
-        alt += refHmsl;
+        alt += startHmsl;
 
     auto tan = static_cast<double>(alt - prevAlt) / dst;
     for(const auto &tp : m_terrainProfile) {
@@ -580,4 +597,43 @@ void Waypoint::checkCollision()
         }
     }
     setCollision(false);
+}
+
+double Waypoint::calcStartHMSL()
+{
+    double hHmsl{0};
+    if (group->mission->f_runways->size() > 0) {
+        MissionItem* runway = static_cast<MissionItem *>(group->mission->f_runways->child(0));
+        auto rwHmsl = runway->findChild("hmsl")->value().toInt();
+        hHmsl = rwHmsl;
+        // If hmsl default
+        if (rwHmsl == 0) {
+            // If runway has elevation
+            auto rwElevation = runway->elevation();
+            if (!std::isnan(rwElevation))
+                hHmsl = rwElevation;
+
+            // If refpoint initialized
+            auto refHmsl = getRefPointHmsl();
+            if (refHmsl != 0)
+                hHmsl = refHmsl;
+        }
+    } else {
+        //  If there are no runways
+        hHmsl = getRefPointHmsl();
+    }
+    return hHmsl;
+}
+
+double Waypoint::getRefPointHmsl()
+{
+    double refPointHmsl{0};
+    if (!f_refStatus)
+        return refPointHmsl;
+    if (!f_refHmsl)
+        return refPointHmsl;
+    if (f_refStatus->value().toInt() != mandala::ref_status_initialized)
+        return refPointHmsl;
+    refPointHmsl = f_refHmsl->value().toDouble();
+    return refPointHmsl;
 }
