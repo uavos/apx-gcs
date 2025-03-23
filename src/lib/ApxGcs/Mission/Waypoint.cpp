@@ -126,9 +126,7 @@ void Waypoint::initElevationMap()
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAglFt);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::calcAgl);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl);
-    connect(this, &MissionItem::elevationChanged, this, [this]() {
-        f_agl->setEnabled(!std::isnan(m_elevation));
-    });
+    connect(this, &MissionItem::elevationChanged, this, [this]() {f_agl->setEnabled(!std::isnan(m_elevation));});
     m_timer.setSingleShot(true);
     m_timer.setInterval(TIMEOUT);
     connect(this, &MissionItem::coordinateChanged, this, [this]() {if (!m_timer.isActive()) m_timer.start();});
@@ -139,7 +137,11 @@ void Waypoint::initElevationMap()
     // connect(this, &MissionItem::geoPathChanged, this, &MissionItem::clearTerrainProfile);
     connect(this, &MissionItem::geoPathChanged, this, [this]() {m_geoPathTimer.start();});
     connect(&m_geoPathTimer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
-    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
+    connect(f_altitude, &Fact::valueChanged, this, [this]() {updateMinMaxHeight(m_minHeight, m_maxHeight);});
+    connect(this, &Waypoint::minHeightChanged, group->mission, &UnitMission::updateMinHeight);
+    connect(this, &Waypoint::maxHeightChanged, group->mission, &UnitMission::updateMaxHeight);
+    connect(this, &Waypoint::collisionChanged, group->mission, &UnitMission::checkCollision);
+    connect(f_agl, &Fact::valueChanged, this, &Waypoint::checkCollision);
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if(prevWp) {
         Fact *prevAltitude = prevWp->f_altitude;
@@ -352,6 +354,42 @@ QGeoPath Waypoint::getPath()
     return p;
 }
 
+Waypoint::ChosenFact Waypoint::chosen() const
+{
+    return m_chosen;
+}
+void Waypoint::setChosen(ChosenFact v)
+{
+    if (m_chosen == v)
+        return;
+    m_chosen = v;
+    emit chosenChanged();
+}
+
+double Waypoint::minHeight() const
+{
+    return m_minHeight;
+}
+void Waypoint::setMinHeight(const double v)
+{
+    if(m_minHeight == v)
+        return;
+    m_minHeight = v;
+    emit minHeightChanged();
+}
+
+double Waypoint::maxHeight() const
+{
+    return m_maxHeight;
+}
+void Waypoint::setMaxHeight(const double v)
+{
+    if(m_maxHeight == v)
+        return;
+    m_maxHeight = v;
+    emit maxHeightChanged();
+}
+
 bool Waypoint::reachable() const
 {
     return m_reachable;
@@ -362,18 +400,6 @@ void Waypoint::setReachable(bool v)
         return;
     m_reachable = v;
     emit reachableChanged();
-}
-
-QPair<int, int> Waypoint::minmax() const
-{
-    return m_minmax;
-}
-void Waypoint::setMinmax(const QPair<int, int> &v)
-{
-    if (m_minmax == v)
-        return;
-    m_minmax = v;
-    emit minmaxChanged();
 }
 
 bool Waypoint::warning() const
@@ -397,18 +423,6 @@ void Waypoint::setCollision(bool v){
         return;
     m_collision = v;
     emit collisionChanged();
-}
-
-Waypoint::ChosenFact Waypoint::chosen() const
-{
-    return m_chosen;
-}
-void Waypoint::setChosen(ChosenFact v)
-{
-    if (m_chosen == v)
-        return;
-    m_chosen = v;
-    emit chosenChanged();
 }
 
 int Waypoint::unsafeAgl() const
@@ -533,6 +547,8 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     clearTerrainProfile();
 
     QPointF pt;
+    double minHeight{0};
+    double maxHeight{0};
     double ptDistance{0};
     double ptElevation{0};
     QGeoCoordinate current;
@@ -545,12 +561,17 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
         ptElevation = current.altitude();
         m_terrainProfile.append(QPointF(ptDistance, ptElevation));
         ptDistance += current.distanceTo(next);
+        minHeight = qMin(minHeight, ptElevation);
+        maxHeight = qMax(maxHeight, ptElevation);
     }
-    
+
     ptElevation = path.coordinateAt(lastIndex).altitude();
     m_terrainProfile.append(QPointF(ptDistance, ptElevation));
+    minHeight = qMin(minHeight, ptElevation);
+    maxHeight = qMax(maxHeight, ptElevation);
     emit terrainProfileChanged();
-    
+
+    updateMinMaxHeight(minHeight, maxHeight);
     checkCollision();
 }
 
@@ -600,7 +621,7 @@ void Waypoint::checkCollision()
         }
     }
     setCollision(false);
-}
+} 
 
 double Waypoint::calcStartHMSL()
 {
@@ -639,4 +660,16 @@ double Waypoint::getRefPointHmsl()
         return refPointHmsl;
     refPointHmsl = f_refHmsl->value().toDouble();
     return refPointHmsl;
+}
+
+void Waypoint::updateMinMaxHeight(const double min, const double max) 
+{
+    bool amsl = f_amsl->value().toBool();
+    double alt = f_altitude->value().toDouble();
+    if(!amsl)
+        alt += calcStartHMSL();
+    auto minHeight = qMin(min, alt);
+    auto maxHeight = qMax(max, alt);
+    setMinHeight(minHeight);
+    setMaxHeight(maxHeight);
 }

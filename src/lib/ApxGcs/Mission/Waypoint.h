@@ -83,6 +83,7 @@ private slots:
     void updateDescr();
     void updateAMSL();
     void updateAltDescr();
+    void updateMinMaxHeight(const double min, const double max);
 
 public slots:
     void updateAgl();
@@ -92,11 +93,17 @@ public slots:
     //---------------------------------------
     // PROPERTIES
 public:
+    ChosenFact chosen() const;
+    void setChosen(ChosenFact v);
+
+    double minHeight() const;
+    void setMinHeight(const double v);
+
+    double maxHeight() const;
+    void setMaxHeight(const double v);
+
     bool reachable() const;
     void setReachable(bool v);
-
-    QPair<int, int> minmax() const;
-    void setMinmax(const QPair<int, int> &v);
 
     bool warning() const;
     void setWarning(bool v);
@@ -104,24 +111,23 @@ public:
     bool collision() const;
     void setCollision(bool v);
 
-    ChosenFact chosen() const;
-    void setChosen(ChosenFact v);
-
     int unsafeAgl() const;
 
 protected:
     static const int UNSAFE_AGL = 100; // Suggested by the CEO
-    QPair<int, int> m_minmax;
     ChosenFact m_chosen{ALT};
+    double m_minHeight{0};
+    double m_maxHeight{0};
     bool m_reachable{};
     bool m_warning{};
     bool m_collision{};
 
 signals:
     void requestTerrainProfile(QGeoPath v);
+    void minHeightChanged();
+    void maxHeightChanged();
     void reachableChanged();
     void collisionChanged();
     void warningChanged();
     void chosenChanged();
-    void minmaxChanged();
 };

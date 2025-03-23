@@ -45,9 +45,13 @@ UnitMission::UnitMission(Unit *parent)
     : Fact(parent, "mission", "Mission", tr("Unit mission"), Group | ModifiedGroup, "ship-wheel")
     , unit(parent)
     , blockSizeUpdate(false)
+    , m_startElevation(0)
     , m_startHeading(0)
     , m_startLength(0)
+    , m_minHeight(0)
+    , m_maxHeight(100)
     , m_missionSize(0)
+    , m_collision{false}
     , m_empty(true)
     , m_synced(false)
     , m_saved(false)
@@ -507,4 +511,82 @@ void UnitMission::setStartElevation(const double v)
         return;
     m_startElevation = v;
     emit startElevationChanged();
+}
+
+double UnitMission::minHeight() const
+{
+    return m_minHeight;
+}
+void UnitMission::setMinHeight(const double v)
+{
+    if (m_minHeight == v)
+        return;
+    m_minHeight = v;
+    emit minHeightChanged();
+}
+
+double UnitMission::maxHeight() const
+{
+    return m_maxHeight;
+}
+void UnitMission::setMaxHeight(const double v)
+{
+    if(m_maxHeight == v)
+        return;
+    m_maxHeight = v;
+    emit maxHeightChanged(); 
+}
+
+bool UnitMission::collision() const
+{
+    return m_collision;
+}
+void UnitMission::setCollision(const bool v)
+{
+    if(m_collision == v)
+        return;
+    m_collision = v;
+    emit collisionChanged();
+}
+
+void UnitMission::checkCollision()
+{
+    if (f_waypoints->size() <= 0)
+        return;
+    bool collision{false};
+    for (int i = 0; i < f_waypoints->size(); ++i) {
+        collision = static_cast<Waypoint *>(f_waypoints->child(i))->collision();
+        if (collision) {
+            setCollision(true);
+            return;
+        }
+    }
+    setCollision(false);
+}
+
+void UnitMission::updateMinHeight()
+{
+    if (f_waypoints->size() <= 0)
+        return;
+    double min{0};
+    double wpMin{0};
+    for (int i = 0; i < f_waypoints->size(); ++i) {
+        wpMin = static_cast<Waypoint *>(f_waypoints->child(i))->minHeight();
+        min = qMin(min, wpMin);
+    }
+    setMinHeight(min);
+}
+
+void UnitMission::updateMaxHeight()
+{
+    if (f_waypoints->size() <= 0)
+        return;
+
+    double max{0};
+    double wpMax{0};
+    for (int i = 0; i < f_waypoints->size(); ++i) {
+        wpMax = static_cast<Waypoint *>(f_waypoints->child(i))->maxHeight();
+        max = qMax(max, wpMax);
+    }
+    setMaxHeight(max);
 }

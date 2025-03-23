@@ -49,10 +49,13 @@ class UnitMission : public Fact
     Q_PROPERTY(double startElevation READ startElevation WRITE setStartElevation NOTIFY startElevationChanged)
     Q_PROPERTY(double startHeading READ startHeading WRITE setStartHeading NOTIFY startHeadingChanged)
     Q_PROPERTY(double startLength READ startLength WRITE setStartLength NOTIFY startLengthChanged)
+    Q_PROPERTY(double minHeight READ minHeight WRITE setMinHeight NOTIFY minHeightChanged)
+    Q_PROPERTY(double maxHeight READ maxHeight WRITE setMaxHeight NOTIFY maxHeightChanged)
 
     Q_PROPERTY(MissionListModel *listModel READ listModel CONSTANT)
 
     Q_PROPERTY(int missionSize READ missionSize NOTIFY missionSizeChanged)
+    Q_PROPERTY(bool collision READ collision WRITE setCollision NOTIFY collisionChanged)
     Q_PROPERTY(bool empty READ empty NOTIFY emptyChanged)
 
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
@@ -129,6 +132,9 @@ public slots:
     void downloadMission();
 
     void test(int n = 50);
+    void checkCollision();
+    void updateMinHeight();
+    void updateMaxHeight();
 
 signals:
     void actionsUpdated();
@@ -176,15 +182,27 @@ public:
     double startElevation() const;
     void setStartElevation(const double v);
 
+    double minHeight() const;
+    void setMinHeight(const double v);
+
+    double maxHeight() const;
+    void setMaxHeight(const double v);
+
+    bool collision() const;
+    void setCollision(const bool v);
+
 protected:
     QGeoCoordinate m_startPoint;
-    double m_startElevation{};
+    double m_startElevation;
     double m_startHeading;
     double m_startLength;
+    double m_minHeight;
+    double m_maxHeight;
 
     MissionListModel *m_listModel;
 
     int m_missionSize;
+    bool m_collision;
     bool m_empty;
 
     QGeoCoordinate m_coordinate;
@@ -198,9 +216,12 @@ protected:
 signals:
     void startPointChanged();
     void startElevationChanged();
+    void minHeightChanged();
+    void maxHeightChanged();
     void startHeadingChanged();
     void startLengthChanged();
     void missionSizeChanged();
+    void collisionChanged();
     void emptyChanged();
     void coordinateChanged();
     void siteChanged();

@@ -92,7 +92,7 @@ Window {
             radius: 2
             border.width: radius
             border.color: "white"
-            visible: false
+            visible: mission.collision
             anchors {
                 top: parent.top
                 left: parent.left
@@ -138,8 +138,8 @@ Window {
             }
             ValueAxis {
                 id: axisY
-                min: 0
-                max: 2000
+                min: mission.minHeight
+                max: Math.ceil(mission.maxHeight/10)*10
                 lineVisible: true
                 labelsFont.family: axisYLabel.font.family
                 labelsFont.pointSize: axisYLabel.font.pointSize
