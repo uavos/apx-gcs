@@ -28,7 +28,10 @@ Repeater {
             property var scaleX: axisX.max/chartView.plotArea.width
             property var scaleY: axisY.max/chartView.plotArea.height
             property var terrainProfile: modelData.terrainProfile
+            property var totalDistance: modelData.totalDistance ? modelData.totalDistance : -1
+            property var distance: modelData.distance ? modelData.distance : -1
 
+            visible: totalDistance >=0 && distance >=0
             height: chartView.plotArea.height
             width: modelData.distance/scaleX
             x:  chartView.plotArea.x + (modelData.totalDistance -  modelData.distance)/scaleX

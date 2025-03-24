@@ -28,7 +28,7 @@ Repeater {
             property var startHmsl: mission.startElevation
             property var altitude: modelData.child("altitude").value
             property var hAMSL: amsl ? altitude : altitude + startHmsl
-            property var distance: modelData.totalDistance
+            property var distance: modelData.totalDistance ? modelData.totalDistance : -1
             property var coordinate: modelData.coordinate
             property var chartWidth: chartView.plotArea.width
             property var chartHeight: chartView.plotArea.height
@@ -37,6 +37,7 @@ Repeater {
             property var oldDistance: -1
             property var oldHAMSL: -1
             
+            visible: distance >= 0
             x: chartView.plotArea.x + distance/scaleX
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
             Rectangle {
@@ -73,11 +74,14 @@ Repeater {
             }
             Component.onCompleted: timer.start()
             Component.onDestruction: removeData()
+            onVisibleChanged: timer.start()
             onDistanceChanged: updateData()
             onHAMSLChanged: updateData()
             onCoordinateChanged: updateData() 
 
             function appendData() {
+                if(!visible)
+                    return
                 if(index>repeater.lastIndex)
                     lineSeries.append(distance,hAMSL)
                 else 
