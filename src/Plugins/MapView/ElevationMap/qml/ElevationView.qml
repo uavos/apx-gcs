@@ -108,6 +108,23 @@ Window {
                 font.pixelSize: Style.fontSize*0.8
                 anchors.centerIn: parent
             }
+
+            SequentialAnimation {
+                running: true
+                loops: Animation.Infinite
+                PropertyAnimation {
+                    target: alarm
+                    property: "opacity"
+                      to: 0.5
+                    duration: 1500
+                }
+                PropertyAnimation {
+                    target: alarm
+                    property: "opacity"
+                    to: 1
+                    duration: 1500
+                }
+            }
         }
 
         ChartView {
