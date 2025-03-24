@@ -40,6 +40,7 @@ ElevationMap::ElevationMap(Fact *parent)
            tr("Terrain elevation map"),
            Group | FlatModel,
            "elevation-rise")
+    , m_elevation(qQNaN())     
 {
     auto path = AppDirs::db().absolutePath() + "/Elevation";
 
