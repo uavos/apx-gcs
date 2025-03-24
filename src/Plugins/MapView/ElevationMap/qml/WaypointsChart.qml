@@ -24,15 +24,18 @@ Repeater {
         // Waypoints
         Item { 
             id: wpItem
-            property var oldDistance: -1
-            property var oldHAMSL: -1
+            property bool amsl: modelData.child("amsl").value
+            property var startHmsl: mission.startElevation
+            property var altitude: modelData.child("altitude").value
+            property var hAMSL: amsl ? altitude : altitude + startHmsl
             property var distance: modelData.totalDistance
-            property var hAMSL: modelData.child("altitude").value // Calc for different cases
             property var coordinate: modelData.coordinate
             property var chartWidth: chartView.plotArea.width
             property var chartHeight: chartView.plotArea.height
             property var scaleX: axisX.max/chartWidth
             property var scaleY: axisY.max/chartHeight
+            property var oldDistance: -1
+            property var oldHAMSL: -1
             
             x: chartView.plotArea.x + distance/scaleX
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
@@ -63,7 +66,12 @@ Repeater {
                     onClicked: modelData.trigger()
                 }
             }
-            Component.onCompleted: appendData()
+            Timer {
+                id: timer
+                interval: 10
+                onTriggered: wpItem.appendData()
+            }
+            Component.onCompleted: timer.start()
             Component.onDestruction: removeData()
             onDistanceChanged: updateData()
             onHAMSLChanged: updateData()
