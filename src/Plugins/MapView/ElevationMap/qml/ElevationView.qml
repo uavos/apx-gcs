@@ -207,10 +207,10 @@ Window {
             onStartElevationChanged: updateStartPoint()
             function updateStartPoint()
             {
-                if(hStartPoint === undefined)
-                    return;
+                if(isNaN(startElevation))
+                    return     
                 var point = lineSeries.at(0)
-               lineSeries.replace(point.x, point.y, point.x, hStartPoint)
+                lineSeries.replace(point.x, point.y, point.x, startElevation)
             }
         }
         Loader {

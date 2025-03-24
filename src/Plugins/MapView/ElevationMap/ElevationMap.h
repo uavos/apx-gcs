@@ -57,6 +57,8 @@ public:
     Fact *f_path;
     Fact *f_util;
     Fact *f_control{nullptr};
+    Fact *f_refStatus{nullptr};
+    Fact *f_refHmsl{nullptr};
 
     Unit *unit() const;
     UnitMission *mission() const;
@@ -100,8 +102,10 @@ private:
     QObject *qml;
 
 private slots:
+    double getRefPointHmsl();
     void onOpenTriggered();
     void updateMission();
+    void updateRefPoint();
     void setMissionAgl();
     void getPluginEnableControl();
     void changeExternalsVisibility();

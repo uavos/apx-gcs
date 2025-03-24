@@ -143,10 +143,22 @@ Fact *ElevationMap::aglset() const
 void ElevationMap::updateMission()
 {
     connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::changeExternalsVisibility);
+    connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::setStartPointElevation);
     connect(mission(), &UnitMission::startPointChanged, this, &ElevationMap::setStartPointElevation);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
     changeExternalsVisibility();
+    updateRefPoint();
 }
+
+void ElevationMap::updateRefPoint() {
+    f_refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
+    f_refStatus = unit()->f_mandala->fact(mandala::est::nav::ref::status::uid);
+    if (f_refHmsl)
+        connect(f_refHmsl, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation);
+    if (f_refStatus)
+        connect(f_refStatus, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation);
+}
+
 
 void ElevationMap::getPluginEnableControl()
 {
@@ -322,20 +334,53 @@ void ElevationMap::clearMissionPoints()
 // ==== Mission analize
 void ElevationMap::setStartPointElevation()
 {
+    double hHmsl{0};
     auto m = mission();
-    auto startPoint = m->startPoint();
-    for (int i = 0; i < m->f_runways->size(); ++i) {
-        auto runway = static_cast<Runway *>(m->f_runways->child(i));
-        if (startPoint != runway->endPoint()) {
-            continue;
+    if (m->f_runways->size() > 0) {
+        auto startPoint = m->startPoint();
+        auto runway = static_cast<Runway *>(m->f_runways->child(0));
+        for (int i = 0; i < m->f_runways->size(); ++i) {
+            auto rw = static_cast<Runway *>(m->f_runways->child(i));
+            if (startPoint == rw->endPoint())
+                runway = rw;
         }
-        auto rwHmsl = runway->f_hmsl;
-        auto value = rwHmsl->value().toInt();
-        auto elevation = (value != 0) ? value : runway->elevation();
-        m->setStartElevation(elevation);
-        connect(rwHmsl, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation);
-        connect(runway, &Fact::removed, this, [this]() { mission()->setStartElevation(0); });
+        connect(runway, &MissionItem::elevationChanged, this, &ElevationMap::setStartPointElevation);
+        connect(runway->f_hmsl, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation);
+        auto rwHmsl = runway->f_hmsl->value().toInt();
+        hHmsl = rwHmsl;
+        // If hmsl default
+        if (rwHmsl == 0) {
+            // If runway has elevation
+            auto rwElevation = runway->elevation();
+            if (!std::isnan(rwElevation)) {
+                hHmsl = rwElevation;
+            }
+            // If refpoint initialized
+            auto refHmsl = getRefPointHmsl();
+            if (refHmsl != 0) {
+                hHmsl = refHmsl;
+            }
+        }
+    } else {
+        // If there are no runways
+        hHmsl = getRefPointHmsl();
     }
+    m->setStartElevation(hHmsl);
+}
+
+double ElevationMap::getRefPointHmsl()
+{
+    double refPointHmsl{0};
+    f_refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
+    f_refStatus = unit()->f_mandala->fact(mandala::est::nav::ref::status::uid);
+    if (!f_refStatus)
+        return refPointHmsl;
+    if (!f_refHmsl)
+        return refPointHmsl;
+    if (f_refStatus->value().toInt() != mandala::ref_status_initialized)
+        return refPointHmsl;
+    refPointHmsl = f_refHmsl->value().toDouble();
+    return refPointHmsl;
 }
 
 bool ElevationMap::isRoutHasCollision(QVariantList &elevationProfile,
