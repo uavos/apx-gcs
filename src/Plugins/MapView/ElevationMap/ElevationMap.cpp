@@ -338,44 +338,6 @@ void ElevationMap::setStartPointElevation()
     }
 }
 
-QVariantList ElevationMap::getElevationProfile(const QGeoPath &geoPath)
-{
-    double distance{0};
-    double elevation{0};
-    QVariantList elevationProfile;
-    // // auto path = geoPath.path();
- 
-    // // Add path points
-    // for (int i = 0; i < path.size()-1; ++i) {
-    //     auto plotLenght = path[i].distanceTo(path[i+1]);
-    //     if (plotLenght > TERRAIN_STEP) {
-    //         double lenght{0};
-    //         auto azimuth = path[i].azimuthTo(path[i + 1]);
-    //         while (lenght < plotLenght) {
-    //             auto point = path[i].atDistanceAndAzimuth(lenght, azimuth);
-    //             // elevation = getElevationByCoordinate(point);                
-    //             elevationProfile.append(QPointF(distance + lenght, elevation));
-    //             lenght += TERRAIN_STEP;
-    //         }
-    //     } else {
-    //         elevation = getElevationByCoordinate(path[i]);
-    //         elevationProfile.append(QPointF(distance, elevation));
-    //     }
-    //     distance += plotLenght;
-    // }
-    // // Add last point
-    // elevation = getElevationByCoordinate(path.last());
-    // elevationProfile.append(QPointF(distance, elevation));
-
-
-    // ==== Temporary stub ====
-    elevationProfile.append(QPointF(0, 200));
-    elevationProfile.append(QPointF(geoPath.length(), 200));
-
-    return elevationProfile;
-}
-
-
 bool ElevationMap::isRoutHasCollision(QVariantList &elevationProfile,
                                       double startHAMSL,
                                       double endHAMSL)

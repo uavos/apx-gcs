@@ -78,9 +78,7 @@ public:
 
     // ===== Analyze elevation route =====
     // static constexpr int TERRAIN_STEP = 10;
-    static constexpr int TERRAIN_STEP = 30;
-    Q_INVOKABLE QVariantList getElevationProfile(const QGeoPath &geoPath);
-    // ===================================
+    static constexpr int TERRAIN_STEP = 15;
 
 protected:
     QGeoPath m_geoPath;
