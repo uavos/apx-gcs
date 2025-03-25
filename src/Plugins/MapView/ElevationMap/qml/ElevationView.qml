@@ -144,7 +144,7 @@ Window {
             ValueAxis {
                 id: axisX
                 min: 0
-                max: chartView.distance!=0?chartView.distance:10
+                max: chartView.distance!= 0 ? chartView.distance : 1000
                 lineVisible: true
                 labelsFont.family: axisXLabel.font.family
                 labelsFont.pointSize: axisXLabel.font.pointSize
