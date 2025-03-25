@@ -123,6 +123,7 @@ private slots:
     void updateStatus();
     void updateActions();
     void updateStartPath();
+    void setDefaultMinMaxHeight();
 
 public slots:
     void updateSize();

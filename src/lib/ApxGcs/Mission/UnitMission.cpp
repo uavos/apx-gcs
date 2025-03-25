@@ -132,6 +132,10 @@ UnitMission::UnitMission(Unit *parent)
     connect(this, &UnitMission::startPointChanged, this, &UnitMission::updateStartPath);
     connect(this, &UnitMission::startHeadingChanged, this, &UnitMission::updateStartPath);
     connect(this, &UnitMission::startLengthChanged, this, &UnitMission::updateStartPath);
+    // elevation map
+    connect(this, &UnitMission::startElevationChanged, this, &UnitMission::updateMinHeight);
+    connect(this, &UnitMission::startElevationChanged, this, &UnitMission::updateMaxHeight);
+    connect(this, &UnitMission::emptyChanged, this, &UnitMission::setDefaultMinMaxHeight);
 
     //sync and saved status behavior
     connect(this, &Fact::modifiedChanged, this, [this]() {
@@ -572,27 +576,47 @@ void UnitMission::checkCollision()
 
 void UnitMission::updateMinHeight()
 {
+    if (empty())
+        return;
     if (f_waypoints->size() <= 0)
         return;
     double min{0};
     double wpMin{0};
     for (int i = 0; i < f_waypoints->size(); ++i) {
-        wpMin = static_cast<Waypoint *>(f_waypoints->child(i))->minHeight();
+        auto wp = static_cast<Waypoint *>(f_waypoints->child(i));
+        if(!wp)
+            continue;
+        wpMin = wp->minHeight();
         min = qMin(min, wpMin);
     }
+    min = qMin(min, m_startElevation);
     setMinHeight(min);
 }
 
 void UnitMission::updateMaxHeight()
 {
+    if(empty())
+        return;
     if (f_waypoints->size() <= 0)
         return;
-
     double max{0};
     double wpMax{0};
     for (int i = 0; i < f_waypoints->size(); ++i) {
-        wpMax = static_cast<Waypoint *>(f_waypoints->child(i))->maxHeight();
+        auto wp = static_cast<Waypoint *>(f_waypoints->child(i));
+        if (!wp)
+            continue;
+        wpMax = wp->maxHeight();
         max = qMax(max, wpMax);
     }
+    max = qMax(max, m_startElevation);
     setMaxHeight(max);
 }
+
+void UnitMission::setDefaultMinMaxHeight() {
+    if (!empty())
+        return;
+    setMinHeight(0);
+    setMaxHeight(100);
+}
+
+

@@ -131,7 +131,8 @@ Window {
             id: chartView
             property int margin: 5
             property var distance: mission.wp.distance
-
+            property var minHeight: mission.minHeight
+            property var maxHeight: mission.maxHeight
             anchors.fill: parent
             margins.top: alarm.height
             margins.right: margin
@@ -144,7 +145,7 @@ Window {
             ValueAxis {
                 id: axisX
                 min: 0
-                max: chartView.distance!= 0 ? chartView.distance : 1000
+                max: Math.max(chartView.distance, 1000)
                 lineVisible: true
                 labelsFont.family: axisXLabel.font.family
                 labelsFont.pointSize: axisXLabel.font.pointSize
@@ -155,7 +156,7 @@ Window {
             }
             ValueAxis {
                 id: axisY
-                min: mission.minHeight
+                min: chartView.minHeight
                 max: Math.ceil(mission.maxHeight/10)*10
                 lineVisible: true
                 labelsFont.family: axisYLabel.font.family
