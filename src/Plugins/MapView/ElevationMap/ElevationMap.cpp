@@ -143,7 +143,7 @@ Fact *ElevationMap::aglset() const
 void ElevationMap::updateMission()
 {
     connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::changeExternalsVisibility);
-    connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::setStartPointElevation);
+    // connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::setStartPointElevation);
     connect(mission(), &UnitMission::startPointChanged, this, &ElevationMap::setStartPointElevation);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
     changeExternalsVisibility();
@@ -334,15 +334,20 @@ void ElevationMap::clearMissionPoints()
 // ==== Mission analize
 void ElevationMap::setStartPointElevation()
 {
-    double hHmsl{0};
     auto m = mission();
+    auto hHmsl = getRefPointHmsl();
     if (m->f_runways->size() > 0) {
         auto startPoint = m->startPoint();
         auto runway = static_cast<Runway *>(m->f_runways->child(0));
         for (int i = 0; i < m->f_runways->size(); ++i) {
             auto rw = static_cast<Runway *>(m->f_runways->child(i));
-            if (startPoint == rw->endPoint())
+            if (rw && startPoint == rw->endPoint()) {
                 runway = rw;
+            }
+        }
+        if(!runway) {
+            m->setStartElevation(hHmsl);
+            return;
         }
         connect(runway, &MissionItem::elevationChanged, this, &ElevationMap::setStartPointElevation);
         connect(runway->f_hmsl, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation);
@@ -361,9 +366,6 @@ void ElevationMap::setStartPointElevation()
                 hHmsl = refHmsl;
             }
         }
-    } else {
-        // If there are no runways
-        hHmsl = getRefPointHmsl();
     }
     m->setStartElevation(hHmsl);
 }
