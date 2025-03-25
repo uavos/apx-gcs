@@ -52,7 +52,7 @@ jobs:
     env:
       VERSION_QT: 6.8.1
       VERSION_SDL: 2.30.8
-      VERSION_GST: 1.22.5
+      VERSION_GST: 1.22.10
 
       # we replace system python with brew python
       PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
