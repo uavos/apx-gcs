@@ -32,6 +32,9 @@
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
 
+	<key>NSCameraUseContinuityCameraDeviceType</key>
+	<true/>
+
     <key>NSCameraUsageDescription</key>
 	<string>Video Streaming plugin</string>
 
