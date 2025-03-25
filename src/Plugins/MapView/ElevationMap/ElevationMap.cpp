@@ -384,35 +384,3 @@ double ElevationMap::getRefPointHmsl()
     refPointHmsl = f_refHmsl->value().toDouble();
     return refPointHmsl;
 }
-
-bool ElevationMap::isRoutHasCollision(QVariantList &elevationProfile,
-                                      double startHAMSL,
-                                      double endHAMSL)
-{
-    if (elevationProfile.empty())
-        return false;
-
-    auto diff = endHAMSL - startHAMSL;
-    auto distance = elevationProfile.last().toPointF().x();
-    if(distance !=0) {
-        auto tg = diff / distance;
-        for(const auto ep:elevationProfile) {
-            auto point = ep.toPoint();
-            auto height = startHAMSL + point.x() * tg;
-            if (height < point.y()) {
-                return true;
-            }
-        }
-    } else {
-        auto firstPoint = elevationProfile.first().toPoint();
-        if (startHAMSL < firstPoint.y()) {
-            return true;
-        }
-        auto lastPoint = elevationProfile.last().toPoint();
-        if (endHAMSL < lastPoint.y()) {
-            return true;
-        }
-    }
-    
-    return true;
-}

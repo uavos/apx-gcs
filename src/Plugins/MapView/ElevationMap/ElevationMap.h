@@ -76,7 +76,6 @@ public:
     void setCoordinate(const QGeoCoordinate &coordinate);
     double elevation() const;
     void setElevation(double v);
-    Q_INVOKABLE bool isRoutHasCollision(QVariantList &elevationProfile, double startHAMSL, double endHAMSL);
 
     // ===== Analyze elevation route =====
     // static constexpr int TERRAIN_STEP = 10;
