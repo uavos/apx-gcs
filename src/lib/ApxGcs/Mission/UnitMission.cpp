@@ -551,8 +551,14 @@ void UnitMission::setCollision(const bool v)
 
 void UnitMission::checkCollision()
 {
-    if (f_waypoints->size() <= 0)
+    if(missionSize() <= 0) {
+        setCollision(false);
         return;
+    }
+    if (f_waypoints->size() <= 0) {
+        setCollision(false);
+        return;
+    }
     bool collision{false};
     for (int i = 0; i < f_waypoints->size(); ++i) {
         collision = static_cast<Waypoint *>(f_waypoints->child(i))->collision();

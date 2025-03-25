@@ -143,7 +143,7 @@ Fact *ElevationMap::aglset() const
 void ElevationMap::updateMission()
 {
     connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::changeExternalsVisibility);
-    // connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::setStartPointElevation);
+    connect(mission(), &UnitMission::missionSizeChanged, mission(), &UnitMission::checkCollision);
     connect(mission(), &UnitMission::startPointChanged, this, &ElevationMap::setStartPointElevation);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
     changeExternalsVisibility();
@@ -172,6 +172,9 @@ void ElevationMap::setMissionAgl()
     auto m = mission();
     for (int i = 0; i < m->f_waypoints->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        if(!wp)
+            continue;
+
         auto elevation = wp->elevation();
         if (qIsNaN(elevation))
             continue;
@@ -191,7 +194,7 @@ void ElevationMap::changeExternalsVisibility()
 {
     bool useValue{false};
     bool controlValue{false};
-    if(f_control && !f_control->busy())
+    if(f_control && !f_control->busy()) 
         controlValue = f_control->value().toBool();
     if (f_use)
         useValue = f_use->value().toBool();
