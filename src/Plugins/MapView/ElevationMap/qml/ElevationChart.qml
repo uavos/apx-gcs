@@ -25,16 +25,19 @@ Repeater {
         // TerrainProfile 
         Rectangle {
             id: epItem
+            
+            property var fact: modelData 
             property var scaleX: axisX.max/chartView.plotArea.width
             property var scaleY: axisY.max/chartView.plotArea.height
-            property var terrainProfile: modelData.terrainProfile
-            property var totalDistance: modelData.totalDistance ? modelData.totalDistance : -1
-            property var distance: modelData.distance ? modelData.distance : -1
+            property var terrainProfile: fact ? fact.terrainProfile : null
+            property var totalDistance: fact ? fact.totalDistance : -1
+            property var distance: fact ? fact.distance : -1
+            property var collision: fact ? fact.collision : false
 
             visible: totalDistance >=0 && distance >=0
             height: chartView.plotArea.height
-            width: modelData.distance/scaleX
-            x:  chartView.plotArea.x + (modelData.totalDistance -  modelData.distance)/scaleX
+            width: distance/scaleX
+            x:  chartView.plotArea.x + (totalDistance -  distance)/scaleX
             y:  chartView.plotArea.y
             color: "transparent"
 
@@ -54,7 +57,7 @@ Repeater {
                 ValueAxis {
                     id: epAxisX
                     min: 0
-                    max: modelData.distance
+                    max: epItem.distance
                     lineVisible: false
                     labelsVisible: false
                     gridVisible: false
@@ -71,8 +74,8 @@ Repeater {
                     id: areaSeries
                     axisX: epAxisX
                     axisY: epAxisY
-                    color: modelData.collision ? "#FF0000" : "#00FF00"
-                    borderColor: modelData.collision ? "#FF0000" : "#00FF00"
+                    color: epItem.collision ? "#FF0000" : "#00FF00"
+                    borderColor: epItem.collision ? "#FF0000" : "#00FF00"
                     opacity: 0.25
                     upperSeries: LineSeries {
                         id: epLineSeries
@@ -81,6 +84,8 @@ Repeater {
             }
             onTerrainProfileChanged: updateLineSeriesData()
             function updateLineSeriesData() {
+                if(!terrainProfile)
+                    return;
                 if(terrainProfile.lenght == 0)
                     return;
                 if(epLineSeries.count > 0)
