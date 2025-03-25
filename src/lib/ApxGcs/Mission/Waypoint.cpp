@@ -577,34 +577,34 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
 
 void Waypoint::checkCollision()
 {
-    if(m_terrainProfile.empty()) {
+    if (m_terrainProfile.empty()) {
         setCollision(false);
         return;
     }
 
+    double prevAlt{0};
+    auto startHmsl = calcStartHMSL();
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     // Checking the first point
-    if (!prevWp) {
-        bool collision = (f_agl->value().toInt() < UNSAFE_AGL);
-        setCollision(collision);
-        return;
+    if (prevWp) {
+        prevAlt = prevWp->f_altitude->value().toInt();
+        auto prevAmsl = prevWp->f_amsl->value().toBool();
+        if (!prevAmsl) {
+            prevAlt += startHmsl;
+        }
+    } else {
+        prevAlt = m_terrainProfile.first().y();
     }
 
     // Checking points on top of each other
     auto dst = distance();
-    if(dst == 0) {
+    if (dst == 0) {
+        bool prevCollision = prevWp ? (prevWp->f_agl->value().toInt() < UNSAFE_AGL) : false;
         bool currentCollision = (f_agl->value().toInt() < UNSAFE_AGL);
-        bool prevCollision = (prevWp->f_agl->value().toInt() < UNSAFE_AGL);
         bool collision = currentCollision && prevCollision;
         setCollision(collision);
         return;
     }
-
-    auto prevAlt = prevWp->f_altitude->value().toInt();
-    auto prevAmsl = prevWp->f_amsl->value().toBool();
-    auto startHmsl = calcStartHMSL();
-    if (!prevAmsl)
-        prevAlt += startHmsl;
 
     auto alt = f_altitude->value().toInt();
     auto amsl = f_amsl->value().toBool();
@@ -612,8 +612,9 @@ void Waypoint::checkCollision()
         alt += startHmsl;
 
     auto tan = static_cast<double>(alt - prevAlt) / dst;
-    for(const auto &tp : m_terrainProfile) {
-        auto safeHeight = tp.y() + UNSAFE_AGL;
+    for (const auto &tp : m_terrainProfile) {
+        double k = !prevWp ? (tp.x() / dst): 1; // proportional increase in safe AGL for the first point
+        auto safeHeight = tp.y() + UNSAFE_AGL * k;
         auto routeHeight = prevAlt + tp.x() * tan;
         if (routeHeight < safeHeight) {
             setCollision(true);
@@ -621,7 +622,7 @@ void Waypoint::checkCollision()
         }
     }
     setCollision(false);
-} 
+}
 
 double Waypoint::calcStartHMSL()
 {
