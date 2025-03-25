@@ -1,3 +1,13 @@
+# [APX Ground Control v11.2.5](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.5) (03/19/25)
+
+> Branch: `main`\
+> Date: `03/19/25 16:09:18`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/45dbb29b7129f3facc4a310dc5e5abc2eeb6e595...97043459a1967b539da755c2256eae51fe2b93be)
+
+## Bug Fixes
+* app update copy hidden folders (fixes issue with script compile)
+* corrupted messages display(read xbus strings segfaults)
+
 # [APX Ground Control v11.2.4](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.4) (02/17/25)
 
 > Branch: `main`\
