@@ -27,6 +27,8 @@ Repeater {
             property bool amsl: modelData.child("amsl").value
             property var startHmsl: mission.startElevation
             property var altitude: modelData.child("altitude").value
+            property var agl: modelData.child("agl").value
+            property bool alarmOn: agl < modelData.unsafeAgl 
             property var hAMSL: amsl ? altitude : altitude + startHmsl
             property var distance: modelData.totalDistance ? modelData.totalDistance : -1
             property var coordinate: modelData.coordinate
@@ -55,10 +57,13 @@ Repeater {
                 x: -width/2
                 y: -height/2
                 radius: height/8
-                color: "yellow"
+                color: wpItem.alarmOn ? "#ffdead" : "yellow"
+                border.color: wpItem.alarmOn ? "red" : "transparent"
+                border.width: 1
                 Text {
                     anchors.centerIn: parent
                     text: modelData.num + 1
+                    color: wpItem.alarmOn ? "red" : "black"
                     font.pixelSize: 12
                     font.bold: true
                 }
