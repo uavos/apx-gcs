@@ -27,12 +27,14 @@ Repeater {
             property bool created: false
             property bool amsl: modelData.child("amsl").value
             property var startHmsl: mission.startElevation
+            property var startPoint: mission.startPoint
             property var altitude: modelData.child("altitude").value
             property var agl: modelData.child("agl").value
             property bool alarmOn: agl < modelData.unsafeAgl 
             property var hAMSL: amsl ? altitude : altitude + startHmsl
-            property var distance: modelData.totalDistance ? modelData.totalDistance : -1
+            property var distance: modelData ? modelData.totalDistance : -1
             property var coordinate: modelData.coordinate
+            property var num: modelData.num
             property var chartWidth: chartView.plotArea.width
             property var chartHeight: chartView.plotArea.height
             property var scaleX: axisX.max/chartWidth
@@ -40,7 +42,7 @@ Repeater {
             property var oldDistance: -1
             property var oldHAMSL: -1
             
-            visible: distance >= 0 || created
+            visible: distance > 0 || created 
             x: chartView.plotArea.x + distance/scaleX
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
             Rectangle {
@@ -63,7 +65,7 @@ Repeater {
                 border.width: 1
                 Text {
                     anchors.centerIn: parent
-                    text: modelData.num + 1
+                    text: wpItem.num + 1
                     color: wpItem.alarmOn ? "red" : "black"
                     font.pixelSize: 12
                     font.bold: true
@@ -80,18 +82,25 @@ Repeater {
             }
             Component.onCompleted: timer.start()
             Component.onDestruction: removeData()
-            onVisibleChanged: timer.start()
+            onVisibleChanged: if(visible) timer.start()
             onDistanceChanged: updateData()
             onHAMSLChanged: updateData()
             onCoordinateChanged: updateData() 
 
             function appendData() {
-                if(!visible)
-                    return
+                if(!visible) {
+                    if(num != 0)
+                        return
+                    if(!startPoint.isValid) {
+                        created = true
+                        return
+                    }
+                }
+                var dst = distance > 0 ? distance : 0.1 //fix for incorrect line drawing at zero values
                 if(index>repeater.lastIndex)
-                    lineSeries.append(distance,hAMSL)
-                else 
-                    lineSeries.insert(1,distance,hAMSL)
+                    lineSeries.append(dst,hAMSL)
+                else
+                    lineSeries.insert(1,dst,hAMSL)
                 repeater.lastIndex = index
                 setOldValues()
                 created = true

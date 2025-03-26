@@ -6,11 +6,6 @@ import QtQml
 
 import QtQml.Models
 
-// import Apx.Common
-// import Apx.Controls
-// import Apx.Instruments
-// import Apx.Application
-
 import APX.Fleet as APX
 import APX.Mission
 

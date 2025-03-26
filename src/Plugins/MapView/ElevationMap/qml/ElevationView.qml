@@ -184,6 +184,7 @@ Window {
             property var startElevation: mission.startElevation
             property var hStartPoint: !isNaN(startElevation)?(startElevation/scaleY):0
 
+            visible: mission.startPoint.isValid
             x: chartView.plotArea.x
             y: chartView.plotArea.y + chartHeight
             z: 1
