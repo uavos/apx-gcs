@@ -49,8 +49,6 @@ public:
     Fact *f_altitude;
     Fact *f_amsl;
     Fact *f_agl;
-    Fact *f_refHmsl{nullptr};
-    Fact *f_refStatus{nullptr};
 
     Fact *f_atrack;
     Fact *f_xtrack;
@@ -77,8 +75,7 @@ private:
     QString _altUnits;
 
 private slots:
-    double calcStartHMSL();
-    double getRefPointHmsl();
+    double getStartHMSL();
     void updateTitle() override;
     void updateDescr();
     void updateAMSL();
