@@ -17,7 +17,6 @@ import APX.Mission
 Repeater {
     id: repeater
     model: mission.wp.mapModel
-    property int lastIndex: 0
     delegate: Item {
         required property var modelData
         required property var index
@@ -25,7 +24,6 @@ Repeater {
         // TerrainProfile 
         Rectangle {
             id: epItem
-            
             property var fact: modelData 
             property var scaleX: axisX.max/chartView.plotArea.width
             property var scaleY: axisY.max/chartView.plotArea.height
@@ -34,7 +32,7 @@ Repeater {
             property var distance: fact ? fact.distance : -1
             property var collision: fact ? fact.collision : false
 
-            visible: totalDistance >=0 && distance >=0
+            visible: totalDistance >=0 && distance >=0 && x>=0 && y>=0
             height: chartView.plotArea.height
             width: distance/scaleX
             x:  chartView.plotArea.x + (totalDistance -  distance)/scaleX

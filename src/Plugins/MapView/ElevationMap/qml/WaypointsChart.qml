@@ -24,6 +24,7 @@ Repeater {
         // Waypoints
         Item { 
             id: wpItem
+            property bool created: false
             property bool amsl: modelData.child("amsl").value
             property var startHmsl: mission.startElevation
             property var altitude: modelData.child("altitude").value
@@ -39,7 +40,7 @@ Repeater {
             property var oldDistance: -1
             property var oldHAMSL: -1
             
-            visible: distance >= 0
+            visible: distance >= 0 || created
             x: chartView.plotArea.x + distance/scaleX
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
             Rectangle {
@@ -74,7 +75,7 @@ Repeater {
             }
             Timer {
                 id: timer
-                interval: 10
+                interval: 100
                 onTriggered: wpItem.appendData()
             }
             Component.onCompleted: timer.start()
@@ -93,6 +94,7 @@ Repeater {
                     lineSeries.insert(1,distance,hAMSL)
                 repeater.lastIndex = index
                 setOldValues()
+                created = true
             }
             function updateData() {
                 lineSeries.replace(oldDistance, oldHAMSL, distance, hAMSL)
