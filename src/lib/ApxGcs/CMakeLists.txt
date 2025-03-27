@@ -10,5 +10,6 @@ apx_lib(
     Widgets
     SerialPort
     Positioning
+    Concurrent
     Charts
 )

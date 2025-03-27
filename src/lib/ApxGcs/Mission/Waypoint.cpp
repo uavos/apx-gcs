@@ -25,6 +25,9 @@
 #include <App/App.h>
 #include <ApxMisc/JsonHelpers.h>
 
+#include <QFuture>
+#include <QtConcurrent>
+
 Waypoint::Waypoint(MissionGroup *parent)
     : MissionItem(parent, "w#", "", "")
 {
@@ -141,6 +144,8 @@ void Waypoint::initElevationMap()
         Fact *prevAltitude = prevWp->f_altitude;
         connect(prevAltitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
     }
+    connect(&watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo);
+    connect(App::instance(), &App::appQuit, &watcher, &QFutureWatcher<TerrainInfo>::cancel);
 
     updateAgl();
 }
@@ -535,14 +540,23 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     firstIn.setAltitude(0);
     lastIn.setAltitude(0);
 
-    if(first != firstIn || last != lastIn)
+    if (first != firstIn || last != lastIn)
         return;
 
-    clearTerrainProfile();
+    if(watcher.isRunning())
+        watcher.cancel();
 
+    // clearTerrainProfile();
+
+    QFuture<TerrainInfo> future;
+    future = QtConcurrent::run(createTerrainInfo, path);
+    watcher.setFuture(future);
+}
+
+void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path)
+{
     QPointF pt;
-    double minHeight{0};
-    double maxHeight{0};
+    TerrainInfo info;
     double ptDistance{0};
     double ptElevation{0};
     QGeoCoordinate current;
@@ -550,23 +564,23 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
 
     auto lastIndex = path.size() - 1;
     for (qsizetype i = 0; i < lastIndex; ++i) {
+        promise.suspendIfRequested();
+        if (promise.isCanceled()) {
+            return;
+        }
         current = path.coordinateAt(i);
         next = path.coordinateAt(i + 1);
         ptElevation = current.altitude();
-        m_terrainProfile.append(QPointF(ptDistance, ptElevation));
+        info.terrainProfile.append(QPointF(ptDistance, ptElevation));
         ptDistance += current.distanceTo(next);
-        minHeight = qMin(minHeight, ptElevation);
-        maxHeight = qMax(maxHeight, ptElevation);
+        info.minHeight = qMin(info.minHeight, ptElevation);
+        info.maxHeight = qMax(info.maxHeight, ptElevation);
     }
-
     ptElevation = path.coordinateAt(lastIndex).altitude();
-    m_terrainProfile.append(QPointF(ptDistance, ptElevation));
-    minHeight = qMin(minHeight, ptElevation);
-    maxHeight = qMax(maxHeight, ptElevation);
-    emit terrainProfileChanged();
-
-    updateMinMaxHeight(minHeight, maxHeight);
-    checkCollision();
+    info.terrainProfile.append(QPointF(ptDistance, ptElevation));
+    info.minHeight = qMin(info.minHeight, ptElevation);
+    info.maxHeight = qMax(info.maxHeight, ptElevation);
+    promise.addResult(info);
 }
 
 void Waypoint::checkCollision()
@@ -633,4 +647,12 @@ void Waypoint::updateMinMaxHeight(const double min, const double max)
     auto maxHeight = qMax(max, alt);
     setMinHeight(minHeight);
     setMaxHeight(maxHeight);
+}
+
+void Waypoint::updateTerrainInfo()
+{
+    auto result = watcher.result();
+    updateMinMaxHeight(result.minHeight, result.maxHeight);
+    setTerrainProfile(result.terrainProfile);
+    checkCollision();
 }

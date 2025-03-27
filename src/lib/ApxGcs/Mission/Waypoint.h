@@ -26,6 +26,7 @@
 #include <QGeoCoordinate>
 #include <QGeoPath>
 #include <QtCore>
+#include <QFutureWatcher>
 
 class Waypoint : public MissionItem
 {
@@ -38,6 +39,13 @@ class Waypoint : public MissionItem
     Q_PROPERTY(int unsafeAgl READ unsafeAgl CONSTANT)
 
 public:
+    struct TerrainInfo
+    {
+        QList<QPointF> terrainProfile;
+        double minHeight;
+        double maxHeight;
+    };
+
     enum ChosenFact {
         ALT = 0,
         AGL,
@@ -80,7 +88,9 @@ private slots:
     void updateDescr();
     void updateAMSL();
     void updateAltDescr();
+    static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
     void updateMinMaxHeight(const double min, const double max);
+    void updateTerrainInfo();
 
 public slots:
     void updateAgl();
@@ -112,6 +122,7 @@ public:
 
 protected:
     static const int UNSAFE_AGL = 100; // Suggested by the CEO
+    QFutureWatcher<TerrainInfo> watcher;
     ChosenFact m_chosen{ALT};
     double m_minHeight{0};
     double m_maxHeight{0};
