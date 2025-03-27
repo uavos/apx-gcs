@@ -578,8 +578,8 @@ void UnitMission::updateMinHeight()
 {
     if (empty())
         return;
-    if (f_waypoints->size() <= 0)
-        return;
+    // if (f_waypoints->size() <= 0)
+    //     return;
     double min{0};
     double wpMin{0};
     for (int i = 0; i < f_waypoints->size(); ++i) {
@@ -597,8 +597,8 @@ void UnitMission::updateMaxHeight()
 {
     if(empty())
         return;
-    if (f_waypoints->size() <= 0)
-        return;
+    // if (f_waypoints->size() <= 0)
+    //     return;
     double max{0};
     double wpMax{0};
     for (int i = 0; i < f_waypoints->size(); ++i) {
@@ -618,5 +618,3 @@ void UnitMission::setDefaultMinMaxHeight() {
     setMinHeight(0);
     setMaxHeight(100);
 }
-
-

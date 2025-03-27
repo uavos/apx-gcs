@@ -170,7 +170,6 @@ Window {
                 id: lineSeries
                 axisX: axisX
                 axisY: axisY
-                XYPoint{x:0; y:0}
             }
         }
 
@@ -204,13 +203,28 @@ Window {
                     font.bold: true
                 }
             }
-            Component.onCompleted: updateStartPoint()
+
+            Component.onCompleted: initStartPoint()
+            onVisibleChanged: initStartPoint()
             onCoordinateChanged: updateStartPoint()
             onStartElevationChanged: updateStartPoint()
-            function updateStartPoint()
+
+            function initStartPoint()
             {
                 if(isNaN(startElevation))
-                    return     
+                    return
+                if(visible)
+                    lineSeries.insert(-1, 0, startElevation)
+                else
+                    if(lineSeries.count > 0) 
+                        lineSeries.remove(0)
+            }
+            function updateStartPoint()
+            {
+                if(!visible)
+                    return
+                if(isNaN(startElevation))
+                    return
                 var point = lineSeries.at(0)
                 lineSeries.replace(point.x, point.y, point.x, startElevation)
             }

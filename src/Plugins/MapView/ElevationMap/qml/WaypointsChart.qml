@@ -6,18 +6,12 @@ import QtQml
 
 import QtQml.Models
 
-// import Apx.Common
-// import Apx.Controls
-// import Apx.Instruments
-// import Apx.Application
-
 import APX.Fleet as APX
 import APX.Mission
 
 Repeater {
     id: repeater
     model: mission.wp.mapModel
-    property int lastIndex: 0
     delegate: Item {
         required property var modelData
         required property var index
@@ -30,7 +24,10 @@ Repeater {
             property var startPoint: mission.startPoint
             property var altitude: modelData.child("altitude").value
             property var agl: modelData.child("agl").value
-            property bool alarmOn: agl < modelData.unsafeAgl || modelData.collision
+            property var elevation: modelData.elevation
+            property var unsafeAgl: modelData.unsafeAgl
+            property bool collision: modelData.collision
+            property bool alarmOn: !isNaN(elevation) ? (agl < unsafeAgl || collision) : false
             property var hAMSL: amsl ? altitude : altitude + startHmsl
             property var distance: modelData ? modelData.totalDistance : -1
             property var coordinate: modelData.coordinate
@@ -95,17 +92,24 @@ Repeater {
                         created = true
                         return
                     }
+                    return
                 }
-                var dst = distance > 0 ? distance : 0.1 //fix for incorrect line drawing at zero values
-                if(index>repeater.lastIndex)
-                    lineSeries.append(dst,hAMSL)
-                else
-                    lineSeries.insert(1,dst,hAMSL)
-                repeater.lastIndex = index
+                for(var i = 0; i < lineSeries.count; i++) {
+                    var point = lineSeries.at(i)
+                    if(point.x > distance) {
+                        lineSeries.insert(i, distance, hAMSL)
+                        setOldValues()
+                        created = true
+                        return
+                    }
+                }
+                lineSeries.append(distance, hAMSL)
                 setOldValues()
                 created = true
             }
             function updateData() {
+                if(!created)
+                    return
                 lineSeries.replace(oldDistance, oldHAMSL, distance, hAMSL)
                 setOldValues()
             }
