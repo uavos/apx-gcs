@@ -68,9 +68,11 @@ MissionObject {
     property var agl: fact?fact.child("agl").value:0
     property var elevation: fact?fact.elevation:NaN
     property var collision: fact?fact.collision:false
+    property var unsafeAgl: fact?fact.unsafeAgl:100 // default unsafe agl = 100 m
 
     onAglChanged: timer.restart()
     onAlarmOnChanged: timer.restart()
+    onCollisionChanged: timer.restart()
      
     function alarm() 
     {   
@@ -80,7 +82,7 @@ MissionObject {
             return false
         if(isNaN(elevation))
             return false
-        return agl < fact.unsafeAgl
+        return (agl < unsafeAgl || collision)
     }
 
     Timer {

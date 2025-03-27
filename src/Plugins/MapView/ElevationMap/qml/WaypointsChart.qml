@@ -30,7 +30,7 @@ Repeater {
             property var startPoint: mission.startPoint
             property var altitude: modelData.child("altitude").value
             property var agl: modelData.child("agl").value
-            property bool alarmOn: agl < modelData.unsafeAgl 
+            property bool alarmOn: agl < modelData.unsafeAgl || modelData.collision
             property var hAMSL: amsl ? altitude : altitude + startHmsl
             property var distance: modelData ? modelData.totalDistance : -1
             property var coordinate: modelData.coordinate
