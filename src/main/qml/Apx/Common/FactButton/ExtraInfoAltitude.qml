@@ -23,13 +23,19 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
+import QtQml.Models
+
 import Apx.Common
+import APX.Fleet as APX
 import APX.Mission
 
 Item {
     id: item
 
-    property var homeHmsl: mandala.est.ref.hmsl.value
+    readonly property APX.Unit unit: apx.fleet.current
+    readonly property Mission mission: unit.mission
+
+    property var homeHmsl: mission.startElevation ? mission.startElevation : 0
     property var color: "#dcdcdc"
     property var chosenFact: fact.parentFact.chosen
     property bool chosen: chosenFact == Waypoint.ALT
@@ -38,30 +44,30 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     implicitHeight: parent.height
     implicitWidth: Math.max(icon.width+text.implicitWidth, height*4)
+    visible: !fact.parentFact.amsl.value 
         
-    // MaterialIcon {
-    //     id: icon
-    //     anchors.left: parent.left
-    //     anchors.verticalCenter: parent.verticalCenter
-    //     name: "home-map-marker"
-    //     color: item.color
-    //     size: text.contentHeight
-    //     verticalAlignment: Text.AlignVCenter
-    // }
-    // Text {
-    //     id: text
-    //     anchors.left: icon.right
-    //     anchors.verticalCenter: parent.verticalCenter
-    //     verticalAlignment: Text.AlignVCenter
-    //     font: apx.font_narrow(Style.fontSize)
-    //     color: item.color
-    //     text: getHomeHmsl()
-    // }
+    MaterialIcon {
+        id: icon
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        name: "home-map-marker"
+        color: item.color
+        size: text.contentHeight
+        verticalAlignment: Text.AlignVCenter
+    }
+    Text {
+        id: text
+        anchors.left: icon.right
+        anchors.verticalCenter: parent.verticalCenter
+        verticalAlignment: Text.AlignVCenter
+        font: apx.font_narrow(Style.fontSize)
+        color: item.color
+        text: getHomeHmsl()
+    }
 
     onChosenChanged: _editor.enabled = chosen
 
     Component.onCompleted: _editor.enabled = chosen
-
 
     function getHomeHmsl()
     {
