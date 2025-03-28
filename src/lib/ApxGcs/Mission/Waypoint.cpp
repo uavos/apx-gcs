@@ -560,6 +560,7 @@ void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath 
     QGeoCoordinate current;
     QGeoCoordinate next;
     TerrainInfo info;
+    info.terrainProfile = {};
     info.minHeight = 0;
     info.maxHeight = 0;
 
@@ -574,6 +575,8 @@ void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath 
         ptElevation = current.altitude();
         info.terrainProfile.append(QPointF(ptDistance, ptElevation));
         ptDistance += current.distanceTo(next);
+        if (qIsNaN(ptDistance))
+            continue;
         info.minHeight = qMin(info.minHeight, ptElevation);
         info.maxHeight = qMax(info.maxHeight, ptElevation);
     }
@@ -644,8 +647,8 @@ void Waypoint::updateMinMaxHeight(const double min, const double max)
     double alt = f_altitude->value().toDouble();
     if(!amsl)
         alt += getStartHMSL();
-    auto minHeight = qMin(min, alt);
-    auto maxHeight = qMax(max, alt);
+    auto minHeight = !qIsNaN(alt) ? qMin(min, alt) : min;
+    auto maxHeight = !qIsNaN(alt) ? qMax(max, alt) : max;
     setMinHeight(minHeight);
     setMaxHeight(maxHeight);
 }

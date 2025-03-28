@@ -87,7 +87,7 @@ Window {
             property int margin: 5
 
             height: txt.height
-            width: txt.width + margin
+            width: icon.width + txt.width + 2*margin
             color: "red"
             radius: 2
             border.width: radius
@@ -100,15 +100,25 @@ Window {
                 leftMargin: margin
             }
 
+            MaterialIcon {
+                id: icon
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.leftMargin: alarm.margin/2
+                name: "alert-circle"
+                color: txt.color
+                size: txt.font.pixelSize
+            }
             Text {
                 id: txt
                 text: "Alarm"
                 color: "white"
                 font.bold: true
                 font.pixelSize: Style.fontSize*0.8
-                anchors.centerIn: parent
+                anchors.left: icon.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.leftMargin: alarm.margin/2
             }
-
             SequentialAnimation {
                 running: true
                 loops: Animation.Infinite

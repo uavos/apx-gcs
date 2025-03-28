@@ -3,6 +3,7 @@ import QtCharts
 import QtQuick.Controls
 import QtQuick.Window
 import QtQml
+import QtQuick.Layouts
 
 import QtQml.Models
 
@@ -27,6 +28,7 @@ Repeater {
             property var distance: fact ? fact.distance : -1
             property var collision: fact ? fact.collision : false
             property var maxWidth: Screen.desktopAvailableWidth - 50
+            property alias chartVisible: elevationProfile.visible
 
             visible: totalDistance >=0 && distance >=0 && x>=0 && y>=0
             height: chartView.plotArea.height
@@ -77,6 +79,7 @@ Repeater {
                 }
             }
             onTerrainProfileChanged: updateLineSeriesData()
+            onDistanceChanged: elevationProfile.visible = false
             function updateLineSeriesData() {
                 if(!terrainProfile)
                     return;
@@ -91,6 +94,46 @@ Repeater {
                 for (var i = 0; i < terrainProfile.length; ++i) 
                     if((i%step) == 0 || i == terrainProfile.length-1)
                         epLineSeries.append(terrainProfile[i].x, terrainProfile[i].y)
+                elevationProfile.visible = true     
+            }
+        }
+        Item {
+            id: loading
+            property var totalDistance: modelData.totalDistance
+            property var distance: modelData.distance
+            property var chartWidth: chartView.plotArea.width
+            property var chartHeight: chartView.plotArea.height
+            property var scaleX: axisX.max/chartWidth
+
+            height: 3
+            visible: !epItem.chartVisible
+            y: chartView.plotArea.y + chartHeight
+
+            onScaleXChanged: updateX()
+            onVisibleChanged: if(!busyTimer.running) busyTimer.restart()
+                
+            Timer {
+                id: busyTimer
+                interval: 10000
+                running: loading.visible
+            }
+            BusyIndicator {
+                id: busy
+                anchors.centerIn: parent
+                running: busyTimer.running
+                height: 32
+                width:  32
+            }
+            Rectangle {
+                height: parent.height
+                width: loading.distance/loading.scaleX
+                anchors.centerIn: parent
+                visible: !busyTimer.running
+                color: Material.accent
+            }
+            function updateX() {
+                var newX = chartView.plotArea.x + (totalDistance-distance*0.5)/scaleX
+                x = Math.abs(newX - x) > 1 ? newX : x
             }
         }
     }
