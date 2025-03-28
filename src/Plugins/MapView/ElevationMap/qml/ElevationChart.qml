@@ -26,6 +26,7 @@ Repeater {
             property var totalDistance: fact ? fact.totalDistance : -1
             property var distance: fact ? fact.distance : -1
             property var collision: fact ? fact.collision : false
+            property var maxWidth: Screen.desktopAvailableWidth - 50
 
             visible: totalDistance >=0 && distance >=0 && x>=0 && y>=0
             height: chartView.plotArea.height
@@ -79,11 +80,17 @@ Repeater {
             function updateLineSeriesData() {
                 if(!terrainProfile)
                     return;
-                if(terrainProfile.lenght == 0)
-                    return;
+                //if(terrainProfile.lenght == 0)
+                //    return;
                 if(epLineSeries.count > 0)
                     epLineSeries.removePoints(0, epLineSeries.count)
-               terrainProfile.forEach((ep)=>{epLineSeries.append(ep.x, ep.y)})
+                var groupDistance = mission.wp.distance
+                var partWidth = distance * maxWidth / Math.max(groupDistance, totalDistance)
+                var step = Math.round(2*terrainProfile.length / partWidth)
+                step = step > 0 ? step : 1
+                for (var i = 0; i < terrainProfile.length; ++i) 
+                    if((i%step) == 0 || i == terrainProfile.length-1)
+                        epLineSeries.append(terrainProfile[i].x, terrainProfile[i].y)
             }
         }
     }

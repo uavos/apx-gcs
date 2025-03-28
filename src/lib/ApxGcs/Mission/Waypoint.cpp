@@ -546,8 +546,7 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     if(watcher.isRunning())
         watcher.cancel();
 
-    // clearTerrainProfile();
-
+    clearTerrainProfile();
     QFuture<TerrainInfo> future;
     future = QtConcurrent::run(createTerrainInfo, path);
     watcher.setFuture(future);
@@ -556,11 +555,13 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
 void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path)
 {
     QPointF pt;
-    TerrainInfo info;
     double ptDistance{0};
     double ptElevation{0};
     QGeoCoordinate current;
     QGeoCoordinate next;
+    TerrainInfo info;
+    info.minHeight = 0;
+    info.maxHeight = 0;
 
     auto lastIndex = path.size() - 1;
     for (qsizetype i = 0; i < lastIndex; ++i) {
