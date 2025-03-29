@@ -78,7 +78,7 @@ Rectangle{
             interval: 1
             onTriggered: if(cmdText.selectionStart<cmdText.pos0)cmdText.select(cmdText.pos0,cmdText.selectionEnd)
         }
-        Keys.onPressed: {
+        Keys.onPressed: function(event){
             //console.log("key: "+event.key+" mod: "+event.modifiers+" text: "+event.text)
             consoleExec.focused()
             forceActiveFocus()
@@ -95,20 +95,20 @@ Rectangle{
                 reset()
             }*/
         }
-        Keys.onTabPressed: {
+        Keys.onTabPressed: function(event){
             //console.log("tabE")
             event.accepted=true
             hints()
         }
-        Keys.onEnterPressed: enter(event)
-        Keys.onReturnPressed: enter(event)
-        Keys.onUpPressed: {
+        Keys.onEnterPressed: function(event){ enter(event) }
+        Keys.onReturnPressed: function(event){ enter(event) }
+        Keys.onUpPressed: function(event){
             event.accepted=true
             //var cpos=cursorPosition
             setCmd(terminal.historyNext(getCmd()),true)
             //cursorPosition=cpos
         }
-        Keys.onDownPressed: {
+        Keys.onDownPressed: function(event){
             event.accepted=true
             //var cpos=cursorPosition
             setCmd(terminal.historyPrev(getCmd()),true)
