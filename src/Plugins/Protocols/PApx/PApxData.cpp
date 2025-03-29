@@ -145,7 +145,7 @@ void PApxData::requestScript(QString func)
     if (func.isEmpty())
         return;
     _req.request(mandala::cmd::env::script::vmexec::uid);
-    _req.append(func.toUtf8());
+    _req.write_string(func.toUtf8().constData());
     trace()->block(func);
     _req.send();
 }
