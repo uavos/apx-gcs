@@ -67,7 +67,7 @@ MissionObject {
     property var coordinate: fact?fact.coordinate:0
     property var agl: fact?fact.child("agl").value:0
     property var elevation: fact?fact.elevation:NaN
-    property var collision: fact?fact.collision:false
+    property var collision: (fact && alarmOn)?fact.collision:false
     property var unsafeAgl: fact?fact.unsafeAgl:100 // default unsafe agl = 100 m
 
     onAglChanged: timer.restart()
