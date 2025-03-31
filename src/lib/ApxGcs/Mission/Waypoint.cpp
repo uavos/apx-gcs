@@ -147,6 +147,7 @@ void Waypoint::initElevationMap()
     connect(&m_watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo);
     connect(App::instance(), &App::appQuit, &m_watcher, &QFutureWatcher<TerrainInfo>::cancel);
 
+    updateMinMaxHeight(m_minHeight, m_maxHeight);
     updateAgl();
 }
 
