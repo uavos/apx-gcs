@@ -187,7 +187,7 @@ public slots:
 signals:
     void selected();
 
-    void requestScript(QString func);
+    void requestScript(QString func, QVariant arg = {});
     void geoPathAppend(QGeoCoordinate p);
     void deleteUnit();
 

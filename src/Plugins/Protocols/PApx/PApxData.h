@@ -64,6 +64,6 @@ protected:
     void sendValue(mandala::uid_t uid, QVariant value) override;
 
     void requestCalibration(mandala::uid_t uid, QByteArray data) override;
-    void requestScript(QString func) override;
+    void requestScript(QString func, QVariant arg = {}) override;
     void sendSerial(quint8 portID, QByteArray data) override;
 };

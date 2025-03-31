@@ -139,7 +139,7 @@ void PApxData::requestCalibration(mandala::uid_t uid, QByteArray data)
     _req.send();
 }
 
-void PApxData::requestScript(QString func)
+void PApxData::requestScript(QString func, QVariant arg)
 {
     func = func.simplified().trimmed();
     if (func.isEmpty())
@@ -147,6 +147,9 @@ void PApxData::requestScript(QString func)
     _req.request(mandala::cmd::env::script::vmexec::uid);
     _req.write_string(func.toUtf8().constData());
     trace()->block(func);
+    if (!arg.isNull()) {
+        _req << (uint32_t) arg.toUInt();
+    }
     _req.send();
 }
 
