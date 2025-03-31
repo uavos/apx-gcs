@@ -122,7 +122,7 @@ public:
 
 protected:
     static const int UNSAFE_AGL = 100; // Suggested by the CEO
-    QFutureWatcher<TerrainInfo> watcher;
+    QFutureWatcher<TerrainInfo> m_watcher;
     ChosenFact m_chosen{ALT};
     double m_minHeight{0};
     double m_maxHeight{0};

@@ -144,8 +144,8 @@ void Waypoint::initElevationMap()
         Fact *prevAltitude = prevWp->f_altitude;
         connect(prevAltitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
     }
-    connect(&watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo);
-    connect(App::instance(), &App::appQuit, &watcher, &QFutureWatcher<TerrainInfo>::cancel);
+    connect(&m_watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo);
+    connect(App::instance(), &App::appQuit, &m_watcher, &QFutureWatcher<TerrainInfo>::cancel);
 
     updateAgl();
 }
@@ -531,10 +531,9 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     auto first = m_geoPath.coordinateAt(0);
     auto last = m_geoPath.coordinateAt(end);
 
-    end = path.size() - 1;
+    auto inEnd = path.size() - 1;
     auto firstIn = path.coordinateAt(0);
-    auto lastIn = path.coordinateAt(end);
-    auto hasNaN = qIsNaN(firstIn.altitude());
+    auto lastIn = path.coordinateAt(inEnd);
 
     first.setAltitude(0);
     last.setAltitude(0);
@@ -544,18 +543,19 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     if (first != firstIn || last != lastIn)
         return;
 
-    if(watcher.isRunning())
-        watcher.cancel();
+    if(m_watcher.isRunning())
+       m_watcher.cancel();
 
     clearTerrainProfile();
-    
-    // Check empty path without altitude
-    if(hasNaN)
-        checkCollision();
+
+    if (m_geoPath == path) {
+        setCollision(false);
+        return;
+    }
 
     QFuture<TerrainInfo> future;
     future = QtConcurrent::run(createTerrainInfo, path);
-    watcher.setFuture(future);
+    m_watcher.setFuture(future);
 }
 
 void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path)
@@ -661,7 +661,7 @@ void Waypoint::updateMinMaxHeight(const double min, const double max)
 
 void Waypoint::updateTerrainInfo()
 {
-    auto result = watcher.result();
+    auto result = m_watcher.result();
     updateMinMaxHeight(result.minHeight, result.maxHeight);
     setTerrainProfile(result.terrainProfile);
     checkCollision();
