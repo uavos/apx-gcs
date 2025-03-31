@@ -63,7 +63,11 @@ MissionObject {
     property bool showDetails: interacting || active || f_distance===0 || (map.metersToPixelsFactor*f_distance)>150
 
     // Unsafe AGL alarm
-    property var alarmOn: apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value
+    property var elevationmap: apx.tools.elevationmap
+    property var plugin: apx.settings.application.plugins.elevationmap
+    property var use: elevationmap ? apx.tools.elevationmap.use.value : false
+    property var pluginOn: plugin ? apx.settings.application.plugins.elevationmap.value : false
+    property var alarmOn: use && pluginOn
     property var coordinate: fact?fact.coordinate:0
     property var agl: fact?fact.child("agl").value:0
     property var elevation: fact?fact.elevation:NaN
