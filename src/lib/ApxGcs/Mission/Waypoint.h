@@ -68,7 +68,6 @@ public:
 
 protected:
     QGeoPath getPath() override;
-    void initElevationMap();
     void calcAltitude();
     void recalcAltitude();
     void processAgl();
@@ -93,6 +92,7 @@ private slots:
     void updateTerrainInfo();
 
 public slots:
+    void initElevationMap();
     void updateAgl();
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();

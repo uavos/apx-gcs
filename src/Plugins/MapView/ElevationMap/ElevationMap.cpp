@@ -265,6 +265,8 @@ void ElevationMap::setWaypointsValues(bool b)
         wp->f_agl->setVisible(b);
         if (!b)
             continue;
+        wp->initElevationMap();
+        setTerrainProfile(wp->geoPath());
         connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation);
         connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
         connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile);
@@ -296,6 +298,7 @@ void ElevationMap::setRunwaysValues(bool b) {
         if (!b)
             continue;
         auto runway = static_cast<Runway *>(m->f_runways->child(i));
+        runway->initElevationMap();
         connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation);
         connect(runway, &Runway::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
         auto str = runway->coordinate().toString();
@@ -315,6 +318,7 @@ void ElevationMap::setPoisValues(bool b) {
         if (!b)
             continue;
         auto poi = static_cast<Poi *>(m->f_pois->child(i));
+        poi->initElevationMap();
         connect(this, &ElevationMap::coordinateChanged, poi, &Poi::extractElevation);
         connect(poi, &Poi::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
         // connect(poi, &Poi::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
