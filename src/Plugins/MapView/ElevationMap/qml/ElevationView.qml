@@ -40,13 +40,20 @@ Window {
     property APX.Unit unit: apx.fleet.current
     readonly property Mission mission: unit.mission
     readonly property bool empty: mission.empty
+    property var elevationmap: apx.tools.elevationmap
+    property var use: elevationmap ? elevationmap.use.value : false 
+    property var plugin: apx.settings.application.plugins.elevationmap
+    property var pluginOn: plugin ? plugin.value : false
+    property var chartOn: use && pluginOn
+    property var name: qsTr("Terrain elevation")
+    property var disabled: qsTr("(disabled)")
 
     flags: Qt.WindowStaysOnTopHint
     width: Screen.desktopAvailableWidth - 50
     height: 200
     minimumHeight: 200
     minimumWidth: 600
-    title: qsTr("Terrain elevation")
+    title: chartOn ? name : name + " " + disabled
     color: "#CC000000"
     visible: true
     x: 25
@@ -69,6 +76,7 @@ Window {
         horizontalAlignment: Text.AlignHCenter
         transformOrigin: Item.TopLeft
         rotation: -90
+        visible: elevationView.chartOn
     }
     Label {
         id: axisXLabel
@@ -76,11 +84,13 @@ Window {
         width: parent.width
         text: qsTr("Distance, %1").arg("m")
         horizontalAlignment: Text.AlignHCenter
+        visible: elevationView.chartOn
     }
     Item {
         id: chartItem
         height: elevationView.height
         width: elevationView.width
+        visible: elevationView.chartOn
 
         Rectangle {
             id: alarm

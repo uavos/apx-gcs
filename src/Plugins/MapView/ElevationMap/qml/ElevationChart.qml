@@ -84,7 +84,9 @@ Repeater {
                 if(!terrainProfile)
                     return;
                 //if(terrainProfile.lenght == 0)
-                //    return;
+                //    return; 
+                if(distance >0 && !terrainProfile.length)
+                    return;
                 if(epLineSeries.count > 0)
                     epLineSeries.removePoints(0, epLineSeries.count)
                 var groupDistance = mission.wp.distance
