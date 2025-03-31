@@ -534,6 +534,7 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     end = path.size() - 1;
     auto firstIn = path.coordinateAt(0);
     auto lastIn = path.coordinateAt(end);
+    auto hasNaN = qIsNaN(firstIn.altitude());
 
     first.setAltitude(0);
     last.setAltitude(0);
@@ -547,6 +548,11 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
         watcher.cancel();
 
     clearTerrainProfile();
+    
+    // Check empty path without altitude
+    if(hasNaN)
+        checkCollision();
+
     QFuture<TerrainInfo> future;
     future = QtConcurrent::run(createTerrainInfo, path);
     watcher.setFuture(future);
