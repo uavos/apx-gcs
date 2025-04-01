@@ -1,3 +1,15 @@
+# [APX Ground Control v11.2.6](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.6) (03/31/25)
+
+> Branch: `main`\
+> Date: `03/31/25 18:28:37`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/a7a2221dfe80ef2c8a880bc837489fdb33834c8c...074a7ca48806a9ce5a4695561668233d2a3fb179)
+
+## Bug Fixes
+* mac app camera use plist
+* mac app camera entitlement
+* vmexec call
+* teminal key press events parameters injection
+
 # [APX Ground Control v11.2.5](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.5) (03/19/25)
 
 > Branch: `main`\
