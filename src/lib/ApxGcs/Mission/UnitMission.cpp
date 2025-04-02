@@ -49,7 +49,7 @@ UnitMission::UnitMission(Unit *parent)
     , m_startHeading(0)
     , m_startLength(0)
     , m_minHeight(0)
-    , m_maxHeight(100)
+    , m_maxHeight(200)
     , m_missionSize(0)
     , m_collision{false}
     , m_empty(true)
@@ -616,5 +616,5 @@ void UnitMission::setDefaultMinMaxHeight() {
     if (!empty())
         return;
     setMinHeight(0);
-    setMaxHeight(100);
+    setMaxHeight(200);
 }

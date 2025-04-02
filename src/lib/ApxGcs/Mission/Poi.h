@@ -46,6 +46,7 @@ private slots:
     void updateDescr();
 
 public slots:
+    void initElevationMap();
 
     //---------------------------------------
     // PROPERTIES
@@ -54,7 +55,6 @@ public:
     void setRadiusPoint(const QGeoCoordinate &v);
 
 protected:
-    void initElevationMap();
     
 signals:
     void radiusPointChanged();

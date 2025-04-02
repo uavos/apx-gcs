@@ -125,7 +125,7 @@ protected:
     QFutureWatcher<TerrainInfo> m_watcher;
     ChosenFact m_chosen{ALT};
     double m_minHeight{0};
-    double m_maxHeight{100};
+    double m_maxHeight{200};
     bool m_reachable{};
     bool m_warning{};
     bool m_collision{};
