@@ -82,7 +82,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     // Add feets options end
 
     // elevation map and agl
-    connect(f_altitude, &Fact::valueChanged, this, [this]() { if (this->chosen() == ALT) calcAgl();});
+    connect(f_altitude, &Fact::valueChanged, this, [this]() { if (this->chosen() == ALT) processAgl();});
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
     connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude);
     connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
@@ -119,9 +119,9 @@ void Waypoint::initElevationMap()
 
     connect(group->mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude);
-    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAgl);
-    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::calcAglFt);
-    connect(this, &MissionItem::elevationChanged, this, &Waypoint::calcAgl);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::processAgl);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::processAglFt);
+    connect(this, &MissionItem::elevationChanged, this, &Waypoint::processAgl);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl);
     connect(this, &MissionItem::elevationChanged, this, [this]() {f_agl->setEnabled(!std::isnan(m_elevation));});
     m_timer.setSingleShot(true);
