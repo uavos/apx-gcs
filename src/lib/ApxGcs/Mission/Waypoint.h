@@ -80,6 +80,8 @@ protected:
 
 private:
     QString _altUnits;
+    double m_terrainProfileMin{0};
+    double m_terrainProfileMax{0};
 
 private slots:
     double getStartHMSL();

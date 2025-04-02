@@ -33,7 +33,7 @@ Item {
     property var plugin: apx.settings.application.plugins.elevationmap
     property var use: elevationmap ? apx.tools.elevationmap.use.value : false
     property var pluginOn: plugin ? apx.settings.application.plugins.elevationmap.value : false
-    visible:: use && pluginOn
+    visible: use && pluginOn
 
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter

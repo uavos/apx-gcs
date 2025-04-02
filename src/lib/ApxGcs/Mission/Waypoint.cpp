@@ -134,7 +134,7 @@ void Waypoint::initElevationMap()
     // connect(this, &MissionItem::geoPathChanged, this, &MissionItem::clearTerrainProfile);
     connect(this, &MissionItem::geoPathChanged, this, [this]() {m_geoPathTimer.start();});
     connect(&m_geoPathTimer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
-    connect(f_altitude, &Fact::valueChanged, this, [this]() {updateMinMaxHeight(m_minHeight, m_maxHeight);});
+    connect(f_altitude, &Fact::valueChanged, this, [this]() {updateMinMaxHeight(m_terrainProfileMin, m_terrainProfileMax);});
     connect(this, &Waypoint::minHeightChanged, group->mission, &UnitMission::updateMinHeight);
     connect(this, &Waypoint::maxHeightChanged, group->mission, &UnitMission::updateMaxHeight);
     connect(this, &Waypoint::collisionChanged, group->mission, &UnitMission::checkCollision);
@@ -648,6 +648,7 @@ double Waypoint::getStartHMSL()
     return group->mission->startElevation();
 }
 
+// This method needs to be refactored 
 void Waypoint::updateMinMaxHeight(const double min, const double max) 
 {
     bool amsl = f_amsl->value().toBool();
@@ -663,6 +664,8 @@ void Waypoint::updateMinMaxHeight(const double min, const double max)
 void Waypoint::updateTerrainInfo()
 {
     auto result = m_watcher.result();
+    m_terrainProfileMin = result.minHeight;
+    m_terrainProfileMax = result.maxHeight;
     updateMinMaxHeight(result.minHeight, result.maxHeight);
     setTerrainProfile(result.terrainProfile);
     checkCollision();
