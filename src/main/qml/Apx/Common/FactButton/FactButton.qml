@@ -264,7 +264,9 @@ ActionButton {
                 anchors.rightMargin: mrg
 
                 Loader {
-                    active: !fact.opts.extrainfo ? false : true
+                    property var opts: fact? fact.opts : null
+                    property var extrainfo: opts ? fact.opts.extrainfo : false
+                    active: !opts.extrainfo ? false : true
                     anchors.fill: parent
                     // Material.accent: Material.color(Material.Green)
                     source: active?getExtrainfoSource():""
@@ -368,14 +370,6 @@ ActionButton {
                 }
             }
         }
-    }
-
-    Component.onCompleted: {
-        if(!fact.opts.alignleft)
-             return;
-
-        anchor.left = parent.left
-        concole.log("move left")
     }
 
     // Feets / meters conversion
