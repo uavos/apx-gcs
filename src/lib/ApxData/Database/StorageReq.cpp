@@ -656,6 +656,15 @@ bool TelemetryImport::run(QSqlQuery &query)
         auto destFilePath = Session::telemetryFilePathUnique(basename);
         basename = QFileInfo(destFilePath).baseName();
 
+        // ensure dest folder exists
+        auto destDir = QFileInfo(destFilePath).absoluteDir();
+        if (!destDir.exists()) {
+            if (!destDir.mkpath(".")) {
+                apxMsgW() << tr("Failed to create folder").append(':') << destDir.absolutePath();
+                break;
+            }
+        }
+
         rv = import.copy(destFilePath);
         if (!rv) {
             apxMsgW() << tr("Failed to copy").append(':') << basename;
