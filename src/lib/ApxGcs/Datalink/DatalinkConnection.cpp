@@ -100,7 +100,7 @@ void DatalinkConnection::resetDataStream()
 {
     if (_decoder)
         _decoder->reset();
-    _rx_fifo.reset();
+    _rx_fifo.clear();
 }
 
 void DatalinkConnection::sendPacket(QByteArray packet, quint16 network)
@@ -154,7 +154,7 @@ QByteArray DatalinkConnection::_readPacket()
     if (!_rx_fifo.empty()) {
         // qDebug() << "RX FIFO" << _rx_fifo.used();
         QTimer::singleShot(0, this, &DatalinkConnection::readDataAvailable);
-        return _rx_pkt.left(_rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size()));
+        return _rx_fifo.dequeue();
     }
 
     // read PHY and continue decoding
@@ -192,10 +192,7 @@ QByteArray DatalinkConnection::_readPacket()
         case SerialDecoder::PacketAvailable:
             pkt = true;
             // qDebug() << "RX PKT" << _decoder->size();
-
-            if (!_rx_fifo.write_packet(_decoder->data(), _decoder->size())) {
-                qWarning() << "RX fifo full";
-            }
+            _rx_fifo.enqueue(QByteArray((const char *) _decoder->data(), _decoder->size()));
             break;
         case SerialDecoder::DataAccepted:
         case SerialDecoder::DataDropped:
@@ -209,7 +206,7 @@ QByteArray DatalinkConnection::_readPacket()
     if (!pkt)
         return {};
 
-    return _rx_pkt.left(_rx_fifo.read_packet(_rx_pkt.data(), _rx_pkt.size()));
+    return _rx_fifo.dequeue();
 }
 
 void DatalinkConnection::opened()

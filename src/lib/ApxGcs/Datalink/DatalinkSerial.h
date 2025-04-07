@@ -25,8 +25,6 @@
 
 #include <XbusPacket.h>
 
-#include <fifo.hpp>
-
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QtCore>

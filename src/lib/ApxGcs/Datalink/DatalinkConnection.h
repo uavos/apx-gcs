@@ -24,7 +24,6 @@
 #include <Fact/Fact.h>
 #include <QtCore>
 
-#include <fifo.hpp>
 #include <serial/SerialCodec.h>
 
 class DatalinkConnection : public Fact
@@ -87,9 +86,7 @@ protected:
 
 private:
     // receiver fifo and packets queue
-    static constexpr size_t RXBUF_SIZE{xbus::size_packet_max * 8};
-    apx::fifo_packet_static<RXBUF_SIZE> _rx_fifo;
-    QByteArray _rx_pkt{xbus::size_packet_max, '\0'};
+    QQueue<QByteArray> _rx_fifo;
     QByteArray _readPacket();
 
 private:
