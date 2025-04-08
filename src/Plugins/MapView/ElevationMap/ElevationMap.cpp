@@ -69,7 +69,7 @@ ElevationMap::ElevationMap(Fact *parent)
 #endif
 
     connect(this, &Fact::pathChanged, this, &ElevationMap::getPluginEnableControl);
-    connect(Fleet::instance(), &Fleet::currentChanged, this, [this]() { updateMission(); });
+    connect(Fleet::instance(), &Fleet::currentChanged, this, &ElevationMap::updateMission);
     connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
@@ -267,17 +267,16 @@ void ElevationMap::setWaypointsValues(bool b)
             continue;
         wp->initElevationMap();
         setTerrainProfile(wp->geoPath());
-        connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation);
-        connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
-        connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile);
-        connect(this, &ElevationMap::geoPathChanged, wp, &Waypoint::buildTerrainProfile);
-        // connect(wp, &Waypoint::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
+        connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation, Qt::UniqueConnection);
+        connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
+        connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile, Qt::UniqueConnection);
+        connect(this, &ElevationMap::geoPathChanged, wp, &Waypoint::buildTerrainProfile, Qt::UniqueConnection);
         // For start point height update
         if(m->f_runways->size() > 0) {
             auto rw0 = static_cast<Runway *>(m->f_runways->child(0));
             auto rw0Hmsl = rw0->f_hmsl;
-            connect(rw0, &Runway::elevationChanged, wp, &Waypoint::updateAgl);
-            connect(rw0Hmsl, &Fact::valueChanged, wp, &Waypoint::updateAgl);
+            connect(rw0, &Runway::elevationChanged, wp, &Waypoint::updateAgl, Qt::UniqueConnection);
+            connect(rw0Hmsl, &Fact::valueChanged, wp, &Waypoint::updateAgl, Qt::UniqueConnection);
             wp->updateAgl();
         }
         auto str = wp->coordinate().toString();
@@ -299,8 +298,8 @@ void ElevationMap::setRunwaysValues(bool b) {
             continue;
         auto runway = static_cast<Runway *>(m->f_runways->child(i));
         runway->initElevationMap();
-        connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation);
-        connect(runway, &Runway::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+        connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation, Qt::UniqueConnection);
+        connect(runway, &Runway::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
         auto str = runway->coordinate().toString();
         if (!m_runways.contains(str)) {
             setCoordinateWithElevation(runway->coordinate());
@@ -319,9 +318,8 @@ void ElevationMap::setPoisValues(bool b) {
             continue;
         auto poi = static_cast<Poi *>(m->f_pois->child(i));
         poi->initElevationMap();
-        connect(this, &ElevationMap::coordinateChanged, poi, &Poi::extractElevation);
-        connect(poi, &Poi::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
-        // connect(poi, &Poi::coordinateChanged, this, &ElevationMap::setCoordinateWithElevation);  // for fast processing
+        connect(this, &ElevationMap::coordinateChanged, poi, &Poi::extractElevation, Qt::UniqueConnection);
+        connect(poi, &Poi::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
         auto str = poi->coordinate().toString();
         if (!m_pois.contains(str)) {
             setCoordinateWithElevation(poi->coordinate());
@@ -356,8 +354,8 @@ void ElevationMap::setStartPointElevation()
             m->setStartElevation(hHmsl);
             return;
         }
-        connect(runway, &MissionItem::elevationChanged, this, &ElevationMap::setStartPointElevation);
-        connect(runway->f_hmsl, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation);
+        connect(runway, &MissionItem::elevationChanged, this, &ElevationMap::setStartPointElevation, Qt::UniqueConnection);
+        connect(runway->f_hmsl, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation, Qt::UniqueConnection);
         auto rwHmsl = runway->f_hmsl->value().toInt();
         hHmsl = rwHmsl;
         // If hmsl default
