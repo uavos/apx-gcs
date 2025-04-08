@@ -118,7 +118,7 @@ void Waypoint::initElevationMap()
         return;
 
     connect(group->mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl);
-    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude);
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude, Qt::UniqueConnection);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::processAgl);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::processAglFt);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::processAgl);
