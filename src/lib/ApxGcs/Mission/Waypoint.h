@@ -81,7 +81,7 @@ protected:
 private:
     QString _altUnits;
     double m_terrainProfileMin{0};
-    double m_terrainProfileMax{0};
+    double m_terrainProfileMax{200};
 
 private slots:
     double getStartHMSL();
@@ -92,7 +92,8 @@ private slots:
     void sendElevationRequest();
     void sendTerrainProfileRequest();
     static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
-    void updateMinMaxHeight(const double min, const double max);
+    // void updateMinMaxHeight(const double min, const double max);
+    void updateMinMaxHeight();
     void updateTerrainInfo();
     void setAglEnabled();
     void startTimer();

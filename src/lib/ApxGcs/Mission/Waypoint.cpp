@@ -135,11 +135,12 @@ void Waypoint::initElevationMap()
     connect(&m_geoPathTimer, &QTimer::timeout, this, &Waypoint::sendTerrainProfileRequest, Qt::UniqueConnection);
     // connect(this, &MissionItem::geoPathChanged, this, &MissionItem::clearTerrainProfile);
 
-    connect(f_altitude, &Fact::valueChanged, this, [this]() {updateMinMaxHeight(m_terrainProfileMin, m_terrainProfileMax);});
+    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::updateMinMaxHeight, Qt::UniqueConnection);
     connect(f_agl, &Fact::valueChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
     connect(this, &Waypoint::minHeightChanged, mission, &UnitMission::updateMinHeight, Qt::UniqueConnection);
     connect(this, &Waypoint::maxHeightChanged, mission, &UnitMission::updateMaxHeight, Qt::UniqueConnection);
     connect(this, &Waypoint::collisionChanged, mission, &UnitMission::checkCollision, Qt::UniqueConnection);
+    
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if(prevWp) {
         Fact *prevAltitude = prevWp->f_altitude;
@@ -148,7 +149,7 @@ void Waypoint::initElevationMap()
     connect(&m_watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo, Qt::UniqueConnection);
     connect(App::instance(), &App::appQuit, &m_watcher, &QFutureWatcher<TerrainInfo>::cancel, Qt::UniqueConnection);
 
-    updateMinMaxHeight(m_minHeight, m_maxHeight);
+    updateMinMaxHeight();
     updateAgl();
 }
 
@@ -634,7 +635,7 @@ void Waypoint::checkCollision()
             prevAlt += startHmsl;
         }
     } else {
-        prevAlt = m_terrainProfile.first().y();
+        prevAlt = startHmsl !=0 ? startHmsl : m_terrainProfile.first().y();
     }
 
     // Checking points on top of each other
@@ -671,14 +672,14 @@ double Waypoint::getStartHMSL()
 }
 
 // This method needs to be refactored 
-void Waypoint::updateMinMaxHeight(const double min, const double max) 
+void Waypoint::updateMinMaxHeight() 
 {
     bool amsl = f_amsl->value().toBool();
     double alt = f_altitude->value().toDouble();
     if(!amsl)
         alt += getStartHMSL();
-    auto minHeight = !qIsNaN(alt) ? qMin(min, alt) : min;
-    auto maxHeight = !qIsNaN(alt) ? qMax(max, alt) : max;
+    auto minHeight = !qIsNaN(alt) ? qMin(m_terrainProfileMin, alt) : m_terrainProfileMin;
+    auto maxHeight = !qIsNaN(alt) ? qMax(m_terrainProfileMax, alt) : m_terrainProfileMax;
     setMinHeight(minHeight);
     setMaxHeight(maxHeight);
 }
@@ -688,7 +689,7 @@ void Waypoint::updateTerrainInfo()
     auto result = m_watcher.result();
     m_terrainProfileMin = result.minHeight;
     m_terrainProfileMax = result.maxHeight;
-    updateMinMaxHeight(result.minHeight, result.maxHeight);
+    updateMinMaxHeight();
     setTerrainProfile(result.terrainProfile);
     checkCollision();
 }
