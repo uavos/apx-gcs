@@ -116,11 +116,19 @@ void Waypoint::initElevationMap()
     f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
     if(!f_elevationmap)
         return;
-
+        
     auto mission = group->mission;
+    auto order = f_order->value().toInt();
     connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
+    if (order == 1) {
+        connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
+    }
+
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude, Qt::UniqueConnection);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
+    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::updateMinMaxHeight, Qt::UniqueConnection);
+    connect(f_agl, &Fact::valueChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
+
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::setAglEnabled, Qt::UniqueConnection);
 
@@ -133,10 +141,7 @@ void Waypoint::initElevationMap()
     m_geoPathTimer.setInterval(TIMEOUT);
     connect(this, SIGNAL(geoPathChanged()), &m_geoPathTimer, SLOT(start()), Qt::UniqueConnection);
     connect(&m_geoPathTimer, &QTimer::timeout, this, &Waypoint::sendTerrainProfileRequest, Qt::UniqueConnection);
-    // connect(this, &MissionItem::geoPathChanged, this, &MissionItem::clearTerrainProfile);
 
-    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::updateMinMaxHeight, Qt::UniqueConnection);
-    connect(f_agl, &Fact::valueChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
     connect(this, &Waypoint::minHeightChanged, mission, &UnitMission::updateMinHeight, Qt::UniqueConnection);
     connect(this, &Waypoint::maxHeightChanged, mission, &UnitMission::updateMaxHeight, Qt::UniqueConnection);
     connect(this, &Waypoint::collisionChanged, mission, &UnitMission::checkCollision, Qt::UniqueConnection);
