@@ -379,6 +379,17 @@ void MissionItem::changeFeetMeters()
 
 
 // ===== Mission analyze =====
+void MissionItem::startTimer()
+{
+    if (!m_timer.isActive())
+        m_timer.start();
+}
+
+void MissionItem::sendElevationRequest()
+{
+    emit requestElevation(m_coordinate);
+}
+
 QList<QPointF> MissionItem::terrainProfile() const
 {
     return m_terrainProfile;

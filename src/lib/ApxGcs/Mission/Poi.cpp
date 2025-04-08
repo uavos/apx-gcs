@@ -90,8 +90,8 @@ void Poi::initElevationMap()
         return;
     m_timer.setInterval(TIMEOUT);
     m_timer.setSingleShot(true);
-    connect(&m_timer, &QTimer::timeout, this, [this]() { emit requestElevation(m_coordinate); });
-    connect(this, &MissionItem::coordinateChanged, this, [this]() { if (!m_timer.isActive()) m_timer.start();});
+    connect(this, &MissionItem::coordinateChanged, this, &Poi::startTimer, Qt::UniqueConnection);
+    connect(&m_timer, &QTimer::timeout, this, &Poi::sendElevationRequest, Qt::UniqueConnection);
 }
 
 void Poi::updateTitle()

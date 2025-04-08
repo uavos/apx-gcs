@@ -99,6 +99,8 @@ protected:
     MissionItem *nextItem() const;
 
     auto unit() const { return group->mission->unit; }
+    void sendElevationRequest();
+    void startTimer();
 
     bool blockUpdates{};
     bool blockUpdateCoordinate{};

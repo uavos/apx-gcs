@@ -128,10 +128,10 @@ void Runway::initElevationMap()
     f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
     if (!f_elevationmap)
         return;
-    m_timer.setInterval(TIMEOUT);
+    m_timer.setInterval(TIMEOUT); 
     m_timer.setSingleShot(true);
-    connect(&m_timer, &QTimer::timeout, this, [this]() { emit requestElevation(m_coordinate); });
-    connect(this, &MissionItem::coordinateChanged, this, [this]() {if (!m_timer.isActive()) m_timer.start();});
+    connect(this, &MissionItem::coordinateChanged, this, &Runway::startTimer, Qt::UniqueConnection);
+    connect(&m_timer, &QTimer::timeout, this, &Runway::sendElevationRequest, Qt::UniqueConnection);
 }
 
 void Runway::updateTitle()

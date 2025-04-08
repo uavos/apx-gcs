@@ -533,20 +533,9 @@ void Waypoint::setAglEnabled()
     f_agl->setEnabled(!std::isnan(m_elevation));
 }
 
-void Waypoint::sendElevationRequest()
-{
-    emit requestElevation(m_coordinate);
-}
-
 void Waypoint::sendTerrainProfileRequest()
 {
     emit requestTerrainProfile(m_geoPath);
-}
-
-void Waypoint::startTimer()
-{
-    if (!m_timer.isActive())
-        m_timer.start();
 }
 
 void Waypoint::buildTerrainProfile(const QGeoPath &path)

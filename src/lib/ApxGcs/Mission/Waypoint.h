@@ -89,14 +89,11 @@ private slots:
     void updateDescr();
     void updateAMSL();
     void updateAltDescr();
-    void sendElevationRequest();
     void sendTerrainProfileRequest();
     static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
-    // void updateMinMaxHeight(const double min, const double max);
     void updateMinMaxHeight();
     void updateTerrainInfo();
     void setAglEnabled();
-    void startTimer();
 
 public slots:
     void initElevationMap();
