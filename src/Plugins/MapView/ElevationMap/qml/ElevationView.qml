@@ -28,9 +28,6 @@ import QtQml
 import QtQml.Models
 
 import Apx.Common
-// import Apx.Controls
-// import Apx.Instruments
-// import Apx.Application
 
 import APX.Fleet as APX
 import APX.Mission
@@ -42,8 +39,8 @@ Window {
     readonly property bool empty: mission.empty
     property var elevationmap: apx.tools.elevationmap
     property var use: elevationmap ? elevationmap.use.value : false 
-    property var plugin: apx.settings.application.plugins.elevationmap
-    property var pluginOn: plugin ? plugin.value : false
+    property var elevationPlugin: apx.settings.application.plugins.elevationmap
+    property var pluginOn: elevationPlugin ? elevationPlugin.value : false
     property var chartOn: use && pluginOn
     property var name: qsTr("Terrain elevation")
     property var disabled: qsTr("(disabled)")
