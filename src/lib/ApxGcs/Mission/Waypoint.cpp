@@ -117,35 +117,36 @@ void Waypoint::initElevationMap()
     if(!f_elevationmap)
         return;
 
-    connect(group->mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl);
+    auto mission = group->mission;
+    connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude, Qt::UniqueConnection);
-    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::processAgl);
-    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::processAglFt);
-    connect(this, &MissionItem::elevationChanged, this, &Waypoint::processAgl);
-    connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl);
-    connect(this, &MissionItem::elevationChanged, this, [this]() {f_agl->setEnabled(!std::isnan(m_elevation));});
+    connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
+    connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
+    connect(this, &MissionItem::elevationChanged, this, &Waypoint::setAglEnabled, Qt::UniqueConnection);
+
     m_timer.setSingleShot(true);
     m_timer.setInterval(TIMEOUT);
-    connect(this, &MissionItem::coordinateChanged, this, [this]() {if (!m_timer.isActive()) m_timer.start();});
-    connect(&m_timer, &QTimer::timeout, this, [this]() {emit requestElevation(m_coordinate);});
-   
+    connect(this, &MissionItem::coordinateChanged, this, &Waypoint::startTimer, Qt::UniqueConnection);
+    connect(&m_timer, &QTimer::timeout, this, &Waypoint::sendElevationRequest, Qt::UniqueConnection);
+
     m_geoPathTimer.setSingleShot(true);
     m_geoPathTimer.setInterval(TIMEOUT);
+    connect(this, SIGNAL(geoPathChanged()), &m_geoPathTimer, SLOT(start()), Qt::UniqueConnection);
+    connect(&m_geoPathTimer, &QTimer::timeout, this, &Waypoint::sendTerrainProfileRequest, Qt::UniqueConnection);
     // connect(this, &MissionItem::geoPathChanged, this, &MissionItem::clearTerrainProfile);
-    connect(this, &MissionItem::geoPathChanged, this, [this]() {m_geoPathTimer.start();});
-    connect(&m_geoPathTimer, &QTimer::timeout, this, [this]() {emit requestTerrainProfile(m_geoPath);});
+
     connect(f_altitude, &Fact::valueChanged, this, [this]() {updateMinMaxHeight(m_terrainProfileMin, m_terrainProfileMax);});
-    connect(this, &Waypoint::minHeightChanged, group->mission, &UnitMission::updateMinHeight);
-    connect(this, &Waypoint::maxHeightChanged, group->mission, &UnitMission::updateMaxHeight);
-    connect(this, &Waypoint::collisionChanged, group->mission, &UnitMission::checkCollision);
-    connect(f_agl, &Fact::valueChanged, this, &Waypoint::checkCollision);
+    connect(f_agl, &Fact::valueChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
+    connect(this, &Waypoint::minHeightChanged, mission, &UnitMission::updateMinHeight, Qt::UniqueConnection);
+    connect(this, &Waypoint::maxHeightChanged, mission, &UnitMission::updateMaxHeight, Qt::UniqueConnection);
+    connect(this, &Waypoint::collisionChanged, mission, &UnitMission::checkCollision, Qt::UniqueConnection);
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if(prevWp) {
         Fact *prevAltitude = prevWp->f_altitude;
-        connect(prevAltitude, &Fact::valueChanged, this, &Waypoint::checkCollision);
+        connect(prevAltitude, &Fact::valueChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
     }
-    connect(&m_watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo);
-    connect(App::instance(), &App::appQuit, &m_watcher, &QFutureWatcher<TerrainInfo>::cancel);
+    connect(&m_watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo, Qt::UniqueConnection);
+    connect(App::instance(), &App::appQuit, &m_watcher, &QFutureWatcher<TerrainInfo>::cancel, Qt::UniqueConnection);
 
     updateMinMaxHeight(m_minHeight, m_maxHeight);
     updateAgl();
@@ -524,6 +525,27 @@ void Waypoint::updateAgl()
 {
     processAgl();
     processAglFt();
+}
+
+void Waypoint::setAglEnabled()
+{
+    f_agl->setEnabled(!std::isnan(m_elevation));
+}
+
+void Waypoint::sendElevationRequest()
+{
+    emit requestElevation(m_coordinate);
+}
+
+void Waypoint::sendTerrainProfileRequest()
+{
+    emit requestTerrainProfile(m_geoPath);
+}
+
+void Waypoint::startTimer()
+{
+    if (!m_timer.isActive())
+        m_timer.start();
 }
 
 void Waypoint::buildTerrainProfile(const QGeoPath &path)
