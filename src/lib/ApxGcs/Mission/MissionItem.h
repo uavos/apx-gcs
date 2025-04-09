@@ -35,7 +35,6 @@
 class MissionItem : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(int missionItemType READ missionItemType CONSTANT)
 
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
@@ -56,7 +55,6 @@ public:
                          const QString &descr);
 
     MissionGroup *group;
-    int missionItemType() const;
 
     Fact *f_order;
     Fact *f_latitude;

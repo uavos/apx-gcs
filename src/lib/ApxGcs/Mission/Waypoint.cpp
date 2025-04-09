@@ -28,6 +28,8 @@
 Waypoint::Waypoint(MissionGroup *parent)
     : MissionItem(parent, "w#", "", "")
 {
+    setOpt("color", "#657C88");
+
     f_amsl = new MissionField(this, "amsl", tr("AMSL mode"), tr("Altitude above sea level"), Bool);
 
     f_altitude = new MissionField(this, "altitude", tr("Altitude"), tr("Altitude above ground"), Int);

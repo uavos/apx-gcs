@@ -123,11 +123,6 @@ void MissionItem::fromJson(const QJsonValue &jsv)
     itemDataLoaded();
 }
 
-int MissionItem::missionItemType() const
-{
-    return group->missionItemType();
-}
-
 void MissionItem::updateTitle()
 {
     setTitle(QString::number(num() + 1));

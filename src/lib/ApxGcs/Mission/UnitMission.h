@@ -43,7 +43,6 @@ class MissionTools;
 class UnitMission : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(MissionItemType)
 
     Q_PROPERTY(QGeoCoordinate startPoint READ startPoint WRITE setStartPoint NOTIFY startPointChanged)
     Q_PROPERTY(double startHeading READ startHeading WRITE setStartHeading NOTIFY startHeadingChanged)
@@ -64,21 +63,11 @@ class UnitMission : public Fact
 public:
     explicit UnitMission(Unit *parent);
 
-    enum MissionItemType {
-        WaypointType = 0,
-        RunwayType,
-        TaxiwayType,
-        PoiType,
-        AreaType,
-    };
-
-    Q_ENUM(MissionItemType)
-
-    typedef MissionGroupT<Runway, RunwayType> Runways;
-    typedef MissionGroupT<Waypoint, WaypointType> Waypoints;
-    typedef MissionGroupT<Taxiway, TaxiwayType> Taxiways;
-    typedef MissionGroupT<Poi, PoiType> Pois;
-    typedef MissionGroupT<Area, AreaType> Areas;
+    typedef MissionGroupT<Runway> Runways;
+    typedef MissionGroupT<Waypoint> Waypoints;
+    typedef MissionGroupT<Taxiway> Taxiways;
+    typedef MissionGroupT<Poi> Pois;
+    typedef MissionGroupT<Area> Areas;
 
     Runways *f_runways;
     Waypoints *f_waypoints;

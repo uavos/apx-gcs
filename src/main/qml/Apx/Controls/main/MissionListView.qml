@@ -90,19 +90,7 @@ ColumnLayout {
                     : Material.primaryTextColor
 
 
-                color: {
-                    switch(modelData.missionItemType){
-                    default: return Material.primaryColor
-                    case Mission.RunwayType:
-                        return Material.color(Material.Blue, Material.Shade900) //Style.cListRunway
-                    case Mission.WaypointType:
-                        return Material.color(Material.BlueGrey, Material.Shade500) //Style.cListWaypoint
-                    case Mission.PoiType:
-                        return Material.color(Material.Teal, Material.Shade700) //Style.cListPoint
-                    case Mission.TaxiwayType:
-                        return Material.color(Material.Grey, Material.Shade800) //Style.cListTaxiway
-                    }
-                }
+                color: modelData.opts.color
             }
             Loader {
                 id: activeIndicator

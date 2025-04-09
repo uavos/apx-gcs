@@ -28,6 +28,8 @@
 Poi::Poi(MissionGroup *parent)
     : MissionItem(parent, "p#", "", "")
 {
+    setOpt("color", "#00796D");
+
     f_hmsl = new MissionField(this, "hmsl", tr("HMSL"), tr("Object of interest altitude MSL"), Int);
     f_hmsl->setUnits("m");
     f_hmsl->setEnumStrings(QStringList() << "ground");
