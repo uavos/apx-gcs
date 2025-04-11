@@ -51,6 +51,9 @@ MissionPlanner::MissionPlanner(Fact *parent)
     f = new Fact(f_add, "taxiway", tr("Taxiway"), "", CloseOnTrigger, "vector-polyline");
     connect(f, &Fact::triggered, this, [=]() { mission()->f_taxiways->add(clickCoordinate()); });
 
+    f = new Fact(f_add, "area", tr("Area"), "", CloseOnTrigger, "vector-polygon");
+    connect(f, &Fact::triggered, this, [=]() { mission()->f_areas->add(clickCoordinate()); });
+
     f = new Fact(f_unit, "fly_here", tr("Fly here"), "", CloseOnTrigger, "airplane");
     connect(f, &Fact::triggered, this, [=]() { unit()->flyHere(clickCoordinate()); });
 

@@ -26,8 +26,10 @@
 #include <QGeoCircle>
 
 Area::Area(MissionGroup *parent)
-    : MissionItem(parent, "P#", "", tr("Areant of interest"))
+    : MissionItem(parent, "A#", "", tr("Area of interest"))
 {
+    setOpt("color", "#E65100");
+
     f_hmsl = new MissionField(this, "hmsl", tr("HMSL"), tr("Object of interest altitude MSL"), Int);
     f_hmsl->setUnits("m");
     f_hmsl->setEnumStrings(QStringList() << "ground");
