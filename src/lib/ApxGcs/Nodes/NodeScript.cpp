@@ -74,8 +74,9 @@ void NodeScript::_update_cc_args()
         QJsonDocument json = QJsonDocument::fromJson(ftasks.readAll());
         ftasks.close();
         //qDebug() << json;
-        foreach (QJsonValue v, json["tasks"].toArray()) {
-            if (!v["group"]["isDefault"].toBool())
+        for (const auto i : json["tasks"].toArray()) {
+            const auto jso = i.toObject();
+            if (!jso.value("group").toObject().value("isDefault").toBool())
                 continue;
             QHash<QString, QString> map;
             map.insert("config:wasm.sysroot", AppDirs::scripts().absoluteFilePath("sysroot"));
@@ -83,8 +84,8 @@ void NodeScript::_update_cc_args()
             map.insert("fileDirname", QFileInfo(srcFile.fileName()).absolutePath());
             map.insert("fileBasenameNoExtension", QFileInfo(srcFile.fileName()).baseName());
             map.insert("file", srcFile.fileName());
-            for (auto a : v["args"].toArray().toVariantList()) {
-                QString s = a.toString();
+            for (auto i : jso.value("args").toArray()) {
+                auto s = i.toVariant().toString();
                 if (s.contains("${")) {
                     for (auto k : map.keys())
                         s.replace(QString("${%1}").arg(k), map.value(k));
