@@ -171,6 +171,11 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
     }
     file.close();
 
+    if (discarded()) {
+        qDebug() << "Telemetry file reading aborted";
+        return true;
+    }
+
     bool still_writing = _reader.is_still_writing();
     if (still_writing) {
         qDebug() << "File is still writing";

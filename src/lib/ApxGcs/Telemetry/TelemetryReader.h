@@ -56,6 +56,8 @@ public:
 
 private:
     quint64 _loadRecordID{};
+    db::storage::TelemetryLoadFile *_loadFileReq{};
+
     QList<Field> _fields; // store read fields copy
     QJsonObject _recordInfo;
     QString _recordFilePath;
@@ -80,6 +82,8 @@ private slots:
     void updateStatus();
 
     void setRecordInfo(quint64 id, QJsonObject info, QString notes);
+
+    void do_loadRecord(quint64 id);
 
     void do_rec_field(Field field);
     void do_rec_values(quint64 timestamp_ms, Values data, bool uplink);

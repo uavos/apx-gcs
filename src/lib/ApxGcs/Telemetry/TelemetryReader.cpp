@@ -66,6 +66,19 @@ void TelemetryReader::updateStatus()
 
 void TelemetryReader::loadRecord(quint64 id)
 {
+    if (_loadFileReq) {
+        _loadFileReq->discard();
+
+        _loadFileReq->disconnect();
+        _loadFileReq->reader()->disconnect();
+
+        _loadFileReq = nullptr;
+    }
+    QTimer::singleShot(0, this, [this, id]() { do_loadRecord(id); });
+}
+
+void TelemetryReader::do_loadRecord(quint64 id)
+{
     f_reload->setEnabled(false);
 
     setTotalSize(0);
@@ -113,6 +126,7 @@ void TelemetryReader::loadRecord(quint64 id)
     connect(reader, &TelemetryFileReader::jso, this, &TelemetryReader::do_rec_jso);
 
     // start parsing
+    _loadFileReq = req;
     emit rec_started();
     req->exec();
 }
@@ -216,6 +230,8 @@ void TelemetryReader::do_rec_finished()
     _geoPath = {};
     f_reload->setEnabled(true);
     setProgress(-1);
+
+    _loadFileReq = nullptr;
 }
 
 void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
