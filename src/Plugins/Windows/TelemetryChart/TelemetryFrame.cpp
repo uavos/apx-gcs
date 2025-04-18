@@ -484,6 +484,6 @@ void TelemetryFrame::updatePlotPlayerTime()
 {
     quint64 t = player->f_time->value().toULongLong();
     playerSlider->setValue(t);
-    plot->setTimeCursor(t, reader->totalSize() < 3000000);
+    plot->setTimeCursor(t, true); //reader->totalSize() < 3000000);
     lbPlayerTime->setText(AppRoot::timemsToString(t));
 }
