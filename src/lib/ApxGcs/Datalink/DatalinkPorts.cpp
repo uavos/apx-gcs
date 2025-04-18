@@ -106,10 +106,10 @@ void DatalinkPorts::save()
 QStringList DatalinkPorts::activeSerialPorts() const
 {
     QStringList st;
-    foreach (DatalinkPort *port, serialPorts()) {
-        if (!port->active())
+    for (auto i : serialPorts()) {
+        if (!i->active())
             continue;
-        st.append(port->f_connection->title());
+        st.append(i->f_connection->title());
     }
     return st;
 }

@@ -201,7 +201,7 @@ void DrawingArea::DrawData()
     pen.setColor(Qt::green);
     pen.setWidth(1);
     painter->setPen(pen);
-    foreach (QPointF cv, cVectorList) {
+    for (const auto &cv : cVectorList) {
         painter->drawPoint(DPoint(cv));
         double tx = cv.x() - dx;
         double ty = cv.y() + dy;

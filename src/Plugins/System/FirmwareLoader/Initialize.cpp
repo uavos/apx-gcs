@@ -48,7 +48,7 @@ Initialize::Initialize(Firmware *firmware, Fact *parent)
 void Initialize::updatePortEnums()
 {
     QStringList st;
-    foreach (QSerialPortInfo spi, QSerialPortInfo::availablePorts()) {
+    for (const auto &spi : QSerialPortInfo::availablePorts()) {
         if (st.contains(spi.portName()))
             continue;
         st.append(spi.portName());
@@ -60,7 +60,7 @@ void Initialize::updatePortEnums()
         f_port->setValue(sta.first());
     else {
         QString v, vusb;
-        foreach (QString s, st) {
+        for (const auto &s : st) {
             bool cu = s.contains("cu.", Qt::CaseInsensitive);
             bool usb = s.contains("usb", Qt::CaseInsensitive);
             if (cu && usb) {

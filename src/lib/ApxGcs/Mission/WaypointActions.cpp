@@ -92,13 +92,13 @@ void WaypointActions::actionsValueChanged()
     if (blockActionsValueChanged)
         return;
     QMap<QString, QString> map;
-    foreach (const QString &s, this->value().toString().split(',')) {
+    for (const auto s : this->value().toString().split(',')) {
         int i = s.indexOf('=');
         if (i <= 0)
             continue;
         map[s.left(i)] = s.mid(i + 1);
     }
-    foreach (const QString &s, map.keys()) {
+    for (const auto s : map.keys()) {
         Fact *f = child(s);
         if (!f) {
             qDebug() << "Waypoint action data key not found" << s;

@@ -63,10 +63,10 @@ void AppPlugins::load(const QStringList &names)
     if (!userp.exists())
         userp.mkpath(".");
     QStringList stRep, stRepQml;
-    foreach (QString fileName, userp.entryList(filters, QDir::Files | QDir::Dirs)) {
+    for (const auto fileName : userp.entryList(filters, QDir::Files | QDir::Dirs)) {
         if (fileName.startsWith('-'))
             continue;
-        QString pname = QString(fileName);
+        QString pname = fileName;
         if (pname.startsWith("lib"))
             pname.remove(0, 3);
         if (!pname.endsWith(".qml")) {
@@ -86,7 +86,7 @@ void AppPlugins::load(const QStringList &names)
     pluginsDir.setSorting(QDir::Name | QDir::IgnoreCase);
     pluginsDir.refresh();
     //apxDebug()<<pluginsDir;
-    foreach (QString fileName, pluginsDir.entryList(filters, QDir::Files | QDir::Dirs)) {
+    for (const auto fileName : pluginsDir.entryList(filters, QDir::Files | QDir::Dirs)) {
         //apxDebug()<<fileName;
         allFiles.append(pluginsDir.absoluteFilePath(fileName));
     }
@@ -94,8 +94,8 @@ void AppPlugins::load(const QStringList &names)
     //parse command line arguments (plugins to load)
     if (!names.isEmpty()) {
         QStringList st;
-        foreach (QString pname, names) {
-            foreach (QString fname, allFiles) {
+        for (const auto pname : names) {
+            for (const auto fname : allFiles) {
                 QString s = QFileInfo(fname).baseName();
                 if (s.startsWith("lib"))
                     s.remove(0, 3);
@@ -111,7 +111,7 @@ void AppPlugins::load(const QStringList &names)
 
     //load and initialize
     QStringList libFiles, qmlFiles;
-    foreach (QString s, allFiles) {
+    for (const auto s : allFiles) {
         if (s.endsWith(".qml", Qt::CaseInsensitive)) {
             qmlFiles.append(s);
         } else {
@@ -148,12 +148,12 @@ void AppPlugins::load(const QStringList &names)
 
 void AppPlugins::fixDuplicates(QStringList &list, const QString &userPluginsPath) const
 {
-    foreach (QString p, list) {
+    for (const auto p : list) {
         if (!p.startsWith(userPluginsPath))
             continue;
         //p is user plugin
         QString pn = QFileInfo(p).baseName();
-        foreach (QString ps, list) {
+        for (const auto ps : list) {
             if (ps.startsWith(userPluginsPath))
                 continue;
             //ps is system plugin
@@ -169,7 +169,7 @@ void AppPlugins::fixDuplicates(QStringList &list, const QString &userPluginsPath
 void AppPlugins::loadFiles(const QStringList &fileNames)
 {
     QStringList loadedNames;
-    foreach (QString fileName, fileNames) {
+    for (const auto fileName : fileNames) {
         QString pname = QFileInfo(fileName).baseName();
         if (pname.startsWith("lib"))
             pname.remove(0, 3);

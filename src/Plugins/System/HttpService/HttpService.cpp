@@ -345,7 +345,7 @@ QString HttpService::reply_telemetry()
   int igps_lon=Fleet::instance()->current()->f_mandala->names.indexOf("gps_lon");
   int igps_hmsl=Fleet::instance()->current()->f_mandala->names.indexOf("gps_hmsl");
   QStringList st;
-  foreach(const UnitRecorder::ListDouble &vlist,Fleet::instance()->current()->f_recorder->file.data){
+  for (const auto &vlist: Fleet::instance()->current()->f_recorder->file.data){
     const double lat=vlist.at(igps_lat);
     const double lon=vlist.at(igps_lon);
     const double hmsl=vlist.at(igps_hmsl);
@@ -402,7 +402,7 @@ QString HttpService::reply_telemetry()
   int iyaw=Fleet::instance()->current()->f_mandala->names.indexOf("yaw");
   uint time_s=0;
   int i=-1,cam_i=-1;
-  foreach(uint time,Fleet::instance()->current()->f_recorder->file.time){
+  for (auto time: Fleet::instance()->current()->f_recorder->file.time){
     i++;
     if(cam_i>=0)cam_i++;
     //every second
@@ -476,7 +476,7 @@ QString HttpService::reply_telemetry()
   QDateTime t=Fleet::instance()->current()->f_recorder->file.timestamp;
   time_s=0;
   i=-1;
-  foreach(uint time,Fleet::instance()->current()->f_recorder->file.time){
+  for (auto time: Fleet::instance()->current()->f_recorder->file.time){
     i++;
     //every second
     if((time-time_s)<1000)continue;

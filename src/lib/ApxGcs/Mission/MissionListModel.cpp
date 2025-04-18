@@ -37,7 +37,7 @@ MissionListModel::MissionListModel(UnitMission *parent)
 void MissionListModel::populate(ItemsList *list, Fact *fact)
 {
     if (fact == mission) {
-        foreach (Fact *f, mission->groups) {
+        for (auto f : mission->groups) {
             FactListModel::populate(list, f);
         }
         return;

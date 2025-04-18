@@ -93,7 +93,7 @@ Fact *UnitWarnings::createItem(const QString &msg, MsgType kind)
     } else {
         fact->setValue(fact->value().toUInt() + 1);
     }
-    foreach (Fact *f, showList) {
+    for (auto f : showList) {
         if (f->title() != fact->title())
             continue;
         showList.removeAll(f);

@@ -211,12 +211,11 @@ void ApxFw::clean()
 {
     QDir dir = releaseDir();
     //clean up other extracted packages
-    foreach (QFileInfo fi,
-             QDir(AppDirs::firmware().absolutePath(),
-                  "APX_*",
-                  QDir::NoSort,
-                  QDir::Dirs | QDir::NoDotAndDotDot)
-                 .entryInfoList()) {
+    for (const auto fi : QDir(AppDirs::firmware().absolutePath(),
+                              "APX_*",
+                              QDir::NoSort,
+                              QDir::Dirs | QDir::NoDotAndDotDot)
+                             .entryInfoList()) {
         if (dir.absolutePath() == fi.absoluteFilePath())
             continue;
         QDir(fi.absoluteFilePath()).removeRecursively();
@@ -224,9 +223,9 @@ void ApxFw::clean()
     }
     //clean up dev firmwares
     QVersionNumber ver = QVersionNumber::fromString(App::version());
-    foreach (QFileInfo fi,
-             QDir(AppDirs::firmware().absolutePath(), "*.apxfw", QDir::NoSort, QDir::Files)
-                 .entryInfoList()) {
+    for (const auto fi :
+         QDir(AppDirs::firmware().absolutePath(), "*.apxfw", QDir::NoSort, QDir::Files)
+             .entryInfoList()) {
         QStringList st = fi.completeBaseName().split('-');
         if (st.size() >= 3) {
             QVersionNumber fver = QVersionNumber::fromString(st.at(2));
@@ -347,7 +346,7 @@ QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
 
     //search fw package
     QDir dir(releaseDir().absolutePath(), QString("%1-*.apxfw").arg(fname));
-    foreach (QFileInfo fi, dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
+    for (const auto fi : dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
         QStringList st(fi.completeBaseName().split('-'));
         if (st.size() < ccnt)
             continue;
@@ -360,7 +359,7 @@ QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
 
     //search dev files
     dir = QDir(devDir().absolutePath(), QString("%1-*.apxfw").arg(fname));
-    foreach (QFileInfo fi, dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
+    for (const auto fi : dir.entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase)) {
         QStringList st(fi.completeBaseName().split('-'));
         if (st.size() < ccnt)
             continue;
@@ -612,7 +611,7 @@ bool ApxFw::loadFileMHX(QString ver, QByteArray *data)
         QDir dir(prefix);
         if (!dir.cd("mhx"))
             break;
-        foreach (QFileInfo fi, dir.entryInfoList()) {
+        for (const auto fi : dir.entryInfoList()) {
             QString s = fi.baseName();
             if (!s.startsWith(mname, Qt::CaseInsensitive))
                 continue;

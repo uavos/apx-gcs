@@ -100,7 +100,7 @@ void SerialForm::btnSend()
         ba = QByteArray::fromHex(s.trimmed().toUtf8());
         break;
     case 2: //List
-        foreach (QString si, s.trimmed().split(',')) {
+        for (auto si : s.trimmed().split(',')) {
             si = si.trimmed();
             if (si.contains('"')) {
                 si.remove('"');

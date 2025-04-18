@@ -200,10 +200,10 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     });
 
     //update css styles
-    foreach (QAction *a, toolBar->actions()) {
+    for (auto a : toolBar->actions()) {
         toolBar->widgetForAction(a)->setObjectName(a->objectName());
     }
-    foreach (QAction *a, toolBarPlayer->actions()) {
+    for (auto a : toolBarPlayer->actions()) {
         toolBarPlayer->widgetForAction(a)->setObjectName(a->objectName());
     }
 

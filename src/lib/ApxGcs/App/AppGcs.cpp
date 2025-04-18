@@ -101,7 +101,7 @@ void AppGcs::openFile(AppGcs::FileType type)
         return;
     QSettings().setValue(settingName, dlg.directory().absolutePath());
 
-    foreach (QString fname, dlg.selectedFiles()) {
+    for (const auto fname : dlg.selectedFiles()) {
         emit fileOpenRequest(fname);
     }
 }
