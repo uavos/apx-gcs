@@ -24,12 +24,12 @@
 #include "MissionItem.h"
 #include <QtCore>
 
-class Area : public MissionItem
+class AirspaceItem : public MissionItem
 {
     Q_OBJECT
 
 public:
-    explicit Area(MissionGroup *parent);
+    explicit AirspaceItem(MissionGroup *parent);
 
     Fact *f_hmsl;
 

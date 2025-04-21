@@ -26,7 +26,7 @@
 #include "MissionShare.h"
 #include "MissionTools.h"
 
-#include "Area.h"
+#include "Airspace.h"
 #include "Poi.h"
 #include "Runway.h"
 #include "Taxiway.h"
@@ -82,7 +82,7 @@ UnitMission::UnitMission(Unit *parent)
                               tr("Taxiways"),
                               "",
                               unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
-    f_areas = new Areas(this, "area", tr("Area"), tr("Airspace definitions"));
+    f_airspace = new Airspace(this);
 
     foreach (MissionGroup *group, groups) {
         connect(group, &Fact::sizeChanged, this, &UnitMission::updateSize, Qt::QueuedConnection);

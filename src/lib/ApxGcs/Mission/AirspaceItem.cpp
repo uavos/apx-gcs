@@ -19,14 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "Area.h"
+#include "AirspaceItem.h"
 #include "MissionField.h"
 #include "UnitMission.h"
 #include <App/App.h>
 #include <QGeoCircle>
 
-Area::Area(MissionGroup *parent)
-    : MissionItem(parent, "A#", "", tr("Area of interest"))
+AirspaceItem::AirspaceItem(MissionGroup *parent)
+    : MissionItem(parent, "A#", "", tr("Geofence"))
 {
     setOpt("color", "#E65100");
 
@@ -37,19 +37,19 @@ Area::Area(MissionGroup *parent)
     //title
     updateTitle();
 
-    connect(f_hmsl, &Fact::valueChanged, this, &Area::updateDescr);
+    connect(f_hmsl, &Fact::valueChanged, this, &AirspaceItem::updateDescr);
     updateDescr();
 
     App::jsync(this);
 }
 
-void Area::updateTitle()
+void AirspaceItem::updateTitle()
 {
     QStringList st;
     st.append(QString::number(num() + 1));
     setTitle(st.join(' '));
 }
-void Area::updateDescr()
+void AirspaceItem::updateDescr()
 {
     QStringList st;
     QString sts;

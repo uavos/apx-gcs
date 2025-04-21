@@ -40,31 +40,31 @@ MissionPlanner::MissionPlanner(Fact *parent)
     Fact *f;
 
     f = new Fact(f_add, "waypoint", tr("Waypoint"), "", CloseOnTrigger, "map-marker");
-    connect(f, &Fact::triggered, this, [=]() { mission()->f_waypoints->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_waypoints->add(clickCoordinate()); });
 
     f = new Fact(f_add, "point", tr("Point of interest"), "", CloseOnTrigger, "map-marker-radius");
-    connect(f, &Fact::triggered, this, [=]() { mission()->f_pois->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_pois->add(clickCoordinate()); });
 
     f = new Fact(f_add, "runway", tr("Runway"), "", CloseOnTrigger, "road");
-    connect(f, &Fact::triggered, this, [=]() { mission()->f_runways->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_runways->add(clickCoordinate()); });
 
     f = new Fact(f_add, "taxiway", tr("Taxiway"), "", CloseOnTrigger, "vector-polyline");
-    connect(f, &Fact::triggered, this, [=]() { mission()->f_taxiways->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_taxiways->add(clickCoordinate()); });
 
-    f = new Fact(f_add, "area", tr("Area"), "", CloseOnTrigger, "vector-polygon");
-    connect(f, &Fact::triggered, this, [=]() { mission()->f_areas->add(clickCoordinate()); });
+    f = new Fact(f_add, "airspace", tr("Geofence"));
+    f->setBinding(mission()->f_airspace->f_add);
 
     f = new Fact(f_unit, "fly_here", tr("Fly here"), "", CloseOnTrigger, "airplane");
-    connect(f, &Fact::triggered, this, [=]() { unit()->flyHere(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { unit()->flyHere(clickCoordinate()); });
 
     f = new Fact(f_unit, "look_here", tr("Look here"), "", CloseOnTrigger, "eye");
-    connect(f, &Fact::triggered, this, [=]() { unit()->lookHere(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { unit()->lookHere(clickCoordinate()); });
 
     f = new Fact(f_unit, "home_here", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
-    connect(f, &Fact::triggered, this, [=]() { unit()->setHomePoint(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { unit()->setHomePoint(clickCoordinate()); });
 
     f = new Fact(f_unit, "pos_here", tr("Fix position"), "", CloseOnTrigger, "crosshairs-gps");
-    connect(f, &Fact::triggered, this, [=]() { unit()->sendPositionFix(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { unit()->sendPositionFix(clickCoordinate()); });
 
     new MapPrefs(this);
 

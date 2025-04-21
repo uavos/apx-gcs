@@ -21,7 +21,6 @@
  */
 #pragma once
 
-#include "MissionGroup.h"
 #include <Fact/Fact.h>
 #include <Fleet/Fleet.h>
 
@@ -29,12 +28,15 @@
 #include <QGeoRectangle>
 #include <QtCore>
 
+#include "Airspace.h"
+#include "MissionGroup.h"
+
 class MissionListModel;
 class Waypoint;
 class Runway;
 class Taxiway;
 class Poi;
-class Area;
+class Airspace;
 class LookupMissions;
 class MissionShare;
 class MissionStorage;
@@ -67,13 +69,13 @@ public:
     typedef MissionGroupT<Waypoint> Waypoints;
     typedef MissionGroupT<Taxiway> Taxiways;
     typedef MissionGroupT<Poi> Pois;
-    typedef MissionGroupT<Area> Areas;
 
     Runways *f_runways;
     Waypoints *f_waypoints;
     Taxiways *f_taxiways;
     Pois *f_pois;
-    Areas *f_areas;
+
+    Airspace *f_airspace;
     //MissionItems *f_restricted;
     //MissionItems *f_emergency;
 
