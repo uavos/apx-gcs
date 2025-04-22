@@ -235,6 +235,11 @@ QGeoPath ElevationMap::geoPath() const
     return m_geoPath;
 }
 
+QGeoCoordinate ElevationMap::coordinate() const
+{
+    return m_coordinate;
+}
+
 void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
     if(m_coordinate == coordinate)
         return;
