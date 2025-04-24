@@ -76,6 +76,7 @@ public slots:
     void updateDistance();
 
     void add(const QGeoCoordinate &p);
+    void insert(const QGeoCoordinate &p, uint index);
 
     //---------------------------------------
     // PROPERTIES
