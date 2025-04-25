@@ -156,9 +156,27 @@ void Waypoint::initElevationMap()
 
     updateMinMaxHeight();
     updateAgl();
+
+    // Debug purposes only
+    // m_testTimer.setInterval(5000);
+    // m_testTimer.setSingleShot(true);
+    // connect(&m_testTimer, &QTimer::timeout, this, &Waypoint::testInsert);
+    // m_testTimer.start();
 }
 
-QJsonValue Waypoint::toJson()
+// ====== Debug new functionality =======
+// void Waypoint::testInsert() {
+    // int index = indexInParent();
+    // if(index %2 == 0)
+    //     return;
+    // auto prevCoordinate = prevItem()->coordinate();
+    // auto azimut = m_coordinate.azimuthTo(prevCoordinate);
+    // auto newWpCoordinate = m_coordinate.atDistanceAndAzimuth(m_distance / 2, azimut);
+    // group->insert(newWpCoordinate, index);
+// }
+// ======================================
+
+    QJsonValue Waypoint::toJson()
 {
     auto jso = MissionItem::toJson().toObject();
 
@@ -397,6 +415,17 @@ void Waypoint::setMaxHeight(const double v)
     emit maxHeightChanged();
 }
 
+double Waypoint::worstRouteAgl() const
+{
+    return m_worstRouteAgl;
+}
+void Waypoint::setWorstRouteAgl(const double v)
+{
+    if(m_worstRouteAgl == v)
+        return;
+    m_worstRouteAgl = v;
+}
+
 bool Waypoint::reachable() const
 {
     return m_reachable;
@@ -605,6 +634,7 @@ void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath 
         info.maxHeight = qMax(info.maxHeight, ptElevation);
     }
     ptElevation = path.coordinateAt(lastIndex).altitude();
+    info.terrainProfilePath = path;
     info.terrainProfile.append(QPointF(ptDistance, ptElevation));
     info.minHeight = qMin(info.minHeight, ptElevation);
     info.maxHeight = qMax(info.maxHeight, ptElevation);
@@ -613,8 +643,11 @@ void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath 
 
 void Waypoint::checkCollision()
 {
+    bool hasCollision{false};
+    m_worstRouteAgl = UNSAFE_AGL;
+
     if (m_terrainProfile.empty()) {
-        setCollision(false);
+        setCollision(hasCollision);
         return;
     }
 
@@ -638,8 +671,10 @@ void Waypoint::checkCollision()
         bool prevCollision = prevWp ? (prevWp->f_agl->value().toInt() < UNSAFE_AGL) : false;
         bool currentCollision = (f_agl->value().toInt() < UNSAFE_AGL);
         bool collision = currentCollision && prevCollision;
-        setCollision(collision);
-        return;
+        // setCollision(collision);
+        // return;
+
+        hasCollision = true;
     }
 
     auto alt = f_altitude->value().toInt();
@@ -648,16 +683,42 @@ void Waypoint::checkCollision()
         alt += startHmsl;
 
     auto tan = static_cast<double>(alt - prevAlt) / dst;
-    for (const auto &tp : m_terrainProfile) {
-        double k = !prevWp ? (tp.x() / dst): 1; // proportional increase in safe AGL for the first point
+    // for (const auto &tp : m_terrainProfile) {
+    //     double k = !prevWp ? (tp.x() / dst): 1; // proportional increase in safe AGL for the first point
+    //     auto safeHeight = tp.y() + UNSAFE_AGL * k;
+    //     auto routeHeight = prevAlt + tp.x() * tan;
+    //     if (routeHeight < safeHeight) {
+    //         setCollision(true);
+    //         return;
+    //     }
+    // }
+
+    for (int i = 0; i < m_terrainProfile.size(); i++) {
+        auto tp = m_terrainProfile[i];
+        double k = !prevWp ? (tp.x() / dst) : 1; // proportional increase in safe AGL for the first point
         auto safeHeight = tp.y() + UNSAFE_AGL * k;
         auto routeHeight = prevAlt + tp.x() * tan;
         if (routeHeight < safeHeight) {
-            setCollision(true);
-            return;
+            // setCollision(true);
+            // return;
+            hasCollision = true;
+
+            // Don't calc max unsafe agl for first point
+            if(!prevWp)
+                continue;
+            auto agl = routeHeight - tp.y();
+            if(agl < m_worstRouteAgl) { 
+                m_worstRouteAgl = agl;
+                m_worstRouteAglCoordinate = m_terrainProfilePath.coordinateAt(i);
+            }
         }
     }
-    setCollision(false);
+
+    // setCollision(false);
+    setCollision(hasCollision);
+
+    // int order = f_order->value().toInt();
+    // apxMsgW() << order << ". Min unsafe AGL=" << m_minUnsafeAgl;
 }
 
 double Waypoint::getStartHMSL()
@@ -681,6 +742,8 @@ void Waypoint::updateMinMaxHeight()
 void Waypoint::updateTerrainInfo()
 {
     auto result = m_watcher.result();
+    // Rebuild geoPath
+    m_terrainProfilePath = result.terrainProfilePath;
     m_terrainProfileMin = result.minHeight;
     m_terrainProfileMax = result.maxHeight;
     updateMinMaxHeight();

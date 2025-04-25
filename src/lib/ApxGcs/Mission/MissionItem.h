@@ -164,6 +164,7 @@ protected:
     QTimer m_geoPathTimer;
     QGeoCoordinate m_coordinate;
     QList<QPointF> m_terrainProfile;
+    QGeoPath m_terrainProfilePath;
     QGeoPath m_geoPath;
     double m_elevation{NAN};
     double m_bearing{};
