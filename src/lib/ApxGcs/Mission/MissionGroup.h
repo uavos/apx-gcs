@@ -48,6 +48,7 @@ public:
     virtual MissionItem *createObject() { return nullptr; }
 
     MissionItem *addObject(const QGeoCoordinate &);
+    MissionItem *insertObject(const QGeoCoordinate &p, uint index);
 
     Fact *f_clear;
 

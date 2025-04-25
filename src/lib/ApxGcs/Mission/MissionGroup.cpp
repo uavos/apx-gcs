@@ -171,8 +171,7 @@ void MissionGroup::insert(const QGeoCoordinate &p, uint index)
     if (!p.isValid()) {
         return;
     }
-    MissionItem *f = addObject(p);
-    f->move(index);
+    insertObject(p, index);
 }
 
 MissionItem *MissionGroup::addObject(const QGeoCoordinate &p)
@@ -181,6 +180,13 @@ MissionItem *MissionGroup::addObject(const QGeoCoordinate &p)
     f->backup();
     f->f_latitude->setValue(p.latitude());
     f->f_longitude->setValue(p.longitude());
+    return f;
+}
+
+MissionItem *MissionGroup::insertObject(const QGeoCoordinate &p, uint index)
+{
+    MissionItem *f = addObject(p);
+    f->move(index);
     return f;
 }
 
