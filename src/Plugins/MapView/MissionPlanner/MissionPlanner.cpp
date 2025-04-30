@@ -51,9 +51,10 @@ MissionPlanner::MissionPlanner(Fact *parent)
     f = new Fact(f_add, "taxiway", tr("Taxiway"), "", CloseOnTrigger, "vector-polyline");
     connect(f, &Fact::triggered, this, [this]() { mission()->f_taxiways->add(clickCoordinate()); });
 
-    f = new Fact(f_add, "airspace", tr("Geofence"));
-    f->setBinding(mission()->f_airspace->f_add);
+    f = new Fact(f_add, "airspace", tr("Geofence"), "", CloseOnTrigger, "map-marker-radius");
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_airspace->add(clickCoordinate()); });
 
+    // commands to unit
     f = new Fact(f_unit, "fly_here", tr("Fly here"), "", CloseOnTrigger, "airplane");
     connect(f, &Fact::triggered, this, [this]() { unit()->flyHere(clickCoordinate()); });
 

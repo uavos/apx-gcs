@@ -26,25 +26,33 @@ Airspace::Airspace(UnitMission *parent)
 {
     f_add = new Fact(this, "add_object", tr("Add Geofence"), "", Action, "plus-circle");
 
-    Fact *f_object;
-    f_object = new Fact(f_add,
-                        "add_circle",
-                        tr("Circle"),
-                        tr("Add circular geofence"),
-                        CloseOnTrigger,
-                        "circle-outline");
+    Fact *f;
+    f = new Fact(f_add,
+                 "add_circle",
+                 tr("Circle"),
+                 tr("Add circular geofence"),
+                 CloseOnTrigger,
+                 "circle-outline");
 
-    f_object = new Fact(f_add,
-                        "add_polygon",
-                        tr("Polygon"),
-                        tr("Add polygon geofence"),
-                        CloseOnTrigger,
-                        "vector-polygon");
+    f = new Fact(f_add,
+                 "add_polygon",
+                 tr("Polygon"),
+                 tr("Add polygon geofence"),
+                 CloseOnTrigger,
+                 "vector-polygon");
 
-    f_object = new Fact(f_add,
-                        "add_line",
-                        tr("Line"),
-                        tr("Add line geofence"),
-                        CloseOnTrigger,
-                        "vector-line");
+    f = new Fact(f_add,
+                 "add_line",
+                 tr("Line"),
+                 tr("Add line geofence"),
+                 CloseOnTrigger,
+                 "vector-line");
+}
+
+void Airspace::add(const QGeoCoordinate &p, Shape shape)
+{
+    // auto item = new AirspaceItem(this);
+    // item->setCoordinate(p);
+    // item->setShape(shape);
+    // item->setSelected(true);
 }

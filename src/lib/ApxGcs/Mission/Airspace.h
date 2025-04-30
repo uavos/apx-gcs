@@ -23,6 +23,8 @@
 
 #include "UnitMission.h"
 
+#include <XbusMission.h>
+
 class Airspace : public Fact
 {
     Q_OBJECT
@@ -32,6 +34,8 @@ public:
 
     Fact *f_add;
 
+    typedef xbus::mission::geo_s::shape_e Shape;
+
 public slots:
-    // void add(const QGeoCoordinate &p);
+    void add(const QGeoCoordinate &p, Shape shape = Shape::POLYGON);
 };
