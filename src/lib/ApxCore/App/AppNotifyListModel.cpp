@@ -27,7 +27,11 @@ AppNotifyListModel::AppNotifyListModel(AppNotify *appNotify)
 {
     qRegisterMetaType<QtMsgType>("QtMsgType");
 
-    connect(appNotify, &AppNotify::notification, this, &AppNotifyListModel::notification);
+    connect(appNotify,
+            &AppNotify::notification,
+            this,
+            &AppNotifyListModel::notification,
+            Qt::QueuedConnection);
 }
 AppNotifyListModel::~AppNotifyListModel()
 {
