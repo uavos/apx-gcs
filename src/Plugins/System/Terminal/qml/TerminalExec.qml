@@ -43,7 +43,7 @@ Rectangle{
 
 
     onPrefixChanged: setCmd(getCmd())
-    onFocusRequested: cmdText.forceActiveFocus()
+    onFocusRequested: setFocus()
 
     TextInput {
         id: cmdText
@@ -53,11 +53,14 @@ Rectangle{
         wrapMode: Text.WrapAnywhere
         selectByMouse: true
         focus: true
+        activeFocusOnTab: true
         readonly property int pos0: text.indexOf(pdel)+pdel.length
         readonly property int pos: cursorPosition-pos0
         text: prefix //+"</font><font color='#fff'>"
 
-        onActiveFocusChanged: if(activeFocus)focused()
+        onActiveFocusChanged: {
+            if(activeFocus)consoleExec.focused()
+        }
 
         cursorDelegate: Rectangle {
             border.width: 0
@@ -81,7 +84,7 @@ Rectangle{
         Keys.onPressed: function(event){
             //console.log("key: "+event.key+" mod: "+event.modifiers+" text: "+event.text)
             consoleExec.focused()
-            forceActiveFocus()
+            setFocus()
             if(pos<=0 && event.key===Qt.Key_Backspace){
                 event.accepted=true
             }else if(event.key===Qt.Key_C && (event.modifiers&(Qt.ControlModifier|Qt.MetaModifier))){
@@ -120,14 +123,9 @@ Rectangle{
             exec()
         }
     }
-    Timer {
-        id: focusTimer
-        interval: 1
-        onTriggered: cmdText.forceActiveFocus()
-    }
     function setFocus()
     {
-        focusTimer.start()
+        cmdText.forceActiveFocus()
     }
     function getCmd()
     {
@@ -143,11 +141,11 @@ Rectangle{
     }
     function exec()
     {
+        setFocus()
         var cmd=getCmd()
         reset()
         if(cmd.length<=0)return
         terminal.exec(cmd)
-        setFocus()
     }
     function reset()
     {

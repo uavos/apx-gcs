@@ -84,6 +84,7 @@ void AppNotifyListModel::notification(QString msg,
 {
     if (msg.isEmpty())
         return;
+
     int row = rowCount();
     if (row > 1000) {
         beginRemoveRows(QModelIndex(), 0, 1);
@@ -91,6 +92,7 @@ void AppNotifyListModel::notification(QString msg,
         m_items.removeAt(0);
         endRemoveRows();
     }
+
     row = rowCount();
     beginInsertRows(QModelIndex(), row, row);
     NotifyListItem *item = new NotifyListItem;

@@ -34,6 +34,10 @@ ListView {
 
     focus: false
     keyNavigationEnabled: false
+    cacheBuffer: 0
+    reuseItems: true
+    snapMode: ListView.NoSnap
+    currentIndex: -1 // no current item, fixes focus issue
 
     ScrollBar.vertical: ScrollBar {
         width: Style.buttonSize/4
@@ -61,10 +65,13 @@ ListView {
     Connections {
         target: listView.model
         function onRowsInserted() {
-            if(listView.stickEnd) {
-                listView.scrollToEnd()
-                scrollEndTimer.start()
-            }
+            scrollEndTimer.start()
+        }
+        function onRowsRemoved() {
+            scrollEndTimer.start()
+        }
+        function onModelReset() {
+            scrollEndTimer.start()
         }
     }
 

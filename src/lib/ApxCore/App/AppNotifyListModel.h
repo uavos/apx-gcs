@@ -66,7 +66,6 @@ public:
     };
     QList<NotifyListItem *> m_items;
 
-protected:
 signals:
     void countChanged();
 
