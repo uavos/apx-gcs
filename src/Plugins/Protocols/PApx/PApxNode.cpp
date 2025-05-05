@@ -124,37 +124,52 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
 
         xbus::node::conf::fid_t fid;
         stream >> fid;
-        trace()->block(QString::number(fid >> 8));
+        const auto fidx = fid >> 8;
+        trace()->block(QString::number(fidx));
         trace()->block(QString::number(fid & 0xFF));
         trace()->data(stream.payload());
 
-        if (pid.pri == xbus::pri_response) {
-            // intrercept conf saved response
-            stream.reset(pos_s);
-            if (fid == 0xFFFFFFFF) {
-                emit confSaved();
-            }
-        } else if (pid.pri == xbus::pri_request) {
-            auto fidx = fid >> 8;
-            if (fidx >= _field_types.size())
+        if (pid.pri == xbus::pri_request) {
+            // field update request from another GCS
+            if (fid == 0xFFFFFFFF) { // conf save request
+                _ext_upd_request = !_ext_upd_values.isEmpty();
                 return;
-            auto aidx = fid & 0xFF;
-            auto name = _field_names.at(fidx);
-            auto array = _field_arrays.at(fidx);
-            if (array > 0) {
-                if (aidx >= array)
-                    return;
-                name.append(QString("_%1").arg(aidx + 1));
             }
-            if (name == _script_field)
+            _ext_upd_request = false;
+            // emit event to update field UI
+            const auto name = find_field_name(fid);
+            const auto type = _field_types.at(fidx);
+            if (name.isEmpty() || name == _script_field)
                 return;
-            auto value = read_param(stream, _field_types.at(fidx));
-            QJsonObject values;
-            values[name] = QJsonValue::fromVariant(value);
-            emit confUpdated(values);
+            auto value = read_param(stream, type);
+            if (value.isNull())
+                return;
+
+            if (type == xbus::node::conf::option)
+                value = optionToText(value, fidx);
+            else if (type == xbus::node::conf::bind)
+                value = mandalaToString(value.toInt());
+
+            _ext_upd_values.insert(name, value);
+            emit paramsSent({{name, value}});
             return;
-        } else
+        }
+
+        // only responses are processed further
+        if (pid.pri != xbus::pri_response) {
+            // all other pri types are ignored
+            // qDebug() << "wrong pri" << pid.pri;
             return;
+        }
+        stream.reset(pos_s); // revert to the start of the packet payload
+
+        // intercept conf save event from another GCS
+        if (fid == 0xFFFFFFFF && _ext_upd_request) {
+            // qDebug() << "conf saved from other GCS";
+            emit paramsSaved(_ext_upd_values);
+            _ext_upd_values = {};
+            _ext_upd_request = false;
+        }
     }
 
     // node messages
@@ -252,7 +267,7 @@ void PApxNode::extend_request(PApxNodeRequest *req, size_t time_ms)
 void PApxNode::delete_request(PApxNodeRequest *req)
 {
     //qDebug() << "finished" << req->title();
-    req->finished();
+    emit req->finished();
     emit request_finished(req);
     delete req;
 }
@@ -331,6 +346,21 @@ bool PApxNode::find_field(QString name,
     *fid = v;
     *type = _field_types.at(i);
     return true;
+}
+QString PApxNode::find_field_name(xbus::node::conf::fid_t fid) const
+{
+    auto fidx = fid >> 8;
+    if (fidx >= _field_types.size())
+        return {};
+    auto aidx = fid & 0xFF;
+    auto name = _field_names.at(fidx);
+    auto array = _field_arrays.at(fidx);
+    if (array > 0) {
+        if (aidx >= array)
+            return {};
+        name.append(QString("_%1").arg(aidx + 1));
+    }
+    return name;
 }
 
 QString PApxNode::hashToText(xbus::node::hash_t hash)
@@ -444,6 +474,9 @@ void PApxNode::parseDictData(PApxNode *node,
     _values = {};
     _script_value = {};
     _script_field.clear();
+
+    _ext_upd_values = {};
+    _ext_upd_request = false;
 
     do {
         // check node hash
@@ -593,6 +626,9 @@ void PApxNode::parseConfData(PApxNode *node,
     PStreamReader stream(data);
 
     _values = {};
+    _script_value = {};
+    _ext_upd_values = {};
+    _ext_upd_request = false;
 
     bool err = true;
     QJsonObject values;

@@ -88,11 +88,16 @@ signals:
     // the whole set of parameters received
     void confReceived(QJsonObject values);
 
-    // some parameters updated externally
-    void confUpdated(QJsonObject values);
+    // node parameter[s] updated
+    // emitted when param update is sent
+    // also emitted when update sent from another GCS instance
+    // values are marked in UI as modified
+    void paramsSent(QJsonObject params);
 
-    // when requestUpdate accepted and saved
-    void confSaved();
+    // when requestUpdate finished, accepted all fields and saved to NVRAM
+    // can be used to store values to DB and commit config checkpoit
+    // values are marked in UI as unmodified
+    void paramsSaved(QJsonObject params);
 
     // when requestMod results available
     void modReceived(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data);

@@ -85,9 +85,9 @@ bool PApxNodeRequest::make_request(PApxRequest &req)
 bool PApxNodeRequest::check_response(PStreamReader &stream)
 {
     auto pos_s = stream.pos();
-    auto ret = response(stream);
+    _response = response(stream);
     stream.reset(pos_s);
-    return ret;
+    return _response;
 }
 
 bool PApxNodeRequestReboot::request(PApxRequest &req)
@@ -180,7 +180,7 @@ bool PApxNodeRequestMod::response(PStreamReader &stream)
     auto data = stream.read_strings();
     trace()->blocks(data);
 
-    _node->modReceived(cmd, adr, data);
+    emit _node->modReceived(cmd, adr, data);
 
     return true;
 }
@@ -279,12 +279,13 @@ bool PApxNodeRequestUpdate::request(PApxRequest &req)
         qWarning() << "no field:" << name;
         return false;
     }
+    auto value = _values.value(name);
+    emit _node->paramsSent({{name, value}});
 
     req << _fid;
     trace()->block(QString::number(_fid >> 8));
     trace()->block(QString::number(_fid & 0xFF));
 
-    auto value = _values.value(name);
     if (type == xbus::node::conf::option)
         value = _node->textToOption(value, _fid >> 8);
     else if (type == xbus::node::conf::bind)
@@ -315,13 +316,19 @@ bool PApxNodeRequestUpdate::response(PStreamReader &stream)
         return false;
     }
 
-    if (_index >= _values.size()) {
-        if (_fid == 0xFFFFFFFF) {
-            // qDebug() << "saved";
-            return true;
-        }
+    // request finished and acknowledged
+
+    if (_index >= _values.size() && _fid == 0xFFFFFFFF) {
+        // request was to save to NVRAM
+        // qDebug() << "saved";
+        emit _node->paramsSaved(_values);
+        return true;
     }
 
+    // request was to update a field, field is saved in node RAM
+    // qDebug() << "updated:" << _name;
+
+    // continue request for the next field
     _node->reschedule_request(this);
     return false;
 }

@@ -58,8 +58,8 @@ NodeItem::NodeItem(Fact *parent, Nodes *nodes, PNode *protocol)
         connect(protocol, &PNode::identReceived, this, &NodeItem::identReceived);
         connect(protocol, &PNode::dictReceived, this, &NodeItem::dictReceived);
         connect(protocol, &PNode::confReceived, this, &NodeItem::confReceived);
-        connect(protocol, &PNode::confUpdated, this, &NodeItem::confUpdated);
-        connect(protocol, &PNode::confSaved, this, &NodeItem::confSaved);
+        connect(protocol, &PNode::paramsSent, this, &NodeItem::paramsSent);
+        connect(protocol, &PNode::paramsSaved, this, &NodeItem::paramsSaved);
 
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateUpgrading);
         connect(protocol, &PNode::upgradingChanged, this, &NodeItem::updateStatus);
@@ -163,11 +163,13 @@ void NodeItem::upload()
 
     tools->f_storage->updateConfID(0);
 
+    // collect all modified fields
     QList<NodeField *> fields;
     for (auto i : m_fields) {
         if (!i->modified())
             continue;
         if (i->size() > 0) {
+            // array field
             for (auto j : i->facts()) {
                 if (!j->modified())
                     continue;
@@ -178,18 +180,15 @@ void NodeItem::upload()
         fields.append(static_cast<NodeField *>(i));
     }
 
+    // construct JSON object with all modified fields
+    // and send to protocol
     QJsonObject values;
     for (auto i : fields) {
         values.insert(i->fpath(), i->toJson());
+        // save event to telemetry storage
         emit _nodes->fieldUploadReport(this, i->fpath(), i->valueText());
     }
     _protocol->requestUpdate(values);
-}
-void NodeItem::confSaved()
-{
-    qDebug() << modified();
-    backup();
-    tools->f_storage->saveNodeConf();
 }
 
 QVariant NodeItem::data(int col, int role)
@@ -734,19 +733,24 @@ void NodeItem::confReceived(QJsonObject values)
     if (_protocol && !_ident.value("reconf").toBool())
         tools->f_storage->saveNodeConf();
 }
-void NodeItem::confUpdated(QJsonObject values)
+void NodeItem::paramsSent(QJsonObject params)
 {
     // updated from another GCS instance
+
     if (!valid())
         return;
+    if (!_protocol)
+        return;
+    if (params.isEmpty())
+        return;
 
-    auto keys = values.keys();
-    for (auto it = values.constBegin(); it != values.constEnd(); ++it) {
+    auto keys = params.keys();
+    for (auto it = params.constBegin(); it != params.constEnd(); ++it) {
         auto f = field(it.key());
         if (!f)
             continue;
         f->fromJson(it.value());
-        f->backup();
+
         keys.removeOne(it.key());
         apxMsg() << tr("Updated").append(':') << f->name() + ':' << f->text();
     }
@@ -754,6 +758,47 @@ void NodeItem::confUpdated(QJsonObject values)
         return;
 
     apxMsgW() << tr("Fields not found").append(':') << keys;
+}
+void NodeItem::paramsSaved(QJsonObject params)
+{
+    if (!valid())
+        return;
+    if (!_protocol)
+        return;
+    if (params.isEmpty())
+        return;
+
+    // qDebug() << modified();
+    // reset saved fields status
+    for (auto it = params.constBegin(); it != params.constEnd(); ++it) {
+        const auto key = it.key();
+        auto f = field(key);
+        if (!f) {
+            apxMsgW() << tr("Missing field") << key;
+            _protocol->requestIdent();
+            break;
+        }
+        const auto bMod = f->modified();
+        f->fromJson(it.value());
+        if (bMod) {
+            // field was modified and uploaded - reset modified status
+            f->backup();
+        } else {
+            // Field was not modified, but updated (f.ex. from other GCS)
+            // Should never happen because GCS also marks fields modified when request is sent.
+            // Mark field as modified, indicating unsync with other GCS
+            apxMsgW() << tr("Modified field") << key;
+            f->setModified(true);
+        }
+    }
+
+    if (!modified()) {
+        // all fields are saved
+        // reset all fields status and commit checkpoint
+        qDebug() << "saved" << title();
+        backup();
+        tools->f_storage->saveNodeConf();
+    }
 }
 
 void NodeItem::messageReceived(PNode::msg_type_e type, QString msg)

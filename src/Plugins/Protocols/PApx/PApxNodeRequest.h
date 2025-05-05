@@ -47,7 +47,9 @@ public:
     PApxNode *node() const { return _node; }
     mandala::uid_t uid() const { return _uid; }
     QString title() const;
+
     auto active() const { return _active; }
+    auto response() const { return _response; }
 
     virtual QString cid() const { return QString(); } // compare ID to check duplicates
 
@@ -60,6 +62,7 @@ protected:
     mandala::uid_t _uid;
     uint _timeout_ms;
     bool _active{};
+    bool _response{};
 
     virtual bool request(PApxRequest &req) { return true; }
     virtual bool response(PStreamReader &stream) { return true; }
@@ -141,6 +144,8 @@ public:
 
 private:
     const QJsonObject _values;
+
+    // state (scan and update all values)
     size_t _index{};
     xbus::node::conf::fid_t _fid{};
 
