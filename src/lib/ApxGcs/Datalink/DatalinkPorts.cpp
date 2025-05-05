@@ -22,6 +22,8 @@
 #include "DatalinkPorts.h"
 #include "Datalink.h"
 #include "DatalinkPort.h"
+#include "DatalinkSocket.h"
+
 #include <App/AppLog.h>
 #include <App/AppSettings.h>
 
@@ -151,4 +153,27 @@ void DatalinkPorts::unblockSerialPorts()
     }
     qDebug() << "Ports unblocked" << blockedPorts.size();
     blockedPorts.clear();
+}
+
+void DatalinkPorts::disableLocalNetworkPorts()
+{
+    // TODO detect and disable ifaces with loops
+    for (auto i : f_list->facts()) {
+        DatalinkPort *port = qobject_cast<DatalinkPort *>(i);
+        if (!port)
+            continue;
+        if (port->f_type->value().toInt() != DatalinkPort::TCP)
+            continue;
+
+        if (!DatalinkSocket::isLocalHost(QHostAddress(port->f_url->value().toString())))
+            continue;
+
+        // qDebug() << port->f_url->value().toString();
+        // qDebug() << QUrl(port->f_url->value().toString()).host();
+        // qDebug() << QHostAddress(port->f_url->value().toString());
+
+        apxMsgW() << tr("Local network port disabled").append(':') << port->title();
+        port->f_enable->setValue(false);
+        // port->f_connection->setActivated(false);
+    }
 }
