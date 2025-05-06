@@ -168,12 +168,10 @@ void DatalinkPorts::disableLocalNetworkPorts()
         if (!DatalinkSocket::isLocalHost(QHostAddress(port->f_url->value().toString())))
             continue;
 
-        // qDebug() << port->f_url->value().toString();
-        // qDebug() << QUrl(port->f_url->value().toString()).host();
-        // qDebug() << QHostAddress(port->f_url->value().toString());
+        if (!port->f_enable->value().toBool())
+            continue;
 
         apxMsgW() << tr("Local network port disabled").append(':') << port->title();
         port->f_enable->setValue(false);
-        // port->f_connection->setActivated(false);
     }
 }
