@@ -1380,6 +1380,24 @@ namespace est
             enum { x14 = 0x59e };
             enum { x15 = 0x59f };
         };
+        namespace local
+        {
+            enum { l1 = 0x5a1 };
+            enum { l2 = 0x5a2 };
+            enum { l3 = 0x5a3 };
+            enum { l4 = 0x5a4 };
+            enum { l5 = 0x5a5 };
+            enum { l6 = 0x5a6 };
+            enum { l7 = 0x5a7 };
+            enum { l8 = 0x5a8 };
+            enum { l9 = 0x5a9 };
+            enum { l10 = 0x5aa };
+            enum { l11 = 0x5ab };
+            enum { l12 = 0x5ac };
+            enum { l13 = 0x5ad };
+            enum { l14 = 0x5ae };
+            enum { l15 = 0x5af };
+        };
     };
 };
 namespace cmd
