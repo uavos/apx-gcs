@@ -108,6 +108,14 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_actions, &Fact::valueChanged, this, &Waypoint::updateDescr);
     updateDescr();
 
+    // Dummy button correct route
+    f_correct = new MissionField(this,
+                                 "correct",
+                                 tr("Correct"),
+                                 tr("Correct test button"),
+                                 CloseOnTrigger);
+    connect(f_correct, &Fact::triggered, this, &Waypoint::correctRoute);
+
     App::jsync(this);
 }
 
@@ -153,6 +161,17 @@ void Waypoint::initElevationMap()
     }
     connect(&m_watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo, Qt::UniqueConnection);
     connect(App::instance(), &App::appQuit, &m_watcher, &QFutureWatcher<TerrainInfo>::cancel, Qt::UniqueConnection);
+
+    connect(&m_pointsWatcher,
+            &QFutureWatcher<QList<QGeoCoordinate>>::finished,
+            this,
+            &Waypoint::insertNewPoints,
+            Qt::UniqueConnection);
+    connect(App::instance(),
+            &App::appQuit,
+            &m_pointsWatcher,
+            &QFutureWatcher<QList<QGeoCoordinate>>::cancel,
+            Qt::UniqueConnection);
 
     updateMinMaxHeight();
     updateAgl();
@@ -670,11 +689,9 @@ void Waypoint::checkCollision()
     if (dst == 0) {
         bool prevCollision = prevWp ? (prevWp->f_agl->value().toInt() < UNSAFE_AGL) : false;
         bool currentCollision = (f_agl->value().toInt() < UNSAFE_AGL);
-        bool collision = currentCollision && prevCollision;
-        // setCollision(collision);
-        // return;
-
-        hasCollision = true;
+        hasCollision = currentCollision && prevCollision;
+        setCollision(hasCollision);
+        return;
     }
 
     auto alt = f_altitude->value().toInt();
@@ -693,18 +710,18 @@ void Waypoint::checkCollision()
     //     }
     // }
 
+    double eps = 0.001;
     for (int i = 0; i < m_terrainProfile.size(); i++) {
         auto tp = m_terrainProfile[i];
         double k = !prevWp ? (tp.x() / dst) : 1; // proportional increase in safe AGL for the first point
         auto safeHeight = tp.y() + UNSAFE_AGL * k;
         auto routeHeight = prevAlt + tp.x() * tan;
-        if (routeHeight < safeHeight) {
-            // setCollision(true);
-            // return;
+
+        if (safeHeight - routeHeight > eps) {
             hasCollision = true;
 
             // Don't calc max unsafe agl for first point
-            if(!prevWp)
+            if (!prevWp)
                 continue;
             auto agl = routeHeight - tp.y();
             if(agl < m_worstRouteAgl) { 
@@ -714,11 +731,7 @@ void Waypoint::checkCollision()
         }
     }
 
-    // setCollision(false);
     setCollision(hasCollision);
-
-    // int order = f_order->value().toInt();
-    // apxMsgW() << order << ". Min unsafe AGL=" << m_minUnsafeAgl;
 }
 
 double Waypoint::getStartHMSL()
@@ -749,4 +762,203 @@ void Waypoint::updateTerrainInfo()
     updateMinMaxHeight();
     setTerrainProfile(result.terrainProfile);
     checkCollision();
+}
+
+void Waypoint::addPointForWorstAgl()
+{
+    if(!m_collision)
+        return;
+
+    if (!m_worstRouteAglCoordinate.isValid())
+        return;
+
+    uint index = indexInParent();
+    Waypoint *wp = static_cast<Waypoint *>(group->insertObject(m_worstRouteAglCoordinate, index));
+    
+    if(!wp)
+        return;
+
+    wp->f_agl->setValue(UNSAFE_AGL);
+}
+
+// ===== New functionality ======
+void Waypoint::correctRoute()
+{
+    if (!m_collision)
+        return;
+
+    // Correct point altitude 
+    auto alt = f_altitude->value().toInt();
+    auto agl = f_agl->value().toInt();
+    if (agl < UNSAFE_AGL) {
+        alt += UNSAFE_AGL - agl;
+        f_altitude->setValue(alt);
+    }
+
+    Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
+    if (!prevWp)
+        return;
+
+    auto amsl = f_amsl->value().toBool();
+    if(!amsl)
+        alt += getStartHMSL();
+
+    // Correct previous point altitude
+    auto prevAlt = prevWp->f_altitude->value().toInt();
+    auto prevAgl = prevWp->f_agl->value().toInt();
+    if (prevAgl < UNSAFE_AGL) {
+        prevAlt += UNSAFE_AGL - agl;
+        prevWp->f_altitude->setValue(prevAlt);
+    }
+
+    auto prevAmsl = f_amsl->value().toBool();
+    if (!prevAmsl)
+        prevAlt += getStartHMSL();
+
+    QFuture<QList<QGeoCoordinate>> future;
+    future = QtConcurrent::run(getCorrectRoutePoints, m_terrainProfilePath, prevAlt, alt);
+    m_pointsWatcher.setFuture(future);
+}
+
+void Waypoint::insertNewPoints()
+{
+    QList<QGeoCoordinate> result = m_pointsWatcher.result();
+    int wpIndex = indexInParent();
+    for (int i = result.size() - 1; i >= 0; i--) {
+        auto point = result[i];
+        auto wpHmsl = point.altitude() + UNSAFE_AGL;
+        Waypoint *wp = static_cast<Waypoint *>(group->insertObject(point, wpIndex));
+        wp->f_amsl->setValue(true);
+        wp->f_altitude->setValue(wpHmsl);
+    }
+ }
+
+// QList<QGeoCoordinate> Waypoint::getCorrectRoutePoints(QGeoPath &path, int hFirst, int hLast)
+// {
+//     QList<int> indexes;
+//     if (!m_collision)
+//         return QList<QGeoCoordinate>();
+
+//     int count = 0;
+//     int pathSize = path.size();
+//     bool hasCollision = true;
+//     indexes = {0, pathSize - 1};
+
+//     // Start build terrain profile
+//     while (!hasCollision || count < pathSize) {
+//         hasCollision = false;
+//         QList<int> tmp{0};
+//         for (int i = 0; i < indexes.size() - 1; i++) {
+//             // Get coordinates from path
+//             auto begin = indexes[i];
+//             auto end = indexes[i + 1];
+//             auto first = path.coordinateAt(begin);
+//             auto last = path.coordinateAt(end);
+
+//             // Get points height and distance
+//             double h1 = begin != 0 ? (first.altitude() + UNSAFE_AGL) : hFirst;
+//             double h2 = end != (pathSize - 1) ? (last.altitude() + UNSAFE_AGL) : hLast;
+//             auto dst = path.length(begin, end);
+//             auto tan = static_cast<double>(h2 - h1) / dst;
+            
+//             // Check intermediate points
+//             int unsafeIndex{-1};
+//             double unsafeHeightDiff{0};
+//             for (int j = begin; j < end; j++) {
+//                 auto coordinate = path.coordinateAt(j);
+//                 auto pointElevation = coordinate.altitude();
+//                 auto routeHeight = h1 + path.length(begin, j) * tan;
+//                 auto safeHeight = pointElevation + UNSAFE_AGL;
+//                 // Check safe AGL
+//                 if (routeHeight < safeHeight) {
+//                     hasCollision = true;
+//                     double diff = safeHeight - routeHeight;
+//                     if (unsafeHeightDiff < diff) {
+//                         unsafeHeightDiff = diff;
+//                         unsafeIndex = j;
+//                     }
+//                 }
+//             }
+//             if(unsafeIndex >=0)
+//                 tmp.append(unsafeIndex);
+
+//             count++;
+//         }
+//         tmp.append(pathSize - 1);
+//         std::sort(tmp.begin(), tmp.end());
+//         indexes = tmp;
+//     }
+
+//     // Create list with new points
+//     QList<QGeoCoordinate> newPoints;
+//     for (int i = 1; i < indexes.size()-1; i++) {
+//         newPoints.append(path.coordinateAt(indexes[i]));
+//         qDebug() << indexes[i] << ". " << path.coordinateAt(indexes[i]);
+//     }
+//     return newPoints;
+// }
+
+void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
+                                                      const QGeoPath &path,
+                                                      int hFirst,
+                                                      int hLast)
+{
+    QList<int> indexes;
+    int count = 0;
+    int pathSize = path.size();
+    bool hasCollision = true;
+    indexes = {0, pathSize - 1};
+    const int unsafe_agl = 100; // mb add passed parameter?
+
+    // Start build terrain profile
+    while (hasCollision && count < pathSize) {
+        hasCollision = false;
+        QList<int> tmp;
+        for (int i = 0; i < indexes.size() - 1; i++) {
+            // Get coordinates from path
+            auto begin = indexes[i];
+            auto end = indexes[i + 1];
+            auto first = path.coordinateAt(begin);
+            auto last = path.coordinateAt(end);
+
+            // Get points height and distance
+            double h1 = begin != 0 ? (first.altitude() + unsafe_agl) : hFirst;
+            double h2 = end != (pathSize - 1) ? (last.altitude() + unsafe_agl) : hLast;
+            auto dst = path.length(begin, end);
+            auto tan = static_cast<double>(h2 - h1) / dst;
+
+            // Check intermediate points
+            int unsafeIndex{-1};
+            double unsafeHeightDiff{0};
+            for (int j = begin + 1; j < end; j++) {
+                auto coordinate = path.coordinateAt(j);
+                auto pointElevation = coordinate.altitude();
+                auto routeHeight = h1 + path.length(begin, j) * tan;
+                auto safeHeight = pointElevation + unsafe_agl;
+ 
+                // Check safe AGL
+                if (routeHeight < safeHeight)
+                {
+                    hasCollision = true;
+                    double diff = safeHeight - routeHeight;
+                    if (unsafeHeightDiff < diff) {
+                        unsafeHeightDiff = diff;
+                        unsafeIndex = j;
+                    }
+                }
+            }
+            if (unsafeIndex >= 0)
+                tmp.append(unsafeIndex);
+        }
+        indexes.append(tmp);
+        std::sort(indexes.begin(), indexes.end());
+        count++;
+    }
+
+    // Create list with new points
+    QList<QGeoCoordinate> newPoints;
+    for (int i = 1; i < indexes.size() - 1; i++)
+        newPoints.append(path.coordinateAt(indexes[i]));
+
+    promise.addResult(newPoints);
 }

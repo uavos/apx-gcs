@@ -62,6 +62,9 @@ public:
     Fact *f_atrack;
     Fact *f_xtrack;
 
+    // New functionality
+    Fact *f_correct;
+
     WaypointActions *f_actions;
 
     QJsonValue toJson() override;
@@ -79,6 +82,10 @@ protected:
     void processAglFt();
     void calcAglFt();
 
+    // New functionality
+    void correctRoute();
+    // QList<QGeoCoordinate> getCorrectRoutePoints(QGeoPath &path, int hFirst, int hLast);
+
 private:
     QString _altUnits;
     double m_terrainProfileMin{0};
@@ -92,6 +99,13 @@ private slots:
     void updateAltDescr();
     void sendTerrainProfileRequest();
     static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
+
+    // New functionality
+    static void getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise, const QGeoPath &path,
+                                                                                int hFirst,
+                                                                                int hLast);
+    void insertNewPoints();
+    
     void updateMinMaxHeight();
     void updateTerrainInfo();
     void setAglEnabled();
@@ -101,7 +115,8 @@ public slots:
     void updateAgl();
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();
-
+    void addPointForWorstAgl();
+  
     //---------------------------------------
     // PROPERTIES
 public:
@@ -144,6 +159,7 @@ protected:
     // void testInsert();
     // QTimer m_testTimer;
     // ==============================
+    QFutureWatcher<QList<QGeoCoordinate>> m_pointsWatcher;
 
 signals:
     void requestTerrainProfile(QGeoPath v);
