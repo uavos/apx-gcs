@@ -94,6 +94,14 @@ MissionTools::MissionTools(UnitMission *mission, Flags flags)
                              Action | Apply | CloseOnTrigger | ShowDisabled);
     f_aglsetApply->setEnabled(false);
 
+    f_pathsCorrect = new Fact(this,
+                              "pathscorrect",
+                              tr("Paths correction"),
+                              tr("Correct paths with ansafe agl"),
+                              CloseOnTrigger,
+                              "puzzle-edit-outline");
+    f_pathsCorrect->setVisible(false);
+
     auto fvs = new UnitSelect(this, "copy", tr("Copy"), tr("Copy to unit"));
     f_copy = fvs;
     f_copy->setIcon("content-copy");

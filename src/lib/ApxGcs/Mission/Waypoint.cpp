@@ -116,7 +116,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_actions, &Fact::valueChanged, this, &Waypoint::updateDescr);
     updateDescr();
 
-    connect(f_correct, &Fact::triggered, this, &Waypoint::correctRoute);
+    connect(f_correct, &Fact::triggered, this, &Waypoint::correctPath);
 
     App::jsync(this);
 }
@@ -715,7 +715,7 @@ void Waypoint::updateTerrainInfo()
 }
 
 // ===== New functionality ======
-void Waypoint::correctRoute()
+void Waypoint::correctPath()
 {
     if (!m_collision)
         return;

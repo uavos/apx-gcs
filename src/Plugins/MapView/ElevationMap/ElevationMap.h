@@ -106,6 +106,7 @@ private slots:
     void updateMission();
     void updateRefPoint();
     void setMissionAgl();
+    void correctUnsafePaths();
     void getPluginEnableControl();
     void changeExternalsVisibility();
     void setStartPointElevation();

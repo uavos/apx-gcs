@@ -82,9 +82,6 @@ protected:
     void processAglFt();
     void calcAglFt();
 
-    // New functionality
-    void correctRoute();
-
 private:
     QString _altUnits;
     double m_terrainProfileMin{0};
@@ -114,7 +111,10 @@ public slots:
     void updateAgl();
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();
-  
+
+    // New functionality
+    void correctPath();
+
     //---------------------------------------
     // PROPERTIES
 public:

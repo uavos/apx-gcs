@@ -39,7 +39,7 @@ public:
     Fact *f_altsetApply;
     Fact *f_aglset;
     Fact *f_aglsetApply;
-    Fact *f_useAglset; 
+    Fact *f_pathsCorrect; 
 
     Fact *f_copy;
 

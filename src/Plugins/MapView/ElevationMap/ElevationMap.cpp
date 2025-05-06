@@ -146,6 +146,7 @@ void ElevationMap::updateMission()
     connect(mission(), &UnitMission::missionSizeChanged, mission(), &UnitMission::checkCollision);
     connect(mission(), &UnitMission::startPointChanged, this, &ElevationMap::setStartPointElevation);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
+    connect(missionTools()->f_pathsCorrect, &Fact::triggered, this, &ElevationMap::correctUnsafePaths);
     changeExternalsVisibility();
     updateRefPoint();
 }
@@ -190,6 +191,17 @@ void ElevationMap::setMissionAgl()
     }
 }
 
+void ElevationMap::correctUnsafePaths()
+{
+    auto m = mission();
+    for (int i = 0; i < m->f_waypoints->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        if (!wp)
+            continue;
+        wp->correctPath();
+    }
+}
+
 void ElevationMap::changeExternalsVisibility()
 {
     bool useValue{false};
@@ -209,6 +221,10 @@ void ElevationMap::setMissionValues(bool b)
     auto aglset = missionTools()->child("aglset");
     if (aglset)
         aglset->setVisible(b);
+
+    auto pathsCorrect = missionTools()->f_pathsCorrect;
+    if (pathsCorrect)
+        pathsCorrect->setVisible(b);
 
     // Signal missionSizeChanged is sent before mission is cleared
     auto m = mission();
