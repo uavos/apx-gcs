@@ -280,7 +280,7 @@ bool PApxNodeRequestUpdate::request(PApxRequest &req)
         return false;
     }
     auto value = _values.value(name);
-    emit _node->paramsSent({{name, value}});
+    emit sent(name, value);
 
     req << _fid;
     trace()->block(QString::number(_fid >> 8));
@@ -321,7 +321,7 @@ bool PApxNodeRequestUpdate::response(PStreamReader &stream)
     if (_index >= _values.size() && _fid == 0xFFFFFFFF) {
         // request was to save to NVRAM
         // qDebug() << "saved";
-        emit _node->paramsSaved(_values);
+        emit saved(_values);
         return true;
     }
 

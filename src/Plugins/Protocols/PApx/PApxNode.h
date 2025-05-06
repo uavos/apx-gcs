@@ -94,9 +94,10 @@ private:
 
     bool _skip_cache{};
 
-    QJsonObject _values;
-    xbus::node::conf::script_t _script_value{};
+    QJsonObject _rvalues;
+    xbus::node::conf::script_t _script_hash{};
     QString _script_field;
+    QJsonValue _script_wdata;
 
     // ext gcs values update
     QJsonObject _ext_upd_values;

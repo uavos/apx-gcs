@@ -421,8 +421,8 @@ void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
     _field_arrays.clear();
     _field_units.clear();
 
-    _values = {};
-    _script_value = {};
+    _rvalues = {};
+    _script_hash = {};
     _script_field.clear();
 
     for (const auto &i : dict.value("fields").toArray()) {
@@ -471,8 +471,8 @@ void PApxNode::parseDictData(PApxNode *node,
     _field_arrays.clear();
     _field_units.clear();
 
-    _values = {};
-    _script_value = {};
+    _rvalues = {};
+    _script_hash = {};
     _script_field.clear();
 
     _ext_upd_values = {};
@@ -625,8 +625,8 @@ void PApxNode::parseConfData(PApxNode *node,
 
     PStreamReader stream(data);
 
-    _values = {};
-    _script_value = {};
+    _rvalues = {};
+    _script_hash = {};
     _ext_upd_values = {};
     _ext_upd_request = false;
 
@@ -714,7 +714,7 @@ void PApxNode::parseConfData(PApxNode *node,
             QString name = _field_names.value(fidx);
 
             if (type == xbus::node::conf::script) {
-                _script_value = jsv.toVariant().value<xbus::node::conf::script_t>();
+                _script_hash = jsv.toVariant().value<xbus::node::conf::script_t>();
                 _script_field = name;
                 jsv = {};
             }
@@ -745,7 +745,7 @@ void PApxNode::parseConfData(PApxNode *node,
     }
 
     // store values and download script
-    _values = values;
+    _rvalues = values;
     if (_req_conf)
         new PApxNodeRequestFileRead(this, "script");
 }
@@ -858,7 +858,7 @@ void PApxNode::parseScriptDataUpload(PApxNode *node,
                                      const xbus::node::file::info_s &info,
                                      const QByteArray data)
 {
-    _script_value = info.hash;
+    _script_hash = info.hash;
     parseScriptData(node, info, data);
 }
 void PApxNode::parseScriptData(PApxNode *node,
@@ -869,9 +869,9 @@ void PApxNode::parseScriptData(PApxNode *node,
 
     //qDebug() << "script data" << info.size << data.size();
     // check script hash
-    if (info.hash != _script_value) {
+    if (info.hash != _script_hash) {
         qWarning() << title() << "script hash error:" << QString::number(info.hash, 16)
-                   << QString::number(_script_value, 16);
+                   << QString::number(_script_hash, 16);
         return;
     }
 
@@ -912,30 +912,43 @@ void PApxNode::parseScriptData(PApxNode *node,
         value = st.join(',');
     }
 
-    _values.insert(_script_field, value);
-    emit confReceived(_values);
-    _values = {};
+    // append script data to values
+    _rvalues.insert(_script_field, value);
+    emit confReceived(_rvalues);
+    _rvalues = {};
 }
 
 void PApxNode::requestUpdate(QJsonObject values)
 {
     if (values.contains(_script_field)) {
-        QByteArray data = pack_script(values.value(_script_field));
+        // script data must be decoded to file data and field value (hash)
+        _script_wdata = values.value(_script_field);
+        QByteArray data = pack_script(_script_wdata);
         if (data.isEmpty()) {
-            _script_value = {};
+            _script_hash = {};
             qDebug() << title() << "empty script";
         } else {
-            _script_value = apx::crc32(data.data(), data.size());
+            _script_hash = apx::crc32(data.data(), data.size());
         }
-        values.insert(_script_field, (qint64) _script_value);
+        values.insert(_script_field, (qint64) _script_hash);
         new PApxNodeRequestFileWrite(this, "script", data);
     }
 
-    new PApxNodeRequestUpdate(this, values);
+    auto req = new PApxNodeRequestUpdate(this, values);
+    connect(req, &PApxNodeRequestUpdate::sent, this, [this](QString name, QJsonValue value) {
+        if (name == _script_field)
+            value = _script_wdata;
+        emit paramsSent({{name, value}});
+    });
+    connect(req, &PApxNodeRequestUpdate::saved, this, [this](QJsonObject values) {
+        if (values.contains(_script_field))
+            values.insert(_script_field, _script_wdata);
+        emit paramsSaved(values);
+    });
 }
 QByteArray PApxNode::pack_script(const QJsonValue &jsv)
 {
-    QStringList st = jsv.toVariant().toString().split(',', Qt::KeepEmptyParts);
+    QStringList st = jsv.toString().split(',', Qt::KeepEmptyParts);
 
     if (st.size() != 3)
         return {};

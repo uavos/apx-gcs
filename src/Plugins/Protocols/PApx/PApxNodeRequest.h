@@ -136,6 +136,7 @@ public:
 
 class PApxNodeRequestUpdate : public PApxNodeRequest
 {
+    Q_OBJECT
 public:
     explicit PApxNodeRequestUpdate(PApxNode *node, const QJsonObject &values)
         : PApxNodeRequest(node, mandala::cmd::env::nmt::upd::uid)
@@ -151,6 +152,10 @@ private:
 
     bool request(PApxRequest &req) override;
     bool response(PStreamReader &stream) override;
+
+signals:
+    void sent(QString name, QJsonValue value);
+    void saved(QJsonObject params);
 };
 
 class PApxNodeRequestFile : public PApxNodeRequest
