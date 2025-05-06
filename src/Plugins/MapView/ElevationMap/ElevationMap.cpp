@@ -268,6 +268,7 @@ void ElevationMap::setWaypointsValues(bool b)
     for (int i = 0; i < m->f_waypoints->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
         wp->f_agl->setVisible(b);
+        wp->f_correct->setVisible(b);
         if (!b)
             continue;
         wp->initElevationMap();

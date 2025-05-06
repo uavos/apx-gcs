@@ -84,7 +84,6 @@ protected:
 
     // New functionality
     void correctRoute();
-    // QList<QGeoCoordinate> getCorrectRoutePoints(QGeoPath &path, int hFirst, int hLast);
 
 private:
     QString _altUnits;
@@ -115,7 +114,6 @@ public slots:
     void updateAgl();
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();
-    void addPointForWorstAgl();
   
     //---------------------------------------
     // PROPERTIES
@@ -128,9 +126,6 @@ public:
 
     double maxHeight() const;
     void setMaxHeight(const double v);
-
-    double worstRouteAgl() const;
-    void setWorstRouteAgl(const double v);
 
     bool reachable() const;
     void setReachable(bool v);
@@ -145,20 +140,14 @@ public:
 
 protected:
     static const int UNSAFE_AGL = 100; // Suggested by the CEO
-    QGeoCoordinate m_worstRouteAglCoordinate;
     QFutureWatcher<TerrainInfo> m_watcher;
     ChosenFact m_chosen{ALT};
     double m_minHeight{0};
     double m_maxHeight{200};
-    double m_worstRouteAgl{100}; // TODO specify maxUnsafeAgl in Ctor
     bool m_reachable{};
     bool m_warning{};
     bool m_collision{};
 
-    // ==== Debug purposes only =====
-    // void testInsert();
-    // QTimer m_testTimer;
-    // ==============================
     QFutureWatcher<QList<QGeoCoordinate>> m_pointsWatcher;
 
 signals:
