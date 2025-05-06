@@ -974,6 +974,24 @@ namespace sns
             enum { fov = 0x1b7 };
             enum { range = 0x1b8 };
         };
+        namespace scr
+        {
+            enum { s1 = 0x1c1 };
+            enum { s2 = 0x1c2 };
+            enum { s3 = 0x1c3 };
+            enum { s4 = 0x1c4 };
+            enum { s5 = 0x1c5 };
+            enum { s6 = 0x1c6 };
+            enum { s7 = 0x1c7 };
+            enum { s8 = 0x1c8 };
+            enum { s9 = 0x1c9 };
+            enum { s10 = 0x1ca };
+            enum { s11 = 0x1cb };
+            enum { s12 = 0x1cc };
+            enum { s13 = 0x1cd };
+            enum { s14 = 0x1ce };
+            enum { s15 = 0x1cf };
+        };
     };
 };
 namespace ctr
@@ -1379,24 +1397,6 @@ namespace est
             enum { x13 = 0x59d };
             enum { x14 = 0x59e };
             enum { x15 = 0x59f };
-        };
-        namespace local
-        {
-            enum { l1 = 0x5a1 };
-            enum { l2 = 0x5a2 };
-            enum { l3 = 0x5a3 };
-            enum { l4 = 0x5a4 };
-            enum { l5 = 0x5a5 };
-            enum { l6 = 0x5a6 };
-            enum { l7 = 0x5a7 };
-            enum { l8 = 0x5a8 };
-            enum { l9 = 0x5a9 };
-            enum { l10 = 0x5aa };
-            enum { l11 = 0x5ab };
-            enum { l12 = 0x5ac };
-            enum { l13 = 0x5ad };
-            enum { l14 = 0x5ae };
-            enum { l15 = 0x5af };
         };
     };
 };
