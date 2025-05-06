@@ -46,7 +46,10 @@ ListView {
     boundsBehavior: Flickable.StopAtBounds
     
     readonly property bool scrolling: dragging||flicking
-    onScrollingChanged: stickEnd=false
+    onScrollingChanged: {
+        stickEnd=false
+        scrollAutoStickTimer.restart()
+    }
     
     property bool stickEnd: false
 
@@ -59,7 +62,16 @@ ListView {
     Timer {
         id: scrollEndTimer
         interval: 1
-        onTriggered: if(listView.stickEnd) listView.scrollToEnd()
+        onTriggered: {
+            if(listView.stickEnd)
+                listView.scrollToEnd()
+            scrollAutoStickTimer.restart()
+        }
+    }
+    Timer {
+        id: scrollAutoStickTimer
+        interval: 15000
+        onTriggered: listView.scrollToEnd()
     }
 
     Connections {
