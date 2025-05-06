@@ -1,3 +1,16 @@
+# [APX Ground Control v11.2.8](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.8) (05/06/25)
+
+> Branch: `main`\
+> Date: `05/06/25 16:20:45`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/2013fabfe4e6e37773b6ae4a7fbad4f5b951b130...734448de2fd15a25005f1f56859aa309e4177813)
+
+## New Features
+* terminal auto scroll stick timer
+
+## Bug Fixes
+* script simultaneous upload (multi GCS) behavior
+* enhance directory iteration logic in app updater to fix script compile "no input files" issue
+
 # [APX Ground Control v11.2.7](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.7) (05/05/25)
 
 > Branch: `main`\
