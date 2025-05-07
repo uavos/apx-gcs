@@ -130,7 +130,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         trace()->block(QString::number(fid & 0xFF));
         trace()->data(stream.payload());
 
-        if (pid.pri == xbus::pri_request) {
+        if (pid.req) {
             // field update request from another GCS
             if (fid == 0xFFFFFFFF) { // conf save request
                 _ext_upd_request = !_ext_upd_values.isEmpty();
@@ -157,11 +157,6 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         }
 
         // only responses are processed further
-        if (pid.pri != xbus::pri_response) {
-            // all other pri types are ignored
-            // qDebug() << "wrong pri" << pid.pri;
-            return;
-        }
         stream.reset(pos_s); // revert to the start of the packet payload
 
         // intercept conf save event from another GCS
