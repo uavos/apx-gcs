@@ -1,3 +1,40 @@
+# [APX Ground Control v11.2.8](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.8) (05/06/25)
+
+> Branch: `main`\
+> Date: `05/06/25 16:20:45`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/2013fabfe4e6e37773b6ae4a7fbad4f5b951b130...734448de2fd15a25005f1f56859aa309e4177813)
+
+## New Features
+* terminal auto scroll stick timer
+
+## Bug Fixes
+* script simultaneous upload (multi GCS) behavior
+* enhance directory iteration logic in app updater to fix script compile "no input files" issue
+
+# [APX Ground Control v11.2.7](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.7) (05/05/25)
+
+> Branch: `main`\
+> Date: `05/05/25 09:46:41`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/a0e989339d2eb50ab72944322f69f3df119572f8...e6ae059c89011cd6639089e9a3de6179d62f9240)
+
+## New Features
+* add functionality to disable local TCP ports on server bind to avoid loops
+
+## Bug Fixes
+* telemetry import for fresh gcs install
+* config file parsers JSON object data handlers
+* telemetry file load discard behavior
+* telemetry plot cursor movement
+* telemetry plot discrete data handling
+* msg model pass through app evt queue
+* loading of telemetry files with too many messages (freeze)
+* telemetry db modified request to refresh records list (freeze)
+* log views and console focus and auto scroll issues
+* multi-gcs node params update behavior (closes [`91`](https://github.com/uavos/apx-gcs/issues/91))
+
+## Performance Enhancements
+* optimize containers iterators (remove unnecessary data copy)
+
 # [APX Ground Control v11.2.6](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.6) (03/31/25)
 
 > Branch: `main`\

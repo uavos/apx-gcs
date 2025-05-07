@@ -71,7 +71,7 @@ void NodesFrame::unitSelected(Unit *unit)
 
     connect(unit->f_nodes, &Nodes::modifiedChanged, this, &NodesFrame::updateActions);
 
-    foreach (QAction *a, toolBar->actions()) {
+    for (auto a : toolBar->actions()) {
         toolBar->removeAction(a);
         a->deleteLater();
     }

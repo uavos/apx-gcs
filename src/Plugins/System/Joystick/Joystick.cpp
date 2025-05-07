@@ -201,25 +201,28 @@ void Joystick::loadConfig(const QJsonObject &config)
     //load
     f_title->setValue(config["title"]);
     const QJsonObject &conf = config["config"].toObject();
-    foreach (QJsonValue v, conf["axes"].toArray()) {
-        int i = v["id"].toInt() - 1;
+    for (const auto jsv : conf["axes"].toArray()) {
+        const auto jso = jsv.toObject();
+        int i = jso.value("id").toInt() - 1;
         JoystickAxis *f = static_cast<JoystickAxis *>(f_axes->child(i));
         if (f)
-            f->loadConfig(v.toObject());
+            f->loadConfig(jso);
     }
-    foreach (QJsonValue v, conf["buttons"].toArray()) {
-        int i = v["id"].toInt() - 1;
+    for (const auto jsv : conf["buttons"].toArray()) {
+        const auto jso = jsv.toObject();
+        int i = jso.value("id").toInt() - 1;
         Fact *f = f_buttons->child(i);
         if (!f)
             continue;
-        f->setValue(v["scr"]);
+        f->setValue(jso.value("scr"));
     }
-    foreach (QJsonValue v, conf["hats"].toArray()) {
-        int i = v["id"].toInt() - 1;
+    for (const auto jsv : conf["hats"].toArray()) {
+        const auto jso = jsv.toObject();
+        int i = jso.value("id").toInt() - 1;
         Fact *f = f_hats->child(i);
         if (!f)
             continue;
-        f->setValue(v["scr"]);
+        f->setValue(jso.value("scr"));
     }
 }
 

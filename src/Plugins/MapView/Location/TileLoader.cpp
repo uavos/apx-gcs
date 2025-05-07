@@ -155,7 +155,7 @@ bool TileLoader::checkImage(const QByteArray &data)
 
 void TileLoader::abort()
 {
-    foreach (QNetworkReply *reply, reqMap.keys()) {
+    for (auto reply : reqMap.keys()) {
         reply->abort();
         emit tileError(reqMap.value(reply), reply->errorString());
     }
@@ -400,7 +400,7 @@ void TileLoader::versionReplyFinished()
     if (versionGoogleMaps.isEmpty())
         versionGoogleMaps = "748";
     //qDebug()<<versionGoogleMaps;
-    foreach (quint64 uid, pendingDownloads) {
+    for (auto uid : pendingDownloads) {
         download(uid);
     }
     pendingDownloads.clear();

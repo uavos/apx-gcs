@@ -200,10 +200,10 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     });
 
     //update css styles
-    foreach (QAction *a, toolBar->actions()) {
+    for (auto a : toolBar->actions()) {
         toolBar->widgetForAction(a)->setObjectName(a->objectName());
     }
-    foreach (QAction *a, toolBarPlayer->actions()) {
+    for (auto a : toolBarPlayer->actions()) {
         toolBarPlayer->widgetForAction(a)->setObjectName(a->objectName());
     }
 
@@ -334,17 +334,20 @@ void TelemetryFrame::rec_values(quint64 timestamp_ms, TelemetryReader::Values da
         return;
     }
 
-    for (const auto [index, value] : data) {
-        auto tf = timestamp_ms / 1000.0;
-        if (tf > _timeMax)
-            _timeMax = tf;
+    auto tf = timestamp_ms / 1000.0;
 
+    auto tf_dt = (tf - _timeMax) * 8.0; // max interval to keep plot smooth
+
+    if (tf > _timeMax)
+        _timeMax = tf;
+
+    for (const auto [index, value] : data) {
         auto v = value.toDouble();
         while (_samples.size() <= index)
             _samples.append(QVector<QPointF>());
 
         auto &pts = _samples[index];
-        if (pts.size() > 0 && (tf - pts.last().x()) > 0.5) {
+        if (pts.size() > 0 && (tf - pts.last().x()) > tf_dt) {
             //extrapolate unchanged value tail-1ms
             pts.append(QPointF(tf, pts.last().y()));
         }
@@ -484,6 +487,6 @@ void TelemetryFrame::updatePlotPlayerTime()
 {
     quint64 t = player->f_time->value().toULongLong();
     playerSlider->setValue(t);
-    plot->setTimeCursor(t, reader->totalSize() < 3000000);
+    plot->setTimeCursor(t, true); //reader->totalSize() < 3000000);
     lbPlayerTime->setText(AppRoot::timemsToString(t));
 }

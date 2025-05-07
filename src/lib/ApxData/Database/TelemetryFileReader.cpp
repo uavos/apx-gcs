@@ -236,8 +236,10 @@ bool TelemetryFileReader::parse_payload()
     while (isOpen() && !atEnd()) {
         setProgress((pos() - pos_start) * 100 / (size() - pos_start));
         if (_interrupted) {
-            qWarning() << "interrupted at" << pos();
-            break;
+            qWarning() << "interrupted at" << pos() << _ts_s;
+            _reset_data();
+            setProgress(-1);
+            return true;
         }
 
         ret = parse_next();

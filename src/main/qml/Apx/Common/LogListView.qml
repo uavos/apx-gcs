@@ -34,6 +34,10 @@ ListView {
 
     focus: false
     keyNavigationEnabled: false
+    cacheBuffer: 0
+    reuseItems: true
+    snapMode: ListView.NoSnap
+    currentIndex: -1 // no current item, fixes focus issue
 
     ScrollBar.vertical: ScrollBar {
         width: Style.buttonSize/4
@@ -42,7 +46,10 @@ ListView {
     boundsBehavior: Flickable.StopAtBounds
     
     readonly property bool scrolling: dragging||flicking
-    onScrollingChanged: stickEnd=false
+    onScrollingChanged: {
+        stickEnd=false
+        scrollAutoStickTimer.restart()
+    }
     
     property bool stickEnd: false
 
@@ -55,16 +62,28 @@ ListView {
     Timer {
         id: scrollEndTimer
         interval: 1
-        onTriggered: if(listView.stickEnd) listView.scrollToEnd()
+        onTriggered: {
+            if(listView.stickEnd)
+                listView.scrollToEnd()
+            scrollAutoStickTimer.restart()
+        }
+    }
+    Timer {
+        id: scrollAutoStickTimer
+        interval: 15000
+        onTriggered: listView.scrollToEnd()
     }
 
     Connections {
         target: listView.model
         function onRowsInserted() {
-            if(listView.stickEnd) {
-                listView.scrollToEnd()
-                scrollEndTimer.start()
-            }
+            scrollEndTimer.start()
+        }
+        function onRowsRemoved() {
+            scrollEndTimer.start()
+        }
+        function onModelReset() {
+            scrollEndTimer.start()
         }
     }
 

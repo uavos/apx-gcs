@@ -87,7 +87,7 @@ void Joysticks::updateEnabled()
         waitEvent();
         qDebug() << "SDL initialized";
     } else {
-        foreach (auto i, f_list->facts()) {
+        for (auto i : f_list->facts()) {
             i->deleteFact();
             delete i;
         }
@@ -304,19 +304,20 @@ void Joysticks::loadConfigs()
         if (file.open(QFile::ReadOnly | QFile::Text)) {
             QJsonDocument json = QJsonDocument::fromJson(file.readAll());
             file.close();
-            foreach (QJsonValue v, json["configs"].toArray()) {
-                QString uid = v["uid"].toString();
-                QString name = v["name"].toString();
-                int index = v["index"].toString().toInt();
+            for (const auto i : json["configs"].toArray()) {
+                const auto jso = i.toObject();
+                QString uid = jso.value("uid").toString();
+                QString name = jso.value("name").toString();
+                int index = jso.value("index").toVariant().toInt();
                 QString jkey = QString("%1:%2:%3").arg(index).arg(name).arg(uid);
 
-                int cidx = configIndex(v.toObject());
-                configs.append(v.toObject());
+                int cidx = configIndex(jso);
+                configs.append(jso);
                 configIds.append(jkey);
                 if (cidx >= 0)
                     continue;
 
-                QString confTitle = v["title"].toString();
+                QString confTitle = jso.value("title").toString();
                 if (!name.isEmpty())
                     confTitle.append(" - ").append(name);
                 QString suffix;
@@ -336,10 +337,10 @@ void Joysticks::saveConfigs()
 {
     QJsonObject json;
     QJsonArray a;
-    foreach (const QJsonObject &config, configs) {
-        if (config["uid"].isUndefined())
+    for (const auto &i : configs) {
+        if (i.value("uid").isUndefined())
             continue;
-        a.append(config);
+        a.append(i);
     }
     json.insert("configs", a);
 

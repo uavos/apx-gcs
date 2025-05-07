@@ -474,7 +474,7 @@ Fact *Fact::createAction(Fact *parent, FactBase::Flags flags)
 
 void Fact::setValues(const QVariantMap &values)
 {
-    foreach (const QString &key, values.keys()) {
+    for (const auto key : values.keys()) {
         Fact *f = child(key);
         if (f)
             f->setValue(values.value(key));
