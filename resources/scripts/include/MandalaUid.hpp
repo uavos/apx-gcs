@@ -974,6 +974,24 @@ namespace sns
             enum { fov = 0x1b7 };
             enum { range = 0x1b8 };
         };
+        namespace scr
+        {
+            enum { s1 = 0x1c1 };
+            enum { s2 = 0x1c2 };
+            enum { s3 = 0x1c3 };
+            enum { s4 = 0x1c4 };
+            enum { s5 = 0x1c5 };
+            enum { s6 = 0x1c6 };
+            enum { s7 = 0x1c7 };
+            enum { s8 = 0x1c8 };
+            enum { s9 = 0x1c9 };
+            enum { s10 = 0x1ca };
+            enum { s11 = 0x1cb };
+            enum { s12 = 0x1cc };
+            enum { s13 = 0x1cd };
+            enum { s14 = 0x1ce };
+            enum { s15 = 0x1cf };
+        };
     };
 };
 namespace ctr
