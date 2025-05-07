@@ -171,6 +171,11 @@ bool TelemetryLoadFile::run(QSqlQuery &query)
     }
     file.close();
 
+    if (discarded()) {
+        qDebug() << "Telemetry file reading aborted";
+        return true;
+    }
+
     bool still_writing = _reader.is_still_writing();
     if (still_writing) {
         qDebug() << "File is still writing";
@@ -655,6 +660,15 @@ bool TelemetryImport::run(QSqlQuery &query)
 
         auto destFilePath = Session::telemetryFilePathUnique(basename);
         basename = QFileInfo(destFilePath).baseName();
+
+        // ensure dest folder exists
+        auto destDir = QFileInfo(destFilePath).absoluteDir();
+        if (!destDir.exists()) {
+            if (!destDir.mkpath(".")) {
+                apxMsgW() << tr("Failed to create folder").append(':') << destDir.absolutePath();
+                break;
+            }
+        }
 
         rv = import.copy(destFilePath);
         if (!rv) {

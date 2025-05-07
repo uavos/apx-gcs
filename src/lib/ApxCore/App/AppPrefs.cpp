@@ -85,7 +85,7 @@ void AppPrefs::removeValue(const QString &name, const QString &path)
 {
     QSettings *sx = m_settings;
     int grp = 0;
-    foreach (const QString &s, path.split('/', Qt::SkipEmptyParts)) {
+    for (const auto s : path.split('/', Qt::SkipEmptyParts)) {
         sx->beginGroup(s);
         grp++;
     }
@@ -97,7 +97,7 @@ QVariant AppPrefs::loadValue(const QString &name, const QString &path, const QVa
 {
     QSettings *sx = m_settings;
     int grp = 0;
-    foreach (const QString &s, path.split('/', Qt::SkipEmptyParts)) {
+    for (const auto s : path.split('/', Qt::SkipEmptyParts)) {
         sx->beginGroup(s);
         grp++;
     }
@@ -131,7 +131,7 @@ QVariant AppPrefs::loadValue(const QString &name, const QString &path, const QVa
 QStringList AppPrefs::allKeys(const QString &path)
 {
     int grp = 0;
-    foreach (const QString &s, path.split('/', Qt::SkipEmptyParts)) {
+    for (const auto s : path.split('/', Qt::SkipEmptyParts)) {
         m_settings->beginGroup(s);
         grp++;
     }

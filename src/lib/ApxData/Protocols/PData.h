@@ -42,7 +42,7 @@ public slots:
     virtual void sendValue(mandala::uid_t uid, QVariant value) { _nimp(__FUNCTION__); }
 
     virtual void sendBundle(mandala::uid_t uid, QByteArray data) { _nimp(__FUNCTION__); }
-    virtual void requestScript(QString func) { _nimp(__FUNCTION__); }
+    virtual void requestScript(QString func, QVariant arg = {}) { _nimp(__FUNCTION__); }
     virtual void sendSerial(quint8 portID, QByteArray data) { _nimp(__FUNCTION__); }
 
 signals:

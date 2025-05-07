@@ -80,7 +80,7 @@ UnitMission::UnitMission(Unit *parent)
     f_taxiways = new Taxiways(this, "tw", tr("Taxiways"), "", unit->f_mandala->fact("cmd.proc.wp"));
     f_areas = new Areas(this, "area", tr("Area"), tr("Airspace definitions"));
 
-    foreach (MissionGroup *group, groups) {
+    for (auto group : groups) {
         connect(group, &Fact::sizeChanged, this, &UnitMission::updateSize, Qt::QueuedConnection);
     }
 
@@ -111,7 +111,7 @@ UnitMission::UnitMission(Unit *parent)
 
     //App::jsync(f_tools);
 
-    foreach (FactBase *a, actions()) {
+    for (auto a : actions()) {
         connect(static_cast<Fact *>(a), &Fact::enabledChanged, this, &UnitMission::actionsUpdated);
     }
 
@@ -195,7 +195,7 @@ void UnitMission::updateSize()
     if (blockSizeUpdate)
         return;
     int cnt = 0;
-    foreach (MissionGroup *group, groups) {
+    for (auto group : groups) {
         cnt += group->size();
     }
     setMissionSize(cnt);
@@ -223,7 +223,7 @@ void UnitMission::updateStartPath()
 QGeoRectangle UnitMission::boundingGeoRectangle() const
 {
     QGeoRectangle r;
-    foreach (MissionGroup *group, groups) {
+    for (auto group : groups) {
         for (int i = 0; i < group->size(); ++i) {
             QGeoRectangle re = static_cast<MissionItem *>(group->child(i))->boundingGeoRectangle();
             r = r.isValid() ? r.united(re) : re;
@@ -238,7 +238,7 @@ void UnitMission::clearMission()
     setSite("");
     setMissionSize(0);
     blockSizeUpdate = true;
-    foreach (MissionGroup *group, groups) {
+    for (auto group : groups) {
         group->f_clear->trigger();
     }
     blockSizeUpdate = false;
@@ -326,7 +326,7 @@ void UnitMission::fromJson(const QJsonValue &jsv)
 
 void UnitMission::hashData(QCryptographicHash *h) const
 {
-    foreach (MissionGroup *group, groups) {
+    for (auto group : groups) {
         group->hashData(h);
     }
 }

@@ -122,14 +122,17 @@ void PApxData::sendBundle(mandala::uid_t uid, QByteArray data)
     _req.send();
 }
 
-void PApxData::requestScript(QString func)
+void PApxData::requestScript(QString func, QVariant arg)
 {
     func = func.simplified().trimmed();
     if (func.isEmpty())
         return;
     _req.request(xbus::cmd::aux::vmexec);
-    _req.append(func.toUtf8());
+    _req.write_string(func.toUtf8().constData());
     trace()->block(func);
+    if (!arg.isNull()) {
+        _req << (uint32_t) arg.toUInt();
+    }
     _req.send();
 }
 

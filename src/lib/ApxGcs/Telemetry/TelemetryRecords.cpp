@@ -122,12 +122,12 @@ void TelemetryRecords::updateStatus()
 
 void TelemetryRecords::dbRequestRecordsList()
 {
-    // subscribe to update list next time on ochanges
+    // subscribe to update list next time on changes
     connect(Database::instance()->storage,
             &DatabaseSession::modified,
             this,
             &TelemetryRecords::dbRequestRecordsList,
-            Qt::QueuedConnection);
+            Qt::UniqueConnection);
 
     QStringList fields = {"unitName", "unitType", "confName", "notes", "file"};
     auto extra_filter = f_restore->value().toBool() ? "" : QString("trash IS NULL");

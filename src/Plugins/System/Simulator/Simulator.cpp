@@ -139,7 +139,7 @@ void Simulator::detectXplane()
             break;
     }
 
-    foreach (QFileInfo fi, files) {
+    for (const auto &fi : files) {
         QString s = fi.baseName();
         int ver = 0;
         QString sv = s.split('_').last();

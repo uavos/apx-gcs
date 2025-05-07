@@ -181,13 +181,13 @@ bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
         rv = true;
     }
 
-    foreach (QString directoryName, originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+    for (const auto directoryName : originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         QString destinationPath = destinationDir + "/" + directoryName;
         //destinationDirectory.mkpath(directoryName);
         copyPath(sourceDir + "/" + directoryName, destinationPath);
     }
 
-    foreach (QString fileName, originDirectory.entryList(QDir::Files)) {
+    for (const auto fileName : originDirectory.entryList(QDir::Files)) {
         QFileInfo dest(destinationDir + "/" + fileName);
         QFileInfo src(sourceDir + "/" + fileName);
         if (dest.exists()) {

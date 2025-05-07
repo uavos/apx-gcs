@@ -108,7 +108,7 @@ void ServosForm::do_find(void)
 
 void ServosForm::sendVolz(uint cmd, uint id, uint arg)
 {
-    QByteArray pack;
+    QByteArray pack(256, '\0');
     pack[0] = cmd;
     pack[1] = id;
     pack[2] = (arg >> 8) & 0xFF;
@@ -136,7 +136,7 @@ void ServosForm::sendVolz(uint cmd, uint id, uint arg)
 void ServosForm::sendFutabaAddr(uint servoID, uint newAddr)
 {
     qInfo() << QString("SBUS ADDR %1-%2: %3").arg(servoID >> 16).arg(servoID & 0xFFFF).arg(newAddr);
-    QByteArray pack;
+    QByteArray pack(256, '\0');
     pack[0] = 0xF9;
     pack[1] = newAddr - 1;
     pack[2] = servoID >> 16 & 0xFF;

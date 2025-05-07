@@ -316,15 +316,14 @@ void AppUpdateChecker::hdutilFinished(int exitCode, QProcess::ExitStatus exitSta
     auto fromDir = mountPath;
     auto toDir = appDir.absolutePath();
 
-    QDirIterator it(fromDir, QDirIterator::Subdirectories);
+    QDirIterator it(fromDir,
+                    QDir::Dirs | QDir::Files | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
     QDir dir(fromDir);
     const int absSourcePathLength = dir.absoluteFilePath(fromDir).length();
     while (it.hasNext()) {
         it.next();
         const auto fileInfo = it.fileInfo();
-
-        if (fileInfo.isHidden())
-            continue; //filters dot and dotdot
 
         const QString subPathStructure = fileInfo.absoluteFilePath().mid(absSourcePathLength);
         const QString constructedAbsolutePath = toDir + subPathStructure;

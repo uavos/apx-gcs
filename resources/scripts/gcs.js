@@ -59,8 +59,8 @@ function serial(p, v) {
 }
 serial.info = "send data v to serial port ID p";
 
-function vmexec(f) {
-    apx.fleet.current.requestScript(f);
+function vmexec(f, arg) {
+    apx.fleet.current.requestScript(f, arg);
 }
 vmexec.info = "execute function of onboard scripts";
 
