@@ -78,8 +78,8 @@ public:
     void setElevation(double v);
 
     // ===== Analyze elevation route =====
-    // static constexpr int TERRAIN_STEP = 10;
-    static constexpr int TERRAIN_STEP = 15;
+    static constexpr int TERRAIN_STEP = 30;
+    // static constexpr int TERRAIN_STEP = 15;
 
 protected:
     QGeoPath m_geoPath;
