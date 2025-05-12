@@ -669,8 +669,8 @@ void Waypoint::checkCollision()
     if (!amsl)
         alt += startHmsl;
 
-    double eps = 0.001; // limit  - 1 mm
-    auto tan = static_cast<double>(alt - prevAlt) / dst;
+    double eps = 0.01; // limit  - 0.01 m
+    double tan = static_cast<double>((alt - prevAlt) / m_terrainProfile.last().x());
     for (const auto &tp : m_terrainProfile) {
         double k = !prevWp ? (tp.x() / dst): 1; // proportional increase in safe AGL for the first point
         auto safeHeight = tp.y() + UNSAFE_AGL * k;
@@ -680,7 +680,6 @@ void Waypoint::checkCollision()
             return;
         }
     }
-
     setCollision(false);
 }
 
@@ -757,9 +756,23 @@ void Waypoint::insertNewPoints()
 {
     QList<QGeoCoordinate> result = m_pointsWatcher.result();
     int wpIndex = indexInParent();
+    Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
+    auto prevCoordinate = prevWp->coordinate();
+
     for (int i = result.size() - 1; i >= 0; i--) {
         auto point = result[i];
-        auto wpHmsl = point.altitude() + UNSAFE_AGL;
+        int wpHmsl = std::ceil(point.altitude());
+        if(i == 0) {
+            // Check if first point equal prev waypoint
+            auto latDiff = std::abs(result[i].latitude() - prevCoordinate.latitude());
+            auto lonDiff = std::abs(result[i].longitude() - prevCoordinate.longitude());
+            if (latDiff <= EPS && lonDiff <= EPS) {
+                prevWp->f_amsl->setValue(true);
+                prevWp->f_altitude->setValue(wpHmsl);
+                return;
+            }
+        }
+
         Waypoint *wp = static_cast<Waypoint *>(group->insertObject(point, wpIndex));
         wp->f_amsl->setValue(true);
         wp->f_altitude->setValue(wpHmsl);
@@ -771,12 +784,10 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
                                                       int hFirst,
                                                       int hLast)
 {
-    QList<int> indexes;
-    int count = 0;
+    int count{0};
     int pathSize = path.size();
     bool hasCollision = true;
-    indexes = {0, pathSize - 1};
-    // const int unsafe_agl = UNSAFE_AGL; // mb add passed parameter?
+    QList<int> indexes{0, pathSize - 1};
 
     // Start build terrain profile
     while (hasCollision && count < pathSize) {
@@ -823,10 +834,66 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
         count++;
     }
 
-    // Create list with new points
+    // Find the first point of a straight section of a path
+    int linesFirstIndex{-1};
+    const double epsAz = 0.001;
+    auto lastPoint = path.coordinateAt(pathSize - 1);
+    for (int i = 0; i < path.size() - 1; i++) {
+        auto point = path.coordinateAt(i);
+        auto nextPoint = path.coordinateAt(i + 1);
+        auto az = point.azimuthTo(lastPoint);
+        auto nextAz = nextPoint.azimuthTo(lastPoint);
+        if(linesFirstIndex >= 0)
+            break;
+        if (std::abs(az - nextAz) < epsAz)
+            linesFirstIndex = i + 1;
+    }
+
     QList<QGeoCoordinate> newPoints;
-    for (int i = 1; i < indexes.size() - 1; i++)
-        newPoints.append(path.coordinateAt(indexes[i]));
+    
+    // Check points less lineFirstIndex
+    auto alt4Correct = path.coordinateAt(linesFirstIndex).altitude();
+    for (int i = 1; i < indexes.size() - 1; i++) {
+        if (linesFirstIndex <= 0)
+            break;
+
+        // If the point belongs to a straight section
+        if (linesFirstIndex < indexes[i])
+            continue;
+
+        // Find max terrain elevation on the interval
+        for (int j = 0; j < linesFirstIndex; j++) {
+            auto alt = path.coordinateAt(j).altitude();
+            alt4Correct = std::max(alt4Correct, alt);
+        }
+
+        // First point for altitude correction append
+        if (newPoints.size() == 0) {
+            newPoints.append(path.coordinateAt(0));
+    }
+
+    // Add second point for correction
+    if (newPoints.size() != 0) {
+        auto point = path.coordinateAt(linesFirstIndex);
+        alt4Correct += UNSAFE_AGL;
+        point.setAltitude(alt4Correct);
+        newPoints.append(point);
+        if (hFirst < alt4Correct) {
+            newPoints[0].setAltitude(alt4Correct);
+        } else {
+            newPoints[0].setAltitude(hFirst);
+        }
+    }
+
+    // Add new points
+    for (int i = 1; i < indexes.size() - 1; i++) {
+        if (indexes[i] <= linesFirstIndex)
+            continue;
+        auto point = path.coordinateAt(indexes[i]);
+        auto newAlt = point.altitude() + UNSAFE_AGL;
+        point.setAltitude(newAlt);
+        newPoints.append(point);
+    }
 
     promise.addResult(newPoints);
 }
