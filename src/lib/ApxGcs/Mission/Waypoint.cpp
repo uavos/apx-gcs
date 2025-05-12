@@ -861,15 +861,25 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
         if (linesFirstIndex < indexes[i])
             continue;
 
-        // Find max terrain elevation on the interval
-        for (int j = 0; j < linesFirstIndex; j++) {
-            auto alt = path.coordinateAt(j).altitude();
-            alt4Correct = std::max(alt4Correct, alt);
-        }
-
         // First point for altitude correction append
+        // and max terrain elevation on the interval
         if (newPoints.size() == 0) {
             newPoints.append(path.coordinateAt(0));
+            for (int j = 0; j < linesFirstIndex; j++) {
+                auto alt = path.coordinateAt(j).altitude();
+                alt4Correct = std::max(alt4Correct, alt);
+            }
+        }
+
+        // Correct first point altitude if needed
+        if (indexes[i] < linesFirstIndex && linesFirstIndex < indexes[i + 1]) {
+            auto alt1 = path.coordinateAt(indexes[i]).altitude();
+            auto alt2 = path.coordinateAt(indexes[i+1]).altitude();
+            auto dst = path.length(indexes[i], indexes[i + 1]);
+            auto indexDst = path.length(indexes[i], linesFirstIndex);
+            auto altCorrection = alt1 + (alt1 - alt2) * indexDst / dst;
+            alt4Correct = std::max(alt4Correct, altCorrection);
+        }
     }
 
     // Add second point for correction
