@@ -40,7 +40,10 @@ Repeater {
             ChartView {
                 id: elevationProfile
                 anchors.fill: parent
-                plotArea: Qt.rect(x, y, width, height)
+                anchors.margins: -10
+                anchors.leftMargin: -11 // -1 is the bias for bad positioning
+
+                // plotArea: Qt.rect(x, y, width, height)
                 backgroundColor: "transparent"
                 legend.visible: false
                 antialiasing: true
