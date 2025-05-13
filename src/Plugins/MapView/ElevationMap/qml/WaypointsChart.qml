@@ -15,6 +15,9 @@ Repeater {
     delegate: Item {
         required property var modelData
         required property var index
+
+        z: ma.containsMouse ? 1 : 0
+
         // Waypoints
         Item { 
             id: wpItem
@@ -52,13 +55,13 @@ Repeater {
             }
             Rectangle {
                 id: chartPoint
-                height: 16
+                height: 18
                 width: height
                 x: -width/2
                 y: -height/2
                 radius: height/8
                 color: wpItem.alarmOn ? "#ffdead" : "yellow"
-                border.color: wpItem.alarmOn ? "red" : "transparent"
+                border.color: wpItem.alarmOn ? "red" : "#40000000"
                 border.width: 1
                 Text {
                     anchors.centerIn: parent
@@ -68,7 +71,9 @@ Repeater {
                     font.bold: true
                 }
                 MouseArea {
+                    id: ma
                     anchors.fill: parent
+                    hoverEnabled: true
                     onClicked: modelData.trigger()
                 }
             }
