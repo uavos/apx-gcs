@@ -655,7 +655,7 @@ void Waypoint::checkCollision()
     }
 
     // Checking points on top of each other
-    auto dst = distance();
+    auto dst = m_terrainProfile.last().x();
     if (dst == 0) {
         bool prevCollision = prevWp ? (prevWp->f_agl->value().toInt() < UNSAFE_AGL) : false;
         bool currentCollision = (f_agl->value().toInt() < UNSAFE_AGL);
@@ -669,13 +669,20 @@ void Waypoint::checkCollision()
     if (!amsl)
         alt += startHmsl;
 
-    double eps = 0.01; // limit  - 0.01 m
-    double tan = static_cast<double>((alt - prevAlt) / m_terrainProfile.last().x());
+    // double tan = static_cast<double>((alt - prevAlt) / m_terrainProfile.last().x());
+    double tan = static_cast<double>((alt - prevAlt) / dst);
     for (const auto &tp : m_terrainProfile) {
         double k = !prevWp ? (tp.x() / dst): 1; // proportional increase in safe AGL for the first point
         auto safeHeight = tp.y() + UNSAFE_AGL * k;
         auto routeHeight = prevAlt + tp.x() * tan;
-        if (safeHeight - routeHeight > eps) {
+        auto diff = std::abs(safeHeight - routeHeight);
+        if (routeHeight < safeHeight && ALT_EPS < diff) {
+            // apxMsgW() << "N" << f_order->value().toInt() << " Check routeHeight < safeHeight :" << routeHeight << "<" << safeHeight;
+
+            // apxMsgW() << "N" << f_order->value().toInt()
+            //               << ". Collision check coordinate-alt-prevAlt-tan-dst: " << coordinate()
+            //               << "-" << alt << "-" << prevAlt << "-" << tan << "-" << dst;
+
             setCollision(true);
             return;
         }
@@ -794,6 +801,8 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
 
     // Start build terrain profile
     while (hasCollision && count < pathSize) {
+        // apxMsgW() << "================ Iteration " << count + 1 << " start ================";
+
         hasCollision = false;
         QList<int> tmp;
         for (int i = 0; i < indexes.size() - 1; i++) {
@@ -809,6 +818,11 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
             auto dst = path.length(begin, end);
             auto tan = static_cast<double>(h2 - h1) / dst;
 
+
+            // ====== Debug =====
+            // apxMsgW() << "N" << i+1 << "correct coordinate-alt-prevAlt-tan-dst: " << last << "-"
+            //           << h2 << "-" << h1 << "-" << tan << "-" << dst;
+
             // Check intermediate points
             int unsafeIndex{-1};
             double unsafeHeightDiff{0};
@@ -819,10 +833,9 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
                 auto safeHeight = pointElevation + UNSAFE_AGL;
 
                 // Check safe AGL
-                if (routeHeight < safeHeight)
-                {
+                double diff = std::abs(safeHeight - routeHeight);
+                if (routeHeight < safeHeight && ALT_EPS < diff) {
                     hasCollision = true;
-                    double diff = safeHeight - routeHeight;
                     if (unsafeHeightDiff < diff) {
                         unsafeHeightDiff = diff;
                         unsafeIndex = j;
@@ -835,6 +848,8 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
         indexes.append(tmp);
         std::sort(indexes.begin(), indexes.end());
         count++;
+
+        // apxMsgW() << "Iteration " << count << " end, indexes size=" << indexes.size() << ", hasCollision=" << hasCollision;
     }
 
     // Find the first point of a straight section of a path
@@ -880,8 +895,11 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
             auto alt2 = path.coordinateAt(indexes[i+1]).altitude();
             auto dst = path.length(indexes[i], indexes[i + 1]);
             auto indexDst = path.length(indexes[i], linesFirstIndex);
-            auto altCorrection = alt1 + (alt1 - alt2) * indexDst / dst;
+            auto altCorrection = alt1 + (alt2 - alt1) * indexDst / dst;
             alt4Correct = std::max(alt4Correct, altCorrection);
+
+            // apxMsgW() << "First line correction dst-indexDst-tg-altCorection" << dst << "-"
+            //           << indexDst << "-" << ((alt1 - alt2) / dst) << "-" << altCorrection;
         }
     }
 

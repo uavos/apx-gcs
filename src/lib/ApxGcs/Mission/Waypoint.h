@@ -55,6 +55,8 @@ public:
 
     explicit Waypoint(MissionGroup *parent);
 
+    static constexpr double ALT_EPS = 0.1;
+    
     Fact *f_altitude;
     Fact *f_amsl;
     Fact *f_agl;
