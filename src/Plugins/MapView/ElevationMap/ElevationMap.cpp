@@ -200,6 +200,39 @@ void ElevationMap::correctUnsafePaths()
             continue;
         wp->correctPath();
     }
+
+    // // Insert using waypoints coordinates
+    // auto m = mission();
+    // auto waypoints = m->f_waypoints;
+    // if (!waypoints)
+    //     return;
+
+    // QList<QGeoCoordinate> coordinates;
+    // for (int i = 0; i < waypoints->size(); ++i) {
+    //     auto wp = static_cast<Waypoint *>(waypoints->child(i));
+    //     if (!wp)
+    //         continue;
+    //     coordinates.append(wp->coordinate());
+    // }
+
+    // for (int i = 0; i < coordinates.size(); ++i) {
+    //     waypoints = m->f_waypoints;
+    //     if (!waypoints)
+    //         return;
+    //     for (int j = 0; j < waypoints->size(); ++j) {
+    //         auto wp = static_cast<Waypoint *>(waypoints->child(j));
+    //         if (!wp)
+    //             continue;
+    //         if(coordinates[i] == wp->coordinate()) {
+    //             apxMsgW() << "N" << i << ". Coordinate=" << coordinates[i];
+    //             wp->correctPath();
+    //             QEventLoop loop;
+    //             QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+    //             connect(wp, &Waypoint::correctionCompleted, &loop, &QEventLoop::quit);
+    //             loop.exec();
+    //         }
+    //     }
+    // }
 }
 
 void ElevationMap::changeExternalsVisibility()

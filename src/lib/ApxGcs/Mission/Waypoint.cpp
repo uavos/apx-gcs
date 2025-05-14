@@ -777,7 +777,10 @@ void Waypoint::insertNewPoints()
         wp->f_amsl->setValue(true);
         wp->f_altitude->setValue(wpHmsl);
     }
- }
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, &QEventLoop::quit);
+    loop.exec();
+}
 
 void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
                                                       const QGeoPath &path,
