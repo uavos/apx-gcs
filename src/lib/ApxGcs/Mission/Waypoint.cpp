@@ -116,7 +116,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_actions, &Fact::valueChanged, this, &Waypoint::updateDescr);
     updateDescr();
 
-    connect(f_correct, &Fact::triggered, this, &Waypoint::correctPath);
+    connect(f_correct, &Fact::triggered, this, [this](){ correctPath(); });
 
     App::jsync(this);
 }
@@ -721,10 +721,18 @@ void Waypoint::updateTerrainInfo()
 }
 
 // ===== New functionality ======
-void Waypoint::correctPath()
+void Waypoint::correctPath(bool reply)
 {
-    if (!m_collision)
+    if (m_reply != reply)
+        m_reply = reply;
+
+    if (!m_collision) {
+        if(!m_reply)
+            return;
+        auto index = indexInParent();
+        emit responseCorrectPath(QList<QGeoCoordinate>(), index);
         return;
+    }
 
     // Correct point altitude 
     auto alt = f_altitude->value().toInt();
@@ -735,8 +743,13 @@ void Waypoint::correctPath()
     }
 
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
-    if (!prevWp)
+    if (!prevWp) {
+        if (!m_reply)
+            return;
+        auto index = indexInParent();      
+        emit responseCorrectPath(QList<QGeoCoordinate>(), index);
         return;
+    }
 
     auto amsl = f_amsl->value().toBool();
     if(!amsl)
@@ -762,6 +775,13 @@ void Waypoint::correctPath()
 void Waypoint::insertNewPoints()
 {
     QList<QGeoCoordinate> result = m_pointsWatcher.result();
+    if(m_reply) {
+        m_reply = false; 
+        auto index = indexInParent();
+        emit responseCorrectPath(result, index);
+        return;
+    }
+
     int wpIndex = indexInParent();
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     auto prevCoordinate = prevWp->coordinate();

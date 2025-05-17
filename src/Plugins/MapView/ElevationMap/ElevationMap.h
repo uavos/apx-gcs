@@ -81,6 +81,8 @@ public:
     static constexpr int TERRAIN_STEP = 30;
     // static constexpr int TERRAIN_STEP = 15;
 
+    void getCorrectPathResponse(QList<QGeoCoordinate> v, int index);
+
 protected:
     QGeoPath m_geoPath;
     QGeoCoordinate m_coordinate;
@@ -88,6 +90,7 @@ protected:
 
 private:
     QSharedPointer<AbstractElevationDB> m_elevationDB;
+    QMap<int, QList<QGeoCoordinate>> m_correction;
     QMap<QString, int> m_waypoints;
     QSet<QString> m_runways;
     QSet<QString> m_pois;
@@ -106,11 +109,12 @@ private slots:
     void updateMission();
     void updateRefPoint();
     void setMissionAgl();
-    void correctUnsafePaths();
     void getPluginEnableControl();
     void changeExternalsVisibility();
     void setStartPointElevation();
     void updateDBUtility();
+    void correctUnsafePaths();
+    void insertMissionWaypoints();
 
 signals:
     void coordinateChanged(QGeoCoordinate coordinate);

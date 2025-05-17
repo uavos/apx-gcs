@@ -191,50 +191,6 @@ void ElevationMap::setMissionAgl()
     }
 }
 
-void ElevationMap::correctUnsafePaths()
-{
-    auto m = mission();
-    for (int i = 0; i < m->f_waypoints->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
-        if (!wp)
-            continue;
-        wp->correctPath();
-    }
-
-    // // Insert using waypoints coordinates
-    // auto m = mission();
-    // auto waypoints = m->f_waypoints;
-    // if (!waypoints)
-    //     return;
-
-    // QList<QGeoCoordinate> coordinates;
-    // for (int i = 0; i < waypoints->size(); ++i) {
-    //     auto wp = static_cast<Waypoint *>(waypoints->child(i));
-    //     if (!wp)
-    //         continue;
-    //     coordinates.append(wp->coordinate());
-    // }
-
-    // for (int i = 0; i < coordinates.size(); ++i) {
-    //     waypoints = m->f_waypoints;
-    //     if (!waypoints)
-    //         return;
-    //     for (int j = 0; j < waypoints->size(); ++j) {
-    //         auto wp = static_cast<Waypoint *>(waypoints->child(j));
-    //         if (!wp)
-    //             continue;
-    //         if(coordinates[i] == wp->coordinate()) {
-    //             apxMsgW() << "N" << i << ". Coordinate=" << coordinates[i];
-    //             wp->correctPath();
-    //             QEventLoop loop;
-    //             QTimer::singleShot(3000, &loop, &QEventLoop::quit);
-    //             connect(wp, &Waypoint::correctionCompleted, &loop, &QEventLoop::quit);
-    //             loop.exec();
-    //         }
-    //     }
-    // }
-}
-
 void ElevationMap::changeExternalsVisibility()
 {
     bool useValue{false};
@@ -326,8 +282,9 @@ void ElevationMap::setWaypointsValues(bool b)
         connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
         connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile, Qt::UniqueConnection);
         connect(this, &ElevationMap::geoPathChanged, wp, &Waypoint::buildTerrainProfile, Qt::UniqueConnection);
+        connect(wp, &Waypoint::responseCorrectPath, this, &ElevationMap::getCorrectPathResponse, Qt::UniqueConnection);
         // For start point height update
-        if(m->f_runways->size() > 0) {
+        if (m->f_runways->size() > 0) {
             auto rw0 = static_cast<Runway *>(m->f_runways->child(0));
             auto rw0Hmsl = rw0->f_hmsl;
             connect(rw0, &Runway::elevationChanged, wp, &Waypoint::updateAgl, Qt::UniqueConnection);
@@ -365,7 +322,6 @@ void ElevationMap::setRunwaysValues(bool b) {
 }
 
 void ElevationMap::setPoisValues(bool b) {
-    
     auto m = mission();
     QSet<QString> tempSet;
     for (int i = 0; i < m->f_pois->size(); ++i) {
@@ -443,4 +399,36 @@ double ElevationMap::getRefPointHmsl()
         return refPointHmsl;
     refPointHmsl = f_refHmsl->value().toDouble();
     return refPointHmsl;
+}
+
+// Correct unsafe paths funtionality
+void ElevationMap::correctUnsafePaths()
+{
+    m_correction.clear();
+    auto m = mission();
+    for (int i = 0; i < m->f_waypoints->size(); i++) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        if (!wp)
+            continue;
+        wp->correctPath(true);
+    }
+}
+
+void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index) {
+    auto m = mission();
+    m_correction.insert(index, v);
+    if (m_correction.size() != m->f_waypoints->size())
+        return;
+    insertMissionWaypoints();
+}
+
+void ElevationMap::insertMissionWaypoints()
+{
+    auto m = mission();
+    for (int i = 0; i < m->f_waypoints->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        // TODO correction logic
+    }
+    m_correction.clear();
+    return;
 }

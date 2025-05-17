@@ -88,6 +88,7 @@ private:
     QString _altUnits;
     double m_terrainProfileMin{0};
     double m_terrainProfileMax{200};
+    bool m_reply{false};
 
 private slots:
     double getStartHMSL();
@@ -115,7 +116,7 @@ public slots:
     void checkCollision();
 
     // New functionality
-    void correctPath();
+    void correctPath(bool reply = false);
 
     //---------------------------------------
     // PROPERTIES
@@ -154,6 +155,7 @@ protected:
 
 signals:
     void requestTerrainProfile(QGeoPath v);
+    void responseCorrectPath(QList<QGeoCoordinate> v, int index);
     void minHeightChanged();
     void maxHeightChanged();
     void reachableChanged();
