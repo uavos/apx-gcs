@@ -425,10 +425,52 @@ void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index) {
 void ElevationMap::insertMissionWaypoints()
 {
     auto m = mission();
+    QJsonArray jsa;
+    QJsonObject jso;
+    QList<QGeoCoordinate> newWps;
     for (int i = 0; i < m->f_waypoints->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
-        // TODO correction logic
+        
+        // Add first point
+        if (i == 0) {
+            jsa.append(wp->toJson());
+            continue;
+        }
+
+        if(!m_correction.contains(i)) {
+            jsa.append(wp->toJson());
+            continue;
+        }
+        
+        // Append new waypoints 
+        newWps = m_correction[i];
+        auto prevWp = static_cast<Waypoint *>(m->f_waypoints->child(i-1));
+        auto prevCoordinate = prevWp->coordinate();
+        for (int j = 0; j < newWps.size(); ++j) {
+            if (j == 0) {
+                // Check if first point equal prev waypoint
+                auto latDiff = std::abs(newWps[j].latitude() - prevCoordinate.latitude());
+                auto lonDiff = std::abs(newWps[j].longitude() - prevCoordinate.longitude());
+                if (latDiff <= DBL_EPSILON && lonDiff <= DBL_EPSILON) {
+                    prevWp->f_amsl->setValue(true);
+                    prevWp->f_altitude->setValue(newWps[j].altitude());
+                    jsa.removeLast();
+                    jsa.append(prevWp->toJson());
+                    continue;
+                }
+            }
+            // Append new point
+            jso[wp->f_amsl->name()] = true;
+            jso[wp->f_altitude->name()] = static_cast<int>(newWps[j].altitude());
+            jso[wp->f_latitude->name()] = newWps[j].latitude();
+            jso[wp->f_longitude->name()] = newWps[j].longitude();
+            jsa.append(jso);
+        }
+        // Append current waypoint
+        jsa.append(wp->toJson());
     }
+
+    m->f_waypoints->fromJson(jsa);
     m_correction.clear();
     return;
 }
