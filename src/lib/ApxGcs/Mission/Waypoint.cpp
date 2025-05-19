@@ -65,7 +65,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     f_correct = new MissionField(this,
                                  "correct",
                                  tr("Path correction"),
-                                 tr("Correcting unsafe path points"),
+                                 tr("Correct unsafe path's points"),
                                  CloseOnTrigger);
     f_correct->setVisible(false);
 

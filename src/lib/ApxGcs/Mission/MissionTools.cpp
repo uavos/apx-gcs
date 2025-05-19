@@ -96,8 +96,8 @@ MissionTools::MissionTools(UnitMission *mission, Flags flags)
 
     f_pathsCorrect = new Fact(this,
                               "pathscorrect",
-                              tr("Paths correction"),
-                              tr("Correct paths with ansafe agl"),
+                              tr("Mission correction"),
+                              tr("Correct paths with unsafe agl"),
                               CloseOnTrigger,
                               "puzzle-edit-outline");
     f_pathsCorrect->setVisible(false);
