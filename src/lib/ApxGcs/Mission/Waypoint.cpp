@@ -58,10 +58,10 @@ Waypoint::Waypoint(MissionGroup *parent)
 
     f_xtrack = new MissionField(this, "xtrack", tr("Line tracking"), tr("Maintain path track"), Bool);
 
-    //actions
+    // Actions
     f_actions = new WaypointActions(this);
 
-    // correct rout for elevationmap plugin
+    // Correct rout for elevationmap plugin
     f_correct = new MissionField(this,
                                  "correct",
                                  tr("Path correction"),
@@ -69,7 +69,7 @@ Waypoint::Waypoint(MissionGroup *parent)
                                  CloseOnTrigger);
     f_correct->setVisible(false);
 
-    //default values
+    // Default values
     Waypoint *f0 = static_cast<Waypoint *>(prevItem());
     if (f0)
         f_altitude->setValue(f0->f_altitude->value());
@@ -87,9 +87,8 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
     connect(f_altitude, &Fact::optsChanged, this, &Waypoint::processAglFt);
     connect(f_agl, &Fact::optsChanged, this, [this]() {if (this->chosen() == AGL) calcAltitudeFt();});
-    // Add feets options end
 
-    // elevation map and agl
+    // Elevation map and agl
     connect(f_altitude, &Fact::valueChanged, this, [this]() { if (this->chosen() == ALT) processAgl();});
     connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
     connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude);
@@ -183,10 +182,10 @@ QJsonValue Waypoint::toJson()
 {
     auto jso = MissionItem::toJson().toObject();
 
-    // remove agl from oblect
+    // Remove agl from oblect
     jso.remove(f_agl->name());
 
-    // move all actions to object
+    // Move all actions to object
     auto jso_actions = jso.take("actions").toObject();
     for (auto it = jso_actions.begin(); it != jso_actions.end(); ++it) {
         jso.insert(it.key(), it.value());
@@ -228,7 +227,7 @@ void Waypoint::updateTitle()
         st.append("H");
     // st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
 
-    // For feets functionality
+    // Feets functionality
     if (m_isFeets) {
         QString ftUnits = f_amsl->value().toBool() ? "ft AMSL" : "ft";
         st.append(f_altitude->opts().value("ft", 0).toString() + ftUnits);
@@ -257,10 +256,8 @@ void Waypoint::updateAMSL()
 
     if (f_amsl->value().toBool()) {
         f_altitude->setUnits(QString("%1 %2").arg(_altUnits, tr("AMSL")));
-        // f_altitude->setValue(f_altitude->value().toInt() + href);
     } else {
         f_altitude->setUnits(_altUnits);
-        // f_altitude->setValue(f_altitude->value().toInt() - href);
     }
 }
 
@@ -643,6 +640,7 @@ void Waypoint::checkCollision()
     double prevAlt{0};
     auto startHmsl = getStartHMSL();
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
+    
     // Checking the first point
     if (prevWp) {
         prevAlt = prevWp->f_altitude->value().toInt();
@@ -688,7 +686,6 @@ double Waypoint::getStartHMSL()
     return group->mission->startElevation();
 }
 
-// This method needs to be refactored 
 void Waypoint::updateMinMaxHeight() 
 {
     bool amsl = f_amsl->value().toBool();
@@ -704,7 +701,7 @@ void Waypoint::updateMinMaxHeight()
 void Waypoint::updateTerrainInfo()
 {
     auto result = m_watcher.result();
-    // Rebuild geoPath
+    // Rebuild GeoPath
     m_terrainProfilePath = result.terrainProfilePath;
     m_terrainProfileMin = result.minHeight;
     m_terrainProfileMax = result.maxHeight;
@@ -713,7 +710,7 @@ void Waypoint::updateTerrainInfo()
     checkCollision();
 }
 
-// ===== New functionality ======
+// Waypoint path correction
 void Waypoint::correctPath(bool reply)
 {
     if (m_reply != reply)
@@ -814,8 +811,6 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
 
     // Start build terrain profile
     while (hasCollision && count < pathSize) {
-        // apxMsgW() << "================ Iteration " << count + 1 << " start ================";
-
         hasCollision = false;
         QList<int> tmp;
         for (int i = 0; i < indexes.size() - 1; i++) {
@@ -830,11 +825,6 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
             double h2 = end != (pathSize - 1) ? (last.altitude() + UNSAFE_AGL) : hLast;
             auto dst = path.length(begin, end);
             auto tan = static_cast<double>(h2 - h1) / dst;
-
-
-            // ====== Debug =====
-            // apxMsgW() << "N" << i+1 << "correct coordinate-alt-prevAlt-tan-dst: " << last << "-"
-            //           << h2 << "-" << h1 << "-" << tan << "-" << dst;
 
             // Check intermediate points
             int unsafeIndex{-1};
@@ -861,8 +851,6 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
         indexes.append(tmp);
         std::sort(indexes.begin(), indexes.end());
         count++;
-
-        // apxMsgW() << "Iteration " << count << " end, indexes size=" << indexes.size() << ", hasCollision=" << hasCollision;
     }
 
     // Find the first point of a straight section of a path
@@ -910,9 +898,6 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
             auto indexDst = path.length(indexes[i], linesFirstIndex);
             auto altCorrection = alt1 + (alt2 - alt1) * indexDst / dst;
             alt4Correct = std::max(alt4Correct, altCorrection);
-
-            // apxMsgW() << "First line correction dst-indexDst-tg-altCorection" << dst << "-"
-            //           << indexDst << "-" << ((alt1 - alt2) / dst) << "-" << altCorrection;
         }
     }
 
