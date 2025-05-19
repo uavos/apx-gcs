@@ -406,9 +406,13 @@ double ElevationMap::getRefPointHmsl()
     return refPointHmsl;
 }
 
-// Correct unsafe paths funtionality
+// Correct unsafe mission paths
 void ElevationMap::correctUnsafePaths()
 {
+    if (m_isCorrect)
+        return;
+
+    m_isCorrect = true;
     m_correction.clear();
     auto m = mission();
     QFuture<void> future = QtConcurrent::run([=]() {
@@ -443,6 +447,18 @@ void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index) {
 
 void ElevationMap::insertMissionWaypoints()
 {
+    // Check new insertion points
+    // 
+    for (auto k : m_correction.keys()) {
+        if (!m_correction.value(k).empty())
+            break;
+        if(k != m_correction.lastKey())
+            continue;
+        m_isCorrect = false;
+        return;
+    }
+
+    // Create new waypoints array
     auto m = mission();
     QJsonArray jsa;
     QJsonObject jso;
@@ -450,7 +466,7 @@ void ElevationMap::insertMissionWaypoints()
     for (int i = 0; i < m->f_waypoints->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
         
-        // Add first point
+        // Add first waypoint
         if (i == 0) {
             jsa.append(wp->toJson());
             continue;
@@ -491,5 +507,5 @@ void ElevationMap::insertMissionWaypoints()
 
     m->f_waypoints->fromJson(jsa);
     m_correction.clear();
-    return;
+    m_isCorrect = false;
 }

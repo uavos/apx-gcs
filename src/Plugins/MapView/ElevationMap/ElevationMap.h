@@ -94,6 +94,7 @@ private:
     QMap<QString, int> m_waypoints;
     QSet<QString> m_runways;
     QSet<QString> m_pois;
+    bool m_isCorrect{false};
 
     void createElevationDatabase();
     void setMissionValues(bool b);
