@@ -669,7 +669,6 @@ void Waypoint::checkCollision()
     if (!amsl)
         alt += startHmsl;
 
-    // double tan = static_cast<double>((alt - prevAlt) / m_terrainProfile.last().x());
     double tan = static_cast<double>((alt - prevAlt) / dst);
     for (const auto &tp : m_terrainProfile) {
         double k = !prevWp ? (tp.x() / dst): 1; // proportional increase in safe AGL for the first point
@@ -677,12 +676,6 @@ void Waypoint::checkCollision()
         auto routeHeight = prevAlt + tp.x() * tan;
         auto diff = std::abs(safeHeight - routeHeight);
         if (routeHeight < safeHeight && ALT_EPS < diff) {
-            // apxMsgW() << "N" << f_order->value().toInt() << " Check routeHeight < safeHeight :" << routeHeight << "<" << safeHeight;
-
-            // apxMsgW() << "N" << f_order->value().toInt()
-            //               << ". Collision check coordinate-alt-prevAlt-tan-dst: " << coordinate()
-            //               << "-" << alt << "-" << prevAlt << "-" << tan << "-" << dst;
-
             setCollision(true);
             return;
         }
@@ -803,10 +796,10 @@ void Waypoint::insertNewPoints()
         Waypoint *wp = static_cast<Waypoint *>(group->insertObject(point, wpIndex));
         wp->f_amsl->setValue(true);
         wp->f_altitude->setValue(wpHmsl);
+        QEventLoop loop;
+        QTimer::singleShot(100, &loop, &QEventLoop::quit);
+        loop.exec();
     }
-    QEventLoop loop;
-    QTimer::singleShot(5000, &loop, &QEventLoop::quit);
-    loop.exec();
 }
 
 void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
