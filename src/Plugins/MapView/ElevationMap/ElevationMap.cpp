@@ -32,6 +32,11 @@
 
 #include <QFileDialog>
 #include <QMap>
+#include <QtConcurrent>
+
+#include <atomic>
+
+static std::atomic<int> threads{0};
 
 ElevationMap::ElevationMap(Fact *parent)
     : Fact(parent,
@@ -40,7 +45,7 @@ ElevationMap::ElevationMap(Fact *parent)
            tr("Terrain elevation map"),
            Group | FlatModel,
            "elevation-rise")
-    , m_elevation(qQNaN())     
+    , m_elevation(qQNaN())
 {
     auto path = AppDirs::db().absolutePath() + "/Elevation";
 
@@ -406,15 +411,29 @@ void ElevationMap::correctUnsafePaths()
 {
     m_correction.clear();
     auto m = mission();
-    for (int i = 0; i < m->f_waypoints->size(); i++) {
-        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
-        if (!wp)
-            continue;
-        wp->correctPath(true);
-    }
+    QFuture<void> future = QtConcurrent::run([=]() {
+        auto num = QThread::idealThreadCount();
+        auto maxThreads = num > 2 ? num-2 : 1;
+        for (int i = 0; i < m->f_waypoints->size(); i++) {
+            // Check avaliable threads count
+            if (threads >= maxThreads) {
+                i--;
+                continue;
+            }
+            // Waypoint correction start
+            auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+            if (!wp)
+                continue;
+            wp->correctPath(true);
+            threads++;
+        }
+    });
 }
 
 void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index) {
+    if (threads > 0)
+        threads--;
+
     auto m = mission();
     m_correction.insert(index, v);
     if (m_correction.size() != m->f_waypoints->size())
