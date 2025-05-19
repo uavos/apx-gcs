@@ -28,6 +28,7 @@
 
 // Mission analyze
 #include <QPointF>
+#include <float.h>
 
 MissionItem::MissionItem(MissionGroup *parent,
                          const QString &name,
@@ -354,7 +355,7 @@ void MissionItem::extractElevation(const QGeoCoordinate &coordinate)
 {
     auto latDiff = std::abs(m_coordinate.latitude() - coordinate.latitude());
     auto lonDiff = std::abs(m_coordinate.longitude() - coordinate.longitude());
-    if(latDiff > EPS || lonDiff > EPS)
+    if (latDiff > DBL_EPSILON || lonDiff > DBL_EPSILON)
         return;    
     setElevation(coordinate.altitude());
 }

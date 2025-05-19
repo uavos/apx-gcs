@@ -783,7 +783,7 @@ void Waypoint::insertNewPoints()
             // Check if first point equal prev waypoint
             auto latDiff = std::abs(result[i].latitude() - prevCoordinate.latitude());
             auto lonDiff = std::abs(result[i].longitude() - prevCoordinate.longitude());
-            if (latDiff <= EPS && lonDiff <= EPS) {
+            if (latDiff <= DBL_EPSILON && lonDiff <= DBL_EPSILON) {
                 prevWp->f_amsl->setValue(true);
                 prevWp->f_altitude->setValue(wpHmsl);
                 return;
