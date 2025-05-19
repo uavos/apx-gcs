@@ -487,8 +487,10 @@ void ElevationMap::insertMissionWaypoints()
                 auto latDiff = std::abs(newWps[j].latitude() - prevCoordinate.latitude());
                 auto lonDiff = std::abs(newWps[j].longitude() - prevCoordinate.longitude());
                 if (latDiff <= DBL_EPSILON && lonDiff <= DBL_EPSILON) {
+                    auto prevAmsl = prevWp->f_amsl->value().toBool();
                     prevWp->f_amsl->setValue(true);
                     prevWp->f_altitude->setValue(newWps[j].altitude());
+                    prevWp->f_amsl->setValue(prevAmsl);
                     jsa.removeLast();
                     jsa.append(prevWp->toJson());
                     continue;
@@ -499,6 +501,8 @@ void ElevationMap::insertMissionWaypoints()
             jso[wp->f_altitude->name()] = static_cast<int>(newWps[j].altitude());
             jso[wp->f_latitude->name()] = newWps[j].latitude();
             jso[wp->f_longitude->name()] = newWps[j].longitude();
+            jso[wp->f_atrack->name()] = wp->f_atrack->value().toBool();
+            jso[wp->f_xtrack->name()] = wp->f_xtrack->value().toBool();
             jsa.append(jso);
         }
         // Append current waypoint

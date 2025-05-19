@@ -784,8 +784,10 @@ void Waypoint::insertNewPoints()
             auto latDiff = std::abs(result[i].latitude() - prevCoordinate.latitude());
             auto lonDiff = std::abs(result[i].longitude() - prevCoordinate.longitude());
             if (latDiff <= DBL_EPSILON && lonDiff <= DBL_EPSILON) {
+                auto prevAmsl = prevWp->f_amsl->value.toBool();
                 prevWp->f_amsl->setValue(true);
                 prevWp->f_altitude->setValue(wpHmsl);
+                prevWp->f_amsl->setValue(prevAmsl);
                 return;
             }
         }
@@ -793,6 +795,9 @@ void Waypoint::insertNewPoints()
         Waypoint *wp = static_cast<Waypoint *>(group->insertObject(point, wpIndex));
         wp->f_amsl->setValue(true);
         wp->f_altitude->setValue(wpHmsl);
+        wp->f_atrack->setValue(f_atrack->value());
+        wp->f_xtrack->setValue(f_xtrack->value());
+
         QEventLoop loop;
         QTimer::singleShot(100, &loop, &QEventLoop::quit);
         loop.exec();
