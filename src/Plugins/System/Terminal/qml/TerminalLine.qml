@@ -62,7 +62,6 @@ RowLayout {
 
     Label {
         Layout.fillWidth: true
-        focus: false
         color: control.color
         font: apx.font(lineSize,control.bold)
         wrapMode: Text.WrapAnywhere

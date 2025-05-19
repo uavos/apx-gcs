@@ -72,7 +72,7 @@ AppLog::~AppLog()
         appLogStream = nullptr;
     }
 
-    foreach (QTextStream *stream, streams.values()) {
+    for (QTextStream *stream : streams.values()) {
         stream->flush();
         stream->device()->close();
         delete stream;

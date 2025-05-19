@@ -142,8 +142,8 @@ void FactDelegateDialog::doSaveGeometry()
     sx.beginGroup("geometry");
     sx.setValue(objectName() + "_Geometry", saveGeometry());
     if (widget) {
-        foreach (QSplitter *w, widget->findChildren<QSplitter *>()) {
-            sx.setValue(objectName() + "_" + w->objectName() + "State", w->saveState());
+        for (auto i : widget->findChildren<QSplitter *>()) {
+            sx.setValue(objectName() + "_" + i->objectName() + "State", i->saveState());
         }
     }
 }
@@ -154,8 +154,8 @@ void FactDelegateDialog::doRestoreGeometry()
     sx.beginGroup("geometry");
     restoreGeometry(sx.value(objectName() + "_Geometry").toByteArray());
     if (widget) {
-        foreach (QSplitter *w, widget->findChildren<QSplitter *>()) {
-            w->restoreState(sx.value(objectName() + "_" + w->objectName() + "State").toByteArray());
+        for (auto i : widget->findChildren<QSplitter *>()) {
+            i->restoreState(sx.value(objectName() + "_" + i->objectName() + "State").toByteArray());
         }
     }
 }

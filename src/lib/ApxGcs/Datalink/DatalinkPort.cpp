@@ -313,11 +313,11 @@ void DatalinkPort::updateConnectionNetwork()
     const QMetaEnum &m = QMetaEnum::fromType<Datalink::NetworkMask>();
     QString v = f_routing->value().toString();
     quint16 rxNetwork = 0;
-    foreach (QString s, v.left(v.indexOf(':')).split(',', Qt::SkipEmptyParts)) {
+    for (const auto s : v.left(v.indexOf(':')).split(',', Qt::SkipEmptyParts)) {
         rxNetwork |= m.keyToValue(s.toUtf8());
     }
     quint16 txNetwork = 0;
-    foreach (QString s, v.mid(v.indexOf(':') + 1).split(',', Qt::SkipEmptyParts)) {
+    for (const auto s : v.mid(v.indexOf(':') + 1).split(',', Qt::SkipEmptyParts)) {
         txNetwork |= m.keyToValue(s.toUtf8());
     }
     f_connection->setRxNetwork(rxNetwork);
@@ -330,7 +330,7 @@ void DatalinkPort::syncUrlEnum()
     switch (f_type->value().toInt()) {
     case SERIAL: {
         st << "auto";
-        foreach (QSerialPortInfo spi, QSerialPortInfo::availablePorts()) {
+        for (const auto spi : QSerialPortInfo::availablePorts()) {
             if (st.contains(spi.portName()))
                 continue;
             st.append(spi.portName());

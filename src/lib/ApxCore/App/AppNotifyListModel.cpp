@@ -27,7 +27,11 @@ AppNotifyListModel::AppNotifyListModel(AppNotify *appNotify)
 {
     qRegisterMetaType<QtMsgType>("QtMsgType");
 
-    connect(appNotify, &AppNotify::notification, this, &AppNotifyListModel::notification);
+    connect(appNotify,
+            &AppNotify::notification,
+            this,
+            &AppNotifyListModel::notification,
+            Qt::QueuedConnection);
 }
 AppNotifyListModel::~AppNotifyListModel()
 {
@@ -84,6 +88,7 @@ void AppNotifyListModel::notification(QString msg,
 {
     if (msg.isEmpty())
         return;
+
     int row = rowCount();
     if (row > 1000) {
         beginRemoveRows(QModelIndex(), 0, 1);
@@ -91,6 +96,7 @@ void AppNotifyListModel::notification(QString msg,
         m_items.removeAt(0);
         endRemoveRows();
     }
+
     row = rowCount();
     beginInsertRows(QModelIndex(), row, row);
     NotifyListItem *item = new NotifyListItem;

@@ -127,10 +127,10 @@ bool DatalinkTcp::readHeader()
         return false;
     //header received
     const QStringList &hdr = data.hdr;
-    foreach (QString s, hdr) {
-        if (s.contains(':'))
-            data.hdr_hash.insert(s.left(s.indexOf(':')).trimmed().toLower(),
-                                 s.mid(s.indexOf(':') + 1).trimmed());
+    for (const auto i : hdr) {
+        if (i.contains(':'))
+            data.hdr_hash.insert(i.left(i.indexOf(':')).trimmed().toLower(),
+                                 i.mid(i.indexOf(':') + 1).trimmed());
     }
     // qDebug() << "hdr:" << hdr;
     if (!data.hdr.isEmpty())

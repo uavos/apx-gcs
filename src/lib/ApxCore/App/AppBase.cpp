@@ -71,7 +71,7 @@ AppBase::AppBase(int &argc, char **argv, const QString &name)
 
     // guess user name
     QString sname = "user";
-    foreach (QString s, QProcess::systemEnvironment()) {
+    for (auto s : QProcess::systemEnvironment()) {
         if (!s.startsWith("USER"))
             continue;
         s = s.mid(s.indexOf('=') + 1).trimmed();

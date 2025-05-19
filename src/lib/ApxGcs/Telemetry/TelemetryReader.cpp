@@ -66,6 +66,19 @@ void TelemetryReader::updateStatus()
 
 void TelemetryReader::loadRecord(quint64 id)
 {
+    if (_loadFileReq) {
+        _loadFileReq->discard();
+
+        _loadFileReq->disconnect();
+        _loadFileReq->reader()->disconnect();
+
+        _loadFileReq = nullptr;
+    }
+    QTimer::singleShot(0, this, [this, id]() { do_loadRecord(id); });
+}
+
+void TelemetryReader::do_loadRecord(quint64 id)
+{
     f_reload->setEnabled(false);
 
     setTotalSize(0);
@@ -113,6 +126,7 @@ void TelemetryReader::loadRecord(quint64 id)
     connect(reader, &TelemetryFileReader::jso, this, &TelemetryReader::do_rec_jso);
 
     // start parsing
+    _loadFileReq = req;
     emit rec_started();
     req->exec();
 }
@@ -216,6 +230,8 @@ void TelemetryReader::do_rec_finished()
     _geoPath = {};
     f_reload->setEnabled(true);
     setProgress(-1);
+
+    _loadFileReq = nullptr;
 }
 
 void TelemetryReader::setRecordInfo(quint64 id, QJsonObject info, QString notes)
@@ -280,6 +296,11 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
         g = new Fact(this, name, "", "", Fact::Group | Fact::Count);
     }
 
+    if (g->size() > 1000) {
+        // too many records
+        return;
+    }
+
     name.replace('.', '_');
 
     Fact *f = nullptr;
@@ -311,7 +332,14 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
         auto src = data.value("src").toString();
         auto uid = data.value("uid").toString();
         auto descr = uid.isEmpty() ? src : (src + " | " + uid);
-        f = new Fact(g, name + "#", msg, descr);
+        // check if the last fact has the same message
+        Fact *flast = g->facts().isEmpty() ? nullptr : g->facts().last();
+        if (flast && flast->title() == msg && flast->descr() == descr) {
+            int cnt = flast->value().toInt();
+            flast->setValue((cnt <= 0 ? 1 : cnt) + 1);
+        } else {
+            f = new Fact(g, name + "#", msg, descr);
+        }
     } else if (name == telemetry::EVT_CONF.name) {
         auto param = data.value("param").toString();
         auto value = data.value("value").toString();

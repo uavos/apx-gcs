@@ -44,8 +44,8 @@ QFont SourceEdit::getFont()
 
 void SourceEdit::addKeywords(const QStringList &words)
 {
-    foreach (QString w, words)
-        highlighter->addRule(QString("\\b%1\\b").arg(w), "orange", "bold");
+    for (const auto i : words)
+        highlighter->addRule(QString("\\b%1\\b").arg(i), "orange", "bold");
 }
 
 void SourceEdit::keyPressEvent(QKeyEvent *event)
@@ -159,29 +159,25 @@ Highlighter::Highlighter(QTextDocument *parent)
                                          << "false";
     QStringList operators = QStringList() << "=" <<
                             // Comparison
-                            "=="
-                                          << "!="
+                            "==" << "!="
                                           << "<"
                                           << "<="
                                           << ">"
                                           << ">=" <<
                             // Arithmetic
-                            "\\+"
-                                          << "-"
+                            "\\+" << "-"
                                           << "\\*"
                                           << "/"
                                           << "//"
                                           << "%"
                                           << "\\*\\*" <<
                             // In-place
-                            "\\+="
-                                          << "-="
+                            "\\+=" << "-="
                                           << "\\*="
                                           << "/="
                                           << "%=" <<
                             // Bitwise
-                            "\\^"
-                                          << "\\|"
+                            "\\^" << "\\|"
                                           << "&"
                                           << "~"
                                           << ">>"
@@ -192,11 +188,11 @@ Highlighter::Highlighter(QTextDocument *parent)
                                        << "\\)"
                                        << "\\["
                                        << "\\]";
-    foreach (QString currKeyword, keywords)
+    for (const auto currKeyword : keywords)
         addRule(QString("\\b%1\\b").arg(currKeyword), "lightBlue", "bold");
-    foreach (QString currOperator, operators)
+    for (const auto currOperator : operators)
         addRule(QString("%1").arg(currOperator), "orange");
-    foreach (QString currBrace, braces)
+    for (const auto currBrace : braces)
         addRule(QString("%1").arg(currBrace), "yellow");
 
     //function
@@ -218,9 +214,9 @@ Highlighter::Highlighter(QTextDocument *parent)
 
     //fill mandala constants
     /*QMandalaItem *var=QMandala::instance()->current;
-  foreach(QMandalaField *f,var->fields)
+  for (const auto f: var->fields)
     addRule(QString("\\b%1\\b").arg("f_"+f->name()),"orange","bold");
-  foreach(QString name,var->constants.keys())
+  for (const auto name: var->constants.keys())
     addRule(QString("\\b%1\\b").arg(name),"orange","bold");*/
 
     // Double-quoted string, possibly containing escape sequences
@@ -261,7 +257,7 @@ Highlighter::HighlightingRule Highlighter::addRule(const QString &pattern,
 void Highlighter::highlightBlock(const QString &text)
 {
     setFormat(0, text.length(), defaultCharFormat);
-    foreach (const HighlightingRule &rule, highlightingRules) {
+    for (const auto &rule : highlightingRules) {
         QRegularExpression expression(rule.pattern);
         auto match = expression.match(text);
         while (match.hasMatch()) {

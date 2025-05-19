@@ -50,6 +50,7 @@ public:
     bool find_field(QString name,
                     xbus::node::conf::fid_t *fid,
                     xbus::node::conf::type_e *type) const;
+    QString find_field_name(xbus::node::conf::fid_t fid) const;
 
     static QJsonValue read_param(PStreamReader &stream, xbus::node::conf::type_e type);
     static bool write_param(PStreamWriter &stream, xbus::node::conf::type_e type, QJsonValue value);
@@ -93,9 +94,14 @@ private:
 
     bool _skip_cache{};
 
-    QJsonObject _values;
-    xbus::node::conf::script_t _script_value{};
+    QJsonObject _rvalues;
+    xbus::node::conf::script_t _script_hash{};
     QString _script_field;
+    QJsonValue _script_wdata;
+
+    // ext gcs values update
+    QJsonObject _ext_upd_values;
+    bool _ext_upd_request{};
 
     void updateProgress();
 

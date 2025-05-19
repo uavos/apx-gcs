@@ -57,7 +57,7 @@ Sounds::Sounds(Fact *parent)
     st.clear();
     st << "default";
     st << "internal";
-    foreach (QString engine, QTextToSpeech::availableEngines()) {
+    for (const auto engine : QTextToSpeech::availableEngines()) {
         st.append(engine);
     }
     f_engine->setEnumStrings(st);
@@ -124,7 +124,7 @@ Sounds::Sounds(Fact *parent)
     //qDebug() << QSoundEffect::supportedMimeTypes();
     // QDir fdir(AppDirs::res().filePath("audio/alerts"), "*.ogg *.wav");
     QDir fdir(":audio/alerts", "*.ogg *.wav");
-    foreach (QFileInfo fi, fdir.entryInfoList()) {
+    for (const auto &fi : fdir.entryInfoList()) {
         if (!alias.values().contains(fi.baseName()))
             continue;
         auto se = new QSoundEffect(this);
@@ -177,7 +177,7 @@ void Sounds::engineChanged()
     if (tts) {
         connect(tts, &QTextToSpeech::stateChanged, this, &Sounds::ttsStateChanged);
         locales.append(QLocale(QLocale::English, QLocale::UnitedStates));
-        foreach (const QLocale &locale, tts->availableLocales()) {
+        for (const auto &locale : tts->availableLocales()) {
             st << QString("%1 (%2)").arg(QLocale::languageToString(locale.language()),
                                          QLocale::territoryToString(locale.territory()));
             locales.append(locale);
@@ -206,7 +206,7 @@ void Sounds::langChanged()
         voices.append(tts->voice());
         QString defaultVoiceName = defaultVoices.value(tts->locale().name()).toString();
         //qDebug()<<defaultVoiceName<<defaultVoices;
-        foreach (const QVoice &voice, tts->availableVoices()) {
+        for (const auto &voice : tts->availableVoices()) {
             st << QString("%1 - %2 - %3")
                       .arg(voice.name(),
                            QVoice::genderName(voice.gender()),
@@ -217,7 +217,7 @@ void Sounds::langChanged()
         }
     } else {
         QDir voicep(AppDirs::res().filePath("audio/speech"));
-        foreach (QString s, voicep.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+        for (const auto s : voicep.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
             st << s;
     }
     f_voice->setEnumStrings(st);
@@ -255,7 +255,7 @@ void Sounds::voiceChanged()
         QDir fdir(":audio/speech/" + voice, "*.ogg *.wav");
         // QDir fdir(AppDirs::res().filePath("audio/speech/" + voice), "*.ogg *.wav");
         //qDebug()<<fdir.absolutePath();
-        foreach (QString file, fdir.entryList()) {
+        for (const auto file : fdir.entryList()) {
             auto se = new QSoundEffect(this);
             se->setSource(QUrl::fromLocalFile(fdir.absoluteFilePath(file)));
             speech.insert(file.left(file.indexOf('.')), se);
@@ -278,7 +278,7 @@ void Sounds::play(QString text)
 {
     //qDebug() << text;
     if (text.contains('\n')) {
-        foreach (QString s, text.split('\n', Qt::SkipEmptyParts)) {
+        for (const auto s : text.split('\n', Qt::SkipEmptyParts)) {
             play(s);
         }
         return;

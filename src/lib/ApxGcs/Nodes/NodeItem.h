@@ -118,9 +118,9 @@ public slots:
     //protocols:
     void identReceived(QJsonObject ident);
     void dictReceived(QJsonObject dict);
-    void confReceived(QJsonObject values);
-    void confUpdated(QJsonObject values);
-    void confSaved();
+    void confReceived(QJsonObject params);
+    void paramsSent(QJsonObject params);
+    void paramsSaved(QJsonObject params);
 
     void messageReceived(PNode::msg_type_e type, QString msg);
     void statusReceived(const xbus::node::status::status_s &status);

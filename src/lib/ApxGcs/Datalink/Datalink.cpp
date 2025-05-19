@@ -66,6 +66,9 @@ Datalink::Datalink(Fact *parent)
     f_ports = new DatalinkPorts(this);
     f_ports->setSection(sect);
 
+    // disable all local TCP ports on server bind
+    connect(f_server, &DatalinkServer::binded, f_ports, &DatalinkPorts::disableLocalNetworkPorts);
+
     //heartbeat timer
     connect(f_hbeat, &Fact::valueChanged, this, &Datalink::hbeatChanged);
     connect(&heartbeatTimer, &QTimer::timeout, this, &Datalink::heartbeatTimeout);

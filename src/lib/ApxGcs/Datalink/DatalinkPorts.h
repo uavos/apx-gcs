@@ -43,6 +43,8 @@ public:
     Q_INVOKABLE void blockSerialPorts();
     Q_INVOKABLE void unblockSerialPorts();
 
+    Q_INVOKABLE void disableLocalNetworkPorts();
+
     Datalink *datalink;
 
 private:

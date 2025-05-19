@@ -414,7 +414,7 @@ QString Unit::confTitle() const
     QString shiva;
     QString longest;
     QString anyName;
-    foreach (NodeItem *node, f_nodes->nodes()) {
+    for (auto node : f_nodes->nodes()) {
         QString name = node->title();
         QString s = node->value().toString().trimmed();
         if (anyName.isEmpty())

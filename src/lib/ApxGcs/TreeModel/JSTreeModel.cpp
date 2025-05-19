@@ -310,7 +310,7 @@ QString JSTreeItem::path(const QString &sep)
     if (!m_path.isEmpty())
         return m_path;
     QStringList st;
-    foreach (JSTreeItem *i, pathList(true)) {
+    for (auto i : pathList(true)) {
         st.append(i->name);
     }
     st.removeFirst();
@@ -325,7 +325,7 @@ void JSTreeItem::sync()
     //filter childs for some items
     //check recursive
     QJSValue v = value();
-    foreach (JSTreeItem *i, pathList(false)) {
+    for (auto i : pathList(false)) {
         if (i->value().strictlyEquals(v)) {
             descr = "recursive reference";
             qDebug() << path() << descr;
