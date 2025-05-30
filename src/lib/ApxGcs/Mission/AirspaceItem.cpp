@@ -25,20 +25,59 @@
 #include <App/App.h>
 #include <QGeoCircle>
 
-AirspaceItem::AirspaceItem(MissionGroup *parent)
-    : MissionItem(parent, "A#", "", tr("Geofence"))
+AirspaceItem::AirspaceItem(Fact *parent)
+    : Fact(parent, "A#", "", tr("Geofence"), Group | ModifiedGroup)
 {
     setOpt("color", "#E65100");
 
-    f_hmsl = new MissionField(this, "hmsl", tr("HMSL"), tr("Object of interest altitude MSL"), Int);
-    f_hmsl->setUnits("m");
-    f_hmsl->setEnumStrings(QStringList() << "ground");
+    f_role = new Fact(this, "role", tr("Role"), "", Fact::Enum);
+    f_role->setEnumStrings({
+        "safe",
+        "nofly",
+        "terminate",
+        "auxiliary",
+    });
+
+    f_shape = new Fact(this, "shape", tr("Shape"), "", Fact::Enum);
+    f_shape->setEnumStrings({
+        "circle",
+        "polygon",
+        "line",
+    });
+
+    f_label = new Fact(this, "label", tr("Label"), tr("Geofence label"), Fact::Text);
+
+    f_top = new MissionField(this, "top", tr("Top"), tr("Top altitude AMSL"), Fact::Int);
+    f_top->setUnits("m");
+    f_top->setMin(0);
+    f_top->setIncrement(100);
+    f_top->setEnumStrings({
+        tr("unlimited"),
+    });
+
+    f_bottom = new MissionField(this, "bottom", tr("Bottom"), tr("Bottom altitude AMSL"), Fact::Int);
+    f_bottom->setUnits("m");
+    f_bottom->setMin(0);
+    f_bottom->setIncrement(100);
+    f_bottom->setEnumStrings({
+        tr("ground"),
+    });
+
+    f_inverted = new Fact(this, "inverted", tr("Inverted"), tr("Valid when outside"), Fact::Bool);
+
+    f_points = new Fact(this,
+                        "points",
+                        tr("Points"),
+                        tr("Geofence points"),
+                        Fact::Group | Fact::ModifiedGroup | Fact::Count);
+
+    auto f_remove = new Fact(this, "remove", tr("Remove"), tr("Remove geofence"), Action | Remove);
+    connect(f_remove, &Fact::triggered, this, &Fact::deleteFact);
 
     //title
     updateTitle();
-
-    connect(f_hmsl, &Fact::valueChanged, this, &AirspaceItem::updateDescr);
-    updateDescr();
+    for (auto f : facts())
+        connect(f, &Fact::valueChanged, this, &AirspaceItem::updateTitle);
 
     App::jsync(this);
 }
@@ -46,17 +85,38 @@ AirspaceItem::AirspaceItem(MissionGroup *parent)
 void AirspaceItem::updateTitle()
 {
     QStringList st;
-    st.append(QString::number(num() + 1));
+
+    st.append(f_role->valueText());
+
+    if (f_inverted->value().toBool()) {
+        st.append(tr("inverted"));
+    }
+    st.append(f_shape->valueText());
+
+    auto label = f_label->valueText();
+    if (!label.isEmpty())
+        st.append("\"" + label + "\"");
+
+    auto top = f_top->value().toInt();
+    auto bottom = f_bottom->value().toInt();
+    if (bottom != 0 && top != 0) {
+        st.append(QString("%1-%2").arg(bottom).arg(top));
+    } else if (bottom != 0) {
+        st.append(QString("%1+").arg(bottom));
+    } else if (top != 0) {
+        st.append(QString("0-%1").arg(top));
+    }
+
+    auto sz = f_points->size();
+    if (sz > 0)
+        st.append(QString("[%1]").arg(sz));
+
     setTitle(st.join(' '));
 }
 void AirspaceItem::updateDescr()
 {
     QStringList st;
     QString sts;
-    if (!f_hmsl->isZero()) {
-        st.append("MSL" + f_hmsl->valueText());
-        sts.append("H");
-    }
     setDescr(st.join(' '));
     setValue(sts);
 }

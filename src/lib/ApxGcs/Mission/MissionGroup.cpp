@@ -106,9 +106,11 @@ void MissionGroup::updateTimeDo()
 {
     uint v = 0;
     for (auto i : facts()) {
-        MissionItem *wp = static_cast<MissionItem *>(i);
-        v += wp->time();
-        wp->setTotalTime(v);
+        auto mi = qobject_cast<MissionItem *>(i);
+        if (!mi)
+            continue;
+        v += mi->time();
+        mi->setTotalTime(v);
     }
     setTime(v);
 }
@@ -120,9 +122,11 @@ void MissionGroup::updateDistanceDo()
 {
     uint v = 0;
     for (auto i : facts()) {
-        MissionItem *wp = static_cast<MissionItem *>(i);
-        v += wp->distance();
-        wp->setTotalDistance(v);
+        auto mi = qobject_cast<MissionItem *>(i);
+        if (!mi)
+            continue;
+        v += mi->distance();
+        mi->setTotalDistance(v);
     }
     setDistance(v);
 }

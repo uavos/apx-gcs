@@ -22,7 +22,11 @@
 #include "Airspace.h"
 
 Airspace::Airspace(UnitMission *parent)
-    : Fact(parent, "airspace", "Airspace", tr("Geofences and NoFly zones"), Group | ModifiedGroup)
+    : Fact(parent,
+           "airspace",
+           "Airspace",
+           tr("Geofences and NoFly zones"),
+           Group | ModifiedGroup | Count)
 {
     // f_add = new Fact(this, "add_object", tr("Add Geofence"), "", Action, "plus-circle");
 
@@ -51,7 +55,8 @@ Airspace::Airspace(UnitMission *parent)
 
 void Airspace::add(const QGeoCoordinate &p, Shape shape)
 {
-    // auto item = new AirspaceItem(this);
+    qDebug() << "Airspace::add" << p.latitude() << p.longitude() << shape;
+    auto item = new AirspaceItem(this);
     // item->setCoordinate(p);
     // item->setShape(shape);
     // item->setSelected(true);

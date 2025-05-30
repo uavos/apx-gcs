@@ -21,17 +21,25 @@
  */
 #pragma once
 
-#include "MissionItem.h"
+#include "UnitMission.h"
 #include <QtCore>
 
-class AirspaceItem : public MissionItem
+class AirspaceItem : public Fact
 {
     Q_OBJECT
 
 public:
-    explicit AirspaceItem(MissionGroup *parent);
+    explicit AirspaceItem(Fact *parent);
 
-    Fact *f_hmsl;
+    Fact *f_role;
+    Fact *f_shape;
+    Fact *f_top;
+    Fact *f_bottom;
+    Fact *f_inverted;
+
+    Fact *f_label;
+
+    Fact *f_points;
 
 private slots:
     void updateTitle();

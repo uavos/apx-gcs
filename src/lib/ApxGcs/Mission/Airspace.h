@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include "AirspaceItem.h"
 #include "UnitMission.h"
 
 #include <XbusMission.h>
@@ -31,8 +32,6 @@ class Airspace : public Fact
 
 public:
     explicit Airspace(UnitMission *parent);
-
-    Fact *f_add;
 
     typedef xbus::mission::geo_s::shape_e Shape;
 
