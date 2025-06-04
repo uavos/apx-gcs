@@ -1,3 +1,13 @@
+# [APX Ground Control v11.2.9](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.9) (06/03/25)
+
+> Branch: `main`\
+> Date: `06/03/25 20:29:51`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/2ae583db5d0b915b0185747598dcce0abc08d753...ccbcafb9c2f45e6adf9208b3eb8ca1ec5e9d4d01)
+
+## Bug Fixes
+* telemetry decoder xpdr interference
+* terminal log model segfault
+
 # [APX Ground Control v11.2.8](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.8) (05/06/25)
 
 > Branch: `main`\
