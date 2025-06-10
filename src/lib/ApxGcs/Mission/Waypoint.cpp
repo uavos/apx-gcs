@@ -749,7 +749,7 @@ void Waypoint::correctPath(bool reply)
     auto prevAlt = prevWp->f_altitude->value().toInt();
     auto prevAgl = prevWp->f_agl->value().toInt();
     if (prevAgl < UNSAFE_AGL) {
-        prevAlt += UNSAFE_AGL - agl;
+        prevAlt += UNSAFE_AGL - prevAgl;
         prevWp->f_altitude->setValue(prevAlt);
     }
 
