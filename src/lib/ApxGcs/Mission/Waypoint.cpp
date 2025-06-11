@@ -748,7 +748,7 @@ void Waypoint::correctPath(bool reply)
     // Correct previous point altitude
     auto prevAlt = prevWp->f_altitude->value().toInt();
     auto prevAgl = prevWp->f_agl->value().toInt();
-    if (prevAgl < UNSAFE_AGL) {
+    if (prevAgl < UNSAFE_AGL && !m_reply) {
         prevAlt += UNSAFE_AGL - prevAgl;
         prevWp->f_altitude->setValue(prevAlt);
     }
