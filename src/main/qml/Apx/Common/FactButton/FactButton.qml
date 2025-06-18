@@ -266,9 +266,8 @@ ActionButton {
                 Loader {
                     property var opts: fact? fact.opts : null
                     property var extrainfo: opts ? fact.opts.extrainfo : false
-                    active: !opts.extrainfo ? false : true
+                    active: !extrainfo ? false : true
                     anchors.fill: parent
-                    // Material.accent: Material.color(Material.Green)
                     source: active?getExtrainfoSource():""
                     onLoaded: _extrainfo.mrg = item.implicitWidth + _extrainfo.mrg*ui.scale
                 }
