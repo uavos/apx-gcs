@@ -66,7 +66,7 @@ public:
     void setUtil(Util u) override;
 
 private:
-    static constexpr int TERRAIN_STEP = 15; // terrain profile step in meters
+    static constexpr int TERRAIN_STEP = 30; // terrain profile step in meters
     QImage m_image;
     QString m_dbPath;
     QString m_fileName;
