@@ -411,6 +411,8 @@ void ElevationMap::correctUnsafePaths()
 {
     if (m_isCorrect)
         return;
+    
+    apxMsg() << "Mission correction started";
 
     m_isCorrect = true;
     m_correction.clear();
@@ -509,6 +511,28 @@ void ElevationMap::insertMissionWaypoints()
     }
 
     m->f_waypoints->fromJson(jsa);
-    m_correction.clear();
+    auto lastWp = static_cast<Waypoint *>(m->f_waypoints->facts().last());
+    if(lastWp) {
+        connect(lastWp, &Waypoint::terrainProfileChanged, this, &ElevationMap::completeCorrection);
+        return;
+    }
+    apxMsg() << "Mission correction completed";
+    m_isCorrect = false;
+}
+
+void ElevationMap::completeCorrection() 
+{
+    if (!m_isCorrect)
+        return;
+
+    Waypoint *lastWp = static_cast<Waypoint *>(mission()->f_waypoints->facts().last());
+    if(!lastWp)
+        return;
+
+    auto tp = lastWp->terrainProfile();
+    if (tp.empty())
+        return;
+
+    apxMsg() << "Mission correction completed";
     m_isCorrect = false;
 }

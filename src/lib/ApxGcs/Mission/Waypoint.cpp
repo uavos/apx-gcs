@@ -779,8 +779,10 @@ void Waypoint::insertNewPoints()
 
     int wpIndex = indexInParent();
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
-    auto prevCoordinate = prevWp->coordinate();
+    if(!prevWp)
+        return;
 
+    auto prevCoordinate = prevWp->coordinate();
     for (int i = result.size() - 1; i >= 0; i--) {
         auto point = result[i];
         int wpHmsl = std::ceil(point.altitude());
