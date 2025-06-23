@@ -76,11 +76,6 @@ public:
     void setCoordinate(const QGeoCoordinate &coordinate);
     double elevation() const;
     void setElevation(double v);
-
-    // ===== Analyze elevation route =====
-    static constexpr int TERRAIN_STEP = 30;
-    // static constexpr int TERRAIN_STEP = 15;
-
     void getCorrectPathResponse(QList<QGeoCoordinate> v, int index);
 
 protected:

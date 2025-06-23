@@ -448,7 +448,6 @@ void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index) {
 void ElevationMap::insertMissionWaypoints()
 {
     // Check new insertion points
-    // 
     for (auto k : m_correction.keys()) {
         if (!m_correction.value(k).empty())
             break;
