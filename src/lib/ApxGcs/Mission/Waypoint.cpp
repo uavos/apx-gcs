@@ -632,6 +632,11 @@ void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath 
 
 void Waypoint::checkCollision()
 {
+    if (!m_reachable) {
+        setCollision(true);
+        return;
+    }
+
     if (m_terrainProfile.empty()) {
         setCollision(false);
         return;
