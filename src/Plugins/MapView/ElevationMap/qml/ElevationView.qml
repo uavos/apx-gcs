@@ -118,7 +118,7 @@ Window {
             }
             Text {
                 id: txt
-                text: "Alarm"
+                text: qsTr("Alarm")
                 color: "white"
                 font.bold: true
                 font.pixelSize: Style.fontSize*0.8

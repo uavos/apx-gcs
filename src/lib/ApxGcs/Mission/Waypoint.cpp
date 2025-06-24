@@ -457,9 +457,9 @@ int Waypoint::unsafeAgl() const
 
 void Waypoint::updateAltDescr() {
     if(f_amsl->value().toBool())
-        f_altitude->setDescr("Altitude above mean sea level");
+        f_altitude->setDescr(tr("Altitude above mean sea level"));
     else
-        f_altitude->setDescr("Altitude above takeoff point");
+        f_altitude->setDescr(tr("Altitude above takeoff point"));
 }
 
 void Waypoint::calcAltitude()
