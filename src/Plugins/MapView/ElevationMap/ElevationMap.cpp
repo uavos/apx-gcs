@@ -414,15 +414,19 @@ void ElevationMap::correctUnsafePaths()
     if (m_isCorrect)
         return;
     
-    apxMsg() << "Mission correction started";
+    auto m = mission();
+    auto wpsSize = m->f_waypoints->size();
+    if(wpsSize <= 0)
+        return;
+
+    apxMsg() << tr("Mission correction started");
 
     m_isCorrect = true;
     m_correction.clear();
-    auto m = mission();
     QFuture<void> future = QtConcurrent::run([=]() {
         auto num = QThread::idealThreadCount();
         auto maxThreads = num > 2 ? num-2 : 1;
-        for (int i = 0; i < m->f_waypoints->size(); i++) {
+        for (int i = 0; i < wpsSize; i++) {
             // Check avaliable threads count
             if (threads >= maxThreads) {
                 i--;
@@ -457,7 +461,7 @@ void ElevationMap::insertMissionWaypoints()
             break;
         if(k != m_correction.lastKey())
             continue;
-        m_isCorrect = false;
+        completeCorrection();
         return;
     }
 
@@ -518,8 +522,7 @@ void ElevationMap::insertMissionWaypoints()
         connect(lastWp, &Waypoint::terrainProfileChanged, this, &ElevationMap::completeCorrection);
         return;
     }
-    apxMsg() << "Mission correction completed";
-    m_isCorrect = false;
+    completeCorrection();
 }
 
 void ElevationMap::completeCorrection() 
@@ -535,6 +538,8 @@ void ElevationMap::completeCorrection()
     if (tp.empty())
         return;
 
-    apxMsg() << "Mission correction completed";
+    apxMsg() << tr("Mission correction completed");
     m_isCorrect = false;
 }
+
+

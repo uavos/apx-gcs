@@ -291,7 +291,6 @@ void OfflineElevationDB::requestTerrainProfileASTER(QPromise<QGeoPath> &promise,
         auto file = createASTERFileName(latitude, longitude);
         auto filePath = QString("%1/%2").arg(db).arg(file);
         if (!QFile::exists(filePath)) {
-            // promise.addResult(QGeoPath());
             promise.addResult(path);
             return;
         }
