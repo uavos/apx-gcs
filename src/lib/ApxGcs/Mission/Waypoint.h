@@ -23,10 +23,10 @@
 
 #include "MissionItem.h"
 #include "WaypointActions.h"
+#include <QFutureWatcher>
 #include <QGeoCoordinate>
 #include <QGeoPath>
 #include <QtCore>
-#include <QFutureWatcher>
 
 class Waypoint : public MissionItem
 {
@@ -56,7 +56,7 @@ public:
     explicit Waypoint(MissionGroup *parent);
 
     static constexpr double ALT_EPS = 0.1;
-    
+
     Fact *f_altitude;
     Fact *f_amsl;
     Fact *f_agl;
@@ -100,9 +100,10 @@ private slots:
     static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
 
     // New functionality
-    static void getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise, const QGeoPath &path,
-                                                                                int hFirst,
-                                                                                int hLast);
+    static void getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
+                                      const QGeoPath &path,
+                                      int hFirst,
+                                      int hLast);
     void insertNewPoints();
     
     void updateMinMaxHeight();
