@@ -151,7 +151,9 @@ void ElevationMap::updateMission()
     connect(mission(), &UnitMission::missionSizeChanged, mission(), &UnitMission::checkCollision);
     connect(mission(), &UnitMission::startPointChanged, this, &ElevationMap::setStartPointElevation);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
-    connect(missionTools()->f_pathsCorrect, &Fact::triggered, this, &ElevationMap::correctUnsafePaths);
+    connect(missionTools()->f_pathsCorrect, &Fact::triggered, this, [this]() {
+        QTimer::singleShot(100, this, &ElevationMap::correctUnsafePaths);
+    });
     changeExternalsVisibility();
     updateRefPoint();
 }
