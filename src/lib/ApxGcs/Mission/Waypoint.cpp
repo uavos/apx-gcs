@@ -740,10 +740,17 @@ void Waypoint::correctPath(bool reply)
         f_altitude->setValue(alt);
     }
 
+    auto startHmsl = getStartHMSL();
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if (!prevWp) {
-        if (!m_reply)
-            return;
+        if (!m_reply) {
+            // Checking start point hmsl
+            auto firstHmsl = m_terrainProfile.first().y();
+            if (startHmsl < firstHmsl) {
+                apxMsgW() << tr("Waypoint 1: the start point is below ground level, correct it");
+                return;
+            }
+        }
         auto index = indexInParent();
         emit responseCorrectPath(QList<QGeoCoordinate>(), index);
         return;
@@ -751,7 +758,7 @@ void Waypoint::correctPath(bool reply)
 
     auto amsl = f_amsl->value().toBool();
     if (!amsl)
-        alt += getStartHMSL();
+        alt += startHmsl;
 
     // Correct previous point altitude
     auto prevAlt = prevWp->f_altitude->value().toInt();
@@ -763,7 +770,7 @@ void Waypoint::correctPath(bool reply)
 
     auto prevAmsl = f_amsl->value().toBool();
     if (!prevAmsl)
-        prevAlt += getStartHMSL();
+        prevAlt += startHmsl;
 
     QFuture<QList<QGeoCoordinate>> future;
     future = QtConcurrent::run(getCorrectRoutePoints, m_terrainProfilePath, prevAlt, alt);
