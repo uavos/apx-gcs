@@ -724,7 +724,8 @@ void Waypoint::correctPath(bool reply)
     if (m_reply != reply)
         m_reply = reply;
 
-    if (!m_collision) {
+    // Skip waypoint without collision or unreachable
+    if (!m_collision || !m_reachable) {
         if (!m_reply)
             return;
         auto index = indexInParent();
