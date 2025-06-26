@@ -546,6 +546,24 @@ void ElevationMap::completeCorrection()
 
     apxMsg() << tr("Mission correction completed");
     m_isCorrect = false;
+    QTimer::singleShot(1000, this, &ElevationMap::checkCorrectionResult);
 }
 
-
+void ElevationMap::checkCorrectionResult() 
+{
+    auto m = mission();
+    QString wpWarnings;
+    for (int i = 0; i < m->f_waypoints->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+        if (!wp || !wp->collision())
+            continue;
+        if (!wpWarnings.isEmpty())
+            wpWarnings += ",";
+        wpWarnings += QString::number(i + 1);
+    }
+    if (wpWarnings.isEmpty())
+        return;
+    apxMsgW() << tr("The path of points %1 has been changed or could not be corrected. "
+                    "Check  these points and try again")
+                     .arg(wpWarnings);
+}

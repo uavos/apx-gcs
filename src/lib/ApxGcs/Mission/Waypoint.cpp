@@ -748,7 +748,7 @@ void Waypoint::correctPath(bool reply)
             // Checking start point hmsl
             auto firstHmsl = m_terrainProfile.first().y();
             if (startHmsl < firstHmsl) {
-                apxMsgW() << tr("Waypoint 1: the start point is below ground level, correct it");
+                apxMsgW() << tr("The start point is below ground level, correct it");
                 return;
             }
         }

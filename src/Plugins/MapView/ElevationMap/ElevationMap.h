@@ -112,6 +112,7 @@ private slots:
     void correctUnsafePaths();
     void insertMissionWaypoints();
     void completeCorrection();
+    void checkCorrectionResult();
 
 signals:
     void coordinateChanged(QGeoCoordinate coordinate);
