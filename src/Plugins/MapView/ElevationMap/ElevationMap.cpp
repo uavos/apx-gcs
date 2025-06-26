@@ -455,13 +455,15 @@ void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index) {
 
 void ElevationMap::insertMissionWaypoints()
 {
-    // Check new insertion points
+    // Check new points for empty lists to insert
+    // If all values ​​are empty, then we do not insert
     for (auto k : m_correction.keys()) {
         if (!m_correction.value(k).empty())
             break;
-        if(k != m_correction.lastKey())
+        else if(k != m_correction.lastKey())
             continue;
-        completeCorrection();
+        apxMsg() << tr("Nothing to correct. Mission correction completed");
+        m_isCorrect = false;
         return;
     }
 
@@ -522,7 +524,8 @@ void ElevationMap::insertMissionWaypoints()
         connect(lastWp, &Waypoint::terrainProfileChanged, this, &ElevationMap::completeCorrection);
         return;
     }
-    completeCorrection();
+    apxMsg() << tr("Mission correction completed");
+    m_isCorrect = false;
 }
 
 void ElevationMap::completeCorrection() 
@@ -534,8 +537,11 @@ void ElevationMap::completeCorrection()
     if(!lastWp)
         return;
 
+    // Terrain profile not empty and waypoint have elevation
+    // (elevation map for waypoint exists)    
     auto tp = lastWp->terrainProfile();
-    if (tp.empty())
+    auto elv = lastWp->elevation();
+    if (tp.empty() && !std::isnan(elv))
         return;
 
     apxMsg() << tr("Mission correction completed");
