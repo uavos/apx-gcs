@@ -34,7 +34,7 @@ typedef uint16_t mandala_uid_t;
 void mset_f(mandala_uid_t uid, float v);
 void mset_i(mandala_uid_t uid, uint32_t v);
 
-mandala_handle_t mbind(mandala_uid_t uid, const char *notify = 0);
+mandala_handle_t mbind(mandala_uid_t uid, const char *notify);
 float mget(mandala_handle_t h);
 
 __END_DECLS
