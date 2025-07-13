@@ -116,6 +116,8 @@ RowLayout {
     }
     function copyAllMessages() {
         for (let i = 0; i < listView.count; i++) {
+            if (!listView.itemAtIndex(i))
+                continue
             if(i > 0)
                 textEdit.text += "\n"
             textEdit.text += listView.itemAtIndex(i).text
