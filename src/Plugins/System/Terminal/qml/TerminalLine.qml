@@ -73,21 +73,33 @@ RowLayout {
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             onClicked: (mouse) => {
                 if (mouse.button === Qt.RightButton)
-                    contextMenu.popup()
+                    menu.popup()
             }
             onPressAndHold: (mouse) => {
                 if (mouse.source === Qt.MouseEventNotSynthesized)
-                    contextMenu.popup()
+                    menu.popup()
             }
             Menu {
-                id: contextMenu
+                id: menu
+                
+                readonly property real miScale: Math.max(0.75,1*ui.scale)
 
+                width: 100 * miScale
+    
                 MenuItem { 
                     text: "Copy"
+                    font: apx.font(lineSize,control.bold)
+                    implicitHeight: 20 * menu.miScale
+                    topPadding: 5 * menu.miScale
+                    bottomPadding: 5 *menu.miScale
                     onTriggered: control.copyMessage()
                 }
                 MenuItem { 
                     text: "Copy all"
+                    font: apx.font(lineSize,control.bold)
+                    implicitHeight: 20 * menu.miScale
+                    topPadding: 5 * menu.miScale
+                    bottomPadding: 5 *menu.miScale
                     onTriggered: control.copyAllMessages()
                 }
             }
