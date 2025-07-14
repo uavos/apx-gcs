@@ -67,10 +67,16 @@ RowLayout {
         wrapMode: Text.WrapAnywhere
         text: control.text
         textFormat: html?Text.RichText:Text.AutoText
+        background: Rectangle {
+            anchors.fill: parent
+            color: "#ffffff"
+            opacity: 0.15
+            visible: menu.visible
+        }
         
         MouseArea {
             anchors.fill: parent
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            acceptedButtons: Qt.RightButton
             onClicked: (mouse) => {
                 if (mouse.button === Qt.RightButton)
                     menu.popup()
@@ -81,29 +87,18 @@ RowLayout {
             }
             Menu {
                 id: menu
-                
-                readonly property real miScale: Math.max(0.75,1*ui.scale)
+                width: 105 * Math.max(0.75,1*ui.scale)
 
-                width: 100 * miScale
-    
-                MenuItem { 
-                    text: "Copy"
-                    font: apx.font(lineSize,control.bold)
-                    implicitHeight: 20 * menu.miScale
-                    topPadding: 5 * menu.miScale
-                    bottomPadding: 5 *menu.miScale
+                TerminalMenuItem { 
+                    text: qsTr("Copy")
                     onTriggered: control.copyMessage()
                 }
-                MenuItem { 
-                    text: "Copy all"
-                    font: apx.font(lineSize,control.bold)
-                    implicitHeight: 20 * menu.miScale
-                    topPadding: 5 * menu.miScale
-                    bottomPadding: 5 *menu.miScale
+                TerminalMenuItem { 
+                    text: qsTr("Copy all")
                     onTriggered: control.copyAllMessages()
                 }
             }
-            TextEdit{
+            TextEdit {
                 id: textEdit
                 visible: false
             }
