@@ -134,6 +134,6 @@ RowLayout {
     function copy2Clipboard() {
         textEdit.selectAll()
         textEdit.copy()
-        textEdit.text = "";
+        textEdit.clear()
     }
 }
