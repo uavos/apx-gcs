@@ -24,6 +24,7 @@
 #include "DatalinkConnection.h"
 #include "DatalinkPorts.h"
 #include "DatalinkRemotes.h"
+#include "DatalinkSerialRemotes.h"
 #include "DatalinkServer.h"
 #include "DatalinkStats.h"
 #include <Fact/Fact.h>
@@ -55,6 +56,7 @@ public:
     Fact *f_readonly;
     DatalinkServer *f_server;
     DatalinkRemotes *f_remotes;
+    DatalinkSerialRemotes *f_serialRemotes;
     DatalinkPorts *f_ports;
 
     Protocols *f_protocols;
