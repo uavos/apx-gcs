@@ -67,6 +67,42 @@ RowLayout {
         wrapMode: Text.WrapAnywhere
         text: control.text
         textFormat: html?Text.RichText:Text.AutoText
+        background: Rectangle {
+            anchors.fill: parent
+            color: "#ffffff"
+            opacity: 0.15
+            visible: menu.visible
+        }
+        
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.RightButton
+            onClicked: (mouse) => {
+                if (mouse.button === Qt.RightButton)
+                    menu.popup()
+            }
+            onPressAndHold: (mouse) => {
+                if (mouse.source === Qt.MouseEventNotSynthesized)
+                    menu.popup()
+            }
+            Menu {
+                id: menu
+                width: 105 * Math.max(0.75,1*ui.scale)
+
+                TerminalMenuItem { 
+                    text: qsTr("Copy")
+                    onTriggered: control.copyMessage()
+                }
+                TerminalMenuItem { 
+                    text: qsTr("Copy all")
+                    onTriggered: control.copyAllMessages()
+                }
+            }
+            TextEdit {
+                id: textEdit
+                visible: false
+            }
+        }
     }
     Label {
         Layout.alignment: Qt.AlignRight|Qt.AlignVCenter
@@ -80,5 +116,24 @@ RowLayout {
             color: "#223"
             radius: height/10
         }
+    }
+    function copyMessage() {
+        textEdit.text = control.text
+        copy2Clipboard()
+    }
+    function copyAllMessages() {
+        for (let i = 0; i < listView.count; i++) {
+            if (!listView.itemAtIndex(i))
+                continue
+            if(i > 0)
+                textEdit.text += "\n"
+            textEdit.text += listView.itemAtIndex(i).text
+        }
+        copy2Clipboard()
+    }
+    function copy2Clipboard() {
+        textEdit.selectAll()
+        textEdit.copy()
+        textEdit.clear()
     }
 }
