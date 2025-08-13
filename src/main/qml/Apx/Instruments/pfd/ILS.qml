@@ -37,7 +37,7 @@ Item {
 
     property double anumation_duration: 1000
 
-    property bool isLanding: m_mode===proc_mode_LANDING
+    property bool isLanding: m_mode===proc_mode_LANDING || m_reg_airbrk===reg_airbrk_dist
     property bool isDistIndicator: m_reg_airbrk===reg_airbrk_dist
 
     property double sz: (width>height?height:width)*0.6
