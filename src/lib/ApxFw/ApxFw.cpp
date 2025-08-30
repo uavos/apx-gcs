@@ -164,6 +164,25 @@ bool ApxFw::extractRelease(const QString &filePath)
 
     updateNodesMeta(dir);
 
+    // extract Scripts SDK
+    auto sdk_src_fi = dir.entryInfoList({"APX_Nodes_SDK-*.zip"}, QDir::Files, QDir::Name).value(0);
+    if (sdk_src_fi.exists()) {
+        QDir sysroot_dest = QDir(AppDirs::scripts().absoluteFilePath("sysroot"));
+        if (sysroot_dest.exists())
+            sysroot_dest.removeRecursively();
+        else
+            sysroot_dest.mkpath(".");
+
+        if (JlCompress::extractDir(sdk_src_fi.absoluteFilePath(), AppDirs::scripts().absolutePath())
+                .isEmpty()) {
+            apxMsgW() << tr("Can't extract SDK archive") << sdk_src_fi.fileName();
+        } else {
+            apxMsg() << tr("SDK updated");
+        }
+    } else {
+        qWarning() << "Missing SDK archive in firmware release" << fzip.fileName();
+    }
+
     return true;
 }
 
