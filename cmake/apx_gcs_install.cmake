@@ -57,7 +57,7 @@ function(apx_install_res prefix)
         list(APPEND SRCS ${prefix}/${src})
     endforeach()
 
-    apx_glob_srcs(${SRCS})
+    apx_glob_srcs(SRCS)
 
     foreach(src ${SRCS})
         file(RELATIVE_PATH dir ${prefix} ${CMAKE_CURRENT_SOURCE_DIR}/${src})

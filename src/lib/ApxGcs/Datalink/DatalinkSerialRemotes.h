@@ -4,7 +4,7 @@
  * Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
  * All rights reserved
  *
- * This file is part of APX Shared Libraries.
+ * This file is part of APX Ground Control.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -21,44 +21,34 @@
  */
 #pragma once
 
-#include "types.h"
-#include "visibility.h"
+#include "DatalinkConnection.h"
 
-__BEGIN_DECLS
+class Datalink;
+class DatalinkSerialRemote;
 
-int puts(const char *v);
-void printf_s(const char *fmt, const char *v);
-void printf_f(const char *fmt, float v);
-void printf_i(const char *fmt, int32_t v);
-void dump(const void *src, size_t n);
+class DatalinkSerialRemotes : public Fact
+{
+    Q_OBJECT
 
-__END_DECLS
+public:
+    explicit DatalinkSerialRemotes(Datalink *datalink);
 
-#ifdef __cplusplus
+    Fact *f_add = nullptr;
+    Fact *f_host = nullptr;
+    Fact *f_port = nullptr;
+    Fact *f_connect = nullptr;
+    Fact *f_list = nullptr;
 
-void print(const char *v)
-{
-    puts(v);
-}
-void printf(const char *v)
-{
-    print(v);
-}
-void printf(const char *fmt, const char *v)
-{
-    printf_s(fmt, v);
-}
-void printf(const char *fmt, float v)
-{
-    printf_f(fmt, v);
-}
-void printf(const char *fmt, int32_t v)
-{
-    printf_i(fmt, v);
-}
-void printf(const char *fmt, uint32_t v)
-{
-    printf_i(fmt, v);
-}
+private:
+    Datalink *m_datalink = nullptr;
 
-#endif
+    void updateStatus();
+    void load();
+    void save();
+    DatalinkSerialRemote *createConnection(const QString &host, int port);
+
+private slots:
+    void onConnectTriggered();
+    void onConnectionActiveChanged();
+    void onConnectionRemoveTriggered();
+};

@@ -184,15 +184,15 @@ QJsonValue json::fix_number(QJsonValue jsv)
 
 QJsonObject json::rename(QJsonObject jso, const QHash<QString, QString> &map)
 {
-    for (auto it = jso.begin(); it != jso.end();) {
-        auto key = it.key();
-        if (!map.contains(key)) {
-            it++;
+    for (auto key : map.keys()) {
+        if (!jso.contains(key))
             continue;
-        }
 
-        jso[map[key]] = it.value();
-        it = jso.erase(it);
+        auto value = jso.take(key);
+        auto new_key = map.value(key);
+        if (new_key.isEmpty())
+            continue; // skip empty keys
+        jso[new_key] = value;
     }
     return jso;
 }

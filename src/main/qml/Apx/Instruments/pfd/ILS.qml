@@ -26,8 +26,9 @@ Item {
     id: ils_window
 
     readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_reg_airbrk: mandala.cmd.reg.airbrk.value
 
-    readonly property var f_delta: mandala.est.wpt.derr
+    readonly property var f_derr: mandala.est.wpt.derr
     readonly property var f_xtrack: mandala.est.wpt.xtrack
 
     readonly property int m_reg_hdg: mandala.cmd.reg.hdg.value
@@ -36,13 +37,14 @@ Item {
 
     property double anumation_duration: 1000
 
-    property bool isLanding: m_mode===proc_mode_LANDING
+    readonly property bool isLanding: m_mode===proc_mode_LANDING
+    readonly property bool isDistTracking: m_reg_airbrk===reg_airbrk_dist
 
     property double sz: (width>height?height:width)*0.6
-
+    
     PfdImage {
         id: ils_bar_vertical
-        visible: ui.test || isLanding
+        visible: ui.test || isDistTracking
         elementName: "ils-bar-vertical"
         fillMode: Image.PreserveAspectFit
         anchors.left: parent.left
@@ -50,25 +52,27 @@ Item {
         height: sz
         width: elementBounds.width*height/elementBounds.height
         //smooth: ui.antialiasing
-        Rectangle {
-            antialiasing: true
-            color: "#3f3"
-            border.width: 0.5
-            border.color: "#80000000"
-            width: parent.width*1.5
-            height: parent.width*0.5
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: apx.limit(f_delta.value/500*parent.height/2,-parent.height*0.6,parent.height*0.6)
-            Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration; } }
-            Text {
-                property double value: Math.abs(f_delta.value.toFixed())
-                visible: value>25
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.right: parent.left
-                text: value
-                color: "white"
-                font: apx.font_narrow(parent.width)
-            }
+    }
+    
+    Rectangle {
+        visible: ui.test || isLanding || isDistTracking
+        antialiasing: true
+        color: "#3f3"
+        border.width: 0.5
+        border.color: "#80000000"
+        width: ils_bar_vertical.width*1.5
+        height: ils_bar_vertical.width*0.5
+        anchors.centerIn: ils_bar_vertical
+        anchors.verticalCenterOffset: apx.limit(f_derr.value/500*ils_bar_vertical.height/2,-ils_bar_vertical.height*0.6,ils_bar_vertical.height*0.6)
+        Behavior on anchors.verticalCenterOffset { enabled: ui.smooth; PropertyAnimation {duration: anumation_duration; } }
+        Text {
+            property double value: Math.abs(f_derr.value.toFixed())
+            visible: value>25
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.left
+            text: value
+            color: "white"
+            font: apx.font_narrow(parent.width)
         }
     }
 
@@ -103,6 +107,4 @@ Item {
             }
         }
     }
-
-
 }

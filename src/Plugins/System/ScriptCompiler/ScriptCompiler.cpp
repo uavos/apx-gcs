@@ -179,12 +179,6 @@ void ScriptCompiler::setCompiler(QString cc)
         AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.vscode"),
                           AppDirs::scripts().absoluteFilePath(".vscode"));
 
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/sysroot"),
-                          AppDirs::scripts().absoluteFilePath("sysroot"));
-
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
-                          AppDirs::scripts().absoluteFilePath("include"));
-
         AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
                           AppDirs::scripts().absoluteFilePath("examples"));
 

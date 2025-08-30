@@ -46,10 +46,11 @@ public:
     static QDir db();
 
     static QDir logs();
-    static QDir video();
-    static QDir images();
 
     //-------------------------------------------
     //HELPERS
     static bool copyPath(QString sourceDir, QString destinationDir);
+
+    static QHash<QString, QDir> _versioned_dirs;
+    static QDir versioned_dir(QDir dir);
 };

@@ -98,9 +98,6 @@ void Firmware::unitRegistered(Unit *unit)
 }
 void Firmware::nodeNotify(NodeItem *node)
 {
-    if (node->ident().isEmpty())
-        return;
-
     auto uid = node->uid();
 
     // update nodes map
@@ -114,6 +111,9 @@ void Firmware::nodeNotify(NodeItem *node)
         _nodesMap.insert(uid, s);
         nodesMapUpdated(_nodesMap);
     }
+
+    if (node->ident().isEmpty())
+        return;
 
     if (queued(f_queue, uid))
         return;

@@ -61,7 +61,11 @@ QVariant AppNotifyListModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() >= rowCount())
         return QVariant();
-    NotifyListItem *item = m_items.at(index.row());
+
+    NotifyListItem *item = m_items.value(index.row());
+    if (!item)
+        return QVariant();
+
     switch (role) {
     case TextRole:
         return item->text;
@@ -90,11 +94,13 @@ void AppNotifyListModel::notification(QString msg,
         return;
 
     int row = rowCount();
-    if (row > 1000) {
-        beginRemoveRows(QModelIndex(), 0, 1);
-        m_items.removeAt(0);
-        m_items.removeAt(0);
-        endRemoveRows();
+    if (row > 10000) {
+        QTimer::singleShot(1, this, [this]() {
+            beginRemoveRows(QModelIndex(), 0, 1);
+            m_items.removeAt(0);
+            m_items.removeAt(0);
+            endRemoveRows();
+        });
     }
 
     row = rowCount();
