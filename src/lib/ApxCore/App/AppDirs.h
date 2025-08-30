@@ -49,7 +49,7 @@ public:
 
     //-------------------------------------------
     //HELPERS
-    static bool copyPath(QString sourceDir, QString destinationDir);
+    static bool copyPath(QString sourceDir, QString destinationDir, bool copy_hidden = false);
 
     static QHash<QString, QDir> _versioned_dirs;
     static QDir versioned_dir(QDir dir);

@@ -60,8 +60,6 @@ private:
 
     void extract(QString fileName);
 
-    void update_vscode();
-
     void setCompiler(QString cc);
 
 private slots:
