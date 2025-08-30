@@ -17,11 +17,15 @@ function(apx_plugin)
     list(GET path_list -1 target)
     message(STATUS "PLUGIN: ${target}")
 
-    apx_glob_srcs(${SRCS})
+    # find SRCS files
+    if(NOT SRCS AND NOT CUSTOM)
+        set(SRCS "*.[chsS]*;*.yml") # default search patterns
+    endif()
+    apx_glob_srcs(SRCS)
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qml)
         list(APPEND SRCS "qml")
     endif()
-    apx_glob_srcs(${SRCS})
+    apx_glob_srcs(SRCS)
 
     add_library(${target} SHARED ${SRCS})
 
