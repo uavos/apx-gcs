@@ -100,7 +100,9 @@ void DatalinkRemotes::discover(void)
     if (f_discover->value().toBool()) {
         if (udpDiscover->state() == QAbstractSocket::BoundState)
             return;
-        if (udpDiscover->bind(QHostAddress::AnyIPv4, UDP_PORT_DISCOVER)) {
+        if (udpDiscover->bind(QHostAddress::AnyIPv4,
+                              UDP_PORT_DISCOVER,
+                              QAbstractSocket::ShareAddress)) {
             f_discover->setActive(true);
             qDebug() << "binded";
             return;
