@@ -104,15 +104,19 @@ bool TelemetryFileImport::import_telemetry(QString srcFileName)
             //check format
             QXmlStreamReader xml(&src_file);
             if (xml.readNextStartElement()) {
+                QString format;
                 if (xml.name().compare("telemetry") == 0) {
-                    auto format = xml.attributes().value("format").toString();
+                    format = xml.attributes().value("format").toString();
                     if (format.isEmpty())
                         format = "old";
-                    rv = import_telemetry_v11(xml, format);
                 } else if (xml.name().compare("telemetry.gcu.uavos.com") == 0) {
-                    rv = import_telemetry_v9(xml);
+                    format = "v9";
+                } else {
+                    rv = false;
+                    break;
                 }
 
+                rv = import_telemetry_xml(xml, format);
                 if (rv)
                     break;
             }
@@ -169,10 +173,9 @@ QJsonValue TelemetryFileImport::import_js(QXmlStreamReader &xml,
     return json::fix_numbers(json::remove_empty(jso));
 }
 
-bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString format)
+bool TelemetryFileImport::import_telemetry_xml(QXmlStreamReader &xml, QString format)
 {
-    apxMsg() << tr("Importing v10 format").append(':') << QFileInfo(_srcFileName).fileName()
-             << format;
+    apxMsg() << tr("Importing XML").append(':') << QFileInfo(_srcFileName).fileName() << format;
 
     bool ok = true;
 
@@ -192,11 +195,57 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
         jso_import["hash"] = _src_hash;
         jso_import["format"] = format;
 
+        bool format_v9 = format == "v9";
+        if (format_v9) {
+            const auto title = xml.attributes().value("title").toString().trimmed();
+            if (!title.isEmpty())
+                jso_import["title"] = title;
+            const auto s_utc = xml.attributes().value("UTC").toString().trimmed();
+            jso_import["timestamp"] = s_utc;
+            const auto ts = QDateTime::fromString(s_utc, Qt::ISODate).toMSecsSinceEpoch();
+            if (ts > 0) {
+                info["timestamp"] = ts;
+                // qDebug() << "timestamp from UTC:" << ts << s_utc;
+            } else {
+                apxMsgW() << tr("Invalid timestamp").append(':') << s_utc;
+            }
+            // get unit name from title v9
+            auto unit_name = title.split('_').mid(6).join('_').trimmed();
+            if (!unit_name.isEmpty()) {
+                QJsonObject unit;
+                unit["name"] = unit_name;
+                info["unit"] = unit;
+            }
+        }
+
+        bool data_begins = false;
         QString tag;
         while (xml.readNextStartElement()) {
             tag = xml.name().toString();
-            if (tag == "data")
+
+            if (format_v9) {
+                if (tag == "mandala") {
+                    auto jso = import_js(xml).toObject();
+                    fields = jso["fields"].toString().split(',', Qt::SkipEmptyParts);
+                    auto version = jso["version"].toString().trimmed();
+                    if (!version.isEmpty()) {
+                        QJsonObject sw;
+                        sw["version"] = version;
+                        info["sw"] = sw;
+                    }
+                    // the only tag to read in header for v9
+                    data_begins = true;
+                    break;
+                }
+                // tag not recognized for v9
+                xml.skipCurrentElement();
+                continue;
+            }
+
+            if (tag == "data") {
+                data_begins = true;
                 break; // stop on data
+            }
 
             if (tag == "info") {
                 auto jso = import_js(xml).toObject();
@@ -292,7 +341,7 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
         } // read xml header
 
         // header parsed
-        if (tag != "data" || fields.isEmpty() || info.isEmpty()) {
+        if (!data_begins || fields.isEmpty() || info.isEmpty()) {
             apxMsgW() << tr("XML data error");
             qDebug() << info;
             qDebug() << fields;
@@ -305,7 +354,58 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
         info["import"] = jso_import;
 
         // parse title
-        {
+        if (format_v9) {
+            // file title encodes local timestamp
+            // find UTC offset by comparing to UTC timestamp from tag
+            auto st = jso_import["title"].toString().split('_');
+            if (st.size() < 6) {
+                apxMsgW() << tr("Invalid title format").append(':') << jso_import["title"];
+            } else {
+                auto ts_name = QDateTime::fromString(st.mid(0, 5).join('_'), "yyyy_MM_dd_HH_mm");
+                ts_name.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(0));
+                // qDebug() << "timestamp from name:" << ts_name.toMSecsSinceEpoch();
+                if (!ts_name.isValid()) {
+                    apxMsgW() << tr("Invalid timestamp in title").append(':') << st;
+                }
+
+                auto timestamp = info["timestamp"].toVariant().toULongLong();
+                if (timestamp > 0) {
+                    qint64 utc_offset = (ts_name.toMSecsSinceEpoch() - timestamp) / 1000;
+                    // qDebug() << "utc_offset:" << utc_offset;
+
+                    if (std::abs(utc_offset) > 24 * 3600 * 1000) {
+                        apxMsgW() << tr("Invalid UTC offset").append(':') << utc_offset;
+                        qWarning() << "utc_offset" << utc_offset << "ts_name"
+                                   << ts_name.toMSecsSinceEpoch() << "timestamp" << timestamp;
+                    } else {
+                        info["utc_offset"] = utc_offset;
+                        ts_name.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utc_offset));
+                        // compare two timestamps
+                        auto tms_name = ts_name.toMSecsSinceEpoch();
+                        auto tms = info["timestamp"].toVariant().toULongLong();
+                        if (tms_name != tms) {
+                            apxMsgW() << tr("Timestamp mismatch").append(':') << tms_name << tms
+                                      << utc_offset;
+                            if (tms == 0) {
+                                info["timestamp"] = tms_name;
+                            }
+                        } else {
+                            // qDebug() << "utc_offset" << utc_offset << "tms_name" << tms_name
+                            //          << "tms" << tms;
+                        }
+                    }
+                } else if (ts_name.isValid()) {
+                    // no timestamp in info, use ts_name
+                    info["timestamp"] = ts_name.toMSecsSinceEpoch();
+                    qDebug() << "set timestamp from title" << info["timestamp"];
+                } else {
+                    apxMsgW() << tr("Invalid timestamp").append(':') << jso_import["title"];
+                    ok = false;
+                    break;
+                }
+            }
+
+        } else {
             auto s = jso_import["title"].toString();
             auto s_ts = s.left(s.indexOf('-'));
             auto s_name = s.mid(s.indexOf('-') + 1);
@@ -392,106 +492,109 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
             if (xml.attributes().hasAttribute("t"))
                 time_tag = xml.attributes().value("t").toUInt();
 
-            // downlink data
-            if (tag == "D") {
-                TelemetryFileWriter::Values values;
-                size_t i = 0;
-                for (const auto &s : xml.readElementText().split(',', Qt::KeepEmptyParts)) {
-                    if (s.isEmpty()) {
-                        i++;
-                        continue;
+            if (format_v9) {
+            } else {
+                // downlink data
+                if (tag == "D") {
+                    TelemetryFileWriter::Values values;
+                    size_t i = 0;
+                    for (const auto &s : xml.readElementText().split(',', Qt::KeepEmptyParts)) {
+                        if (s.isEmpty()) {
+                            i++;
+                            continue;
+                        }
+                        if (s.startsWith('#')) {
+                            i += s.mid(1).toUInt();
+                            continue;
+                        }
+                        auto field_index = i++;
+                        if (field_index >= fields.size())
+                            continue;
+
+                        auto v = s.toDouble();
+                        if (std::isnan(v) || std::isinf(v))
+                            continue;
+
+                        const auto &field = fields_stream[field_index];
+                        values[&field] = v;
                     }
-                    if (s.startsWith('#')) {
-                        i += s.mid(1).toUInt();
-                        continue;
-                    }
-                    auto field_index = i++;
-                    if (field_index >= fields.size())
+
+                    if (values.empty())
                         continue;
 
-                    auto v = s.toDouble();
-                    if (std::isnan(v) || std::isinf(v))
-                        continue;
+                    stream.write_values(time_tag, values, false);
+                    record_count++;
+                    continue;
+                }
 
+                // uplink data
+                if (tag == "U") {
+                    const auto name = xml.attributes().value("name").toString();
+                    // find field index by name
+                    int field_index = -1;
+                    for (const auto &f : fields) {
+                        field_index++;
+                        if (f == name)
+                            break;
+                    }
+                    if (field_index < 0) {
+                        qWarning() << "ignored field" << name;
+                        continue;
+                    }
+                    TelemetryFileWriter::Values values;
                     const auto &field = fields_stream[field_index];
-                    values[&field] = v;
-                }
-
-                if (values.empty())
-                    continue;
-
-                stream.write_values(time_tag, values, false);
-                record_count++;
-                continue;
-            }
-
-            // uplink data
-            if (tag == "U") {
-                const auto name = xml.attributes().value("name").toString();
-                // find field index by name
-                int field_index = -1;
-                for (const auto &f : fields) {
-                    field_index++;
-                    if (f == name)
-                        break;
-                }
-                if (field_index < 0) {
-                    qWarning() << "ignored field" << name;
+                    values[&field] = (float) xml.readElementText().toDouble();
+                    stream.write_values(time_tag, values, true);
+                    record_count++;
                     continue;
                 }
-                TelemetryFileWriter::Values values;
-                const auto &field = fields_stream[field_index];
-                values[&field] = (float) xml.readElementText().toDouble();
-                stream.write_values(time_tag, values, true);
-                record_count++;
-                continue;
-            }
 
-            // event
-            if (tag == "E") {
-                const auto evt_name = xml.attributes().value("name").toString();
-                const auto uid = xml.attributes().value("uid").toString();
-                bool uplink = xml.attributes().value("uplink").toUInt();
-                const auto value = xml.readElementText();
-                if (evt_name.isEmpty()) {
-                    qWarning() << "unknown event" << evt_name << value;
-                    continue;
-                }
-                // qDebug() << "event" << evt_name << value << uid;
-                if (evt_name == "msg") {
-                    auto msg = value;
-                    auto src = QString();
-                    if (msg.contains('[') && msg.contains(']')) {
-                        auto i1 = msg.indexOf('[');
-                        auto i2 = msg.indexOf(']');
-                        src = msg.mid(i1 + 1, i2 - i1 - 1);
-                        msg.remove(i1, i2 - i1 + 1);
+                // event
+                if (tag == "E") {
+                    const auto evt_name = xml.attributes().value("name").toString();
+                    const auto uid = xml.attributes().value("uid").toString();
+                    bool uplink = xml.attributes().value("uplink").toUInt();
+                    const auto value = xml.readElementText();
+                    if (evt_name.isEmpty()) {
+                        qWarning() << "unknown event" << evt_name << value;
+                        continue;
                     }
-                    stream.write_evt(time_tag, &telemetry::EVT_MSG, {uid, src, msg}, false, 1);
-                    continue;
-                }
-                if (evt_name == "mission") {
-                    auto it = missions.find(uid);
-                    if (it == missions.end())
+                    // qDebug() << "event" << evt_name << value << uid;
+                    if (evt_name == "msg") {
+                        auto msg = value;
+                        auto src = QString();
+                        if (msg.contains('[') && msg.contains(']')) {
+                            auto i1 = msg.indexOf('[');
+                            auto i2 = msg.indexOf(']');
+                            src = msg.mid(i1 + 1, i2 - i1 - 1);
+                            msg.remove(i1, i2 - i1 + 1);
+                        }
+                        stream.write_evt(time_tag, &telemetry::EVT_MSG, {uid, src, msg}, false, 1);
                         continue;
-                    auto jso = it->second;
-                    jso["import"] = json::merge(jso["import"].toObject(), jso_import);
-                    stream.write_jso(time_tag, evt_name, jso, uplink);
-                    continue;
-                }
-                if (evt_name == "nodes") {
-                    auto it = nodes.find(uid);
-                    if (it == nodes.end())
+                    }
+                    if (evt_name == "mission") {
+                        auto it = missions.find(uid);
+                        if (it == missions.end())
+                            continue;
+                        auto jso = it->second;
+                        jso["import"] = json::merge(jso["import"].toObject(), jso_import);
+                        stream.write_jso(time_tag, evt_name, jso, uplink);
                         continue;
-                    auto jso = it->second;
-                    jso["import"] = jso_import;
-                    // qDebug() << value << jso;
-                    stream.write_jso(time_tag, evt_name, jso, uplink);
-                    continue;
-                }
+                    }
+                    if (evt_name == "nodes") {
+                        auto it = nodes.find(uid);
+                        if (it == nodes.end())
+                            continue;
+                        auto jso = it->second;
+                        jso["import"] = jso_import;
+                        // qDebug() << value << jso;
+                        stream.write_jso(time_tag, evt_name, jso, uplink);
+                        continue;
+                    }
 
-                continue;
-            } // <E> event
+                    continue;
+                } // <E> event
+            }
 
             // special tags with objects
 
@@ -500,6 +603,9 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
                 if (jso.isEmpty())
                     continue;
                 jso["import"] = json::merge(jso["import"].toObject(), jso_import);
+                if (!jso.contains("time"))
+                    jso["time"] = (qint64) timestamp + time_tag;
+
                 // qDebug() << tag << jso;
                 stream.write_jso(time_tag, tag, jso, false);
                 continue;
@@ -508,6 +614,9 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
             if (tag == "nodes") {
                 auto jso = import_nodes(xml);
                 jso["import"] = json::merge(jso["import"].toObject(), jso_import);
+                if (!jso.contains("time"))
+                    jso["time"] = (qint64) timestamp + time_tag;
+
                 jso = json::fix_numbers(jso);
                 stream.write_jso(time_tag, tag, jso, false);
                 continue;
@@ -523,12 +632,6 @@ bool TelemetryFileImport::import_telemetry_v11(QXmlStreamReader &xml, QString fo
 
     emit progress(0);
     return ok;
-}
-
-bool TelemetryFileImport::import_telemetry_v9(QXmlStreamReader &xml)
-{
-    apxMsg() << tr("Importing v9 format").append(':') << QFileInfo(_srcFileName).fileName();
-    return false;
 }
 
 QJsonObject TelemetryFileImport::import_mission(QXmlStreamReader &xml)
@@ -595,10 +698,12 @@ QJsonObject TelemetryFileImport::import_mission(QXmlStreamReader &xml)
             auto jso = json::rename(jsv.toObject(), map_fields);
             // fix some values
             jso.remove("id");
-            auto type = jso["type"].toVariant().toString();
+            jso.remove("idx");
+            auto type = jso.take("type").toVariant().toString();
             if (name == "wp") {
-                jso["type"] = (type == "Line" || type == "1") ? QString("track")
-                                                              : QString("direct");
+                if (type == "Line" || type == "1") {
+                    jso["xtrack"] = true;
+                }
             } else if (name == "rw") {
                 jso["type"] = (type == "Right" || type == "1") ? QString("right") : QString("left");
             }
@@ -639,21 +744,35 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
     }
 
     const auto imp = import_js(xml,
-                               {"dictionary",
-                                "config",
-                                "user",
-                                "commands",
-                                "fields",
-                                "info",
-                                "vehicle",
-                                "ident"},
-                               {"node", "command", "field"})
+                               {
+                                   "dictionary",
+                                   "config",
+                                   "user",
+                                   "commands",
+                                   "fields",
+                                   "struct",
+                                   "info",
+                                   "vehicle",
+                                   "ident",
+                                   "struct",
+                               },
+                               {
+                                   "node",
+                                   "command",
+                                   "field",
+                               })
                          .toObject();
 
     QJsonObject nodes;
 
-    nodes["title"] = imp["info"]["title"];
-    nodes["time"] = imp["info"]["time"];
+    json::save("nodes-imp", imp);
+
+    if (imp.contains("info")) {
+        nodes["title"] = imp["info"]["title"];
+        nodes["time"] = imp["info"]["time"];
+    } else {
+        nodes["title"] = imp["title"];
+    }
 
     {
         QJsonObject jso;
@@ -794,7 +913,7 @@ QJsonObject TelemetryFileImport::import_nodes(QXmlStreamReader &xml)
 
     // clean up and return object
     nodes = json::fix_numbers(json::remove_empty(nodes));
-    // json::save("nodes-conv", nodes);
+    json::save("nodes-conv", nodes);
     // json::save("nodes-orig", imp);
 
     return nodes;

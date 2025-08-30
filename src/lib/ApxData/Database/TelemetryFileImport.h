@@ -46,8 +46,7 @@ private:
     QString _src_hash;
     QString _srcFileName;
 
-    bool import_telemetry_v11(QXmlStreamReader &xml, QString format);
-    bool import_telemetry_v9(QXmlStreamReader &xml);
+    bool import_telemetry_xml(QXmlStreamReader &xml, QString format);
 
     // helpers
     static QJsonValue import_js(QXmlStreamReader &xml,
