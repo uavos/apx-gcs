@@ -196,7 +196,7 @@ ControlArea {
         readonly property real v: f_ins_dh.value
 
         elementName: "altitude-triangle"
-        visible: ui.test || apx.datalink.valid
+        visible: ui.test || f_ins_dh.value !== 0 || unit.isReplay
 
         sourceScale: altitude_window.strip_scale
         anchors.right: altitude_window.left

@@ -4,7 +4,7 @@
  * Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
  * All rights reserved
  *
- * This file is part of APX Shared Libraries.
+ * This file is part of APX Ground Control.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,21 +19,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+import QtQuick
+import QtQuick.Controls
 
-#include "types.h"
-#include "visibility.h"
+MenuItem {
+    readonly property real miScale: Math.max(0.75,1*ui.scale)
 
-__BEGIN_DECLS
-
-typedef uint8_t port_id_t;
-
-// register receive callback for Virtual Comm Port
-// The callback must be defined as:
-// EXPORT void on_serial_data(const uint8_t *data, size_t size) {}
-void receive(port_id_t port_id, const char *rx_callback);
-
-// send data to Virtual Comm Port
-void send(port_id_t port_id, const void *data, size_t size, bool online = false);
-
-__END_DECLS
+    font: apx.font(lineSize,control.bold)
+    implicitHeight: 20 * miScale
+    topPadding: 5 * miScale
+    bottomPadding: 5 * miScale
+    leftPadding: 10 * miScale
+    rightPadding: 10 * miScale
+}

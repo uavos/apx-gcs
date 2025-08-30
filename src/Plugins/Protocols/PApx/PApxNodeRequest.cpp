@@ -252,7 +252,7 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
         {"version", sversion},
         {"hardware", shardware},
         {"hash", _node->hashToText(ident.hash)},
-        {"format", (bool) ident.format},
+        {"format", (int) ident.format},
         {"reconf", (bool) ident.flags.bits.reconf},
         {"busy", (bool) ident.flags.bits.busy},
         {"files", QJsonArray::fromStringList(fnames)},

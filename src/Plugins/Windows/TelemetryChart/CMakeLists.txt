@@ -1,6 +1,7 @@
 apx_plugin(DEPENDS lib.ApxGcs)
 
-apx_glob_srcs("qwt/*.[ch]*")
+set(SRCS "qwt/*.[ch]*")
+apx_glob_srcs(SRCS)
 add_library(qwt STATIC ${SRCS})
 
 apx_qt(qwt Concurrent PrintSupport OpenGL Svg)
