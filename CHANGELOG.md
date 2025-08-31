@@ -1,3 +1,12 @@
+# [APX Ground Control v11.2.11](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.11) (08/30/25)
+
+> Branch: `main`\
+> Date: `08/30/25 19:58:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/5a93e083e77da7ff15d2fc7a574946ebd834ab2f...9304a38d203ff155b6a01f4726438d10fb15f461)
+
+## New Features
+* Get WASM Script SDK from nodes firmware package
+
 # [APX Ground Control v11.2.10](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.10) (08/08/25)
 
 > Branch: `main`\
