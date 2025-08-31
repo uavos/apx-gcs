@@ -129,7 +129,7 @@ QDir AppDirs::logs()
 //-------------------------------------------
 //HELPERS
 
-bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
+bool AppDirs::copyPath(QString sourceDir, QString destinationDir, bool copy_hidden)
 {
     QFileInfo srcInfo(sourceDir);
     QFileInfo destInfo(destinationDir);
@@ -171,13 +171,16 @@ bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
         rv = true;
     }
 
-    for (const auto directoryName : originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+    QDir::Filters dirExtraFilters = copy_hidden ? QDir::Hidden : QDir::Filters();
+
+    for (const auto directoryName :
+         originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot | dirExtraFilters)) {
         QString destinationPath = destinationDir + "/" + directoryName;
         //destinationDirectory.mkpath(directoryName);
         copyPath(sourceDir + "/" + directoryName, destinationPath);
     }
 
-    for (const auto fileName : originDirectory.entryList(QDir::Files)) {
+    for (const auto fileName : originDirectory.entryList(QDir::Files | dirExtraFilters)) {
         QFileInfo dest(destinationDir + "/" + fileName);
         QFileInfo src(sourceDir + "/" + fileName);
         if (dest.exists()) {
