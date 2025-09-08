@@ -114,6 +114,13 @@ Item {
     readonly property var f_gyro_valid: mandala.est.gyro.valid
     readonly property var f_acc_valid: mandala.est.acc.valid
 
+    // pitot heater
+    readonly property bool m_sns_hstatus: mandala.sns.pitot.hstatus.value
+    readonly property real m_sns_htemp: mandala.sns.pitot.htemp.value
+    readonly property bool m_pwr_ice: mandala.ctr.pwr.ice.value
+    readonly property bool m_pwr_hpt: mandala.ctr.pwr.hpt.value
+
+
     readonly property bool isValid: f_att_status.value > 0
 
     opacity: ui.effects?((apx.datalink.valid && !(unit.streamType===APX.PUnit.XPDR||unit.streamType===APX.PUnit.TELEMETRY))?0.7:1):1
@@ -216,6 +223,23 @@ Item {
                 anchors.leftMargin: parent.width*0.6
                 anchors.topMargin: pfdScene.topFramesMargin
                 anchors.bottomMargin: anchors.topMargin
+
+                CleanText { // pitot heater status
+                    // anchors.verticalCenterOffset: -pfdScene.flagHeight*1.5
+                    anchors.bottom: parent.verticalCenter
+                    anchors.right: parent.left
+                    anchors.rightMargin: height/4
+                    // anchors.left: parent.left
+                    height: pfdScene.txtHeight*0.5
+                    fact: f_ins_hsel
+                    visible: ui.test || m_pwr_hpt || m_pwr_ice || m_sns_hstatus
+                    type: m_pwr_hpt
+                        ? (m_sns_htemp<90?CleanText.Yellow:CleanText.Green)
+                        : m_pwr_ice
+                            ? ((m_sns_htemp!=0 && m_sns_htemp<50)?CleanText.White:CleanText.Clean)
+                            : CleanText.Blue
+                    text: "PH"
+                }
             }
 
             RectNum {
