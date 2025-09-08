@@ -1,3 +1,12 @@
+# [APX Ground Control v11.2.12](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.12) (09/08/25)
+
+> Branch: `main`\
+> Date: `09/08/25 19:35:45`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/17e3ff1a1097603521a9d0090d444ce4c74d212b...20fa297274e90eb7aee82a2ae9ba2dfe97841efb)
+
+## New Features
+* pitot heater status indicator on PFD
+
 # [APX Ground Control v11.2.11](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.11) (08/30/25)
 
 > Branch: `main`\
