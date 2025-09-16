@@ -1,3 +1,3 @@
-apx_plugin(DEPENDS lib.ApxData QT Location)
+set(QT_NO_PRIVATE_MODULE_WARNING ON)
 
-target_link_libraries(${MODULE} PRIVATE Qt6::LocationPrivate)
+apx_plugin(DEPENDS lib.ApxData QT Location LocationPrivate)
