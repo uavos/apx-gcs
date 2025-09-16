@@ -23,6 +23,12 @@
 
 #define PTRACE_MAX_ROWS 1000
 
+// Qt 6.7 compatibility
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
+#define beginFilterChange()
+#define endFilterChange() invalidateFilter()
+#endif
+
 PTraceListModel::PTraceListModel(QObject *parent)
     : QAbstractListModel(parent)
 {}
