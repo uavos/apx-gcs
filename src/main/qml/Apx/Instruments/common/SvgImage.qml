@@ -53,7 +53,10 @@ Image {
     onSourceSizeChanged: reloadImage()
 
     function reloadImage() {
-        if(svgFileNamePath.trim().length<=0)return
+        if(svgFileNamePath.trim().length<=0)
+            return
+        if(!svgRenderer)
+            return
 
         var src = "image://svg/"+svgFileNamePath
 
