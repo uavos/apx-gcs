@@ -91,20 +91,23 @@ void PTraceFilterProxyModel::add_filter(QString s)
     if (_filter.contains(s))
         return;
 
+    beginFilterChange();
     _filter.append(s);
-    invalidateFilter();
+    endFilterChange();
 }
 
 void PTraceFilterProxyModel::remove_filter(QString s)
 {
+    beginFilterChange();
     _filter.removeAll(s);
-    invalidateFilter();
+    endFilterChange();
 }
 
 void PTraceFilterProxyModel::clear_filter()
 {
+    beginFilterChange();
     _filter.clear();
-    invalidateFilter();
+    endFilterChange();
 }
 
 bool PTraceFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
