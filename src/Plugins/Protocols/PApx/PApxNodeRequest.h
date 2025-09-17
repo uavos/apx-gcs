@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include "PApxNode.h"
 #include "PApxRequest.h"
 
 #include <Mandala/Mandala.h>
@@ -58,7 +59,7 @@ public:
     bool silent{};
 
 protected:
-    PApxNode *_node;
+    QPointer<PApxNode> _node;
     mandala::uid_t _uid;
     uint _timeout_ms;
     bool _active{};

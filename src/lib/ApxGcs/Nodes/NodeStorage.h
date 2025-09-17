@@ -36,7 +36,7 @@ public:
     auto confID() const { return _confID; }
 
 private:
-    NodeItem *_node;
+    QPointer<NodeItem> _node;
     DatabaseModel *_dbmodel;
     quint64 _dictID{};
     quint64 _confID{};
