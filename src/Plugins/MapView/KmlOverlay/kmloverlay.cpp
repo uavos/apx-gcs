@@ -91,7 +91,8 @@ void KmlOverlay::onOpenTriggered()
                                                 "KML (*.kml)");
     if (!path.isEmpty()) {
         QFile file(path);
-        file.open(QIODevice::ReadOnly);
+        if (!file.open(QIODevice::ReadOnly))
+            return;
 
         m_parser.parse(file.readAll());
         file.close();

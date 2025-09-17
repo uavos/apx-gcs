@@ -32,7 +32,9 @@ NodeScript::NodeScript(Fact *fact)
 {
     srcFile.setFileTemplate(
         QFileInfo(srcFile.fileTemplate()).absoluteDir().absoluteFilePath("script-XXXXXX.cpp"));
-    srcFile.open();
+    if (!srcFile.open()) {
+        qWarning() << "Can't open temp file" << srcFile.fileName();
+    }
     // qDebug() << srcFile.fileName();
 
     outFileName = QFileInfo(srcFile.fileName())
@@ -111,10 +113,13 @@ void NodeScript::_update_cc_args()
             o.insert("cc", cc);
             ref = o;
             json.setObject(root);
-            fsettings.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
-            fsettings.write(json.toJson());
-            fsettings.close();
-            ok = true;
+            if (fsettings.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
+                fsettings.write(json.toJson());
+                fsettings.close();
+                ok = true;
+            } else {
+                qWarning() << "Can't write wasm config" << fsettings.fileName();
+            }
         }
     }
     if (!ok)
