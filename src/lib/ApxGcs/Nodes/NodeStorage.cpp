@@ -135,6 +135,9 @@ QStringList NodeStorage::get_names(Fact *f, QStringList path)
 }
 void NodeStorage::dictMetaLoaded(QJsonObject jso)
 {
+    if (!_node)
+        return;
+
     QElapsedTimer timer;
     timer.start();
 

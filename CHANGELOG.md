@@ -1,3 +1,42 @@
+# [APX Ground Control v11.2.12](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.12) (09/08/25)
+
+> Branch: `main`\
+> Date: `09/08/25 19:35:45`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/17e3ff1a1097603521a9d0090d444ce4c74d212b...20fa297274e90eb7aee82a2ae9ba2dfe97841efb)
+
+## New Features
+* pitot heater status indicator on PFD
+
+# [APX Ground Control v11.2.11](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.11) (08/30/25)
+
+> Branch: `main`\
+> Date: `08/30/25 19:58:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/5a93e083e77da7ff15d2fc7a574946ebd834ab2f...9304a38d203ff155b6a01f4726438d10fb15f461)
+
+## New Features
+* Get WASM Script SDK from nodes firmware package
+
+# [APX Ground Control v11.2.10](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.10) (08/08/25)
+
+> Branch: `main`\
+> Date: `08/08/25 21:39:32`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/9e0e9a50cd76509ce2e2b5314ea7431dec45de43...a546a361e4892e83481c78385150e72919f262ee)
+
+## Bug Fixes
+* flash faulted nodes workaround
+* some PFD flags and signs display behavior
+* config dirs versioning (closes [`40`](https://github.com/uavos/apx-gcs/issues/40))
+
+# [APX Ground Control v11.2.9](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.9) (06/03/25)
+
+> Branch: `main`\
+> Date: `06/03/25 20:29:51`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/2ae583db5d0b915b0185747598dcce0abc08d753...ccbcafb9c2f45e6adf9208b3eb8ca1ec5e9d4d01)
+
+## Bug Fixes
+* telemetry decoder xpdr interference
+* terminal log model segfault
+
 # [APX Ground Control v11.2.8](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.8) (05/06/25)
 
 > Branch: `main`\

@@ -28,7 +28,6 @@
 #include <Fleet/Unit.h>
 
 #include <App/App.h>
-#include <App/AppDirs.h>
 #include <App/AppLog.h>
 
 #include <QMediaDevices>
@@ -47,10 +46,10 @@ GstPlayer::GstPlayer(Fact *parent)
            "video")
     , m_frameCnt(0)
 {
-    if (!AppDirs::images().exists())
-        AppDirs::images().mkpath(AppDirs::images().absolutePath());
-    if (!AppDirs::video().exists())
-        AppDirs::video().mkpath(AppDirs::video().absolutePath());
+    if (!dir_images.exists())
+        dir_images.mkpath(".");
+    if (!dir_video.exists())
+        dir_video.mkpath(".");
 
     qmlRegisterType<GstPlayer>("GstPlayer", 1, 0, "GstPlayer");
 
@@ -311,10 +310,10 @@ QString GstPlayer::getMediaFileName(MediaType type)
     QString base;
     QString ext;
     if (type == mtImage) {
-        base = AppDirs::images().absolutePath();
+        base = dir_images.absolutePath();
         ext = "png";
     } else if (type == mtVideo) {
-        base = AppDirs::video().absolutePath();
+        base = dir_video.absolutePath();
         ext = "mp4";
     }
 

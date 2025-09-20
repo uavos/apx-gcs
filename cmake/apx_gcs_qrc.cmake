@@ -29,7 +29,7 @@ function(apx_qrc TARGET)
 
     # get_target_property(OUTPUT_NAME ${TARGET} OUTPUT_NAME)
 
-    apx_glob_srcs(${SRCS})
+    apx_glob_srcs(SRCS)
 
     set(qrc_file "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.qrc")
     file(WRITE ${qrc_file} "<!DOCTYPE RCC><RCC version=\"1.0\">\n")

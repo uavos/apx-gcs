@@ -31,6 +31,7 @@
 #include "QmlOverlay.h"
 #include "videothread.h"
 
+#include <App/AppDirs.h>
 #include <Fact/Fact.h>
 
 class Unit;
@@ -100,6 +101,9 @@ private:
     QString inputToUri();
 
     QStringList getAvailableWebcams();
+
+    inline static const QDir dir_video{AppDirs::user().absoluteFilePath("Video")};
+    inline static const QDir dir_images{AppDirs::user().absoluteFilePath("Images")};
 
 private slots:
     void stopAndPlay();

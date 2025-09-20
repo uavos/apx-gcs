@@ -175,55 +175,7 @@ void ScriptCompiler::setCompiler(QString cc)
 
     m_cc = cc;
 
-    if (App::dryRun() || !App::installed()) {
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.vscode"),
-                          AppDirs::scripts().absoluteFilePath(".vscode"));
-
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/sysroot"),
-                          AppDirs::scripts().absoluteFilePath("sysroot"));
-
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/include"),
-                          AppDirs::scripts().absoluteFilePath("include"));
-
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/examples"),
-                          AppDirs::scripts().absoluteFilePath("examples"));
-
-        AppDirs::copyPath(AppDirs::res().absoluteFilePath("scripts/.clang-format"),
-                          AppDirs::scripts().absoluteFilePath(".clang-format"));
-
-        update_vscode();
-    }
-
     emit available();
-}
-
-void ScriptCompiler::update_vscode()
-{
-    // update cc vscode settings
-    do {
-        QFile fsettings(AppDirs::scripts().absoluteFilePath(".vscode/settings.json"));
-
-        if (!fsettings.open(QFile::ReadOnly | QFile::Text))
-            break;
-
-        QJsonDocument json = QJsonDocument::fromJson(fsettings.readAll());
-        fsettings.close();
-        QJsonObject root = json.object();
-        QJsonValueRef ref = root.find("wasm").value();
-        if (ref.isUndefined())
-            break;
-
-        QJsonObject o = ref.toObject();
-        o.insert("cc", m_cc);
-        ref = o;
-        json.setObject(root);
-        fsettings.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
-        fsettings.write(json.toJson());
-        fsettings.close();
-
-        return;
-    } while (0);
-    qWarning() << "vscode settings error";
 }
 
 void ScriptCompiler::download()

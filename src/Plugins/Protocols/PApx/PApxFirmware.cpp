@@ -22,6 +22,7 @@
 #include "PApxFirmware.h"
 
 #include "PApxNode.h"
+#include "PApxNodeRequest.h"
 #include "PApxNodes.h"
 
 #include <App/App.h>

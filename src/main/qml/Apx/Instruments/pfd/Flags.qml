@@ -99,7 +99,7 @@ Column {
         height: txtHeight
         visible: true
         fact: f_eng
-        show: fact.value <= 0 && apx.datalink.valid
+        show: fact.value <= 0 && (apx.datalink.valid || fact.everReceived)
         type: CleanText.Red
         text: qsTr("ENG")
     }

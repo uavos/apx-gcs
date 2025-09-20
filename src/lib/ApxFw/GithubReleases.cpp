@@ -175,7 +175,13 @@ void GithubReleases::requestDownload(QUrl url)
     _reply = request(url);
 
     _file = new QTemporaryFile(this);
-    _file->open();
+    if (!_file->open()) {
+        _file = nullptr;
+        _reply->abort();
+        _reply = nullptr;
+        responseError("cannot open temp file");
+        return;
+    }
 
     connect(_reply, &QNetworkReply::finished, this, &GithubReleases::responseDownload);
     connect(_reply,

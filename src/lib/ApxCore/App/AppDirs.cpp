@@ -83,63 +83,53 @@ QDir AppDirs::plugins()
 
 QDir AppDirs::userPlugins()
 {
-    return QDir(user().absoluteFilePath("Plugins"));
+    return versioned_dir(QDir(user().absoluteFilePath("Plugins")));
 }
 
 QDir AppDirs::firmware()
 {
-    return QDir(AppDirs::user().absoluteFilePath("Firmware"));
+    return versioned_dir(QDir(AppDirs::user().absoluteFilePath("Firmware")));
 }
 
 QDir AppDirs::prefs()
 {
-    return QDir(AppDirs::user().absoluteFilePath("Preferences"));
+    return versioned_dir(QDir(AppDirs::user().absoluteFilePath("Preferences")));
 }
 
 QDir AppDirs::storage()
 {
-    return QDir(user().absoluteFilePath("Storage"));
+    return versioned_dir(QDir(user().absoluteFilePath("Storage")));
 }
 
 QDir AppDirs::missions()
 {
-    return QDir(user().absoluteFilePath("Missions"));
+    return versioned_dir(QDir(user().absoluteFilePath("Missions")));
 }
 
 QDir AppDirs::configs()
 {
-    return QDir(user().absoluteFilePath("Configs"));
+    return versioned_dir(QDir(user().absoluteFilePath("Configs")));
 }
 
 QDir AppDirs::scripts()
 {
-    return QDir(user().absoluteFilePath("Scripts"));
+    return versioned_dir(QDir(user().absoluteFilePath("Scripts")));
 }
 
 QDir AppDirs::db()
 {
-    return QDir(user().absoluteFilePath("Data"));
+    return versioned_dir(QDir(user().absoluteFilePath("Data")));
 }
 
 QDir AppDirs::logs()
 {
-    return QDir(user().absoluteFilePath("Logs"));
-}
-
-QDir AppDirs::video()
-{
-    return QDir(user().absoluteFilePath("Video"));
-}
-
-QDir AppDirs::images()
-{
-    return QDir(user().absoluteFilePath("Images"));
+    return versioned_dir(QDir(user().absoluteFilePath("Logs")));
 }
 
 //-------------------------------------------
 //HELPERS
 
-bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
+bool AppDirs::copyPath(QString sourceDir, QString destinationDir, bool copy_hidden)
 {
     QFileInfo srcInfo(sourceDir);
     QFileInfo destInfo(destinationDir);
@@ -181,13 +171,16 @@ bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
         rv = true;
     }
 
-    for (const auto directoryName : originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+    QDir::Filters dirExtraFilters = copy_hidden ? QDir::Hidden : QDir::Filters();
+
+    for (const auto directoryName :
+         originDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot | dirExtraFilters)) {
         QString destinationPath = destinationDir + "/" + directoryName;
         //destinationDirectory.mkpath(directoryName);
         copyPath(sourceDir + "/" + directoryName, destinationPath);
     }
 
-    for (const auto fileName : originDirectory.entryList(QDir::Files)) {
+    for (const auto fileName : originDirectory.entryList(QDir::Files | dirExtraFilters)) {
         QFileInfo dest(destinationDir + "/" + fileName);
         QFileInfo src(sourceDir + "/" + fileName);
         if (dest.exists()) {
@@ -204,4 +197,36 @@ bool AppDirs::copyPath(QString sourceDir, QString destinationDir)
     finalDestination.refresh();
 
     return rv;
+}
+
+QHash<QString, QDir> AppDirs::_versioned_dirs;
+
+QDir AppDirs::versioned_dir(QDir dir)
+{
+    const auto dir_path = dir.absolutePath();
+
+    // check if the directory is already cached
+    if (_versioned_dirs.contains(dir_path))
+        return _versioned_dirs.value(dir_path);
+
+    // find if there is a versioned directory existing
+    for (auto ver = QCoreApplication::applicationVersion(); !ver.isEmpty();
+         ver.truncate(ver.indexOf('.'))) {
+        auto vdir = QDir(dir.absolutePath() + "." + ver);
+        if (vdir.exists()) {
+            qDebug() << "Using versioned dir:" << vdir.dirName();
+            _versioned_dirs.insert(dir_path, vdir);
+            return vdir;
+        }
+    }
+
+    // no versioned directory found, use default
+    if (!dir.exists()) {
+        qDebug() << "Creating directory:" << dir.absolutePath();
+        if (!dir.mkpath(".")) {
+            qWarning() << "Failed to create directory:" << dir.absolutePath();
+        }
+    }
+    _versioned_dirs.insert(dir_path, dir);
+    return dir;
 }

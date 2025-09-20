@@ -22,6 +22,7 @@
 #include "PApxNodes.h"
 
 #include "PApxNode.h"
+#include "PApxNodeRequest.h"
 
 #include <Mandala/Mandala.h>
 #include <XbusNode.h>

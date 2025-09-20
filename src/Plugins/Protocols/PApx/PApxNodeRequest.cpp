@@ -47,6 +47,9 @@ PApxNodeRequest::~PApxNodeRequest()
 }
 QString PApxNodeRequest::title() const
 {
+    if (!_node || !_node->parent() || !_node->parent()->parent())
+        return QString("orphan request %1").arg(Mandala::meta(uid()).name);
+
     return QString("%1/%2/%3")
         .arg(_node->parent()->parent()->title())
         .arg(_node->title())
@@ -64,6 +67,9 @@ void PApxNodeRequest::discard()
 
 bool PApxNodeRequest::make_request(PApxRequest &req)
 {
+    if (!_node)
+        return false;
+
     _active = true;
 
     req.request(_uid);
@@ -252,7 +258,7 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
         {"version", sversion},
         {"hardware", shardware},
         {"hash", _node->hashToText(ident.hash)},
-        {"format", (bool) ident.format},
+        {"format", (int) ident.format},
         {"reconf", (bool) ident.flags.bits.reconf},
         {"busy", (bool) ident.flags.bits.busy},
         {"files", QJsonArray::fromStringList(fnames)},

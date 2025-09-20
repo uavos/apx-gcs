@@ -136,7 +136,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         defaults();
     } else {
         copyValuesFrom(port);
-        f_remove = new Fact(this, "remove", tr("Remove"), "", Action | Remove);
+        f_remove = new Fact(this, "remove", tr("Remove"), "", Action | Remove | CloseOnTrigger);
         connect(f_remove, &Fact::triggered, this, &DatalinkPort::removeTriggered);
 
         for (int i = 0; i < size(); ++i) {

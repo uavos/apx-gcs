@@ -164,6 +164,40 @@ bool ApxFw::extractRelease(const QString &filePath)
 
     updateNodesMeta(dir);
 
+    // extract Scripts SDK
+    do {
+        auto sdk_zip_fi = dir.entryInfoList({"APX_Nodes_SDK-*.zip"}, QDir::Files, QDir::Name)
+                              .value(0);
+        if (!sdk_zip_fi.exists()) {
+            qWarning() << "Missing SDK archive in firmware release" << fzip.fileName();
+            break;
+        }
+
+        // remove old sysroot only
+        QDir sysroot_dest(AppDirs::scripts().absoluteFilePath("sysroot"));
+        if (sysroot_dest.exists())
+            sysroot_dest.removeRecursively();
+
+        // extract to sdk temp folder
+        auto sdk_files = JlCompress::extractDir(sdk_zip_fi.absoluteFilePath(),
+                                                AppDirs::scripts().absolutePath());
+        if (sdk_files.isEmpty()) {
+            apxMsgW() << tr("Can't extract SDK archive") << sdk_zip_fi.fileName();
+            break;
+        }
+
+        // copy contents of temp folder to local scripts data
+        QDir sdk_src_fi(AppDirs::scripts().absoluteFilePath("apx-nodes-sdk"));
+        if (!sdk_src_fi.exists()) {
+            apxMsgW() << "Invalid SDK archive structure" << sdk_zip_fi.fileName();
+            break;
+        }
+        AppDirs::copyPath(sdk_src_fi.absolutePath(), AppDirs::scripts().absolutePath(), true);
+        sdk_src_fi.removeRecursively();
+
+        apxMsg() << tr("SDK updated (%1)").arg(sdk_files.size());
+    } while (0);
+
     return true;
 }
 

@@ -1,6 +1,7 @@
 set(target ${PROJECT_NAME})
 
-apx_glob_srcs("*.[ch]*" "qml")
+set(SRCS "*.[ch]*;qml")
+apx_glob_srcs(SRCS)
 
 add_executable(${target} ${SRCS})
 
@@ -42,7 +43,7 @@ if(APPLE)
 elseif(UNIX AND NOT APPLE)
 
     set(SRCS ${APX_RESOURCES_DIR}/linux/**)
-    apx_glob_srcs(${SRCS})
+    apx_glob_srcs(SRCS)
 
     foreach(src ${SRCS})
         file(RELATIVE_PATH dir ${APX_RESOURCES_DIR}/linux ${CMAKE_CURRENT_SOURCE_DIR}/${src})

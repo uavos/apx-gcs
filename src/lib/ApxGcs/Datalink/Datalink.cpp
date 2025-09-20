@@ -63,6 +63,8 @@ Datalink::Datalink(Fact *parent)
     f_server->setSection(sect);
     f_remotes = new DatalinkRemotes(this);
     f_remotes->setSection(sect);
+    f_serialRemotes = new DatalinkSerialRemotes(this);
+    f_serialRemotes->setSection(sect);
     f_ports = new DatalinkPorts(this);
     f_ports->setSection(sect);
 
