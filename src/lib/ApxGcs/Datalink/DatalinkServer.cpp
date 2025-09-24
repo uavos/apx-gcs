@@ -117,6 +117,12 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     connect(f_http, &Fact::valueChanged, this, &DatalinkServer::httpActiveChanged);
     connect(f_udp, &Fact::valueChanged, this, &DatalinkServer::udpActiveChanged);
 
+    statusTimer.setSingleShot(true);
+    connect(&statusTimer, &QTimer::timeout, this, [this]() {
+        f_alloff->setEnabled(false);
+        setValue("");
+    });
+
     updateStatus();
 
     // connect after app loading with some delay
@@ -129,8 +135,14 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
 void DatalinkServer::updateStatus()
 {
     int cnt = f_clients->size();
-    f_alloff->setEnabled(cnt > 0);
-    setValue(cnt > 0 ? QString::number(cnt) : "");
+
+    if (cnt > 0) {
+        statusTimer.stop();
+        f_alloff->setEnabled(true);
+        setValue(QString::number(cnt));
+    } else {
+        statusTimer.start(3000);
+    }
 }
 
 void DatalinkServer::httpActiveChanged()
