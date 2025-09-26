@@ -21,6 +21,7 @@
  */
 #include "PApxNode.h"
 #include "PApxNodeFile.h"
+#include "PApxNodeRequest.h"
 #include "PApxNodes.h"
 
 #include <Mandala/Mandala.h>
@@ -368,6 +369,11 @@ QString PApxNode::hashToText(xbus::node::hash_t hash)
     return QString("%1").arg(hash, sizeof(hash) * 2, 16, QChar('0')).toUpper();
 }
 
+void PApxNode::requestIdent()
+{
+    new PApxNodeRequestIdent(this);
+}
+
 void PApxNode::requestDict()
 {
     if (!file("dict"))
@@ -403,6 +409,12 @@ void PApxNode::requestDict()
 
     req->exec();
 }
+
+void PApxNode::requestDictDownload()
+{
+    new PApxNodeRequestFileRead(this, "dict");
+}
+
 void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
 {
     auto hash = dict.value("cache").toString();
@@ -968,4 +980,17 @@ QByteArray PApxNode::pack_script(const QJsonValue &jsv)
     stream.append(code);
     stream.append(src);
     return stream.toByteArray();
+}
+
+void PApxNode::requestReboot()
+{
+    new PApxNodeRequestReboot(this);
+}
+void PApxNode::requestMod(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data)
+{
+    new PApxNodeRequestMod(this, cmd, adr, data);
+}
+void PApxNode::requestUsr(quint8 cmd, QByteArray data)
+{
+    new PApxNodeRequestUsr(this, cmd, data);
 }

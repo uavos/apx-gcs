@@ -1,3 +1,16 @@
+# [APX Ground Control v11.2.13](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.13) (09/25/25)
+
+> Branch: `main`\
+> Date: `09/25/25 08:56:53`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/fe7bd27c5cb7a34e6a2789c3cee0982c8ff34620...163a9dafafb0d7adc70722d4855ae9fae66a9075)
+
+## Bug Fixes
+* periodic segfaults on nodes refresh while downloading
+* datalink server status
+
+## Performance Enhancements
+* macos Qt upgrade to 6.10
+
 # [APX Ground Control v11.2.12](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.12) (09/08/25)
 
 > Branch: `main`\
