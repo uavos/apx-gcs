@@ -113,7 +113,7 @@ void Shortcuts::load()
 {
     QFile fusr(AppDirs::prefs().filePath("shortcuts.json"));
     if (!fusr.open(QFile::ReadOnly | QFile::Text)) {
-        qWarning() << fusr.errorString();
+        fromJson({}); // will load default system shortcuts
         return;
     }
 
