@@ -1,3 +1,13 @@
+# [APX Ground Control v11.2.14](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.14) (10/01/25)
+
+> Branch: `main`\
+> Date: `10/01/25 18:13:09`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/681570cfbacd8b5367b58a41dbe939975b5a23fc...2727b927151d1786db08481674dbb1eeee036b4f)
+
+## Bug Fixes
+* keyboard shortcuts scope
+* default system shortcuts
+
 # [APX Ground Control v11.2.13](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.13) (09/25/25)
 
 > Branch: `main`\
