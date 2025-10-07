@@ -22,7 +22,8 @@
 #include "DatalinkSerialRemotes.h"
 
 #include "Datalink.h"
-#include "DatalinkSerialRemote.h"
+#include "DatalinkSerialRemoteTcp.h"
+#include "DatalinkSerialRemoteUdpMcast.h"
 #include <App/AppLog.h>
 #include <App/AppSettings.h>
 
@@ -54,6 +55,13 @@ DatalinkSerialRemotes::DatalinkSerialRemotes(Datalink *datalink)
                       tr("TCP Port of remote serial port"),
                       Int | PersistentValue,
                       "numeric");
+    f_type = new Fact(f_add,
+                      "type",
+                      tr("Type"),
+                      tr("Type of connection"),
+                      Enum | PersistentValue,
+                      "format-list-bulleted-type");
+    f_type->setEnumStrings({"tcp", "udp_mcast"});
     f_list = new Fact(this,
                       "remote_ports",
                       tr("Remote ports"),
@@ -69,8 +77,8 @@ void DatalinkSerialRemotes::updateStatus()
 {
     int connectedCount = 0;
     int totalCount = f_list->size();
-    for(auto f: f_list->facts()) {
-        if(f->active()) {
+    for (auto f : f_list->facts()) {
+        if (f->active()) {
             connectedCount++;
         }
     }
@@ -87,8 +95,11 @@ void DatalinkSerialRemotes::load()
                 auto o = v.toObject();
                 QString host = o["host"].toString();
                 int port = o["port"].toInt();
-                auto c = createConnection(host, port);
-                c->setActivated(o["activated"].toBool());
+                QString type = o["type"].toString();
+                if (!type.isEmpty()) {
+                    auto c = createConnection(host, port, type);
+                    c->setActivated(o["activated"].toBool());
+                }
             }
         }
     }
@@ -100,12 +111,22 @@ void DatalinkSerialRemotes::save()
         auto objs = f_list->facts();
         QJsonArray array;
         for (auto o : objs) {
-            auto c = qobject_cast<DatalinkSerialRemote *>(o);
-            if (c) {
+            auto tcpc = qobject_cast<DatalinkSerialRemoteTcp *>(o);
+            if (tcpc) {
                 QJsonObject json;
-                json["host"] = c->getHost();
-                json["port"] = c->getPort();
-                json["activated"] = c->activated();
+                json["host"] = tcpc->getHost();
+                json["port"] = tcpc->getPort();
+                json["activated"] = tcpc->activated();
+                json["type"] = "tcp";
+                array.append(json);
+            }
+            auto udpmcastc = qobject_cast<DatalinkSerialRemoteUdpMcast *>(o);
+            if (udpmcastc) {
+                QJsonObject json;
+                json["host"] = udpmcastc->getHost();
+                json["port"] = udpmcastc->getPort();
+                json["activated"] = udpmcastc->activated();
+                json["type"] = "udp_mcast";
                 array.append(json);
             }
         }
@@ -116,21 +137,34 @@ void DatalinkSerialRemotes::save()
     }
 }
 
-DatalinkSerialRemote *DatalinkSerialRemotes::createConnection(const QString &host, int port)
+DatalinkConnection *DatalinkSerialRemotes::createConnection(const QString &host,
+                                                            int port,
+                                                            const QString &type)
 {
-    DatalinkSerialRemote *c = new DatalinkSerialRemote(f_list, host, port);
+    DatalinkConnection *c = nullptr;
+    if (type == "tcp") {
+        DatalinkSerialRemoteTcp *tcpc = new DatalinkSerialRemoteTcp(f_list, host, port);
+        connect(tcpc->f_remove,
+                &Fact::triggered,
+                this,
+                &DatalinkSerialRemotes::onConnectionRemoveTriggered);
+        c = tcpc;
+    } else if (type == "udp_mcast") {
+        DatalinkSerialRemoteUdpMcast *udpc = new DatalinkSerialRemoteUdpMcast(f_list, host, port);
+        connect(udpc->f_remove,
+                &Fact::triggered,
+                this,
+                &DatalinkSerialRemotes::onConnectionRemoveTriggered);
+        c = udpc;
+    }
     m_datalink->addConnection(c);
     c->setValue(true);
 
     connect(c,
-            &DatalinkSerialRemote::activeChanged,
+            &DatalinkSerialRemoteTcp::activeChanged,
             this,
             &DatalinkSerialRemotes::onConnectionActiveChanged);
-    connect(c, &DatalinkSerialRemote::activatedChanged, this, &DatalinkSerialRemotes::save);
-    connect(c->f_remove,
-            &Fact::triggered,
-            this,
-            &DatalinkSerialRemotes::onConnectionRemoveTriggered);
+    connect(c, &DatalinkSerialRemoteTcp::activatedChanged, this, &DatalinkSerialRemotes::save);
 
     updateStatus();
     return c;
@@ -138,7 +172,7 @@ DatalinkSerialRemote *DatalinkSerialRemotes::createConnection(const QString &hos
 
 void DatalinkSerialRemotes::onConnectionActiveChanged()
 {
-    auto c = qobject_cast<DatalinkSerialRemote *>(sender());
+    auto c = qobject_cast<DatalinkSerialRemoteTcp *>(sender());
     updateStatus();
 }
 
@@ -150,6 +184,6 @@ void DatalinkSerialRemotes::onConnectionRemoveTriggered()
 
 void DatalinkSerialRemotes::onConnectTriggered()
 {
-    createConnection(f_host->text(), f_port->value().toInt());
+    createConnection(f_host->text(), f_port->value().toInt(), f_type->text());
     save();
 }
