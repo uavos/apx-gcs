@@ -28,15 +28,15 @@
 #include <QGeoRectangle>
 #include <QtCore>
 
-#include "Airspace.h"
 #include "MissionGroup.h"
 
-class MissionListModel;
 class Waypoint;
 class Runway;
 class Taxiway;
 class Poi;
-class Airspace;
+class Geo;
+
+class MissionListModel;
 class LookupMissions;
 class MissionShare;
 class MissionStorage;
@@ -65,19 +65,17 @@ class UnitMission : public Fact
 public:
     explicit UnitMission(Unit *parent);
 
-    typedef MissionGroupT<Runway> Runways;
-    typedef MissionGroupT<Waypoint> Waypoints;
-    typedef MissionGroupT<Taxiway> Taxiways;
-    typedef MissionGroupT<Poi> Pois;
+    typedef MissionGroupT<Runway> RunwayItems;
+    typedef MissionGroupT<Waypoint> WaypointItems;
+    typedef MissionGroupT<Taxiway> TaxiwayItems;
+    typedef MissionGroupT<Poi> PoiItems;
+    typedef MissionGroupT<Geo> GeoItems;
 
-    Runways *f_runways;
-    Waypoints *f_waypoints;
-    Taxiways *f_taxiways;
-    Pois *f_pois;
-
-    Airspace *f_airspace;
-    //MissionItems *f_restricted;
-    //MissionItems *f_emergency;
+    RunwayItems *f_rw;
+    WaypointItems *f_wp;
+    TaxiwayItems *f_tw;
+    PoiItems *f_pi;
+    GeoItems *f_gi;
 
     Fact *f_title;
 

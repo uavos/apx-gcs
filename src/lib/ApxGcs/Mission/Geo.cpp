@@ -19,14 +19,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "AirspaceItem.h"
+#include "Geo.h"
 #include "MissionField.h"
 #include "UnitMission.h"
 #include <App/App.h>
 #include <QGeoCircle>
 
-AirspaceItem::AirspaceItem(Fact *parent)
-    : Fact(parent, "A#", "", tr("Geofence"), Group | ModifiedGroup)
+Geo::Geo(MissionGroup *parent)
+    : MissionItem(parent, "p#", "", "")
 {
     setOpt("color", "#E65100");
 
@@ -77,12 +77,12 @@ AirspaceItem::AirspaceItem(Fact *parent)
     //title
     updateTitle();
     for (auto f : facts())
-        connect(f, &Fact::valueChanged, this, &AirspaceItem::updateTitle);
+        connect(f, &Fact::valueChanged, this, &Geo::updateTitle);
 
     App::jsync(this);
 }
 
-void AirspaceItem::updateTitle()
+void Geo::updateTitle()
 {
     QStringList st;
 
@@ -113,10 +113,17 @@ void AirspaceItem::updateTitle()
 
     setTitle(st.join(' '));
 }
-void AirspaceItem::updateDescr()
+void Geo::updateDescr()
 {
     QStringList st;
     QString sts;
     setDescr(st.join(' '));
     setValue(sts);
+}
+
+QGeoRectangle Geo::boundingGeoRectangle() const
+{
+    return MissionItem::boundingGeoRectangle();
+    //.united(
+    //    QGeoCircle(coordinate(), std::abs(f_radius->value().toDouble())).boundingGeoRectangle());
 }

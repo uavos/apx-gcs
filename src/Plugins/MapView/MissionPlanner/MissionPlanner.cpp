@@ -40,19 +40,19 @@ MissionPlanner::MissionPlanner(Fact *parent)
     Fact *f;
 
     f = new Fact(f_add, "waypoint", tr("Waypoint"), "", CloseOnTrigger, "map-marker");
-    connect(f, &Fact::triggered, this, [this]() { mission()->f_waypoints->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_wp->add(clickCoordinate()); });
 
     f = new Fact(f_add, "point", tr("Point of interest"), "", CloseOnTrigger, "map-marker-radius");
-    connect(f, &Fact::triggered, this, [this]() { mission()->f_pois->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_pi->add(clickCoordinate()); });
 
     f = new Fact(f_add, "runway", tr("Runway"), "", CloseOnTrigger, "road");
-    connect(f, &Fact::triggered, this, [this]() { mission()->f_runways->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_rw->add(clickCoordinate()); });
 
     f = new Fact(f_add, "taxiway", tr("Taxiway"), "", CloseOnTrigger, "vector-polyline");
-    connect(f, &Fact::triggered, this, [this]() { mission()->f_taxiways->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_tw->add(clickCoordinate()); });
 
-    f = new Fact(f_add, "airspace", tr("Geofence"), "", CloseOnTrigger, "map-marker-radius");
-    connect(f, &Fact::triggered, this, [this]() { mission()->f_airspace->add(clickCoordinate()); });
+    f = new Fact(f_add, "geo", tr("Geofence"), "", CloseOnTrigger, "map-marker-radius");
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_gi->add(clickCoordinate()); });
 
     // commands to unit
     f = new Fact(f_unit, "fly_here", tr("Fly here"), "", CloseOnTrigger, "airplane");

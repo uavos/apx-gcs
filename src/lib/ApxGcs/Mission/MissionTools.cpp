@@ -84,8 +84,8 @@ MissionTools::MissionTools(UnitMission *mission, Flags flags)
 void MissionTools::altadjustTriggered()
 {
     int v = f_altadjust->value().toInt();
-    for (int i = 0; i < mission->f_waypoints->size(); ++i) {
-        Fact *f = static_cast<Waypoint *>(mission->f_waypoints->child(i))->f_altitude;
+    for (int i = 0; i < mission->f_wp->size(); ++i) {
+        Fact *f = static_cast<Waypoint *>(mission->f_wp->child(i))->f_altitude;
         f->setValue(f->value().toInt() + v);
     }
     f_altadjust->setValue(0);
@@ -94,8 +94,8 @@ void MissionTools::altadjustTriggered()
 void MissionTools::altsetTriggered()
 {
     int v = f_altset->value().toInt();
-    for (int i = 0; i < mission->f_waypoints->size(); ++i) {
-        Fact *f = static_cast<Waypoint *>(mission->f_waypoints->child(i))->f_altitude;
+    for (int i = 0; i < mission->f_wp->size(); ++i) {
+        Fact *f = static_cast<Waypoint *>(mission->f_wp->child(i))->f_altitude;
         f->setValue(v);
     }
 }
@@ -103,8 +103,8 @@ void MissionTools::altsetTriggered()
 void MissionTools::updateMaxAltitude()
 {
     int alt = 0;
-    for (int i = 0; i < mission->f_waypoints->size(); ++i) {
-        Waypoint *wp = qobject_cast<Waypoint *>(mission->f_waypoints->child(i));
+    for (int i = 0; i < mission->f_wp->size(); ++i) {
+        Waypoint *wp = qobject_cast<Waypoint *>(mission->f_wp->child(i));
         if (!wp)
             continue;
         int v = wp->f_altitude->value().toInt();

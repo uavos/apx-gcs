@@ -21,20 +21,30 @@
  */
 #pragma once
 
-#include "AirspaceItem.h"
-#include "UnitMission.h"
+#include "MissionItem.h"
+#include <QtCore>
 
-#include <XbusMission.h>
-
-class Airspace : public Fact
+class Geo : public MissionItem
 {
     Q_OBJECT
 
 public:
-    explicit Airspace(UnitMission *parent);
+    explicit Geo(MissionGroup *parent);
 
-    typedef xbus::mission::geo_s::shape_e Shape;
+    Fact *f_role;
+    Fact *f_shape;
+    Fact *f_top;
+    Fact *f_bottom;
+    Fact *f_inverted;
 
-public slots:
-    void add(const QGeoCoordinate &p, Shape shape = Shape::POLYGON);
+    Fact *f_label;
+
+    Fact *f_points;
+
+protected:
+    QGeoRectangle boundingGeoRectangle() const;
+
+private slots:
+    void updateTitle();
+    void updateDescr();
 };
