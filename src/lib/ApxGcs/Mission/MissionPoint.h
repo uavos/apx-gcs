@@ -29,15 +29,20 @@
 class MissionPoint : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
+
 public:
     explicit MissionPoint(Fact *parent, QString name, QString title, QString descr = "");
     explicit MissionPoint(Fact *parent, QString title, QGeoCoordinate c);
 
-    void setCoordinate(const QGeoCoordinate &c);
+    void setCoordinate(QGeoCoordinate c);
     auto coordinate() const { return _coordinate; }
 
     bool setValue(const QVariant &v) override;
 
 private:
     QGeoCoordinate _coordinate;
+
+signals:
+    void coordinateChanged();
 };

@@ -27,6 +27,8 @@
 class Geo : public MissionItem
 {
     Q_OBJECT
+    Q_PROPERTY(
+        QGeoCoordinate radiusPoint READ radiusPoint WRITE setRadiusPoint NOTIFY radiusPointChanged)
 
 public:
     explicit Geo(MissionGroup *parent);
@@ -54,4 +56,14 @@ protected:
 
 private slots:
     void updateTitle() override;
+
+    //---------------------------------------
+    // PROPERTIES
+public:
+    QGeoCoordinate radiusPoint() const;
+    void setRadiusPoint(const QGeoCoordinate &v);
+
+protected:
+signals:
+    void radiusPointChanged();
 };

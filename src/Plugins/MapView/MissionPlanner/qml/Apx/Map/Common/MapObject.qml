@@ -48,6 +48,8 @@ MapQuickItem {  //to be used inside MapComponent only
     property alias contentsBottom:  containerBottom.children
     property alias contentsCenter:  containerCenter.children
 
+    property real radiusFactor: 10
+
 
     signal triggered()
     signal moved()
@@ -161,7 +163,7 @@ MapQuickItem {  //to be used inside MapComponent only
                     antialiasing: true
                     border.width: 2
                     border.color: "#FFFFFF"
-                    radius: shadow?height/10:0
+                    radius: shadow?height/mapObject.radiusFactor:0
                     color: "#50FFFFFF"
                     opacity: ui.effects?0.6:1
                 }
@@ -172,6 +174,7 @@ MapQuickItem {  //to be used inside MapComponent only
             horizontalAlignment: Text.AlignHCenter
             text: title
             square: true
+            radiusFactor: mapObject.radiusFactor
             visible: shadowLoader.status!=Loader.Ready
         }
         Loader {

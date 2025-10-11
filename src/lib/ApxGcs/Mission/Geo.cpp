@@ -97,6 +97,8 @@ Geo::Geo(MissionGroup *parent)
     f_radius->setUnits("m");
     f_radius->setMin(100);
     f_radius->setIncrement(100);
+    connect(this, &MissionItem::coordinateChanged, this, &Geo::radiusPointChanged);
+    connect(f_radius, &Fact::valueChanged, this, &Geo::radiusPointChanged);
 
     f_points = new Fact(this,
                         "points",
@@ -119,7 +121,7 @@ Geo::Geo(MissionGroup *parent)
             f_points->setVisible(true);
             f_p2->setVisible(false);
             if (f_points->size() < 3) {
-                for (int i = f_points->size(); i < 3; ++i)
+                for (int i = f_points->size(); i < 4; ++i)
                     addPoint(coordinate().atDistanceAndAzimuth(100.0 * (i + 1), 90.0 * i));
             }
             break;
@@ -213,7 +215,7 @@ void Geo::updateTitle()
     st.append("#" + QString::number(num() + 1));
 
     if (f_inverted->value().toBool()) {
-        st.append("i");
+        st.append("n");
     }
 
     auto label = f_label->valueText();
@@ -232,10 +234,11 @@ void Geo::updateTitle()
 
     switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
     case xbus::mission::geo_s::CIRCLE:
-        st.append(QString("C%1m").arg(f_radius->value().toInt()));
+        st.append(QString("C%1").arg(AppRoot::distanceToString(f_radius->value().toInt())));
         break;
     case xbus::mission::geo_s::LINE:
-        st.append(QString("L%1m").arg(int(coordinate().distanceTo(f_p2->coordinate()))));
+        st.append(QString("L%1").arg(
+            AppRoot::distanceToString((coordinate().distanceTo(f_p2->coordinate())))));
         break;
     case xbus::mission::geo_s::POLYGON:
         st.append(QString("[%1]").arg(f_points->size()));
@@ -274,4 +277,32 @@ void Geo::addPoint(QGeoCoordinate c, int n)
     auto pt = new MissionPoint(f_points, tr("Polygon vertex"), c);
     if (n >= 0)
         pt->move(n, false);
+}
+
+QGeoCoordinate Geo::radiusPoint() const
+{
+    return f_pos->coordinate().atDistanceAndAzimuth(std::abs(f_radius->value().toInt()), 90.0);
+}
+void Geo::setRadiusPoint(const QGeoCoordinate &v)
+{
+    auto p = f_pos->coordinate();
+    double a = qDegreesToRadians(p.azimuthTo(v));
+    double d = p.distanceTo(v);
+    QPointF ne(d * std::cos(a), d * std::sin(a));
+    ne = AppRoot::rotate(ne, 90.0);
+    int rabs = std::abs(f_radius->value().toInt());
+    if (std::abs(ne.y()) > (rabs / 2.0)) {
+        //switch turn direction
+        f_radius->setValue(ne.y() > 0 ? rabs : -rabs);
+    }
+    int dist = ne.x();
+    if (dist < 20)
+        dist = 0;
+    else if (dist > 50000)
+        dist = (dist / 1000) * 1000;
+    else if (dist > 500)
+        dist = (dist / 100) * 100;
+    else
+        dist = (dist / 10) * 10;
+    f_radius->setValue(f_radius->value().toInt() < 0 ? -dist : dist);
 }

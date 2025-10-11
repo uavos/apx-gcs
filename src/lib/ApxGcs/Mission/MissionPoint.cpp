@@ -94,9 +94,13 @@ bool MissionPoint::setValue(const QVariant &v)
     return false;
 }
 
-void MissionPoint::setCoordinate(const QGeoCoordinate &c)
+void MissionPoint::setCoordinate(QGeoCoordinate c)
 {
+    if (_coordinate == c)
+        return;
+
     _coordinate = c;
     Fact::setValue(QString("%1 | %2").arg(AppRoot::latToString(c.latitude()),
                                           AppRoot::lonToString(c.longitude())));
+    emit coordinateChanged();
 }
