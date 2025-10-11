@@ -31,6 +31,7 @@ class MissionPoint : public Fact
     Q_OBJECT
 public:
     explicit MissionPoint(Fact *parent, QString name, QString title, QString descr = "");
+    explicit MissionPoint(Fact *parent, QString title, QGeoCoordinate c);
 
     void setCoordinate(const QGeoCoordinate &c);
     auto coordinate() const { return _coordinate; }

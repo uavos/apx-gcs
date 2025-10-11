@@ -42,6 +42,9 @@ public:
     // geometry
     Fact *f_radius;
     Fact *f_points;
+    MissionPoint *f_p2;
+
+    void addPoint(QGeoCoordinate c, int n = -1);
 
 protected:
     QGeoRectangle boundingGeoRectangle() const;

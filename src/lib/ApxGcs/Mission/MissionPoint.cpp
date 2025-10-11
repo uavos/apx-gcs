@@ -26,6 +26,11 @@
 MissionPoint::MissionPoint(Fact *parent, QString name, QString title, QString descr)
     : Fact(parent, name, title, descr, Fact::Text | Fact::ModifiedTrack)
 {}
+MissionPoint::MissionPoint(Fact *parent, QString title, QGeoCoordinate c)
+    : MissionPoint(parent, "p#", title)
+{
+    setCoordinate(c);
+}
 
 bool MissionPoint::setValue(const QVariant &v)
 {

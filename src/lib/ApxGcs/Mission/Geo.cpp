@@ -33,7 +33,7 @@ Geo::Geo(MissionGroup *parent)
     // geofence role
     f_role = new MissionField(this, "role", tr("Role"), "", Fact::Enum);
     f_role->setEnumStrings({
-        "safe",
+        "safe", // must reflect xbus::mission::geo_s
         "nofly",
         "terminate",
         "auxiliary",
@@ -41,17 +41,17 @@ Geo::Geo(MissionGroup *parent)
     connect(f_role, &Fact::valueChanged, this, [this]() {
         // color depends on role
         QString c = "#E65100"; //orange
-        switch (f_role->value().toInt()) {
-        case 0: // safe - green
+        switch ((xbus::mission::geo_s::role_e) f_role->value().toInt()) {
+        case xbus::mission::geo_s::SAFE: // safe - green
             c = "#1B5E20";
             break;
-        case 1: // no-fly - yellow
+        case xbus::mission::geo_s::DENY: // no-fly - yellow
             c = "#a0500e";
             break;
-        case 2: // terminate - red
+        case xbus::mission::geo_s::TERM: // terminate - red
             c = "#D50000";
             break;
-        case 3: // auxiliary - blue
+        case xbus::mission::geo_s::AUX: // auxiliary - blue
             c = "#2962FF";
             break;
         }
@@ -62,7 +62,7 @@ Geo::Geo(MissionGroup *parent)
     // shape
     f_shape = new MissionField(this, "shape", tr("Shape"), "", Fact::Enum);
     f_shape->setEnumStrings({
-        "circle",
+        "circle", // must reflect xbus::mission::geo_s
         "polygon",
         "line",
     });
@@ -103,6 +103,36 @@ Geo::Geo(MissionGroup *parent)
                         tr("Points"),
                         tr("Geofence points"),
                         Fact::Group | Fact::ModifiedGroup | Fact::Count);
+
+    f_p2 = new MissionPoint(this, "p2", tr("Point 2"), tr("Second point of line"));
+
+    // select applicable shape parameters
+    connect(f_shape, &Fact::valueChanged, this, [this]() {
+        switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
+        case xbus::mission::geo_s::CIRCLE: // circle
+            f_radius->setVisible(true);
+            f_points->setVisible(false);
+            f_p2->setVisible(false);
+            break;
+        case xbus::mission::geo_s::POLYGON: // polygon
+            f_radius->setVisible(false);
+            f_points->setVisible(true);
+            f_p2->setVisible(false);
+            if (f_points->size() < 3) {
+                for (int i = f_points->size(); i < 3; ++i)
+                    addPoint(coordinate().atDistanceAndAzimuth(100.0 * (i + 1), 90.0 * i));
+            }
+            break;
+        case xbus::mission::geo_s::LINE: // line
+            f_radius->setVisible(false);
+            f_points->setVisible(false);
+            f_p2->setVisible(true);
+            if (!f_p2->coordinate().isValid())
+                f_p2->setCoordinate(coordinate().atDistanceAndAzimuth(500.0, 45.0));
+            break;
+        }
+    });
+    emit f_shape->valueChanged();
 
     //title
     updateTitle();
@@ -154,7 +184,31 @@ void Geo::updateDescr()
 
 QGeoRectangle Geo::boundingGeoRectangle() const
 {
-    return MissionItem::boundingGeoRectangle();
-    //.united(
-    //    QGeoCircle(coordinate(), std::abs(f_radius->value().toDouble())).boundingGeoRectangle());
+    QGeoRectangle r;
+    switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
+    case xbus::mission::geo_s::CIRCLE: // circle
+        r = QGeoCircle(coordinate(), std::abs(f_radius->value().toDouble())).boundingGeoRectangle();
+        break;
+    case xbus::mission::geo_s::POLYGON: // polygon
+        for (auto i : f_points->facts()) {
+            auto p = qobject_cast<MissionPoint *>(i);
+            if (p)
+                r = r.isValid() ? r.united(QGeoRectangle(p->coordinate(), p->coordinate()))
+                                : QGeoRectangle(p->coordinate(), p->coordinate());
+        }
+        break;
+    case xbus::mission::geo_s::LINE: // line
+        r = QGeoRectangle(coordinate(), f_p2->coordinate());
+        break;
+    }
+    return MissionItem::boundingGeoRectangle().united(r);
+}
+
+void Geo::addPoint(QGeoCoordinate c, int n)
+{
+    if (f_shape->value().toInt() != xbus::mission::geo_s::POLYGON)
+        return;
+    auto pt = new MissionPoint(f_points, tr("Polygon vertex"), c);
+    if (n >= 0)
+        pt->move(n, false);
 }
