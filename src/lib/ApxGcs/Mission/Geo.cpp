@@ -30,6 +30,7 @@ Geo::Geo(MissionGroup *parent)
 {
     setOpt("color", "#E65100");
 
+    // geofence role
     f_role = new Fact(this, "role", tr("Role"), "", Fact::Enum);
     f_role->setEnumStrings({
         "safe",
@@ -37,7 +38,28 @@ Geo::Geo(MissionGroup *parent)
         "terminate",
         "auxiliary",
     });
+    connect(f_role, &Fact::valueChanged, this, [this]() {
+        // color depends on role
+        QString c = "#E65100"; //orange
+        switch (f_role->value().toInt()) {
+        case 0: // safe - green
+            c = "#1B5E20";
+            break;
+        case 1: // no-fly - yellow
+            c = "#a0500e";
+            break;
+        case 2: // terminate - red
+            c = "#D50000";
+            break;
+        case 3: // auxiliary - blue
+            c = "#2962FF";
+            break;
+        }
+        setOpt("color", c);
+    });
+    emit f_role->valueChanged();
 
+    // shape
     f_shape = new Fact(this, "shape", tr("Shape"), "", Fact::Enum);
     f_shape->setEnumStrings({
         "circle",
@@ -45,6 +67,7 @@ Geo::Geo(MissionGroup *parent)
         "line",
     });
 
+    // other fields
     f_label = new Fact(this, "label", tr("Label"), tr("Geofence label"), Fact::Text);
 
     f_top = new MissionField(this, "top", tr("Top"), tr("Top altitude AMSL"), Fact::Int);
@@ -65,14 +88,13 @@ Geo::Geo(MissionGroup *parent)
 
     f_inverted = new Fact(this, "inverted", tr("Inverted"), tr("Valid when outside"), Fact::Bool);
 
+    // fields specific to shape
     f_points = new Fact(this,
                         "points",
                         tr("Points"),
                         tr("Geofence points"),
                         Fact::Group | Fact::ModifiedGroup | Fact::Count);
-
-    auto f_remove = new Fact(this, "remove", tr("Remove"), tr("Remove geofence"), Action | Remove);
-    connect(f_remove, &Fact::triggered, this, &Fact::deleteFact);
+    f_points->setSection(tr("Geometry"));
 
     //title
     updateTitle();
@@ -86,16 +108,17 @@ void Geo::updateTitle()
 {
     QStringList st;
 
-    st.append(f_role->valueText());
+    st.append(f_role->valueText().at(0).toUpper());
+    st.append(f_shape->valueText().at(0).toUpper());
+    st.append("#" + QString::number(num() + 1));
 
     if (f_inverted->value().toBool()) {
-        st.append(tr("inverted"));
+        st.append("i");
     }
-    st.append(f_shape->valueText());
 
     auto label = f_label->valueText();
     if (!label.isEmpty())
-        st.append("\"" + label + "\"");
+        st.append(label);
 
     auto top = f_top->value().toInt();
     auto bottom = f_bottom->value().toInt();
