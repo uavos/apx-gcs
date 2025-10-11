@@ -50,8 +50,8 @@ protected:
     QGeoRectangle boundingGeoRectangle() const override;
 
     QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
 
 private slots:
     void updateTitle() override;
-    void updateDescr();
 };

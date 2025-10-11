@@ -180,6 +180,31 @@ QJsonValue Geo::toJson()
     return jso;
 }
 
+void Geo::fromJson(const QJsonValue &jsv)
+{
+    auto jso = jsv.toObject();
+    // points array
+    if (jso.contains(f_points->name())) {
+        auto jsa = jso.value(f_points->name()).toArray();
+        jso.remove(f_points->name());
+        f_points->deleteChildren();
+        for (auto jv : jsa) {
+            auto jso = jv.toObject();
+            addPoint(QGeoCoordinate(jso.value("lat").toDouble(), jso.value("lon").toDouble()));
+        }
+    }
+
+    // p2 point coordinate
+    if (jso.contains(f_p2->name())) {
+        auto jso2 = jso.value(f_p2->name()).toObject();
+        jso.remove(f_p2->name());
+        f_p2->setCoordinate(
+            QGeoCoordinate(jso2.value("lat").toDouble(), jso2.value("lon").toDouble()));
+    }
+
+    MissionItem::fromJson(jso);
+}
+
 void Geo::updateTitle()
 {
     QStringList st;
@@ -207,7 +232,7 @@ void Geo::updateTitle()
 
     switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
     case xbus::mission::geo_s::CIRCLE:
-        st.append(QString("R%1m").arg(f_radius->value().toInt()));
+        st.append(QString("C%1m").arg(f_radius->value().toInt()));
         break;
     case xbus::mission::geo_s::LINE:
         st.append(QString("L%1m").arg(int(coordinate().distanceTo(f_p2->coordinate()))));
@@ -218,13 +243,6 @@ void Geo::updateTitle()
     }
 
     setTitle(st.join(' '));
-}
-void Geo::updateDescr()
-{
-    QStringList st;
-    QString sts;
-    setDescr(st.join(' '));
-    setValue(sts);
 }
 
 QGeoRectangle Geo::boundingGeoRectangle() const
