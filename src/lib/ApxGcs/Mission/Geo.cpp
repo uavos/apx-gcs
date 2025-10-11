@@ -142,12 +142,49 @@ Geo::Geo(MissionGroup *parent)
     App::jsync(this);
 }
 
+QJsonValue Geo::toJson()
+{
+    auto jso = MissionItem::toJson().toObject();
+
+    // remove zero altitude limits
+    if (f_top->value().toInt() == 0)
+        jso.remove(f_top->name());
+    if (f_bottom->value().toInt() == 0)
+        jso.remove(f_bottom->name());
+
+    // shape specific
+    if (f_shape->value().toInt() == xbus::mission::geo_s::POLYGON) {
+        // points
+        QJsonArray jsa;
+        for (auto i : f_points->facts()) {
+            auto p = qobject_cast<MissionPoint *>(i);
+            if (p)
+                jsa.append(QJsonObject{
+                    {"lat", p->coordinate().latitude()},
+                    {"lon", p->coordinate().longitude()},
+                });
+        }
+        jso["points"] = jsa;
+    } else if (f_shape->value().toInt() == xbus::mission::geo_s::LINE) {
+        // point 2
+        if (f_p2->coordinate().isValid()) {
+            jso["p2"] = QJsonObject{
+                {"lat", f_p2->coordinate().latitude()},
+                {"lon", f_p2->coordinate().longitude()},
+            };
+        } else {
+            jso.remove("p2");
+        }
+    }
+
+    return jso;
+}
+
 void Geo::updateTitle()
 {
     QStringList st;
 
-    st.append(f_role->valueText().at(0).toUpper());
-    st.append(f_shape->valueText().at(0).toUpper());
+    st.append(f_role->valueText().left(3).toUpper());
     st.append("#" + QString::number(num() + 1));
 
     if (f_inverted->value().toBool()) {
@@ -168,9 +205,17 @@ void Geo::updateTitle()
         st.append(QString("0-%1").arg(top));
     }
 
-    auto sz = f_points->size();
-    if (sz > 0)
-        st.append(QString("[%1]").arg(sz));
+    switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
+    case xbus::mission::geo_s::CIRCLE:
+        st.append(QString("R%1m").arg(f_radius->value().toInt()));
+        break;
+    case xbus::mission::geo_s::LINE:
+        st.append(QString("L%1m").arg(int(coordinate().distanceTo(f_p2->coordinate()))));
+        break;
+    case xbus::mission::geo_s::POLYGON:
+        st.append(QString("[%1]").arg(f_points->size()));
+        break;
+    }
 
     setTitle(st.join(' '));
 }

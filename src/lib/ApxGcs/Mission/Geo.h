@@ -47,9 +47,11 @@ public:
     void addPoint(QGeoCoordinate c, int n = -1);
 
 protected:
-    QGeoRectangle boundingGeoRectangle() const;
+    QGeoRectangle boundingGeoRectangle() const override;
+
+    QJsonValue toJson() override;
 
 private slots:
-    void updateTitle();
+    void updateTitle() override;
     void updateDescr();
 };
