@@ -26,7 +26,7 @@
 #include <QGeoCircle>
 
 Geo::Geo(MissionGroup *parent)
-    : MissionItem(parent, "p#", "", "")
+    : MissionItem(parent, "g#", "", "")
 {
     setOpt("color", "#E65100");
 
