@@ -22,6 +22,7 @@
 #pragma once
 
 #include "MissionGroup.h"
+#include "MissionPoint.h"
 #include "UnitMission.h"
 
 #include <Fact/Fact.h>
@@ -57,8 +58,7 @@ public:
     MissionGroup *group;
 
     Fact *f_order;
-    Fact *f_latitude;
-    Fact *f_longitude;
+    MissionPoint *f_pos;
 
     Fact *f_remove;
 

@@ -21,32 +21,22 @@
  */
 #pragma once
 
-#include "MissionItem.h"
+#include "MissionField.h"
+
+#include <QGeoCoordinate>
 #include <QtCore>
 
-class Geo : public MissionItem
+class MissionPoint : public Fact
 {
     Q_OBJECT
-
 public:
-    explicit Geo(MissionGroup *parent);
+    explicit MissionPoint(Fact *parent, QString name, QString title, QString descr = "");
 
-    Fact *f_role;
-    Fact *f_shape;
-    Fact *f_top;
-    Fact *f_bottom;
-    Fact *f_inverted;
+    void setCoordinate(const QGeoCoordinate &c);
+    auto coordinate() const { return _coordinate; }
 
-    Fact *f_label;
+    bool setValue(const QVariant &v) override;
 
-    // geometry
-    Fact *f_radius;
-    Fact *f_points;
-
-protected:
-    QGeoRectangle boundingGeoRectangle() const;
-
-private slots:
-    void updateTitle();
-    void updateDescr();
+private:
+    QGeoCoordinate _coordinate;
 };

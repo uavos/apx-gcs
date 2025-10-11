@@ -31,7 +31,7 @@ Geo::Geo(MissionGroup *parent)
     setOpt("color", "#E65100");
 
     // geofence role
-    f_role = new Fact(this, "role", tr("Role"), "", Fact::Enum);
+    f_role = new MissionField(this, "role", tr("Role"), "", Fact::Enum);
     f_role->setEnumStrings({
         "safe",
         "nofly",
@@ -60,7 +60,7 @@ Geo::Geo(MissionGroup *parent)
     emit f_role->valueChanged();
 
     // shape
-    f_shape = new Fact(this, "shape", tr("Shape"), "", Fact::Enum);
+    f_shape = new MissionField(this, "shape", tr("Shape"), "", Fact::Enum);
     f_shape->setEnumStrings({
         "circle",
         "polygon",
@@ -68,7 +68,7 @@ Geo::Geo(MissionGroup *parent)
     });
 
     // other fields
-    f_label = new Fact(this, "label", tr("Label"), tr("Geofence label"), Fact::Text);
+    f_label = new MissionField(this, "label", tr("Label"), tr("Geofence label"), Fact::Text);
 
     f_top = new MissionField(this, "top", tr("Top"), tr("Top altitude AMSL"), Fact::Int);
     f_top->setUnits("m");
@@ -86,15 +86,23 @@ Geo::Geo(MissionGroup *parent)
         tr("ground"),
     });
 
-    f_inverted = new Fact(this, "inverted", tr("Inverted"), tr("Valid when outside"), Fact::Bool);
+    f_inverted = new MissionField(this,
+                                  "inverted",
+                                  tr("Inverted"),
+                                  tr("Valid when outside"),
+                                  Fact::Bool);
 
     // fields specific to shape
+    f_radius = new MissionField(this, "radius", tr("Radius"), tr("Geofence radius"), Fact::Float);
+    f_radius->setUnits("m");
+    f_radius->setMin(100);
+    f_radius->setIncrement(100);
+
     f_points = new Fact(this,
                         "points",
                         tr("Points"),
                         tr("Geofence points"),
                         Fact::Group | Fact::ModifiedGroup | Fact::Count);
-    f_points->setSection(tr("Geometry"));
 
     //title
     updateTitle();

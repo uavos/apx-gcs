@@ -89,19 +89,26 @@ QJsonValue Waypoint::toJson()
 
 void Waypoint::fromJson(const QJsonValue &jsv)
 {
-    const auto jso = jsv.toObject();
-    for (auto i = jso.begin(); i != jso.end(); ++i) {
+    // move actions to separate object
+    auto jso = jsv.toObject();
+    QJsonObject jso_actions;
+    for (auto i = jso.begin(); i != jso.end();) {
         auto f = child(i.key());
         if (f) {
-            f->fromJson(i.value());
+            ++i;
             continue;
         }
         f = f_actions->child(i.key());
         if (f) {
-            f->fromJson(i.value());
+            jso_actions.insert(i.key(), i.value());
+            i = jso.erase(i);
             continue;
         }
+        ++i;
     }
+    if (!jso_actions.isEmpty())
+        jso.insert("actions", jso_actions);
+    MissionItem::fromJson(jso);
 }
 
 void Waypoint::updateTitle()

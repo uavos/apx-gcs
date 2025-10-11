@@ -174,8 +174,7 @@ MissionItem *MissionGroup::addObject(const QGeoCoordinate &p)
 {
     MissionItem *f = createObject();
     f->backup();
-    f->f_latitude->setValue(p.latitude());
-    f->f_longitude->setValue(p.longitude());
+    f->f_pos->setCoordinate(p);
     return f;
 }
 

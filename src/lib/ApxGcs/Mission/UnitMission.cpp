@@ -341,7 +341,7 @@ void UnitMission::test(int n)
     if (f_wp->size() <= 0)
         return;
     Waypoint *w = static_cast<Waypoint *>(f_wp->facts().last());
-    QGeoCoordinate p(w->f_latitude->value().toDouble(), w->f_longitude->value().toDouble());
+    auto p = w->f_pos->coordinate();
     double hdg = QRandomGenerator::global()->bounded(360.0);
     for (int i = 0; i < n; ++i) {
         hdg += QRandomGenerator::global()->bounded(200.0) - 100.0;
