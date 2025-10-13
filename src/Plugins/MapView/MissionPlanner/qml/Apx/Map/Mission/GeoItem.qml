@@ -40,7 +40,7 @@ MissionObject {
     readonly property int m_radius: Math.abs(fact?fact.radius.value:0)
     readonly property string m_role: fact?fact.role.text:""
     
-    readonly property var path: fact?fact.geoPath:0
+    readonly property var polygon: fact?fact.polygon:0
     readonly property var pointsModel: fact?fact.points.model:0
 
     readonly property bool showBG: m_role!=="safe"
@@ -76,7 +76,7 @@ MissionObject {
                     color: "white"
                     textColor: "black"
                     title: apx.distanceToString(m_radius)
-                    opacity: (geoItem.hover || geoItem.selected || selected)?(ui.effects?(m_radius>0?0.8:0.5):1):0
+                    opacity: (geoItem.hover || geoItem.selected || selected)?(ui.effects?0.8:1):0
                     visible: opacity>0
                     implicitCoordinate: geoItem.fact?geoItem.fact.radiusPoint:QtPositioning.coordinate()
                     interactive: true
@@ -103,39 +103,44 @@ MissionObject {
                     color: geoItem.showBG?geoItem.bgColor:"transparent"
                     border.width: geoItem.pathWidth
                     border.color: geoItem.color
-                    function updatePath()
-                    {
-                        if(geoItem.path){
-                            poly.path=geoItem.path.path
-                        }
-                    }
-                    Connections {
-                        target: geoItem
-                        function onPathChanged(){ updatePath() }
-                    }
-                    Component.onCompleted: updatePath()
+                    path: geoItem.polygon.perimeter
                 }
                 Instantiator {
+                    id: pointInst
                     model: geoItem.pointsModel
                     delegate: MapObject {
                         implicitZ: geoItem.implicitZ-1
                         radiusFactor: 2
                         color: geoItem.color
                         title: hover?modelData.num+1:""
-                        // color: "white"
-                        // textColor: "black"
-                        //opacity: ui.effects?0.8:1
-                        // title: modelData.num+1
+                        opacity: ui.effects?0.8:1
+                        visible: editActive
+                        onSelectedChanged: updateActive()
                         implicitCoordinate: modelData.coordinate
-                        onMoved: {
-                            modelData.coordinate=coordinate
-                        }
-                        Component.onCompleted: {
-                            map.addMapItem(this)
-                            // console.log("Point created: "+title+" "+coordinate)
-                        }
+                        onMoved: modelData.coordinate=coordinate
+                        Component.onCompleted: map.addMapItem(this)
                     }
                 }
+                // items visible when at least one point is selected
+                property bool editActive: false
+                function updateActive()
+                {
+                    editActive = geoItem.selected;
+                    if(editActive)
+                        return;
+                    for(var i=0;i<pointInst.count;i++){
+                        var obj=pointInst.objectAt(i);
+                        if(!(obj.selected || obj.dragging))
+                            continue;
+                        editActive=true;
+                        return;
+                    }
+                }
+                Connections {
+                    target: geoItem
+                    function onSelectedChanged(){ updateActive() }
+                }
+                Component.onCompleted: updateActive()
             }
         }
     }

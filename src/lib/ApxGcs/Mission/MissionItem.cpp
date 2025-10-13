@@ -68,7 +68,6 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(f_pos, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
 
     connect(this, &MissionItem::coordinateChanged, this, &MissionItem::updatePath);
-
     connect(this, &Fact::numChanged, this, &MissionItem::updatePath, Qt::QueuedConnection);
 
     //selection support

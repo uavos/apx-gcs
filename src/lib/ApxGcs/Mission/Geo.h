@@ -22,6 +22,8 @@
 #pragma once
 
 #include "MissionItem.h"
+
+#include <QGeoPolygon>
 #include <QtCore>
 
 class Geo : public MissionItem
@@ -29,6 +31,7 @@ class Geo : public MissionItem
     Q_OBJECT
     Q_PROPERTY(
         QGeoCoordinate radiusPoint READ radiusPoint WRITE setRadiusPoint NOTIFY radiusPointChanged)
+    Q_PROPERTY(QGeoPolygon polygon READ polygon NOTIFY polygonChanged)
 
 public:
     explicit Geo(MissionGroup *parent);
@@ -56,6 +59,7 @@ protected:
 
 private slots:
     void updateTitle() override;
+    void updatePolygon();
 
     //---------------------------------------
     // PROPERTIES
@@ -63,7 +67,12 @@ public:
     QGeoCoordinate radiusPoint() const;
     void setRadiusPoint(const QGeoCoordinate &v);
 
+    auto polygon() const { return m_polygon; }
+
 protected:
+    QGeoPolygon m_polygon;
+
 signals:
     void radiusPointChanged();
+    void polygonChanged();
 };

@@ -99,6 +99,7 @@ Geo::Geo(MissionGroup *parent)
     f_radius->setIncrement(100);
     connect(this, &MissionItem::coordinateChanged, this, &Geo::radiusPointChanged);
     connect(f_radius, &Fact::valueChanged, this, &Geo::radiusPointChanged);
+    f_radius->setValue(500);
 
     f_points = new Fact(this,
                         "points",
@@ -277,6 +278,8 @@ void Geo::addPoint(QGeoCoordinate c, int n)
     auto pt = new MissionPoint(f_points, tr("Polygon vertex"), c);
     if (n >= 0)
         pt->move(n, false);
+    connect(pt, &MissionPoint::coordinateChanged, this, &Geo::updatePolygon);
+    updatePolygon();
 }
 
 QGeoCoordinate Geo::radiusPoint() const
@@ -305,4 +308,16 @@ void Geo::setRadiusPoint(const QGeoCoordinate &v)
     else
         dist = (dist / 10) * 10;
     f_radius->setValue(f_radius->value().toInt() < 0 ? -dist : dist);
+}
+
+void Geo::updatePolygon()
+{
+    QGeoPolygon p;
+    for (auto i : f_points->facts()) {
+        auto pt = qobject_cast<MissionPoint *>(i);
+        if (pt)
+            p.addCoordinate(pt->coordinate());
+    }
+    m_polygon = p;
+    emit polygonChanged();
 }
