@@ -131,9 +131,7 @@ MapQuickItem {  //to be used inside MapComponent only
         }
     }
     onDraggingChanged: {
-        if(dragging){
-            if(!selected) select()
-        }else{
+        if(!dragging){
             movingFinished()
             if(implicitCoordinate) coordinate=Qt.binding(function(){return implicitCoordinate})
         }
@@ -232,7 +230,7 @@ MapQuickItem {  //to be used inside MapComponent only
             //acceptedButtons: Qt.LeftButton | Qt.RightButton
             anchors.fill: textItem
             scale: textItem.scale
-            drag.target: mapObject.draggable?mapObject:null
+            drag.target: (mapObject.draggable && mapObject.selected)?mapObject:null
             onPositionChanged: if(drag.active) objectMoving()
             onClicked: {
                 if(selected)triggered()
