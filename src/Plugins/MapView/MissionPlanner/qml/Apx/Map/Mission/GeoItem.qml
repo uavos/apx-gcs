@@ -48,7 +48,7 @@ MissionObject {
     readonly property bool showBG: m_role!=="safe"
 
     // Shapes
-    readonly property real shapeOpacity: (selected||dragging||hover)?0.5:showBG?0.2:0.5
+    readonly property real shapeOpacity: (selected||dragging||hover)?0.5:0.2
     readonly property real pathWidth: 8
     readonly property color bgColor: Qt.lighter(color, 1.9)
     
