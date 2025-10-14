@@ -26,6 +26,8 @@
 Taxiway::Taxiway(MissionGroup *parent)
     : MissionItem(parent, "t#", "", "")
 {
+    setOpt("color", "#3A3A3A");
+
     //title
     connect(this, &Taxiway::distanceChanged, this, &Taxiway::updateTitle);
     updateTitle();

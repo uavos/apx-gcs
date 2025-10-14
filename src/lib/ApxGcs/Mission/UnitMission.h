@@ -21,7 +21,6 @@
  */
 #pragma once
 
-#include "MissionGroup.h"
 #include <Fact/Fact.h>
 #include <Fleet/Fleet.h>
 
@@ -29,12 +28,15 @@
 #include <QGeoRectangle>
 #include <QtCore>
 
-class MissionListModel;
+#include "MissionGroup.h"
+
 class Waypoint;
 class Runway;
 class Taxiway;
 class Poi;
-class Area;
+class Geo;
+
+class MissionListModel;
 class LookupMissions;
 class MissionShare;
 class MissionStorage;
@@ -43,7 +45,6 @@ class MissionTools;
 class UnitMission : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(MissionItemType)
 
     Q_PROPERTY(QGeoCoordinate startPoint READ startPoint WRITE setStartPoint NOTIFY startPointChanged)
     Q_PROPERTY(double startHeading READ startHeading WRITE setStartHeading NOTIFY startHeadingChanged)
@@ -64,29 +65,17 @@ class UnitMission : public Fact
 public:
     explicit UnitMission(Unit *parent);
 
-    enum MissionItemType {
-        WaypointType = 0,
-        RunwayType,
-        TaxiwayType,
-        PoiType,
-        AreaType,
-    };
+    typedef MissionGroupT<Runway> RunwayItems;
+    typedef MissionGroupT<Waypoint> WaypointItems;
+    typedef MissionGroupT<Taxiway> TaxiwayItems;
+    typedef MissionGroupT<Poi> PoiItems;
+    typedef MissionGroupT<Geo> GeoItems;
 
-    Q_ENUM(MissionItemType)
-
-    typedef MissionGroupT<Runway, RunwayType> Runways;
-    typedef MissionGroupT<Waypoint, WaypointType> Waypoints;
-    typedef MissionGroupT<Taxiway, TaxiwayType> Taxiways;
-    typedef MissionGroupT<Poi, PoiType> Pois;
-    typedef MissionGroupT<Area, AreaType> Areas;
-
-    Runways *f_runways;
-    Waypoints *f_waypoints;
-    Taxiways *f_taxiways;
-    Pois *f_pois;
-    Areas *f_areas;
-    //MissionItems *f_restricted;
-    //MissionItems *f_emergency;
+    RunwayItems *f_rw;
+    WaypointItems *f_wp;
+    TaxiwayItems *f_tw;
+    PoiItems *f_pi;
+    GeoItems *f_gi;
 
     Fact *f_title;
 

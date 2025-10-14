@@ -69,8 +69,8 @@ void DatalinkSerialRemotes::updateStatus()
 {
     int connectedCount = 0;
     int totalCount = f_list->size();
-    for(auto f: f_list->facts()) {
-        if(f->active()) {
+    for (auto f : f_list->facts()) {
+        if (f->active()) {
             connectedCount++;
         }
     }

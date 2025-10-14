@@ -111,7 +111,7 @@ void DatalinkSerialRemote::onNoDataTimerTimeout()
     }
 }
 
-void DatalinkSerialRemote::onRemoveTriggered() 
+void DatalinkSerialRemote::onRemoveTriggered()
 {
     close();
     setParentFact(nullptr);
