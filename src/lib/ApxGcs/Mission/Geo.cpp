@@ -269,9 +269,6 @@ QGeoRectangle Geo::boundingGeoRectangle() const
 
 void Geo::addPoint(QGeoCoordinate c, int n)
 {
-    if (f_shape->value().toInt() != xbus::mission::geo_s::POLYGON)
-        return;
-
     auto pt = new MissionPoint(f_points, tr("Polygon vertex"), c);
     if (n >= 0)
         pt->move(n, false);
