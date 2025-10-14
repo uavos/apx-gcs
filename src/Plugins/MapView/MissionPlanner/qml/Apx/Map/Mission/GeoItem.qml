@@ -82,7 +82,7 @@ MissionObject {
                     title: apx.distanceToString(m_radius)
                     opacity: (geoItem.hover || geoItem.selected || selected)?(ui.effects?0.8:1):0
                     visible: opacity>0
-                    implicitCoordinate: geoItem.fact?geoItem.fact.radiusPoint:QtPositioning.coordinate()
+                    implicitCoordinate: radiusPointCoordinate
                     interactive: true
                     onMoved: {
                         geoItem.fact.radiusPoint=coordinate
@@ -92,6 +92,39 @@ MissionObject {
             }
         }
     }
+    
+    // Line
+    readonly property var linePointCoordinate: fact?fact.p2.coordinate:QtPositioning.coordinate()
+    Loader {
+        active: geoItem.isLine
+        onLoaded: map.addMapItemGroup(item)
+        sourceComponent: Component {
+            MapItemGroup {
+                MapPolyline {
+                    // color: showBG?geoItem.bgColor:"transparent"
+                    line.color: geoItem.color
+                    line.width: geoItem.pathWidth
+                    opacity: geoItem.shapeOpacity
+                    path: [ geoItem.coordinate, geoItem.linePointCoordinate ]
+                }
+                MissionObject { // line handle
+                    implicitZ: geoItem.implicitZ-1
+                    color: "white"
+                    textColor: "black"
+                    title: apx.distanceToString(geoItem.coordinate.distanceTo(geoItem.linePointCoordinate))
+                    opacity: (geoItem.hover || geoItem.selected || selected)?(ui.effects?0.8:1):0
+                    visible: opacity>0
+                    implicitCoordinate: linePointCoordinate
+                    interactive: true
+                    onMoved: {
+                        geoItem.fact.p2.coordinate=coordinate
+                        coordinate=implicitCoordinate //snap
+                    }
+                }
+            }
+        }
+    }
+    
 
     // Polygon
     Loader {
