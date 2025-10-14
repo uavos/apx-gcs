@@ -101,7 +101,6 @@ MissionObject {
         sourceComponent: Component {
             MapItemGroup {
                 MapPolyline {
-                    // color: showBG?geoItem.bgColor:"transparent"
                     line.color: geoItem.color
                     line.width: geoItem.pathWidth
                     opacity: geoItem.shapeOpacity
@@ -120,6 +119,21 @@ MissionObject {
                         geoItem.fact.p2.coordinate=coordinate
                         coordinate=implicitCoordinate //snap
                     }
+                }
+                // gradient showing zone direction (left side of line is active)
+                MapPolygon {
+                    z: -1
+                    color: geoItem.bgColor
+                    border.width: 0
+                    opacity: geoItem.shapeOpacity
+                    readonly property real az: geoItem.coordinate.azimuthTo(geoItem.linePointCoordinate)-90
+                    readonly property real dist: geoItem.coordinate.distanceTo(geoItem.linePointCoordinate)+500
+                    path: [
+                        geoItem.coordinate,
+                        geoItem.coordinate.atDistanceAndAzimuth(dist, az),
+                        geoItem.linePointCoordinate.atDistanceAndAzimuth(dist, az),
+                        geoItem.linePointCoordinate
+                    ]
                 }
             }
         }

@@ -44,7 +44,6 @@ public:
     Fact *f_shape;
     Fact *f_top;
     Fact *f_bottom;
-    Fact *f_inverted;
 
     Fact *f_label;
 

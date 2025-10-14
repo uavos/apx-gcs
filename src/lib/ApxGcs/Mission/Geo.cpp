@@ -88,12 +88,6 @@ Geo::Geo(MissionGroup *parent)
         tr("ground"),
     });
 
-    f_inverted = new MissionField(this,
-                                  "inverted",
-                                  tr("Inverted"),
-                                  tr("Valid when outside"),
-                                  Fact::Bool);
-
     // fields specific to shape
     f_radius = new MissionField(this, "radius", tr("Radius"), tr("Geofence radius"), Fact::Float);
     f_radius->setUnits("m");
@@ -220,10 +214,6 @@ void Geo::updateTitle()
 
     st.append(f_role->valueText().left(3).toUpper());
     st.append("#" + QString::number(num() + 1));
-
-    if (f_inverted->value().toBool()) {
-        st.append("n");
-    }
 
     auto label = f_label->valueText();
     if (!label.isEmpty())
