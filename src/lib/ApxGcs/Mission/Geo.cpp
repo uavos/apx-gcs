@@ -34,12 +34,10 @@ Geo::Geo(MissionGroup *parent)
 
     // geofence role
     f_role = new MissionField(this, "role", tr("Role"), "", Fact::Enum);
-    f_role->setEnumStrings({
-        "safe", // must reflect xbus::mission::geo_s
-        "nofly",
-        "terminate",
-        "auxiliary",
-    });
+    QStringList roles;
+    for (auto s : xbus::mission::geo_s::role_str)
+        roles << s;
+    f_role->setEnumStrings(roles);
     connect(f_role, &Fact::valueChanged, this, [this]() {
         // color depends on role
         QString c = "#E65100"; //orange
@@ -63,11 +61,10 @@ Geo::Geo(MissionGroup *parent)
 
     // shape
     f_shape = new MissionField(this, "shape", tr("Shape"), "", Fact::Enum);
-    f_shape->setEnumStrings({
-        "circle", // must reflect xbus::mission::geo_s
-        "polygon",
-        "line",
-    });
+    QStringList shapes;
+    for (auto s : xbus::mission::geo_s::shape_str)
+        shapes << s;
+    f_shape->setEnumStrings(shapes);
 
     // other fields
     f_label = new MissionField(this, "label", tr("Label"), tr("Geofence label"), Fact::Text);
@@ -180,6 +177,12 @@ QJsonValue Geo::toJson()
         }
     }
 
+    // rename name to label
+    if (jso.contains(f_label->name())) {
+        jso["name"] = jso.value(f_label->name());
+        jso.remove(f_label->name());
+    }
+
     return jso;
 }
 
@@ -205,6 +208,12 @@ void Geo::fromJson(const QJsonValue &jsv)
             QGeoCoordinate(jso2.value("lat").toDouble(), jso2.value("lon").toDouble()));
     }
 
+    // rename name to label
+    if (jso.contains("name") && !jso.contains(f_label->name())) {
+        jso[f_label->name()] = jso.value("name");
+        jso.remove("name");
+    }
+
     MissionItem::fromJson(jso);
 }
 
@@ -212,8 +221,8 @@ void Geo::updateTitle()
 {
     QStringList st;
 
-    st.append(f_role->valueText().left(3).toUpper());
-    st.append("#" + QString::number(num() + 1));
+    st.append(QString::number(num() + 1));
+    st.append(f_role->valueText().toUpper());
 
     auto label = f_label->valueText();
     if (!label.isEmpty())
@@ -222,11 +231,13 @@ void Geo::updateTitle()
     auto top = f_top->value().toInt();
     auto bottom = f_bottom->value().toInt();
     if (bottom != 0 && top != 0) {
-        st.append(QString("%1-%2").arg(bottom).arg(top));
+        st.append(QString("%1-%2")
+                      .arg(AppRoot::distanceToString(bottom))
+                      .arg(AppRoot::distanceToString(top)));
     } else if (bottom != 0) {
-        st.append(QString("%1+").arg(bottom));
+        st.append(QString("%1+").arg(AppRoot::distanceToString(bottom)));
     } else if (top != 0) {
-        st.append(QString("0-%1").arg(top));
+        st.append(QString("0-%1").arg(AppRoot::distanceToString(top)));
     }
 
     switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
