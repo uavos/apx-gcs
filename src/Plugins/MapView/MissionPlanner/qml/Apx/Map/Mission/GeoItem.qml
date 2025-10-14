@@ -41,7 +41,9 @@ MissionObject {
     readonly property string m_role: fact?fact.role.text:""
     
     readonly property var polygon: fact?fact.polygon:0
-    readonly property var pointsModel: fact?fact.points.model:0
+    readonly property var pointsModel: fact?fact.pointsModel:0
+    readonly property var polyC1: fact?fact.polyC1:QtPositioning.coordinate()
+    readonly property var polyC2: fact?fact.polyC2:QtPositioning.coordinate()
 
     readonly property bool showBG: m_role!=="safe"
 
@@ -54,6 +56,8 @@ MissionObject {
     readonly property bool isPolygon: fact && fact.shape.text==="polygon"
     readonly property bool isLine: fact && fact.shape.text==="line"
 
+
+    readonly property bool editActive: fact?fact.active:false
 
     // Circle
     readonly property var radiusPointCoordinate: fact?fact.radiusPoint:QtPositioning.coordinate()
@@ -91,56 +95,93 @@ MissionObject {
 
     // Polygon
     Loader {
-        active: geoItem.isPolygon
+        active: isPolygon
         onLoaded: map.addMapItemGroup(item)
         sourceComponent: Component {
             MapItemGroup {
+                z: geoItem.implicitZ
                 MapPolygon {
                     id: poly
-                    z: 50 
-                    visible: geoItem.visible
+                    // visible: geoItem.visible
                     opacity: geoItem.shapeOpacity
                     color: geoItem.showBG?geoItem.bgColor:"transparent"
                     border.width: geoItem.pathWidth
                     border.color: geoItem.color
                     path: geoItem.polygon.perimeter
                 }
-                Instantiator {
+
+                // polygon vertex points
+                MapItemView {
                     id: pointInst
+                    property bool pointSelect: false
                     model: geoItem.pointsModel
+                    delegateModelAccess: DelegateModel.ReadOnly
                     delegate: MapObject {
-                        implicitZ: geoItem.implicitZ-1
                         radiusFactor: 2
                         color: geoItem.color
-                        title: hover?modelData.num+1:""
+                        title: (hover||selected)?modelData.num+1:""
                         opacity: ui.effects?0.8:1
-                        visible: editActive
-                        onSelectedChanged: updateActive()
+                        visible: geoItem.editActive
                         implicitCoordinate: modelData.coordinate
                         onMoved: modelData.coordinate=coordinate
-                        Component.onCompleted: map.addMapItem(this)
+                        onSelectedChanged: {
+                            modelData.active=selected
+                            if(selected) selectedPointIndex=modelData.num
+                        }
+                        Component.onCompleted: {
+                            if(pointInst.pointSelect){
+                                select()
+                                pointInst.pointSelect=false
+                            }
+                        }
+                        // press and hold on selected point to delete it
+                        onPressAndHold: {
+                            if(geoItem.pointsModel.count>3){
+                                console.log("Remove point #"+(modelData.num+1))
+                                geoItem.fact.removePoint(modelData.num)
+                                geoItem.select()
+                            }
+                        }
                     }
                 }
+
                 // items visible when at least one point is selected
-                property bool editActive: false
-                function updateActive()
-                {
-                    editActive = geoItem.selected;
-                    if(editActive)
-                        return;
-                    for(var i=0;i<pointInst.count;i++){
-                        var obj=pointInst.objectAt(i);
-                        if(!(obj.selected || obj.dragging))
-                            continue;
-                        editActive=true;
-                        return;
-                    }
-                }
+                property int selectedPointIndex: -1
                 Connections {
                     target: geoItem
-                    function onSelectedChanged(){ updateActive() }
+                    function onSelectedChanged(){ selectedPointIndex=-1; }
                 }
-                Component.onCompleted: updateActive()
+
+                // two extra points for adding new vertex
+                Repeater {
+                    model: 2
+                    delegate: MapObject {
+                        implicitZ: -1
+                        readonly property bool prev: model.index===0
+                        radiusFactor: 2
+                        color: geoItem.color
+                        title: "+"
+                        opacity: ui.effects?0.8:1
+                        visible: geoItem.editActive && selectedPointIndex>=0
+                        implicitCoordinate: prev?geoItem.polyC1:geoItem.polyC2
+                        function addPoint()
+                        {
+                            // console.log("Add point at "+coordinate)
+                            var i=selectedPointIndex
+                            pointInst.pointSelect=true
+                            if(!prev)
+                                selectedPointIndex++;
+                            geoItem.fact.addPoint(coordinate, prev?i:(i+1))
+                        }
+                        // override default interactive item behavior
+                        interactive: false
+                        MouseArea {
+                            cursorShape: Qt.PointingHandCursor
+                            anchors.fill: parent
+                            onClicked: parent.addPoint() 
+                        }
+                    }
+                }
             }
         }
     }

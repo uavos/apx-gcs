@@ -21,7 +21,9 @@
  */
 #include "Geo.h"
 #include "MissionField.h"
+#include "MissionMapItemsModel.h"
 #include "UnitMission.h"
+
 #include <App/App.h>
 #include <QGeoCircle>
 
@@ -106,6 +108,7 @@ Geo::Geo(MissionGroup *parent)
                         tr("Points"),
                         tr("Geofence points"),
                         Fact::Group | Fact::ModifiedGroup | Fact::Count);
+    m_pointsModel = new MissionMapItemsModel(f_points);
 
     f_p2 = new MissionPoint(this, "p2", tr("Point 2"), tr("Second point of line"));
 
@@ -136,6 +139,9 @@ Geo::Geo(MissionGroup *parent)
         }
     });
     emit f_shape->valueChanged();
+
+    // track active status when selected
+    connect(this, &MissionItem::selectedChanged, this, &Geo::updateActive);
 
     //title
     updateTitle();
@@ -275,10 +281,30 @@ void Geo::addPoint(QGeoCoordinate c, int n)
 {
     if (f_shape->value().toInt() != xbus::mission::geo_s::POLYGON)
         return;
+
     auto pt = new MissionPoint(f_points, tr("Polygon vertex"), c);
     if (n >= 0)
         pt->move(n, false);
+
+    connect(pt, &Fact::activeChanged, this, &Geo::updateActive);
     connect(pt, &MissionPoint::coordinateChanged, this, &Geo::updatePolygon);
+    updatePolygon();
+}
+void Geo::removePoint(int n)
+{
+    if (f_shape->value().toInt() != xbus::mission::geo_s::POLYGON)
+        return;
+    if (n < 0 || n >= f_points->size())
+        return;
+    if (f_points->size() <= 3)
+        return;
+
+    auto pt = qobject_cast<MissionPoint *>(f_points->child(n));
+    if (!pt)
+        return;
+
+    pt->setActive(false);
+    pt->deleteFact();
     updatePolygon();
 }
 
@@ -320,4 +346,71 @@ void Geo::updatePolygon()
     }
     m_polygon = p;
     emit polygonChanged();
+    emit polyHandleChanged();
+}
+
+void Geo::updateActive()
+{
+    // track active status if any handle pints are selected/active
+    bool active = false;
+    if (selected())
+        active = true;
+    else if (f_shape->value().toInt() == xbus::mission::geo_s::POLYGON) {
+        for (auto i : f_points->facts()) {
+            if (i->active()) {
+                active = true;
+                break;
+            }
+        }
+    } else if (f_shape->value().toInt() == xbus::mission::geo_s::LINE) {
+        if (f_pos->active())
+            active = true;
+    }
+    setActive(active);
+    emit polyHandleChanged();
+}
+
+QGeoCoordinate Geo::getPolyHandle(bool prev) const
+{
+    // point between prev and current
+    do {
+        if (f_shape->value().toInt() != xbus::mission::geo_s::POLYGON)
+            break;
+        if (f_points->size() < 2)
+            break;
+
+        // find selected index
+        int p1 = -1;
+        for (int i = 0; i < f_points->size(); ++i)
+            if (f_points->child(i)->active()) {
+                p1 = i;
+                break;
+            }
+        if (p1 < 0)
+            break;
+
+        // qDebug() << "Handle between" << p1 << (prev ? "prev" : "next");
+
+        // previous point
+        int p2 = prev ? (p1 > 0 ? (p1 - 1) : (f_points->size() - 1))
+                      : (p1 < (f_points->size() - 1) ? (p1 + 1) : 0);
+
+        auto pt1 = qobject_cast<MissionPoint *>(f_points->child(p1));
+        auto pt2 = qobject_cast<MissionPoint *>(f_points->child(p2));
+        if (!(pt1 && pt2))
+            break;
+
+        auto dist = pt1->coordinate().distanceTo(pt2->coordinate());
+        if (dist < 20)
+            break;
+        auto az = pt1->coordinate().azimuthTo(pt2->coordinate());
+        auto c = pt1->coordinate().atDistanceAndAzimuth(dist / 2.0, az);
+
+        // qDebug() << "Handle" << (prev ? "prev" : "next") << c << dist << az;
+        return c;
+
+    } while (0);
+
+    // qDebug() << "No handle" << (prev ? "prev" : "next");
+    return QGeoCoordinate();
 }

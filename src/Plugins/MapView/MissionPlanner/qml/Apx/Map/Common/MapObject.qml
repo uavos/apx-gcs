@@ -22,6 +22,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtLocation
+import QtPositioning
 
 MapQuickItem {  //to be used inside MapComponent only
     id: mapObject
@@ -54,6 +55,7 @@ MapQuickItem {  //to be used inside MapComponent only
     signal triggered()
     signal moved()
     signal movingFinished()
+    signal pressAndHold()
 
     enabled: visibleOnMap
 
@@ -235,6 +237,9 @@ MapQuickItem {  //to be used inside MapComponent only
             onClicked: {
                 if(selected)triggered()
                 else select()
+            }
+            onPressAndHold: {
+                if(selected) mapObject.pressAndHold()
             }
         }
     }

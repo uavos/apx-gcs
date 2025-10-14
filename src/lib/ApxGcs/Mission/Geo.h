@@ -29,9 +29,13 @@
 class Geo : public MissionItem
 {
     Q_OBJECT
+    Q_PROPERTY(QAbstractListModel *pointsModel READ pointsModel CONSTANT)
     Q_PROPERTY(
         QGeoCoordinate radiusPoint READ radiusPoint WRITE setRadiusPoint NOTIFY radiusPointChanged)
+
     Q_PROPERTY(QGeoPolygon polygon READ polygon NOTIFY polygonChanged)
+    Q_PROPERTY(QGeoCoordinate polyC1 READ polyC1 NOTIFY polyHandleChanged)
+    Q_PROPERTY(QGeoCoordinate polyC2 READ polyC2 NOTIFY polyHandleChanged)
 
 public:
     explicit Geo(MissionGroup *parent);
@@ -49,30 +53,41 @@ public:
     Fact *f_points;
     MissionPoint *f_p2;
 
-    void addPoint(QGeoCoordinate c, int n = -1);
+    Q_INVOKABLE void addPoint(QGeoCoordinate c, int n = -1);
+    Q_INVOKABLE void removePoint(int n);
 
-protected:
     QGeoRectangle boundingGeoRectangle() const override;
 
     QJsonValue toJson() override;
     void fromJson(const QJsonValue &jsv) override;
 
+private:
+    QGeoCoordinate getPolyHandle(bool prev) const;
+
 private slots:
     void updateTitle() override;
     void updatePolygon();
+    void updateActive();
 
     //---------------------------------------
     // PROPERTIES
 public:
+    QAbstractListModel *pointsModel() const { return m_pointsModel; }
+
     QGeoCoordinate radiusPoint() const;
     void setRadiusPoint(const QGeoCoordinate &v);
 
     auto polygon() const { return m_polygon; }
+    // points to add new vertex
+    QGeoCoordinate polyC1() const { return getPolyHandle(true); }
+    QGeoCoordinate polyC2() const { return getPolyHandle(false); }
 
 protected:
+    QAbstractListModel *m_pointsModel;
     QGeoPolygon m_polygon;
 
 signals:
     void radiusPointChanged();
     void polygonChanged();
+    void polyHandleChanged();
 };
