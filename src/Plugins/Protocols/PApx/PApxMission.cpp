@@ -732,8 +732,8 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         if (top != 0) {
             e.flags.top = 1;
         }
+        // write header data
         stream.write(&e, sizeof(e));
-        hdr.items.tw.cnt++;
         if (e.flags.name) {
             stream.write_string(name.toUtf8().constData());
         }
@@ -814,6 +814,9 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     if (stream.pos() <= pld_offset) {
         qDebug() << "Upload empty mission";
     }
+
+    // qDebug() << stream.size() << "bytes" << hdr.items.rw.cnt << hdr.items.pi.cnt << hdr.items.wp.cnt
+    //          << hdr.items.tw.cnt << hdr.items.act.cnt << hdr.items.geo.cnt;
 
     //update hdr
     strncpy(hdr.title, m.value("title").toString().toUtf8(), sizeof(hdr.title) - 1);
