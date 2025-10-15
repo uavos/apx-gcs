@@ -47,6 +47,13 @@ Mandala::Mandala(Fact *parent)
 
     connect(this, &Mandala::sendValue, this, &Mandala::recordSendValue);
 
+    // descr from parent unit
+    if (parent) {
+        connect(parent, &Fact::titleChanged, this, &Mandala::updateDescr);
+        connect(parent, &Fact::textChanged, this, &Mandala::updateDescr);
+        updateDescr();
+    }
+
     Fact *group = this;
     uint8_t level = 0;
     QString sect;
@@ -98,6 +105,18 @@ void Mandala::updateUsed(int adj)
 void Mandala::updateStatus()
 {
     setValue(QString("%1/%2").arg(_used).arg(_total));
+}
+
+void Mandala::updateDescr()
+{
+    auto p = parentFact();
+    if (!p)
+        return;
+    QStringList st;
+    st << p->title();
+    if (!p->text().isEmpty())
+        st << p->text();
+    setDescr(st.join(" - "));
 }
 
 void Mandala::resetCounters()
