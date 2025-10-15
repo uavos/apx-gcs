@@ -83,7 +83,7 @@ UnitMission::UnitMission(Unit *parent)
                             "",
                             unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
 
-    f_gi = new GeoItems(this, "gi", tr("Geofences"), tr("Airspace"), nullptr);
+    f_geo = new GeoItems(this, "geo", tr("Geofences"), tr("Airspace"), nullptr);
 
     for (auto group : groups) {
         connect(group, &Fact::sizeChanged, this, &UnitMission::updateSize, Qt::QueuedConnection);

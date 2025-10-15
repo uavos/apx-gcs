@@ -80,7 +80,7 @@ MapItemGroup {
 
     MapItemView {
         z: 0
-        model: mission.gi.mapModel
+        model: mission.geo.mapModel
         delegate: GeoItem { }
     }
 }

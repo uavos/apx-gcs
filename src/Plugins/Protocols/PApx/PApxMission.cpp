@@ -227,7 +227,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
     //          << hdr.items.wp.cnt << hdr.items.tw.cnt << hdr.items.act.cnt << hdr.items.geo.cnt;
 
     // read items
-    QVariantList rw, pi, wp, tw, gi, act;
+    QVariantList rw, pi, wp, tw, geo, act;
 
     // Runways
     if (hdr.items.rw.cnt) {
@@ -456,7 +456,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                     qWarning() << "error reading geo bottom" << i << hdr.items.geo.cnt;
                     return {};
                 }
-                m.insert("bottom", (uint) h.hmsl * 100); // m*100
+                m.insert("bottom", h.hmsl);
             }
             if (e.flags.top) {
                 xbus::mission::geo_s::geo_top_s h;
@@ -464,7 +464,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                     qWarning() << "error reading geo top" << i << hdr.items.geo.cnt;
                     return {};
                 }
-                m.insert("top", (uint) h.hmsl * 100); // m*100
+                m.insert("top", h.hmsl);
             }
             // read shape
             switch (e.shape) {
@@ -476,7 +476,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                 }
                 m.insert("lat", mandala::a32_to_deg(sh.pos.lat));
                 m.insert("lon", mandala::a32_to_deg(sh.pos.lon));
-                m.insert("radius", (uint) sh.radius); // m*100
+                m.insert("radius", (uint) sh.radius * 100); // m*100
             } break;
             case xbus::mission::geo_s::POLYGON: {
                 xbus::mission::geo_polygon_s sh;
@@ -522,9 +522,9 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                 m.insert("p2", p2m);
             } break;
             }
-            gi.append(m);
+            geo.append(m);
         }
-        // qDebug() << "geofences" << gi.size();
+        // qDebug() << "geofences" << geo.size();
     }
 
     // collect and return data
@@ -538,8 +538,9 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
         m.insert("wp", wp);
     if (!tw.isEmpty())
         m.insert("tw", tw);
-    if (!gi.isEmpty())
-        m.insert("gi", gi);
+
+    if (!geo.isEmpty())
+        m.insert("geo", geo);
 
     if (m.isEmpty())
         return {};
@@ -692,7 +693,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     // Geofences
     hdr.items.geo.off = stream.pos() - pld_offset;
     hdr.items.geo.cnt = 0;
-    for (auto i : m.value("gi").toList()) {
+    for (auto i : m.value("geo").toList()) {
         const auto im = i.toMap();
         xbus::mission::geo_s e{};
         auto s_role = im.value("role").toString().toLower();

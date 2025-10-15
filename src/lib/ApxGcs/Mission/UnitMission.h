@@ -75,7 +75,7 @@ public:
     WaypointItems *f_wp;
     TaxiwayItems *f_tw;
     PoiItems *f_pi;
-    GeoItems *f_gi;
+    GeoItems *f_geo;
 
     Fact *f_title;
 

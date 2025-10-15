@@ -52,7 +52,7 @@ MissionPlanner::MissionPlanner(Fact *parent)
     connect(f, &Fact::triggered, this, [this]() { mission()->f_tw->add(clickCoordinate()); });
 
     f = new Fact(f_add, "geo", tr("Geofence"), "", CloseOnTrigger, "map-marker-radius");
-    connect(f, &Fact::triggered, this, [this]() { mission()->f_gi->add(clickCoordinate()); });
+    connect(f, &Fact::triggered, this, [this]() { mission()->f_geo->add(clickCoordinate()); });
 
     // commands to unit
     f = new Fact(f_unit, "fly_here", tr("Fly here"), "", CloseOnTrigger, "airplane");
