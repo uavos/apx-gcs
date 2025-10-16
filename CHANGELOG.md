@@ -1,3 +1,17 @@
+# [APX Ground Control v11.2.16](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.16) (10/15/25)
+
+> Branch: `main`\
+> Date: `10/15/25 23:44:38`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b31bf7afefaabdf434a37174063c314210ba98ca...c672e81a89ded5c1840cbfe21bc94c37ccccb2af)
+
+## New Features
+* geofence map editor
+* bind mandala desription to unit title
+
+## Bug Fixes
+* fact re-binding behavior (duplicate binds bug)
+* older qt versions compatibility
+
 # [APX Ground Control v11.2.15](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.15) (10/15/25)
 
 > Branch: `main`\
