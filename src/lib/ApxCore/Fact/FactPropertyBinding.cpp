@@ -56,12 +56,13 @@ FactPropertyBinding::FactPropertyBinding(Fact *parent,
         return;
     }
 
-    connect(_src,
-            _psrc.notifySignal().methodSignature().prepend('2'),
-            this,
-            SLOT(propertyChanged()));
+    _clist.append(connect(_src,
+                          _psrc.notifySignal().methodSignature().prepend('2'),
+                          this,
+                          SLOT(propertyChanged())));
 
-    connect(_src, &QObject::destroyed, this, [this]() { _dst->unbindProperties(_src); });
+    _clist.append(
+        connect(_src, &QObject::destroyed, this, [this]() { _dst->unbindProperties(_src); }));
 
     if (_src_binding)
         _src_binding->_src_binding = this;
@@ -76,9 +77,10 @@ FactPropertyBinding::~FactPropertyBinding()
 
 void FactPropertyBinding::propertyChanged()
 {
-    //qDebug() << _src->name() << "->" << _dst->name() << _name;
+    // qDebug() << _src->path() << "->" << _dst->path() << _name << _psrc.read(_src)
+    //          << _pdst.read(_dst);
     if (_blocked) {
-        //qDebug() << "blocked" << _src->name() << "->" << _dst->name() << _name;
+        // qDebug() << "blocked" << _src->name() << "->" << _dst->name() << _name;
         return;
     }
     QVariant v = _psrc.read(_src);
