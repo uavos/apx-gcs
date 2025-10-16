@@ -19,16 +19,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "DatalinkSerialRemote.h"
+#include "DatalinkSerialRemoteTcp.h"
 #include "Datalink.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
 
-DatalinkSerialRemote::DatalinkSerialRemote(Fact *parent, QString host, int port)
+DatalinkSerialRemoteTcp::DatalinkSerialRemoteTcp(Fact *parent, QString host, int port)
     : DatalinkConnection(parent,
                          "remote_serial#",
-                         QString("%1:%2").arg(host).arg(port),
+                         QString("[tcp] %1:%2").arg(host).arg(port),
                          "",
                          Datalink::CLIENTS | Datalink::LOCAL,
                          Datalink::CLIENTS | Datalink::LOCAL)
@@ -40,32 +40,32 @@ DatalinkSerialRemote::DatalinkSerialRemote(Fact *parent, QString host, int port)
 
     m_noDataTimer.setSingleShot(true);
     m_noDataTimer.setInterval(3000);
-    connect(&m_socket, &QTcpSocket::errorOccurred, this, &DatalinkSerialRemote::onErrorOccured);
-    connect(&m_socket, &QTcpSocket::stateChanged, this, &DatalinkSerialRemote::onStateChanged);
-    connect(&m_socket, &QTcpSocket::readyRead, this, &DatalinkSerialRemote::readDataAvailable);
+    connect(&m_socket, &QTcpSocket::errorOccurred, this, &DatalinkSerialRemoteTcp::onErrorOccured);
+    connect(&m_socket, &QTcpSocket::stateChanged, this, &DatalinkSerialRemoteTcp::onStateChanged);
+    connect(&m_socket, &QTcpSocket::readyRead, this, &DatalinkSerialRemoteTcp::readDataAvailable);
     connect(&m_socket, &QTcpSocket::readyRead, &m_noDataTimer, qOverload<>(&QTimer::start));
-    connect(&m_noDataTimer, &QTimer::timeout, this, &DatalinkSerialRemote::onNoDataTimerTimeout);
+    connect(&m_noDataTimer, &QTimer::timeout, this, &DatalinkSerialRemoteTcp::onNoDataTimerTimeout);
     connect(this,
             &DatalinkConnection::activatedChanged,
             this,
-            &DatalinkSerialRemote::onActivatedChanged);
-    connect(f_remove, &Fact::triggered, this, &DatalinkSerialRemote::onRemoveTriggered);
+            &DatalinkSerialRemoteTcp::onActivatedChanged);
+    connect(f_remove, &Fact::triggered, this, &DatalinkSerialRemoteTcp::onRemoveTriggered);
 
     setEncoder(&m_enc);
     setDecoder(&m_dec);
 }
 
-QString DatalinkSerialRemote::getHost() const
+QString DatalinkSerialRemoteTcp::getHost() const
 {
     return m_host;
 }
 
-int DatalinkSerialRemote::getPort() const
+int DatalinkSerialRemoteTcp::getPort() const
 {
     return m_port;
 }
 
-void DatalinkSerialRemote::onErrorOccured(QAbstractSocket::SocketError socketError)
+void DatalinkSerialRemoteTcp::onErrorOccured(QAbstractSocket::SocketError socketError)
 {
     apxConsoleW() << "TCP error:" << m_socket.errorString();
 
@@ -75,7 +75,7 @@ void DatalinkSerialRemote::onErrorOccured(QAbstractSocket::SocketError socketErr
     }
 }
 
-void DatalinkSerialRemote::onStateChanged(QAbstractSocket::SocketState socketState)
+void DatalinkSerialRemoteTcp::onStateChanged(QAbstractSocket::SocketState socketState)
 {
     QMap<QAbstractSocket::SocketState, QString> map
         = {{QAbstractSocket::UnconnectedState, "Unconnected"},
@@ -94,7 +94,7 @@ void DatalinkSerialRemote::onStateChanged(QAbstractSocket::SocketState socketSta
     }
 }
 
-void DatalinkSerialRemote::onActivatedChanged()
+void DatalinkSerialRemoteTcp::onActivatedChanged()
 {
     if (activated()) {
         open();
@@ -103,7 +103,7 @@ void DatalinkSerialRemote::onActivatedChanged()
     }
 }
 
-void DatalinkSerialRemote::onNoDataTimerTimeout()
+void DatalinkSerialRemoteTcp::onNoDataTimerTimeout()
 {
     close();
     if (activated()) {
@@ -111,14 +111,14 @@ void DatalinkSerialRemote::onNoDataTimerTimeout()
     }
 }
 
-void DatalinkSerialRemote::onRemoveTriggered()
+void DatalinkSerialRemoteTcp::onRemoveTriggered()
 {
     close();
     setParentFact(nullptr);
     deleteLater();
 }
 
-void DatalinkSerialRemote::open()
+void DatalinkSerialRemoteTcp::open()
 {
     if (!activated())
         return;
@@ -127,7 +127,7 @@ void DatalinkSerialRemote::open()
     m_noDataTimer.start();
 }
 
-void DatalinkSerialRemote::close()
+void DatalinkSerialRemoteTcp::close()
 {
     if (m_socket.state() == QAbstractSocket::ConnectedState) {
         apxMsg() << tr("TCP connection closed: %1").arg(m_host);
@@ -136,7 +136,7 @@ void DatalinkSerialRemote::close()
     closed();
 }
 
-void DatalinkSerialRemote::write(const QByteArray &packet)
+void DatalinkSerialRemoteTcp::write(const QByteArray &packet)
 {
     if (m_socket.state() == QAbstractSocket::ConnectedState) {
         auto bytesWritten = m_socket.write(packet);
@@ -146,7 +146,7 @@ void DatalinkSerialRemote::write(const QByteArray &packet)
     }
 }
 
-QByteArray DatalinkSerialRemote::read()
+QByteArray DatalinkSerialRemoteTcp::read()
 {
     if (m_socket.state() != QAbstractSocket::ConnectedState) {
         resetDataStream();
