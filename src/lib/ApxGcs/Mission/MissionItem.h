@@ -22,6 +22,7 @@
 #pragma once
 
 #include "MissionGroup.h"
+#include "MissionPoint.h"
 #include "UnitMission.h"
 
 #include <Fact/Fact.h>
@@ -35,7 +36,6 @@
 class MissionItem : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(int missionItemType READ missionItemType CONSTANT)
 
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
@@ -56,11 +56,9 @@ public:
                          const QString &descr);
 
     MissionGroup *group;
-    int missionItemType() const;
 
     Fact *f_order;
-    Fact *f_latitude;
-    Fact *f_longitude;
+    MissionPoint *f_pos;
 
     Fact *f_remove;
 

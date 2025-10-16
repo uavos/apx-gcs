@@ -28,6 +28,8 @@
 Poi::Poi(MissionGroup *parent)
     : MissionItem(parent, "p#", "", "")
 {
+    setOpt("color", "#00796D");
+
     f_hmsl = new MissionField(this, "hmsl", tr("HMSL"), tr("Object of interest altitude MSL"), Int);
     f_hmsl->setUnits("m");
     f_hmsl->setEnumStrings(QStringList() << "ground");
@@ -106,12 +108,11 @@ QGeoRectangle Poi::boundingGeoRectangle() const
 
 QGeoCoordinate Poi::radiusPoint() const
 {
-    QGeoCoordinate p(f_latitude->value().toDouble(), f_longitude->value().toDouble());
-    return p.atDistanceAndAzimuth(std::abs(f_radius->value().toInt()), 90.0);
+    return f_pos->coordinate().atDistanceAndAzimuth(std::abs(f_radius->value().toInt()), 90.0);
 }
 void Poi::setRadiusPoint(const QGeoCoordinate &v)
 {
-    QGeoCoordinate p(f_latitude->value().toDouble(), f_longitude->value().toDouble());
+    auto p = f_pos->coordinate();
     double a = qDegreesToRadians(p.azimuthTo(v));
     double d = p.distanceTo(v);
     QPointF ne(d * std::cos(a), d * std::sin(a));

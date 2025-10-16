@@ -26,7 +26,7 @@
 #include "MissionShare.h"
 #include "MissionTools.h"
 
-#include "Area.h"
+#include "Geo.h"
 #include "Poi.h"
 #include "Runway.h"
 #include "Taxiway.h"
@@ -62,27 +62,28 @@ UnitMission::UnitMission(Unit *parent)
     connect(this, &UnitMission::missionSizeChanged, this, &UnitMission::updateStatus);
 
     //groups of items
-    f_runways = new Runways(this,
-                            "rw",
-                            tr("Runways"),
-                            tr("Takeoff and Landing"),
-                            unit->f_mandala->fact(mandala::cmd::nav::proc::rw::uid));
-    f_waypoints = new Waypoints(this,
-                                "wp",
-                                tr("Waypoints"),
-                                "",
-                                unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
-    f_pois = new Pois(this,
-                      "pi",
-                      tr("Points"),
-                      tr("Points of Interest"),
-                      unit->f_mandala->fact(mandala::cmd::nav::proc::pi::uid));
-    f_taxiways = new Taxiways(this,
-                              "tw",
-                              tr("Taxiways"),
-                              "",
-                              unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
-    f_areas = new Areas(this, "area", tr("Area"), tr("Airspace definitions"));
+    f_rw = new RunwayItems(this,
+                           "rw",
+                           tr("Runways"),
+                           tr("Takeoff and Landing"),
+                           unit->f_mandala->fact(mandala::cmd::nav::proc::rw::uid));
+    f_wp = new WaypointItems(this,
+                             "wp",
+                             tr("Waypoints"),
+                             "",
+                             unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
+    f_pi = new PoiItems(this,
+                        "pi",
+                        tr("Points"),
+                        tr("Points of Interest"),
+                        unit->f_mandala->fact(mandala::cmd::nav::proc::pi::uid));
+    f_tw = new TaxiwayItems(this,
+                            "tw",
+                            tr("Taxiways"),
+                            "",
+                            unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
+
+    f_geo = new GeoItems(this, "geo", tr("Geofences"), tr("Airspace"), nullptr);
 
     for (auto group : groups) {
         connect(group, &Fact::sizeChanged, this, &UnitMission::updateSize, Qt::QueuedConnection);
@@ -219,9 +220,9 @@ void UnitMission::updateStatus()
 
 void UnitMission::updateStartPath()
 {
-    if (f_waypoints->size() <= 0)
+    if (f_wp->size() <= 0)
         return;
-    static_cast<Waypoint *>(f_waypoints->child(0))->updatePath();
+    static_cast<Waypoint *>(f_wp->child(0))->updatePath();
 }
 
 QGeoRectangle UnitMission::boundingGeoRectangle() const
@@ -274,8 +275,8 @@ QJsonValue UnitMission::toJson()
         jso.insert("callsign", s);
         title.remove(s, Qt::CaseInsensitive);
     }
-    if (f_runways->size() > 0) {
-        QString s = f_runways->child(0)->text();
+    if (f_rw->size() > 0) {
+        QString s = f_rw->child(0)->text();
         jso.insert("runway", s);
         title.remove(s, Qt::CaseInsensitive);
     }
@@ -291,7 +292,7 @@ QJsonValue UnitMission::toJson()
     jso.insert("topLeftLon", rect.topLeft().longitude());
     jso.insert("bottomRightLat", rect.bottomRight().latitude());
     jso.insert("bottomRightLon", rect.bottomRight().longitude());
-    jso.insert("distance", (qint64) f_waypoints->distance());
+    jso.insert("distance", (qint64) f_wp->distance());
 
     //generate hash
     QCryptographicHash hash(QCryptographicHash::Sha1);
@@ -337,15 +338,15 @@ void UnitMission::hashData(QCryptographicHash *h) const
 
 void UnitMission::test(int n)
 {
-    if (f_waypoints->size() <= 0)
+    if (f_wp->size() <= 0)
         return;
-    Waypoint *w = static_cast<Waypoint *>(f_waypoints->facts().last());
-    QGeoCoordinate p(w->f_latitude->value().toDouble(), w->f_longitude->value().toDouble());
+    Waypoint *w = static_cast<Waypoint *>(f_wp->facts().last());
+    auto p = w->f_pos->coordinate();
     double hdg = QRandomGenerator::global()->bounded(360.0);
     for (int i = 0; i < n; ++i) {
         hdg += QRandomGenerator::global()->bounded(200.0) - 100.0;
         p = p.atDistanceAndAzimuth(100 + QRandomGenerator::global()->bounded(10000.0), hdg);
-        f_waypoints->addObject(p);
+        f_wp->addObject(p);
     }
 }
 

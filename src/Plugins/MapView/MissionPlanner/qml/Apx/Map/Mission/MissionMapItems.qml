@@ -67,7 +67,7 @@ MapItemGroup {
     }
 
     MapItemView {
-        z: 0
+        z: 1
         model: mission.tw.mapModel
         delegate: TaxiwayItem { }
     }
@@ -76,5 +76,11 @@ MapItemGroup {
         z: 20
         model: mission.pi.mapModel
         delegate: PointItem { }
+    }
+
+    MapItemView {
+        z: 0
+        model: mission.geo.mapModel
+        delegate: GeoItem { }
     }
 }

@@ -61,6 +61,7 @@ private slots:
     void recordSendValue(mandala::uid_t uid, QVariant value);
 
     void updateStatus();
+    void updateDescr();
 
 public slots:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
