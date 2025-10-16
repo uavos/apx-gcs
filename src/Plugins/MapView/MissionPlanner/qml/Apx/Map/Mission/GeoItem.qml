@@ -162,7 +162,6 @@ MissionObject {
                     id: pointInst
                     property bool pointSelect: false
                     model: geoItem.pointsModel
-                    delegateModelAccess: DelegateModel.ReadOnly
                     delegate: MapObject {
                         radiusFactor: 2
                         color: geoItem.color
