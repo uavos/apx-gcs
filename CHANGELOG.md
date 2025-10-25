@@ -1,3 +1,13 @@
+# [APX Ground Control v11.2.17](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.17) (10/25/25)
+
+> Branch: `main`\
+> Date: `10/25/25 19:12:24`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/70c0d9832d28776b045e2828db7cb29c5321a2da...6072d64ee30e2438905c0edfd9fc1e3183045f90)
+
+## Bug Fixes
+* geo bounding rect estimate
+* geo colors
+
 # [APX Ground Control v11.2.16](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.16) (10/15/25)
 
 > Branch: `main`\
