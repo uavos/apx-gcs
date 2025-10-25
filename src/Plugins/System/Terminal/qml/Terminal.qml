@@ -42,7 +42,6 @@ Rectangle {
         anchors.margins: Style.spacing
         anchors.fill: parent
 
-
         LogListView {
             id: listView
             Layout.fillWidth: true
@@ -50,8 +49,46 @@ Rectangle {
             Layout.alignment: Qt.AlignBottom
             Layout.preferredWidth: 300
             Layout.preferredHeight: 400
+            currentIndex: -1
+            property bool active: activeFocus || contextMenu.activeFocus
+            property var terminal: apx.tools.terminal
 
             spacing: lineSpace
+
+            Menu {
+                id: contextMenu
+                MenuItem {
+                    text: "Copy"
+                    onTriggered: {
+                        if (listView.currentIndex !== -1)
+                            listView.terminal.copySelectedLinesToClipboard()
+                        else
+                            listView.footerItem.copy()
+                    }
+                }
+                MenuItem {
+                    text: "Copy all"
+                    onTriggered: {
+                        listView.terminal.copyConsoleHistoryToClipboard()
+                    }
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.RightButton
+                onClicked: contextMenu.popup()
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.MiddleButton
+                onWheel: {
+                    if (wheel.angleDelta.y > 0)
+                        listView.focus = false
+                    wheel.accepted = false
+                }
+            }
 
             model: application.notifyModel
             delegate: TerminalLine {
@@ -63,6 +100,7 @@ Rectangle {
                 options: model.options
                 fact: model.fact
                 timestamp: model.timestamp
+                selected: model.selected
             }
 
             add: Transition {
@@ -75,13 +113,97 @@ Rectangle {
                     easing.type: Easing.OutCubic
                 }
             }
-            
-            footer: TerminalExec {
-                width: parent.width
-                onFocused: listView.scrollToEnd()
+
+            onCountChanged: scrollTimer.start()
+            Timer {
+                id: scrollTimer
+                interval: 1
+                onTriggered: listView.scrollToEnd()
             }
 
-            onClicked: listView.footerItem.focusRequested()
+            Keys.onPressed: {
+                if (event.key === Qt.Key_C
+                        && (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) {
+                    terminal.copySelectedLinesToClipboard()
+                }
+                if ((event.text.length == 1 && event.modifiers == Qt.NoModifier)
+                        || event.key == Qt.Key_Backspace) {
+                    event.accepted = true
+                    footerItem.setFocus()
+                    if (event.key != Qt.Key_Backspace)
+                        footerItem.appendCmd(event.text)
+                    else
+                        footerItem.doBackSpace()
+                }
+            }
+            Keys.onTabPressed: {
+                event.accepted = true
+                footerItem.hints()
+                footerItem.setFocus()
+            }
+            Keys.onEnterPressed: {
+                event.accepted = true
+                footerItem.exec()
+            }
+            Keys.onReturnPressed: {
+                event.accepted = true
+                footerItem.exec()
+            }
+            Keys.onUpPressed: {
+                footerItem.setFocus()
+                footerItem.upPressed(event)
+            }
+            Keys.onDownPressed: {
+                footerItem.setFocus()
+                footerItem.downPressed(event)
+            }
+
+            footer: TerminalExec {
+                width: parent.width
+                onFocused: {
+                    listView.scrollToEnd()
+                    listView.currentIndex = -1
+                    listView.terminal.unselectAllLines()
+                }
+            }
+        }
+    }
+
+    Item {
+        anchors {
+            top: parent.top
+            right: parent.right
+            rightMargin: 35
+            topMargin: 15
+        }
+
+        Rectangle {
+            width: 25
+            height: 20
+            color: "#808080"
+            opacity: currOpacity()
+
+            Text {
+                anchors.centerIn: parent
+                text: "☰"
+                color: "white"
+                font.pixelSize: 12
+            }
+
+            MouseArea {
+                id: mouseArea
+                anchors.fill: parent
+                onClicked: contextMenu.popup()
+                hoverEnabled: true
+            }
+
+            function currOpacity() {
+                if (!listView.active)
+                    return 0
+                if (mouseArea.containsMouse)
+                    return 1
+                return 0.5
+            }
         }
     }
 }

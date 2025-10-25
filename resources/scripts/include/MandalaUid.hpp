@@ -1189,11 +1189,12 @@ namespace est
             enum { health = 0x502 };
             enum { time = 0x503 };
             enum { uptime = 0x504 };
-            enum { fuel = 0x505 };
-            enum { weight = 0x506 };
-            enum { ttl = 0x507 };
-            enum { range = 0x508 };
-            enum { corr = 0x509 };
+            enum { ltt = 0x505 };
+            enum { fuel = 0x506 };
+            enum { weight = 0x507 };
+            enum { ttl = 0x508 };
+            enum { range = 0x509 };
+            enum { corr = 0x50a };
         };
         namespace ats
         {
@@ -1386,6 +1387,8 @@ namespace cmd
             enum { vspeed = 0x647 };
             enum { tecs = 0x648 };
             enum { radius = 0x649 };
+            enum { vx = 0x64a };
+            enum { vy = 0x64b };
         };
         namespace eng
         {
