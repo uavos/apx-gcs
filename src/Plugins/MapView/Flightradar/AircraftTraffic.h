@@ -38,10 +38,12 @@ typedef struct
     uint32_t ICAO_address;
     int32_t lat;
     int32_t lon;
-    uint16_t heading;
     int32_t altitude;
+    uint16_t heading;
     uint16_t squawk;
+    uint8_t altitude_type;
     char callsign[9];
+    uint8_t emitter_type;
 } __attribute__((packed)) GCS_TRAFFIC_REPORT_S;
 #pragma pack()
 
@@ -56,7 +58,7 @@ public:
     Q_INVOKABLE void removeAircraft(const QString &callsign);
     Q_INVOKABLE void updateFromAP(const GCS_TRAFFIC_REPORT_S &data);
 
-    void updateFromAP(const QString &callsign);
+    Q_INVOKABLE void updateSimData(const QString &callsign);
 
 signals:
     Q_INVOKABLE void aircraftUpdated(const QString &callsign);

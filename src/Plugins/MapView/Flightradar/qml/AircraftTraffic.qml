@@ -54,23 +54,23 @@ MapItemGroup {
                     callsign: air.callsign,
                     lat: air.latitude / 1e7,
                     lon: air.longitude / 1e7,
-                    altitude: air.altitude,
+                    altitude: air.altitude / 1e3,
+                    heading: air.heading / 1e2,
                 })
 
-                map.addMapItem(marker)
-
                 if (!marker) {
-                    console.warn("Failed to create marker for", callsign)
+                    //console.warn("Failed to create marker for", callsign)
                     return
                 }
-
+                
+                map.addMapItem(marker)
                 markers[callsign] = marker
-                console.log("Created marker:", air.callsign, marker.coordinate)
+                //console.log("Created marker:", air.callsign, marker.coordinate)
             } else {
                 marker.lat = air.latitude / 1e7
                 marker.lon = air.longitude / 1e7
-                marker.altitude = air.altitude
-                //marker.heading = air.heading
+                marker.altitude = air.altitude / 1e3
+                marker.heading = air.heading / 1e2
             }
 
             //printAllMarkers();
@@ -82,7 +82,7 @@ MapItemGroup {
             if (marker) {
                 marker.destroy()
                 delete markers[callsign]
-                console.log("Marker removed:", callsign)
+                //console.log("Marker removed:", callsign)
             }
         }
     }
@@ -120,129 +120,3 @@ MapItemGroup {
     }
     */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//AircraftTraffic.qml
-
-/*
-
-import QtQuick
-import QtLocation
-import QtPositioning
-
-import Apx.Common
-import Apx.Application
-
-MapItemGroup {
-    id: aircraftTraffic
-    z: 400
-
-    property var markers: ({})  
-
-    Component { 
-        id: markerComponent
-        AircraftMarker { }
-    }
-
-    Connections {
-        target: qat
-
-        function onAircraftUpdated(callsign) {
-            
-            const air = qat.getAircraft(callsign)
-            if (!air) {
-                return;
-            }
-
-            let marker = markers[callsign]
-
-            console.log("Marker:", air, marker)
-
-            
-            if (!marker) {
-                marker = markerComponent.createObject(ui.map, {
-                    callsign: air.callsign,
-                    lat: air.latitude / 1e7,
-                    lon: air.longitude / 1e7,
-                    //heading: air.heading
-                })
-
-                if (!marker) {
-                    //console.log("ERROR: Marker creation failed for", callsign)
-                    return;
-                }
-
-                markers[callsign] = marker
-                //console.log("Marker created:", callsign, marker.lat, marker.lon)
-            } else {
-                marker.lat = air.latitude / 1e7
-                marker.lon = air.longitude / 1e7
-                //marker.heading = air.heading
-                //console.log("Marker updated:", callsign, marker.lat, marker.lon)
-            }
-
-            printAllMarkers()
-        }
-
-        function onAircraftRemoved(callsign) {
-            const marker = markers[callsign]
-            if (marker) {
-                marker.destroy()
-                delete markers[callsign]
-                console.log("Marker removed:", callsign)
-            }
-        }
-    }
-
-    function printAllMarkers() {
-        for (let key in markers) {
-            const m = markers[key];
-            console.log("Callsign:", m.callsign, "Lat:", m.lat, "Lon:", m.lon, "Heading:", m.heading);
-        }
-    }
-
-    AircraftMarker {
-        lat: 24.2571
-        lon: 54.2625
-        callsign: "TEST"
-    }
-
-    MapQuickItem {
-        id: master
-        z: 500
-        coordinate: QtPositioning.coordinate(0.05, 0.05)
-        sourceItem: Rectangle {
-            width: 8
-            height: 8
-            radius: width / 2
-            color: "#f00"
-            border.color: "#fff"
-            border.width: 2
-        }
-        Behavior on coordinate {
-            enabled: true
-            CoordinateAnimation { duration: 500; easing.type: Easing.InOutQuad }
-        }
-    }
-}
-*/

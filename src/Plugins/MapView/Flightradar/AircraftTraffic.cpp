@@ -80,15 +80,15 @@ void AircraftTraffic::updateFromAP(const GCS_TRAFFIC_REPORT_S &data)
     emit aircraftUpdated(key);
 }
 
-void AircraftTraffic::updateFromAP(const QString &callsign)
+void AircraftTraffic::updateSimData(const QString &callsign)
 {
     Aircraft *air = m_aircrafts.value(callsign, nullptr);
 
     if (air) {
         const float dist = 100000;
         const float heading = air->heading();
-        const float dlat = std::sin(heading * M_PI / 180) * dist;
-        const float dlon = std::cos(heading * M_PI / 180) * dist;
+        const float dlat = std::cos((heading / 1e2) * M_PI / 180) * dist;
+        const float dlon = std::sin((heading / 1e2) * M_PI / 180) * dist;
         air->setLatitude(air->latitude() + dlat);
         air->setLongitude(air->longitude() + dlon);
 

@@ -71,10 +71,10 @@ signals:
 
 private:
     uint32_t m_icaoAddress = 0;
-    int32_t m_lat = 0;
-    int32_t m_lon = 0;
-    uint16_t m_heading = 0;
-    int32_t m_altitude = 0;
+    int32_t m_lat = 0;      // 1e7
+    int32_t m_lon = 0;      // 1e7
+    uint16_t m_heading = 0; // 1e2
+    int32_t m_altitude = 0; // 1e3
     uint16_t m_squawk = 0;
     QString m_callsign;
 

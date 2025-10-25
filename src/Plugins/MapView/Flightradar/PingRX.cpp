@@ -40,9 +40,6 @@ PingRX::PingRX(Fact *parent,
     f_vcpid->setMax(255);
 
     _at = new AircraftTraffic(this);
-    connect(_at, &AircraftTraffic::aircraftUpdated, this, &PingRX::onUpdated);
-    connect(_at, &AircraftTraffic::aircraftRemoved, this, &PingRX::onRemoved);
-    connect(_at, &AircraftTraffic::aircraftTimeout, this, &PingRX::onTimeout);
 
     connect(Fleet::instance(),
             &Fleet::currentChanged,
@@ -56,27 +53,11 @@ PingRX::PingRX(Fact *parent,
     App::setContextProperty("QAT", _at);
     qml = loadQml("qrc:/FlightradarPlugin.qml");
 
-    if (qml) {
-        qDebug() << "FLIGHT_RADAR:" << "OK...";
-    } else {
-        qDebug() << "FLIGHT_RADAR:" << "FAIL...";
-    }
-
-    /*
-    qmlRegisterType<AircraftTraffic>("AppPlugin", 1, 0, "AircraftTraffic");
-
-    qml = loadQml("qrc:/FlightradarPlugin.qml");
-    if (qml) {
-        //qml->setProperty("traffic", QVariant::fromValue(_at));
-        qml->setProperty("trafficCpp", QVariant::fromValue(_at));
-        qDebug() << "FLIGHT_RADAR:" << "OK...";
-    }
-    qDebug() << "FLIGHT_RADAR:" << qml;
-    */
-
-    //create_test_uav();
-    //connect(&m_testTimer, &QTimer::timeout, this, &PingRX::update_test_uav);
-    //m_testTimer.start(200);
+#ifdef PINGRX_SIMULATION
+    create_test_uav();
+    connect(&m_testTimer, &QTimer::timeout, this, &PingRX::update_test_uav);
+    m_testTimer.start(200);
+#endif // PINGRX_SIMULATION
 }
 
 void PingRX::onCurrentUnitChanged()
@@ -94,8 +75,8 @@ void PingRX::onCurrentUnitChanged()
 
 void PingRX::onPdataSerialData(quint8 portID, QByteArray data)
 {
-    //if (!f_enabled->value().toBool())
-    //    return;
+    if (!f_enabled->value().toBool())
+        return;
 
     if (data.isEmpty())
         return;
@@ -122,64 +103,6 @@ void PingRX::updateStatus()
             setText("");
         } else {
             setText("Error");
-        }
-    }
-}
-
-void PingRX::onUpdated(const QString &callsign)
-{
-    //qDebug() << "updated:" << callsign << _at->allCallsigns();
-    //qDebug() << "lat:" << _at->getAircraft(callsign)->latitude() / 1e7;
-    //qDebug() << "lon:" << _at->getAircraft(callsign)->longitude() / 1e7;
-}
-
-void PingRX::onRemoved(const QString &callsign)
-{
-    //qDebug() << "removed:" << callsign;
-}
-
-void PingRX::onTimeout(const QString &callsign)
-{
-    //qDebug() << "timeout:" << callsign;
-}
-
-GCS_TRAFFIC_REPORT_S PingRX::make_random_report()
-{
-    GCS_TRAFFIC_REPORT_S r{};
-
-    r.ICAO_address = randomICAO();
-
-    const double lat = m_minLat
-                       + (m_maxLat - m_minLat) * QRandomGenerator::global()->generateDouble();
-    const double lon = m_minLon
-                       + (m_maxLon - m_minLon) * QRandomGenerator::global()->generateDouble();
-
-    r.lat = degToInt32(lat);
-    r.lon = degToInt32(lon);
-
-    r.heading = randomHeading();
-    r.altitude = randomAltitude(m_minAlt, m_maxAlt);
-    r.squawk = randomSquawk();
-
-    randomCallsign(r.callsign);
-
-    return r;
-}
-
-void PingRX::create_test_uav()
-{
-    for (uint32_t i = 0; i < count_test_uav; i++) {
-        _at->updateFromAP(make_random_report());
-    }
-}
-
-void PingRX::update_test_uav()
-{
-    QStringList callsigns = _at->allCallsigns();
-    for (uint32_t i = 0; i < callsigns.size(); i++) {
-        Aircraft *aircraft = _at->getAircraft(callsigns.at(i));
-        if (aircraft) {
-            _at->updateFromAP(callsigns.at(i));
         }
     }
 }

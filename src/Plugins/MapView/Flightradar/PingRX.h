@@ -29,6 +29,8 @@
 
 #include "AircraftTraffic.h"
 
+#define PINGRX_SIMULATION
+
 class PingRX : public Fact
 {
     Q_OBJECT
@@ -55,14 +57,8 @@ private slots:
     void onPdataSerialData(quint8 portID, QByteArray data);
     void updateStatus();
 
-    void onUpdated(const QString &callsign);
-    void onRemoved(const QString &callsign);
-    void onTimeout(const QString &callsign);
-
-    void create_test_uav();
-    void update_test_uav();
-
 private:
+#ifdef PINGRX_SIMULATION
     const uint32_t count_test_uav{100};
     QTimer m_testTimer;
 
@@ -74,7 +70,45 @@ private:
     const int m_minAlt = 0;
     const int m_maxAlt = 12000;
 
-    GCS_TRAFFIC_REPORT_S make_random_report();
+    GCS_TRAFFIC_REPORT_S make_random_report()
+    {
+        GCS_TRAFFIC_REPORT_S r{};
+
+        r.ICAO_address = randomICAO();
+
+        const double lat = m_minLat
+                           + (m_maxLat - m_minLat) * QRandomGenerator::global()->generateDouble();
+        const double lon = m_minLon
+                           + (m_maxLon - m_minLon) * QRandomGenerator::global()->generateDouble();
+
+        r.lat = lat * 1e7;
+        r.lon = lon * 1e7;
+
+        r.heading = randomHeading();
+        r.altitude = randomAltitude(m_minAlt, m_maxAlt);
+        r.squawk = randomSquawk();
+
+        randomCallsign(r.callsign);
+
+        return r;
+    }
+
+    void create_test_uav()
+    {
+        for (uint32_t i = 0; i < count_test_uav; i++) {
+            _at->updateFromAP(make_random_report());
+        }
+    }
+    void update_test_uav()
+    {
+        QStringList callsigns = _at->allCallsigns();
+        for (uint32_t i = 0; i < callsigns.size(); i++) {
+            Aircraft *aircraft = _at->getAircraft(callsigns.at(i));
+            if (aircraft) {
+                _at->updateSimData(callsigns.at(i));
+            }
+        }
+    }
 
     uint32_t randomICAO()
     {
@@ -83,12 +117,12 @@ private:
 
     uint16_t randomHeading()
     {
-        return static_cast<uint16_t>(QRandomGenerator::global()->bounded(360u));
+        return static_cast<uint16_t>(QRandomGenerator::global()->bounded(360u) * 1e2);
     }
 
     int32_t randomAltitude(int minAlt, int maxAlt)
     {
-        return static_cast<int32_t>(QRandomGenerator::global()->bounded(minAlt, maxAlt + 1));
+        return static_cast<int32_t>(QRandomGenerator::global()->bounded(minAlt, maxAlt + 1) * 1e3);
     }
 
     uint16_t randomSquawk()
@@ -115,4 +149,5 @@ private:
     }
 
     int32_t degToInt32(double deg) { return deg * 1e7; }
+#endif // PINGRX_SIMULATION
 };

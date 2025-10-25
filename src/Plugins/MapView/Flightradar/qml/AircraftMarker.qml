@@ -27,8 +27,8 @@ import QtPositioning
 MapQuickItem {
     id: marker
     z: 100
-    anchorPoint.x: circle.width / 2
-    anchorPoint.y: circle.height / 2
+    anchorPoint.x: width / 2
+    anchorPoint.y: height / 2
 
     property string callsign: ""
     property real lat: 0
@@ -37,37 +37,85 @@ MapQuickItem {
     property real heading: 0
 
     coordinate: QtPositioning.coordinate(lat, lon)
-    
+
     onLatChanged: coordinate = QtPositioning.coordinate(lat, lon)
     onLonChanged: coordinate = QtPositioning.coordinate(lat, lon)
 
     sourceItem: Item {
+        id: item
         width: 24
         height: 24
 
-        Rectangle {
-            id: circle
-            anchors.centerIn: parent
-            width: 8
-            height: 8
-            radius: width / 2
-            color: "#f00"
-            border.color: "#fff"
-            border.width: 2
-        }
+        HoverHandler { id: hover }
 
+        Canvas {
+            id: triangle
+            anchors.centerIn: parent
+            width: 20
+            height: 28
+            rotation: marker.heading
+
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                ctx.clearRect(0, 0, width, height);
+                ctx.save();
+                
+                ctx.translate(width / 2, height / 2);
+
+                ctx.beginPath();
+                ctx.moveTo(0, -4);   
+                ctx.lineTo(8, 10);     
+                ctx.lineTo(0, 6);      
+                ctx.lineTo(-8, 10);
+                ctx.closePath();
+
+                ctx.fillStyle = "#f00";
+                ctx.fill();
+
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#fff";
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            Behavior on rotation {
+                RotationAnimation { duration: 400; easing.type: Easing.InOutQuad }
+            }
+        }
         Column {
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: circle.bottom
+            anchors.top: triangle.bottom
             spacing: 2
 
             Text {
+                id: callsignText
                 text: marker.callsign
                 font.pixelSize: 10
-                color: "white"
+                color: "#fff"
                 style: Text.Outline
-                styleColor: "black"
-            }            
+                styleColor: "#000"
+            }
+
+            Item {
+                width: callsignText.width
+                height: altitudeText.implicitHeight
+
+                Text {
+                    id: altitudeText
+                    anchors.centerIn: parent
+                    visible: hover.hovered
+                    opacity: hover.hovered ? 1 : 0
+                    text: qsTr("Alt: %1 m").arg(Math.round(marker.altitude))
+                    font.pixelSize: 10
+                    color: "#aee"
+                    style: Text.Outline
+                    styleColor: "#000"
+
+                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                }
+            }
         }
     }
 
