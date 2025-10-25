@@ -43,13 +43,13 @@ Geo::Geo(MissionGroup *parent)
         QString c = "#E65100"; //orange
         switch ((xbus::mission::geo_s::role_e) f_role->value().toInt()) {
         case xbus::mission::geo_s::SAFE: // safe - green
-            c = "#1B5E20";
+            c = "#36b63e";
             break;
         case xbus::mission::geo_s::DENY: // no-fly - yellow
-            c = "#a0500e";
+            c = "#D50000";
             break;
         case xbus::mission::geo_s::TERM: // terminate - red
-            c = "#D50000";
+            c = "#404040";
             break;
         case xbus::mission::geo_s::AUX: // auxiliary - blue
             c = "#2962FF";

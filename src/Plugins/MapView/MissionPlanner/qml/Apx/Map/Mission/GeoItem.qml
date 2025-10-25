@@ -45,12 +45,14 @@ MissionObject {
     readonly property var polyC1: fact?fact.polyC1:QtPositioning.coordinate()
     readonly property var polyC2: fact?fact.polyC2:QtPositioning.coordinate()
 
-    readonly property bool showBG: m_role!=="safe"
+    readonly property bool showBG: true
+    readonly property bool role_safe: m_role==="safe"
+    readonly property bool role_term: m_role==="term"
 
     // Shapes
-    readonly property real shapeOpacity: (selected||dragging||hover)?0.5:0.2
-    readonly property real pathWidth: 8
-    readonly property color bgColor: Qt.lighter(color, 1.9)
+    readonly property real shapeOpacity: (selected||dragging||hover)?0.7:role_safe?0.2:role_term?0.6:0.4
+    readonly property real pathWidth: 4
+    readonly property color bgColor: role_safe?"white":Qt.lighter(color, 1.9)
     
     readonly property bool isCircle: fact && fact.shape.text==="circle"
     readonly property bool isPolygon: fact && fact.shape.text==="polygon"
