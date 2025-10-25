@@ -266,13 +266,17 @@ QGeoRectangle Geo::boundingGeoRectangle() const
     case xbus::mission::geo_s::POLYGON: // polygon
         for (auto i : f_points->facts()) {
             auto p = qobject_cast<MissionPoint *>(i);
-            if (p)
-                r = r.isValid() ? r.united(QGeoRectangle(p->coordinate(), p->coordinate()))
-                                : QGeoRectangle(p->coordinate(), p->coordinate());
+            if (!p)
+                continue;
+            if (r.isValid()) {
+                r.extendRectangle(p->coordinate());
+                continue;
+            }
+            r = QGeoRectangle(QList<QGeoCoordinate>{p->coordinate()});
         }
         break;
     case xbus::mission::geo_s::LINE: // line
-        r = QGeoRectangle(coordinate(), f_p2->coordinate());
+        r = QGeoRectangle(QList<QGeoCoordinate>{coordinate(), f_p2->coordinate()});
         break;
     }
     return MissionItem::boundingGeoRectangle().united(r);
