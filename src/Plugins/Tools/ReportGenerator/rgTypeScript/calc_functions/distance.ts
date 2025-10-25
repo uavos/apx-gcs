@@ -1,15 +1,15 @@
-import { distance_decorator } from "../decorators";
-import { priorityFunction } from "../function";
-import { landing_time, takeoff_time } from "./general";
+import { calculationFunction } from "../function";
 import { getTelTime } from "../time";
 import { findIntersectionsSorted, iterateSynchronizedByTime, Range } from "../mandala_object";
+import { decorators } from "../decorators";
+import { liftoff, touchdown } from "./moment";
 
-export const overall_distance_in_flight = () => priorityFunction(distance_decorator)
+export const overall_distance_in_flight = () => calculationFunction(decorators.distance)
     .params({
         speed: "est.pos.speed",
     }).call((data) => {
-        const takeoff_time_obj = getTelTime(takeoff_time())
-        const landing_time_obj = getTelTime(landing_time())
+        const takeoff_time_obj = getTelTime(liftoff.time())
+        const landing_time_obj = getTelTime(touchdown.time())
 
         if (takeoff_time_obj.isError() || landing_time_obj.isError()) return undefined
         if (takeoff_time_obj.value() > landing_time_obj.value()) return undefined
@@ -28,3 +28,19 @@ export const overall_distance_in_flight = () => priorityFunction(distance_decora
 
         return overall_distance / 1000
     });
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; // Radius of the Earth in meters
+    const φ1 = lat1 * Math.PI / 180; // Convert latitude to radians
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = R * c; // Distance in meters
+    return distance;
+}
