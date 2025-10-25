@@ -26,12 +26,12 @@
 #include <serial/CobsEncoder.h>
 #include <QTcpSocket>
 
-class DatalinkSerialRemote : public DatalinkConnection
+class DatalinkSerialRemoteTcp : public DatalinkConnection
 {
     Q_OBJECT
 
 public:
-    explicit DatalinkSerialRemote(Fact *parent, QString host, int port);
+    explicit DatalinkSerialRemoteTcp(Fact *parent, QString host, int port);
 
     Fact *f_state = nullptr;
     Fact *f_remove = nullptr;

@@ -22,35 +22,43 @@
 #pragma once
 
 #include "DatalinkConnection.h"
+#include <serial/CobsDecoder.h>
+#include <serial/CobsEncoder.h>
+#include <QUdpSocket>
 
-class Datalink;
-class DatalinkSerialRemoteTcp;
-class DatalinkSerialRemoteUdpMcast;
-
-class DatalinkSerialRemotes : public Fact
+class DatalinkSerialRemoteUdpMcast : public DatalinkConnection
 {
     Q_OBJECT
 
 public:
-    explicit DatalinkSerialRemotes(Datalink *datalink);
+    explicit DatalinkSerialRemoteUdpMcast(Fact *parent, QString mcast, int port);
 
-    Fact *f_add = nullptr;
-    Fact *f_host = nullptr;
-    Fact *f_port = nullptr;
-    Fact *f_type = nullptr;
-    Fact *f_connect = nullptr;
-    Fact *f_list = nullptr;
+    Fact *f_state = nullptr;
+    Fact *f_remove = nullptr;
+
+    QString getHost() const;
+    int getPort() const;
+
+protected:
+    //DatalinkConnection overrided
+    void open() override;
+    void close() override;
+    QByteArray read() override;
+    void write(const QByteArray &packet) override;
 
 private:
-    Datalink *m_datalink = nullptr;
-
-    void updateStatus();
-    void load();
-    void save();
-    DatalinkConnection *createConnection(const QString &host, int port, const QString &type);
+    QString m_mcast;
+    QString m_host;
+    int m_port;
+    QUdpSocket m_readSocket;
+    QUdpSocket m_writeSocket;
+    QTimer m_noDataTimer;
+    CobsDecoder<> m_dec;
+    CobsEncoder<> m_enc;
 
 private slots:
-    void onConnectTriggered();
-    void onConnectionActiveChanged();
-    void onConnectionRemoveTriggered();
+    void onErrorOccured(QAbstractSocket::SocketError socketError);
+    void onActivatedChanged();
+    void onNoDataTimerTimeout();
+    void onRemoveTriggered();
 };
