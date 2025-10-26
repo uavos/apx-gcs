@@ -69,7 +69,7 @@ void AircraftTraffic::updateFromAP(const GCS_TRAFFIC_REPORT_S &data)
         return;
     }
 
-    air->setIcaoAddress(data.ICAO_address);
+    air->setIcaoAddress(QString::number(data.ICAO_address, 16).toUpper());
     air->setLatitude(data.lat);
     air->setLongitude(data.lon);
     air->setHeading(data.heading);

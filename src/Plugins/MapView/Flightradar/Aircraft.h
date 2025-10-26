@@ -30,7 +30,7 @@ class Aircraft : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(uint32_t icaoAddress READ icaoAddress WRITE setIcaoAddress NOTIFY dataChanged)
+    Q_PROPERTY(QString icaoAddress READ icaoAddress WRITE setIcaoAddress NOTIFY dataChanged)
     Q_PROPERTY(int32_t latitude READ latitude WRITE setLatitude NOTIFY dataChanged)
     Q_PROPERTY(int32_t longitude READ longitude WRITE setLongitude NOTIFY dataChanged)
     Q_PROPERTY(uint16_t heading READ heading WRITE setHeading NOTIFY dataChanged)
@@ -43,7 +43,7 @@ public:
         : QObject(parent)
     {}
 
-    uint32_t icaoAddress() const { return m_icaoAddress; }
+    QString icaoAddress() const { return m_icaoAddress; }
     int32_t latitude() const { return m_lat; }
     int32_t longitude() const { return m_lon; }
     uint16_t heading() const { return m_heading; }
@@ -52,7 +52,7 @@ public:
     QString callsign() const { return m_callsign; }
     QDateTime lastUpdate() const { return m_lastUpdate; }
 
-    void setIcaoAddress(uint32_t val) { m_icaoAddress = val; }
+    void setIcaoAddress(const QString &val) { m_icaoAddress = val; }
     void setLatitude(int32_t val) { m_lat = val; }
     void setLongitude(int32_t val) { m_lon = val; }
     void setHeading(uint16_t val) { m_heading = val; }
@@ -70,7 +70,7 @@ signals:
     void dataChanged();
 
 private:
-    uint32_t m_icaoAddress = 0;
+    QString m_icaoAddress;
     int32_t m_lat = 0;      // 1e7
     int32_t m_lon = 0;      // 1e7
     uint16_t m_heading = 0; // 1e2

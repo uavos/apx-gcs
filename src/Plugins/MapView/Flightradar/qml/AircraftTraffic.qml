@@ -56,6 +56,7 @@ MapItemGroup {
                     lon: air.longitude / 1e7,
                     altitude: air.altitude / 1e3,
                     heading: air.heading / 1e2,
+                    icao: air.icaoAddress,
                 })
 
                 if (!marker) {
@@ -71,6 +72,7 @@ MapItemGroup {
                 marker.lon = air.longitude / 1e7
                 marker.altitude = air.altitude / 1e3
                 marker.heading = air.heading / 1e2
+                icao: air.icaoAddress
             }
 
             //printAllMarkers();

@@ -29,7 +29,7 @@
 
 #include "AircraftTraffic.h"
 
-#define PINGRX_SIMULATION
+//#define PINGRX_SIMULATION
 
 class PingRX : public Fact
 {

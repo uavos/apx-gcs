@@ -35,6 +35,7 @@ MapQuickItem {
     property real lon: 0
     property real altitude: 0
     property real heading: 0
+    property string icao: ""
 
     coordinate: QtPositioning.coordinate(lat, lon)
 
@@ -109,7 +110,26 @@ MapQuickItem {
                     opacity: hover.hovered ? 1 : 0
                     text: qsTr("Alt: %1 m").arg(Math.round(marker.altitude))
                     font.pixelSize: 10
-                    color: "#aee"
+                    color: "#0f0"
+                    style: Text.Outline
+                    styleColor: "#000"
+
+                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                }
+            }
+
+            Item {
+                width: callsignText.width
+                height: icaoText.implicitHeight
+
+                Text {
+                    id: icaoText
+                    anchors.centerIn: parent
+                    visible: hover.hovered
+                    opacity: hover.hovered ? 1 : 0
+                    text: qsTr("ICAO: %1").arg(marker.icao)
+                    font.pixelSize: 10
+                    color: "#0f0"
                     style: Text.Outline
                     styleColor: "#000"
 
