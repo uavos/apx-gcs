@@ -28,40 +28,43 @@ AircraftTraffic::AircraftTraffic(Fact *parent)
     m_cleanupTimer.start(10000);
 }
 
-Aircraft *AircraftTraffic::getAircraft(const QString &callsign)
+Aircraft *AircraftTraffic::getAircraft(const QString &icao_address)
 {
-    auto ptr = m_aircrafts.value(callsign, nullptr);
+    auto ptr = m_aircrafts.value(icao_address, nullptr);
 
     if (!ptr)
         return nullptr;
     return ptr;
 }
 
-QStringList AircraftTraffic::allCallsigns()
+QStringList AircraftTraffic::allICAOAddress()
 {
     return m_aircrafts.keys();
 }
 
-void AircraftTraffic::removeAircraft(const QString &callsign)
+void AircraftTraffic::removeAircraft(const QString &icao_address)
 {
-    if (m_aircrafts.contains(callsign)) {
-        auto air = m_aircrafts.take(callsign);
-        emit aircraftRemoved(callsign);
+    if (m_aircrafts.contains(icao_address)) {
+        auto air = m_aircrafts.take(icao_address);
+        emit aircraftRemoved(icao_address);
         air->deleteLater();
     }
 }
 
 void AircraftTraffic::updateFromAP(const GCS_TRAFFIC_REPORT_S &data)
 {
-    QString key = QString::fromLatin1(data.callsign).trimmed();
-    if (key.isEmpty())
+    //QString key = QString::fromLatin1(data.callsign).trimmed();
+    QString key = QString::number(data.ICAO_address, 16).toUpper();
+
+    if (key.isEmpty()) {
         return;
+    }
 
     Aircraft *air = m_aircrafts.value(key, nullptr);
 
     if (!air) {
         air = new Aircraft(this);
-        air->setCallsign(key);
+        air->setIcaoAddress(key);
         m_aircrafts.insert(key, air);
     }
 
@@ -69,7 +72,12 @@ void AircraftTraffic::updateFromAP(const GCS_TRAFFIC_REPORT_S &data)
         return;
     }
 
-    air->setIcaoAddress(QString::number(data.ICAO_address, 16).toUpper());
+    QString callsign = QString::fromLatin1(data.callsign).trimmed();
+    if (callsign.isEmpty()) {
+        callsign = QString("N/A");
+    }
+
+    air->setCallsign(callsign);
     air->setLatitude(data.lat);
     air->setLongitude(data.lon);
     air->setHeading(data.heading);
@@ -80,9 +88,9 @@ void AircraftTraffic::updateFromAP(const GCS_TRAFFIC_REPORT_S &data)
     emit aircraftUpdated(key);
 }
 
-void AircraftTraffic::updateSimData(const QString &callsign)
+void AircraftTraffic::updateSimData(const QString &icao_address)
 {
-    Aircraft *air = m_aircrafts.value(callsign, nullptr);
+    Aircraft *air = m_aircrafts.value(icao_address, nullptr);
 
     if (air) {
         const float dist = 100000;
@@ -93,7 +101,7 @@ void AircraftTraffic::updateSimData(const QString &callsign)
         air->setLongitude(air->longitude() + dlon);
 
         air->update();
-        emit aircraftUpdated(callsign);
+        emit aircraftUpdated(icao_address);
     }
 }
 

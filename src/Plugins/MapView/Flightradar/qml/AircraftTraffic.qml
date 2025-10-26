@@ -40,23 +40,23 @@ MapItemGroup {
     Connections {
         target: QAT
 
-        function onAircraftUpdated(callsign) {
+        function onAircraftUpdated(icao_address) {
         
-            const air = QAT.getAircraft(callsign)
+            const air = QAT.getAircraft(icao_address)
             if (!air) {
                 return;
             }
 
-            var marker = markers[callsign]
+            var marker = markers[icao_address]
 
             if (!marker) {
                 marker = markerComponent.createObject(ui.map, {
+                    icao: air.icaoAddress,
                     callsign: air.callsign,
                     lat: air.latitude / 1e7,
                     lon: air.longitude / 1e7,
                     altitude: air.altitude / 1e3,
                     heading: air.heading / 1e2,
-                    icao: air.icaoAddress,
                 })
 
                 if (!marker) {
@@ -65,26 +65,26 @@ MapItemGroup {
                 }
                 
                 map.addMapItem(marker)
-                markers[callsign] = marker
+                markers[icao_address] = marker
                 //console.log("Created marker:", air.callsign, marker.coordinate)
             } else {
+                marker.callsign = air.callsign
                 marker.lat = air.latitude / 1e7
                 marker.lon = air.longitude / 1e7
                 marker.altitude = air.altitude / 1e3
                 marker.heading = air.heading / 1e2
-                icao: air.icaoAddress
             }
 
             //printAllMarkers();
             //console.log("Update marker:", air.callsign, marker.coordinate)
         }
 
-        function onAircraftRemoved(callsign) {
-            const marker = markers[callsign]
+        function onAircraftRemoved(icao_address) {
+            const marker = markers[icao_address]
             if (marker) {
                 marker.destroy()
-                delete markers[callsign]
-                //console.log("Marker removed:", callsign)
+                delete markers[icao_address]
+                //console.log("Marker removed:", icao_address)
             }
         }
     }

@@ -53,17 +53,17 @@ class AircraftTraffic : public Fact
 public:
     explicit AircraftTraffic(Fact *parent = nullptr);
 
-    Q_INVOKABLE Aircraft *getAircraft(const QString &callsign);
-    Q_INVOKABLE QStringList allCallsigns();
-    Q_INVOKABLE void removeAircraft(const QString &callsign);
+    Q_INVOKABLE Aircraft *getAircraft(const QString &icao_address);
+    Q_INVOKABLE QStringList allICAOAddress();
+    Q_INVOKABLE void removeAircraft(const QString &icao_address);
     Q_INVOKABLE void updateFromAP(const GCS_TRAFFIC_REPORT_S &data);
 
-    Q_INVOKABLE void updateSimData(const QString &callsign);
+    Q_INVOKABLE void updateSimData(const QString &calicao_addresslsign);
 
 signals:
-    Q_INVOKABLE void aircraftUpdated(const QString &callsign);
-    Q_INVOKABLE void aircraftRemoved(const QString &callsign);
-    Q_INVOKABLE void aircraftTimeout(const QString &callsign);
+    Q_INVOKABLE void aircraftUpdated(const QString &icao_address);
+    Q_INVOKABLE void aircraftRemoved(const QString &icao_address);
+    Q_INVOKABLE void aircraftTimeout(const QString &icao_address);
 
 private slots:
     void cleanupOldAircrafts();

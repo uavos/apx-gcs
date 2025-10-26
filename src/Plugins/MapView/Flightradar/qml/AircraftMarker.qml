@@ -30,7 +30,7 @@ MapQuickItem {
     anchorPoint.x: width / 2
     anchorPoint.y: height / 2
 
-    property string callsign: ""
+    property string callsign: "N/A"
     property real lat: 0
     property real lon: 0
     property real altitude: 0

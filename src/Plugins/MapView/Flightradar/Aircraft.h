@@ -71,12 +71,12 @@ signals:
 
 private:
     QString m_icaoAddress;
-    int32_t m_lat = 0;      // 1e7
-    int32_t m_lon = 0;      // 1e7
-    uint16_t m_heading = 0; // 1e2
-    int32_t m_altitude = 0; // 1e3
-    uint16_t m_squawk = 0;
-    QString m_callsign;
+    int32_t m_lat{};      // 1e7
+    int32_t m_lon{};      // 1e7
+    uint16_t m_heading{}; // 1e2
+    int32_t m_altitude{}; // 1e3
+    uint16_t m_squawk{};
+    QString m_callsign{"N/A"};
 
     QDateTime m_lastUpdate;
 };
