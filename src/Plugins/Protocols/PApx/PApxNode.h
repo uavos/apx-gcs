@@ -37,7 +37,7 @@ public:
     explicit PApxNode(PApxNodes *parent, QString uid);
     ~PApxNode();
 
-    void process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
+    void process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream);
 
     void schedule_request(PApxNodeRequest *req);
     void delete_request(PApxNodeRequest *req);

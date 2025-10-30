@@ -206,7 +206,7 @@ void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
     emit telemetryDecoded();
 }
 
-void Mandala::valuesData(PBase::Values values)
+void Mandala::valuesData(PBase::Values values, bool is_remote_uplink)
 {
     PBase::Values rec_values;
     for (const auto [uid, v] : values) {
@@ -216,7 +216,7 @@ void Mandala::valuesData(PBase::Values values)
         f->setValueFromStream(v);
         rec_values.push_back({uid, f->value()});
     }
-    emit recordData(rec_values, false);
+    emit recordData(rec_values, is_remote_uplink);
 }
 
 void Mandala::recordSendValue(mandala::uid_t uid, QVariant value)

@@ -59,7 +59,7 @@ QString PApxUnit::uidText(const xbus::unit::uid_t *uid_raw)
         .toUpper();
 }
 
-void PApxUnit::process_downlink(PStreamReader &stream)
+void PApxUnit::process_incoming_data(PStreamReader &stream, bool is_remote_uplink)
 {
     if (stream.available() < xbus::pid_s::psize()) {
         qWarning() << "packet" << stream.dump_payload();
@@ -80,16 +80,17 @@ void PApxUnit::process_downlink(PStreamReader &stream)
     }
     emit packetReceived(uid);
 
-    if (static_cast<PApxNodes *>(m_nodes)->process_downlink(pid, stream)) {
+    if (static_cast<PApxNodes *>(m_nodes)->process_incoming_data(pid, stream, is_remote_uplink)) {
         setStreamType(NMT);
         return;
     }
 
-    if (static_cast<PApxData *>(m_data)->process_downlink(pid, stream)) {
+    if (static_cast<PApxData *>(m_data)->process_incoming_data(pid, stream, is_remote_uplink)) {
         return;
     }
 
-    if (static_cast<PApxTelemetry *>(m_telemetry)->process_downlink(pid, stream)) {
+    if (static_cast<PApxTelemetry *>(m_telemetry)
+            ->process_incoming_data(pid, stream, is_remote_uplink)) {
         return;
     }
 }

@@ -61,10 +61,17 @@ void PApxNodes::updateActive()
     }
 }
 
-bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
+bool PApxNodes::process_incoming_data(const xbus::pid_s &pid,
+                                      PStreamReader &stream,
+                                      bool is_remote_uplink)
 {
     if (!mandala::cmd::env::nmt::match(pid.uid))
         return false;
+
+    if (is_remote_uplink) {
+        trace()->data(stream.payload());
+        return true;
+    }
 
     // if upgrading - forward all to local
     if (upgrading() && !_local) {
@@ -72,7 +79,7 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         trace()->block("LOCAL");
         trace()->tree();
         auto nodes = static_cast<PApxNodes *>(local->nodes());
-        return nodes->process_downlink(pid, stream);
+        return nodes->process_incoming_data(pid, stream, is_remote_uplink);
     }
 
     if (stream.available() < sizeof(xbus::node::guid_t)) {
@@ -98,7 +105,7 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     trace()->block(node->title().append(':'));
     trace()->tree();
 
-    node->process_downlink(pid, stream);
+    node->process_incoming_data(pid, stream);
 
     if (pid.pri == xbus::pri_response)
         emit node_response(node);

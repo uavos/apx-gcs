@@ -65,7 +65,7 @@ private slots:
 
 public slots:
     void telemetryData(PBase::Values values, quint64 timestamp_ms);
-    void valuesData(PBase::Values values);
+    void valuesData(PBase::Values values, bool is_remote_uplink);
 
     void resetCounters();
 

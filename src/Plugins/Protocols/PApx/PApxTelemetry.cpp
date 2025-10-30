@@ -72,7 +72,9 @@ void PApxTelemetry::report()
     }
 }
 
-bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
+bool PApxTelemetry::process_incoming_data(const xbus::pid_s &pid,
+                                          PStreamReader &stream,
+                                          bool is_remote_uplink)
 {
     // telemetry section uid
     switch (pid.uid) {
@@ -80,6 +82,9 @@ bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stre
         return false;
 
     case mandala::cmd::env::telemetry::format::uid:
+        if (is_remote_uplink)
+            return true; // ignore uplink format requests
+
         trace()->data(stream.payload());
         if (pid.pri == xbus::pri_response) {
             _request_format_part = 0;
