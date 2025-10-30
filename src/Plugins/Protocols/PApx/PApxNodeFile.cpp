@@ -38,7 +38,7 @@ PApxNodeFile::PApxNodeFile(PApxNode *node, const QString &name)
     connect(this, &Fact::triggered, this, &PApxNodeFile::requestInfo);
 }
 
-void PApxNodeFile::process_downlink(xbus::node::file::op_e op, PStreamReader &stream)
+void PApxNodeFile::process_incoming_data(xbus::node::file::op_e op, PStreamReader &stream)
 {
     // collect and build file content from received read/write parts and emit signal with data
 

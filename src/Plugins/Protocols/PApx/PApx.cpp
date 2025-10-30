@@ -64,7 +64,7 @@ void PApx::process_downlink(QByteArray packet)
     if (!mandala::cmd::env::unit::match(pid.uid)) {
         // is not unit wrapped format - forward to local
         stream.reset();
-        m_local->process_downlink(stream);
+        m_local->process_incoming_data(stream, false);
         return;
     }
 
@@ -204,7 +204,7 @@ void PApx::process_downlink(QByteArray packet)
             v->packetReceived(pid.uid);
             trace()->block(v->title().append(':'));
             trace()->tree();
-            v->process_downlink(stream);
+            v->process_incoming_data(stream, false);
             return;
         }
 
@@ -214,7 +214,7 @@ void PApx::process_downlink(QByteArray packet)
         if (mandala::cmd::env::nmt::msg::match(pid.uid)) {
             // allow messages from unknown units
             stream.reset(pos_s);
-            m_local->process_downlink(stream);
+            m_local->process_incoming_data(stream, false);
         } else {
             trace()->data(stream.payload());
         }
@@ -242,7 +242,7 @@ void PApx::process_downlink(QByteArray packet)
         v->packetReceived(pid.uid);
         trace()->block(v->title().append(':'));
         trace()->tree();
-        v->process_downlink(stream);
+        v->process_incoming_data(stream, true);
         return;
     }
     }

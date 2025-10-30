@@ -66,7 +66,7 @@ void PApxNode::infoCacheLoaded(QJsonObject info)
     setTitle(info.value("name").toString());
 }
 
-void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
+void PApxNode::process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream)
 {
     mandala::uid_t uid = pid.uid;
 
@@ -110,7 +110,7 @@ void PApxNode::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         if (!f)
             return;
 
-        f->process_downlink(op, stream);
+        f->process_incoming_data(op, stream);
 
         stream.reset(spos);
     }

@@ -29,35 +29,39 @@ PApxData::PApxData(PApxUnit *parent)
     , _req(parent)
 {}
 
-bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
+bool PApxData::process_incoming_data(const xbus::pid_s &pid,
+                                     PStreamReader &stream,
+                                     bool is_remote_uplink)
 {
-    bool is_request = pid.pri == xbus::pri_request;
+    bool is_value_request = pid.pri == xbus::pri_request; // request for data value
     do {
         if (pid.uid < mandala::cmd::env::uid) {
-            if (is_request)
+            if (is_value_request)
                 return true;
 
             // check for bundles sent from other GCS
-            static const QHash<mandala::uid_t, QString> bundleFactsNamePathsMap{
-                {mandala::cmd::nav::pos::uid, "cmd.pos"},
-                {mandala::est::nav::pos::uid, "est.pos"},
-                {mandala::est::nav::ref::uid, "est.ref"},
-            };
-            if (mandala::is_bundle(pid.uid) && bundleFactsNamePathsMap.contains(pid.uid)) {
-                Mandala *mandalaInstance = Fleet::instance()->current()->f_mandala;
-                mandala::bundle::pos_ll_s bundlePos;
-                stream.read(&bundlePos, 8);
+            if (is_remote_uplink) {
+                static const QHash<mandala::uid_t, QString> bundleFactsNamePathsMap{
+                    {mandala::cmd::nav::pos::uid, "cmd.pos"},
+                    {mandala::est::nav::pos::uid, "est.pos"},
+                    {mandala::est::nav::ref::uid, "est.ref"},
+                };
+                if (mandala::is_bundle(pid.uid) && bundleFactsNamePathsMap.contains(pid.uid)) {
+                    Mandala *mandalaInstance = Fleet::instance()->current()->f_mandala;
+                    mandala::bundle::pos_ll_s bundlePos;
+                    stream.read(&bundlePos, 8);
 
-                auto factNamePath = bundleFactsNamePathsMap.value(pid.uid);
-                auto lat = qobject_cast<MandalaFact *>(
-                    mandalaInstance->findChild(factNamePath + ".lat"));
-                auto lon = qobject_cast<MandalaFact *>(
-                    mandalaInstance->findChild(factNamePath + ".lon"));
-                if (lat && lon) {
-                    lat->setRawValueLocal(mandala::a32_to_deg(bundlePos.lat));
-                    lon->setRawValueLocal(mandala::a32_to_deg(bundlePos.lon));
+                    auto factNamePath = bundleFactsNamePathsMap.value(pid.uid);
+                    auto lat = qobject_cast<MandalaFact *>(
+                        mandalaInstance->findChild(factNamePath + ".lat"));
+                    auto lon = qobject_cast<MandalaFact *>(
+                        mandalaInstance->findChild(factNamePath + ".lon"));
+                    if (lat && lon) {
+                        lat->setRawValueLocal(mandala::a32_to_deg(bundlePos.lat));
+                        lon->setRawValueLocal(mandala::a32_to_deg(bundlePos.lon));
+                    }
+                    return true;
                 }
-                return true;
             }
 
             // unpack data value
@@ -77,13 +81,14 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
                 qWarning() << "unpack data values error";
                 break;
             }
-            emit valuesData(values);
+            emit valuesData(values, is_remote_uplink);
             return true;
         }
 
         switch (pid.uid) {
         default:
             return false;
+
         case mandala::cmd::env::stream::vcp::uid:
             if (stream.available() > 1) {
                 uint8_t port_id = stream.read<uint8_t>();
@@ -94,6 +99,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             }
             qWarning() << "Empty serial data received";
             break;
+
         case mandala::cmd::env::script::jsexec::uid:
             if (stream.available() > 2) {
                 QString script = stream.payload().trimmed();
@@ -105,9 +111,11 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
             }
             qWarning() << "Empty jsexec data received" << stream.dump_payload();
             break;
+
         case mandala::cmd::env::stream::calib::uid:
-            if (is_request)
-                return true;
+            if (is_value_request)
+                return true; // no data to return for calibration data request
+
             if (stream.available() > sizeof(mandala::uid_t)) {
                 mandala::uid_t uid;
                 stream >> uid;
