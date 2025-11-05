@@ -68,10 +68,10 @@ bool PApxNodes::process_incoming_data(const xbus::pid_s &pid,
     if (!mandala::cmd::env::nmt::match(pid.uid))
         return false;
 
-    if (is_remote_uplink) {
-        trace()->data(stream.payload());
-        return true;
-    }
+    // if (is_remote_uplink) {
+    //     trace()->data(stream.payload());
+    //     return true;
+    // }
 
     // if upgrading - forward all to local
     if (upgrading() && !_local) {
