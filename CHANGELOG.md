@@ -1,3 +1,13 @@
+# [APX Ground Control v11.2.18](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.18) (11/04/25)
+
+> Branch: `main`\
+> Date: `11/04/25 20:28:09`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/acc3a14e67612eef29755d335b647a9c41e7bee5...59c167e17de7c024c87fc3a77455b6d5af3246a5)
+
+## Bug Fixes
+* recording uplink from remote gcs
+* extend PFD control area limits
+
 # [APX Ground Control v11.2.17](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.17) (10/25/25)
 
 > Branch: `main`\
