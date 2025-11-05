@@ -64,6 +64,13 @@ bool PApxData::process_incoming_data(const xbus::pid_s &pid,
                 }
             }
 
+            // accept all value bundles silently
+            if (mandala::is_bundle(pid.uid)) {
+                // discard bundle data
+                trace()->data(stream.payload());
+                return true;
+            }
+
             // unpack data value
             if (stream.available() <= mandala::spec_s::psize()) {
                 qWarning() << "size" << stream.available();
