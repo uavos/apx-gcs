@@ -1,3 +1,16 @@
+# [APX Ground Control v11.2.19](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.19) (11/05/25)
+
+> Branch: `main`\
+> Date: `11/05/25 13:57:13`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/e934377653f608096e1fbf8c9a5a2a127dd620b3...4a248caf68d0716fe5fabbff5e70b20e606817b3)
+
+## New Features
+* INS pos error displayed with different colors on GPS fix availability
+
+## Bug Fixes
+* remote GCS unit conf update sync
+* accept remote GCS bundles silently
+
 # [APX Ground Control v11.2.18](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.18) (11/04/25)
 
 > Branch: `main`\
