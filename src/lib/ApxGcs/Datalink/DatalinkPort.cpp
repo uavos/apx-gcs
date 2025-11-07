@@ -142,6 +142,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         for (int i = 0; i < size(); ++i) {
             connect(child(i), &Fact::valueChanged, parent, &DatalinkPorts::save);
         }
+
         //f_connection
         switch (f_type->value().toInt()) {
         case SERIAL:
@@ -156,13 +157,14 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             qobject_cast<DatalinkSerial *>(f_connection)
                 ->setCodec(f_codec->value().value<DatalinkSerial::CodecType>());
             break;
-        case TCP:
-            f_connection = new DatalinkRemote(this, datalink, f_url->text());
+        case HTTP:
+            f_connection = new DatalinkRemote(this, datalink, parseUrl());
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
-                qobject_cast<DatalinkRemote *>(f_connection)->setRemoteUrl(f_url->text());
+                qobject_cast<DatalinkRemote *>(f_connection)->setRemoteUrl(parseUrl());
             });
             break;
         }
+
         if (f_connection) {
             f_connection->setEnabled(false);
             f_connection->setVisible(false);
@@ -193,6 +195,17 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         connect(child(i), &Fact::valueChanged, this, &DatalinkPort::updateStatus);
     }
     updateStatus();
+}
+
+QUrl DatalinkPort::parseUrl() const
+{
+    QUrl url = f_url->text();
+    if (url.scheme().isEmpty()) {
+        QString s = url.toString();
+        url.setUrl(QString("%1://%2").arg(f_type->text().toLower()).arg(s));
+    }
+    // qDebug() << f_url->text() << "->" << url.toString();
+    return url;
 }
 
 void DatalinkPort::updateEnabled()
@@ -226,7 +239,7 @@ void DatalinkPort::defaultUrl()
     case SERIAL:
         f_url->setValue("auto");
         break;
-    case TCP:
+    default:
         f_url->setValue("192.168.1.23");
         break;
     }
@@ -248,18 +261,19 @@ void DatalinkPort::updateStatus()
 
     if (_new)
         return;
+
     QStringList st;
     if (!f_comment->text().isEmpty())
         st << f_comment->text();
 
     if (f_connection) {
-        st << f_connection->title();
-        setDescr(f_connection->descr());
+        st << f_connection->status();
     } else {
         st << f_url->text();
-        setDescr(f_routing->value().toString());
     }
+    st.removeAll("");
     setTitle(st.join(": "));
+    setDescr(parseUrl().toString());
 }
 
 void DatalinkPort::updateRoutingValue()
@@ -336,7 +350,7 @@ void DatalinkPort::syncUrlEnum()
             st.append(spi.portName());
         }
     } break;
-    case TCP: {
+    default: {
         const Fact *fg = static_cast<const Fact *>(sender());
         for (int i = 0; i < fg->size(); ++i) {
             const Fact *f = fg->child(i);

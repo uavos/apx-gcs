@@ -135,8 +135,8 @@ void DatalinkRemotes::discoverRead(void)
 
         // qDebug() << QString(datagram.data());
 
-        // if (datalink->f_server->active() && DatalinkTcp::isLocalHost(datagram.senderAddress()))
-        //     continue;
+        if (datalink->f_server->active() && DatalinkSocket::isLocalHost(datagram.senderAddress()))
+            continue;
 
         for (auto data : datagram.data().split('\n')) {
             // qDebug() << data;

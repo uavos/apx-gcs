@@ -162,7 +162,7 @@ void DatalinkPorts::disableLocalNetworkPorts()
         DatalinkPort *port = qobject_cast<DatalinkPort *>(i);
         if (!port)
             continue;
-        if (port->f_type->value().toInt() != DatalinkPort::TCP)
+        if (port->f_type->value().toInt() == DatalinkPort::SERIAL)
             continue;
 
         if (!DatalinkSocket::isLocalHost(QHostAddress(port->f_url->value().toString())))

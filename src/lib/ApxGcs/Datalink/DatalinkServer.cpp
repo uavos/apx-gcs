@@ -41,7 +41,7 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     , datalink(datalink)
 {
     QUrl url;
-    url.setScheme("tcp");
+    url.setScheme("http");
     url.setUserName(App::username());
     url.setHost(App::hostname());
     url.setPort(TCP_PORT_SERVER);

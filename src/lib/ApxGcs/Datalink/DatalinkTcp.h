@@ -30,8 +30,12 @@ public:
     explicit DatalinkTcp(Fact *parent, QTcpSocket *socket, quint16 rxNetwork, quint16 txNetwork);
 
 private:
-    QTcpSocket *_tcp;
-    bool _serverClient;
+    QTcpSocket *_tcp{};
+
+    enum {
+        HTTP_RESPONSE,
+        HTTP_CLIENT,
+    } _connectionType;
 
     typedef struct
     {

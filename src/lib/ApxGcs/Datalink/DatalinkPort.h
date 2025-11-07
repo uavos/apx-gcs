@@ -38,7 +38,7 @@ public:
                           Datalink *datalink,
                           const DatalinkPort *port = nullptr);
 
-    enum PortType { SERIAL, TCP };
+    enum PortType { SERIAL, HTTP, UDP };
     Q_ENUM(PortType)
 
     Fact *f_enable;
@@ -62,6 +62,8 @@ private:
     bool _new;
     bool _blockUpdateRoutingValue;
     bool _blockUpdateRoutingFacts;
+
+    QUrl parseUrl() const;
 
 private slots:
     void updateEnabled();

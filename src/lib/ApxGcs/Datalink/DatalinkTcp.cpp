@@ -32,11 +32,11 @@ DatalinkTcp::DatalinkTcp(Fact *parent, QTcpSocket *socket, quint16 rxNetwork, qu
     , _tcp(socket)
     , serverName(App::username())
 {
-    _serverClient = _tcp->isOpen();
+    _connectionType = _tcp->isOpen() ? HTTP_RESPONSE : HTTP_CLIENT;
 
     _tcp->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
-    if (_serverClient) {
+    if (_connectionType == HTTP_RESPONSE) {
         setUrl(_tcp->peerAddress().toString());
         setStatus("Waiting request");
         connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
@@ -53,29 +53,27 @@ void DatalinkTcp::resetDataStream()
 
 void DatalinkTcp::connectToHost(QHostAddress host, quint16 port)
 {
-    if (_serverClient)
-        return;
-    _hostAddress = host;
-    _hostPort = port;
-    if (_tcp->isOpen())
-        _tcp->abort();
-    connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
-    _tcp->connectToHost(host, port);
+    if (_connectionType == HTTP_CLIENT) {
+        _hostAddress = host;
+        _hostPort = port;
+        if (_tcp->isOpen())
+            _tcp->abort();
+        connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
+        _tcp->connectToHost(host, port);
+    }
 }
 
 void DatalinkTcp::socketDisconnected()
 {
     DatalinkSocket::socketDisconnected();
 
-    //qDebug()<<_serverClient;
+    //qDebug()<<_connectionType;
     disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
     disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readDataAvailable);
 
-    if (_serverClient) {
+    if (_connectionType == HTTP_RESPONSE) {
         disconnect(_tcp, nullptr, this, nullptr);
         _tcp->deleteLater();
-        //parentItem()->removeItem(this,false);
-        //deleteLater();
         deleteFact();
     }
 }
@@ -99,10 +97,14 @@ void DatalinkTcp::readyReadHeader()
 
 bool DatalinkTcp::checkHeader()
 {
-    if (_serverClient)
+    switch (_connectionType) {
+    case HTTP_RESPONSE:
         return checkServerRequestHeader();
-    else
+    case HTTP_CLIENT:
         return checkDatalinkResponseHeader();
+    default:
+        return true;
+    }
 }
 
 bool DatalinkTcp::readHeader()

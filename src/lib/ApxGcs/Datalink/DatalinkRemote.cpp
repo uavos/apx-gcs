@@ -61,12 +61,8 @@ DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
 
 void DatalinkRemote::setRemoteUrl(QUrl url)
 {
-    //qDebug()<<url<<url.isValid()<<url.toString();
+    qDebug() << url << url.isValid() << url.toString();
     url = fixUrl(url);
-    //qDebug()<<url.scheme()<<url.host()<<url.port()<<url.authority()<<url.isValid();
-    // if (url.scheme() == "tcp" && url.port() == TCP_PORT_SERVER)
-    //     setUrl(QString("%1@%2").arg(url.userInfo()).arg(url.host()));
-    // else
     setUrl(url.toString());
     _hostAddress = QHostAddress(url.host());
     _hostPort = static_cast<quint16>(url.port());
@@ -75,12 +71,10 @@ QUrl DatalinkRemote::fixUrl(QUrl url)
 {
     if (url.scheme().isEmpty()) {
         QString s = url.toString();
-        url.setUrl(QString("%1://%2").arg("tcp").arg(s));
+        url.setUrl(QString("%1://%2").arg("http").arg(s));
     }
     if (url.port() <= 0) {
         quint16 v = TCP_PORT_SERVER;
-        if (url.scheme().startsWith("http", Qt::CaseInsensitive))
-            v = 80;
         url.setPort(v);
     }
     return url;
