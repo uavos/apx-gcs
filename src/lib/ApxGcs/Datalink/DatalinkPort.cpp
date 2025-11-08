@@ -158,9 +158,9 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
                 ->setCodec(f_codec->value().value<DatalinkSerial::CodecType>());
             break;
         case HTTP:
-            f_connection = new DatalinkRemote(this, datalink, parseUrl());
+            f_connection = new DatalinkSocketHttp(this, parseUrl());
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
-                qobject_cast<DatalinkRemote *>(f_connection)->setRemoteUrl(parseUrl());
+                qobject_cast<DatalinkSocketHttp *>(f_connection)->setRemoteUrl(parseUrl());
             });
             break;
         }

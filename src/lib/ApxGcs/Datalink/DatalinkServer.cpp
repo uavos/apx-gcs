@@ -21,8 +21,8 @@
  */
 #include "DatalinkServer.h"
 #include "Datalink.h"
-#include "DatalinkTcp.h"
-#include "DatalinkUdp.h"
+#include "DatalinkSocketHttp.h"
+#include "DatalinkSocketUdp.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
@@ -151,7 +151,7 @@ void DatalinkServer::httpActiveChanged()
         return;
 
     if (!f_http->value().toBool()) {
-        for (auto i : f_clients->findFacts<DatalinkTcp>())
+        for (auto i : f_clients->findFacts<DatalinkSocketHttp>())
             i->close();
         httpServer->close();
         f_http->setActive(false);
@@ -172,7 +172,7 @@ void DatalinkServer::udpActiveChanged()
         udpServer->close();
         f_udp->setActive(false);
         apxMsg() << tr("UDP datalink disabled");
-        for (auto i : f_clients->findFacts<DatalinkUdp>())
+        for (auto i : f_clients->findFacts<DatalinkSocketUdp>())
             i->close();
         return;
     }
@@ -254,10 +254,10 @@ void DatalinkServer::newHttpConnection()
             socket->disconnectFromHost();
             continue;
         }
-        DatalinkTcp *c = new DatalinkTcp(f_clients, socket, 0, 0);
+        DatalinkSocketHttp *c = new DatalinkSocketHttp(f_clients, socket, 0, 0);
         updateClientsNetworkMode();
         connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
-        connect(c, &DatalinkTcp::httpRequest, this, &DatalinkServer::httpRequest);
+        connect(c, &DatalinkSocketHttp::httpRequest, this, &DatalinkServer::httpRequest);
         datalink->addConnection(c);
         c->setActivated(true);
     }
@@ -278,7 +278,7 @@ void DatalinkServer::udpReadyRead()
         //          << datagram.isValid();
 
         bool found = false;
-        for (auto i : f_clients->findFacts<DatalinkUdp>()) {
+        for (auto i : f_clients->findFacts<DatalinkSocketUdp>()) {
             if (i->isEqual(datagram.senderAddress())) {
                 i->readDatagram(datagram);
                 found = true;
@@ -288,12 +288,12 @@ void DatalinkServer::udpReadyRead()
         if (found)
             continue;
 
-        DatalinkUdp *c = new DatalinkUdp(f_clients,
-                                         udpServer,
-                                         datagram.senderAddress(),
-                                         datagram.senderPort(),
-                                         0,
-                                         0);
+        DatalinkSocketUdp *c = new DatalinkSocketUdp(f_clients,
+                                                     udpServer,
+                                                     datagram.senderAddress(),
+                                                     datagram.senderPort(),
+                                                     0,
+                                                     0);
 
         qDebug() << "new UDP connection" << c->title();
         updateClientsNetworkMode();

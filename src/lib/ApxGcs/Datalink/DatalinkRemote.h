@@ -21,37 +21,28 @@
  */
 #pragma once
 
-#include "DatalinkTcp.h"
+#include "DatalinkSocketHttp.h"
 #include <QtCore>
 class Datalink;
 
-class DatalinkRemote : public DatalinkTcp
+class DatalinkRemote : public DatalinkSocketHttp
 {
     Q_OBJECT
 public:
     explicit DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url);
 
-    void setRemoteUrl(QUrl url);
-    static QUrl fixUrl(QUrl url);
-
 private:
     Datalink *datalink;
-    int retry;
 
     QElapsedTimer time;
     QTimer updateStatsTimer;
-    QTimer reconnectTimer;
 
 protected:
     //DatalinkConnection overrided
-    void open();
+    void open() override;
 
 private slots:
     void updateStats();
-
-    void reconnect();
-
-    void hostLookupDone(QHostInfo info);
 
 public slots:
     void updateTimeout();

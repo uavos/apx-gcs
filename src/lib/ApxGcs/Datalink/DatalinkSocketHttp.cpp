@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "DatalinkTcp.h"
+#include "DatalinkSocketHttp.h"
 #include "Datalink.h"
 
 #include <App/App.h>
@@ -27,7 +27,10 @@
 
 #include <crc.h>
 
-DatalinkTcp::DatalinkTcp(Fact *parent, QTcpSocket *socket, quint16 rxNetwork, quint16 txNetwork)
+DatalinkSocketHttp::DatalinkSocketHttp(Fact *parent,
+                                       QTcpSocket *socket,
+                                       quint16 rxNetwork,
+                                       quint16 txNetwork)
     : DatalinkSocket(parent, socket, socket->peerAddress(), socket->peerPort(), rxNetwork, txNetwork)
     , _tcp(socket)
     , serverName(App::username())
@@ -39,37 +42,87 @@ DatalinkTcp::DatalinkTcp(Fact *parent, QTcpSocket *socket, quint16 rxNetwork, qu
     if (_connectionType == HTTP_RESPONSE) {
         setUrl(_tcp->peerAddress().toString());
         setStatus("Waiting request");
-        connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
+        connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkSocketHttp::readyReadHeader);
     } else {
-        connect(_tcp, &QTcpSocket::connected, this, &DatalinkTcp::requestDatalinkHeader);
+        connect(_tcp, &QTcpSocket::connected, this, &DatalinkSocketHttp::requestDatalinkHeader);
+
+        reconnectTimer.setSingleShot(true);
+        connect(this, &DatalinkSocketHttp::disconnected, this, &DatalinkSocketHttp::reconnect);
+        connect(this, &DatalinkSocketHttp::error, this, &DatalinkSocketHttp::reconnect);
+        connect(&reconnectTimer, &QTimer::timeout, this, &DatalinkSocketHttp::open);
+
+        connect(this, &DatalinkConnection::activatedChanged, this, [this]() {
+            if (activated()) {
+                retry = 0;
+                open();
+            } else {
+                close();
+            }
+        });
     }
 }
 
-void DatalinkTcp::resetDataStream()
+DatalinkSocketHttp::DatalinkSocketHttp(Fact *parent, QUrl url)
+    : DatalinkSocketHttp(parent,
+                         new QTcpSocket(),
+                         Datalink::SERVERS | Datalink::LOCAL,
+                         Datalink::SERVERS | Datalink::CLIENTS | Datalink::LOCAL)
+{
+    setRemoteUrl(url);
+}
+
+void DatalinkSocketHttp::open()
+{
+    if (_connectionType != HTTP_CLIENT)
+        return;
+
+    // check if same host connection exists
+    auto datalink = findParent<Datalink>();
+    if (datalink && datalink->findActiveConnection(_hostAddress)) {
+        setActivated(false);
+        return;
+    }
+
+    retry++;
+    connectToHost(_hostAddress, _hostPort);
+}
+
+void DatalinkSocketHttp::reconnect()
+{
+    if (activated()) {
+        setStatus(QString("%1 %2").arg(tr("Retry")).arg(retry));
+        reconnectTimer.start(1000 + (retry > 100 ? 100 : retry) * 200);
+    } else {
+        setStatus(QString());
+    }
+    apxMsg() << QString("#%1: %2").arg(tr("server disconnected")).arg(title());
+}
+
+void DatalinkSocketHttp::resetDataStream()
 {
     DatalinkConnection::resetDataStream();
     data.datalink = false;
 }
 
-void DatalinkTcp::connectToHost(QHostAddress host, quint16 port)
+void DatalinkSocketHttp::connectToHost(QHostAddress host, quint16 port)
 {
     if (_connectionType == HTTP_CLIENT) {
         _hostAddress = host;
         _hostPort = port;
         if (_tcp->isOpen())
             _tcp->abort();
-        connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
+        connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkSocketHttp::readyReadHeader);
         _tcp->connectToHost(host, port);
     }
 }
 
-void DatalinkTcp::socketDisconnected()
+void DatalinkSocketHttp::socketDisconnected()
 {
     DatalinkSocket::socketDisconnected();
 
     //qDebug()<<_connectionType;
-    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
-    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readDataAvailable);
+    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkSocketHttp::readyReadHeader);
+    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkSocketHttp::readDataAvailable);
 
     if (_connectionType == HTTP_RESPONSE) {
         disconnect(_tcp, nullptr, this, nullptr);
@@ -78,7 +131,7 @@ void DatalinkTcp::socketDisconnected()
     }
 }
 
-void DatalinkTcp::readyReadHeader()
+void DatalinkSocketHttp::readyReadHeader()
 {
     // qDebug() << _tcp->bytesAvailable() << _tcp->canReadLine();
 
@@ -90,12 +143,12 @@ void DatalinkTcp::readyReadHeader()
         return;
     setStatus("Datalink");
     opened();
-    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readyReadHeader);
-    connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkTcp::readDataAvailable);
+    disconnect(_tcp, &QTcpSocket::readyRead, this, &DatalinkSocketHttp::readyReadHeader);
+    connect(_tcp, &QTcpSocket::readyRead, this, &DatalinkSocketHttp::readDataAvailable);
     readDataAvailable();
 }
 
-bool DatalinkTcp::checkHeader()
+bool DatalinkSocketHttp::checkHeader()
 {
     switch (_connectionType) {
     case HTTP_RESPONSE:
@@ -107,7 +160,7 @@ bool DatalinkTcp::checkHeader()
     }
 }
 
-bool DatalinkTcp::readHeader()
+bool DatalinkSocketHttp::readHeader()
 {
     if (data.datalink)
         return true;
@@ -142,7 +195,7 @@ bool DatalinkTcp::readHeader()
     return false;
 }
 
-QByteArray DatalinkTcp::read()
+QByteArray DatalinkSocketHttp::read()
 {
     if (!data.datalink)
         return {};
@@ -151,7 +204,7 @@ QByteArray DatalinkTcp::read()
     return _tcp->read(xbus::size_packet_max * 2);
 }
 
-void DatalinkTcp::write(const QByteArray &packet)
+void DatalinkSocketHttp::write(const QByteArray &packet)
 {
     // qDebug() << "write:" << packet.size();
     if (!data.datalink)
@@ -161,7 +214,7 @@ void DatalinkTcp::write(const QByteArray &packet)
     _tcp->write(packet);
 }
 
-void DatalinkTcp::requestDatalinkHeader()
+void DatalinkSocketHttp::requestDatalinkHeader()
 {
     setStatus("Requesting");
     data.datalink = false;
@@ -175,7 +228,7 @@ void DatalinkTcp::requestDatalinkHeader()
     stream.flush();
 }
 
-bool DatalinkTcp::checkServerRequestHeader()
+bool DatalinkSocketHttp::checkServerRequestHeader()
 {
     if (data.datalink)
         return true;
@@ -233,7 +286,7 @@ bool DatalinkTcp::checkServerRequestHeader()
     return false;
 }
 
-bool DatalinkTcp::checkDatalinkResponseHeader()
+bool DatalinkSocketHttp::checkDatalinkResponseHeader()
 {
     if (data.datalink)
         return true;

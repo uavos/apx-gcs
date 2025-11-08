@@ -178,7 +178,7 @@ void DatalinkRemotes::updateStatus()
 
 void DatalinkRemotes::connectTriggered()
 {
-    QUrl url = DatalinkRemote::fixUrl(f_url->text());
+    QUrl url = DatalinkSocket::fixUrl(f_url->text());
     QHostAddress addr = QHostAddress(url.host());
     if (addr.isNull() || addr.isLoopback())
         return;

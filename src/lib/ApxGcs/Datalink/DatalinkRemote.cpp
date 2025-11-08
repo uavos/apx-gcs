@@ -29,55 +29,13 @@
 #include <tcp_ports.h>
 
 DatalinkRemote::DatalinkRemote(Fact *parent, Datalink *datalink, QUrl url)
-    : DatalinkTcp(parent,
-                  new QTcpSocket(),
-                  Datalink::SERVERS | Datalink::LOCAL,
-                  Datalink::SERVERS | Datalink::CLIENTS | Datalink::LOCAL)
+    : DatalinkSocketHttp(parent, url)
     , datalink(datalink)
-    , retry(0)
 {
-    setRemoteUrl(url);
-
     updateStatsTimer.setSingleShot(true);
     connect(&updateStatsTimer, &QTimer::timeout, this, &DatalinkRemote::updateStats);
 
-    connect(this, &DatalinkConnection::activatedChanged, this, [this]() {
-        if (activated()) {
-            retry = 0;
-            open();
-        } else {
-            close();
-        }
-    });
-
-    connect(this, &DatalinkTcp::disconnected, this, &DatalinkRemote::reconnect);
-    connect(this, &DatalinkTcp::error, this, &DatalinkRemote::reconnect);
-
-    reconnectTimer.setSingleShot(true);
-    connect(&reconnectTimer, &QTimer::timeout, this, &DatalinkRemote::open);
-
     updateStats();
-}
-
-void DatalinkRemote::setRemoteUrl(QUrl url)
-{
-    qDebug() << url << url.isValid() << url.toString();
-    url = fixUrl(url);
-    setUrl(url.toString());
-    _hostAddress = QHostAddress(url.host());
-    _hostPort = static_cast<quint16>(url.port());
-}
-QUrl DatalinkRemote::fixUrl(QUrl url)
-{
-    if (url.scheme().isEmpty()) {
-        QString s = url.toString();
-        url.setUrl(QString("%1://%2").arg("http").arg(s));
-    }
-    if (url.port() <= 0) {
-        quint16 v = TCP_PORT_SERVER;
-        url.setPort(v);
-    }
-    return url;
 }
 
 void DatalinkRemote::updateStats()
@@ -99,45 +57,13 @@ void DatalinkRemote::updateTimeout()
     updateStatsTimer.start(1000);
 }
 
-void DatalinkRemote::reconnect()
-{
-    if (activated()) {
-        setStatus(QString("%1 %2").arg(tr("Retry")).arg(retry));
-        reconnectTimer.start(1000 + (retry > 100 ? 100 : retry) * 200);
-    } else {
-        setStatus(QString());
-    }
-    apxMsg() << QString("#%1: %2").arg(tr("server disconnected")).arg(title());
-}
-
 void DatalinkRemote::open()
 {
     //check if already present in connections
-    for (int i = 0; i < datalink->connections.size(); ++i) {
-        DatalinkTcp *c = qobject_cast<DatalinkTcp *>(datalink->connections.at(i));
-        if (!c)
-            continue;
-        if (!c->active())
-            continue;
-        if (!c->isEqual(_hostAddress))
-            continue;
+    if (datalink->findActiveConnection(_hostAddress)) {
         setActivated(false);
-        apxMsgW() << tr("Connection exists");
         return;
     }
-
     //open
-    retry++;
-    connectToHost(_hostAddress, _hostPort);
-}
-
-void DatalinkRemote::hostLookupDone(QHostInfo info)
-{
-    if (info.error() != QHostInfo::NoError) {
-        apxMsgW() << info.errorString();
-        return;
-    }
-    qDebug() << "resolve:" << info.addresses();
-    _hostAddress = info.addresses().first();
-    open();
+    DatalinkSocketHttp::open();
 }

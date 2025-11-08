@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Datalink.h"
+#include "DatalinkSocket.h"
 
 #include <App/App.h>
 
@@ -106,6 +107,22 @@ void Datalink::addConnection(DatalinkConnection *c)
     });
     connect(c, &Fact::activeChanged, this, &Datalink::updateStatus);
     updateStatus();
+}
+
+bool Datalink::findActiveConnection(QHostAddress addr)
+{
+    for (auto i : connections) {
+        auto c = qobject_cast<DatalinkSocket *>(i);
+        if (!c)
+            continue;
+        if (!c->active())
+            continue;
+        if (!c->isEqual(addr))
+            continue;
+        apxMsgW() << tr("Connection exists");
+        return true;
+    }
+    return false;
 }
 
 void Datalink::updateStatus()

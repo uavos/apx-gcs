@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "DatalinkUdp.h"
+#include "DatalinkSocketUdp.h"
 #include "Datalink.h"
 
 #include <App/App.h>
@@ -27,12 +27,12 @@
 
 #include <crc.h>
 
-DatalinkUdp::DatalinkUdp(Fact *parent,
-                         QUdpSocket *socket,
-                         QHostAddress hostAddress,
-                         quint16 hostPort,
-                         quint16 rxNetwork,
-                         quint16 txNetwork)
+DatalinkSocketUdp::DatalinkSocketUdp(Fact *parent,
+                                     QUdpSocket *socket,
+                                     QHostAddress hostAddress,
+                                     quint16 hostPort,
+                                     quint16 rxNetwork,
+                                     quint16 txNetwork)
     : DatalinkSocket(parent, socket, hostAddress, hostPort, rxNetwork, txNetwork)
     , _udp(socket)
 {
@@ -45,7 +45,7 @@ DatalinkUdp::DatalinkUdp(Fact *parent,
     });
 }
 
-void DatalinkUdp::socketDisconnected()
+void DatalinkSocketUdp::socketDisconnected()
 {
     DatalinkSocket::socketDisconnected();
 
@@ -53,13 +53,13 @@ void DatalinkUdp::socketDisconnected()
     deleteFact();
 }
 
-void DatalinkUdp::readDatagram(QNetworkDatagram datagram)
+void DatalinkSocketUdp::readDatagram(QNetworkDatagram datagram)
 {
     _read_datagram = datagram;
     readDataAvailable();
 }
 
-QByteArray DatalinkUdp::read()
+QByteArray DatalinkSocketUdp::read()
 {
     if (!_read_datagram.isValid()) {
         // qDebug() << "invalid datagram";
@@ -74,7 +74,7 @@ QByteArray DatalinkUdp::read()
     return data;
 }
 
-void DatalinkUdp::write(const QByteArray &packet)
+void DatalinkSocketUdp::write(const QByteArray &packet)
 {
     _udp->writeDatagram(packet, _hostAddress, _hostPort);
 }

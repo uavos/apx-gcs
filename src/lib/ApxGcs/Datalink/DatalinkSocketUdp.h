@@ -23,16 +23,16 @@
 
 #include "DatalinkSocket.h"
 
-class DatalinkUdp : public DatalinkSocket
+class DatalinkSocketUdp : public DatalinkSocket
 {
     Q_OBJECT
 public:
-    explicit DatalinkUdp(Fact *parent,
-                         QUdpSocket *socket,
-                         QHostAddress hostAddress,
-                         quint16 hostPort,
-                         quint16 rxNetwork,
-                         quint16 txNetwork);
+    explicit DatalinkSocketUdp(Fact *parent,
+                               QUdpSocket *socket,
+                               QHostAddress hostAddress,
+                               quint16 hostPort,
+                               quint16 rxNetwork,
+                               quint16 txNetwork);
 
     void readDatagram(QNetworkDatagram datagram);
 
