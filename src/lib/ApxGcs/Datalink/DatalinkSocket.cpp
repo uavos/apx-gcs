@@ -26,7 +26,6 @@
 #include <App/AppLog.h>
 
 #include <crc.h>
-#include <tcp_ports.h>
 
 DatalinkSocket::DatalinkSocket(Fact *parent,
                                QAbstractSocket *_socket,
@@ -66,23 +65,10 @@ DatalinkSocket::DatalinkSocket(Fact *parent,
 
 void DatalinkSocket::setRemoteUrl(QUrl url)
 {
-    qDebug() << url << url.isValid() << url.toString();
-    url = fixUrl(url);
+    // qDebug() << url << url.isValid() << url.toString();
     setUrl(url.toString());
     _hostAddress = QHostAddress(url.host());
     _hostPort = static_cast<quint16>(url.port());
-}
-QUrl DatalinkSocket::fixUrl(QUrl url)
-{
-    if (url.scheme().isEmpty()) {
-        QString s = url.toString();
-        url.setUrl(QString("%1://%2").arg("http").arg(s));
-    }
-    if (url.port() <= 0) {
-        quint16 v = TCP_PORT_SERVER;
-        url.setPort(v);
-    }
-    return url;
 }
 
 bool DatalinkSocket::isLocalHost(const QHostAddress address)

@@ -78,6 +78,7 @@ DatalinkRemote *DatalinkRemotes::registerHost(QUrl url)
     DatalinkRemote *c = findRemote(url);
     if (c)
         return c;
+    qDebug() << "registerHost" << url.toString();
     c = new DatalinkRemote(f_servers, datalink, url);
     connect(c, &DatalinkRemote::activeChanged, this, &DatalinkRemotes::updateStatus);
     connect(f_alloff, &Fact::triggered, c, [c]() { c->setValue(false); });
@@ -178,10 +179,18 @@ void DatalinkRemotes::updateStatus()
 
 void DatalinkRemotes::connectTriggered()
 {
-    QUrl url = DatalinkSocket::fixUrl(f_url->text());
+    QUrl url = f_url->text();
+    if (url.scheme().isEmpty())
+        url.setUrl(QString("%1://%2").arg("http").arg(url.toString()));
+    if (url.port() <= 0)
+        url.setPort(TCP_PORT_SERVER);
+
     QHostAddress addr = QHostAddress(url.host());
+    qDebug() << "connecting" << url.toString() << addr;
+
     if (addr.isNull() || addr.isLoopback())
         return;
+
     DatalinkRemote *c = registerHost(url);
     c->setValue(true);
 }

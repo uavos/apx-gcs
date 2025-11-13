@@ -67,7 +67,7 @@ private:
     bool _blockUpdateRoutingValue;
     bool _blockUpdateRoutingFacts;
 
-    QUrl parseUrl() const;
+    QUrl getUrl() const;
 
 private slots:
     void updateEnabled();

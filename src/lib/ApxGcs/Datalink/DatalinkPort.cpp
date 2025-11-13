@@ -28,6 +28,8 @@
 #include <App/App.h>
 #include <App/AppLog.h>
 
+#include <tcp_ports.h>
+
 DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const DatalinkPort *port)
     : Fact(port ? parent->f_list : parent,
            port ? "port#" : tr("add"),
@@ -164,9 +166,9 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
                 ->setCodec(f_codec->value().value<DatalinkSerial::CodecType>());
             break;
         case HTTP:
-            f_connection = new DatalinkSocketHttp(this, parseUrl());
+            f_connection = new DatalinkSocketHttp(this, getUrl());
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
-                qobject_cast<DatalinkSocketHttp *>(f_connection)->setRemoteUrl(parseUrl());
+                qobject_cast<DatalinkSocketHttp *>(f_connection)->setRemoteUrl(getUrl());
             });
             break;
         }
@@ -203,7 +205,7 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
     updateStatus();
 }
 
-QUrl DatalinkPort::parseUrl() const
+QUrl DatalinkPort::getUrl() const
 {
     QUrl url = f_url->text();
     if (url.scheme().isEmpty()) {
@@ -211,12 +213,26 @@ QUrl DatalinkPort::parseUrl() const
         url.setUrl(QString("%1://%2").arg(f_type->text().toLower()).arg(s));
     }
     // embed serial parameters into url
-    if (f_type->value().toInt() == SERIAL) {
+    auto type = f_type->value().toInt();
+    if (type == SERIAL) {
         QUrlQuery q(url);
         q.addQueryItem("baud", QString::number(f_baud->value().toUInt()));
         q.addQueryItem("codec", f_codec->text());
         url.setQuery(q);
+    } else if (url.port() <= 0) {
+        switch (type) {
+        case HTTP:
+            url.setPort(TCP_PORT_SERVER);
+            break;
+        case UDP:
+            url.setPort(UDP_PORT_GCS_TLM);
+            break;
+        default:
+            url.setPort(TCP_PORT_SERVER);
+            break;
+        }
     }
+
     // qDebug() << f_url->text() << "->" << url.toString();
     return url;
 }
@@ -272,7 +288,7 @@ QJsonValue DatalinkPort::toJson()
     auto jso = Fact::toJson().toObject();
     // override some serialization
     jso["routing"] = f_routing->value().toString();
-    jso["url"] = parseUrl().toString();
+    jso["url"] = getUrl().toString();
     jso.remove("type");
     if (f_type->value().toInt() == SERIAL) {
         // embedded serial parameters into url, remove separate entries
@@ -333,7 +349,7 @@ void DatalinkPort::updateStatus()
     }
     st.removeAll("");
     setTitle(st.join(": "));
-    setDescr(parseUrl().toString());
+    setDescr(getUrl().toString());
 }
 
 void DatalinkPort::updateRoutingValue()
