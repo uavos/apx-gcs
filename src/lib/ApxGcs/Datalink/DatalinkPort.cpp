@@ -24,6 +24,8 @@
 #include "DatalinkPorts.h"
 #include "DatalinkRemote.h"
 #include "DatalinkSerial.h"
+#include "DatalinkSocketHttp.h"
+#include "DatalinkSocketUdp.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
@@ -169,6 +171,12 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             f_connection = new DatalinkSocketHttp(this, getUrl());
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
                 qobject_cast<DatalinkSocketHttp *>(f_connection)->setRemoteUrl(getUrl());
+            });
+            break;
+        case UDP:
+            f_connection = new DatalinkSocketUdp(this, getUrl());
+            connect(f_url, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkSocketUdp *>(f_connection)->setRemoteUrl(getUrl());
             });
             break;
         }

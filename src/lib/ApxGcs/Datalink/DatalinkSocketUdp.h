@@ -45,6 +45,7 @@ private:
 
 protected:
     //DatalinkConnection overrided
+    virtual void open() override;
     virtual QByteArray read() override;
     virtual void write(const QByteArray &packet) override;
 

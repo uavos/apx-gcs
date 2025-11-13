@@ -46,13 +46,12 @@ public:
 
     void setRemoteUrl(QUrl url);
 
-private:
+protected:
     QAbstractSocket *_socket;
 
     CobsDecoder<> _dec;
     CobsEncoder<> _enc;
 
-protected:
     QHostAddress _hostAddress;
     quint16 _hostPort;
 

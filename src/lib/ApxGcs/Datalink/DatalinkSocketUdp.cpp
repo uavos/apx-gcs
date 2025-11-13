@@ -36,8 +36,8 @@ DatalinkSocketUdp::DatalinkSocketUdp(Fact *parent,
     : DatalinkSocket(parent, socket, hostAddress, hostPort, rxNetwork, txNetwork)
     , _udp(socket)
 {
-    setActive(true);
-    setStatus("UDP");
+    // setActive(true);
+    // setStatus("UDP");
 
     connect(this, &Fact::activeChanged, this, [this]() {
         if (!active())
@@ -52,33 +52,40 @@ DatalinkSocketUdp::DatalinkSocketUdp(Fact *parent, QUrl url)
                      static_cast<quint16>(url.port()),
                      Datalink::SERVERS | Datalink::LOCAL,
                      Datalink::SERVERS | Datalink::CLIENTS | Datalink::LOCAL)
+    , _udp(qobject_cast<QUdpSocket *>(_socket))
 {
     setRemoteUrl(url);
 
     connect(_udp, &QUdpSocket::readyRead, this, [this]() {
-        while (_udp->hasPendingDatagrams()) {
+        if (_udp->hasPendingDatagrams()) {
             readDatagram(_udp->receiveDatagram());
         }
     });
 
-    connect(this, &Fact::activeChanged, this, [this]() {
-        if (active()) {
-            if (!_udp->isOpen()) {
-                bool res = _udp->bind(_hostPort,
-                                      QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
-                if (res) {
-                    setStatus("Listening");
-                    apxConsole() << "UDP socket bound to port" << _hostPort;
-                } else {
-                    setStatus("Bind error");
-                    apxConsoleW() << "Failed to bind UDP socket to port" << _hostPort << ":"
-                                  << _udp->errorString();
-                }
-            }
+    connect(this, &DatalinkConnection::activatedChanged, this, [this]() {
+        if (activated()) {
+            open();
         } else {
-            socketDisconnected();
+            close();
         }
     });
+}
+
+void DatalinkSocketUdp::open()
+{
+    if (_udp->isOpen())
+        _udp->abort();
+
+    bool res = _udp->bind(_hostPort, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
+    if (res) {
+        setStatus("Listening");
+        apxConsole() << "UDP socket bound to port" << _hostPort;
+    } else {
+        setStatus("Bind error");
+        apxConsoleW() << "Failed to bind UDP socket to port" << _hostPort << ":"
+                      << _udp->errorString();
+    }
+    setActive(res);
 }
 
 void DatalinkSocketUdp::socketDisconnected()
