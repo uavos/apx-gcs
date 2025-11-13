@@ -34,6 +34,9 @@ public:
                                quint16 rxNetwork,
                                quint16 txNetwork);
 
+    // constructor to create client socket and listen to remote server url
+    // explicit DatalinkSocketUdp(Fact *parent, QUrl url);
+
     void readDatagram(QNetworkDatagram datagram);
 
 private:

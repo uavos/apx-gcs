@@ -42,6 +42,7 @@ public:
     Q_ENUM(PortType)
 
     Fact *f_enable;
+    Fact *f_persistent;
     Fact *f_comment;
     Fact *f_type;
     Fact *f_url;
@@ -56,6 +57,9 @@ public:
     Fact *f_remove;
 
     DatalinkConnection *f_connection;
+
+    QJsonValue toJson() override;
+    void fromJson(const QJsonValue &jsv) override;
 
 private:
     DatalinkPorts *ports;
