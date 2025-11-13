@@ -279,9 +279,7 @@ QJsonValue DatalinkPort::toJson()
         jso.remove("baud");
         jso.remove("codec");
     }
-    if (!f_persistent->value().toBool()) {
-        jso["enable"] = false;
-    }
+    jso.remove("enable"); // use 'persistent' instead
     return jso;
 }
 void DatalinkPort::fromJson(const QJsonValue &jsv)
@@ -309,9 +307,7 @@ void DatalinkPort::fromJson(const QJsonValue &jsv)
         f_routing->setValue(jso_routing.toString());
         jso.remove("routing");
     }
-    if (!jso["persistent"].toBool()) {
-        jso["enable"] = false;
-    }
+    jso["enable"] = jso["persistent"].toVariant().toBool();
 
     Fact::fromJson(jso);
 }

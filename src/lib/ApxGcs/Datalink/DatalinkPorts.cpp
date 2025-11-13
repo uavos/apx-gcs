@@ -39,8 +39,13 @@ DatalinkPorts::DatalinkPorts(Datalink *datalink)
     f_add = new DatalinkPort(this, datalink);
     f_add->setIcon("plus-circle");
 
-    f_list = new Fact(this, "ports", tr("Ports"), tr("Configured ports"), Section | Count);
+    f_list = new Fact(this,
+                      "ports",
+                      tr("Ports"),
+                      tr("Configured ports"),
+                      Section | Count | DragChildren);
     connect(f_list, &Fact::sizeChanged, this, &DatalinkPorts::updateStatus);
+    connect(f_list, &Fact::itemMoved, this, &DatalinkPorts::save);
 
     load();
 
