@@ -57,7 +57,7 @@ DatalinkSocketUdp::DatalinkSocketUdp(Fact *parent, QUrl url)
     setRemoteUrl(url);
 
     connect(_udp, &QUdpSocket::readyRead, this, [this]() {
-        if (_udp->hasPendingDatagrams()) {
+        while (_udp->hasPendingDatagrams()) {
             readDatagram(_udp->receiveDatagram());
         }
     });
@@ -76,13 +76,15 @@ void DatalinkSocketUdp::open()
     if (_udp->isOpen())
         _udp->abort();
 
-    bool res = _udp->bind(_hostPort, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
+    const quint16 bindPort = _hostPort + 1;
+
+    bool res = _udp->bind(bindPort, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
     if (res) {
         setStatus("Listening");
-        apxConsole() << "UDP socket bound to port" << _hostPort;
+        apxConsole() << "UDP socket bound to port" << bindPort;
     } else {
         setStatus("Bind error");
-        apxConsoleW() << "Failed to bind UDP socket to port" << _hostPort << ":"
+        apxConsoleW() << "Failed to bind UDP socket to port" << bindPort << ":"
                       << _udp->errorString();
     }
     setActive(res);
