@@ -36,8 +36,8 @@ DatalinkSocketUdp::DatalinkSocketUdp(Fact *parent,
     : DatalinkSocket(parent, socket, hostAddress, hostPort, rxNetwork, txNetwork)
     , _udp(socket)
 {
-    // setActive(true);
-    // setStatus("UDP");
+    setActive(true);
+    setStatus("UDP");
 
     connect(this, &Fact::activeChanged, this, [this]() {
         if (!active())
