@@ -18,41 +18,9 @@ Swarm::Swarm(Fact *parent)
 
 void Swarm::onSwarmTimer()
 {
-    //if (!f_swarm_enabled->value().toBool()) {
-    //    return;
-    //}
-
-    /*
-    auto current = Fleet::instance()->current();
-    if (!current) {
+    if (!f_swarm_enabled->value().toBool()) {
         return;
     }
-
-    PData *pdata{};
-    if (current->isGroundControl()) {
-        auto protocol = current->protocol();
-        if (protocol) {
-            pdata = current->protocol()->data();
-            if (pdata) {
-                pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_manual);
-            }
-        }
-        return;
-    }
-
-    if (Fleet::instance()->gcs()->protocol()) {
-        pdata = Fleet::instance()->gcs()->protocol()->data();
-        if (pdata) {
-            QGeoCoordinate uav = current->coordinate();
-            QVariantList value;
-            value << uav.latitude();
-            value << uav.longitude();
-            value << uav.altitude();
-            pdata->sendValue(mandala::cmd::nav::ats::uid, value);
-            pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_track);
-        }
-    }
-    */
 
     for (auto i : Fleet::instance()->facts()) {
         Unit *m_unit = static_cast<Unit *>(i);
