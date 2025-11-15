@@ -1,3 +1,19 @@
+# [APX Ground Control v11.2.20](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.20) (11/15/25)
+
+> Branch: `main`\
+> Date: `11/15/25 05:45:58`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/dc287e40b5748f7e851d771434eaac959a77a0f5...3cca7b76962e1c0c4073498b51ea80bc7396bfb4)
+
+## New Features
+* persistent datalink ports
+* datalink ports list reorder
+
+## Bug Fixes
+* swarm plugin
+
+## Performance Enhancements
+* datalink ports facts
+
 # [APX Ground Control v11.2.19](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.19) (11/05/25)
 
 > Branch: `main`\
