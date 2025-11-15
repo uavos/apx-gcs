@@ -309,6 +309,15 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
                                                  v.at(2).toFloat()});
         return;
     }
+    case mandala::cmd::nav::swarm::uid: {
+        QByteArray ba = value.toByteArray();
+        if (ba.size() != sizeof(mandala::bundle::swarm_s))
+            break;
+        mandala::bundle::swarm_s bundleSwarm;
+        memcpy(&bundleSwarm, ba.constData(), sizeof(mandala::bundle::swarm_s));
+        sendBundleT<mandala::bundle::swarm_s>(uid, bundleSwarm);
+        return;
+    }
     }
     _nimp(__FUNCTION__);
 }
