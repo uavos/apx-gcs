@@ -78,7 +78,9 @@ void DatalinkSocketUdp::open()
 
     const quint16 bindPort = _hostPort + 1;
 
-    bool res = _udp->bind(bindPort, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
+    bool res = _udp->bind(QHostAddress::AnyIPv4,
+                          bindPort,
+                          QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
     if (res) {
         setStatus("Listening");
         apxConsole() << "UDP socket bound to port" << bindPort;
