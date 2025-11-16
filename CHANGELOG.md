@@ -1,3 +1,16 @@
+# [APX Ground Control v11.2.21](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.21) (11/15/25)
+
+> Branch: `main`\
+> Date: `11/15/25 23:10:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/8a5ca544679bb20e8c64254fa0c53afd098cc1c7...adba74763938b7778dc0ce38b6d94557f69ad6a6)
+
+## New Features
+* datalink UDP multicast support
+* udp url bind port query
+
+## Bug Fixes
+* datalink serial port url handling
+
 # [APX Ground Control v11.2.20](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.20) (11/15/25)
 
 > Branch: `main`\
