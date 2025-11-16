@@ -320,11 +320,13 @@ void DatalinkPort::fromJson(const QJsonValue &jsv)
     // override some deserialization
     QUrl url = jso["url"].toString();
     if (!url.scheme().isEmpty()) {
-        jso["type"] = url.scheme().toUpper();
-        jso["url"] = url.host();
+        auto scheme = url.scheme();
+        jso["type"] = scheme.toUpper();
+        jso["url"] = url.toString().mid(scheme.length() + 3);
     } else if (jso["type"].toString().toUpper() == "TCP") {
         jso["type"] = "HTTP";
     }
+
     if (url.scheme().toUpper() == "SERIAL") {
         QUrlQuery q(url);
         if (q.hasQueryItem("port")) {

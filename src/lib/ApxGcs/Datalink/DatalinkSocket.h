@@ -44,7 +44,7 @@ public:
 
     virtual void close() override;
 
-    void setRemoteUrl(QUrl url);
+    virtual void setRemoteUrl(QUrl url);
 
 protected:
     QAbstractSocket *_socket;

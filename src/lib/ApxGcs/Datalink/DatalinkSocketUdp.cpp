@@ -71,15 +71,32 @@ DatalinkSocketUdp::DatalinkSocketUdp(Fact *parent, QUrl url)
     });
 }
 
+void DatalinkSocketUdp::setRemoteUrl(QUrl url)
+{
+    // qDebug() << url << url.isValid() << url.toString();
+    setUrl(url.toString());
+
+    QUrlQuery q(url);
+    if (q.hasQueryItem("bind")) {
+        auto bind = q.queryItemValue("bind");
+        if (bind.contains(":")) {
+            auto parts = bind.split(":");
+            _bindPort = parts.at(1).toUShort();
+        } else {
+            _bindPort = bind.toUShort();
+        }
+    } else {
+        _bindPort = _hostPort + 1;
+    }
+}
+
 void DatalinkSocketUdp::open()
 {
     if (_udp->isOpen())
         _udp->abort();
 
-    const quint16 bindPort = _hostPort + 1;
-
     bool res = _udp->bind(QHostAddress::AnyIPv4,
-                          bindPort,
+                          _bindPort,
                           QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
     if (res) {
         if (_hostAddress.isMulticast()) {
@@ -90,10 +107,11 @@ void DatalinkSocketUdp::open()
         }
 
         setStatus("Listening");
-        apxConsole() << "UDP socket bound to port" << bindPort;
+        apxConsole() << "UDP bind:" << _bindPort
+                     << "dest:" << QString("%1:%2").arg(_hostAddress.toString()).arg(_hostPort);
     } else {
         setStatus("Bind error");
-        apxConsoleW() << "Failed to bind UDP socket to port" << bindPort << ":"
+        apxConsoleW() << "Failed to bind UDP socket to port" << _bindPort << ":"
                       << _udp->errorString();
     }
     setActive(res);

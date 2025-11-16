@@ -39,9 +39,13 @@ public:
 
     void readDatagram(QNetworkDatagram datagram);
 
+    void setRemoteUrl(QUrl url) override;
+
 private:
     QUdpSocket *_udp;
     QNetworkDatagram _read_datagram;
+
+    quint16 _bindPort{};
 
 protected:
     //DatalinkConnection overrided
