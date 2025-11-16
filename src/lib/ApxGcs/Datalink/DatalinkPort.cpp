@@ -319,18 +319,20 @@ void DatalinkPort::fromJson(const QJsonValue &jsv)
     auto jso = jsv.toObject();
     // override some deserialization
     QUrl url = jso["url"].toString();
-    if (!url.scheme().isEmpty()) {
-        auto scheme = url.scheme();
-        jso["type"] = scheme.toUpper();
+    const auto scheme = url.scheme().toUpper();
+    if (!scheme.isEmpty()) {
+        jso["type"] = scheme;
         jso["url"] = url.toString().mid(scheme.length() + 3);
     } else if (jso["type"].toString().toUpper() == "TCP") {
         jso["type"] = "HTTP";
     }
 
-    if (url.scheme().toUpper() == "SERIAL") {
+    if (scheme == "SERIAL") {
         QUrlQuery q(url);
         if (q.hasQueryItem("port")) {
             jso["url"] = q.queryItemValue("port");
+        } else {
+            jso["url"] = url.authority();
         }
         if (q.hasQueryItem("baud")) {
             jso["baud"] = q.queryItemValue("baud");
