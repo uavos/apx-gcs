@@ -215,19 +215,27 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
 
 QUrl DatalinkPort::getUrl() const
 {
-    QUrl url = f_url->text();
-    if (url.scheme().isEmpty()) {
-        QString s = url.toString();
-        url.setUrl(QString("%1://%2").arg(f_type->text().toLower()).arg(s));
-    }
-    // embed serial parameters into url
+    const auto s = f_url->text();
+
     auto type = f_type->value().toInt();
     if (type == SERIAL) {
-        QUrlQuery q(url);
+        // embed serial parameters into url
+        QUrlQuery q;
+        q.addQueryItem("port", f_url->text());
         q.addQueryItem("baud", QString::number(f_baud->value().toUInt()));
         q.addQueryItem("codec", f_codec->text());
+        QUrl url;
+        url.setScheme("serial");
+        url.setHost("");
         url.setQuery(q);
-    } else if (url.port() <= 0) {
+        return url;
+    }
+
+    QUrl url = s;
+    if (url.scheme().isEmpty()) {
+        url.setUrl(QString("%1://%2").arg(f_type->text().toLower()).arg(s));
+    }
+    if (url.port() <= 0) {
         switch (type) {
         case HTTP:
             url.setPort(TCP_PORT_SERVER);
@@ -319,6 +327,9 @@ void DatalinkPort::fromJson(const QJsonValue &jsv)
     }
     if (url.scheme().toUpper() == "SERIAL") {
         QUrlQuery q(url);
+        if (q.hasQueryItem("port")) {
+            jso["url"] = q.queryItemValue("port");
+        }
         if (q.hasQueryItem("baud")) {
             jso["baud"] = q.queryItemValue("baud");
         }
