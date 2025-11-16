@@ -82,6 +82,13 @@ void DatalinkSocketUdp::open()
                           bindPort,
                           QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
     if (res) {
+        if (_hostAddress.isMulticast()) {
+            QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+            for (const auto &iface : ifaces) {
+                _udp->joinMulticastGroup(_hostAddress, iface);
+            }
+        }
+
         setStatus("Listening");
         apxConsole() << "UDP socket bound to port" << bindPort;
     } else {
