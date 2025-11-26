@@ -71,6 +71,7 @@ DatalinkSocketUdp::DatalinkSocketUdp(Fact *parent, QUrl url)
     });
 }
 
+//example: 172.29.0.1:5000?bind=224.168.1.20:5000
 void DatalinkSocketUdp::setRemoteUrl(QUrl url)
 {
     // qDebug() << url << url.isValid() << url.toString();
@@ -81,11 +82,14 @@ void DatalinkSocketUdp::setRemoteUrl(QUrl url)
         auto bind = q.queryItemValue("bind");
         if (bind.contains(":")) {
             auto parts = bind.split(":");
+            _bindAddress = QHostAddress(parts.at(0));
             _bindPort = parts.at(1).toUShort();
         } else {
+            _bindAddress = {};
             _bindPort = bind.toUShort();
         }
     } else {
+        _bindAddress = {};
         _bindPort = _hostPort + 1;
     }
 }
@@ -99,15 +103,14 @@ void DatalinkSocketUdp::open()
                           _bindPort,
                           QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
     if (res) {
-        if (_hostAddress.isMulticast()) {
+        if (_bindAddress.isMulticast()) {
             QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
             for (const auto &iface : ifaces) {
-                _udp->joinMulticastGroup(_hostAddress, iface);
+                _udp->joinMulticastGroup(_bindAddress, iface);
             }
         }
-
         setStatus("Listening");
-        apxConsole() << "UDP bind:" << _bindPort
+        apxConsole() << "UDP bind:" << QString("%1:%2").arg(_bindAddress.toString()).arg(_bindPort)
                      << "dest:" << QString("%1:%2").arg(_hostAddress.toString()).arg(_hostPort);
     } else {
         setStatus("Bind error");

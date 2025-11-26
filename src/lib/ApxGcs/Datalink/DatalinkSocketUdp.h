@@ -45,6 +45,7 @@ private:
     QUdpSocket *_udp;
     QNetworkDatagram _read_datagram;
 
+    QHostAddress _bindAddress{};
     quint16 _bindPort{};
 
 protected:
