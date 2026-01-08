@@ -160,6 +160,9 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
                 qobject_cast<DatalinkSerial *>(f_connection)->setDevName(f_url->text());
             });
+            connect(f_baud, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkSerial *>(f_connection)->setBaud(f_baud->value().toUInt());
+            });
             connect(f_codec, &Fact::valueChanged, f_connection, [this]() {
                 qobject_cast<DatalinkSerial *>(f_connection)
                     ->setCodec(f_codec->value().value<DatalinkSerial::CodecType>());
