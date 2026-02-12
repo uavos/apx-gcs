@@ -1,3 +1,14 @@
+# [APX Ground Control v11.2.22](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.22) (02/09/26)
+
+> Branch: `main`\
+> Date: `02/09/26 03:28:05`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/01089cd30b18e877c0561fff8e92a86651b6c80b...f5db2240934f9c2c4857b2ab4a4afe1a642d411e)
+
+## Bug Fixes
+* udp multicast via local ports
+* agl status
+* baud rate for serial port
+
 # [APX Ground Control v11.2.21](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.21) (11/15/25)
 
 > Branch: `main`\
