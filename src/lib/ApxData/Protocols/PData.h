@@ -50,5 +50,6 @@ signals:
 
     void calibrationData(mandala::uid_t uid, QByteArray data);
     void serialData(quint8 portID, QByteArray data);
+    void serialDataStr(quint8 portID, QString data);
     void jsexecData(QString script);
 };
