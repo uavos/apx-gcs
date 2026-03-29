@@ -26,7 +26,7 @@ import QtQuick.Layouts
 import Apx.Common
 
 TextButton {
-    id: btn
+    id: fltBtn
 
     Layout.fillHeight: true
     checkable: true
@@ -44,18 +44,18 @@ TextButton {
     }
 
     property var values: []
-    // onActivated: signals.facts = Qt.binding(function () {
-    //     return values;
-    // })
+    onActivated: fltCharts.facts = Qt.binding(function () {
+        return values;
+    })
 
-    // toolTip: getToolTip(values)
+    toolTip: getToolTip(values)
 
-    // function getToolTip(facts) {
-    //     var s = [];
-    //     for (var i = 0; i < facts.length; ++i) {
-    //         var fact = facts[i];
-    //         s.push("<font color='" + fact.opts.color + "'>" + fact.descr + "</font>");
-    //     }
-    //      return s.join("<br>");
-    // }
+    function getToolTip(facts) {
+        var s = [];
+        for (var i = 0; i < facts.length; ++i) {
+            var fact = facts[i];
+            s.push("<font color='" + fact.opts.color + "'>" + fact.descr + "</font>");
+        }
+        return s.join("<br>");
+    }
 }

@@ -31,7 +31,7 @@ AppPlugin {
     descr: qsTr("Realtime filtred chart")
     icon: "poll-box-outline"
 
-    sourceComponent: FltCharts {}
+    sourceComponent: FilteredCharts {}
     uiComponent: "main"
     onConfigure: {
         ui.main.add(plugin, GroundControl.Layout.Main);

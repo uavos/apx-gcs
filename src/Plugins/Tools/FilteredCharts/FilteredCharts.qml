@@ -28,7 +28,7 @@ import QtCore
 import Apx.Common
 
 Rectangle {
-    id: control
+    id: fcControl
 
     implicitHeight: layout.implicitHeight
     implicitWidth: layout.implicitWidth
@@ -42,7 +42,7 @@ Rectangle {
         spacing: 0
 
         FltChartsView {
-            id: signals
+            id: fltCharts
             facts: []
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -55,6 +55,7 @@ Rectangle {
 
             Layout.fillWidth: true
             Layout.minimumHeight: Style.fontSize
+            Layout.rightMargin: Style.spacing
 
             // clip: true
             // focus: true
@@ -66,7 +67,7 @@ Rectangle {
             font: apx.font_narrow(Style.fontSize)
 
             color: activeFocus ? Material.color(Material.Yellow) : Material.primaryTextColor
-            text: " "
+            text: "_"
 
             activeFocusOnTab: true
             selectByMouse: true
@@ -84,31 +85,31 @@ Rectangle {
             onVisibleChanged: if (visible)
                 forceActiveFocus()
 
-            // Component.onCompleted: updateFacts()
+            Component.onCompleted: updateFacts()
 
-            // property var facts: []
-            // function updateFacts() {
-            //     var flist = [];
-            //     var list = textInput.text.split(',');
-            //     for (var i = 0; i < list.length; ++i) {
-            //         var f = list[i];
-            //         var fact = {};
-            //         if (eval(f) == undefined)
-            //             continue;
-            //         fact.title = f;
-            //         fact.name = f;
-            //         fact.descr = f;
-            //         fact.opts = {};
-            //         fact.opts.color = Material.color(Material.Blue + i * 2);
-            //         flist.push(fact);
-            //     }
-            //     if (JSON.stringify(textInput.facts) == JSON.stringify(flist))
-            //         return;
-            //     textInput.facts = flist;
+            property var facts: []
+            function updateFacts() {
+                var flist = [];
+                var list = textInput.text.split(',');
+                for (var i = 0; i < list.length; ++i) {
+                    var f = list[i];
+                    var fact = {};
+                    if (eval(f) == undefined)
+                        continue;
+                    fact.title = f;
+                    fact.name = f;
+                    fact.descr = f;
+                    fact.opts = {};
+                    fact.opts.color = Material.color(Material.Blue + i * 2);
+                    flist.push(fact);
+                }
+                if (JSON.stringify(textInput.facts) == JSON.stringify(flist))
+                    return;
+                textInput.facts = flist;
 
-            //     if (plusButton.checked)
-            //         signals.facts = flist;
-            // }
+                if (plusButton.checked)
+                    fltCharts.facts = flist;
+            }
         }
 
         ButtonGroup {
@@ -164,15 +165,9 @@ Rectangle {
                 values: [mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6]
             }
 
-            FltChartsButton {
-                id: plusButton
-                text: "+"
-                values: textInput.facts
-            }
-
             TextButton {
-                text: signals.speedFactorValue + "x"
-                onClicked: signals.changeSpeed()
+                text: fltCharts.speedFactorValue + "x"
+                onClicked: fltCharts.changeSpeed()
                 Layout.fillHeight: true
                 Layout.minimumWidth: height * 3
             }
@@ -193,14 +188,14 @@ Rectangle {
     property string currentPage: buttonGroup.checkedButton.text
 
     Settings {
-        category: "signals"
-        property alias page: control.currentPage
+        category: "filtredCharts"
+        property alias page: fcControl.currentPage
         property alias custom: textInput.text
     }
     Component.onCompleted: {
         for (var i = 0; i < buttonGroup.buttons.length; ++i) {
             var b = buttonGroup.buttons[i];
-            if (b.text !== control.currentPage)
+            if (b.text !== fcontrol.currentPage)
                 continue;
             buttonGroup.checkedButton = b;
             break;
