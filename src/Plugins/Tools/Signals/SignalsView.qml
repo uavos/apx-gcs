@@ -32,21 +32,22 @@ Item {
     property bool openGL: false //apx.settings.graphics.opengl.value
     property bool smoothLines: ui.smooth
 
-
     property real speed: 0
-    property real lineWidth: ui.antialiasing?1.5:1
-    property real lineWidthCmd: ui.antialiasing?2.1:2
+    property real lineWidth: ui.antialiasing ? 1.5 : 1
+    property real lineWidthCmd: ui.antialiasing ? 2.1 : 2
 
-    property var speedFactor: [ 1, 2, 4, 0.5, 0.2 ]
-    property real speedFactorValue: speed<0?speedFactor[0]:speed>=speedFactor.length?speedFactor[speedFactor.length-1]:speedFactor[speed]
+    property var speedFactor: [1, 2, 4, 0.5, 0.2]
+    property real speedFactorValue: speed < 0 ? speedFactor[0] : speed >= speedFactor.length ? speedFactor[speedFactor.length - 1] : speedFactor[speed]
 
     onFactsChanged: {
-        chartView.reset()
+        chartView.reset();
     }
 
     Connections {
         target: apx.fleet.current.mandala
-        function onTelemetryDecoded(){ chartView.appendData() }
+        function onTelemetryDecoded() {
+            chartView.appendData();
+        }
     }
 
     ChartView {
@@ -72,7 +73,7 @@ Item {
         backgroundRoundness: 0
         dropShadowEnabled: false
 
-        property int samples: Math.min(1000,Math.max(25,width/(3*speedFactorValue)))
+        property int samples: Math.min(1000, Math.max(25, width / (3 * speedFactorValue)))
         property int time: 0
 
         property bool dataExist: false
@@ -80,8 +81,13 @@ Item {
         ValueAxis {
             id: axisX
             property real t: chartView.time
-            Behavior on t { enabled: ui.smooth && chartView.dataExist; NumberAnimation {duration: 500; } }
-            min: t-chartView.samples+20
+            Behavior on t {
+                enabled: ui.smooth && chartView.dataExist
+                NumberAnimation {
+                    duration: 500
+                }
+            }
+            min: t - chartView.samples + 20
             max: t
             //min: -chartView.samples //t-chartView.samples+20
             //max: 0 //t
@@ -102,111 +108,116 @@ Item {
             gridLineColor: "#555"
         }
 
-
         property real dataPadding: 0.05
         property real dataPaddingZero: 0.05
         property var sdata: []
         property int timeRescale: 0
 
-        function reset()
-        {
+        function reset() {
             chartView.removeAllSeries();
-            chartView.sdata=[]
-            chartView.time=0
-            axisY.min=-dataPaddingZero
-            axisY.max=dataPaddingZero
-            axisY.tickCount=4
-            axisY.applyNiceNumbers()
-            speed=0
+            chartView.sdata = [];
+            chartView.time = 0;
+            axisY.min = -dataPaddingZero;
+            axisY.max = dataPaddingZero;
+            axisY.tickCount = 4;
+            axisY.applyNiceNumbers();
+            speed = 0;
         }
 
-        function appendData()
-        {
-            var t=time+1;
-            var v=0
-            var fact={}
-            for(var i=0;i<facts.length;++i){
-                appendDataValue(facts[i],t,i)
+        function appendData() {
+            var t = time + 1;
+            var v = 0;
+            var fact = {};
+            for (var i = 0; i < facts.length; ++i) {
+                appendDataValue(facts[i], t, i);
             }
             //calc scale - reduce
-            if((t-timeRescale)>21){
-                timeRescale=t
-                var d=sdata.length-samples*facts.length
-                if(d>0)sdata.splice(0,d)
-                var p=apx.seriesBounds(sdata)
-                var min=p.x-dataPadding
-                var max=p.y+dataPadding
-                if(min==max){
-                    min-=dataPaddingZero
-                    max+=dataPaddingZero
+            if ((t - timeRescale) > 21) {
+                timeRescale = t;
+                var d = sdata.length - samples * facts.length;
+                if (d > 0)
+                    sdata.splice(0, d);
+                var p = apx.seriesBounds(sdata);
+                var min = p.x - dataPadding;
+                var max = p.y + dataPadding;
+                if (min == max) {
+                    min -= dataPaddingZero;
+                    max += dataPaddingZero;
                 }
-                var bmod=false
-                if(axisY.min<min){
-                    axisY.min=min
-                    bmod=true
+                var bmod = false;
+                if (axisY.min < min) {
+                    axisY.min = min;
+                    bmod = true;
                 }
-                if(axisY.max>max){
-                    axisY.max=max
-                    bmod=true
+                if (axisY.max > max) {
+                    axisY.max = max;
+                    bmod = true;
                 }
-                if(bmod){
-                    axisY.tickCount=4
-                    axisY.applyNiceNumbers()
+                if (bmod) {
+                    axisY.tickCount = 4;
+                    axisY.applyNiceNumbers();
                 }
             }
-            time=t
-            dataExist=true
+            time = t;
+            dataExist = true;
         }
 
-        function appendDataValue(fact, t, i){
-            if(i>=chartView.count)addFactSeries(fact)
-            var s=chartView.series(i)
+        function appendDataValue(fact, t, i) {
+            if (i >= chartView.count)
+                addFactSeries(fact);
+            var s = chartView.series(i);
 
-            var value=fact.value!=undefined?fact.value:eval(fact.name)
+            var value = fact.value != undefined ? fact.value : eval(fact.name);
 
-            if(!isFinite(value))value=0
-            s.append(t,value);
-            sdata.push(value)
+            if (!isFinite(value))
+                value = 0;
+            s.append(t, value);
+            sdata.push(value);
             //instant rescale - grow
-            if(axisY.max<value){
-                axisY.max=value+dataPadding;
+            if (axisY.max < value) {
+                axisY.max = value + dataPadding;
             }
-            if(axisY.min>value){
-                axisY.min=value-dataPadding;
+            if (axisY.min > value) {
+                axisY.min = value - dataPadding;
             }
             //remove old
-            var cnt=samples
-            if(s.count>cnt) s.removePoints(0,s.count-cnt)
+            var cnt = samples;
+            if (s.count > cnt)
+                s.removePoints(0, s.count - cnt);
         }
 
-        function addFactSeries(fact)
-        {
-            var s = chartView.createSeries(ui.antialiasing?ChartView.SeriesTypeLine:ChartView.SeriesTypeLine,fact.title,axisX, axisY)
-            s.useOpenGL = Qt.binding(function(){return openGL})
-            s.capStyle=Qt.RoundCap
+        function addFactSeries(fact) {
+            var s = chartView.createSeries(ui.antialiasing ? ChartView.SeriesTypeLine : ChartView.SeriesTypeLine, fact.title, axisX, axisY);
+            s.useOpenGL = Qt.binding(function () {
+                return openGL;
+            });
+            s.capStyle = Qt.RoundCap;
             //s.opacity=0.7
 
-            var color = fact.opts.color
-            if(!color) color = Qt.rgba(1,1,1,1)
+            var color = fact.opts.color;
+            if (!color)
+                color = Qt.rgba(1, 1, 1, 1);
 
-            if(fact.name.startsWith("cmd")){
-                s.width=Qt.binding(function(){return lineWidthCmd})
-                s.color=Qt.hsla(color.hslHue, color.hslSaturation/2, color.hslLightness*1.2, 1)
-            }else{
-                s.width=Qt.binding(function(){return lineWidth})
-                s.color=color
+            if (fact.name.startsWith("cmd")) {
+                s.width = Qt.binding(function () {
+                    return lineWidthCmd;
+                });
+                s.color = Qt.hsla(color.hslHue, color.hslSaturation / 2, color.hslLightness * 1.2, 1);
+            } else {
+                s.width = Qt.binding(function () {
+                    return lineWidth;
+                });
+                s.color = color;
             }
-            return s
+            return s;
         }
-
     }
 
-
-    function changeSpeed()
-    {
-        if((speed+1)<speedFactor.length)speed++
-        else speed=0
+    function changeSpeed() {
+        if ((speed + 1) < speedFactor.length)
+            speed++;
+        else
+            speed = 0;
         //console.log(speed)
     }
 }
-

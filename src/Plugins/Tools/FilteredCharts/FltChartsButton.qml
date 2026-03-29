@@ -41,6 +41,10 @@ TextButton {
     onPressed: {
         if (checked)
             textInput.visible = !textInput.visible;
+        if (checked)
+            if (!fltMenuSet.active) {
+                fltMenuSet.trigger();
+            } else {}
     }
 
     property var values: []
@@ -57,5 +61,9 @@ TextButton {
             s.push("<font color='" + fact.opts.color + "'>" + fact.descr + "</font>");
         }
         return s.join("<br>");
+    }
+
+    FltChartsMenuSet {
+        id: fltMenuSet
     }
 }

@@ -36,8 +36,9 @@ Item {
     property real lineWidth: ui.antialiasing ? 1.5 : 1
     property real lineWidthCmd: ui.antialiasing ? 2.1 : 2
 
-    property var speedFactor: [1, 2, 4, 0.5, 0.2]
-    property real speedFactorValue: speed < 0 ? speedFactor[0] : speed >= speedFactor.length ? speedFactor[speedFactor.length - 1] : speedFactor[speed]
+    // property var speedFactor: [1, 2, 4, 0.5, 0.2]
+    // property real speedFactorValue: speed < 0 ? speedFactor[0] : speed >= speedFactor.length ? speedFactor[speedFactor.length - 1] : speedFactor[speed]
+    property real speedFactorValue: 1
 
     onFactsChanged: {
         fltChartView.reset();
@@ -215,7 +216,7 @@ Item {
 
     function changeSpeed() {
         if ((speed + 1) < speedFactor.length)
-            speed++;
+            speed += 1;
         else
             speed = 0;
         //console.log(speed)

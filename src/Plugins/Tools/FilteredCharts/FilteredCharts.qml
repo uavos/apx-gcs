@@ -28,7 +28,7 @@ import QtCore
 import Apx.Common
 
 Rectangle {
-    id: fcControl
+    id: fltControl
 
     implicitHeight: layout.implicitHeight
     implicitWidth: layout.implicitWidth
@@ -67,7 +67,7 @@ Rectangle {
             font: apx.font_narrow(Style.fontSize)
 
             color: activeFocus ? Material.color(Material.Yellow) : Material.primaryTextColor
-            text: "_"
+            text: ""
 
             activeFocusOnTab: true
             selectByMouse: true
@@ -167,7 +167,7 @@ Rectangle {
 
             TextButton {
                 text: fltCharts.speedFactorValue + "x"
-                onClicked: fltCharts.changeSpeed()
+                // onClicked: fltCharts.changeSpeed()
                 Layout.fillHeight: true
                 Layout.minimumWidth: height * 3
             }
@@ -189,13 +189,13 @@ Rectangle {
 
     Settings {
         category: "filtredCharts"
-        property alias page: fcControl.currentPage
+        property alias page: fltControl.currentPage
         property alias custom: textInput.text
     }
     Component.onCompleted: {
         for (var i = 0; i < buttonGroup.buttons.length; ++i) {
             var b = buttonGroup.buttons[i];
-            if (b.text !== fcontrol.currentPage)
+            if (b.text !== fltControl.currentPage)
                 continue;
             buttonGroup.checkedButton = b;
             break;
