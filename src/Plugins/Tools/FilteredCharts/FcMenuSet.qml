@@ -26,13 +26,14 @@ import APX.Facts
 Fact {
     id: setFact
     flags: (Fact.Group | Fact.FlatModel)
-    title: "Charts #" + fltBtn.text
+    title: "Charts #" + fcBtn.text
 
     property var values //from config
 
     signal selected(var num)
 
     property int editorsCnt: 1
+
     Fact {
         id: setTitle
         title: qsTr("Title")
@@ -41,7 +42,7 @@ Fact {
         icon: "rename-box"
         value: setFact.title
         onValueChanged: {
-            fltBtn.toolTip = value;
+            fcBtn.toolTip = value;
         }
     }
 
@@ -61,7 +62,7 @@ Fact {
         }
     }
 
-    FltChartsMenuChart {
+    FcMenuChart {
         title: qsTr("Add new chart")
         descr: "Creating and setting a new chart"
         icon: "plus-circle"
@@ -102,17 +103,19 @@ Fact {
         updateDescr();
         setValues.onSizeChanged.connect(updateDescr);
     }
+
     function createNumber(number) {
         if (!number.bind)
             return;
         if (number.bind === "")
             return;
-        var c = createFact(setValues, "FltChartsMenuChart.qml", {
+        var c = createFact(setValues, "FcMenuChart.qml", {
             "data": number
         });
         c.titleChanged.connect(updateDescr);
         c.removeTriggered.connect(updateDescr);
     }
+
     function updateDescr() {
         if (!setFact)
             return;
@@ -135,14 +138,14 @@ Fact {
     //     }
     // }
 
-    Fact {
-        flags: (Fact.Action | Fact.Apply)
-        title: qsTr("Select and save")
-        visible: !setFact.active
-        icon: "check-circle"
-        onTriggered: {
-            setFact.menuBack();
-            setFact.selected(setFact.num);
-        }
-    }
+    // Fact {
+    //     flags: (Fact.Action | Fact.Apply)
+    //     title: qsTr("Select and save")
+    //     visible: !setFact.active
+    //     icon: "check-circle"
+    //     onTriggered: {
+    //         setFact.menuBack();
+    //         setFact.selected(setFact.num);
+    //     }
+    // }
 }

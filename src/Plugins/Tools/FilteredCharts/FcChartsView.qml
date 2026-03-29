@@ -25,7 +25,7 @@ import QtQuick.Controls
 import QtQml
 
 Item {
-    id: fltChartItem
+    id: fcChartItem
     //clip: true
     property var facts: []
 
@@ -41,18 +41,18 @@ Item {
     property real speedFactorValue: 1
 
     onFactsChanged: {
-        fltChartView.reset();
+        fcChartView.reset();
     }
 
     Connections {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
-            fltChartView.appendData();
+            fcChartView.appendData();
         }
     }
 
     ChartView {
-        id: fltChartView
+        id: fcChartView
 
         antialiasing: ui.antialiasing
         legend.visible: false
@@ -81,16 +81,16 @@ Item {
 
         ValueAxis {
             id: axisX
-            property real t: fltChartView.time
+            property real t: fcChartView.time
             Behavior on t {
-                enabled: ui.smooth && fltChartView.dataExist
+                enabled: ui.smooth && fcChartView.dataExist
                 NumberAnimation {
                     duration: 500
                 }
             }
-            min: t - fltChartView.samples + 20
+            min: t - fcChartView.samples + 20
             max: t
-            //min: - fltChartView.samples //t- fltChartView.samples+20
+            //min: - fcChartView.samples //t- fcChartView.samples+20
             //max: 0 //t
             visible: false
             gridVisible: false
@@ -115,9 +115,9 @@ Item {
         property int timeRescale: 0
 
         function reset() {
-            fltChartView.removeAllSeries();
-            fltChartView.sdata = [];
-            fltChartView.time = 0;
+            fcChartView.removeAllSeries();
+            fcChartView.sdata = [];
+            fcChartView.time = 0;
             axisY.min = -dataPaddingZero;
             axisY.max = dataPaddingZero;
             axisY.tickCount = 4;
@@ -164,9 +164,9 @@ Item {
         }
 
         function appendDataValue(fact, t, i) {
-            if (i >= fltChartView.count)
+            if (i >= fcChartView.count)
                 addFactSeries(fact);
-            var s = fltChartView.series(i);
+            var s = fcChartView.series(i);
 
             var value = fact.value != undefined ? fact.value : eval(fact.name);
 
@@ -188,7 +188,7 @@ Item {
         }
 
         function addFactSeries(fact) {
-            var s = fltChartView.createSeries(ui.antialiasing ? ChartView.SeriesTypeLine : ChartView.SeriesTypeLine, fact.title, axisX, axisY);
+            var s = fcChartView.createSeries(ui.antialiasing ? ChartView.SeriesTypeLine : ChartView.SeriesTypeLine, fact.title, axisX, axisY);
             s.useOpenGL = Qt.binding(function () {
                 return openGL;
             });

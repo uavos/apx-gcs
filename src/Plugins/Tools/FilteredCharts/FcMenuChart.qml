@@ -125,6 +125,14 @@ Fact {
         enumStrings: ["red", "orange", "yelow", "green", "aqua", "blue", "purple", "pink"]
         // onValueChanged: updateDescr()
     }
+    FcFiltersMenu {
+        id: mFilters
+        name: "filters_num"
+        title: qsTr("Filters")
+        descr: qsTr("Avaliable filters")
+
+        // onValueChanged: updateDescr()
+    }
     Fact {
         name: "warn"
         title: qsTr("Warning")

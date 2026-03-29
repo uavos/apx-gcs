@@ -28,7 +28,7 @@ import QtCore
 import Apx.Common
 
 Rectangle {
-    id: fltControl
+    id: fcControl
 
     implicitHeight: layout.implicitHeight
     implicitWidth: layout.implicitWidth
@@ -41,8 +41,8 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        FltChartsView {
-            id: fltCharts
+        FcChartsView {
+            id: fcCharts
             facts: []
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -108,7 +108,7 @@ Rectangle {
                 textInput.facts = flist;
 
                 if (plusButton.checked)
-                    fltCharts.facts = flist;
+                    fcCharts.facts = flist;
             }
         }
 
@@ -123,51 +123,51 @@ Rectangle {
             Layout.margins: Style.spacing
             spacing: 3
             Layout.maximumHeight: 24 * ui.scale
-            FltChartsButton {
+            FcButton {
                 text: "1"
                 checked: true
                 values: [mandala.cmd.att.roll, mandala.est.att.roll]
             }
-            FltChartsButton {
+            FcButton {
                 text: "2"
                 values: [mandala.cmd.att.pitch, mandala.est.att.pitch]
             }
-            FltChartsButton {
+            FcButton {
                 text: "3"
                 values: [mandala.cmd.pos.bearing, mandala.cmd.att.yaw, mandala.est.att.yaw]
             }
-            FltChartsButton {
+            FcButton {
                 text: "4"
                 values: [mandala.est.acc.x, mandala.est.acc.y]
             }
-            FltChartsButton {
+            FcButton {
                 text: "5"
                 values: [mandala.est.acc.z]
             }
-            FltChartsButton {
+            FcButton {
                 text: "6"
                 values: [mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z]
             }
-            FltChartsButton {
+            FcButton {
                 text: "7"
                 values: [mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed]
             }
-            FltChartsButton {
+            FcButton {
                 text: "8"
                 values: [mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.att.rud, mandala.ctr.eng.thr, mandala.ctr.eng.prop, mandala.ctr.str.rud]
             }
-            FltChartsButton {
+            FcButton {
                 text: "9"
                 values: [mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.thr, mandala.cmd.rc.yaw]
             }
-            FltChartsButton {
+            FcButton {
                 text: "10"
                 values: [mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6]
             }
 
             TextButton {
-                text: fltCharts.speedFactorValue + "x"
-                // onClicked: fltCharts.changeSpeed()
+                text: fcCharts.speedFactorValue + "x"
+                // onClicked: fcCharts.changeSpeed()
                 Layout.fillHeight: true
                 Layout.minimumWidth: height * 3
             }
@@ -189,13 +189,13 @@ Rectangle {
 
     Settings {
         category: "filtredCharts"
-        property alias page: fltControl.currentPage
+        property alias page: fcControl.currentPage
         property alias custom: textInput.text
     }
     Component.onCompleted: {
         for (var i = 0; i < buttonGroup.buttons.length; ++i) {
             var b = buttonGroup.buttons[i];
-            if (b.text !== fltControl.currentPage)
+            if (b.text !== fcControl.currentPage)
                 continue;
             buttonGroup.checkedButton = b;
             break;

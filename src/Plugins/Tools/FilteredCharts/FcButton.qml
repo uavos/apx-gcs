@@ -26,7 +26,7 @@ import QtQuick.Layouts
 import Apx.Common
 
 TextButton {
-    id: fltBtn
+    id: fcBtn
 
     Layout.fillHeight: true
     checkable: true
@@ -42,13 +42,13 @@ TextButton {
         if (checked)
             textInput.visible = !textInput.visible;
         if (checked)
-            if (!fltMenuSet.active) {
-                fltMenuSet.trigger();
+            if (!fcMenuSet.active) {
+                fcMenuSet.trigger();
             } else {}
     }
 
     property var values: []
-    onActivated: fltCharts.facts = Qt.binding(function () {
+    onActivated: fcCharts.facts = Qt.binding(function () {
         return values;
     })
 
@@ -63,7 +63,7 @@ TextButton {
         return s.join("<br>");
     }
 
-    FltChartsMenuSet {
-        id: fltMenuSet
+    FcMenuSet {
+        id: fcMenuSet
     }
 }

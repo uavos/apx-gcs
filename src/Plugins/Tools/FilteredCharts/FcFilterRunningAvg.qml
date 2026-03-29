@@ -1,0 +1,92 @@
+/*
+ * APX Autopilot project <http://docs.uavos.com>
+ *
+ * Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
+ * All rights reserved
+ *
+ * This file is part of APX Ground Control.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+import QtQuick
+
+import APX.Facts
+
+Fact {
+    id: filter
+    flags: Fact.Group
+
+    property bool newItem: false
+
+    property var data: ({})
+
+    // signal addTriggered
+    // signal removeTriggered
+
+    // Component.onCompleted: {
+    //     load(data);
+    // updateTitle();
+    // updateDescr();
+    // mTitle.valueChanged.connect(updateTitle);
+    // }
+
+    // function load() {
+    //     for (var i = 0; i < size; ++i) {
+    //         var f = child(i);
+    //         var v = data[settingName(f)];
+    //         f.value = v;
+    //     }
+    // }
+
+    // function save() {
+    //     data = {};
+    //     for (var i = 0; i < size; ++i) {
+    //         var f = child(i);
+    //         var s = f.text.trim();
+    //         if (s === "")
+    //             continue;
+    //         data[settingName(f)] = s;
+    //     }
+    //     return data;
+    // }
+
+    // function settingName(f) {
+    //     var n = f.name;
+    //     if (n.includes("_"))
+    //         return n.slice(0, n.indexOf("_"));
+    //     return n;
+    // }
+
+    Fact {
+        id: raCoef
+        name: "running_avg_coef"
+        title: qsTr("Coefficient")
+        descr: qsTr("Coefficient for filtration")
+        flags: Fact.Float
+        value: 0
+        min: 0
+        max: 1
+
+        onValueChanged: {
+            console.log("running avg coef = ", value);
+        }
+    }
+
+    Fact {
+        title: qsTr("Save")
+        flags: (Fact.Action | Fact.Apply)
+        icon: "check-circle"
+        // onTriggered: save()
+    }
+}
