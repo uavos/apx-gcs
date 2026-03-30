@@ -38,12 +38,14 @@ Fact {
     Component.onCompleted: {
         load(data);
         updateTitle();
-        // updateDescr();
+        updateDescr();
         mTitle.valueChanged.connect(updateTitle);
+        mBind.valueChanged.connect(updateDescr);
+        mColor.valueChanged.connect(updateDescr);
     }
 
     function load() {
-        for (var i = 0; i < size; ++i) {
+        for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
             f.value = v;
@@ -52,7 +54,7 @@ Fact {
 
     function save() {
         data = {};
-        for (var i = 0; i < size; ++i) {
+        for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
             var s = f.text.trim();
             if (s === "")
@@ -75,26 +77,27 @@ Fact {
         title = mTitle.text ? mTitle.text : mBind.text;
     }
 
-    // function updateDescr() {
-    //     //list non-zero values in descr
-    //     var descrList = [];
-    //     for (var i = 0; i < size; ++i) {
-    //         var f = child(i);
-    //         if (!f.name)
-    //             continue;
-    //         if (f.name === "title")
-    //             continue;
-    //         if (f.name === "color")
-    //             continue;
-    //         if (f.text === "")
-    //             continue;
-    //         descrList.push(f.name.toUpperCase() + ": " + f.text);
-    //     }
-    //     if (descrList.length > 0)
-    //         descr = descrList.join(", ");
-    //     else
-    //         descr = "";
-    // }
+    function updateDescr() {
+        if (newItem)
+            return;
+
+        //list non-zero values in descr
+        var descrList = [];
+        for (var i = 0; i < mChart.size; ++i) {
+            var f = child(i);
+            if (!f.name)
+                continue;
+            if (f.name === "title")
+                continue;
+            if (f.text === "")
+                continue;
+            descrList.push(f.name.toUpperCase() + ": " + f.text);
+        }
+        if (descrList.length > 0)
+            descr = descrList.join(", ");
+        else
+            descr = "";
+    }
 
     // Fact {
     //     id: mFact
@@ -119,27 +122,24 @@ Fact {
 
     Fact {
         id: mBind
-        name: "bind_num"
+        name: "bind"
         title: qsTr("Expression")
         descr: "Math.atan(est.att.pitch/est.att.roll)"
         flags: Fact.Text
-        // onValueChanged: updateDescr()
     }
     Fact {
         id: mColor
-        name: "color_num"
+        name: "color"
         title: qsTr("Color")
         descr: qsTr("Chart color")
         flags: Fact.Enum
         enumStrings: ["red", "orange", "yelow", "green", "aqua", "blue", "purple", "pink"]
-        // onValueChanged: updateDescr()
     }
     FcFiltersMenu {
         id: mFilters
-        name: "filters_num"
+        name: "filters"
         title: qsTr("Filters")
         descr: qsTr("Avaliable filters")
-        // onValueChanged: updateDescr()
     }
     Fact {
         name: "warn"
@@ -147,7 +147,7 @@ Fact {
         descr: qsTr("Expression for warning")
         flags: Fact.Text
         enabled: false
-        // onValueChanged: updateDescr()
+        visible: false
     }
     Fact {
         name: "alarm"
@@ -155,7 +155,7 @@ Fact {
         descr: "value>1.8 || (value>0 && value<1)"
         flags: Fact.Text
         enabled: false
-        // onValueChanged: updateDescr()
+        visible: false
     }
     Fact {
         name: "act"
@@ -163,7 +163,7 @@ Fact {
         descr: "cmd.proc.action=proc_action_reset"
         flags: Fact.Text
         enabled: false
-        // onValueChanged: updateDescr()
+        visible: false
     }
 
     // Actions

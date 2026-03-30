@@ -98,14 +98,14 @@ Fact {
     }
 
     function updateSetItems() {
-        msValues.onSizeChanged.disconnect(updateDescr);
+        // msValues.onSizeChanged.disconnect(updateDescr);
         msValues.deleteChildren();
         for (var i in values) {
             // createNumber(values[i]);
             createChart(values[i]);
         }
-        updateDescr();
-        msValues.onSizeChanged.connect(updateDescr);
+        // updateDescr();
+        // msValues.onSizeChanged.connect(updateDescr);
     }
 
     function createChart(mChart) {
@@ -116,20 +116,20 @@ Fact {
         var c = createFact(msValues, "FcMenuChart.qml", {
             "data": mChart
         });
-        c.titleChanged.connect(updateDescr);
-        c.removeTriggered.connect(updateDescr);
+        // c.titleChanged.connect(updateDescr);
+        // c.removeTriggered.connect(updateDescr);
     }
 
-    function updateDescr() {
-        if (!chartFact)
-            return;
-        // descr = "";
-        // var s = [];
-        // for (var i = 0; i < msValues.size; ++i) {
-        //     s.push(msValues.child(i).title);
-        // }
-        // descr = s.join(',');
-    }
+    // function updateDescr() {
+    // if (!chartFact)
+    //     return;
+    // descr = "";
+    // var s = [];
+    // for (var i = 0; i < msValues.size; ++i) {
+    //     s.push(msValues.child(i).title);
+    // }
+    // descr = s.join(',');
+    // }
 
     function createFact(parent, url, opts) {
         var component = Qt.createComponent(url);
