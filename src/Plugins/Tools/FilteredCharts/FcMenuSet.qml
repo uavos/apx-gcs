@@ -24,17 +24,16 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: setFact
+    id: chartFact
     flags: (Fact.Group | Fact.FlatModel)
     title: "Charts #" + fcBtn.text
 
     property real speed: msSpeed.value
 
     property var values //from config
+    property int editorsCnt: 1
 
     signal selected(var num)
-
-    property int editorsCnt: 1
 
     Fact {
         id: msTitle
@@ -42,7 +41,7 @@ Fact {
         descr: qsTr("Charts title")
         flags: Fact.Text
         icon: "rename-box"
-        value: setFact.title
+        value: chartFact.title
         onValueChanged: {
             fcBtn.toolTip = value;
         }
@@ -70,11 +69,12 @@ Fact {
         descr: "Creating and setting a new chart"
         icon: "plus-circle"
         newItem: true
-        onAddTriggered: createNumber(save())
+        // onAddTriggered: createNumber(save())
+        onAddTriggered: createChart(save())
     }
 
     Fact {
-        id: setValues
+        id: msValues
         title: qsTr("Values")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
     }
@@ -83,11 +83,11 @@ Fact {
 
     function save() {
         var values = [];
-        for (var i = 0; i < setValues.size; ++i) {
-            var number = setValues.child(i).save();
-            if (!number.bind)
+        for (var i = 0; i < msValues.size; ++i) {
+            var mChart = msValues.child(i).save();
+            if (!mChart.bind)
                 continue;
-            values.push(number);
+            values.push(mChart);
         }
         if (!values)
             return;
@@ -98,36 +98,46 @@ Fact {
     }
 
     function updateSetItems() {
-        setValues.onSizeChanged.disconnect(updateDescr);
-        setValues.deleteChildren();
+        msValues.onSizeChanged.disconnect(updateDescr);
+        msValues.deleteChildren();
         for (var i in values) {
-            createNumber(values[i]);
+            // createNumber(values[i]);
+            createChart(values[i]);
         }
         updateDescr();
-        setValues.onSizeChanged.connect(updateDescr);
+        msValues.onSizeChanged.connect(updateDescr);
     }
 
-    function createNumber(number) {
-        if (!number.bind)
+    function createChart(mChart) {
+        if (!mChart.bind)
             return;
-        if (number.bind === "")
+        if (mChart.bind === "")
             return;
-        var c = createFact(setValues, "FcMenuChart.qml", {
-            "data": number
+        var c = createFact(msValues, "FcMenuChart.qml", {
+            "data": mChart
         });
         c.titleChanged.connect(updateDescr);
         c.removeTriggered.connect(updateDescr);
     }
 
     function updateDescr() {
-        if (!setFact)
+        if (!chartFact)
             return;
-        descr = "";
-        var s = [];
-        for (var i = 0; i < setValues.size; ++i) {
-            s.push(setValues.child(i).title);
+        // descr = "";
+        // var s = [];
+        // for (var i = 0; i < msValues.size; ++i) {
+        //     s.push(msValues.child(i).title);
+        // }
+        // descr = s.join(',');
+    }
+
+    function createFact(parent, url, opts) {
+        var component = Qt.createComponent(url);
+        if (component.status === Component.Ready) {
+            var c = component.createObject(parent, opts);
+            c.parentFact = parent;
+            return c;
         }
-        descr = s.join(',');
     }
 
     // Fact {
@@ -135,20 +145,20 @@ Fact {
     //     title: qsTr("Remove set")
     //     icon: "delete"
     //     onTriggered: {
-    //         if (setFact.active)
+    //         if (chartFact.active)
     //             select(0);
-    //         setFact.destroy();
+    //         chartFact.destroy();
     //     }
     // }
 
     // Fact {
     //     flags: (Fact.Action | Fact.Apply)
     //     title: qsTr("Select and save")
-    //     visible: !setFact.active
+    //     visible: !chartFact.active
     //     icon: "check-circle"
     //     onTriggered: {
-    //         setFact.menuBack();
-    //         setFact.selected(setFact.num);
+    //         chartFact.menuBack();
+    //         chartFact.selected(chartFact.num);
     //     }
     // }
 }

@@ -24,7 +24,8 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: number
+    // id: number
+    id: mChart
     flags: Fact.Group
 
     property bool newItem: false
@@ -36,9 +37,9 @@ Fact {
 
     Component.onCompleted: {
         load(data);
-        // updateTitle();
+        updateTitle();
         // updateDescr();
-        // mTitle.valueChanged.connect(updateTitle);
+        mTitle.valueChanged.connect(updateTitle);
     }
 
     function load() {
@@ -74,26 +75,26 @@ Fact {
         title = mTitle.text ? mTitle.text : mBind.text;
     }
 
-    function updateDescr() {
-        //list non-zero values in descr
-        var descrList = [];
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            if (!f.name)
-                continue;
-            if (f.name === "title")
-                continue;
-            if (f.name === "color")
-                continue;
-            if (f.text === "")
-                continue;
-            descrList.push(f.name.toUpperCase() + ": " + f.text);
-        }
-        if (descrList.length > 0)
-            descr = descrList.join(", ");
-        else
-            descr = "";
-    }
+    // function updateDescr() {
+    //     //list non-zero values in descr
+    //     var descrList = [];
+    //     for (var i = 0; i < size; ++i) {
+    //         var f = child(i);
+    //         if (!f.name)
+    //             continue;
+    //         if (f.name === "title")
+    //             continue;
+    //         if (f.name === "color")
+    //             continue;
+    //         if (f.text === "")
+    //             continue;
+    //         descrList.push(f.name.toUpperCase() + ": " + f.text);
+    //     }
+    //     if (descrList.length > 0)
+    //         descr = descrList.join(", ");
+    //     else
+    //         descr = "";
+    // }
 
     // Fact {
     //     id: mFact
@@ -108,6 +109,14 @@ Fact {
     //         //value=null
     //     }
     // }
+
+    Fact {
+        id: mTitle
+        title: qsTr("Title")
+        descr: qsTr("Chart name")
+        flags: Fact.Text
+    }
+
     Fact {
         id: mBind
         name: "bind_num"
@@ -130,7 +139,6 @@ Fact {
         name: "filters_num"
         title: qsTr("Filters")
         descr: qsTr("Avaliable filters")
-
         // onValueChanged: updateDescr()
     }
     Fact {
@@ -157,14 +165,15 @@ Fact {
         enabled: false
         // onValueChanged: updateDescr()
     }
-    //actions
+
+    // Actions
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Add")
         enabled: (newItem && mBind && mBind.value) ? true : false
         icon: "plus-circle"
         onTriggered: {
-            number.menuBack();
+            mChart.menuBack();
             addTriggered();
         }
     }
@@ -175,7 +184,7 @@ Fact {
         icon: "delete"
         onTriggered: {
             removeTriggered();
-            number.deleteFact();
+            mChart.deleteFact();
         }
     }
 }

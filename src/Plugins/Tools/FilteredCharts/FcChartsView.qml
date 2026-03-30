@@ -26,7 +26,7 @@ import QtQml
 
 Item {
     id: fcChartItem
-    //clip: true
+
     property var facts: []
 
     property bool openGL: false //apx.settings.graphics.opengl.value
