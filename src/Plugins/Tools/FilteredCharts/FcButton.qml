@@ -34,17 +34,21 @@ TextButton {
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
     // toolTip: getToolTip(values)
 
-    onCheckedChanged: {
-        if (!checked)
-            textInput.visible = false;
-    }
+    // onCheckedChanged: {
+    //     if (!checked)
+    //         textInput.visible = false;
+    // }
     onPressed: {
-        if (checked)
-            textInput.visible = !textInput.visible;
-        if (checked)
+        // if (checked) {
+        //     textInput.visible = !textInput.visible;
+        // }
+        if (checked) {
             if (!fcMenuSet.active) {
                 fcMenuSet.trigger();
-            } else {}
+            }
+        } else {
+            fcCharts.speedFactorValue = fcMenuSet.speed;
+        }
     }
 
     property var values: []

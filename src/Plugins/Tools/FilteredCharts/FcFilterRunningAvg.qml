@@ -77,7 +77,6 @@ Fact {
         value: 0
         min: 0
         max: 1
-
         onValueChanged: {
             console.log("running avg coef = ", value);
         }

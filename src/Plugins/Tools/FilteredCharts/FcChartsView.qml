@@ -90,8 +90,6 @@ Item {
             }
             min: t - fcChartView.samples + 20
             max: t
-            //min: - fcChartView.samples //t- fcChartView.samples+20
-            //max: 0 //t
             visible: false
             gridVisible: false
             labelsVisible: false

@@ -36,6 +36,19 @@ Rectangle {
     border.width: 0
     color: "#000"
 
+    Component.onCompleted: {
+        for (var i = 0; i < buttonGroup.buttons.length; ++i) {
+            var b = buttonGroup.buttons[i];
+            if (b.text !== fcControl.currentPage)
+                continue;
+            buttonGroup.checkedButton = b;
+            break;
+        }
+        if (buttonGroup.checkedButton == null) {
+            buttonGroup.checkedButton = buttonGroup.buttons[0]; //showPage("R")
+        }
+    }
+
     ColumnLayout {
         id: layout
         anchors.fill: parent
@@ -114,7 +127,6 @@ Rectangle {
 
         ButtonGroup {
             id: buttonGroup
-            // buttons: bottomArea.buttons
         }
 
         RowLayout {
@@ -169,7 +181,7 @@ Rectangle {
                 text: fcCharts.speedFactorValue + "x"
                 // onClicked: fcCharts.changeSpeed()
                 Layout.fillHeight: true
-                Layout.minimumWidth: height * 3
+                Layout.minimumWidth: height * 4
             }
         }
     }
@@ -191,17 +203,5 @@ Rectangle {
         category: "filtredCharts"
         property alias page: fcControl.currentPage
         property alias custom: textInput.text
-    }
-    Component.onCompleted: {
-        for (var i = 0; i < buttonGroup.buttons.length; ++i) {
-            var b = buttonGroup.buttons[i];
-            if (b.text !== fcControl.currentPage)
-                continue;
-            buttonGroup.checkedButton = b;
-            break;
-        }
-        if (buttonGroup.checkedButton == null) {
-            buttonGroup.checkedButton = buttonGroup.buttons[0]; //showPage("R")
-        }
     }
 }

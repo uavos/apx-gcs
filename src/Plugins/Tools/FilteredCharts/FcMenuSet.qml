@@ -28,6 +28,8 @@ Fact {
     flags: (Fact.Group | Fact.FlatModel)
     title: "Charts #" + fcBtn.text
 
+    property real speed: msSpeed.value
+
     property var values //from config
 
     signal selected(var num)
@@ -35,7 +37,7 @@ Fact {
     property int editorsCnt: 1
 
     Fact {
-        id: setTitle
+        id: msTitle
         title: qsTr("Title")
         descr: qsTr("Charts title")
         flags: Fact.Text
@@ -47,17 +49,18 @@ Fact {
     }
 
     Fact {
-        id: setSpeed
+        id: msSpeed
         title: qsTr("Speed")
         descr: qsTr("Charts speed")
         flags: Fact.Float
         icon: "speedometer"
         value: 1.0
         precision: 1
-        min: 0.1
-        max: 5
+        min: 0.2
+        max: 4
         onValueChanged: {
-            speed = value;
+            fcCharts.speed = value;
+            fcCharts.speedFactorValue = value;
             console.log("Speed =", value);
         }
     }
