@@ -84,10 +84,15 @@ Fact {
 
     function updateBtnValues() {
         fcBtn.values = [];
-        for (var i = 0; i < msValues.size; ++i) {
-            var fact = msValues.child(i);
-            fcBtn.values.push(fact);
-        }
+        for (var i = 0; i < msValues.size; ++i)
+            fcBtn.values.push(msValues.child(i));
+    }
+
+    function updateChartsValues() {
+        if (!fcBtn.checked)
+            return;
+        for (var i = 0; i < msValues.size; ++i)
+            msValues.child(i).updateValue();
     }
 
     function save() {

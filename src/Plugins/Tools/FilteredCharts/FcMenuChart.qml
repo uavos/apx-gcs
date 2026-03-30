@@ -43,9 +43,6 @@ Fact {
         mTitle.valueChanged.connect(updateTitle);
         mBind.valueChanged.connect(updateDescr);
         mColor.valueChanged.connect(updateDescr);
-
-        // Debug purposes only
-        // value = Math.random() * 10;
     }
 
     function load() {
@@ -107,6 +104,13 @@ Fact {
         var opt = mChart.opts;
         opt.color = mColor.text;
         mChart.opts = opt;
+    }
+
+    function updateValue() {
+        var exp = mBind.text;
+        if (eval(exp) == undefined)
+            return;
+        value = eval(exp);
     }
 
     // Fact {

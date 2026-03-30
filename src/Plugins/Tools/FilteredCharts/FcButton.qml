@@ -32,22 +32,22 @@ TextButton {
     checkable: true
     ButtonGroup.group: buttonGroup
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
-    // toolTip: getToolTip(values)
 
-    // onCheckedChanged: {
-    //     if (!checked)
-    //         textInput.visible = false;
-    // }
     onPressed: {
-        // if (checked) {
-        //     textInput.visible = !textInput.visible;
-        // }
         if (checked) {
             if (!fcMenuSet.active) {
                 fcMenuSet.trigger();
             }
         } else {
             fcCharts.speedFactorValue = fcMenuSet.speed;
+        }
+    }
+
+    Connections {
+        target: apx.fleet.current.mandala
+        function onTelemetryDecoded() {
+            if (checked)
+                fcMenuSet.updateChartsValues();
         }
     }
 
