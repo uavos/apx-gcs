@@ -91,7 +91,7 @@ void PApx::process_downlink(QByteArray packet)
         trace()->block(v->title().append(':'));
         trace()->tree();
 
-        v->process_downlink(pid, stream);
+        v->process_incoming_data(stream, true);
         return;
     }
 
@@ -224,32 +224,7 @@ void PApx::process_downlink(QByteArray packet)
     request_ident_schedule(squawk);
     return;
 }
-case mandala::cmd::env::unit::uplink::uid: {
-    // uplink from another GCS instance
-    if (pid.pri != xbus::pri_request)
-        return;
-    if (stream.available() <= sizeof(xbus::unit::squawk_t))
-        return;
 
-    const xbus::unit::squawk_t squawk = stream.read<xbus::unit::squawk_t>();
-    trace()->block(PApx::squawkText(squawk));
-
-    if (stream.available() <= xbus::pid_s::psize())
-        return;
-
-    auto v = _squawk_map.value(squawk);
-    if (!v)
-        return;
-
-    v->packetReceived(pid.uid);
-    trace()->block(v->title().append(':'));
-    trace()->tree();
-    v->process_incoming_data(stream, true);
-    return;
-}
-}
-qDebug() << "orphan unit packet";
-}
 bool PApx::check_vuid(PApxUnit *v, uint8_t n, uint8_t seq)
 {
     if (v->check_vuid(n, seq))

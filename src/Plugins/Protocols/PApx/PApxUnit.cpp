@@ -61,6 +61,14 @@ QString PApxUnit::uidText(const xbus::unit::uid_t *uid_raw)
 
 void PApxUnit::process_incoming_data(PStreamReader &stream, bool is_remote_uplink)
 {
+    if (stream.available() < xbus::pid_s::psize()) {
+        qWarning() << "packet too short" << stream.dump_payload();
+        return;
+    }
+
+    xbus::pid_s pid;
+    pid.read(&stream);
+
     const auto uid = pid.uid;
 
     if (uid > mandala::uid_max) {
@@ -70,7 +78,7 @@ void PApxUnit::process_incoming_data(PStreamReader &stream, bool is_remote_uplin
     emit packetReceived(uid);
 
     if (static_cast<PApxNodes *>(m_nodes)->process_incoming_data(pid, stream, is_remote_uplink)) {
-        setStreamType(NMT);
+        setStreamType(SYS);
         return;
     }
 
