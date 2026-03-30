@@ -39,9 +39,13 @@ Fact {
         load(data);
         updateTitle();
         updateDescr();
+        setColor();
         mTitle.valueChanged.connect(updateTitle);
         mBind.valueChanged.connect(updateDescr);
         mColor.valueChanged.connect(updateDescr);
+
+        // Debug purposes only
+        // value = Math.random() * 10;
     }
 
     function load() {
@@ -99,6 +103,12 @@ Fact {
             descr = "";
     }
 
+    function setColor() {
+        var opt = mChart.opts;
+        opt.color = mColor.text;
+        mChart.opts = opt;
+    }
+
     // Fact {
     //     id: mFact
     //     title: qsTr("Binding")
@@ -134,6 +144,7 @@ Fact {
         descr: qsTr("Chart color")
         flags: Fact.Enum
         enumStrings: ["red", "orange", "yelow", "green", "aqua", "blue", "purple", "pink"]
+        onTextChanged: setColor()
     }
     FcFiltersMenu {
         id: mFilters
