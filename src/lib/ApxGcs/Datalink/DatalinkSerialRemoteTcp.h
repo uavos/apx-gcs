@@ -21,29 +21,43 @@
  */
 #pragma once
 
-#include "DatalinkSocket.h"
+#include "DatalinkConnection.h"
+#include <serial/CobsDecoder.h>
+#include <serial/CobsEncoder.h>
+#include <QTcpSocket>
 
-class DatalinkUdp : public DatalinkSocket
+class DatalinkSerialRemoteTcp : public DatalinkConnection
 {
     Q_OBJECT
+
 public:
-    explicit DatalinkUdp(Fact *parent,
-                         QUdpSocket *socket,
-                         QHostAddress hostAddress,
-                         quint16 hostPort,
-                         quint16 rxNetwork,
-                         quint16 txNetwork);
+    explicit DatalinkSerialRemoteTcp(Fact *parent, QString host, int port);
 
-    void readDatagram(QNetworkDatagram datagram);
+    Fact *f_state = nullptr;
+    Fact *f_remove = nullptr;
 
-private:
-    QUdpSocket *_udp;
-    QNetworkDatagram _read_datagram;
+    QString getHost() const;
+    int getPort() const;
 
 protected:
     //DatalinkConnection overrided
-    virtual QByteArray read() override;
-    virtual void write(const QByteArray &packet) override;
+    void open() override;
+    void close() override;
+    QByteArray read() override;
+    void write(const QByteArray &packet) override;
 
-    void socketDisconnected() override;
+private:
+    QString m_host;
+    int m_port;
+    QTcpSocket m_socket;
+    QTimer m_noDataTimer;
+    CobsDecoder<> m_dec;
+    CobsEncoder<> m_enc;
+
+private slots:
+    void onErrorOccured(QAbstractSocket::SocketError socketError);
+    void onStateChanged(QAbstractSocket::SocketState socketState);
+    void onActivatedChanged();
+    void onNoDataTimerTimeout();
+    void onRemoveTriggered();
 };

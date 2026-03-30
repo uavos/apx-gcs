@@ -43,8 +43,6 @@ public:
 
     UnitMission *mission;
 
-    virtual int missionItemType() const { return -1; }
-
     virtual MissionItem *createObject() { return nullptr; }
 
     MissionItem *addObject(const QGeoCoordinate &);
@@ -98,7 +96,7 @@ signals:
     void timeChanged();
 };
 
-template<class T, int miType>
+template<class T>
 class MissionGroupT : public MissionGroup
 {
 public:
@@ -109,7 +107,6 @@ public:
                            Fact *activeIndex = nullptr)
         : MissionGroup(parent, name, title, descr, activeIndex)
     {}
-    int missionItemType() const { return miType; }
 
     MissionItem *createObject() { return new T(this); }
 };

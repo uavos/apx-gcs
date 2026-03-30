@@ -159,7 +159,7 @@ void DatalinkSerial::openNext()
         if (m_devName != info.portName())
             setUrl(QString("%1:%2").arg(m_devName).arg(info.portName()));
         setStatus(tr("Connected"));
-        apxMsg() << tr("Serial port connected").append(":") << info.portName();
+        apxMsg() << tr("Serial port connected: %1 %2bps").arg(info.portName()).arg(m_baud);
         opened();
         return;
     }

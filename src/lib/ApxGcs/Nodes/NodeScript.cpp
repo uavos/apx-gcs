@@ -32,7 +32,9 @@ NodeScript::NodeScript(Fact *fact)
 {
     srcFile.setFileTemplate(
         QFileInfo(srcFile.fileTemplate()).absoluteDir().absoluteFilePath("script-XXXXXX.cpp"));
-    srcFile.open();
+    if (!srcFile.open()) {
+        qWarning() << "Can't open temp file" << srcFile.fileName();
+    }
     // qDebug() << srcFile.fileName();
 
     outFileName = QFileInfo(srcFile.fileName())
@@ -69,7 +71,7 @@ void NodeScript::_update_cc_args()
 
     // parse compiler args - fill from json file
     cc_args.clear();
-    QFile ftasks(AppDirs::res().filePath("scripts/.vscode/tasks.json"));
+    QFile ftasks(AppDirs::scripts().filePath(".vscode/tasks.json"));
     if (ftasks.open(QFile::ReadOnly | QFile::Text)) {
         QJsonDocument json = QJsonDocument::fromJson(ftasks.readAll());
         ftasks.close();
@@ -94,7 +96,35 @@ void NodeScript::_update_cc_args()
             }
             break;
         }
+    } else {
+        qWarning() << "Can't open wasm config" << ftasks.fileName();
     }
+
+    // update cc vscode settings
+    QFile fsettings(AppDirs::scripts().absoluteFilePath(".vscode/settings.json"));
+    bool ok = false;
+    if (fsettings.open(QFile::ReadOnly | QFile::Text)) {
+        QJsonDocument json = QJsonDocument::fromJson(fsettings.readAll());
+        fsettings.close();
+        QJsonObject root = json.object();
+        QJsonValueRef ref = root.find("wasm").value();
+        if (!ref.isUndefined()) {
+            QJsonObject o = ref.toObject();
+            o.insert("cc", cc);
+            ref = o;
+            json.setObject(root);
+            if (fsettings.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
+                fsettings.write(json.toJson());
+                fsettings.close();
+                ok = true;
+            } else {
+                qWarning() << "Can't write wasm config" << fsettings.fileName();
+            }
+        }
+    }
+    if (!ok)
+        qWarning() << "vscode settings error";
+
     //qDebug() << cc << cc_args;
 }
 

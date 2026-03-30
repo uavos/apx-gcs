@@ -44,13 +44,14 @@ public:
 
     virtual void close() override;
 
-private:
+    virtual void setRemoteUrl(QUrl url);
+
+protected:
     QAbstractSocket *_socket;
 
     CobsDecoder<> _dec;
     CobsEncoder<> _enc;
 
-protected:
     QHostAddress _hostAddress;
     quint16 _hostPort;
 

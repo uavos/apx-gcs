@@ -1,3 +1,152 @@
+# [APX Ground Control v11.2.23](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.23) (03/26/26)
+
+> Branch: `main`\
+> Date: `03/26/26 18:10:48`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/a9fcef9debf3be602ce195481c1aff70612c99f7...a7e63925c0a9be8429ab2c49c7d88a122635e550)
+
+Security updates
+
+# [APX Ground Control v11.2.22](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.22) (02/09/26)
+
+> Branch: `main`\
+> Date: `02/09/26 03:28:05`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/01089cd30b18e877c0561fff8e92a86651b6c80b...f5db2240934f9c2c4857b2ab4a4afe1a642d411e)
+
+## Bug Fixes
+* udp multicast via local ports
+* agl status
+* baud rate for serial port
+
+# [APX Ground Control v11.2.21](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.21) (11/15/25)
+
+> Branch: `main`\
+> Date: `11/15/25 23:10:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/8a5ca544679bb20e8c64254fa0c53afd098cc1c7...adba74763938b7778dc0ce38b6d94557f69ad6a6)
+
+## New Features
+* datalink UDP multicast support
+* udp url bind port query
+
+## Bug Fixes
+* datalink serial port url handling
+
+# [APX Ground Control v11.2.20](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.20) (11/15/25)
+
+> Branch: `main`\
+> Date: `11/15/25 05:45:58`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/dc287e40b5748f7e851d771434eaac959a77a0f5...3cca7b76962e1c0c4073498b51ea80bc7396bfb4)
+
+## New Features
+* persistent datalink ports
+* datalink ports list reorder
+
+## Bug Fixes
+* swarm plugin
+
+## Performance Enhancements
+* datalink ports facts
+
+# [APX Ground Control v11.2.19](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.19) (11/05/25)
+
+> Branch: `main`\
+> Date: `11/05/25 13:57:13`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/e934377653f608096e1fbf8c9a5a2a127dd620b3...4a248caf68d0716fe5fabbff5e70b20e606817b3)
+
+## New Features
+* INS pos error displayed with different colors on GPS fix availability
+
+## Bug Fixes
+* remote GCS unit conf update sync
+* accept remote GCS bundles silently
+
+# [APX Ground Control v11.2.18](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.18) (11/04/25)
+
+> Branch: `main`\
+> Date: `11/04/25 20:28:09`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/acc3a14e67612eef29755d335b647a9c41e7bee5...59c167e17de7c024c87fc3a77455b6d5af3246a5)
+
+## Bug Fixes
+* recording uplink from remote gcs
+* extend PFD control area limits
+
+# [APX Ground Control v11.2.17](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.17) (10/25/25)
+
+> Branch: `main`\
+> Date: `10/25/25 19:12:24`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/70c0d9832d28776b045e2828db7cb29c5321a2da...6072d64ee30e2438905c0edfd9fc1e3183045f90)
+
+## Bug Fixes
+* geo bounding rect estimate
+* geo colors
+
+# [APX Ground Control v11.2.16](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.16) (10/15/25)
+
+> Branch: `main`\
+> Date: `10/15/25 23:44:38`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b31bf7afefaabdf434a37174063c314210ba98ca...c672e81a89ded5c1840cbfe21bc94c37ccccb2af)
+
+## New Features
+* geofence map editor
+* bind mandala desription to unit title
+
+## Bug Fixes
+* fact re-binding behavior (duplicate binds bug)
+* older qt versions compatibility
+
+# [APX Ground Control v11.2.15](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.15) (10/15/25)
+
+> Branch: `main`\
+> Date: `10/15/25 20:32:29`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b31bf7afefaabdf434a37174063c314210ba98ca...8428977b49a928d9a6e63496273414e4ef1d41a6)
+
+## New Features
+* geofence map editor
+* bind mandala desription to unit title
+
+## Bug Fixes
+* fact re-binding behavior (duplicate binds bug)
+
+# [APX Ground Control v11.2.14](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.14) (10/01/25)
+
+> Branch: `main`\
+> Date: `10/01/25 18:13:09`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/681570cfbacd8b5367b58a41dbe939975b5a23fc...2727b927151d1786db08481674dbb1eeee036b4f)
+
+## Bug Fixes
+* keyboard shortcuts scope
+* default system shortcuts
+
+# [APX Ground Control v11.2.13](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.13) (09/25/25)
+
+> Branch: `main`\
+> Date: `09/25/25 08:56:53`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/fe7bd27c5cb7a34e6a2789c3cee0982c8ff34620...163a9dafafb0d7adc70722d4855ae9fae66a9075)
+
+## Bug Fixes
+* periodic segfaults on nodes refresh while downloading
+* datalink server status
+
+## Performance Enhancements
+* macos Qt upgrade to 6.10
+
+# [APX Ground Control v11.2.12](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.12) (09/08/25)
+
+> Branch: `main`\
+> Date: `09/08/25 19:35:45`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/17e3ff1a1097603521a9d0090d444ce4c74d212b...20fa297274e90eb7aee82a2ae9ba2dfe97841efb)
+
+## New Features
+* pitot heater status indicator on PFD
+
+# [APX Ground Control v11.2.11](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.11) (08/30/25)
+
+> Branch: `main`\
+> Date: `08/30/25 19:58:27`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/5a93e083e77da7ff15d2fc7a574946ebd834ab2f...9304a38d203ff155b6a01f4726438d10fb15f461)
+
+## New Features
+* Get WASM Script SDK from nodes firmware package
+
 # [APX Ground Control v11.2.10](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.10) (08/08/25)
 
 > Branch: `main`\

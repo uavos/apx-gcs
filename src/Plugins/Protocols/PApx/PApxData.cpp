@@ -31,7 +31,9 @@ PApxData::PApxData(PApxUnit *parent)
     , _req(parent)
 {}
 
-bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
+bool PApxData::process_incoming_data(const xbus::pid_s &pid,
+                                     PStreamReader &stream,
+                                     bool is_remote_uplink)
 {
     bool is_request = pid.req;
     const auto uid = pid.uid;
@@ -75,7 +77,7 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
                 qWarning() << "unpack data values error";
                 break;
             }
-            emit valuesData(values);
+            emit valuesData(values, is_remote_uplink);
             return true;
         }
 
@@ -102,6 +104,21 @@ bool PApxData::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
                 }
             }
             qWarning() << "Empty jsexec data received" << stream.dump_payload();
+            break;
+
+        case mandala::cmd::env::stream::calib::uid:
+            if (is_value_request)
+                return true; // no data to return for calibration data request
+
+            if (stream.available() > sizeof(mandala::uid_t)) {
+                mandala::uid_t uid;
+                stream >> uid;
+                findParent<PApx>()->trace_uid(uid);
+                trace()->data(stream.payload());
+                emit calibrationData(uid, stream.payload());
+                return true;
+            }
+            qWarning() << "Empty calibration data received";
             break;
         }
     } while (0);
@@ -242,6 +259,15 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
                                                  v.at(2).toFloat()});
         return;
     }
+case mandala::cmd::nav::swarm::uid: {
+    QByteArray ba = value.toByteArray();
+    if (ba.size() != sizeof(mandala::bundle::swarm_s))
+        break;
+    mandala::bundle::swarm_s bundleSwarm;
+    memcpy(&bundleSwarm, ba.constData(), sizeof(mandala::bundle::swarm_s));
+    sendBundleT<mandala::bundle::swarm_s>(uid, bundleSwarm);
+    return;
+}
 
     _nimp(__FUNCTION__);
 }

@@ -30,6 +30,8 @@
 #include <ApxMisc/JsonHelpers.h>
 
 #include <XbusMission.h>
+#include <QGeoPolygon>
+#include <QGeoRectangle>
 
 #include <crc.h>
 
@@ -213,7 +215,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
     }
 
     // read payload header
-    xbus::mission::pld_hdr_s hdr{};
+    xbus::mission::pld_hdr_s hdr;
     stream.read(&hdr, sizeof(hdr));
     const auto pld_offset = stream.pos();
 
@@ -221,183 +223,311 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
     const auto title = QString::fromUtf8(
         QByteArray(hdr.title, strnlen(hdr.title, sizeof(hdr.title))));
 
-    // qDebug() << title << stream.size() << "bytes";
+    // qDebug() << title << stream.size() << "bytes" << hdr.items.rw.cnt << hdr.items.pi.cnt
+    //          << hdr.items.wp.cnt << hdr.items.tw.cnt << hdr.items.act.cnt << hdr.items.geo.cnt;
 
     // read items
-    QVariantList rw, pi, wp, tw, act;
+    QVariantList rw, pi, wp, tw, geo, act;
 
     // Runways
-    stream.reset(pld_offset + hdr.items.rw.off);
-    if (!stream.available())
-        return {};
-    for (size_t i = 0; i < hdr.items.rw.cnt; ++i) {
-        xbus::mission::rw_s e;
-        if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading rw" << i << hdr.items.rw.cnt;
+    if (hdr.items.rw.cnt) {
+        stream.reset(pld_offset + hdr.items.rw.off);
+        if (!stream.available())
             return {};
+        for (size_t i = 0; i < hdr.items.rw.cnt; ++i) {
+            xbus::mission::rw_s e;
+            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                qWarning() << "error reading rw" << i << hdr.items.rw.cnt;
+                return {};
+            }
+            QVariantMap m;
+            m.insert("lat", mandala::a32_to_deg(e.lat));
+            m.insert("lon", mandala::a32_to_deg(e.lon));
+            m.insert("hmsl", e.hmsl);
+            m.insert("dN", e.dN);
+            m.insert("dE", e.dE);
+            m.insert("approach", e.approach);
+            switch (e.type) {
+            case xbus::mission::rw_s::CLEFT:
+                m.insert("type", "left");
+                break;
+            case xbus::mission::rw_s::CRIGHT:
+                m.insert("type", "right");
+                break;
+            }
+            rw.append(m);
         }
-        QVariantMap m;
-        m.insert("lat", mandala::a32_to_deg(e.lat));
-        m.insert("lon", mandala::a32_to_deg(e.lon));
-        m.insert("hmsl", e.hmsl);
-        m.insert("dN", e.dN);
-        m.insert("dE", e.dE);
-        m.insert("approach", e.approach);
-        switch (e.type) {
-        case xbus::mission::rw_s::CLEFT:
-            m.insert("type", "left");
-            break;
-        case xbus::mission::rw_s::CRIGHT:
-            m.insert("type", "right");
-            break;
-        }
-        rw.append(m);
+        // qDebug() << "runways" << rw.size();
     }
 
     // Points of Interest
-    stream.reset(pld_offset + hdr.items.pi.off);
-    if (!stream.available())
-        return {};
-    for (size_t i = 0; i < hdr.items.pi.cnt; ++i) {
-        xbus::mission::pi_s e;
-        if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading pi" << i << hdr.items.pi.cnt;
+    if (hdr.items.pi.cnt) {
+        stream.reset(pld_offset + hdr.items.pi.off);
+        if (!stream.available())
             return {};
+        for (size_t i = 0; i < hdr.items.pi.cnt; ++i) {
+            xbus::mission::pi_s e;
+            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                qWarning() << "error reading pi" << i << hdr.items.pi.cnt;
+                return {};
+            }
+            QVariantMap m;
+            m.insert("lat", mandala::a32_to_deg(e.lat));
+            m.insert("lon", mandala::a32_to_deg(e.lon));
+            m.insert("hmsl", e.hmsl);
+            m.insert("radius", e.radius);
+            m.insert("orbits", e.orbs);
+            m.insert("timeout", e.time);
+            pi.append(m);
         }
-        QVariantMap m;
-        m.insert("lat", mandala::a32_to_deg(e.lat));
-        m.insert("lon", mandala::a32_to_deg(e.lon));
-        m.insert("hmsl", e.hmsl);
-        m.insert("radius", e.radius);
-        m.insert("orbits", e.orbs);
-        m.insert("timeout", e.time);
-        pi.append(m);
+        // qDebug() << "pois" << pi.size();
     }
 
     // Actions
-    stream.reset(pld_offset + hdr.items.act.off);
-    if (!stream.available())
-        return {};
-    for (size_t i = 0; i < hdr.items.act.cnt; ++i) {
-        xbus::mission::act_s e;
-        auto pos_s = stream.pos();
-        if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading act" << i << hdr.items.act.cnt;
+    if (hdr.items.act.cnt) {
+        stream.reset(pld_offset + hdr.items.act.off);
+        if (!stream.available())
             return {};
-        }
-        stream.reset(pos_s);
-        QVariantMap m;
-        switch (e.type) {
-        case xbus::mission::act_s::ACT_SEQ: {
-            xbus::mission::act_seq_s e;
+        for (size_t i = 0; i < hdr.items.act.cnt; ++i) {
+            xbus::mission::act_s e;
+            auto pos_s = stream.pos();
             if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_seq" << i << hdr.items.act.cnt;
+                qWarning() << "error reading act" << i << hdr.items.act.cnt;
                 return {};
             }
-            QVariantList seq;
-            for (uint j = 0; j < e.cnt; ++j) {
-                uint8_t index;
-                if (stream.read(&index, 1) != 1) {
-                    qWarning() << "error reading act_seq item" << i << hdr.items.act.cnt << j
-                               << e.cnt;
+            stream.reset(pos_s);
+            QVariantMap m;
+            switch (e.type) {
+            case xbus::mission::act_s::ACT_SEQ: {
+                xbus::mission::act_seq_s e;
+                if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                    qWarning() << "error reading act_seq" << i << hdr.items.act.cnt;
                     return {};
                 }
-                seq.append((uint) index);
+                QVariantList seq;
+                for (uint j = 0; j < e.cnt; ++j) {
+                    uint8_t index;
+                    if (stream.read(&index, 1) != 1) {
+                        qWarning()
+                            << "error reading act_seq item" << i << hdr.items.act.cnt << j << e.cnt;
+                        return {};
+                    }
+                    seq.append((uint) index);
+                }
+                m.insert("seq", seq);
+                break;
             }
-            m.insert("seq", seq);
-            break;
-        }
-        case xbus::mission::act_s::ATR_ALT: {
-            xbus::mission::act_alt_s e;
-            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_alt" << i << hdr.items.act.cnt;
-                return {};
+            case xbus::mission::act_s::ATR_ALT: {
+                xbus::mission::act_alt_s e;
+                if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                    qWarning() << "error reading act_alt" << i << hdr.items.act.cnt;
+                    return {};
+                }
+                m.insert("altitude", e.alt);
+                m.insert("amsl", e.amsl);
+                m.insert("atrack", e.atrk);
+                break;
             }
-            m.insert("altitude", e.alt);
-            m.insert("amsl", e.amsl);
-            m.insert("atrack", e.atrk);
-            break;
-        }
-        case xbus::mission::act_s::ATR_TRK: {
-            xbus::mission::act_trk_s e;
-            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_trk" << i << hdr.items.act.cnt;
-                return {};
+            case xbus::mission::act_s::ATR_TRK: {
+                xbus::mission::act_trk_s e;
+                if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                    qWarning() << "error reading act_trk" << i << hdr.items.act.cnt;
+                    return {};
+                }
+                m.insert("xtrack", e.xtrk);
+                break;
             }
-            m.insert("xtrack", e.xtrk);
-            break;
-        }
-        case xbus::mission::act_s::TRG_SPEED: {
-            xbus::mission::act_speed_s e;
-            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_speed" << i << hdr.items.act.cnt;
-                return {};
+            case xbus::mission::act_s::TRG_SPEED: {
+                xbus::mission::act_speed_s e;
+                if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                    qWarning() << "error reading act_speed" << i << hdr.items.act.cnt;
+                    return {};
+                }
+                m.insert("speed", QVariant::fromValue((uint) e.speed));
+                break;
             }
-            m.insert("speed", QVariant::fromValue((uint) e.speed));
-            break;
-        }
-        case xbus::mission::act_s::TRG_POI: {
-            xbus::mission::act_poi_s e;
-            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_poi" << i << hdr.items.act.cnt;
-                return {};
+            case xbus::mission::act_s::TRG_POI: {
+                xbus::mission::act_poi_s e;
+                if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                    qWarning() << "error reading act_poi" << i << hdr.items.act.cnt;
+                    return {};
+                }
+                uint index = e.index;
+                // GCS poi index from 1
+                m.insert("poi", index + 1);
+                break;
             }
-            uint index = e.index;
-            // GCS poi index from 1
-            m.insert("poi", index + 1);
-            break;
-        }
-        case xbus::mission::act_s::TRG_SCR: {
-            xbus::mission::act_scr_s e;
-            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-                qWarning() << "error reading act_scr" << i << hdr.items.act.cnt;
-                return {};
+            case xbus::mission::act_s::TRG_SCR: {
+                xbus::mission::act_scr_s e;
+                if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                    qWarning() << "error reading act_scr" << i << hdr.items.act.cnt;
+                    return {};
+                }
+                auto s = stream.read_string(xbus::mission::act_scr_s::MAX);
+                m.insert("script", QString::fromUtf8(QByteArray(s, strlen(s))));
+                break;
             }
-            auto s = stream.read_string(xbus::mission::act_scr_s::MAX);
-            m.insert("script", QString::fromUtf8(QByteArray(s, strlen(s))));
-            break;
+            }
+            act.append(m);
         }
-        }
-        act.append(m);
+        // qDebug() << "actions" << act.size();
     }
     // json::save("act-unpack", QJsonDocument::fromVariant(act).array());
 
     // Waypoints
-    stream.reset(pld_offset + hdr.items.wp.off);
-    if (!stream.available())
-        return {};
-    for (size_t i = 0; i < hdr.items.wp.cnt; ++i) {
-        xbus::mission::wp_s e;
-        if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading wp" << i << hdr.items.wp.cnt;
+    if (hdr.items.wp.cnt) {
+        stream.reset(pld_offset + hdr.items.wp.off);
+        if (!stream.available())
             return {};
+        for (size_t i = 0; i < hdr.items.wp.cnt; ++i) {
+            xbus::mission::wp_s e;
+            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                qWarning() << "error reading wp" << i << hdr.items.wp.cnt;
+                return {};
+            }
+            QVariantMap m;
+            m.insert("lat", mandala::a32_to_deg(e.lat));
+            m.insert("lon", mandala::a32_to_deg(e.lon));
+            if (e.act) {
+                _unpack_act(&m, act, e.act);
+                // qDebug() << "wp" << e.act << m;
+            }
+            wp.append(m);
         }
-        QVariantMap m;
-        m.insert("lat", mandala::a32_to_deg(e.lat));
-        m.insert("lon", mandala::a32_to_deg(e.lon));
-        if (e.act) {
-            _unpack_act(&m, act, e.act);
-            // qDebug() << "wp" << e.act << m;
-        }
-        wp.append(m);
+        // qDebug() << "waypoints" << wp.size();
     }
 
     // Taxiways
-    stream.reset(pld_offset + hdr.items.tw.off);
-    if (!stream.available())
-        return {};
-    for (size_t i = 0; i < hdr.items.tw.cnt; ++i) {
-        xbus::mission::tw_s e;
-        if (stream.read(&e, sizeof(e)) != sizeof(e)) {
-            qWarning() << "error reading tw" << i << hdr.items.tw.cnt;
+    if (hdr.items.tw.cnt) {
+        stream.reset(pld_offset + hdr.items.tw.off);
+        if (!stream.available())
             return {};
+        for (size_t i = 0; i < hdr.items.tw.cnt; ++i) {
+            xbus::mission::tw_s e;
+            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                qWarning() << "error reading tw" << i << hdr.items.tw.cnt;
+                return {};
+            }
+            QVariantMap m;
+            m.insert("lat", mandala::a32_to_deg(e.lat));
+            m.insert("lon", mandala::a32_to_deg(e.lon));
+            tw.append(m);
         }
-        QVariantMap m;
-        m.insert("lat", mandala::a32_to_deg(e.lat));
-        m.insert("lon", mandala::a32_to_deg(e.lon));
-        tw.append(m);
+        // qDebug() << "taxiways" << tw.size();
     }
 
+    // Geofences
+    if (hdr.items.geo.cnt) {
+        stream.reset(pld_offset + hdr.items.geo.off);
+        if (!stream.available())
+            return {};
+        for (size_t i = 0; i < hdr.items.geo.cnt; ++i) {
+            xbus::mission::geo_s e{};
+            auto pos_s = stream.pos();
+            if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                qWarning() << "error reading geo" << i << hdr.items.geo.cnt;
+                return {};
+            }
+            QVariantMap m;
+            if (e.role >= sizeof(xbus::mission::geo_s::role_str)
+                              / sizeof(xbus::mission::geo_s::role_str[0])) {
+                qWarning() << "invalid geo role" << int(e.role);
+                return {};
+            }
+            m.insert("role", xbus::mission::geo_s::role_str[e.role]);
+            if (e.shape >= sizeof(xbus::mission::geo_s::shape_str)
+                               / sizeof(xbus::mission::geo_s::shape_str[0])) {
+                qWarning() << "invalid geo shape" << int(e.shape);
+                return {};
+            }
+            m.insert("shape", xbus::mission::geo_s::shape_str[e.shape]);
+            // read optional fields
+            if (e.flags.name) {
+                auto s = stream.read_string(256);
+                if (!s) {
+                    qWarning() << "error reading geo name";
+                    return {};
+                }
+                m.insert("name", QString::fromUtf8(QByteArray(s, strlen(s))));
+            }
+            if (e.flags.bottom) {
+                xbus::mission::geo_s::geo_bottom_s h;
+                if (stream.read(&h, sizeof(h)) != sizeof(h)) {
+                    qWarning() << "error reading geo bottom" << i << hdr.items.geo.cnt;
+                    return {};
+                }
+                m.insert("bottom", h.hmsl);
+            }
+            if (e.flags.top) {
+                xbus::mission::geo_s::geo_top_s h;
+                if (stream.read(&h, sizeof(h)) != sizeof(h)) {
+                    qWarning() << "error reading geo top" << i << hdr.items.geo.cnt;
+                    return {};
+                }
+                m.insert("top", h.hmsl);
+            }
+            // read shape
+            switch (e.shape) {
+            case xbus::mission::geo_s::CIRCLE: {
+                xbus::mission::geo_circle_s sh;
+                if (stream.read(&sh, sizeof(sh)) != sizeof(sh)) {
+                    qWarning() << "error reading geo circle" << i << hdr.items.geo.cnt;
+                    return {};
+                }
+                m.insert("lat", mandala::a32_to_deg(sh.pos.lat));
+                m.insert("lon", mandala::a32_to_deg(sh.pos.lon));
+                m.insert("radius", (uint) sh.radius * 100); // m*100
+            } break;
+            case xbus::mission::geo_s::POLYGON: {
+                xbus::mission::geo_polygon_s sh;
+                auto cnt = sizeof(sh) - sizeof(sh.points);
+                if (stream.read(&sh, cnt) != cnt) {
+                    qWarning() << "error reading geo polygon" << i << hdr.items.geo.cnt;
+                    return {};
+                }
+                cnt = sizeof(sh.points[0]) * sh.cnt;
+                if (cnt == 0 || stream.available() < cnt) {
+                    qWarning() << "error reading geo polygon points" << i << hdr.items.geo.cnt
+                               << sh.cnt;
+                    return {};
+                }
+                m.insert("lat", mandala::a32_to_deg(sh.circle.pos.lat));
+                m.insert("lon", mandala::a32_to_deg(sh.circle.pos.lon));
+                QVariantList points;
+                for (uint j = 0; j < sh.cnt; ++j) {
+                    auto &pt = sh.points[0];
+                    if (stream.read(&pt, sizeof(pt)) != sizeof(pt)) {
+                        qWarning() << "error reading geo polygon point" << i << hdr.items.geo.cnt
+                                   << j << sh.cnt;
+                        return {};
+                    }
+                    QVariantMap pm;
+                    pm.insert("lat", mandala::a32_to_deg(pt.lat));
+                    pm.insert("lon", mandala::a32_to_deg(pt.lon));
+                    points.append(pm);
+                }
+                m.insert("points", points);
+            } break;
+            case xbus::mission::geo_s::LINE: {
+                xbus::mission::geo_line_s sh;
+                if (stream.read(&sh, sizeof(sh)) != sizeof(sh)) {
+                    qWarning() << "error reading geo line" << i << hdr.items.geo.cnt;
+                    return {};
+                }
+                m.insert("lat", mandala::a32_to_deg(sh.p1.lat));
+                m.insert("lon", mandala::a32_to_deg(sh.p1.lon));
+                QVariantMap p2m;
+                p2m.insert("lat", mandala::a32_to_deg(sh.p2.lat));
+                p2m.insert("lon", mandala::a32_to_deg(sh.p2.lon));
+                m.insert("p2", p2m);
+            } break;
+            }
+            geo.append(m);
+        }
+        // qDebug() << "geofences" << geo.size();
+    }
+
+    // collect and return data
     QVariantMap m;
 
     if (!rw.isEmpty())
@@ -408,6 +538,9 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
         m.insert("wp", wp);
     if (!tw.isEmpty())
         m.insert("tw", tw);
+
+    if (!geo.isEmpty())
+        m.insert("geo", geo);
 
     if (m.isEmpty())
         return {};
@@ -557,9 +690,134 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         hdr.items.act.cnt++;
     }
 
+    // Geofences
+    hdr.items.geo.off = stream.pos() - pld_offset;
+    hdr.items.geo.cnt = 0;
+    for (auto i : m.value("geo").toList()) {
+        const auto im = i.toMap();
+        xbus::mission::geo_s e{};
+        auto s_role = im.value("role").toString().toLower();
+        for (auto s : xbus::mission::geo_s::role_str) {
+            if (s_role == s)
+                break;
+            e.role = (xbus::mission::geo_s::role_e) (e.role + 1);
+        }
+        if (e.role >= (sizeof(xbus::mission::geo_s::role_str)
+                       / sizeof(xbus::mission::geo_s::role_str[0]))) {
+            qWarning() << "invalid geo role" << s_role;
+            continue;
+        }
+        auto s_shape = im.value("shape").toString().toLower();
+        for (auto s : xbus::mission::geo_s::shape_str) {
+            if (s_shape == s)
+                break;
+            e.shape = (xbus::mission::geo_s::shape_e) (e.shape + 1);
+        }
+        if (e.shape >= (sizeof(xbus::mission::geo_s::shape_str)
+                        / sizeof(xbus::mission::geo_s::shape_str[0]))) {
+            qWarning() << "invalid geo shape" << s_shape;
+            continue;
+        }
+        // optional fields
+        auto name = im.value("name").toString().trimmed();
+        if (!name.isEmpty()) {
+            if (name.size() > 31)
+                name.resize(31);
+            e.flags.name = 1;
+        }
+        auto bottom = im.value("bottom").toInt();
+        if (bottom != 0) {
+            e.flags.bottom = 1;
+        }
+        auto top = im.value("top").toInt();
+        if (top != 0) {
+            e.flags.top = 1;
+        }
+        // write header data
+        stream.write(&e, sizeof(e));
+        if (e.flags.name) {
+            stream.write_string(name.toUtf8().constData());
+        }
+        if (e.flags.bottom) {
+            xbus::mission::geo_s::geo_bottom_s b{};
+            b.hmsl = bottom;
+            stream.write(&b, sizeof(b));
+        }
+        if (e.flags.top) {
+            xbus::mission::geo_s::geo_top_s t{};
+            t.hmsl = top;
+            stream.write(&t, sizeof(t));
+        }
+        // shapes
+        switch (e.shape) {
+        case xbus::mission::geo_s::CIRCLE: {
+            xbus::mission::geo_circle_s c{};
+            c.pos.lat = mandala::deg_to_a32(im.value("lat").toDouble());
+            c.pos.lon = mandala::deg_to_a32(im.value("lon").toDouble());
+            c.radius = im.value("radius").toUInt() / 100; // m*100
+            stream.write(&c, sizeof(c));
+        } break;
+        case xbus::mission::geo_s::POLYGON: {
+            auto points = im.value("points").toList();
+            if (points.size() < 3) {
+                qWarning() << "polygon with less than 3 points" << points.size();
+                break;
+            }
+
+            // calculate circle around polygon
+            QGeoPolygon poly;
+            for (auto pt : points) {
+                auto pm = pt.toMap();
+                QGeoCoordinate c(pm.value("lat").toDouble(), pm.value("lon").toDouble());
+                if (!c.isValid())
+                    continue;
+                poly.addCoordinate(c);
+            }
+            if (poly.size() != points.size()) {
+                qWarning() << "invalid polygon" << points.size() << poly.size();
+                break;
+            }
+            auto rect = poly.boundingGeoRectangle();
+            auto center = rect.center();
+            auto radius = center.distanceTo(rect.topLeft());
+
+            // write polygon
+            xbus::mission::geo_polygon_s p{};
+            p.cnt = points.size();
+            p.circle.pos.lat = mandala::deg_to_a32(center.latitude());
+            p.circle.pos.lon = mandala::deg_to_a32(center.longitude());
+            p.circle.radius = radius / 100; // m*100
+            stream.write(&p, sizeof(p) - sizeof(p.points));
+            for (auto pt : poly.perimeter()) {
+                xbus::mission::pos_ll_s pp{};
+                pp.lat = mandala::deg_to_a32(pt.latitude());
+                pp.lon = mandala::deg_to_a32(pt.longitude());
+                stream.write(&pp, sizeof(pp));
+            }
+        } break;
+        case xbus::mission::geo_s::LINE: {
+            xbus::mission::geo_line_s l{};
+            l.p1.lat = mandala::deg_to_a32(im.value("lat").toDouble());
+            l.p1.lon = mandala::deg_to_a32(im.value("lon").toDouble());
+            auto p2 = im.value("p2").toMap();
+            if (p2.isEmpty())
+                break;
+            l.p2.lat = mandala::deg_to_a32(p2.value("lat").toDouble());
+            l.p2.lon = mandala::deg_to_a32(p2.value("lon").toDouble());
+            stream.write(&l, sizeof(l));
+        } break;
+        }
+        // increment count
+        hdr.items.geo.cnt++;
+    }
+
+    // done
     if (stream.pos() <= pld_offset) {
         qDebug() << "Upload empty mission";
     }
+
+    // qDebug() << stream.size() << "bytes" << hdr.items.rw.cnt << hdr.items.pi.cnt << hdr.items.wp.cnt
+    //          << hdr.items.tw.cnt << hdr.items.act.cnt << hdr.items.geo.cnt;
 
     //update hdr
     strncpy(hdr.title, m.value("title").toString().toUtf8(), sizeof(hdr.title) - 1);

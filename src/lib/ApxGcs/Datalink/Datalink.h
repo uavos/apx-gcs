@@ -67,6 +67,7 @@ public:
 
     void addConnection(DatalinkConnection *c);
     QList<QPointer<DatalinkConnection>> connections;
+    bool findActiveConnection(QHostAddress addr);
 
 public:
     bool valid() const;

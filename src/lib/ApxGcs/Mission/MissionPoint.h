@@ -4,7 +4,7 @@
  * Copyright (c) 2003-2020, Aliaksei Stratsilatau <sa@uavos.com>
  * All rights reserved
  *
- * This file is part of APX Shared Libraries.
+ * This file is part of APX Ground Control.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,28 +19,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <apx.h>
+#pragma once
 
-using alt = Mandala<mandala::cmd::nav::pos::altitude>;
+#include "MissionField.h"
 
-using roll = Mandala<mandala::est::nav::att::roll>;
-using u1 = Mandala<mandala::est::env::usr::u1>;
+#include <QGeoCoordinate>
+#include <QtCore>
 
-int main()
+class MissionPoint : public Fact
 {
-    alt(); // subscribe
-    u1();
+    Q_OBJECT
+    Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
-    task("on_task", 1000);
+public:
+    explicit MissionPoint(Fact *parent, QString name, QString title, QString descr = "");
+    explicit MissionPoint(Fact *parent, QString title, QGeoCoordinate c);
 
-    return 0;
-}
+    void setCoordinate(QGeoCoordinate c);
+    auto coordinate() const { return _coordinate; }
 
-EXPORT void on_task()
-{
-    alt::publish(alt::value() + 1.f);
-    u1::publish(u1::value() + 0.1f);
+    bool setValue(const QVariant &v) override;
 
-    const uint8_t tbuf[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
-    send(1, tbuf, sizeof(tbuf), true);
-}
+private:
+    QGeoCoordinate _coordinate;
+
+signals:
+    void coordinateChanged();
+};

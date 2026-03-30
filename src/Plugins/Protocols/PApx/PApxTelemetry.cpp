@@ -72,7 +72,9 @@ void PApxTelemetry::report()
     }
 }
 
-bool PApxTelemetry::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
+bool PApxTelemetry::process_incoming_data(const xbus::pid_s &pid,
+                                          PStreamReader &stream,
+                                          bool is_remote_uplink)
 {
     if (!xbus::cmd::telemetry::match(pid.uid)) {
         return false;

@@ -21,12 +21,13 @@
  */
 #pragma once
 
-#include "PApxNodeRequest.h"
 #include "PApxUnit.h"
+#include <XbusNode.h>
 
 class PApxUnit;
 class PApxNodes;
 class PApxNodeFile;
+class PApxNodeRequest;
 
 class PApxNode : public PNode
 {
@@ -36,7 +37,7 @@ public:
     explicit PApxNode(PApxNodes *parent, QString uid);
     ~PApxNode();
 
-    void process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
+    void process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream);
 
     void schedule_request(PApxNodeRequest *req);
     void delete_request(PApxNodeRequest *req);
@@ -62,20 +63,14 @@ public:
     QJsonValue textToOption(const QJsonValue &jsv, size_t fidx);
 
     // requests
-    void requestIdent() override { new PApxNodeRequestIdent(this); }
+    void requestIdent() override;
     void requestDict() override;
     void requestConf() override;
     void requestUpdate(QJsonObject values) override;
 
-    void requestReboot() override { new PApxNodeRequestReboot(this); }
-    void requestMod(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data) override
-    {
-        new PApxNodeRequestMod(this, cmd, adr, data);
-    }
-    void requestUsr(quint8 cmd, QByteArray data) override
-    {
-        new PApxNodeRequestUsr(this, cmd, data);
-    }
+    void requestReboot() override;
+    void requestMod(PNode::mod_cmd_e cmd, QByteArray adr, QStringList data) override;
+    void requestUsr(quint8 cmd, QByteArray data) override;
 
 private:
     PApxNodes *_nodes;
@@ -108,7 +103,7 @@ private:
 private slots:
     void infoCacheLoaded(QJsonObject info);
 
-    void requestDictDownload() { new PApxNodeRequestFileRead(this, "dict"); }
+    void requestDictDownload();
     void dictCacheLoaded(quint64 dictID, QJsonObject dict);
     void dictCacheMissing(QString hash);
 

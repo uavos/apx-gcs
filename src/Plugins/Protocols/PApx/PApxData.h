@@ -32,7 +32,7 @@ class PApxData : public PData
 public:
     explicit PApxData(PApxUnit *parent);
 
-    bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
+    bool process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream, bool is_remote_uplink);
 
 private:
     PApxRequest _req;

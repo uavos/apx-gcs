@@ -22,6 +22,7 @@
 #include "PApxNodes.h"
 
 #include "PApxNode.h"
+#include "PApxNodeRequest.h"
 
 #include <Mandala/Mandala.h>
 #include <XbusNode.h>
@@ -60,7 +61,9 @@ void PApxNodes::updateActive()
     }
 }
 
-bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
+bool PApxNodes::process_incoming_data(const xbus::pid_s &pid,
+                                      PStreamReader &stream,
+                                      bool is_remote_uplink)
 {
     if (!xbus::cmd::node::match(pid.uid))
         return false;
@@ -73,7 +76,7 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
         trace()->block("LOCAL");
         trace()->tree();
         auto nodes = static_cast<PApxNodes *>(local->nodes());
-        return nodes->process_downlink(pid, stream);
+        return nodes->process_incoming_data(pid, stream, is_remote_uplink);
     }
 
     if (stream.available() < sizeof(xbus::node::guid_t)) {
@@ -99,7 +102,7 @@ bool PApxNodes::process_downlink(const xbus::pid_s &pid, PStreamReader &stream)
     trace()->block(node->title().append(':'));
     trace()->tree();
 
-    node->process_downlink(pid, stream);
+    node->process_incoming_data(pid, stream);
 
     if (pid.req)
         return true;

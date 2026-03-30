@@ -63,6 +63,14 @@ DatalinkSocket::DatalinkSocket(Fact *parent,
     connect(_socket, &QAbstractSocket::stateChanged, this, &DatalinkSocket::socketStateChanged);
 }
 
+void DatalinkSocket::setRemoteUrl(QUrl url)
+{
+    // qDebug() << url << url.isValid() << url.toString();
+    setUrl(url.toString());
+    _hostAddress = QHostAddress(url.host());
+    _hostPort = static_cast<quint16>(url.port());
+}
+
 bool DatalinkSocket::isLocalHost(const QHostAddress address)
 {
     if (address.isLoopback())

@@ -46,9 +46,10 @@ public slots:
     virtual void sendSerial(quint8 portID, QByteArray data) { _nimp(__FUNCTION__); }
 
 signals:
-    void valuesData(PBase::Values values);
+    void valuesData(PBase::Values values, bool is_remote_uplink);
 
     void bundleData(mandala::uid_t uid, QByteArray data);
     void serialData(quint8 portID, QByteArray data);
+    void serialDataStr(quint8 portID, QString data);
     void jsexecData(QString script);
 };

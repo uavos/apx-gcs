@@ -28,7 +28,7 @@ import Apx.Map.Common
 MapIcon {
 
     name: "fullscreen-exit"
-    color: Style.cYellow
+    color: gps_fix>0?Style.cYellow:Style.cLineRed
 
     //Fact bindings
     readonly property real lat: mandala.fact("est.pos.lat").value
@@ -40,6 +40,7 @@ MapIcon {
     readonly property real dh: mandala.fact("est.ins.dh").value
 
     readonly property bool ins_nogps: mandala.fact("cmd.ins.nogps").value
+    readonly property bool gps_fix: mandala.fact("sns.gps.fix").value
 
 
     // calculated properties

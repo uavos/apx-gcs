@@ -59,6 +59,8 @@ private:
     QByteArray announceHttpString;
     QByteArray announceUdpString;
 
+    QTimer statusTimer;
+
 private slots:
     void updateStatus();
     void updateClientsNetworkMode();

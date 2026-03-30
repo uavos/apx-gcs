@@ -36,7 +36,7 @@ public:
     explicit PApxNodeFile(PApxNode *node, const QString &name);
 
     // called by nodes
-    void process_downlink(xbus::node::file::op_e op, PStreamReader &stream);
+    void process_incoming_data(xbus::node::file::op_e op, PStreamReader &stream);
 
     void reset();
 

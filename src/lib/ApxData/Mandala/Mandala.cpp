@@ -47,6 +47,13 @@ Mandala::Mandala(Fact *parent)
 
     connect(this, &Mandala::sendValue, this, &Mandala::recordSendValue);
 
+    // descr from parent unit
+    if (parent) {
+        connect(parent, &Fact::titleChanged, this, &Mandala::updateDescr);
+        connect(parent, &Fact::textChanged, this, &Mandala::updateDescr);
+        updateDescr();
+    }
+
     Fact *group = this;
     uint8_t level = 0;
     QString sect;
@@ -100,6 +107,18 @@ void Mandala::updateUsed(int adj)
 void Mandala::updateStatus()
 {
     setValue(QString("%1/%2").arg(_used).arg(_total));
+}
+
+void Mandala::updateDescr()
+{
+    auto p = parentFact();
+    if (!p)
+        return;
+    QStringList st;
+    st << p->title();
+    if (!p->text().isEmpty())
+        st << p->text();
+    setDescr(st.join(" - "));
 }
 
 void Mandala::resetCounters()
@@ -202,7 +221,7 @@ void Mandala::telemetryData(PBase::Values values, quint64 timestamp_ms)
     emit telemetryDecoded();
 }
 
-void Mandala::valuesData(PBase::Values values)
+void Mandala::valuesData(PBase::Values values, bool is_remote_uplink)
 {
     PBase::Values rec_values;
     for (const auto [uid, v] : values) {
@@ -212,7 +231,7 @@ void Mandala::valuesData(PBase::Values values)
         f->setValueFromStream(v);
         rec_values.push_back({uid, f->value()});
     }
-    emit recordData(rec_values, false);
+    emit recordData(rec_values, is_remote_uplink);
 }
 
 void Mandala::recordSendValue(mandala::uid_t uid, QVariant value)

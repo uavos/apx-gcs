@@ -66,7 +66,8 @@ void PApx::process_downlink(QByteArray packet)
 
     if (pid.eid == xbus::eid_none) {
         // is not unit wrapped format - forward to local
-        m_local->process_downlink(pid, stream);
+        stream.reset();
+        m_local->process_incoming_data(stream, false);
         return;
     }
 
@@ -205,19 +206,49 @@ void PApx::process_downlink(QByteArray packet)
         v->packetReceived(pid.uid);
         trace()->block(v->title().append(':'));
         trace()->tree();
-        v->process_downlink(pid, stream);
+        v->process_incoming_data(stream, false);
         return;
     }
 
     // new unit detected
-    if (pid.uid == xbus::cmd::node::msg) {
+    auto pos_s = stream.pos();
+    pid.read(&stream);
+    if (mandala::cmd::env::nmt::msg::match(pid.uid)) {
         // allow messages from unknown units
-        m_local->process_downlink(pid, stream);
+        stream.reset(pos_s);
+        m_local->process_incoming_data(stream, false);
     } else {
         trace()->data(stream.payload());
     }
 
     request_ident_schedule(squawk);
+    return;
+}
+case mandala::cmd::env::unit::uplink::uid: {
+    // uplink from another GCS instance
+    if (pid.pri != xbus::pri_request)
+        return;
+    if (stream.available() <= sizeof(xbus::unit::squawk_t))
+        return;
+
+    const xbus::unit::squawk_t squawk = stream.read<xbus::unit::squawk_t>();
+    trace()->block(PApx::squawkText(squawk));
+
+    if (stream.available() <= xbus::pid_s::psize())
+        return;
+
+    auto v = _squawk_map.value(squawk);
+    if (!v)
+        return;
+
+    v->packetReceived(pid.uid);
+    trace()->block(v->title().append(':'));
+    trace()->tree();
+    v->process_incoming_data(stream, true);
+    return;
+}
+}
+qDebug() << "orphan unit packet";
 }
 bool PApx::check_vuid(PApxUnit *v, uint8_t n, uint8_t seq)
 {

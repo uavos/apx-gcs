@@ -146,6 +146,12 @@ void TelemetryPlayer::play()
         return;
     if (!reader->totalTime())
         return;
+
+    if (!_stream_file.open(QIODevice::ReadOnly)) {
+        apxMsgW() << tr("Cannot open telemetry file %1").arg(_stream_file.fileName());
+        return;
+    }
+
     unit->f_select->trigger();
     setActive(true);
 
@@ -159,7 +165,7 @@ void TelemetryPlayer::play()
 
     tNext = _time;
     timer.start(0);
-    _stream_file.open(QIODevice::ReadOnly);
+
     _stream.init(&_stream_file, QFileInfo(_stream_file.fileName()).completeBaseName());
     _values_init = false;
 

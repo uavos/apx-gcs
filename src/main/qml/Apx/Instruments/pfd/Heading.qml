@@ -42,9 +42,19 @@ Item {
 
     readonly property bool isShiftControl: isTrack
 
+    readonly property int nomag_mode:(f_nomag.value===ins_nomag_fixed && f_ins_mag.value!==ins_mag_blocked)?ins_nomag_fixed:
+                                     (f_nomag.value===ins_nomag_yes||f_ins_mag.value===ins_mag_blocked)?ins_nomag_yes:
+                                     ins_nomag_no
 
-    readonly property bool nomag: f_nomag.value > 0 || f_ins_mag.value == f_ins_mag.eval.blocked
+    readonly property color nomag_background_color:
+        nomag_mode===ins_nomag_yes?"red":
+        nomag_mode===ins_nomag_fixed?"yellow":
+        "transparent"
 
+    readonly property color nomag_text_color:
+        nomag_mode===ins_nomag_yes?"yellow":
+        nomag_mode===ins_nomag_fixed?"black":
+        "white"
 
     //instrument item
     property double animation_duration: 500
@@ -180,31 +190,32 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             height: parent.height
             width: elementBounds.width*height/elementBounds.height
-            Rectangle {
-                border.width: 0
-                color: "#C0FF0000"
-                anchors.fill: hdg_text
-                anchors.leftMargin: parent.width*0.05
-                anchors.rightMargin: anchors.leftMargin
-                anchors.topMargin: anchors.leftMargin+1
-                anchors.bottomMargin: parent.height*0.4
-                visible: nomag
-            }
-            Text {
-                id: hdg_text
-                anchors.fill: parent
-                anchors.topMargin: -1
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignTop
-                property int v: value
-                text: ("00"+apx.angle360(v).toFixed()).slice(-3)
-                font: apx.font_narrow(parent.height*0.7,true)
-                color: nomag?"yellow":"white"
-
-            }
-            ToolTipArea { text: f_yaw.descr }
+            
+        Rectangle {
+            border.width: 0
+            color: nomag_background_color
+            anchors.fill: hdg_text
+            anchors.leftMargin: parent.width*0.05
+            anchors.rightMargin: anchors.leftMargin
+            anchors.topMargin: anchors.leftMargin+1
+            anchors.bottomMargin: parent.height*0.4
+            visible: nomag_mode!==ins_nomag_no
         }
 
+        Text {
+            id: hdg_text
+            anchors.fill: parent
+            anchors.topMargin: -1
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignTop
+            property int v: value
+            text: ("00"+apx.angle360(v).toFixed()).slice(-3)
+            font: apx.font_narrow(parent.height*0.7,true)
+            color: nomag_text_color
+        }
+            
+            ToolTipArea { text: f_yaw.descr }
+        }
     }
 
     //turn rate bar

@@ -226,10 +226,12 @@ void Simulator::launchXplane()
 
                 if (QFile::copy(fiSource.absoluteFilePath(), fiDest.absoluteFilePath())) {
                     QFile fDest(destPath);
-                    fDest.open(QFile::ReadOnly);
-                    fDest.setFileTime(fiSource.lastModified(), QFile::FileModificationTime);
-
-                    apxMsg() << tr("XPL Plugin installed").append(":") << destPath;
+                    if (!fDest.open(QFile::ReadOnly)) {
+                        apxMsgW() << tr("XPL Plugin error").append(":") << destPath;
+                    } else {
+                        fDest.setFileTime(fiSource.lastModified(), QFile::FileModificationTime);
+                        apxMsg() << tr("XPL Plugin installed").append(":") << destPath;
+                    }
                 } else {
                     apxMsgW() << tr("XPL Plugin error").append(":") << destPath;
                 }

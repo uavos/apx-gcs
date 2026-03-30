@@ -92,11 +92,6 @@ MissionObject {
     property Item radiusPoint
     property bool radiusPointSelected: radiusPoint && radiusPoint.selected
 
-    Component.onCompleted: {
-        //createMapComponent(lineC)
-        //createMapComponent(circleC)
-        //radiusPoint=createMapComponent(radiusPointC)
-    }
     Loader {
         //handle
         // asynchronous: true

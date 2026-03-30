@@ -96,7 +96,7 @@ Fact {
             Fact { enabled: false }
             Fact { binding: mandala.fact("cmd.ins.inair") }
             Fact { binding: mandala.fact("cmd.ins.nogps"); flags: Fact.Bool; }
-            Fact { binding: mandala.fact("cmd.ins.nomag"); flags: Fact.Bool; }
+            Fact { binding: mandala.fact("cmd.ins.nomag"); }
             Fact { binding: mandala.fact("cmd.ins.hsel") }
         }
     }

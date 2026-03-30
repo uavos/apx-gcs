@@ -30,6 +30,9 @@ PData::PData(PUnit *parent)
     connect(this, &PData::valuesData, this, &PData::updateStreamType);
     connect(this, &PData::bundleData, this, &PData::updateStreamType);
     connect(this, &PData::serialData, this, &PData::updateStreamType);
+    connect(this, &PData::serialData, this, [this](quint8 portID, const QByteArray &data) {
+        emit serialDataStr(portID, QString(data.toHex().toUpper()));
+    });
     connect(this, &PData::jsexecData, this, &PData::updateStreamType);
 }
 

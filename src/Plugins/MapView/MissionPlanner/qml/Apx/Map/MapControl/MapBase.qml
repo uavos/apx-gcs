@@ -251,12 +251,12 @@ Map {
 
     Shortcut {
         enabled: control.zoomLevel < control.maximumZoomLevel
-        sequence: StandardKey.ZoomIn
+        sequence: [ StandardKey.ZoomIn ]
         onActivated: control.zoomLevel = Math.round(control.zoomLevel + 1)
     }
     Shortcut {
         enabled: control.zoomLevel > control.minimumZoomLevel
-        sequence: StandardKey.ZoomOut
+        sequence: [ StandardKey.ZoomOut ]
         onActivated: control.zoomLevel = Math.round(control.zoomLevel - 1)
     }
 
