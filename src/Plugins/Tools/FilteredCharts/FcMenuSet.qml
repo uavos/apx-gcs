@@ -77,9 +77,18 @@ Fact {
         id: msValues
         title: qsTr("Values")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
+        onSizeChanged: updateBtnValues()
     }
 
     Component.onCompleted: updateSetItems()
+
+    function updateBtnValues() {
+        fcBtn.values = [];
+        for (var i = 0; i < msValues.size; ++i) {
+            var fact = msValues.child(i);
+            fcBtn.values.push(fact);
+        }
+    }
 
     function save() {
         var values = [];
@@ -101,7 +110,6 @@ Fact {
         // msValues.onSizeChanged.disconnect(updateDescr);
         msValues.deleteChildren();
         for (var i in values) {
-            // createNumber(values[i]);
             createChart(values[i]);
         }
         // updateDescr();
@@ -140,6 +148,7 @@ Fact {
         }
     }
 
+    // Actions
     // Fact {
     //     flags: (Fact.Action | Fact.Remove)
     //     title: qsTr("Remove set")

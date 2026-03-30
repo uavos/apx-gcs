@@ -143,7 +143,7 @@ Fact {
         title: qsTr("Color")
         descr: qsTr("Chart color")
         flags: Fact.Enum
-        enumStrings: ["red", "orange", "yelow", "green", "aqua", "blue", "purple", "pink"]
+        enumStrings: ["red", "orange", "yellow", "green", "aqua", "blue", "purple", "violet"]
         onTextChanged: setColor()
     }
     FcFiltersMenu {

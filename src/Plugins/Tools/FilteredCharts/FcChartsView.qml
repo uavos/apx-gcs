@@ -212,11 +212,11 @@ Item {
         }
     }
 
-    function changeSpeed() {
-        if ((speed + 1) < speedFactor.length)
-            speed += 1;
-        else
-            speed = 0;
-        //console.log(speed)
-    }
+    // function changeSpeed() {
+    //     if ((speed + 1) < speedFactor.length)
+    //         speed += 1;
+    //     else
+    //         speed = 0;
+    //     //console.log(speed)
+    // }
 }

@@ -82,6 +82,7 @@ Fact {
         }
     }
 
+    // Actions
     Fact {
         title: qsTr("Save")
         flags: (Fact.Action | Fact.Apply)
