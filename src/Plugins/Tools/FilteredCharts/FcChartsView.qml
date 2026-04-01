@@ -67,7 +67,6 @@ Item {
         anchors.bottomMargin: margin
         anchors.leftMargin: margin
         anchors.rightMargin: margin
-        //onPlotAreaChanged: margin=-plotArea.y/3
 
         plotAreaColor: "black"
         backgroundColor: "black"
@@ -76,7 +75,6 @@ Item {
 
         property int samples: Math.min(1000, Math.max(25, width / (3 * speedFactorValue)))
         property int time: 0
-
         property bool dataExist: false
 
         ValueAxis {
@@ -130,7 +128,7 @@ Item {
             for (var i = 0; i < facts.length; ++i) {
                 appendDataValue(facts[i], t, i);
             }
-            //calc scale - reduce
+            // Calc scale - reduce
             if ((t - timeRescale) > 21) {
                 timeRescale = t;
                 var d = sdata.length - samples * facts.length;
@@ -172,14 +170,14 @@ Item {
                 value = 0;
             s.append(t, value);
             sdata.push(value);
-            //instant rescale - grow
+            // Instant rescale - grow
             if (axisY.max < value) {
                 axisY.max = value + dataPadding;
             }
             if (axisY.min > value) {
                 axisY.min = value - dataPadding;
             }
-            //remove old
+            // Remove old
             var cnt = samples;
             if (s.count > cnt)
                 s.removePoints(0, s.count - cnt);
@@ -191,7 +189,6 @@ Item {
                 return openGL;
             });
             s.capStyle = Qt.RoundCap;
-            //s.opacity=0.7
 
             var color = fact.opts.color;
             if (!color)

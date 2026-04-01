@@ -28,13 +28,7 @@ Fact {
     flags: Fact.Group
 
     property var data: ({})
-
-    // Component.onCompleted: {
-    //     load(data);
-    // updateTitle();
-    // updateDescr();
-    // mTitle.valueChanged.connect(updateTitle);
-    // }
+    property var coef: 0
 
     function load() {
         for (var i = 0; i < size; ++i) {
@@ -63,10 +57,6 @@ Fact {
         return n;
     }
 
-    function getCoef() {
-        return raCoef.value;
-    }
-
     function fillData() {
         if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
             data = value;
@@ -83,14 +73,9 @@ Fact {
         value: 0
         min: 0
         max: 1
-        onValueChanged: raFilter.value = value
+        onValueChanged: {
+            coef = value;
+            raFilter.value = value;
+        }
     }
-
-    // // Actions
-    // Fact {
-    //     title: qsTr("Apply")
-    //     flags: (Fact.Action | Fact.Apply)
-    //     icon: "check-circle"
-    //     // onTriggered: save()
-    // }
 }

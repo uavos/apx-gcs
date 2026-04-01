@@ -25,7 +25,6 @@ import APX.Facts
 
 Fact {
     id: filters
-    flags: Fact.Group
 
     property bool newItem: false
 
@@ -36,10 +35,6 @@ Fact {
 
     Component.onCompleted: {
         fillData();
-        // if (value != undefined)
-        //     fType.value = value;
-        // else
-        //     value = fType.text;
 
         // load(data);
         // updateTitle();
@@ -85,8 +80,13 @@ Fact {
         }
     }
 
+    // Getting filter data
+    function getRunningAvgCoef() {
+        return fRunningAvg.coef;
+    }
+
     Fact {
-        id: fType
+        id: fTypes
         name: "filters"
         title: qsTr("Filter")
         descr: qsTr("Selecting the filter to use")

@@ -29,9 +29,7 @@ Fact {
     title: "Charts #" + fcBtn.text
 
     property real speed: msSpeed.value
-
     property var values //from config
-    property int editorsCnt: 1
 
     signal selected(var num)
 
@@ -64,6 +62,7 @@ Fact {
     }
 
     FcMenuChart {
+        id: msMenuChart
         title: qsTr("Add new chart")
         descr: "Creating and setting a new chart"
         icon: "plus-circle"
@@ -79,6 +78,10 @@ Fact {
     }
 
     Component.onCompleted: updateSetItems()
+
+    function addNewChart() {
+        msMenuChart.trigger();
+    }
 
     function updateBtnValues() {
         fcBtn.values = [];

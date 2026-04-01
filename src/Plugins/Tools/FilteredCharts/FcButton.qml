@@ -28,11 +28,17 @@ import Apx.Common
 TextButton {
     id: fcBtn
 
+    property var values: []
+
     Layout.fillHeight: true
     checkable: true
     ButtonGroup.group: buttonGroup
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
+    toolTip: getToolTip(values)
 
+    onActivated: fcCharts.facts = Qt.binding(function () {
+        return values;
+    })
     onPressed: {
         if (checked) {
             if (!fcMenuSet.active) {
@@ -51,13 +57,6 @@ TextButton {
         }
     }
 
-    property var values: []
-    onActivated: fcCharts.facts = Qt.binding(function () {
-        return values;
-    })
-
-    toolTip: getToolTip(values)
-
     function getToolTip(facts) {
         var s = [];
         for (var i = 0; i < facts.length; ++i) {
@@ -65,6 +64,10 @@ TextButton {
             s.push("<font color='" + fact.opts.color + "'>" + fact.descr + "</font>");
         }
         return s.join("<br>");
+    }
+
+    function callQuickChart() {
+        fcMenuSet.addNewChart();
     }
 
     FcMenuSet {

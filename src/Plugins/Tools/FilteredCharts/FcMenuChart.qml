@@ -27,9 +27,9 @@ Fact {
     // id: number
     id: mChart
     flags: Fact.Group
+    precision: 2
 
     property bool newItem: false
-
     property var data: ({})
 
     signal addTriggered
@@ -121,7 +121,6 @@ Fact {
         // Use filters
         var v = eval(exp);
         var type = mFilters.value;
-        console.log("type = ", type);
         switch (type) {
         case "running_avg":
             useRunningAvgFilter(v);
@@ -130,13 +129,12 @@ Fact {
         }
     }
 
-    // Filters
+    // Filters functions
     function useRunningAvgFilter(v) {
-        var ra = mFilters.fRunningAvg;
-        var k = ra.getCoef();
+        var k = mFilters.getRunningAvgCoef();
         value += (v - value) * k;
 
-        console.log("use running avg filter", v, "/", value);
+        // console.log("use running avg filter", v, "/", value);
     }
 
     // Fact {

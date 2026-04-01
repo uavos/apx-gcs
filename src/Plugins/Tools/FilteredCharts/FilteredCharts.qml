@@ -204,7 +204,10 @@ Rectangle {
         iconName: "plus"
         toolTip: qsTr("Edit charts")
         opacity: ui.effects ? (hovered ? 1 : 0.5) : 1
-        onTriggered: console.log("Not implemented")
+        onTriggered: {
+            var activeButton = buttonGroup.checkedButton;
+            activeButton.callQuickChart();
+        }
     }
 
     property string currentPage: buttonGroup.checkedButton.text
