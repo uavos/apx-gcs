@@ -74,6 +74,10 @@ TextButton {
         return fcMenuSet.save();
     }
 
+    function loadSet(set) {
+        fcMenuSet.load(set);
+    }
+
     FcMenuSet {
         id: fcMenuSet
     }

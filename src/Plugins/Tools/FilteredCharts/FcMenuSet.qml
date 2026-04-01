@@ -115,6 +115,13 @@ Fact {
         return set;
     }
 
+    function load(set) {
+        msTitle.value = set.title;
+        msSpeed.value = set.speed;
+        values = set.values;
+        updateSetItems();
+    }
+
     function updateSetItems() {
         // msValues.onSizeChanged.disconnect(updateDescr);
         msValues.deleteChildren();
@@ -163,6 +170,6 @@ Fact {
         title: qsTr("Save")
         // visible: changed
         icon: "check-circle"
-        onTriggered: fcControl.saveSets()
+        onTriggered: fcControl.saveSettings()
     }
 }

@@ -47,9 +47,10 @@ Rectangle {
         if (buttonGroup.checkedButton == null) {
             buttonGroup.checkedButton = buttonGroup.buttons[0]; // check button #1
         }
+        loadSettings();
     }
 
-    function saveSets() {
+    function saveSettings() {
         var fjson = application.prefs.loadFile("charts.json");
         var json = fjson ? JSON.parse(fjson) : {};
         json.sets = [];
@@ -61,6 +62,28 @@ Rectangle {
             json.sets.push(set);
         }
         application.prefs.saveFile("charts.json", JSON.stringify(json, ' ', 2));
+    }
+
+    function loadSettings() {
+        var sets = [];
+        var fjson = application.prefs.loadFile("charts.json");
+        var json = fjson ? JSON.parse(fjson) : {};
+        var set = {};
+        if (json && json.sets) {
+            for (var i in json.sets) {
+                set = json.sets[i];
+                if (!(typeof set === 'object' && !Array.isArray(set) && set !== null))
+                    continue;
+                sets.push(set);
+            }
+        }
+        if (sets.length <= 0)
+            return;
+
+        // Create charts
+        for (var i in sets) {
+            buttonGroup.buttons[i].loadSet(sets[i]);
+        }
     }
 
     ColumnLayout {

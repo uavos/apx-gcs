@@ -220,7 +220,7 @@ Fact {
         enabled: changed && !newItem && !mAdd.enable
         icon: "plus-circle"
         onTriggered: {
-            fcControl.saveSets();
+            fcControl.saveSettings();
             setChanged(false);
         }
     }
