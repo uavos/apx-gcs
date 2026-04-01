@@ -27,7 +27,6 @@ Fact {
     id: filters
 
     property bool newItem: false
-
     property var data: ({})
 
     signal addTriggered
@@ -49,6 +48,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
+        mChart.setChanged(false);
     }
 
     function save() {
@@ -93,11 +93,12 @@ Fact {
         flags: Fact.Enum
         enumStrings: ["none", "running_avg"]
         onTextChanged: filters.value = text
+        onValueChanged: mChart.setChanged(true) // combobox index changed
     }
 
     FcFilterRunningAvg {
         id: fRunningAvg
-        name: "running_avg_filter"
+        name: "running_avg"
         title: qsTr("Running average")
         descr: qsTr("Running average filter settings")
     }

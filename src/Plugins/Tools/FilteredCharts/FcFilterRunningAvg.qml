@@ -36,6 +36,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
+        mChart.setChanged(false);
     }
 
     function save() {
@@ -66,7 +67,7 @@ Fact {
 
     Fact {
         id: raCoef
-        name: "running_avg_coef"
+        name: "coef"
         title: qsTr("Coefficient")
         descr: qsTr("Coefficient for filtration")
         flags: Fact.Float
@@ -76,6 +77,7 @@ Fact {
         onValueChanged: {
             coef = value;
             raFilter.value = value;
+            mChart.setChanged(true);
         }
     }
 }

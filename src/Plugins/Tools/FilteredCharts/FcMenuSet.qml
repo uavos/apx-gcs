@@ -28,6 +28,7 @@ Fact {
     flags: (Fact.Group | Fact.FlatModel)
     title: "Charts #" + fcBtn.text
 
+    property bool changed: false
     property real speed: msSpeed.value
     property var values //from config
 
@@ -42,6 +43,7 @@ Fact {
         value: chartFact.title
         onValueChanged: {
             fcBtn.toolTip = value;
+            chartFact.title = value;
         }
     }
 
@@ -107,7 +109,8 @@ Fact {
         if (!values)
             return;
         var set = {};
-        set.title = title;
+        set.title = msTitle.value;
+        set.speed = msSpeed.value;
         set.values = values;
         return set;
     }
@@ -155,26 +158,11 @@ Fact {
         }
     }
 
-    // Actions
-    // Fact {
-    //     flags: (Fact.Action | Fact.Remove)
-    //     title: qsTr("Remove set")
-    //     icon: "delete"
-    //     onTriggered: {
-    //         if (chartFact.active)
-    //             select(0);
-    //         chartFact.destroy();
-    //     }
-    // }
-
-    // Fact {
-    //     flags: (Fact.Action | Fact.Apply)
-    //     title: qsTr("Select and save")
-    //     visible: !chartFact.active
-    //     icon: "check-circle"
-    //     onTriggered: {
-    //         chartFact.menuBack();
-    //         chartFact.selected(chartFact.num);
-    //     }
-    // }
+    Fact {
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Save")
+        // visible: changed
+        icon: "check-circle"
+        onTriggered: fcControl.saveSets()
+    }
 }

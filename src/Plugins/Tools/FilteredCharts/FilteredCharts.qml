@@ -45,8 +45,22 @@ Rectangle {
             break;
         }
         if (buttonGroup.checkedButton == null) {
-            buttonGroup.checkedButton = buttonGroup.buttons[0]; //showPage("R")
+            buttonGroup.checkedButton = buttonGroup.buttons[0]; // check button #1
         }
+    }
+
+    function saveSets() {
+        var fjson = application.prefs.loadFile("charts.json");
+        var json = fjson ? JSON.parse(fjson) : {};
+        json.sets = [];
+        for (var i = 0; i < buttonGroup.buttons.length; ++i) {
+            var b = buttonGroup.buttons[i];
+            var set = buttonGroup.buttons[i].getSet();
+            if (!set)
+                continue;
+            json.sets.push(set);
+        }
+        application.prefs.saveFile("charts.json", JSON.stringify(json, ' ', 2));
     }
 
     ColumnLayout {
@@ -61,68 +75,6 @@ Rectangle {
             Layout.fillHeight: true
             Layout.minimumHeight: 20
             Layout.preferredHeight: 130 * ui.scale
-        }
-
-        TextInput {
-            id: textInput
-
-            Layout.fillWidth: true
-            Layout.minimumHeight: Style.fontSize
-            Layout.rightMargin: Style.spacing
-
-            // clip: true
-            // focus: true
-            visible: false
-
-            horizontalAlignment: Text.AlignRight
-            verticalAlignment: Text.AlignVCenter
-
-            font: apx.font_narrow(Style.fontSize)
-
-            color: activeFocus ? Material.color(Material.Yellow) : Material.primaryTextColor
-            text: ""
-
-            activeFocusOnTab: true
-            selectByMouse: true
-
-            onEditingFinished: {
-                var activeButton = buttonGroup.checkedButton;
-                if (activeButton)
-                    activeButton.toolTip = textInput.text;
-                // updateFacts();
-            }
-            onActiveFocusChanged: {
-                if (activeFocus)
-                    selectAll();
-            }
-            onVisibleChanged: if (visible)
-                forceActiveFocus()
-
-            Component.onCompleted: updateFacts()
-
-            property var facts: []
-            function updateFacts() {
-                var flist = [];
-                var list = textInput.text.split(',');
-                for (var i = 0; i < list.length; ++i) {
-                    var f = list[i];
-                    var fact = {};
-                    if (eval(f) == undefined)
-                        continue;
-                    fact.title = f;
-                    fact.name = f;
-                    fact.descr = f;
-                    fact.opts = {};
-                    fact.opts.color = Material.color(Material.Blue + i * 2);
-                    flist.push(fact);
-                }
-                if (JSON.stringify(textInput.facts) == JSON.stringify(flist))
-                    return;
-                textInput.facts = flist;
-
-                if (plusButton.checked)
-                    fcCharts.facts = flist;
-            }
         }
 
         ButtonGroup {
@@ -143,47 +95,38 @@ Rectangle {
             }
             FcButton {
                 text: "2"
-                // values: [mandala.cmd.att.pitch, mandala.est.att.pitch]
                 values: []
             }
             FcButton {
                 text: "3"
-                // values: [mandala.cmd.pos.bearing, mandala.cmd.att.yaw, mandala.est.att.yaw]
                 values: []
             }
             FcButton {
                 text: "4"
-                // values: [mandala.est.acc.x, mandala.est.acc.y]
                 values: []
             }
             FcButton {
                 text: "5"
-                // values: [mandala.est.acc.z]
                 values: []
             }
             FcButton {
                 text: "6"
-                // values: [mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z]
                 values: []
             }
             FcButton {
                 text: "7"
-                // values: [mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed]
                 values: []
             }
             FcButton {
                 text: "8"
-                // values: [mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.att.rud, mandala.ctr.eng.thr, mandala.ctr.eng.prop, mandala.ctr.str.rud]
                 values: []
             }
             FcButton {
                 text: "9"
-                // values: [mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.thr, mandala.cmd.rc.yaw]
                 values: []
             }
             FcButton {
                 text: "10"
-                // values: [mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6]
                 values: []
             }
 
@@ -215,6 +158,5 @@ Rectangle {
     Settings {
         category: "filtredCharts"
         property alias page: fcControl.currentPage
-        property alias custom: textInput.text
     }
 }

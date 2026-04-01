@@ -70,6 +70,10 @@ TextButton {
         fcMenuSet.addNewChart();
     }
 
+    function getSet() {
+        return fcMenuSet.save();
+    }
+
     FcMenuSet {
         id: fcMenuSet
     }

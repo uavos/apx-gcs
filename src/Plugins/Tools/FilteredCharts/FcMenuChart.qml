@@ -29,6 +29,7 @@ Fact {
     flags: Fact.Group
     precision: 2
 
+    property bool changed: false
     property bool newItem: false
     property var data: ({})
 
@@ -55,6 +56,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
+        setChanged(false);
     }
 
     function save() {
@@ -129,6 +131,12 @@ Fact {
         }
     }
 
+    function setChanged(v) {
+        if (newItem)
+            return;
+        changed = v;
+    }
+
     // Filters functions
     function useRunningAvgFilter(v) {
         var k = mFilters.getRunningAvgCoef();
@@ -137,26 +145,13 @@ Fact {
         // console.log("use running avg filter", v, "/", value);
     }
 
-    // Fact {
-    //     id: mFact
-    //     title: qsTr("Binding")
-    //     descr: qsTr("Fact value")
-    //     flags: Fact.Int
-    //     units: "mandala"
-    //     onTextChanged: {
-    //         if(value){
-    //             mBind.setValue(text)
-    //         }
-    //         //value=null
-    //     }
-    // }
-
     Fact {
         id: mTitle
         name: "title"
         title: qsTr("Title")
         descr: qsTr("Chart name")
         flags: Fact.Text
+        onTextChanged: setChanged(true)
     }
     Fact {
         id: mBind
@@ -164,6 +159,7 @@ Fact {
         title: qsTr("Expression")
         descr: "Math.atan(est.att.pitch/est.att.roll)"
         flags: Fact.Text
+        onTextChanged: setChanged(true)
     }
     Fact {
         id: mColor
@@ -173,6 +169,7 @@ Fact {
         flags: Fact.Enum
         enumStrings: ["red", "orange", "yellow", "green", "aqua", "blue", "purple", "violet"]
         onTextChanged: setColor()
+        onValueChanged: setChanged(true)
     }
     FcFiltersMenu {
         id: mFilters
@@ -207,15 +204,27 @@ Fact {
 
     // Actions
     Fact {
+        id: mAdd
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Add")
-        enabled: (newItem && mBind && mBind.value) ? true : false
+        enabled: newItem && mBind && mBind.value
         icon: "plus-circle"
         onTriggered: {
             mChart.menuBack();
             addTriggered();
         }
     }
+    Fact {
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Save")
+        enabled: changed && !newItem && !mAdd.enable
+        icon: "plus-circle"
+        onTriggered: {
+            fcControl.saveSets();
+            setChanged(false);
+        }
+    }
+
     Fact {
         flags: (Fact.Action | Fact.Remove)
         title: qsTr("Remove")
