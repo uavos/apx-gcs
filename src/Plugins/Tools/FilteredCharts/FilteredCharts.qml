@@ -138,43 +138,53 @@ Rectangle {
             FcButton {
                 text: "1"
                 checked: true
-                values: [mandala.cmd.att.roll, mandala.est.att.roll]
+                // values: [mandala.cmd.att.roll, mandala.est.att.roll]
+                values: []
             }
             FcButton {
                 text: "2"
-                values: [mandala.cmd.att.pitch, mandala.est.att.pitch]
+                // values: [mandala.cmd.att.pitch, mandala.est.att.pitch]
+                values: []
             }
             FcButton {
                 text: "3"
-                values: [mandala.cmd.pos.bearing, mandala.cmd.att.yaw, mandala.est.att.yaw]
+                // values: [mandala.cmd.pos.bearing, mandala.cmd.att.yaw, mandala.est.att.yaw]
+                values: []
             }
             FcButton {
                 text: "4"
-                values: [mandala.est.acc.x, mandala.est.acc.y]
+                // values: [mandala.est.acc.x, mandala.est.acc.y]
+                values: []
             }
             FcButton {
                 text: "5"
-                values: [mandala.est.acc.z]
+                // values: [mandala.est.acc.z]
+                values: []
             }
             FcButton {
                 text: "6"
-                values: [mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z]
+                // values: [mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z]
+                values: []
             }
             FcButton {
                 text: "7"
-                values: [mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed]
+                // values: [mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed]
+                values: []
             }
             FcButton {
                 text: "8"
-                values: [mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.att.rud, mandala.ctr.eng.thr, mandala.ctr.eng.prop, mandala.ctr.str.rud]
+                // values: [mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.att.rud, mandala.ctr.eng.thr, mandala.ctr.eng.prop, mandala.ctr.str.rud]
+                values: []
             }
             FcButton {
                 text: "9"
-                values: [mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.thr, mandala.cmd.rc.yaw]
+                // values: [mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.thr, mandala.cmd.rc.yaw]
+                values: []
             }
             FcButton {
                 text: "10"
-                values: [mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6]
+                // values: [mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6]
+                values: []
             }
 
             TextButton {

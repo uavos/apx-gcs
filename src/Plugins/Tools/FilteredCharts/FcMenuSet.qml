@@ -60,7 +60,6 @@ Fact {
         onValueChanged: {
             fcCharts.speed = value;
             fcCharts.speedFactorValue = value;
-            console.log("Speed =", value);
         }
     }
 
@@ -69,7 +68,6 @@ Fact {
         descr: "Creating and setting a new chart"
         icon: "plus-circle"
         newItem: true
-        // onAddTriggered: createNumber(save())
         onAddTriggered: createChart(save())
     }
 
@@ -98,10 +96,10 @@ Fact {
     function save() {
         var values = [];
         for (var i = 0; i < msValues.size; ++i) {
-            var mChart = msValues.child(i).save();
-            if (!mChart.bind)
+            var mchart = msValues.child(i).save();
+            if (!mchart.bind)
                 continue;
-            values.push(mChart);
+            values.push(mchart);
         }
         if (!values)
             return;
@@ -121,14 +119,15 @@ Fact {
         // msValues.onSizeChanged.connect(updateDescr);
     }
 
-    function createChart(mChart) {
-        if (!mChart.bind)
+    function createChart(mchart) {
+        if (!mchart.bind)
             return;
-        if (mChart.bind === "")
+        if (mchart.bind === "")
             return;
         var c = createFact(msValues, "FcMenuChart.qml", {
-            "data": mChart
+            "data": mchart
         });
+
         // c.titleChanged.connect(updateDescr);
         // c.removeTriggered.connect(updateDescr);
     }

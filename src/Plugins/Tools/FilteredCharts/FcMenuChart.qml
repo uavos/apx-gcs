@@ -45,6 +45,10 @@ Fact {
         mColor.valueChanged.connect(updateDescr);
     }
 
+    function updateFilters() {
+        mFilters.fillFilters();
+    }
+
     function load() {
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
@@ -58,8 +62,12 @@ Fact {
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
             var s = f.text.trim();
-            if (s === "")
+            if (f.size != 0) {
+                s = f.save();
+            }
+            if (s === "") {
                 continue;
+            }
             data[settingName(f)] = s;
         }
         return data;
@@ -82,7 +90,7 @@ Fact {
         if (newItem)
             return;
 
-        //list non-zero values in descr
+        // List non-zero values in descr
         var descrList = [];
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
@@ -110,7 +118,25 @@ Fact {
         var exp = mBind.text;
         if (eval(exp) == undefined)
             return;
-        value = eval(exp);
+        // Use filters
+        var v = eval(exp);
+        var type = mFilters.value;
+        console.log("type = ", type);
+        switch (type) {
+        case "running_avg":
+            useRunningAvgFilter(v);
+        default:
+            value = v;
+        }
+    }
+
+    // Filters
+    function useRunningAvgFilter(v) {
+        var ra = mFilters.fRunningAvg;
+        var k = ra.getCoef();
+        value += (v - value) * k;
+
+        console.log("use running avg filter", v, "/", value);
     }
 
     // Fact {
@@ -129,11 +155,11 @@ Fact {
 
     Fact {
         id: mTitle
+        name: "title"
         title: qsTr("Title")
         descr: qsTr("Chart name")
         flags: Fact.Text
     }
-
     Fact {
         id: mBind
         name: "bind"
@@ -152,9 +178,9 @@ Fact {
     }
     FcFiltersMenu {
         id: mFilters
-        name: "filters"
+        name: "filt"
         title: qsTr("Filters")
-        descr: qsTr("Avaliable filters")
+        descr: qsTr("Filters settings")
     }
     Fact {
         name: "warn"

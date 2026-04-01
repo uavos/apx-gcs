@@ -24,15 +24,10 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: filter
+    id: raFilter
     flags: Fact.Group
 
-    property bool newItem: false
-
     property var data: ({})
-
-    // signal addTriggered
-    // signal removeTriggered
 
     // Component.onCompleted: {
     //     load(data);
@@ -41,32 +36,43 @@ Fact {
     // mTitle.valueChanged.connect(updateTitle);
     // }
 
-    // function load() {
-    //     for (var i = 0; i < size; ++i) {
-    //         var f = child(i);
-    //         var v = data[settingName(f)];
-    //         f.value = v;
-    //     }
-    // }
+    function load() {
+        for (var i = 0; i < size; ++i) {
+            var f = child(i);
+            var v = data[settingName(f)];
+            f.value = v;
+        }
+    }
 
-    // function save() {
-    //     data = {};
-    //     for (var i = 0; i < size; ++i) {
-    //         var f = child(i);
-    //         var s = f.text.trim();
-    //         if (s === "")
-    //             continue;
-    //         data[settingName(f)] = s;
-    //     }
-    //     return data;
-    // }
+    function save() {
+        data = {};
+        for (var i = 0; i < size; ++i) {
+            var f = child(i);
+            var s = f.text.trim();
+            if (s === "")
+                continue;
+            data[settingName(f)] = s;
+        }
+        return data;
+    }
 
-    // function settingName(f) {
-    //     var n = f.name;
-    //     if (n.includes("_"))
-    //         return n.slice(0, n.indexOf("_"));
-    //     return n;
-    // }
+    function settingName(f) {
+        var n = f.name;
+        if (n.includes("_"))
+            return n.slice(0, n.indexOf("_"));
+        return n;
+    }
+
+    function getCoef() {
+        return raCoef.value;
+    }
+
+    function fillData() {
+        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+            data = value;
+            load();
+        }
+    }
 
     Fact {
         id: raCoef
@@ -77,16 +83,14 @@ Fact {
         value: 0
         min: 0
         max: 1
-        onValueChanged: {
-            console.log("running avg coef = ", value);
-        }
+        onValueChanged: raFilter.value = value
     }
 
-    // Actions
-    Fact {
-        title: qsTr("Save")
-        flags: (Fact.Action | Fact.Apply)
-        icon: "check-circle"
-        // onTriggered: save()
-    }
+    // // Actions
+    // Fact {
+    //     title: qsTr("Apply")
+    //     flags: (Fact.Action | Fact.Apply)
+    //     icon: "check-circle"
+    //     // onTriggered: save()
+    // }
 }

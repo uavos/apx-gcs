@@ -24,7 +24,7 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: filter
+    id: filters
     flags: Fact.Group
 
     property bool newItem: false
@@ -34,52 +34,69 @@ Fact {
     signal addTriggered
     signal removeTriggered
 
-    // Component.onCompleted: {
-    //     load(data);
-    //     // updateTitle();
-    //     // updateDescr();
-    //     // mTitle.valueChanged.connect(updateTitle);
-    // }
+    Component.onCompleted: {
+        fillData();
+        // if (value != undefined)
+        //     fType.value = value;
+        // else
+        //     value = fType.text;
 
-    // function load() {
-    //     for (var i = 0; i < size; ++i) {
-    //         var f = child(i);
-    //         var v = data[settingName(f)];
-    //         f.value = v;
-    //     }
-    // }
+        // load(data);
+        // updateTitle();
+        // updateDescr();
+        // mTitle.valueChanged.connect(updateTitle);
+    }
 
-    // function save() {
-    //     data = {};
-    //     for (var i = 0; i < size; ++i) {
-    //         var f = child(i);
-    //         var s = f.text.trim();
-    //         if (s === "")
-    //             continue;
-    //         data[settingName(f)] = s;
-    //     }
-    //     return data;
-    // }
+    function load() {
+        console.log();
+        for (var i = 0; i < size; ++i) {
+            var f = child(i);
+            var v = data[settingName(f)];
+            f.value = v;
+        }
+    }
 
-    // function settingName(f) {
-    //     var n = f.name;
-    //     if (n.includes("_"))
-    //         return n.slice(0, n.indexOf("_"));
-    //     return n;
-    // }
+    function save() {
+        data = {};
+        for (var i = 0; i < size; ++i) {
+            var f = child(i);
+            var s = f.text.trim();
+            if (f.size != 0)
+                s = f.save();
+            if (s === "")
+                continue;
+            data[settingName(f)] = s;
+        }
+        return data;
+    }
+
+    function settingName(f) {
+        var n = f.name;
+        if (n.includes("_"))
+            return n.slice(0, n.indexOf("_"));
+        return n;
+    }
+
+    function fillData() {
+        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+            data = value;
+            load();
+            fRunningAvg.fillData();
+        }
+    }
 
     Fact {
-        id: mFilter
+        id: fType
         name: "filters"
         title: qsTr("Filter")
         descr: qsTr("Selecting the filter to use")
         flags: Fact.Enum
-        enumStrings: ["none", "running avg"]
-        // onValueChanged: updateDescr()
+        enumStrings: ["none", "running_avg"]
+        onTextChanged: filters.value = text
     }
 
     FcFilterRunningAvg {
-        id: mRunningAvg
+        id: fRunningAvg
         name: "running_avg_filter"
         title: qsTr("Running average")
         descr: qsTr("Running average filter settings")
