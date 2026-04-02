@@ -32,55 +32,6 @@ Fact {
     property real speed: msSpeed.value
     property var values //from config
 
-    signal selected(var num)
-
-    Fact {
-        id: msTitle
-        title: qsTr("Title")
-        descr: qsTr("Charts title")
-        flags: Fact.Text
-        icon: "rename-box"
-        value: chartFact.title
-        onValueChanged: {
-            fcBtn.toolTip = value;
-            chartFact.title = value;
-        }
-    }
-
-    Fact {
-        id: msSpeed
-        title: qsTr("Speed")
-        descr: qsTr("Charts speed")
-        flags: Fact.Float
-        icon: "speedometer"
-        value: 1.0
-        precision: 1
-        min: 0.2
-        max: 4
-        onValueChanged: {
-            fcCharts.speed = value;
-            fcCharts.speedFactorValue = value;
-        }
-    }
-
-    FcMenuChart {
-        id: msMenuChart
-        title: qsTr("Add new chart")
-        descr: "Creating and setting a new chart"
-        icon: "plus-circle"
-        newItem: true
-        onAddTriggered: createChart(save())
-    }
-
-    Fact {
-        id: msValues
-        title: qsTr("Values")
-        flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: updateBtnValues()
-    }
-
-    Component.onCompleted: updateSetItems()
-
     function addNewChart() {
         msMenuChart.trigger();
     }
@@ -99,6 +50,7 @@ Fact {
     }
 
     function save() {
+        changed = false; 
         var values = [];
         for (var i = 0; i < msValues.size; ++i) {
             var mchart = msValues.child(i).save();
@@ -106,8 +58,6 @@ Fact {
                 continue;
             values.push(mchart);
         }
-        if (!values)
-            return;
         var set = {};
         set.title = msTitle.value;
         set.speed = msSpeed.value;
@@ -120,6 +70,7 @@ Fact {
         msSpeed.value = set.speed;
         values = set.values;
         updateSetItems();
+        changed = false;
     }
 
     function updateSetItems() {
@@ -165,10 +116,57 @@ Fact {
         }
     }
 
+        Fact {
+        id: msTitle
+        title: qsTr("Title")
+        descr: qsTr("Charts title")
+        flags: Fact.Text
+        icon: "rename-box"
+        value: chartFact.title
+        onValueChanged: {
+            fcBtn.toolTip = value;
+            chartFact.title = value;
+            changed = true;
+        }
+    }
+
+    Fact {
+        id: msSpeed
+        title: qsTr("Speed")
+        descr: qsTr("Charts speed")
+        flags: Fact.Float
+        icon: "speedometer"
+        value: 1.0
+        precision: 1
+        min: 0.2
+        max: 4
+        onValueChanged: {
+            fcCharts.speed = value;
+            fcCharts.speedFactorValue = value;
+            changed = true;
+        }
+    }
+
+    FcMenuChart {
+        id: msMenuChart
+        title: qsTr("Add new chart")
+        descr: "Creating and setting a new chart"
+        icon: "plus-circle"
+        newItem: true
+        onAddTriggered: createChart(save())
+    }
+
+    Fact {
+        id: msValues
+        title: qsTr("Values")
+        flags: (Fact.Group | Fact.Section | Fact.DragChildren)
+        onSizeChanged: updateBtnValues()
+    }
+
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        // visible: changed
+        visible: changed
         icon: "check-circle"
         onTriggered: fcControl.saveSettings()
     }
