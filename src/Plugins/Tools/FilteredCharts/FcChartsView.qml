@@ -40,9 +40,7 @@ Item {
     // property real speedFactorValue: speed < 0 ? speedFactor[0] : speed >= speedFactor.length ? speedFactor[speedFactor.length - 1] : speedFactor[speed]
     property real speedFactorValue: 1
 
-    onFactsChanged: {
-        fcChartView.reset();
-    }
+    onFactsChanged: fcChartView.reset()
 
     Connections {
         target: apx.fleet.current.mandala

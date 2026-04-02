@@ -24,8 +24,8 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    // id: number
     id: mChart
+    
     flags: Fact.Group
     precision: 2
 
@@ -44,6 +44,7 @@ Fact {
         mTitle.valueChanged.connect(updateTitle);
         mBind.valueChanged.connect(updateDescr);
         mColor.valueChanged.connect(updateDescr);
+        mFilters.valueChanged.connect(updateDescr);
     }
 
     function load() {
@@ -52,7 +53,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
-        mFilters.fillData()
+        mFilters.fillData();
         changes = false;
     }
 
@@ -143,7 +144,6 @@ Fact {
         descr: qsTr("Chart name")
         flags: Fact.Text
         onTextChanged: changes = true
-
     }
     Fact {
         id: mBind
@@ -211,7 +211,7 @@ Fact {
         title: qsTr("Save")
         enabled: !newItem && !mAdd.enable && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings();
+        onTriggered: fcControl.saveSettings()
     }
     Fact {
         flags: (Fact.Action | Fact.Remove)

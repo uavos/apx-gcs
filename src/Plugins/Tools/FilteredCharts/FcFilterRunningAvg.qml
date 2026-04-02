@@ -25,13 +25,14 @@ import APX.Facts
 
 Fact {
     id: raFilter
+    
     flags: Fact.Group
 
     property bool changes: false
     property var data: ({})
     property var coef: 0
 
-    onChangesChanged: { if(changes) fMenu.changes = true;}
+    onChangesChanged: { if (changes) fMenu.changes = true;}
 
     function load() {
         for (var i = 0; i < size; ++i) {
@@ -80,7 +81,7 @@ Fact {
         max: 1
         onValueChanged: {
             coef = value;
-            raFilter.value = value;
+            raFilter.value = "k=" + value;
             changes = true;
         }
     }
@@ -91,6 +92,6 @@ Fact {
         title: qsTr("Save")
         enabled: !mChart.newItem && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings();
+        onTriggered: fcControl.saveSettings()
     }
 }

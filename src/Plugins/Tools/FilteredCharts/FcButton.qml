@@ -36,9 +36,7 @@ TextButton {
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
     toolTip: getToolTip(values)
 
-    onActivated: fcCharts.facts = Qt.binding(function () {
-        return values;
-    })
+    onActivated: fcCharts.facts = Qt.binding(function () { return values;})
     onPressed: {
         if (checked) {
             if (!fcMenuSet.active) {
@@ -52,7 +50,7 @@ TextButton {
     Connections {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
-            if (checked)
+            if (checked) // Comment it to calculate all values ​​at once
                 fcMenuSet.updateChartsValues();
         }
     }

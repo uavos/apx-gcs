@@ -32,7 +32,6 @@ Rectangle {
 
     implicitHeight: layout.implicitHeight
     implicitWidth: layout.implicitWidth
-
     border.width: 0
     color: "#000"
 
@@ -77,9 +76,9 @@ Rectangle {
                 sets.push(set);
             }
         }
-        if (sets.length <= 0)
+        if (sets.length <= 0) {
             return;
-
+        }
         // Create charts
         for (var i in sets) {
             buttonGroup.buttons[i].loadSet(sets[i]);
@@ -113,7 +112,6 @@ Rectangle {
             FcButton {
                 text: "1"
                 checked: true
-                // values: [mandala.cmd.att.roll, mandala.est.att.roll]
                 values: []
             }
             FcButton {

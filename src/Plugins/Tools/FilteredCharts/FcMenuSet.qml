@@ -25,6 +25,7 @@ import APX.Facts
 
 Fact {
     id: chartFact
+    
     flags: (Fact.Group | Fact.FlatModel)
     title: "Charts #" + fcBtn.text
 
@@ -74,13 +75,10 @@ Fact {
     }
 
     function updateSetItems() {
-        // msValues.onSizeChanged.disconnect(updateDescr);
         msValues.deleteChildren();
         for (var i in values) {
             createChart(values[i]);
         }
-        // updateDescr();
-        // msValues.onSizeChanged.connect(updateDescr);
     }
 
     function createChart(mchart) {
@@ -95,21 +93,7 @@ Fact {
             changes = true;
         });
         changes = true;
-
-        // c.titleChanged.connect(updateDescr);
-        // c.removeTriggered.connect(updateDescr);
     }
-
-    // function updateDescr() {
-    // if (!chartFact)
-    //     return;
-    // descr = "";
-    // var s = [];
-    // for (var i = 0; i < msValues.size; ++i) {
-    //     s.push(msValues.child(i).title);
-    // }
-    // descr = s.join(',');
-    // }
 
     function createFact(parent, url, opts) {
         var component = Qt.createComponent(url);

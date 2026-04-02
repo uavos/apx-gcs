@@ -31,13 +31,8 @@ Fact {
 
     signal removeTriggered
 
-    onChangesChanged: { if(changes) mChart.changes = true;}
+    onChangesChanged: { if (changes) mChart.changes = true;}
 
-    Component.onCompleted: { 
-        // updateTitle();
-        // updateDescr();
-        // mTitle.valueChanged.connect(updateTitle);
-    }
 
     function load() {
         for (var i = 0; i < size; ++i) {
@@ -107,6 +102,6 @@ Fact {
         title: qsTr("Save")
         enabled: !mChart.newItem && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings();
+        onTriggered: fcControl.saveSettings()
     }
 }
