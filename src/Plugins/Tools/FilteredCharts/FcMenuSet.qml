@@ -28,7 +28,7 @@ Fact {
     flags: (Fact.Group | Fact.FlatModel)
     title: "Charts #" + fcBtn.text
 
-    property bool changed: false
+    property bool changes: false
     property real speed: msSpeed.value
     property var values //from config
 
@@ -70,7 +70,7 @@ Fact {
         msSpeed.value = set.speed;
         values = set.values;
         updateSetItems();
-        changed = false;
+        changes = false;
     }
 
     function updateSetItems() {
@@ -91,6 +91,8 @@ Fact {
         var c = createFact(msValues, "FcMenuChart.qml", {
             "data": mchart
         });
+        c.removeTriggered.connect(function(){changes = true});
+        changes = true;
 
         // c.titleChanged.connect(updateDescr);
         // c.removeTriggered.connect(updateDescr);
@@ -116,7 +118,7 @@ Fact {
         }
     }
 
-        Fact {
+    Fact {
         id: msTitle
         title: qsTr("Title")
         descr: qsTr("Charts title")
@@ -126,10 +128,9 @@ Fact {
         onValueChanged: {
             fcBtn.toolTip = value;
             chartFact.title = value;
-            changed = true;
+            changes = true;
         }
     }
-
     Fact {
         id: msSpeed
         title: qsTr("Speed")
@@ -143,10 +144,9 @@ Fact {
         onValueChanged: {
             fcCharts.speed = value;
             fcCharts.speedFactorValue = value;
-            changed = true;
+            changes = true;
         }
     }
-
     FcMenuChart {
         id: msMenuChart
         title: qsTr("Add new chart")
@@ -155,7 +155,6 @@ Fact {
         newItem: true
         onAddTriggered: createChart(save())
     }
-
     Fact {
         id: msValues
         title: qsTr("Values")
@@ -163,10 +162,11 @@ Fact {
         onSizeChanged: updateBtnValues()
     }
 
+    // Actions
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        visible: changed
+        visible: changes
         icon: "check-circle"
         onTriggered: fcControl.saveSettings()
     }

@@ -27,8 +27,11 @@ Fact {
     id: raFilter
     flags: Fact.Group
 
+    property bool changes: false
     property var data: ({})
     property var coef: 0
+
+    onChangesChanged: { if(changes) fMenu.changes = true;}
 
     function load() {
         for (var i = 0; i < size; ++i) {
@@ -36,7 +39,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
-        mChart.setChanged(false);
+        changes = false;
     }
 
     function save() {
@@ -48,6 +51,7 @@ Fact {
                 continue;
             data[settingName(f)] = s;
         }
+        changes = false;
         return data;
     }
 
@@ -77,7 +81,16 @@ Fact {
         onValueChanged: {
             coef = value;
             raFilter.value = value;
-            mChart.setChanged(true);
+            changes = true;
         }
+    }
+
+    // Actions
+    Fact {
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Save")
+        enabled: !mChart.newItem && changes
+        icon: "check-circle"
+        onTriggered: fcControl.saveSettings();
     }
 }

@@ -29,7 +29,7 @@ Fact {
     flags: Fact.Group
     precision: 2
 
-    property bool changed: false
+    property bool changes: false
     property bool newItem: false
     property var data: ({})
 
@@ -46,17 +46,14 @@ Fact {
         mColor.valueChanged.connect(updateDescr);
     }
 
-    function updateFilters() {
-        mFilters.fillFilters();
-    }
-
     function load() {
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
             f.value = v;
         }
-        setChanged(false);
+        mFilters.fillData()
+        changes = false;
     }
 
     function save() {
@@ -72,6 +69,7 @@ Fact {
             }
             data[settingName(f)] = s;
         }
+        changes = false;
         return data;
     }
 
@@ -131,17 +129,10 @@ Fact {
         }
     }
 
-    function setChanged(v) {
-        if (newItem)
-            return;
-        changed = v;
-    }
-
     // Filters functions
     function useRunningAvgFilter(v) {
         var k = mFilters.getRunningAvgCoef();
         value += (v - value) * k;
-
         // console.log("use running avg filter", v, "/", value);
     }
 
@@ -151,7 +142,8 @@ Fact {
         title: qsTr("Title")
         descr: qsTr("Chart name")
         flags: Fact.Text
-        onTextChanged: setChanged(true)
+        onTextChanged: changes = true
+
     }
     Fact {
         id: mBind
@@ -159,7 +151,7 @@ Fact {
         title: qsTr("Expression")
         descr: "Math.atan(est.att.pitch/est.att.roll)"
         flags: Fact.Text
-        onTextChanged: setChanged(true)
+        onTextChanged: changes = true
     }
     Fact {
         id: mColor
@@ -169,9 +161,9 @@ Fact {
         flags: Fact.Enum
         enumStrings: ["red", "orange", "yellow", "green", "aqua", "blue", "purple", "violet"]
         onTextChanged: setColor()
-        onValueChanged: setChanged(true)
+        onValueChanged: changes = true
     }
-    FcFiltersMenu {
+    FcMenuFilters {
         id: mFilters
         name: "filt"
         title: qsTr("Filters")
@@ -217,14 +209,10 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        enabled: changed && !newItem && !mAdd.enable
-        icon: "plus-circle"
-        onTriggered: {
-            fcControl.saveSettings();
-            setChanged(false);
-        }
+        enabled: !newItem && !mAdd.enable && changes
+        icon: "check-circle"
+        onTriggered: fcControl.saveSettings();
     }
-
     Fact {
         flags: (Fact.Action | Fact.Remove)
         title: qsTr("Remove")

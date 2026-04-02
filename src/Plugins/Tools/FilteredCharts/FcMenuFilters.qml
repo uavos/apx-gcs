@@ -24,31 +24,28 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: filters
+    id: fMenu
 
-    property bool newItem: false
+    property bool changes: false
     property var data: ({})
 
-    signal addTriggered
     signal removeTriggered
 
-    Component.onCompleted: {
-        fillData();
+    onChangesChanged: { if(changes) mChart.changes = true;}
 
-        // load(data);
+    Component.onCompleted: { 
         // updateTitle();
         // updateDescr();
         // mTitle.valueChanged.connect(updateTitle);
     }
 
     function load() {
-        console.log();
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
             f.value = v;
         }
-        mChart.setChanged(false);
+        changes = false;
     }
 
     function save() {
@@ -62,6 +59,7 @@ Fact {
                 continue;
             data[settingName(f)] = s;
         }
+        changes = false;
         return data;
     }
 
@@ -77,6 +75,7 @@ Fact {
             data = value;
             load();
             fRunningAvg.fillData();
+            changes = false;
         }
     }
 
@@ -92,14 +91,22 @@ Fact {
         descr: qsTr("Selecting the filter to use")
         flags: Fact.Enum
         enumStrings: ["none", "running_avg"]
-        onTextChanged: filters.value = text
-        onValueChanged: mChart.setChanged(true) // combobox index changed
+        onTextChanged: fMenu.value = text
+        onValueChanged: changes = true // combobox index changed
     }
-
     FcFilterRunningAvg {
         id: fRunningAvg
         name: "running_avg"
         title: qsTr("Running average")
         descr: qsTr("Running average filter settings")
+    }
+
+    // Actions
+    Fact {
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Save")
+        enabled: !mChart.newItem && changes
+        icon: "check-circle"
+        onTriggered: fcControl.saveSettings();
     }
 }
