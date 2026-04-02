@@ -50,7 +50,7 @@ Fact {
     }
 
     function save() {
-        changed = false; 
+        changes = false;
         var values = [];
         for (var i = 0; i < msValues.size; ++i) {
             var mchart = msValues.child(i).save();
@@ -91,7 +91,9 @@ Fact {
         var c = createFact(msValues, "FcMenuChart.qml", {
             "data": mchart
         });
-        c.removeTriggered.connect(function(){changes = true});
+        c.removeTriggered.connect(function () {
+            changes = true;
+        });
         changes = true;
 
         // c.titleChanged.connect(updateDescr);
