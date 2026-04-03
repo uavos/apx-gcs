@@ -34,7 +34,6 @@ TextButton {
     checkable: true
     ButtonGroup.group: buttonGroup
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
-    toolTip: getToolTip(values)
 
     onActivated: fcCharts.facts = Qt.binding(function () { return values;})
     onPressed: {
@@ -55,13 +54,14 @@ TextButton {
         }
     }
 
-    function getToolTip(facts) {
-        var s = [];
+    function updateToolTip(facts) {
+       var s = [];
+       s.push("<strong>" + fcMenuSet.title + "</strong>");
         for (var i = 0; i < facts.length; ++i) {
             var fact = facts[i];
-            s.push("<font color='" + fact.opts.color + "'>" + fact.descr + "</font>");
+            s.push("<font color='" + fact.opts.color + "'>" + fact.title + "</font>");
         }
-        return s.join("<br>");
+        toolTip = s.join("<br>");
     }
 
     function callQuickChart() {

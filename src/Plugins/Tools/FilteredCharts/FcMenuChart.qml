@@ -85,6 +85,7 @@ Fact {
         if (newItem)
             return;
         title = mTitle.text ? mTitle.text : mBind.text;
+        chartFact.updateBtnValues()
     }
 
     function updateDescr() {
@@ -113,6 +114,7 @@ Fact {
         var opt = mChart.opts;
         opt.color = mColor.text;
         mChart.opts = opt;
+        chartFact.updateBtnValues()
     }
 
     function updateValue() {

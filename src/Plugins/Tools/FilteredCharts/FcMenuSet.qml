@@ -41,6 +41,7 @@ Fact {
         fcBtn.values = [];
         for (var i = 0; i < msValues.size; ++i)
             fcBtn.values.push(msValues.child(i));
+        fcBtn.updateToolTip(fcBtn.values);   
     }
 
     function updateChartsValues() {
@@ -112,9 +113,9 @@ Fact {
         icon: "rename-box"
         value: chartFact.title
         onValueChanged: {
-            fcBtn.toolTip = value;
             chartFact.title = value;
             changes = true;
+            updateBtnValues()
         }
     }
     Fact {
