@@ -22,6 +22,7 @@
 import QtQuick
 
 import APX.Facts
+import Apx.Common
 
 Fact {
     id: mChart
@@ -171,10 +172,24 @@ Fact {
         name: "color"
         title: qsTr("Color")
         descr: qsTr("Chart color")
-        flags: Fact.Enum
-        enumStrings: ["red", "orange", "yellow", "green", "aqua", "blue", "purple", "violet"]
-        onTextChanged: setColor()
-        onValueChanged: changes = true
+        value: "#ff0000"
+        onValueChanged: {
+            setColor() 
+            changes = true
+        }
+        Component.onCompleted: {
+            var opt = opts;
+            opt.page = "qrc:/FilteredCharts/FcColorChooser.qml";
+            opts = opt;
+        }
+        Fact {
+            id: mApply
+            flags: (Fact.Action | Fact.Apply)
+            title: qsTr("Save")
+            enabled: !newItem && changes
+            icon: "check-circle"
+            onTriggered: fcControl.saveSettings()
+        }
     }
     FcMenuFilters {
         id: mFilters
