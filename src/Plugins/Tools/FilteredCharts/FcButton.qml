@@ -76,6 +76,11 @@ TextButton {
         fcMenuSet.load(set);
     }
 
+    Timer {
+        id: timer
+        interval: 10000
+    }
+
     FcMenuSet {
         id: fcMenuSet
     }

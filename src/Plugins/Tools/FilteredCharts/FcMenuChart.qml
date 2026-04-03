@@ -118,18 +118,29 @@ Fact {
     }
 
     function updateValue() {
-        var exp = mBind.text;
-        if (eval(exp) == undefined)
-            return;
-        // Use filters
-        var v = eval(exp);
-        var type = mFilters.value;
-        switch (type) {
-        case "running_avg":
-            useRunningAvgFilter(v);
-        default:
-            value = v;
+        var expr = mBind.text;
+        try {
+            var v = new Function('return ' + expr)()
+            if (v === undefined)
+                throw new Error("expression is undefined")
+            // Use filters
+            var type = mFilters.value;
+            switch (type) {
+            case "running_avg":
+                useRunningAvgFilter(v);
+            default:
+                value = v;
+            }
+        } catch (e) {
+            chartWarning(e.message);
         }
+    }
+
+    function chartWarning(msg) {
+        if(timer.running)
+            return;
+        console.warn("Chart " + title + ": " + msg);
+        timer.restart();
     }
 
     // Filters functions
