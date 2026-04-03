@@ -43,7 +43,7 @@ TextButton {
                 fcMenuSet.trigger();
             }
         } else {
-            fcCharts.speedFactorValue = fcMenuSet.speed;
+            fcCharts.speed = fcMenuSet.speed;
         }
     }
 

@@ -128,7 +128,6 @@ Fact {
         min: 0.2
         max: 4
         onValueChanged: {
-            fcCharts.speed = value;
             fcCharts.speedFactorValue = value;
             changes = true;
         }
