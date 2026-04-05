@@ -40,7 +40,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
-        changes = false;
+        updateCoef();
     }
 
     function save() {
@@ -52,7 +52,7 @@ Fact {
                 continue;
             data[settingName(f)] = s;
         }
-        changes = false;
+        updateCoef();
         return data;
     }
 
@@ -70,6 +70,11 @@ Fact {
         }
     }
 
+    function updateCoef() {
+        coef = raCoef.value;
+        changes = false;
+    }
+
     Fact {
         id: raCoef
         name: "coef"
@@ -80,7 +85,6 @@ Fact {
         min: 0
         max: 1
         onValueChanged: {
-            coef = value;
             raFilter.value = "k=" + value;
             changes = true;
         }

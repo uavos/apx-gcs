@@ -34,6 +34,10 @@ Fact {
     property bool newItem: false
     property var data: ({})
 
+    // Chart values
+    property var type: "none"
+    property var expr: ""
+
     signal addTriggered
     signal removeTriggered
 
@@ -41,7 +45,6 @@ Fact {
         load(data);
         updateTitle();
         updateDescr();
-        setColor();
         mTitle.valueChanged.connect(updateTitle);
         mBind.valueChanged.connect(updateDescr);
         mColor.valueChanged.connect(updateDescr);
@@ -55,7 +58,7 @@ Fact {
             f.value = v;
         }
         mFilters.fillData();
-        changes = false;
+        updateChartVars();
     }
 
     function save() {
@@ -71,7 +74,7 @@ Fact {
             }
             data[settingName(f)] = s;
         }
-        changes = false;
+        updateChartVars();
         return data;
     }
 
@@ -80,6 +83,13 @@ Fact {
         if (n.includes("_"))
             return n.slice(0, n.indexOf("_"));
         return n;
+    }
+
+    function updateChartVars() {
+        expr = mBind.text;
+        type = mFilters.value;
+        changes = false;
+        setColor();
     }
 
     function updateTitle() {
@@ -119,13 +129,11 @@ Fact {
     }
 
     function updateValue() {
-        var expr = mBind.text;
         try {
             var v = new Function('return ' + expr)()
             if (v === undefined)
                 throw new Error("expression is undefined")
             // Use filters
-            var type = mFilters.value;
             switch (type) {
             case "running_avg":
                 useRunningAvgFilter(v);
@@ -148,7 +156,6 @@ Fact {
     function useRunningAvgFilter(v) {
         var k = mFilters.getRunningAvgCoef();
         value += (v - value) * k;
-        // console.log("use running avg filter", v, "/", value);
     }
 
     Fact {
@@ -173,10 +180,7 @@ Fact {
         title: qsTr("Color")
         descr: qsTr("Chart color")
         value: "#ff0000"
-        onValueChanged: {
-            setColor() 
-            changes = true
-        }
+        onValueChanged: changes = true
         Component.onCompleted: {
             var opt = opts;
             opt.page = "qrc:/FilteredCharts/FcColorChooser.qml";
