@@ -24,13 +24,13 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: raFilter
+    id: ksFilter
     
     flags: Fact.Group
 
     property bool changes: false
     property var data: ({})
-    property var coef: 0
+    property var coefs: []
 
     onChangesChanged: { if (changes) fMenu.changes = true;}
 
@@ -40,7 +40,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
-        updateCoef();
+        updateCoefs();
     }
 
     function save() {
@@ -52,7 +52,7 @@ Fact {
                 continue;
             data[settingName(f)] = s;
         }
-        updateCoef();
+        updateCoefs();
         return data;
     }
 
@@ -70,24 +70,37 @@ Fact {
         }
     }
 
-    function updateCoef() {
-        coef = raCoef.value;
+    function updateFilterValue() {
+        ksFilter.value = "Km=" + ksMeasNoise.value + ",Ke=" + ksEnvNoise.value;
+        changes = true; 
+    }
+
+    function updateCoefs() {
+        coefs = [ksMeasNoise.value, ksEnvNoise.value]
         changes = false;
     }
 
     Fact {
-        id: raCoef
-        name: "coef"
-        title: qsTr("Coefficient")
-        descr: qsTr("Coefficient for filtration")
+        id: ksMeasNoise
+        name: "measurement_noise"
+        title: qsTr("Measurement noise")
+        descr: qsTr("Coefficient of measurement noise")
         flags: Fact.Float
-        value: 0
+        value: 1
         min: 0
-        max: 1
-        onValueChanged: {
-            raFilter.value = "K=" + value;
-            changes = true;
-        }
+        max: 100
+        onValueChanged: updateFilterValue()
+    }
+    Fact {
+        id: ksEnvNoise
+        name: "environment_noise"
+        title: qsTr("Environment noise")
+        descr: qsTr("Coefficient of environment noise")
+        flags: Fact.Float
+        value: 1
+        min: 0
+        max: 100
+        onValueChanged: updateFilterValue()
     }
 
     // Actions

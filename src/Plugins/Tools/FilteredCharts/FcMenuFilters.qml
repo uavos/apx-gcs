@@ -70,6 +70,7 @@ Fact {
             data = value;
             load();
             fRunningAvg.fillData();
+            fKalmanSimple.fillData();
             changes = false;
         }
     }
@@ -79,13 +80,17 @@ Fact {
         return fRunningAvg.coef;
     }
 
+    function getKalmanSimpleCoefs() {
+        return fKalmanSimple.coefs
+    }
+
     Fact {
         id: fTypes
         name: "filters"
         title: qsTr("Filter")
         descr: qsTr("Selecting the filter to use")
         flags: Fact.Enum
-        enumStrings: ["none", "running_avg"]
+        enumStrings: ["none", "running_avg", "kalman_smp"]
         onTextChanged: fMenu.value = text
         onValueChanged: changes = true // combobox index changed
     }
@@ -94,6 +99,12 @@ Fact {
         name: "running_avg"
         title: qsTr("Running average")
         descr: qsTr("Running average filter settings")
+    }
+    FcFilterKalmanSimple {
+        id: fKalmanSimple
+        name: "kalman_smp"
+        title: qsTr("Kalman simple")
+        descr: qsTr("Simple kalman filter settings")
     }
 
     // Actions

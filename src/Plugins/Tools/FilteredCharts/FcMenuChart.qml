@@ -88,6 +88,8 @@ Fact {
     function updateChartVars() {
         expr = mBind.text;
         type = mFilters.value;
+        if(type === "kalman_smp")
+            setKalmanState(0, 0.1) // set start state and covarience
         changes = false;
         setColor();
     }
@@ -135,9 +137,13 @@ Fact {
                 throw new Error("expression is undefined")
             // Use filters
             switch (type) {
-            case "running_avg":
+            case "running_avg": 
                 useRunningAvgFilter(v);
-            default:
+                break;
+            case "kalman_smp":
+                useKalmanSmpFilter(v);
+                break;   
+            default:    
                 value = v;
             }
         } catch (e) {
@@ -153,9 +159,38 @@ Fact {
     }
 
     // Filters functions
+    // Running average filter
     function useRunningAvgFilter(v) {
+        if(Number.isNaN(value)) {
+            value = v;
+            return;
+        }
         var k = mFilters.getRunningAvgCoef();
         value += (v - value) * k;
+    }
+
+
+    // Kalman simple filter
+    property var state: 0
+    property var covariance: 0.1
+
+    function setKalmanState(st, cv) {
+        state = st;
+        covariance = cv;
+    }
+
+    function useKalmanSmpFilter(v) {
+        var coefs = mFilters.getKalmanSimpleCoefs();
+        
+        // Time update - prediction
+        var x0 = state;
+        var p0 = covariance + coefs[0];
+
+        // measurement update - correction
+        var k = p0 / (p0 + coefs[1]);
+        state = x0 + k * (v - x0);
+        covariance = (1 - k) * p0;
+        value = state;
     }
 
     Fact {
