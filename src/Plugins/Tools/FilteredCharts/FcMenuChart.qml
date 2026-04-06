@@ -88,8 +88,10 @@ Fact {
     function updateChartVars() {
         expr = mBind.text;
         type = mFilters.value;
-        if(type === "kalman_smp")
-            setKalmanState(0, 0.1) // set start state and covarience
+        if(type === "kalman_smp") {
+            var v = value !== undefined ? value : 0
+            setKalmanState(v, 0.1) // set start state and covariance
+        }
         changes = false;
         setColor();
     }
@@ -135,6 +137,12 @@ Fact {
             var v = new Function('return ' + expr)()
             if (v === undefined)
                 throw new Error("expression is undefined")
+            // For first init
+            if(value === undefined) {
+                setKalmanState(v, 0.1);
+                value = v
+                return;
+            }  
             // Use filters
             switch (type) {
             case "running_avg": 
@@ -161,10 +169,6 @@ Fact {
     // Filters functions
     // Running average filter
     function useRunningAvgFilter(v) {
-        if(Number.isNaN(value)) {
-            value = v;
-            return;
-        }
         var k = mFilters.getRunningAvgCoef();
         value += (v - value) * k;
     }
