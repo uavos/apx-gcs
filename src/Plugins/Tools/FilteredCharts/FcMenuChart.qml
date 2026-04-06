@@ -113,7 +113,7 @@ Fact {
                 continue;
             if (f.text === "")
                 continue;
-            descrList.push(f.name.toUpperCase() + ": " + f.text);
+            descrList.push(f.name.toUpperCase() + ": " + f.text);    
         }
         if (descrList.length > 0)
             descr = descrList.join(", ");
@@ -179,7 +179,7 @@ Fact {
         name: "color"
         title: qsTr("Color")
         descr: qsTr("Chart color")
-        value: "#ff0000"
+        value: "#ffffff"
         onValueChanged: changes = true
         Component.onCompleted: {
             var opt = opts;

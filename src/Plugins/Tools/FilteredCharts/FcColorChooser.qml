@@ -7,6 +7,8 @@ import APX.Facts
 
 Item {
     id: colorChooser
+
+    property var color: fact.value != undefined ? fact.value : "#ffffff"
     property var space: Style.spacing * 1.2
 
     implicitWidth: 280 * ui.scale
@@ -21,15 +23,12 @@ Item {
         anchors.right: parent.right
         anchors.bottom: colorPreview.top 
         
-        property var chartColor: "#ffffff"
-
         GridLayout {
             columns: 12
             anchors.fill: parent
             anchors.margins: space
             columnSpacing: space
             rowSpacing: space
-            // columns: 8
 
             Repeater {
                 model: [
@@ -46,7 +45,7 @@ Item {
                     color: modelData
                     border.width: 1
                     border.color: chosen ? "#b0c4de" : "transparent"
-                    opacity: chosen ? 1 : 0.8
+                    opacity: chosen ? 1 : 0.85
                     scale: chosen ? 1.15 : 1.0
 
                     MouseArea {
@@ -65,15 +64,18 @@ Item {
         spacing: space
         
         Rectangle {
-            color: fact.value
-            width: 22 * ui.scale
-            height: 14 * ui.scale
+            color: colorChooser.color
+            width: 24 * ui.scale
+            height: 16 * ui.scale
+            border.width: ui.scale
+            border.color: "#383838"
             Layout.topMargin: space
             Layout.leftMargin: space
+            opacity: 0.85
         }
         
         Label {
-            text: fact.value
+            text: colorChooser.color
             font.pixelSize: Style.fontSize * 0.7
             Layout.topMargin: space
             Layout.alignment: Qt.AlignVCenter
