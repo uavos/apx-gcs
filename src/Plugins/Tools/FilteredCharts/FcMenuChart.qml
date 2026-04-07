@@ -51,6 +51,8 @@ Fact {
         mFilters.valueChanged.connect(updateDescr);
     }
 
+    onValueChanged: saveValue2Fact()
+
     function load() {
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
@@ -159,6 +161,15 @@ Fact {
         }
     }
 
+    function saveValue2Fact() {
+        var fname = mFact2Save.text;
+        if(!fname || fname === "" || fname === undefined)
+            return;
+        if(!apx.fleet.current.mandala.fact(fname, true))
+            return;   
+        apx.fleet.current.mandala.fact(fname, true).value = value;
+    }
+
     function chartWarning(msg) {
         if(timer.running)
             return;
@@ -263,6 +274,14 @@ Fact {
         flags: Fact.Text
         enabled: false
         visible: false
+    }
+    Fact {
+        id: mFact2Save
+        title: qsTr("Save to")
+        descr: qsTr("Variable for saving chart value")
+        flags: Fact.Int
+        units: "mandala"
+        onTextChanged: changes = true
     }
 
     // Actions
