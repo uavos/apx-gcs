@@ -166,7 +166,11 @@ Fact {
         if(!fname || fname === "" || fname === undefined)
             return;
         if(!apx.fleet.current.mandala.fact(fname, true))
-            return;   
+            return;
+        if(!fname.includes("sns.scr")) {
+            chartWarning("Unacceptable variable name. Use 'src.scr' vars for saving!");
+            return;
+        }    
         apx.fleet.current.mandala.fact(fname, true).value = value;
     }
 
@@ -207,7 +211,7 @@ Fact {
         covariance = (1 - k) * p0;
         value = state;
     }
-
+    
     Fact {
         id: mTitle
         name: "title"
