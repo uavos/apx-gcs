@@ -49,6 +49,7 @@ Fact {
         mBind.valueChanged.connect(updateDescr);
         mColor.valueChanged.connect(updateDescr);
         mFilters.valueChanged.connect(updateDescr);
+        mFact2Save.valueChanged.connect(updateDescr);
     }
 
     onValueChanged: saveValue2Fact()
@@ -280,6 +281,7 @@ Fact {
     }
     Fact {
         id: mFact2Save
+        name: "save"
         title: qsTr("Save to")
         descr: qsTr("Variable for saving chart value")
         flags: Fact.Int
