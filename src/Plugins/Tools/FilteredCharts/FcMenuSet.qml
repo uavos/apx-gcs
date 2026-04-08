@@ -45,8 +45,6 @@ Fact {
     }
 
     function updateChartsValues() {
-        if (!fcBtn.checked)
-            return;
         for (var i = 0; i < msValues.size; ++i)
             msValues.child(i).updateValue();
     }
