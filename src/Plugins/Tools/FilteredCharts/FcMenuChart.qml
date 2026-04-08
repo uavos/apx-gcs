@@ -188,7 +188,6 @@ Fact {
         value += (v - value) * k;
     }
 
-
     // Kalman simple filter
     property var state: 0
     property var covariance: 0.1
@@ -205,7 +204,7 @@ Fact {
         var x0 = state;
         var p0 = covariance + coefs[0];
 
-        // measurement update - correction
+        // Measurement update - correction
         var k = p0 / (p0 + coefs[1]);
         state = x0 + k * (v - x0);
         covariance = (1 - k) * p0;

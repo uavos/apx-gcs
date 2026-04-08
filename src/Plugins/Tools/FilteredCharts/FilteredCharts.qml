@@ -153,7 +153,6 @@ Rectangle {
 
             TextButton {
                 text: fcCharts.speedFactorValue + "x"
-                // onClicked: fcCharts.changeSpeed()
                 Layout.fillHeight: true
                 Layout.minimumWidth: height * 4
             }

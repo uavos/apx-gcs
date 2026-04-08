@@ -33,7 +33,6 @@ Fact {
 
     onChangesChanged: { if (changes) mChart.changes = true;}
 
-
     function load() {
         for (var i = 0; i < size; ++i) {
             var f = child(i);
