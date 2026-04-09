@@ -49,8 +49,8 @@ TextButton {
     Connections {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
-            if (checked) // Comment it to calculate all values ​​at once
-                fcMenuSet.updateChartsValues();
+            // if (checked) // Comment it to calculate all values ​​at once
+            fcMenuSet.updateChartsValues();
         }
     }
 

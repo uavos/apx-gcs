@@ -173,7 +173,7 @@ Fact {
             chartWarning("Unacceptable variable name. Use 'src.scr' vars for saving!");
             return;
         }    
-        apx.fleet.current.mandala.fact(fname, true).value = value;
+        apx.fleet.current.mandala.fact(fname, true).setRawValueLocal(value);
     }
 
     function chartWarning(msg) {
