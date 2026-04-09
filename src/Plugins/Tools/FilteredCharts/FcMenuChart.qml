@@ -132,6 +132,7 @@ Fact {
         var opt = mChart.opts;
         opt.color = mColor.text;
         mChart.opts = opt;
+        mColor.changes = false;
         chartFact.updateBtnValues()
     }
 
@@ -228,26 +229,11 @@ Fact {
         flags: Fact.Text
         onTextChanged: changes = true
     }
-    Fact {
+    FcMenuColor {
         id: mColor
         name: "color"
         title: qsTr("Color")
         descr: qsTr("Chart color")
-        value: "#ffffff"
-        onValueChanged: changes = true
-        Component.onCompleted: {
-            var opt = opts;
-            opt.page = "qrc:/FilteredCharts/FcColorChooser.qml";
-            opts = opt;
-        }
-        Fact {
-            id: mApply
-            flags: (Fact.Action | Fact.Apply)
-            title: qsTr("Save")
-            enabled: !newItem && changes
-            icon: "check-circle"
-            onTriggered: fcControl.saveSettings()
-        }
     }
     FcMenuFilters {
         id: mFilters
