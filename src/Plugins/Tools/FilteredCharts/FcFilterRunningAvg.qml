@@ -84,6 +84,7 @@ Fact {
         value: 0
         min: 0
         max: 1
+        precision: 3
         onValueChanged: {
             raFilter.value = "K=" + value;
             changes = true;

@@ -88,7 +88,8 @@ Fact {
         flags: Fact.Float
         value: 1
         min: 0
-        max: 100
+        max: 10000
+        precision: 3
         onValueChanged: updateFilterValue()
     }
     Fact {
@@ -99,7 +100,8 @@ Fact {
         flags: Fact.Float
         value: 1
         min: 0
-        max: 100
+        max: 10000
+        precision: 3
         onValueChanged: updateFilterValue()
     }
 
