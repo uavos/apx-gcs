@@ -34,17 +34,10 @@ TextButton {
     checkable: true
     ButtonGroup.group: buttonGroup
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
-
+ 
     onActivated: fcCharts.facts = Qt.binding(function () { return values;})
-    onPressed: {
-        if (checked) {
-            if (!fcMenuSet.active) {
-                fcMenuSet.trigger();
-            }
-        } else {
-            fcCharts.speed = fcMenuSet.speed;
-        }
-    }
+    onCheckedChanged: if (checked) fcCharts.speedFactorValue = fcMenuSet.speed
+    onPressed: if (checked && !fcMenuSet.active) fcMenuSet.trigger()
 
     Connections {
         target: apx.fleet.current.mandala

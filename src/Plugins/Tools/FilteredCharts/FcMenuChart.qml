@@ -133,6 +133,7 @@ Fact {
         opt.color = mColor.text;
         mChart.opts = opt;
         mColor.changes = false;
+        fcCharts.updateSeriesColor(indexInParent());
         chartFact.updateBtnValues()
     }
 

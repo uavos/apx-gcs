@@ -61,6 +61,11 @@ Rectangle {
             json.sets.push(set);
         }
         application.prefs.saveFile("charts.json", JSON.stringify(json, ' ', 2));
+
+        if(fcCharts.resetOn) {
+            console.log("fcCharts=", fcCharts.resetOn);  
+            fcCharts.resetChartView();
+        }
     }
 
     function loadSettings() {
@@ -83,6 +88,8 @@ Rectangle {
         for (var i in sets) {
             buttonGroup.buttons[i].loadSet(sets[i]);
         }
+
+        fcCharts.resetChartView();
     }
 
     ColumnLayout {
@@ -101,6 +108,7 @@ Rectangle {
 
         ButtonGroup {
             id: buttonGroup
+            onCheckedButtonChanged: fcCharts.resetChartView()
         }
 
         RowLayout {

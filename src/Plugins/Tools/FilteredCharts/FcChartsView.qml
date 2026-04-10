@@ -38,13 +38,31 @@ Item {
     property real speed: 1
     property real speedFactorValue: 1
 
-    onFactsChanged: fcChartView.reset()
+    property bool resetOn: false
+    // onFactsChanged: fcChartView.reset()
 
     Connections {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
             fcChartView.appendData();
         }
+    }
+
+    function resetChartView() {
+        fcChartView.reset();
+        resetOn = false;
+    }
+
+    function updateSeriesColor(index) {
+        if(fcChartView.count <= 0 || index < 0)
+            return;
+        if(fcChartView.count < index + 1)
+            return;
+        if(facts[index] === undefined)
+            return;   
+        if(!facts[index].opts.color)
+           return; 
+        fcChartView.series(index).color = facts[index].opts.color;
     }
 
     ChartView {
@@ -114,7 +132,6 @@ Item {
             axisY.max = dataPaddingZero;
             axisY.tickCount = 4;
             axisY.applyNiceNumbers();
-            speedFactorValue = speed;
         }
 
         function appendData() {

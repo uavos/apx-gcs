@@ -30,7 +30,7 @@ Fact {
     title: "Charts #" + fcBtn.text
 
     property bool changes: false
-    property real speed: msSpeed.value
+    property alias speed: msSpeed.value
     property var values //from config
 
     function addNewChart() {
@@ -127,6 +127,8 @@ Fact {
         min: 0.2
         max: 4
         onValueChanged: {
+            if(!fcBtn.checked)
+                return;
             fcCharts.speedFactorValue = value;
             changes = true;
         }
@@ -143,7 +145,10 @@ Fact {
         id: msValues
         title: qsTr("Values")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: updateBtnValues()
+        onSizeChanged: { 
+            updateBtnValues()
+            fcCharts.resetOn = true;
+        }
     }
 
     // Actions
