@@ -101,7 +101,6 @@ Rectangle {
 
         ButtonGroup {
             id: buttonGroup
-            onCheckedButtonChanged: fcCharts.resetEnable = true
         }
 
         RowLayout {

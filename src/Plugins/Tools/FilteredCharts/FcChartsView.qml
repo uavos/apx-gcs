@@ -39,6 +39,7 @@ Item {
     property real speedFactorValue: 1
 
     property bool resetEnable: false
+    
     onFactsChanged: if(resetEnable) {
         fcChartView.reset();
         resetEnable = false;
