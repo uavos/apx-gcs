@@ -51,17 +51,18 @@ Fact {
 
     function save() {
         changes = false;
-        var values = [];
+        var tmpValues = [];
         for (var i = 0; i < msValues.size; ++i) {
             var mchart = msValues.child(i).save();
             if (!mchart.bind)
                 continue;
-            values.push(mchart);
+            tmpValues.push(mchart);
         }
         var set = {};
         set.title = msTitle.value;
         set.speed = msSpeed.value;
-        set.values = values;
+        set.values = tmpValues;
+        updateBtnValues()
         return set;
     }
 
@@ -78,6 +79,7 @@ Fact {
         for (var i in values) {
             createChart(values[i]);
         }
+        updateBtnValues()
     }
 
     function createChart(mchart) {
@@ -113,7 +115,6 @@ Fact {
         onValueChanged: {
             chartFact.title = value;
             changes = true;
-            updateBtnValues()
         }
     }
     Fact {
@@ -145,10 +146,7 @@ Fact {
         id: msValues
         title: qsTr("Values")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: { 
-            updateBtnValues()
-            fcCharts.resetOn = true;
-        }
+        onSizeChanged: fcCharts.resetEnable = true;
     }
 
     // Actions

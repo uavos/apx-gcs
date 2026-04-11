@@ -38,8 +38,11 @@ Item {
     property real speed: 1
     property real speedFactorValue: 1
 
-    property bool resetOn: false
-    // onFactsChanged: fcChartView.reset()
+    property bool resetEnable: false
+    onFactsChanged: if(resetEnable) {
+        fcChartView.reset();
+        resetEnable = false;
+    }
 
     Connections {
         target: apx.fleet.current.mandala
@@ -48,21 +51,13 @@ Item {
         }
     }
 
-    function resetChartView() {
-        fcChartView.reset();
-        resetOn = false;
-    }
-
-    function updateSeriesColor(index) {
-        if(fcChartView.count <= 0 || index < 0)
-            return;
-        if(fcChartView.count < index + 1)
-            return;
-        if(facts[index] === undefined)
-            return;   
-        if(!facts[index].opts.color)
-           return; 
-        fcChartView.series(index).color = facts[index].opts.color;
+    function updateSeriesColor() {
+        for (var i = 0; i < facts.length; ++i) {
+            if(!fcChartView.series(i))
+                continue;
+            if (fcChartView.series(i).color != facts[i].opts.color)
+                fcChartView.series(i).color = facts[i].opts.color;
+        }
     }
 
     ChartView {

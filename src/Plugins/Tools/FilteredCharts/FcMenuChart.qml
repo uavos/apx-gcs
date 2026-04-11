@@ -103,7 +103,6 @@ Fact {
         if (newItem)
             return;
         title = mTitle.text ? mTitle.text : mBind.text;
-        chartFact.updateBtnValues()
     }
 
     function updateDescr() {
@@ -133,8 +132,8 @@ Fact {
         opt.color = mColor.text;
         mChart.opts = opt;
         mColor.changes = false;
-        fcCharts.updateSeriesColor(indexInParent());
         chartFact.updateBtnValues()
+        fcCharts.updateSeriesColor()
     }
 
     function updateValue() {

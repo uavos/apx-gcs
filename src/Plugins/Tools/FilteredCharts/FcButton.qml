@@ -36,8 +36,8 @@ TextButton {
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
  
     onActivated: fcCharts.facts = Qt.binding(function () { return values;})
-    onCheckedChanged: if (checked) fcCharts.speedFactorValue = fcMenuSet.speed
-    onPressed: if (checked && !fcMenuSet.active) fcMenuSet.trigger()
+    onCheckedChanged: if(checked) fcCharts.speedFactorValue = fcMenuSet.speed
+    onPressed: if(checked && !fcMenuSet.active) fcMenuSet.trigger()
 
     Connections {
         target: apx.fleet.current.mandala
