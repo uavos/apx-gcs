@@ -56,6 +56,8 @@ Item {
         for (var i = 0; i < facts.length; ++i) {
             if(!fcChartView.series(i))
                 continue;
+            if(fact?.[i] === undefined)
+               continue;
             if (fcChartView.series(i).color != facts[i].opts.color)
                 fcChartView.series(i).color = facts[i].opts.color;
         }
