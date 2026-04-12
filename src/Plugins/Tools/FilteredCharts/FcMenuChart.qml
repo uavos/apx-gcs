@@ -37,6 +37,7 @@ Fact {
     // Chart values
     property var type: "none"
     property var expr: ""
+    property var scr: ""
 
     signal addTriggered
     signal removeTriggered
@@ -91,6 +92,7 @@ Fact {
     function updateChartVars() {
         expr = mBind.text;
         type = mFilters.value;
+        scr = mFact2Save.text;
         if(type === "kalman_smp") {
             var v = value !== undefined ? value : 0
             setKalmanState(v, 0.1) // set start state and covariance
@@ -164,7 +166,7 @@ Fact {
     }
 
     function saveValue2Fact() {
-        var fname = mFact2Save.text;
+        var fname = scr;
         if(!fname || fname === "" || fname === undefined)
             return;
         if(!apx.fleet.current.mandala.fact(fname, true))
