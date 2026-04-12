@@ -136,7 +136,6 @@ Item {
             var t = time + 1;
             var v = 0;
             var fact = {};
-            console.log("length=", facts.length)
             for (var i = 0; i < facts.length; ++i) {
                 appendDataValue(facts[i], t, i);
             }
