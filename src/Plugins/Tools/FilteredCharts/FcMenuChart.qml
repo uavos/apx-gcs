@@ -121,7 +121,10 @@ Fact {
                 continue;
             if (f.text === "")
                 continue;
-            descrList.push(f.name.toUpperCase() + ": " + f.text);    
+            if (f.name === "color")
+                descrList.push(f.name.toUpperCase() + ": <font color='" + f.text + "'>" + f.text.toUpperCase() + "</font>");
+            else      
+                descrList.push(f.name.toUpperCase() + ": " + f.text);    
         }
         if (descrList.length > 0)
             descr = descrList.join(", ");
