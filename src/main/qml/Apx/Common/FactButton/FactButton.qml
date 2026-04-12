@@ -104,7 +104,7 @@ ActionButton {
     property bool showNext: expandable
     property bool showDescr: descr
 
-
+    iconColor: (fact && fact.opts.iconColor)?fact.opts.iconColor:Material.iconColor
 
     toolTipItem.visible: pressed
     toolTipItem.delay: Qt.styleHints.mousePressAndHoldInterval

@@ -29,6 +29,7 @@ Fact {
     
     flags: Fact.Group
     precision: 2
+    icon: "rectangle"
 
     property bool changes: false
     property bool newItem: false
@@ -135,6 +136,7 @@ Fact {
     function setColor() {
         var opt = mChart.opts;
         opt.color = mColor.text ? mColor.text : "#ffffff" // Black color for chart turn into white
+        opt.iconColor = opt.color;
         mChart.opts = opt;
         mColor.changes = false;
         chartFact.updateBtnValues()
