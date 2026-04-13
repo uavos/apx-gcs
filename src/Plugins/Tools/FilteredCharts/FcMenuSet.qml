@@ -33,6 +33,8 @@ Fact {
     property alias speed: msSpeed.value
     property var values //from config
 
+    Component.onDestruction: removed()
+
     function addNewChart() {
         msMenuChart.trigger();
     }
