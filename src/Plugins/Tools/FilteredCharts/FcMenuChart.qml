@@ -136,7 +136,8 @@ Fact {
     function setColor() {
         var opt = mChart.opts;
         opt.color = mColor.text ? mColor.text : "#ffffff" // Black color for chart turn into white
-        opt.iconColor = opt.color;
+        if(!newItem)
+            opt.iconColor = opt.color;
         mChart.opts = opt;
         mColor.changes = false;
         chartFact.updateBtnValues()

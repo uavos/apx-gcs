@@ -137,7 +137,7 @@ Fact {
     FcMenuChart {
         id: msMenuChart
         title: qsTr("Add new chart")
-        descr: "Creating and setting a new chart"
+        descr: qsTr("Creating and setting a new chart")
         icon: "plus-circle"
         newItem: true
         onAddTriggered: createChart(save())
