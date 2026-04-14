@@ -33,7 +33,7 @@ Fact {
     property alias speed: msSpeed.value
     property var values //from config
 
-    Component.onDestruction: removed()
+    Component.onDestruction: removed() // pinned menu closes when the plugin is closed
 
     function addNewChart() {
         msMenuChart.trigger();
@@ -105,6 +105,13 @@ Fact {
             c.parentFact = parent;
             return c;
         }
+    }
+
+    function checkScrs(val) {
+        var matches = false;
+        for(var i = 0; i < msValues.size; ++i)
+            if(msValues.child(i).hasScr(val)) matches = true;
+        return matches;
     }
 
     Fact {

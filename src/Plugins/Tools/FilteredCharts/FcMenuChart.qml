@@ -148,7 +148,7 @@ Fact {
         try {
             var v = new Function('return ' + expr)()
             if (v === undefined)
-                throw new Error("expression is undefined")
+                throw new Error(qsTr("expression is undefined"))
             // For first init
             if(value === undefined) {
                 setKalmanState(v, 0.1);
@@ -178,7 +178,7 @@ Fact {
         if(!apx.fleet.current.mandala.fact(fname, true))
             return;
         if(!fname.includes("sns.scr")) {
-            chartWarning("Unacceptable variable name. Use 'src.scr' vars for saving!");
+            chartWarning(qsTr("Unacceptable variable name. Use 'src.scr' vars for saving!"));
             return;
         }    
         apx.fleet.current.mandala.fact(fname, true).setRawValueLocal(value);
@@ -187,8 +187,15 @@ Fact {
     function chartWarning(msg) {
         if(timer.running)
             return;
-        console.warn("Chart " + title + ": " + msg);
+        console.warn(qsTr("Chart") + " " + title + ": " + msg);
         timer.restart();
+    }
+
+    function hasScr(val) {
+        if(!val || val !== scr)
+            return false;
+        chartWarning(val + " " + qsTr("variable already used"));  
+        return true;
     }
 
     // Filters functions
@@ -280,7 +287,10 @@ Fact {
         descr: qsTr("Variable for saving chart value")
         flags: Fact.Int
         units: "mandala"
-        onTextChanged: changes = true
+        onTextChanged: {
+            fcControl.checkScrMatches(text)
+            changes = true;
+        }
     }
 
     // Actions

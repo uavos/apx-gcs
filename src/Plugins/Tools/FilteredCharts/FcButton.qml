@@ -72,6 +72,10 @@ TextButton {
         fcMenuSet.load(set);
     }
 
+    function getScrMatches(val) {
+        return fcMenuSet.checkScrs(val);
+    }
+
     Timer {
         id: timer
         interval: 10000

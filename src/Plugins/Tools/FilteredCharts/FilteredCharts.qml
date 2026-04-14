@@ -85,6 +85,13 @@ Rectangle {
         }
     }
 
+    function checkScrMatches(val) {
+        var matches = false;
+        for (var i = 0; i < buttonGroup.buttons.length; ++i)
+            if(buttonGroup.buttons[i].getScrMatches(val)) matches = true;
+        return matches;
+    }
+
     ColumnLayout {
         id: layout
         anchors.fill: parent
