@@ -230,7 +230,7 @@ Fact {
     
     Fact {
         id: mTitle
-        name: "title"
+        name: "chartname"
         title: qsTr("Title")
         descr: qsTr("Chart name")
         flags: Fact.Text

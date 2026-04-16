@@ -77,7 +77,7 @@ Fact {
 
     Fact {
         id: raCoef
-        name: "coef"
+        name: "coefficient"
         title: qsTr("Coefficient")
         descr: qsTr("Coefficient for filtration")
         flags: Fact.Float
