@@ -33,6 +33,7 @@ Fact {
 
     property bool changes: false
     property bool newItem: false
+    property var warning: ""
     property var data: ({})
 
     // Chart values
@@ -185,8 +186,9 @@ Fact {
     }
 
     function chartWarning(msg) {
-        if(timer.running)
+        if(warning == msg && timer.running)
             return;
+        warning = msg;    
         console.warn(qsTr("Chart") + " " + title + ": " + msg);
         timer.restart();
     }
