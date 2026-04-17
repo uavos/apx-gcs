@@ -30,7 +30,7 @@ Fact {
 
     property bool changes: false
     property var data: ({})
-    property var coef: 0
+    property var coef: 1
 
     onChangesChanged: { if (changes) fMenu.changes = true;}
 
@@ -81,7 +81,7 @@ Fact {
         title: qsTr("Coefficient")
         descr: qsTr("Coefficient for filtration")
         flags: Fact.Float
-        value: 0
+        value: 1
         min: 0
         max: 1
         precision: 3
