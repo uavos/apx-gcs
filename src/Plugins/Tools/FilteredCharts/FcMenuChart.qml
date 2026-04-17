@@ -179,7 +179,7 @@ Fact {
         if(!apx.fleet.current.mandala.fact(fname, true))
             return;
         if(!fname.includes("sns.scr")) {
-            chartWarning(qsTr("Unacceptable variable name. Use 'src.scr' vars for saving!"));
+            chartWarning(qsTr("Unacceptable variable name. Use 'sns.scr' vars for saving!"));
             return;
         }    
         apx.fleet.current.mandala.fact(fname, true).setRawValueLocal(value);
