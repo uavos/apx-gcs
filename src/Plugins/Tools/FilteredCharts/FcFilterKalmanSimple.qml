@@ -29,8 +29,8 @@ Fact {
     flags: Fact.Group
 
     property bool changes: false
+    property var coefs: [1,1]
     property var data: ({})
-    property var coefs: []
 
     onChangesChanged: { if (changes) fMenu.changes = true;}
 
