@@ -27,8 +27,8 @@ import Apx.Application
 AppPlugin {
     id: plugin
 
-    title: qsTr("Filtred Charts")
-    descr: qsTr("Realtime filtred chart")
+    title: qsTr("Filtered Charts")
+    descr: qsTr("Realtime filtered chart")
     icon: "poll-box-outline"
 
     sourceComponent: FilteredCharts {}

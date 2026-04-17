@@ -183,7 +183,7 @@ Rectangle {
     property string currentPage: buttonGroup.checkedButton.text
 
     Settings {
-        category: "filtredCharts"
+        category: "filteredCharts"
         property alias page: fcControl.currentPage
     }
 }
