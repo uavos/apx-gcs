@@ -40,7 +40,7 @@ Fact {
         id: mApply
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        enabled: !newItem && changes
+        enabled: !mChart.newItem && changes
         icon: "check-circle"
         onTriggered: fcControl.saveSettings()
     }
