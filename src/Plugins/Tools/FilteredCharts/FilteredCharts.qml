@@ -81,7 +81,9 @@ Rectangle {
         }
         // Create charts
         for (var i in sets) {
-            buttonGroup.buttons[i].loadSet(sets[i]);
+            if(i < buttonGroup.buttons.length) {
+                buttonGroup.buttons[i].loadSet(sets[i]);
+            }
         }
     }
 
