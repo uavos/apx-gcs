@@ -26,7 +26,7 @@ import Apx.Common
 
 Fact {
     id: mChart
-    
+
     flags: Fact.Group
     precision: 2
     icon: "rectangle"
@@ -95,9 +95,9 @@ Fact {
         expr = mBind.text;
         type = mFilters.value;
         scr = mFact2Save.text;
-        if(type === "kalman_smp") {
-            var v = value !== undefined ? value : 0
-            setKalmanState(v, 0.1) // set start state and covariance
+        if (type === "kalman_smp") {
+            var v = value !== undefined ? value : 0;
+            setKalmanState(v, 0.1); // set start state and covariance
         }
         changes = false;
         setColor();
@@ -125,8 +125,8 @@ Fact {
                 continue;
             if (f.name === "color")
                 descrList.push(f.name.toUpperCase() + ": <font color='" + f.text + "'>" + f.text.toUpperCase() + "</font>");
-            else      
-                descrList.push(f.name.toUpperCase() + ": " + f.text);    
+            else
+                descrList.push(f.name.toUpperCase() + ": " + f.text);
         }
         if (descrList.length > 0)
             descr = descrList.join(", ");
@@ -136,35 +136,35 @@ Fact {
 
     function setColor() {
         var opt = mChart.opts;
-        opt.color = mColor.text ? mColor.text : "#ffffff" // Black color for chart turn into white
-        if(!newItem)
+        opt.color = mColor.text ? mColor.text : "#ffffff"; // Black color for chart turn into white
+        if (!newItem)
             opt.iconColor = opt.color;
         mChart.opts = opt;
         mColor.changes = false;
-        chartFact.updateBtnValues()
-        fcCharts.updateSeriesColor()
+        chartFact.updateBtnValues();
+        fcCharts.updateSeriesColor();
     }
 
     function updateValue() {
         try {
-            var v = new Function('return ' + expr)()
+            var v = new Function('return ' + expr)();
             if (v === undefined)
-                throw new Error(qsTr("expression is undefined"))
+                throw new Error(qsTr("expression is undefined"));
             // For first init
-            if(value === undefined) {
+            if (value === undefined) {
                 setKalmanState(v, 0.1);
-                value = v
+                value = v;
                 return;
-            }  
+            }
             // Use filters
             switch (type) {
-            case "running_avg": 
+            case "running_avg":
                 useRunningAvgFilter(v);
                 break;
             case "kalman_smp":
                 useKalmanSmpFilter(v);
-                break;   
-            default:    
+                break;
+            default:
                 value = v;
             }
         } catch (e) {
@@ -174,29 +174,29 @@ Fact {
 
     function saveValue2Fact() {
         var fname = scr;
-        if(!fname || fname === "" || fname === undefined)
+        if (!fname || fname === "" || fname === undefined)
             return;
-        if(!apx.fleet.current.mandala.fact(fname, true))
+        if (!apx.fleet.current.mandala.fact(fname, true))
             return;
-        if(!fname.includes("sns.scr")) {
+        if (!fname.includes("sns.scr")) {
             chartWarning(qsTr("Unacceptable variable name. Use 'sns.scr' vars for saving!"));
             return;
-        }    
+        }
         apx.fleet.current.mandala.fact(fname, true).setRawValueLocal(value);
     }
 
     function chartWarning(msg) {
-        if(warning == msg && timer.running)
+        if (warning == msg && timer.running)
             return;
-        warning = msg;    
+        warning = msg;
         console.warn(qsTr("Chart") + " " + title + ": " + msg);
         timer.restart();
     }
 
     function hasScr(val) {
-        if(!val || val !== scr)
+        if (!val || val !== scr)
             return false;
-        chartWarning(val + " " + qsTr("variable already used"));  
+        chartWarning(val + " " + qsTr("variable already used"));
         return true;
     }
 
@@ -218,7 +218,7 @@ Fact {
 
     function useKalmanSmpFilter(v) {
         var coefs = mFilters.getKalmanSimpleCoefs();
-        
+
         // Time update - prediction
         var x0 = state;
         var p0 = covariance + coefs[0];
@@ -229,7 +229,7 @@ Fact {
         covariance = (1 - k) * p0;
         value = state;
     }
-    
+
     Fact {
         id: mTitle
         name: "chartname"
@@ -290,7 +290,7 @@ Fact {
         flags: Fact.Int
         units: "mandala"
         onTextChanged: {
-            fcControl.checkScrMatches(text)
+            fcControl.checkScrMatches(text);
             changes = true;
         }
     }
@@ -310,7 +310,7 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        enabled: !newItem && !mAdd.enable && changes
+        enabled: !newItem && !mAdd.enabled && changes
         icon: "check-circle"
         onTriggered: fcControl.saveSettings()
     }
