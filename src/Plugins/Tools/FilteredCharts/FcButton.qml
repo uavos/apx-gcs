@@ -22,6 +22,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Controls.Material
 
 import Apx.Common
 
@@ -34,12 +35,16 @@ TextButton {
     checkable: true
     ButtonGroup.group: buttonGroup
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
- 
-    onCheckedChanged: if(checked) fcCharts.speedFactorValue = fcMenuSet.speed
-    onPressed: if(checked && !fcMenuSet.active) fcMenuSet.trigger()
+
+    onCheckedChanged: if (checked)
+        fcCharts.speedFactorValue = fcMenuSet.speed
+    onPressed: if (checked && !fcMenuSet.active)
+        fcMenuSet.trigger()
     onActivated: {
-        fcCharts.resetEnable = true
-        fcCharts.facts = Qt.binding(function () { return values;})
+        fcCharts.resetEnable = true;
+        fcCharts.facts = Qt.binding(function () {
+            return values;
+        });
     }
 
     Connections {
@@ -51,8 +56,8 @@ TextButton {
     }
 
     function updateToolTip(facts) {
-       var s = [];
-       s.push("<strong>" + fcMenuSet.title + "</strong>");
+        var s = [];
+        s.push("<strong>" + fcMenuSet.title + "</strong>");
         for (var i = 0; i < facts.length; ++i) {
             var fact = facts[i];
             s.push("<font color='" + fact.opts.color + "'>" + fact.title + "</font>");
