@@ -178,8 +178,8 @@ void ElevationMap::getPluginEnableControl()
 void ElevationMap::setMissionAgl()
 {
     auto m = mission();
-    for (int i = 0; i < m->f_waypoints->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+    for (int i = 0; i < m->f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
         if(!wp)
             continue;
 
@@ -277,8 +277,8 @@ void ElevationMap::setWaypointsValues(bool b)
 {
     auto m = mission();
     QMap<QString, int> tempMap;
-    for (int i = 0; i < m->f_waypoints->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+    for (int i = 0; i < m->f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
         wp->f_agl->setVisible(b);
         wp->f_correct->setVisible(b);
         if (!b)
@@ -291,8 +291,8 @@ void ElevationMap::setWaypointsValues(bool b)
         connect(this, &ElevationMap::geoPathChanged, wp, &Waypoint::buildTerrainProfile, Qt::UniqueConnection);
         connect(wp, &Waypoint::responseCorrectPath, this, &ElevationMap::getCorrectPathResponse, Qt::UniqueConnection);
         // For start point height update
-        if (m->f_runways->size() > 0) {
-            auto rw0 = static_cast<Runway *>(m->f_runways->child(0));
+        if (m->f_rw->size() > 0) {
+            auto rw0 = static_cast<Runway *>(m->f_rw->child(0));
             auto rw0Hmsl = rw0->f_hmsl;
             connect(rw0, &Runway::elevationChanged, wp, &Waypoint::updateAgl, Qt::UniqueConnection);
             connect(rw0Hmsl, &Fact::valueChanged, wp, &Waypoint::updateAgl, Qt::UniqueConnection);
@@ -312,10 +312,10 @@ void ElevationMap::setWaypointsValues(bool b)
 void ElevationMap::setRunwaysValues(bool b) {
     auto m = mission();
     QSet<QString> tempSet;
-    for (int i = 0; i < m->f_runways->size(); ++i) {
+    for (int i = 0; i < m->f_rw->size(); ++i) {
         if (!b)
             continue;
-        auto runway = static_cast<Runway *>(m->f_runways->child(i));
+        auto runway = static_cast<Runway *>(m->f_rw->child(i));
         runway->initElevationMap();
         connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation, Qt::UniqueConnection);
         connect(runway, &Runway::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
@@ -331,10 +331,10 @@ void ElevationMap::setRunwaysValues(bool b) {
 void ElevationMap::setPoisValues(bool b) {
     auto m = mission();
     QSet<QString> tempSet;
-    for (int i = 0; i < m->f_pois->size(); ++i) {
+    for (int i = 0; i < m->f_pi->size(); ++i) {
         if (!b)
             continue;
-        auto poi = static_cast<Poi *>(m->f_pois->child(i));
+        auto poi = static_cast<Poi *>(m->f_pi->child(i));
         poi->initElevationMap();
         connect(this, &ElevationMap::coordinateChanged, poi, &Poi::extractElevation, Qt::UniqueConnection);
         connect(poi, &Poi::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
@@ -359,11 +359,11 @@ void ElevationMap::setStartPointElevation()
 {
     auto m = mission();
     auto hHmsl = getRefPointHmsl();
-    if (m->f_runways->size() > 0) {
+    if (m->f_rw->size() > 0) {
         auto startPoint = m->startPoint();
-        auto runway = static_cast<Runway *>(m->f_runways->child(0));
-        for (int i = 0; i < m->f_runways->size(); ++i) {
-            auto rw = static_cast<Runway *>(m->f_runways->child(i));
+        auto runway = static_cast<Runway *>(m->f_rw->child(0));
+        for (int i = 0; i < m->f_rw->size(); ++i) {
+            auto rw = static_cast<Runway *>(m->f_rw->child(i));
             if (rw && startPoint == rw->endPoint()) {
                 runway = rw;
             }
@@ -415,7 +415,7 @@ void ElevationMap::correctUnsafePaths()
         return;
     
     auto m = mission();
-    auto wpsSize = m->f_waypoints->size();
+    auto wpsSize = m->f_wp->size();
     if(wpsSize <= 0)
         return;
 
@@ -433,7 +433,7 @@ void ElevationMap::correctUnsafePaths()
                 continue;
             }
             // Waypoint correction start
-            auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+            auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
             if (!wp)
                 continue;
             wp->correctPath(true);
@@ -448,7 +448,7 @@ void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index) {
 
     auto m = mission();
     m_correction.insert(index, v);
-    if (m_correction.size() != m->f_waypoints->size())
+    if (m_correction.size() != m->f_wp->size())
         return;
     insertMissionWaypoints();
 }
@@ -472,8 +472,8 @@ void ElevationMap::insertMissionWaypoints()
     QJsonArray jsa;
     QJsonObject jso;
     QList<QGeoCoordinate> newWps;
-    for (int i = 0; i < m->f_waypoints->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+    for (int i = 0; i < m->f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
         
         // Add first waypoint
         if (i == 0) {
@@ -488,7 +488,7 @@ void ElevationMap::insertMissionWaypoints()
         
         // Append new waypoints 
         newWps = m_correction[i];
-        auto prevWp = static_cast<Waypoint *>(m->f_waypoints->child(i-1));
+        auto prevWp = static_cast<Waypoint *>(m->f_wp->child(i-1));
         auto prevCoordinate = prevWp->coordinate();
         for (int j = 0; j < newWps.size(); ++j) {
             if (j == 0) {
@@ -507,9 +507,10 @@ void ElevationMap::insertMissionWaypoints()
             }
             // Append new point
             jso[wp->f_amsl->name()] = true;
+            jso[wp->f_pos->name()] = 
             jso[wp->f_altitude->name()] = static_cast<int>(newWps[j].altitude());
-            jso[wp->f_latitude->name()] = newWps[j].latitude();
-            jso[wp->f_longitude->name()] = newWps[j].longitude();
+            jso["lat"] = newWps[j].latitude();
+            jso["lon"] = newWps[j].longitude();
             jso[wp->f_atrack->name()] = wp->f_atrack->value().toBool();
             jso[wp->f_xtrack->name()] = wp->f_xtrack->value().toBool();
             jsa.append(jso);
@@ -518,8 +519,8 @@ void ElevationMap::insertMissionWaypoints()
         jsa.append(wp->toJson());
     }
 
-    m->f_waypoints->fromJson(jsa);
-    auto lastWp = static_cast<Waypoint *>(m->f_waypoints->facts().last());
+    m->f_wp->fromJson(jsa);
+    auto lastWp = static_cast<Waypoint *>(m->f_wp->facts().last());
     if(lastWp) {
         connect(lastWp, &Waypoint::terrainProfileChanged, this, &ElevationMap::completeCorrection);
         return;
@@ -533,7 +534,7 @@ void ElevationMap::completeCorrection()
     if (!m_isCorrect)
         return;
 
-    Waypoint *lastWp = static_cast<Waypoint *>(mission()->f_waypoints->facts().last());
+    Waypoint *lastWp = static_cast<Waypoint *>(mission()->f_wp->facts().last());
     if(!lastWp)
         return;
 
@@ -553,8 +554,8 @@ void ElevationMap::checkCorrectionResult()
 {
     auto m = mission();
     QString wpWarnings;
-    for (int i = 0; i < m->f_waypoints->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_waypoints->child(i));
+    for (int i = 0; i < m->f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
         if (!wp || !wp->collision())
             continue;
         if (!wpWarnings.isEmpty())

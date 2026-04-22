@@ -560,13 +560,13 @@ void UnitMission::checkCollision()
         setCollision(false);
         return;
     }
-    if (f_waypoints->size() <= 0) {
+    if (f_wp->size() <= 0) {
         setCollision(false);
         return;
     }
     bool collision{false};
-    for (int i = 0; i < f_waypoints->size(); ++i) {
-        collision = static_cast<Waypoint *>(f_waypoints->child(i))->collision();
+    for (int i = 0; i < f_wp->size(); ++i) {
+        collision = static_cast<Waypoint *>(f_wp->child(i))->collision();
         if (collision) {
             setCollision(true);
             return;
@@ -583,8 +583,8 @@ void UnitMission::updateMinHeight()
     //     return;
     double min{0};
     double wpMin{0};
-    for (int i = 0; i < f_waypoints->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(f_waypoints->child(i));
+    for (int i = 0; i < f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(f_wp->child(i));
         if(!wp)
             continue;
         wpMin = wp->minHeight();
@@ -602,8 +602,8 @@ void UnitMission::updateMaxHeight()
     //     return;
     double max{0};
     double wpMax{0};
-    for (int i = 0; i < f_waypoints->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(f_waypoints->child(i));
+    for (int i = 0; i < f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(f_wp->child(i));
         if (!wp)
             continue;
         wpMax = wp->maxHeight();
