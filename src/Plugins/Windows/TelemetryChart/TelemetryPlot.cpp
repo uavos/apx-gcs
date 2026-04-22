@@ -633,6 +633,7 @@ void LegendItem::paintEvent(QPaintEvent *e)
     QRect identRect = cr;
     identRect.setX(identRect.x() + margin());
     identRect.setSize(icon().size());
+    identRect.setWidth(10);
     identRect.moveCenter(QPoint(identRect.center().x(), cr.center().y()));
     painter.drawPixmap(identRect, icon());
     painter.restore();

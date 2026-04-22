@@ -22,6 +22,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtLocation
+import QtPositioning
 
 MapQuickItem {  //to be used inside MapComponent only
     id: mapObject
@@ -49,10 +50,13 @@ MapQuickItem {  //to be used inside MapComponent only
     property alias contentsBottom:  containerBottom.children
     property alias contentsCenter:  containerCenter.children
 
+    property real radiusFactor: 10
+
 
     signal triggered()
     signal moved()
     signal movingFinished()
+    signal pressAndHold()
 
     enabled: visibleOnMap
 
@@ -138,14 +142,14 @@ MapQuickItem {  //to be used inside MapComponent only
     
     onHoverChanged: if(hover && !dragging) timer.start() // updateMapInfoElevation()
     onDraggingChanged: {
-        if(dragging){
-            if(!selected) select()
-            timer.repeat = true;
-            timer.start()
-        }else{
+        if(!dragging){
             movingFinished()
             if(implicitCoordinate) coordinate=Qt.binding(function(){return implicitCoordinate})
             timer.repeat = false;
+        } else {
+            if(!selected) select()
+            timer.repeat = true;
+            timer.start()
         }
     }
 
@@ -191,7 +195,7 @@ MapQuickItem {  //to be used inside MapComponent only
                     antialiasing: true
                     border.width: 2
                     border.color: "#FFFFFF"
-                    radius: shadow?height/10:0
+                    radius: shadow?height/mapObject.radiusFactor:0
                     color: "#50FFFFFF"
                     opacity: ui.effects?0.6:1
                 }
@@ -202,6 +206,7 @@ MapQuickItem {  //to be used inside MapComponent only
             horizontalAlignment: Text.AlignHCenter
             text: title
             square: true
+            radiusFactor: mapObject.radiusFactor
             visible: shadowLoader.status!=Loader.Ready
         }
         Loader {
@@ -259,11 +264,14 @@ MapQuickItem {  //to be used inside MapComponent only
             //acceptedButtons: Qt.LeftButton | Qt.RightButton
             anchors.fill: textItem
             scale: textItem.scale
-            drag.target: mapObject.draggable?mapObject:null
+            drag.target: (mapObject.draggable && mapObject.selected)?mapObject:null
             onPositionChanged: if(drag.active) objectMoving()
             onClicked: {
                 if(selected)triggered()
                 else select()
+            }
+            onPressAndHold: {
+                if(selected) mapObject.pressAndHold()
             }
         }
     }

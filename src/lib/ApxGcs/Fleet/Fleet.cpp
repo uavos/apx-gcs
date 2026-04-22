@@ -40,6 +40,7 @@ Fleet::Fleet(Fact *parent, Protocols *protocols)
     qmlRegisterUncreatableType<UnitWarnings>("APX.Fleet", 1, 0, "UnitWarnings", "Reference only");
 
     qmlRegisterUncreatableType<PUnit>("APX.Fleet", 1, 0, "PUnit", "Reference only");
+    qmlRegisterUncreatableType<PData>("APX.Fleet", 1, 0, "PData", "Reference only");
 
     f_select = new UnitSelect(this, "select", tr("Select unit"), tr("Change the active unit"));
     f_select->setIcon("select");

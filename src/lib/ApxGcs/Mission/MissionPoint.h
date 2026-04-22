@@ -19,42 +19,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "Area.h"
+#pragma once
+
 #include "MissionField.h"
-#include "UnitMission.h"
-#include <App/App.h>
-#include <QGeoCircle>
 
-Area::Area(MissionGroup *parent)
-    : MissionItem(parent, "P#", "", tr("Areant of interest"))
+#include <QGeoCoordinate>
+#include <QtCore>
+
+class MissionPoint : public Fact
 {
-    f_hmsl = new MissionField(this, "hmsl", tr("HMSL"), tr("Object of interest altitude MSL"), Int);
-    f_hmsl->setUnits("m");
-    f_hmsl->setEnumStrings(QStringList() << "ground");
+    Q_OBJECT
+    Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
-    //title
-    updateTitle();
+public:
+    explicit MissionPoint(Fact *parent, QString name, QString title, QString descr = "");
+    explicit MissionPoint(Fact *parent, QString title, QGeoCoordinate c);
 
-    connect(f_hmsl, &Fact::valueChanged, this, &Area::updateDescr);
-    updateDescr();
+    void setCoordinate(QGeoCoordinate c);
+    auto coordinate() const { return _coordinate; }
 
-    App::jsync(this);
-}
+    bool setValue(const QVariant &v) override;
 
-void Area::updateTitle()
-{
-    QStringList st;
-    st.append(QString::number(num() + 1));
-    setTitle(st.join(' '));
-}
-void Area::updateDescr()
-{
-    QStringList st;
-    QString sts;
-    if (!f_hmsl->isZero()) {
-        st.append("MSL" + f_hmsl->valueText());
-        sts.append("H");
-    }
-    setDescr(st.join(' '));
-    setValue(sts);
-}
+private:
+    QGeoCoordinate _coordinate;
+
+signals:
+    void coordinateChanged();
+};

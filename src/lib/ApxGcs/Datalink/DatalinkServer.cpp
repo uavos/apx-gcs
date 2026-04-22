@@ -21,8 +21,8 @@
  */
 #include "DatalinkServer.h"
 #include "Datalink.h"
-#include "DatalinkTcp.h"
-#include "DatalinkUdp.h"
+#include "DatalinkSocketHttp.h"
+#include "DatalinkSocketUdp.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
@@ -41,7 +41,7 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     , datalink(datalink)
 {
     QUrl url;
-    url.setScheme("tcp");
+    url.setScheme("http");
     url.setUserName(App::username());
     url.setHost(App::hostname());
     url.setPort(TCP_PORT_SERVER);
@@ -117,6 +117,12 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
     connect(f_http, &Fact::valueChanged, this, &DatalinkServer::httpActiveChanged);
     connect(f_udp, &Fact::valueChanged, this, &DatalinkServer::udpActiveChanged);
 
+    statusTimer.setSingleShot(true);
+    connect(&statusTimer, &QTimer::timeout, this, [this]() {
+        f_alloff->setEnabled(false);
+        setValue("");
+    });
+
     updateStatus();
 
     // connect after app loading with some delay
@@ -129,8 +135,14 @@ DatalinkServer::DatalinkServer(Datalink *datalink)
 void DatalinkServer::updateStatus()
 {
     int cnt = f_clients->size();
-    f_alloff->setEnabled(cnt > 0);
-    setValue(cnt > 0 ? QString::number(cnt) : "");
+
+    if (cnt > 0) {
+        statusTimer.stop();
+        f_alloff->setEnabled(true);
+        setValue(QString::number(cnt));
+    } else {
+        statusTimer.start(3000);
+    }
 }
 
 void DatalinkServer::httpActiveChanged()
@@ -139,7 +151,7 @@ void DatalinkServer::httpActiveChanged()
         return;
 
     if (!f_http->value().toBool()) {
-        for (auto i : f_clients->findFacts<DatalinkTcp>())
+        for (auto i : f_clients->findFacts<DatalinkSocketHttp>())
             i->close();
         httpServer->close();
         f_http->setActive(false);
@@ -160,7 +172,7 @@ void DatalinkServer::udpActiveChanged()
         udpServer->close();
         f_udp->setActive(false);
         apxMsg() << tr("UDP datalink disabled");
-        for (auto i : f_clients->findFacts<DatalinkUdp>())
+        for (auto i : f_clients->findFacts<DatalinkSocketUdp>())
             i->close();
         return;
     }
@@ -242,10 +254,10 @@ void DatalinkServer::newHttpConnection()
             socket->disconnectFromHost();
             continue;
         }
-        DatalinkTcp *c = new DatalinkTcp(f_clients, socket, 0, 0);
+        DatalinkSocketHttp *c = new DatalinkSocketHttp(f_clients, socket, 0, 0);
         updateClientsNetworkMode();
         connect(f_alloff, &Fact::triggered, c, &DatalinkConnection::close);
-        connect(c, &DatalinkTcp::httpRequest, this, &DatalinkServer::httpRequest);
+        connect(c, &DatalinkSocketHttp::httpRequest, this, &DatalinkServer::httpRequest);
         datalink->addConnection(c);
         c->setActivated(true);
     }
@@ -266,7 +278,7 @@ void DatalinkServer::udpReadyRead()
         //          << datagram.isValid();
 
         bool found = false;
-        for (auto i : f_clients->findFacts<DatalinkUdp>()) {
+        for (auto i : f_clients->findFacts<DatalinkSocketUdp>()) {
             if (i->isEqual(datagram.senderAddress())) {
                 i->readDatagram(datagram);
                 found = true;
@@ -276,12 +288,12 @@ void DatalinkServer::udpReadyRead()
         if (found)
             continue;
 
-        DatalinkUdp *c = new DatalinkUdp(f_clients,
-                                         udpServer,
-                                         datagram.senderAddress(),
-                                         datagram.senderPort(),
-                                         0,
-                                         0);
+        DatalinkSocketUdp *c = new DatalinkSocketUdp(f_clients,
+                                                     udpServer,
+                                                     datagram.senderAddress(),
+                                                     datagram.senderPort(),
+                                                     0,
+                                                     0);
 
         qDebug() << "new UDP connection" << c->title();
         updateClientsNetworkMode();

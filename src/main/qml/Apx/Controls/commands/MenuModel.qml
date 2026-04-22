@@ -93,7 +93,7 @@ Fact {
             Fact { enabled: false }
             Fact { binding: mandala.cmd.ins.inair }
             Fact { binding: mandala.cmd.ins.nogps; flags: Fact.Bool; }
-            Fact { binding: mandala.cmd.ins.nomag; flags: Fact.Bool; }
+            Fact { binding: mandala.cmd.ins.nomag; }
             Fact { binding: mandala.cmd.ins.hsel }
         }
     }

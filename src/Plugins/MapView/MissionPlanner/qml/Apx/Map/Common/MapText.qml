@@ -37,6 +37,8 @@ Rectangle {
     property real minWidth: 0
     property real minHeight: font.pixelSize+mapText.margins*2+1
 
+    property real radiusFactor: 10
+
     Behavior on implicitWidth { enabled: ui.smooth; NumberAnimation {duration: 100; } }
     Behavior on implicitHeight { enabled: ui.smooth; NumberAnimation {duration: 100; } }
 
@@ -45,7 +47,7 @@ Rectangle {
     //smooth: ui.antialiasing
     implicitWidth: (square?textItem.width:textItem.contentWidth)+mapText.margins*2+1+rightMargin
     implicitHeight: textItem.height+mapText.margins*2+1
-    radius: height/10
+    radius: height/radiusFactor
     //clip: true
     Text {
         id: textItem

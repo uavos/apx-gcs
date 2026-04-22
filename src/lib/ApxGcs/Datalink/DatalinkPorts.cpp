@@ -39,8 +39,13 @@ DatalinkPorts::DatalinkPorts(Datalink *datalink)
     f_add = new DatalinkPort(this, datalink);
     f_add->setIcon("plus-circle");
 
-    f_list = new Fact(this, "ports", tr("Ports"), tr("Configured ports"), Section | Count);
+    f_list = new Fact(this,
+                      "ports",
+                      tr("Ports"),
+                      tr("Configured ports"),
+                      Section | Count | DragChildren);
     connect(f_list, &Fact::sizeChanged, this, &DatalinkPorts::updateStatus);
+    connect(f_list, &Fact::itemMoved, this, &DatalinkPorts::save);
 
     load();
 
@@ -162,7 +167,7 @@ void DatalinkPorts::disableLocalNetworkPorts()
         DatalinkPort *port = qobject_cast<DatalinkPort *>(i);
         if (!port)
             continue;
-        if (port->f_type->value().toInt() != DatalinkPort::TCP)
+        if (port->f_type->value().toInt() == DatalinkPort::SERIAL)
             continue;
 
         if (!DatalinkSocket::isLocalHost(QHostAddress(port->f_url->value().toString())))

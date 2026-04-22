@@ -26,6 +26,7 @@ Item {
     id: ils_window
 
     readonly property int m_mode: mandala.cmd.proc.mode.value
+    readonly property int m_stage: mandala.cmd.proc.stage.value
     readonly property int m_reg_airbrk: mandala.cmd.reg.airbrk.value
 
     readonly property var f_derr: mandala.est.wpt.derr
@@ -34,11 +35,13 @@ Item {
     readonly property int m_reg_hdg: mandala.cmd.reg.hdg.value
     readonly property bool m_reg_taxi: mandala.cmd.reg.taxi.value
     property bool isTrack: m_reg_taxi || m_reg_hdg===reg_hdg_track || m_reg_hdg===reg_hdg_loiter
+        || (m_mode==proc_mode_UAV && m_stage>0)
 
     property double anumation_duration: 1000
 
     readonly property bool isLanding: m_mode===proc_mode_LANDING
-    readonly property bool isDistTracking: m_reg_airbrk===reg_airbrk_dist
+    readonly property bool isDistTracking: m_reg_airbrk===reg_airbrk_dist 
+        || (m_mode==proc_mode_UAV && m_stage>0)
 
     property double sz: (width>height?height:width)*0.6
     

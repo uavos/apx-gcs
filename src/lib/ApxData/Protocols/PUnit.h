@@ -43,6 +43,8 @@ class PUnit : public PTreeBase
 
     Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)
 
+    Q_PROPERTY(PData *data READ data CONSTANT)
+
 public:
     enum UnitType {
         UAV = 0, // Unmanned Aerial Unit

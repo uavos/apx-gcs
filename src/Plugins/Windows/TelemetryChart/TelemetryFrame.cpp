@@ -186,10 +186,13 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
 
     const uint8_t calc_count = 4;
     for (int i = 0; i < calc_count; i++) {
+        int hue = (360 / calc_count) * i;
+        QColor color = QColor::fromHsv(hue, 255, 200);
+
         QwtPlotCurve *calc_curve = plot->addCurve(QString("calculated_%0").arg(i + 1),
                                                   QString("Calculated_%0 JS script value").arg(i + 1),
                                                   "",
-                                                  QColor(Qt::yellow).lighter());
+                                                  color.lighter());
         plot->push_calc_curve(calc_curve);
     }
 

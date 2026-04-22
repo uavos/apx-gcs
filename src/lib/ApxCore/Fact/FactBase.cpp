@@ -74,13 +74,14 @@ void FactBase::unbindProperty(QString name)
 }
 void FactBase::unbindProperties(Fact *src, const QString &name)
 {
-    for (auto i : _property_binds) {
+    for (auto i : QList<QPointer<FactPropertyBinding>>(_property_binds)) {
         if (!i) {
             _property_binds.removeAll(i);
             continue;
         }
         if (!i->match(src, name))
             continue;
+        //qDebug() << "unbind:" << path() << name;
         _property_binds.removeAll(i);
         delete i;
     }

@@ -24,7 +24,8 @@
 #include "DatalinkConnection.h"
 
 class Datalink;
-class DatalinkSerialRemote;
+class DatalinkSerialRemoteTcp;
+class DatalinkSerialRemoteUdpMcast;
 
 class DatalinkSerialRemotes : public Fact
 {
@@ -36,6 +37,7 @@ public:
     Fact *f_add = nullptr;
     Fact *f_host = nullptr;
     Fact *f_port = nullptr;
+    Fact *f_type = nullptr;
     Fact *f_connect = nullptr;
     Fact *f_list = nullptr;
 
@@ -45,7 +47,7 @@ private:
     void updateStatus();
     void load();
     void save();
-    DatalinkSerialRemote *createConnection(const QString &host, int port);
+    DatalinkConnection *createConnection(const QString &host, int port, const QString &type);
 
 private slots:
     void onConnectTriggered();

@@ -153,7 +153,7 @@ void AppPlugins::fixDuplicates(QStringList &list, const QString &userPluginsPath
             continue;
         //p is user plugin
         QString pn = QFileInfo(p).baseName();
-        for (const auto ps : list) {
+        for (const auto ps : QStringList(list)) {
             if (ps.startsWith(userPluginsPath))
                 continue;
             //ps is system plugin

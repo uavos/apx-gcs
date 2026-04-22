@@ -46,14 +46,7 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(this, &Fact::numChanged, this, &MissionItem::updateOrderState);
     connect(group, &Fact::sizeChanged, this, &MissionItem::updateOrderState);
 
-    f_latitude = new MissionField(this, "lat", tr("Latitude"), tr("Global position latitude"), Float);
-    f_latitude->setUnits("lat");
-    f_longitude = new MissionField(this,
-                                   "lon",
-                                   tr("Longitude"),
-                                   tr("Global position longitude"),
-                                   Float);
-    f_longitude->setUnits("lon");
+    f_pos = new MissionPoint(this, "pos", tr("Position"), tr("Global position"));
 
     // This is a temporary solution until the feet-meters conversion of gcs is completed.
     f_feets = AppSettings::instance()->f_interface->findChild("measurementsystem.feets");
@@ -83,11 +76,9 @@ MissionItem::MissionItem(MissionGroup *parent,
 
     connect(this, &MissionItem::itemDataLoaded, this, &MissionItem::updateCoordinate);
 
-    connect(f_latitude, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
-    connect(f_longitude, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
+    connect(f_pos, &Fact::valueChanged, this, &MissionItem::updateCoordinate);
 
     connect(this, &MissionItem::coordinateChanged, this, &MissionItem::updatePath);
-
     connect(this, &Fact::numChanged, this, &MissionItem::updatePath, Qt::QueuedConnection);
 
     //selection support
@@ -121,21 +112,33 @@ QJsonValue MissionItem::toJson()
     const auto jsv = Fact::toJson();
     if (jsv.isNull() || jsv.isUndefined())
         return {};
+    // fix json
     auto jso = jsv.toObject();
+    //order is implicit by position in array
     jso.remove(f_order->name());
+    // pos to lat/lon
+    jso.remove(f_pos->name());
+    jso["lat"] = f_pos->coordinate().latitude();
+    jso["lon"] = f_pos->coordinate().longitude();
     return jso;
 }
 void MissionItem::fromJson(const QJsonValue &jsv)
 {
+    // fix json
+    auto jso = jsv.toObject();
+    // pos from lat/lon
+    if (jso.contains("lat") && jso.contains("lon")) {
+        const double lat = jso["lat"].toVariant().toDouble();
+        const double lon = jso["lon"].toVariant().toDouble();
+        f_pos->setCoordinate(QGeoCoordinate(lat, lon));
+        jso.remove("lat");
+        jso.remove("lon");
+    }
+    // update values
     blockUpdates = true;
-    Fact::fromJson(jsv);
+    Fact::fromJson(jso);
     blockUpdates = false;
     itemDataLoaded();
-}
-
-int MissionItem::missionItemType() const
-{
-    return group->missionItemType();
 }
 
 void MissionItem::updateTitle()
@@ -166,7 +169,7 @@ void MissionItem::updateCoordinate()
 {
     if (blockUpdateCoordinate || blockUpdates)
         return;
-    setCoordinate(QGeoCoordinate(f_latitude->value().toDouble(), f_longitude->value().toDouble()));
+    setCoordinate(f_pos->coordinate());
 }
 
 void MissionItem::updatePath()
@@ -253,8 +256,7 @@ void MissionItem::setCoordinate(const QGeoCoordinate &v)
     m_coordinate = v;
     emit coordinateChanged(v);
     blockUpdateCoordinate = true;
-    f_latitude->setValue(v.latitude());
-    f_longitude->setValue(v.longitude());
+    f_pos->setCoordinate(v);
     blockUpdateCoordinate = false;
 }
 QGeoPath MissionItem::geoPath() const

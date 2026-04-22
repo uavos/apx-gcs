@@ -28,6 +28,8 @@
 Runway::Runway(MissionGroup *parent)
     : MissionItem(parent, "r#", "", "")
 {
+    setOpt("color", "#0A6DBE");
+
     f_type = new MissionField(this, "type", tr("Type"), tr("Landing pattern type"), Enum);
     f_type->setEnumStrings(QStringList() << "left"
                                          << "right");

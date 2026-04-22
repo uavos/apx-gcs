@@ -33,7 +33,7 @@ ControlArea {
     mvar: f_cmd_airspeed   //ControlArea
     span: 10
     min:0
-    max: 100
+    max: 1000
     step: 1
     stepDrag: step*0.5
     stepLimit: 1

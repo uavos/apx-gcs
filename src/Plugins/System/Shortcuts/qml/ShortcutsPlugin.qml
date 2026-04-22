@@ -26,5 +26,6 @@ import Apx.Application
 
 AppPlugin {
     id: pluginSites
+    uiComponent: "main"
     sourceComponent: Component { Shortcuts { } }
 }

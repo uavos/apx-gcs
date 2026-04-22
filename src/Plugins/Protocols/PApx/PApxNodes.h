@@ -34,7 +34,7 @@ class PApxNodes : public PNodes
 public:
     explicit PApxNodes(PApxUnit *parent);
 
-    bool process_downlink(const xbus::pid_s &pid, PStreamReader &stream);
+    bool process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream, bool is_remote_uplink);
 
     auto nodes() const { return _nodes.values(); }
     auto local() const { return _local; }

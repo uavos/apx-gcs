@@ -23,15 +23,25 @@
 
 #include "DatalinkSocket.h"
 
-class DatalinkTcp : public DatalinkSocket
+class DatalinkSocketHttp : public DatalinkSocket
 {
     Q_OBJECT
 public:
-    explicit DatalinkTcp(Fact *parent, QTcpSocket *socket, quint16 rxNetwork, quint16 txNetwork);
+    explicit DatalinkSocketHttp(Fact *parent,
+                                QTcpSocket *socket,
+                                quint16 rxNetwork,
+                                quint16 txNetwork);
+
+    // constructor to create client socket and connect to remote server url
+    explicit DatalinkSocketHttp(Fact *parent, QUrl url);
 
 private:
-    QTcpSocket *_tcp;
-    bool _serverClient;
+    QTcpSocket *_tcp{};
+
+    enum {
+        HTTP_RESPONSE,
+        HTTP_CLIENT,
+    } _connectionType;
 
     typedef struct
     {
@@ -51,10 +61,16 @@ private:
     bool checkServerRequestHeader();
     bool checkDatalinkResponseHeader();
 
+    // retry connect
+    int retry{};
+    QTimer reconnectTimer;
+
 protected:
     void connectToHost(QHostAddress host, quint16 port);
+    void reconnect();
 
     //DatalinkConnection overrided
+    virtual void open() override;
     void resetDataStream() override;
 
     QByteArray read() override;

@@ -42,8 +42,9 @@ Loader {
             Shortcut {
                 context: Qt.ApplicationShortcut
                 enabled: modelData.enb.value
-                sequence: modelData.key.text
-                onActivated: application.jsexec(modelData.scr.text)
+                sequences: [modelData.key.text]
+                onActivated: application.jsexec(modelData.scr.text);
+                Component.onCompleted: parent=ui.main
             }
         }
     }
@@ -55,8 +56,9 @@ Loader {
             Shortcut {
                 context: Qt.ApplicationShortcut
                 enabled: modelData.enb.value
-                sequence: modelData.key.text
+                sequences: [modelData.key.text]
                 onActivated: application.jsexec(modelData.scr.text)
+                Component.onCompleted: parent=ui.main
             }
         }
     }

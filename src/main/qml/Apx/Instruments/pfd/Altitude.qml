@@ -43,7 +43,7 @@ ControlArea {
 
     mvar: f_cmd_altitude   //ControlArea
     span: 20
-    min:0
+    min: -1000
     max: 50000
     fixedPoint: true
     step: (f_cmd_altitude.value<100)?1:f_cmd_altitude.value<800?10:100

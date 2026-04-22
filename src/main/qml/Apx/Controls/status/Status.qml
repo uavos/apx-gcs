@@ -238,6 +238,7 @@ Rectangle {
             warning: m_agl_warning
             error: m_agl_failure
             active: m_agl_ready
+            enabled: m_agl_warning || m_agl_failure
             Layout.fillWidth: true
             Layout.preferredHeight: itemHeight
         }

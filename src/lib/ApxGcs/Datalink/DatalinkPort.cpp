@@ -24,9 +24,13 @@
 #include "DatalinkPorts.h"
 #include "DatalinkRemote.h"
 #include "DatalinkSerial.h"
+#include "DatalinkSocketHttp.h"
+#include "DatalinkSocketUdp.h"
 
 #include <App/App.h>
 #include <App/AppLog.h>
+
+#include <tcp_ports.h>
 
 DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const DatalinkPort *port)
     : Fact(port ? parent->f_list : parent,
@@ -43,6 +47,12 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
     f_comment = new Fact(this, "comment", tr("Description"), tr("Comment"), Text);
 
     f_enable = new Fact(this, "enable", tr("Enabled"), tr("Connect when available"), Bool);
+
+    f_persistent = new Fact(this,
+                            "persistent",
+                            tr("Persistent"),
+                            tr("Reconnect on app restart"),
+                            Bool);
 
     f_type = new Fact(this, "type", tr("Type"), tr("Link type"), Enum);
     f_type->setEnumStrings(QMetaEnum::fromType<PortType>());
@@ -142,12 +152,16 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         for (int i = 0; i < size(); ++i) {
             connect(child(i), &Fact::valueChanged, parent, &DatalinkPorts::save);
         }
+
         //f_connection
         switch (f_type->value().toInt()) {
         case SERIAL:
             f_connection = new DatalinkSerial(this, f_url->text(), f_baud->value().toUInt());
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
                 qobject_cast<DatalinkSerial *>(f_connection)->setDevName(f_url->text());
+            });
+            connect(f_baud, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkSerial *>(f_connection)->setBaud(f_baud->value().toUInt());
             });
             connect(f_codec, &Fact::valueChanged, f_connection, [this]() {
                 qobject_cast<DatalinkSerial *>(f_connection)
@@ -156,13 +170,20 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             qobject_cast<DatalinkSerial *>(f_connection)
                 ->setCodec(f_codec->value().value<DatalinkSerial::CodecType>());
             break;
-        case TCP:
-            f_connection = new DatalinkRemote(this, datalink, f_url->text());
+        case HTTP:
+            f_connection = new DatalinkSocketHttp(this, getUrl());
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
-                qobject_cast<DatalinkRemote *>(f_connection)->setRemoteUrl(f_url->text());
+                qobject_cast<DatalinkSocketHttp *>(f_connection)->setRemoteUrl(getUrl());
+            });
+            break;
+        case UDP:
+            f_connection = new DatalinkSocketUdp(this, getUrl());
+            connect(f_url, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkSocketUdp *>(f_connection)->setRemoteUrl(getUrl());
             });
             break;
         }
+
         if (f_connection) {
             f_connection->setEnabled(false);
             f_connection->setVisible(false);
@@ -195,6 +216,46 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
     updateStatus();
 }
 
+QUrl DatalinkPort::getUrl() const
+{
+    const auto s = f_url->text();
+
+    auto type = f_type->value().toInt();
+    if (type == SERIAL) {
+        // embed serial parameters into url
+        QUrlQuery q;
+        q.addQueryItem("port", f_url->text());
+        q.addQueryItem("baud", QString::number(f_baud->value().toUInt()));
+        q.addQueryItem("codec", f_codec->text());
+        QUrl url;
+        url.setScheme("serial");
+        url.setHost("");
+        url.setQuery(q);
+        return url;
+    }
+
+    QUrl url = s;
+    if (url.scheme().isEmpty()) {
+        url.setUrl(QString("%1://%2").arg(f_type->text().toLower()).arg(s));
+    }
+    if (url.port() <= 0) {
+        switch (type) {
+        case HTTP:
+            url.setPort(TCP_PORT_SERVER);
+            break;
+        case UDP:
+            url.setPort(UDP_PORT_GCS_TLM);
+            break;
+        default:
+            url.setPort(TCP_PORT_SERVER);
+            break;
+        }
+    }
+
+    // qDebug() << f_url->text() << "->" << url.toString();
+    return url;
+}
+
 void DatalinkPort::updateEnabled()
 {
     if (!App::loaded())
@@ -207,6 +268,7 @@ void DatalinkPort::updateEnabled()
 void DatalinkPort::defaults()
 {
     f_enable->setValue(true);
+    f_persistent->setValue(false);
     f_type->setValue(SERIAL);
     f_baud->setValue("460800");
     f_routing->setValue("LOCAL,CLIENTS:LOCAL,CLIENTS");
@@ -215,6 +277,7 @@ void DatalinkPort::defaults()
 void DatalinkPort::clear()
 {
     f_enable->setValue(false);
+    f_persistent->setValue(false);
     f_type->setValue(SERIAL);
     f_baud->setValue(QVariant());
     f_routing->setValue(QVariant());
@@ -226,7 +289,7 @@ void DatalinkPort::defaultUrl()
     case SERIAL:
         f_url->setValue("auto");
         break;
-    case TCP:
+    default:
         f_url->setValue("192.168.1.23");
         break;
     }
@@ -239,6 +302,58 @@ void DatalinkPort::removeTriggered()
     deleteLater();
 }
 
+QJsonValue DatalinkPort::toJson()
+{
+    auto jso = Fact::toJson().toObject();
+    // override some serialization
+    jso["routing"] = f_routing->value().toString();
+    jso["url"] = getUrl().toString();
+    jso.remove("type");
+    if (f_type->value().toInt() == SERIAL) {
+        // embedded serial parameters into url, remove separate entries
+        jso.remove("baud");
+        jso.remove("codec");
+    }
+    jso.remove("enable"); // use 'persistent' instead
+    return jso;
+}
+void DatalinkPort::fromJson(const QJsonValue &jsv)
+{
+    auto jso = jsv.toObject();
+    // override some deserialization
+    QUrl url = jso["url"].toString();
+    const auto scheme = url.scheme().toUpper();
+    if (!scheme.isEmpty()) {
+        jso["type"] = scheme;
+        jso["url"] = url.toString().mid(scheme.length() + 3);
+    } else if (jso["type"].toString().toUpper() == "TCP") {
+        jso["type"] = "HTTP";
+    }
+
+    if (scheme == "SERIAL") {
+        QUrlQuery q(url);
+        if (q.hasQueryItem("port")) {
+            jso["url"] = q.queryItemValue("port");
+        } else {
+            jso["url"] = url.authority();
+        }
+        if (q.hasQueryItem("baud")) {
+            jso["baud"] = q.queryItemValue("baud");
+        }
+        if (q.hasQueryItem("codec")) {
+            jso["codec"] = q.queryItemValue("codec").toUpper();
+        }
+    }
+    const auto jso_routing = jso["routing"];
+    if (jso_routing.isString()) {
+        f_routing->setValue(jso_routing.toString());
+        jso.remove("routing");
+    }
+    jso["enable"] = jso["persistent"].toVariant().toBool();
+
+    Fact::fromJson(jso);
+}
+
 void DatalinkPort::updateStatus()
 {
     int type = f_type->value().toInt();
@@ -248,18 +363,19 @@ void DatalinkPort::updateStatus()
 
     if (_new)
         return;
+
     QStringList st;
     if (!f_comment->text().isEmpty())
         st << f_comment->text();
 
     if (f_connection) {
-        st << f_connection->title();
-        setDescr(f_connection->descr());
+        st << f_connection->status();
     } else {
         st << f_url->text();
-        setDescr(f_routing->value().toString());
     }
+    st.removeAll("");
     setTitle(st.join(": "));
+    setDescr(getUrl().toString());
 }
 
 void DatalinkPort::updateRoutingValue()
@@ -336,7 +452,7 @@ void DatalinkPort::syncUrlEnum()
             st.append(spi.portName());
         }
     } break;
-    case TCP: {
+    default: {
         const Fact *fg = static_cast<const Fact *>(sender());
         for (int i = 0; i < fg->size(); ++i) {
             const Fact *f = fg->child(i);

@@ -22,6 +22,7 @@
 #pragma once
 
 #include "MissionGroup.h"
+#include "MissionPoint.h"
 #include "UnitMission.h"
 
 #include <Fact/Fact.h>
@@ -40,7 +41,6 @@
 class MissionItem : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(int missionItemType READ missionItemType CONSTANT)
 
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
 
@@ -66,14 +66,12 @@ public:
                          const QString &descr);
 
     MissionGroup *group;
-    int missionItemType() const;
 
     static constexpr float M2FT_COEF = 3.2808;  // conversion coefficient feets to meter
     static constexpr float M2KN_COEF = 1.9438;  // conversion coefficient meter per secont to knots
     static constexpr int TIMEOUT = 500;         // elevation update timeout
     Fact *f_order;
-    Fact *f_latitude;
-    Fact *f_longitude;
+    MissionPoint *f_pos;
 
     Fact *f_elevationmap{nullptr};
     Fact *f_remove;
