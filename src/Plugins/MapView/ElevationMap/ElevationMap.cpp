@@ -507,7 +507,6 @@ void ElevationMap::insertMissionWaypoints()
             }
             // Append new point
             jso[wp->f_amsl->name()] = true;
-            jso[wp->f_pos->name()] = 
             jso[wp->f_altitude->name()] = static_cast<int>(newWps[j].altitude());
             jso["lat"] = newWps[j].latitude();
             jso["lon"] = newWps[j].longitude();
