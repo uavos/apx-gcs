@@ -31,6 +31,10 @@ import Apx.Common
 Rectangle {
     id: signalsWidget
 
+    SignalsModel {
+        id: signalsModel
+    }
+
     implicitHeight: mainLayout.implicitHeight
     implicitWidth: mainLayout.implicitWidth
     border.width: 0
@@ -52,13 +56,13 @@ Rectangle {
     // -----------------------------------------------------------------
 
     function saveSettings() {
-        var json = _loadJson();
+        var json = signalsModel.loadJson();
         json.sets = [];
         var activeSets = _buildSetsFromPages();
         json.sets = activeSets.sets;
         if (!json.active) json.active = {};
         json.active["signals"] = activeSetIndex;
-        application.prefs.saveFile("signals.json", JSON.stringify(json, ' ', 2));
+        signalsModel.saveJson(json);
     }
 
     function checkScrMatches(val) {
@@ -72,14 +76,26 @@ Rectangle {
 
     function updateLayout() {
         pinnedPages = activePages.filter(function(p) { return p.pinned; });
+        var nonPinnedPages = activePages.filter(function(p) { return !p.pinned; });
+        if (currentPage && currentPage.pinned)
+            currentPage = nonPinnedPages.length > 0 ? nonPinnedPages[0] : null;
+        if (!currentPage && nonPinnedPages.length > 0)
+            currentPage = nonPinnedPages[0];
     }
 
     function updateSeriesColors() {
         singleChart.updateSeriesColor();
+        for (var i = 0; i < pinnedChartsRepeater.count; ++i) {
+            var item = pinnedChartsRepeater.itemAt(i);
+            if (item)
+                item.updateSeriesColor();
+        }
     }
 
     function activatePage(page) {
         if (!page) return;
+        if (page.pinned)
+            return;
         currentPage = page;
         singleChart.resetEnable = true;
         singleChart.facts = Qt.binding(function() {
@@ -102,23 +118,13 @@ Rectangle {
         // Destroy old page facts
         _destroyActivePages();
 
-        var json = _loadJson();
-
-        // Legacy migration: {page, signalas} -> {active, sets}
-        if (json && json.signalas && !json.sets)
-            json = _migrateLegacy(json);
-
-        var sets = (json && json.sets) ? json.sets : [];
-        if (sets.length === 0) sets = [_buildDefaultSet()];
-
-        var idx = 0;
-        if (json && json.active)
-            idx = json.active["signals"] || 0;
-        if (idx < 0 || idx >= sets.length) idx = 0;
+        var json = signalsModel.loadJson();
+        var sets = json.sets;
+        var idx = signalsModel.activeIndex(json);
 
         activeSetIndex = idx;
         var activeSet = sets[idx];
-        activeSetTitle = activeSet.title || "default";
+        activeSetTitle = activeSet.title || qsTr("default");
 
         var pages = activeSet.pages || [];
         var newPages = [];
@@ -128,7 +134,8 @@ Rectangle {
         }
         activePages = newPages;
         pinnedPages = newPages.filter(function(p) { return p.pinned; });
-        currentPage = newPages.length > 0 ? newPages[0] : null;
+        var nonPinnedPages = newPages.filter(function(p) { return !p.pinned; });
+        currentPage = nonPinnedPages.length > 0 ? nonPinnedPages[0] : null;
 
         if (currentPage) {
             singleChart.resetEnable = true;
@@ -140,12 +147,12 @@ Rectangle {
             });
         } else {
             singleChart.facts = [];
+            singleChart.speedFactorValue = 1.0;
         }
     }
 
     function _loadJson() {
-        var f = application.prefs.loadFile("signals.json");
-        return f ? JSON.parse(f) : {};
+        return signalsModel.loadJson();
     }
 
     function _destroyActivePages() {
@@ -163,7 +170,7 @@ Rectangle {
             return null;
         }
         var pg = component.createObject(signalsWidget, {
-            "title": pageData.name ? pageData.name : "P",
+            "title": pageData.name ? pageData.name : qsTr("P"),
             "isDirectEdit": true
         });
         pg.parentFact = apx.fleet.local;
@@ -178,7 +185,7 @@ Rectangle {
             savedPages.push(activePages[i].save());
 
         // Load existing sets, replace active one
-        var json = _loadJson();
+        var json = signalsModel.loadJson();
         var sets = (json && json.sets) ? JSON.parse(JSON.stringify(json.sets)) : [];
         if (sets.length === 0) sets.push({ title: activeSetTitle, pages: [] });
         if (activeSetIndex >= sets.length) activeSetIndex = 0;
@@ -253,9 +260,13 @@ Rectangle {
                     text: modelData.title
                     Layout.fillHeight: true
                     ButtonGroup.group: pageButtonGroup
-                    checked: modelData === signalsWidget.currentPage
+                    checked: !modelData.pinned && modelData === signalsWidget.currentPage
                     onClicked: {
-                        if (checked) {
+                        var wasCurrent = modelData === signalsWidget.currentPage;
+                        if (modelData.pinned) {
+                            if (modelData)
+                                modelData.trigger();
+                        } else if (wasCurrent) {
                             // already active — open page editor
                             if (modelData) modelData.trigger();
                         } else {
@@ -288,25 +299,25 @@ Rectangle {
                     var idx = factors.indexOf(currentPage.speed);
                     var next = (idx >= 0 && idx < factors.length - 1)
                                ? factors[idx + 1] : factors[0];
-                    currentPage.speed = next;
+                    currentPage.setSpeed(next);
                     saveSettings();
                 }
             }
         }
     }
 
-    // + button (top-right) — opens current page item editor
+    // + button (top-right) — opens current page editor
     IconButton {
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: Style.spacing
         size: Style.buttonSize * 0.7
         iconName: "plus"
-        toolTip: qsTr("Edit current page items")
+        toolTip: qsTr("Edit current page")
         opacity: ui.effects ? (hovered ? 1 : 0.5) : 1
         onTriggered: {
             if (currentPage)
-                currentPage.addNewItem();
+                currentPage.trigger();
         }
     }
 
@@ -335,33 +346,7 @@ Rectangle {
     // -----------------------------------------------------------------
 
     function _migrateLegacy(oldJson) {
-        var items = (oldJson.signalas || [])
-            .map(function(it) {
-                return {
-                    bind: it.bind || it.name || "",
-                    title: it.title || "",
-                    color: it.color || "",
-                    filters: [],
-                    warn: it.warn || "",
-                    alarm: it.alarm || "",
-                    act: it.act || "",
-                    save: it.save || ""
-                };
-            })
-            .filter(function(it) { return it.bind !== ""; });
-
-        return {
-            active: { signals: 0 },
-            sets: [{
-                title: "default",
-                pages: [{
-                    name: oldJson.page || "page 1",
-                    pin: false,
-                    speed: 1.0,
-                    items: items
-                }]
-            }]
-        };
+        return signalsModel.migrateLegacy(oldJson);
     }
 
     // -----------------------------------------------------------------
@@ -369,62 +354,6 @@ Rectangle {
     // -----------------------------------------------------------------
 
     function _buildDefaultSet() {
-        return {
-            title: "default",
-            pages: [
-                { name: "R",   pin: false, speed: 1.0, items: [
-                    { bind: "mandala.cmd.att.roll.value",  title: "roll cmd" },
-                    { bind: "mandala.est.att.roll.value",  title: "roll" }
-                ]},
-                { name: "P",   pin: false, speed: 1.0, items: [
-                    { bind: "mandala.cmd.att.pitch.value", title: "pitch cmd" },
-                    { bind: "mandala.est.att.pitch.value", title: "pitch" }
-                ]},
-                { name: "Y",   pin: false, speed: 1.0, items: [
-                    { bind: "mandala.cmd.pos.bearing.value", title: "bearing cmd" },
-                    { bind: "mandala.cmd.att.yaw.value",   title: "yaw cmd" },
-                    { bind: "mandala.est.att.yaw.value",   title: "yaw" }
-                ]},
-                { name: "Axy", pin: false, speed: 1.0, items: [
-                    { bind: "mandala.est.acc.x.value", title: "Ax" },
-                    { bind: "mandala.est.acc.y.value", title: "Ay" }
-                ]},
-                { name: "Az",  pin: false, speed: 1.0, items: [
-                    { bind: "mandala.est.acc.z.value", title: "Az" }
-                ]},
-                { name: "G",   pin: false, speed: 1.0, items: [
-                    { bind: "mandala.est.gyro.x.value", title: "Gx" },
-                    { bind: "mandala.est.gyro.y.value", title: "Gy" },
-                    { bind: "mandala.est.gyro.z.value", title: "Gz" }
-                ]},
-                { name: "Pt",  pin: false, speed: 1.0, items: [
-                    { bind: "mandala.est.pos.altitude.value",  title: "alt" },
-                    { bind: "mandala.est.pos.vspeed.value",    title: "vspd" },
-                    { bind: "mandala.est.air.airspeed.value",  title: "airspeed" }
-                ]},
-                { name: "Ctr", pin: false, speed: 1.0, items: [
-                    { bind: "mandala.ctr.att.ail.value",  title: "ail" },
-                    { bind: "mandala.ctr.att.elv.value",  title: "elv" },
-                    { bind: "mandala.ctr.att.rud.value",  title: "rud" },
-                    { bind: "mandala.ctr.eng.thr.value",  title: "thr" },
-                    { bind: "mandala.ctr.eng.prop.value", title: "prop" },
-                    { bind: "mandala.ctr.str.rud.value",  title: "str.rud" }
-                ]},
-                { name: "RC",  pin: false, speed: 1.0, items: [
-                    { bind: "mandala.cmd.rc.roll.value",  title: "RC roll" },
-                    { bind: "mandala.cmd.rc.pitch.value", title: "RC pitch" },
-                    { bind: "mandala.cmd.rc.thr.value",   title: "RC thr" },
-                    { bind: "mandala.cmd.rc.yaw.value",   title: "RC yaw" }
-                ]},
-                { name: "Usr", pin: false, speed: 1.0, items: [
-                    { bind: "mandala.est.usr.u1.value", title: "u1" },
-                    { bind: "mandala.est.usr.u2.value", title: "u2" },
-                    { bind: "mandala.est.usr.u3.value", title: "u3" },
-                    { bind: "mandala.est.usr.u4.value", title: "u4" },
-                    { bind: "mandala.est.usr.u5.value", title: "u5" },
-                    { bind: "mandala.est.usr.u6.value", title: "u6" }
-                ]}
-            ]
-        };
+        return signalsModel.buildDefaultSet();
     }
 }

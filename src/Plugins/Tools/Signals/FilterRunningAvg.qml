@@ -32,8 +32,6 @@ Fact {
     property var data: ({})
     property var coef: 0.5
 
-    onChangesChanged: { if (changes) menuFilters.changes = true; }
-
     function applyFilter(v) {
         return coef_value + (v - coef_value) * coef;
     }
@@ -54,41 +52,16 @@ Fact {
         initialized = false;
     }
 
-    function load() {
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            var v = data[settingName(f)];
-            if (v !== undefined)
-                f.value = v;
-        }
+    function loadFromObject(obj) {
+        data = obj || {};
+        raCoef.value = data.coef !== undefined ? data.coef : (data.coefficient !== undefined ? data.coefficient : 0.5);
         updateCoef();
     }
 
     function save() {
-        data = {};
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            var s = f.text.trim();
-            if (s === "")
-                continue;
-            data[settingName(f)] = s;
-        }
         updateCoef();
+        data = { coef: raCoef.value };
         return data;
-    }
-
-    function settingName(f) {
-        var n = f.name;
-        if (n.includes("_"))
-            return n.slice(0, n.indexOf("_"));
-        return n;
-    }
-
-    function fillData() {
-        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-            data = value;
-            load();
-        }
     }
 
     function updateCoef() {
@@ -98,7 +71,7 @@ Fact {
 
     Fact {
         id: raCoef
-        name: "coefficient"
+        name: "coef"
         title: qsTr("Coefficient")
         descr: qsTr("Coefficient for filtration")
         flags: Fact.Float

@@ -38,6 +38,7 @@ Fact {
     // Warning/alarm aggregated from items
     property bool hasWarning: false
     property bool hasAlarm: false
+    property string warningText: ""
 
     // Set to true when created directly from Signals.qml (page-button flow)
     // to show the per-page Save button. False when used inside SignalsMenu popup.
@@ -66,21 +67,35 @@ Fact {
     function updateWarnings() {
         var warn = false;
         var alarm = false;
+        var message = "";
         for (var i = 0; i < mItems.size; ++i) {
             var it = mItems.child(i);
-            if (it.hasWarning)
+            if (it.hasWarning) {
                 warn = true;
-            if (it.hasAlarm)
+                if (message === "")
+                    message = it.alertText || it.warningMsg;
+            }
+            if (it.hasAlarm) {
                 alarm = true;
+                if (message === "")
+                    message = it.alertText || it.warningMsg;
+            }
         }
         hasWarning = warn;
         hasAlarm = alarm;
+        warningText = message;
     }
 
     function updateChartsValues() {
         for (var i = 0; i < mItems.size; ++i)
             mItems.child(i).updateValue();
         updateWarnings();
+    }
+
+    function setSpeed(value) {
+        if (mSpeed.value === value)
+            return;
+        mSpeed.value = value;
     }
 
     function save() {
@@ -115,11 +130,23 @@ Fact {
     function createItem(itemData) {
         if (!itemData.bind || itemData.bind === "")
             return;
+        var wasEmpty = mItems.size === 0;
         var c = createFact(mItems, "MenuItem.qml", { "data": itemData });
         c.parentFact = mItems;
         c.removeTriggered.connect(function () { updatePageValues(); });
         c.titleChanged.connect(updatePageValues);
+        if (wasEmpty && (!pTitle.value || /^P\d+$/.test(pTitle.value)))
+            pTitle.value = defaultPageName(itemData.bind);
         return c;
+    }
+
+    function defaultPageName(bindExpr) {
+        if (!bindExpr || bindExpr === "")
+            return "P";
+        var expr = bindExpr.replace(/^mandala\./, "").replace(/\.value$/, "");
+        var parts = expr.split(".");
+        var leaf = parts.length > 0 ? parts[parts.length - 1] : expr;
+        return leaf.length > 0 ? leaf.charAt(0).toUpperCase() : "P";
     }
 
     function createFact(parent, url, opts) {
@@ -196,6 +223,7 @@ Fact {
             if (typeof signalsWidget !== 'undefined' && signalsWidget)
                 signalsWidget.updateLayout();
         }
+        onItemMoved: menuPage.updatePageValues()
     }
 
     Fact {

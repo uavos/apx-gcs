@@ -26,25 +26,23 @@ import QtQuick.Controls.Material
 
 import Apx.Common
 
-TextButton {
+ValueButton {
     id: pageBtn
 
     Layout.fillHeight: true
     checkable: true
     ButtonGroup.group: pageButtonGroup
+    showValue: false
+    alerts: true
 
     // The MenuPage Fact this button represents
     property var page: null
 
-    textColor: {
-        if (page && page.hasAlarm)
-            return Material.color(Material.Red);
-        if (page && page.hasWarning)
-            return Material.color(Material.Orange);
-        if (checked)
-            return Material.color(Material.Yellow);
-        return Material.primaryTextColor;
-    }
+    warning: page && page.hasWarning && !page.hasAlarm
+    error: page && page.hasAlarm
+    active: checked
+    normalColor: "#222"
+    activeColor: Qt.darker(Material.color(Material.BlueGrey), 1.5)
 
     // Pinned indicator — a subtle border
     background: Rectangle {
@@ -56,6 +54,8 @@ TextButton {
         radius: height / 6
     }
 
+    descr: page && page.warningText ? page.warningText : ""
+
     toolTip: buildToolTip()
 
     function buildToolTip() {
@@ -63,6 +63,10 @@ TextButton {
             return text;
         var s = [];
         s.push("<strong>" + page.title + "</strong>");
+        if (page.warningText && page.warningText !== "") {
+            var warnColor = page.hasAlarm ? Material.color(Material.Red) : Material.color(Material.Orange);
+            s.push("<font color='" + warnColor + "'>" + page.warningText + "</font>");
+        }
         var values = page.values;
         for (var i = 0; i < values.length; ++i) {
             var it = values[i];

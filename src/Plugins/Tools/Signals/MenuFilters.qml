@@ -23,110 +23,170 @@ import QtQuick
 
 import APX.Facts
 
-// Filter selector + params for a single chart item.
-// Exposes value as the currently selected filter type string.
+// Ordered filter chain for a single chart item.
 // To add a new filter type:
-//   1. Create FilterMyType.qml with filterValue(input)/resetState() API
-//   2. Add instance below with name matching the type string
-//   3. Add the type string to fTypes.enumStrings
-//   4. Handle it in MenuItem.qml updateValue() filter loop
+//   1. Create FilterMyType.qml with loadFromObject()/save()/filterValue()/resetState()
+//   2. Register the type in FilterItem.qml registry and enumStrings
+//   3. The chain will pick it up automatically
 Fact {
     id: menuFilters
 
     property bool changes: false
-    property var data: ({})
+    property var data: []
 
-    signal removeTriggered
+    property var newFilterTypeFact: newFilterType
+    property var addFilterFact: addFilterAction
+    property var filtersFact: filterValues
+
+    Component.onCompleted: {
+        var opt = opts;
+        opt.page = "qrc:/Signals/MenuFiltersPage.qml";
+        opts = opt;
+    }
 
     onChangesChanged: { if (changes) menuItem.changes = true; }
 
-    // Returns currently active filter type string ("none", "running_avg", "kalman_smp")
-    property string filterType: fTypes.text
-
-    function getFilterType() { return fTypes.text; }
-    function getRunningAvgCoef() { return fRunningAvg.coef; }
-    function getKalmanSimpleCoefs() { return fKalmanSimple.coefs; }
-
-    // Apply all enabled filters in sequence (future: loop over filter list)
-    // For current single-filter model, applies selected filter type
-    function applyFilters(v, stateObj) {
-        var type = fTypes.text;
-        if (type === "running_avg") {
-            return fRunningAvg.filterValue(v);
-        } else if (type === "kalman_smp") {
-            return fKalmanSimple.filterValue(v);
+    function createFilter(filterData) {
+        var component = Qt.createComponent("FilterItem.qml");
+        if (component.status !== Component.Ready) {
+            console.warn("MenuFilters: cannot load FilterItem.qml: " + component.errorString());
+            return null;
         }
-        return v;
+
+        var filterFact = component.createObject(filterValues, {
+            "data": filterData || {
+                type: "running_avg",
+                enabled: true
+            }
+        });
+        if (!filterFact) {
+            console.warn("MenuFilters: failed to create FilterItem instance");
+            return null;
+        }
+        filterFact.parentFact = filterValues;
+        filterFact.removeTriggered.connect(function() {
+            updateDescr();
+            changes = true;
+        });
+        filterFact.titleChanged.connect(updateDescr);
+        updateDescr();
+        return filterFact;
     }
 
     function resetFilterState() {
-        fRunningAvg.resetState();
-        fKalmanSimple.resetState();
+        for (var i = 0; i < filterValues.size; ++i)
+            filterValues.child(i).resetState();
+    }
+
+    function applyFilters(v) {
+        var result = v;
+        for (var i = 0; i < filterValues.size; ++i)
+            result = filterValues.child(i).applyFilter(result);
+        return result;
+    }
+
+    function normalizeData(rawData) {
+        if (Array.isArray(rawData))
+            return rawData;
+
+        if (rawData && typeof rawData === "object") {
+            if (rawData.type)
+                return [rawData];
+
+            if (rawData.filters && Array.isArray(rawData.filters))
+                return rawData.filters;
+
+            // Legacy single-selector shape
+            var legacyType = rawData.filters || rawData.filterType;
+            if (legacyType === "running_avg")
+                return [{
+                    type: "running_avg",
+                    enabled: true,
+                    coef: rawData.running_avg || rawData.coef || rawData.coefficient || 0.5
+                }];
+            if (legacyType === "kalman_smp")
+                return [{
+                    type: "kalman_smp",
+                    enabled: true,
+                    r: rawData.measurement_noise !== undefined ? rawData.measurement_noise : (rawData.r !== undefined ? rawData.r : 1),
+                    q: rawData.environment_noise !== undefined ? rawData.environment_noise : (rawData.q !== undefined ? rawData.q : 1)
+                }];
+        }
+
+        return [];
     }
 
     function load() {
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            var v = data[settingName(f)];
-            if (v !== undefined)
-                f.value = v;
-        }
-        fRunningAvg.fillData();
-        fKalmanSimple.fillData();
+        filterValues.deleteChildren();
+        var list = normalizeData(data);
+        for (var i = 0; i < list.length; ++i)
+            createFilter(list[i]);
+        menuFilters.value = list;
         changes = false;
+        updateDescr();
     }
 
     function save() {
-        data = {};
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            var s = f.text.trim();
-            if (f.size !== 0)
-                s = f.save();
-            if (s === "")
-                continue;
-            data[settingName(f)] = s;
-        }
+        data = [];
+        for (var i = 0; i < filterValues.size; ++i)
+            data.push(filterValues.child(i).save());
+        menuFilters.value = data;
         changes = false;
+        updateDescr();
         return data;
     }
 
-    function settingName(f) {
-        var n = f.name;
-        if (n.includes("_"))
-            return n.slice(0, n.indexOf("_"));
-        return n;
+    function updateDescr() {
+        var labels = [];
+        for (var i = 0; i < filterValues.size; ++i)
+            labels.push(filterValues.child(i).title);
+        descr = labels.length > 0 ? labels.join(", ") : qsTr("No filters");
     }
 
     function fillData() {
-        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+        if (value !== undefined && value !== null) {
             data = value;
             load();
         }
     }
 
     Fact {
-        id: fTypes
-        name: "filters"
-        title: qsTr("Filter")
-        descr: qsTr("Selecting the filter to use")
+        id: newFilterType
+        name: "new_filter_type"
+        title: qsTr("New filter type")
+        descr: qsTr("Filter type to append to the chain")
         flags: Fact.Enum
-        enumStrings: ["none", "running_avg", "kalman_smp"]
-        onTextChanged: menuFilters.value = text
-        onValueChanged: changes = true
-    }
-    FilterRunningAvg {
-        id: fRunningAvg
-        name: "running_avg"
-        title: qsTr("Running average")
-        descr: qsTr("Running average filter settings")
-    }
-    FilterKalmanSimple {
-        id: fKalmanSimple
-        name: "kalman_smp"
-        title: qsTr("Kalman simple")
-        descr: qsTr("Simple kalman filter settings")
+        enumStrings: ["running_avg", "kalman_smp"]
     }
 
+    Fact {
+        id: addFilterAction
+        title: qsTr("Add filter")
+        descr: qsTr("Append a new filter to the chain")
+        flags: Fact.Action
+        icon: "plus-circle"
+        onTriggered: {
+            createFilter({
+                type: newFilterType.text,
+                enabled: true
+            });
+            changes = true;
+        }
+    }
+
+    Fact {
+        id: filterValues
+        title: qsTr("Filters")
+        descr: qsTr("Ordered filter chain")
+        flags: (Fact.Group | Fact.Section | Fact.DragChildren)
+        onSizeChanged: {
+            updateDescr();
+            changes = true;
+        }
+        onItemMoved: {
+            updateDescr();
+            changes = true;
+        }
+    }
 }
 

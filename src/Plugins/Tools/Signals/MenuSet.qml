@@ -31,6 +31,9 @@ Fact {
     flags: (Fact.Group | Fact.FlatModel)
 
     property var pages: [] // from config / JSON
+    property var titleFact: setTitle
+    property var addPageFact: addPage
+    property var pagesFact: mPages
 
     signal selected(var num)
 
@@ -45,6 +48,7 @@ Fact {
 
     // Add a new blank page (up to 10)
     Fact {
+        id: addPage
         title: qsTr("Add page")
         icon: "plus-circle"
         flags: Fact.Action
@@ -59,11 +63,15 @@ Fact {
     Fact {
         id: mPages
         title: qsTr("Pages")
-        flags: (Fact.Group | Fact.Section)
+        flags: (Fact.Group | Fact.Section | Fact.Count | Fact.DragChildren)
         onSizeChanged: updateDescr()
+        onItemMoved: updateDescr()
     }
 
     Component.onCompleted: {
+        var opt = opts;
+        opt.page = "qrc:/Signals/MenuSetPage.qml";
+        opts = opt;
         updateSetItems();
     }
 
@@ -77,6 +85,13 @@ Fact {
             title: title,
             pages: savedPages
         };
+    }
+
+    function loadSet(setData) {
+        title = setData.title ? setData.title : title;
+        setTitle.value = title;
+        pages = setData.pages ? setData.pages : [];
+        updateSetItems();
     }
 
     function updateSetItems() {
@@ -98,9 +113,15 @@ Fact {
         var pg = component.createObject(mPages, {
             "title": pageData.name ? pageData.name : ("P" + (mPages.size + 1))
         });
+        if (!pg) {
+            console.warn("MenuSet: failed to create MenuPage instance");
+            return null;
+        }
         pg.parentFact = mPages;
         pg.load(pageData);
-        pg.destroyed.connect(updateDescr);
+        if (pg.titleChanged)
+            pg.titleChanged.connect(updateDescr);
+        updateDescr();
         return pg;
     }
 

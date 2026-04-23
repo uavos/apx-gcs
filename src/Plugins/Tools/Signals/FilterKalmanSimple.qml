@@ -29,15 +29,14 @@ Fact {
     flags: Fact.Group
 
     property bool changes: false
-    property var coefs: [1, 1]
+    property real q: 1
+    property real r: 1
     property var data: ({})
 
     // Kalman state
     property real kState: 0
     property real kCovariance: 0.1
     property bool initialized: false
-
-    onChangesChanged: { if (changes) menuFilters.changes = true; }
 
     function filterValue(input) {
         if (!initialized) {
@@ -47,10 +46,10 @@ Fact {
         }
         // Time update - prediction
         var x0 = kState;
-        var p0 = kCovariance + coefs[0];
+        var p0 = kCovariance + q;
 
         // Measurement update - correction
-        var k = p0 / (p0 + coefs[1]);
+        var k = p0 / (p0 + r);
         kState = x0 + k * (input - x0);
         kCovariance = (1 - k) * p0;
         return kState;
@@ -60,41 +59,11 @@ Fact {
         initialized = false;
     }
 
-    function load() {
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            var v = data[settingName(f)];
-            if (v !== undefined)
-                f.value = v;
-        }
+    function loadFromObject(obj) {
+        data = obj || {};
+        ksMeasNoise.value = data.r !== undefined ? data.r : (data.measurement_noise !== undefined ? data.measurement_noise : 1);
+        ksEnvNoise.value = data.q !== undefined ? data.q : (data.environment_noise !== undefined ? data.environment_noise : 1);
         updateCoefs();
-    }
-
-    function save() {
-        data = {};
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            var s = f.text.trim();
-            if (s === "")
-                continue;
-            data[settingName(f)] = s;
-        }
-        updateCoefs();
-        return data;
-    }
-
-    function settingName(f) {
-        var n = f.name;
-        if (n.includes("_"))
-            return n.slice(0, n.indexOf("_"));
-        return n;
-    }
-
-    function fillData() {
-        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-            data = value;
-            load();
-        }
     }
 
     function updateFilterValue() {
@@ -103,13 +72,23 @@ Fact {
     }
 
     function updateCoefs() {
-        coefs = [ksMeasNoise.value, ksEnvNoise.value];
+        r = ksMeasNoise.value;
+        q = ksEnvNoise.value;
         changes = false;
+    }
+
+    function save() {
+        updateCoefs();
+        data = {
+            r: ksMeasNoise.value,
+            q: ksEnvNoise.value
+        };
+        return data;
     }
 
     Fact {
         id: ksMeasNoise
-        name: "measurement_noise"
+        name: "r"
         title: qsTr("Measurement noise")
         descr: qsTr("Coefficient of measurement noise")
         flags: Fact.Float
@@ -121,7 +100,7 @@ Fact {
     }
     Fact {
         id: ksEnvNoise
-        name: "environment_noise"
+        name: "q"
         title: qsTr("Environment noise")
         descr: qsTr("Coefficient of environment noise")
         flags: Fact.Float

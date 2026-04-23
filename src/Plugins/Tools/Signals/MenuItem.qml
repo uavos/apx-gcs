@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
+import QtQuick.Controls.Material
 
 import APX.Facts
 import Apx.Common
@@ -38,6 +39,7 @@ Fact {
     // Runtime computed value (filtered)
     property var currentValue: undefined
     property string warningMsg: ""
+    property string alertText: ""
     property real _warnTimestamp: 0
 
     // Cached compiled functions – rebuilt only when expressions change
@@ -79,7 +81,7 @@ Fact {
 
     // Expose for PageButton tooltip
     property string itemTitle: mTitle.text ? mTitle.text : mBind.text
-    property string itemColor: mColor.value ? mColor.value : "#ffffff"
+    property var itemColor: menuItem.opts && menuItem.opts.color ? menuItem.opts.color : Material.color(Material.Blue + menuItem.num * 2)
 
     Component.onCompleted: {
         // Wire expression changes to recompile cached functions before loading
@@ -108,12 +110,21 @@ Fact {
     onCurrentValueChanged: saveValue2Fact()
 
     function load() {
+        if (data.filters === undefined && data.filt !== undefined)
+            data.filters = data.filt;
+        if (data.warning === undefined && data.warn !== undefined)
+            data.warning = data.warn;
+        if (data.title === undefined && data.chartname !== undefined)
+            data.title = data.chartname;
         for (var i = 0; i < menuItem.size; ++i) {
             var f = child(i);
+            if (f.transientFact)
+                continue;
             var v = data[settingName(f)];
             if (v !== undefined)
                 f.value = v;
         }
+        syncBindSelector();
         mFilters.fillData();
         mColor.value = data.color ? data.color : "";
         changes = false;
@@ -124,6 +135,8 @@ Fact {
         data = {};
         for (var i = 0; i < menuItem.size; ++i) {
             var f = child(i);
+            if (f.transientFact)
+                continue;
             var s = f.text.trim();
             if (f.size !== 0)
                 s = f.save();
@@ -138,9 +151,22 @@ Fact {
 
     function settingName(f) {
         var n = f.name;
+        if (!n || n.startsWith("_"))
+            return "";
         if (n.includes("_"))
             return n.slice(0, n.indexOf("_"));
         return n;
+    }
+
+    function syncBindSelector() {
+        var expr = mBind.text;
+        var prefix = "mandala.";
+        var suffix = ".value";
+        if (expr && expr.startsWith(prefix) && expr.endsWith(suffix) && expr.indexOf("(") < 0 && expr.indexOf(" ") < 0) {
+            mBindFact.value = expr.slice(prefix.length, expr.length - suffix.length);
+        } else {
+            mBindFact.value = "";
+        }
     }
 
     function updateTitle() {
@@ -157,21 +183,26 @@ Fact {
             var f = child(i);
             if (!f.name)
                 continue;
+            if (f.transientFact)
+                continue;
             if (f.name === "title")
                 continue;
-            if (f.text === "")
+            var text = f.text;
+            if ((!text || text === "") && f.descr)
+                text = f.descr;
+            if (!text || text === "")
                 continue;
             if (f.name === "color")
                 descrList.push(f.name.toUpperCase() + ": <font color='" + f.text + "'>" + f.text.toUpperCase() + "</font>");
             else
-                descrList.push(f.name.toUpperCase() + ": " + f.text);
+                descrList.push(f.name.toUpperCase() + ": " + text);
         }
         descr = descrList.length > 0 ? descrList.join(", ") : "";
     }
 
     function setColor() {
         var opt = menuItem.opts;
-        opt.color = mColor.value ? mColor.value : "#ffffff";
+        opt.color = mColor.value ? mColor.value : Material.color(Material.Blue + menuItem.num * 2);
         opt.iconColor = opt.color;
         menuItem.opts = opt;
         mColor.changes = false;
@@ -183,7 +214,12 @@ Fact {
 
     // Telemetry update — computes filtered value and evaluates warn/alarm
     function updateValue() {
-        if (!_bindFn) return;
+        if (!_bindFn) {
+            hasWarning = false;
+            hasAlarm = false;
+            alertText = "";
+            return;
+        }
         var v;
         try {
             v = _bindFn();
@@ -194,8 +230,12 @@ Fact {
                 if (_f) v = _f.value;
             } catch (e2) {}
         }
-        if (v === undefined || !isFinite(v))
+        if (v === undefined || !isFinite(v)) {
+            hasWarning = false;
+            hasAlarm = false;
+            alertText = "";
             return;
+        }
 
         // Seed filter state on first valid value
         if (currentValue === undefined)
@@ -209,6 +249,12 @@ Fact {
         // Evaluate warning/alarm using pre-compiled functions
         try { hasWarning = _warnFn ? _warnFn(filtered) : false; } catch(e) { hasWarning = false; }
         try { hasAlarm = _alarmFn ? _alarmFn(filtered) : false; } catch(e) { hasAlarm = false; }
+        if (hasAlarm)
+            alertText = itemTitle + ": " + qsTr("Alarm");
+        else if (hasWarning)
+            alertText = itemTitle + ": " + qsTr("Warning");
+        else
+            alertText = "";
     }
 
     function saveValue2Fact() {
@@ -242,19 +288,35 @@ Fact {
 
     Fact {
         id: mTitle
-        name: "chartname"
+        name: "title"
         title: qsTr("Title")
         descr: qsTr("Chart name")
         flags: Fact.Text
         onTextChanged: changes = true
     }
     Fact {
+        id: mBindFact
+        name: "_bind_fact"
+        property bool transientFact: true
+        title: qsTr("Binding")
+        descr: qsTr("Select a mandala fact and fill the expression automatically")
+        flags: Fact.Int
+        units: "mandala"
+        onTextChanged: {
+            if (text && text !== "")
+                mBind.value = "mandala." + text + ".value";
+        }
+    }
+    Fact {
         id: mBind
         name: "bind"
         title: qsTr("Expression")
-        descr: "Math.atan(est.att.pitch/est.att.roll)"
+        descr: qsTr("Example: Math.atan(mandala.est.att.pitch.value / mandala.est.att.roll.value)")
         flags: Fact.Text
-        onTextChanged: changes = true
+        onTextChanged: {
+            syncBindSelector();
+            changes = true;
+        }
     }
     MenuColor {
         id: mColor
@@ -264,12 +326,12 @@ Fact {
     }
     MenuFilters {
         id: mFilters
-        name: "filt"
+        name: "filters"
         title: qsTr("Filters")
         descr: qsTr("Filter settings")
     }
     Fact {
-        name: "warn"
+        name: "warning"
         id: mWarn
         title: qsTr("Warning")
         descr: qsTr("Expression for warning (receives 'value')")
@@ -280,14 +342,14 @@ Fact {
         name: "alarm"
         id: mAlarm
         title: qsTr("Alarm")
-        descr: "value>1.8 || (value>0 && value<1)"
+        descr: qsTr("Example: value>1.8 || (value>0 && value<1)")
         flags: Fact.Text
         onValueChanged: changes = true
     }
     Fact {
         name: "act"
         title: qsTr("Action")
-        descr: "cmd.proc.action=proc_action_reset"
+        descr: qsTr("Example: cmd.proc.action=proc_action_reset")
         flags: Fact.Text
         onValueChanged: changes = true
     }
