@@ -81,9 +81,20 @@ TextButton {
         return fcMenuSet.checkScrs(val);
     }
 
+    function setSpeed(val) {
+        fcMenuSet.speed = val;
+        saveTimer.restart(); // save settings after speed changed
+    }
+
     Timer {
         id: timer
         interval: 10000
+    }
+
+    Timer {
+        id: saveTimer
+        interval: 1000
+        onTriggered: fcControl.saveSettings()
     }
 
     FcMenuSet {

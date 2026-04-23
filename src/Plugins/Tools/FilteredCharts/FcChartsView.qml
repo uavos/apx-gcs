@@ -35,7 +35,7 @@ Item {
     property real lineWidth: ui.antialiasing ? 1.5 : 1
     property real lineWidthCmd: ui.antialiasing ? 2.1 : 2
 
-    property real speed: 1
+    property var speedFactor: [0.2, 0.5, 1, 2, 4]
     property real speedFactorValue: 1
 
     property bool resetEnable: false

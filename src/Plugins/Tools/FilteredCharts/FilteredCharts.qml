@@ -94,6 +94,19 @@ Rectangle {
         return matches;
     }
 
+    function changeSpeed() {
+        if(fcCharts.speedFactorValue !== fcCharts.speedFactor[fcCharts.speedFactor.length - 1]) {
+            for (var i = 0; i < fcCharts.speedFactor.length-1; ++i) {
+                if (fcCharts.speedFactor[i] <= fcCharts.speedFactorValue && fcCharts.speedFactorValue < fcCharts.speedFactor[i+1]) {
+                    buttonGroup.checkedButton.setSpeed(fcCharts.speedFactor[i+1])
+                    break;
+                }
+            }
+        } else {
+            buttonGroup.checkedButton.setSpeed(fcCharts.speedFactor[0])
+        }
+    }
+
     ColumnLayout {
         id: layout
         anchors.fill: parent
@@ -164,6 +177,7 @@ Rectangle {
                 text: fcCharts.speedFactorValue + "x"
                 Layout.fillHeight: true
                 Layout.minimumWidth: height * 4
+                onClicked: changeSpeed()
             }
         }
     }
