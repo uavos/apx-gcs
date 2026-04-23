@@ -38,6 +38,7 @@ Fact {
     // Runtime computed value (filtered)
     property var currentValue: undefined
     property string warningMsg: ""
+    property real _warnTimestamp: 0
 
     signal addTriggered
     signal removeTriggered
@@ -139,33 +140,43 @@ Fact {
 
     // Telemetry update — computes filtered value and evaluates warn/alarm
     function updateValue() {
+        var expr = mBind.text;
+        if (!expr || expr === "")
+            return;
+        var v;
         try {
-            var expr = mBind.text;
-            if (!expr || expr === "")
-                return;
-            var v = new Function('return ' + expr)();
-            if (v === undefined)
-                throw new Error(qsTr("expression is undefined"));
-
-            // On first value, seed filter state
-            if (currentValue === undefined) {
-                mFilters.resetFilterState();
-                currentValue = v;
-            }
-
-            // Run filter chain
-            var filtered = mFilters.applyFilters(v);
-            currentValue = filtered;
-
-            // Evaluate warning/alarm expressions
-            var warnExpr = mWarn.text;
-            var alarmExpr = mAlarm.text;
-            hasWarning = warnExpr ? !!new Function('value', 'return ' + warnExpr)(filtered) : false;
-            hasAlarm = alarmExpr ? !!new Function('value', 'return ' + alarmExpr)(filtered) : false;
-
+            // 'mandala' is available as a QML context property;
+            // expressions like "mandala.est.att.roll.value" or
+            // "Math.atan(mandala.est.att.pitch.value / mandala.est.att.roll.value)" work.
+            v = eval(expr);
         } catch (e) {
-            emitWarning(e.message);
+            // Fallback: treat as a plain mandala fact path
+            try {
+                var _f = apx.fleet.current.mandala.fact(expr, false);
+                if (_f) v = _f.value;
+            } catch (e2) {}
         }
+        if (v === undefined || !isFinite(v))
+            return;
+
+        // Seed filter state on first valid value
+        if (currentValue === undefined)
+            mFilters.resetFilterState();
+
+        // Run filter chain
+        var filtered = mFilters.applyFilters(v);
+        currentValue = filtered;
+        menuItem.value = filtered;  // ChartsView reads fact.value
+
+        // Evaluate warning/alarm expressions
+        try {
+            var warnExpr = mWarn.text;
+            hasWarning = warnExpr ? !!eval(warnExpr.replace(/\bvalue\b/g, filtered)) : false;
+        } catch (e) { hasWarning = false; }
+        try {
+            var alarmExpr = mAlarm.text;
+            hasAlarm = alarmExpr ? !!eval(alarmExpr.replace(/\bvalue\b/g, filtered)) : false;
+        } catch (e) { hasAlarm = false; }
     }
 
     function saveValue2Fact() {
@@ -182,11 +193,12 @@ Fact {
     }
 
     function emitWarning(msg) {
-        if (warningMsg === msg && warnTimer.running)
+        var now = Date.now();
+        if (warningMsg === msg && (now - _warnTimestamp) < 10000)
             return;
         warningMsg = msg;
+        _warnTimestamp = now;
         console.warn(qsTr("Chart") + " " + title + ": " + msg);
-        warnTimer.restart();
     }
 
     function hasScr(val) {
@@ -194,11 +206,6 @@ Fact {
             return false;
         emitWarning(val + " " + qsTr("variable already used"));
         return true;
-    }
-
-    Timer {
-        id: warnTimer
-        interval: 10000
     }
 
     Fact {

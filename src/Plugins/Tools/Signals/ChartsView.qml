@@ -48,7 +48,9 @@ Item {
     Connections {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
-            chartView.appendData();
+            // Defer so MenuItem.updateValue() (triggered by the same signal
+            // via Signals.qml) has a chance to write its filtered value first.
+            Qt.callLater(chartView.appendData);
         }
     }
 
@@ -181,7 +183,15 @@ Item {
                 addFactSeries(fact);
             var s = chartView.series(i);
 
-            var value = fact.value !== undefined ? fact.value : eval(fact.name);
+            // MenuItem objects expose currentValue (filtered); plain mandala Fact
+            // objects expose value. Fall back to eval(name) for legacy paths.
+            var value;
+            if (fact.currentValue !== undefined)
+                value = fact.currentValue;
+            else if (fact.value !== undefined)
+                value = fact.value;
+            else
+                value = eval(fact.name);
 
             if (!isFinite(value))
                 value = 0;
