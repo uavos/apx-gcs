@@ -289,7 +289,6 @@ Rectangle {
                     var next = (idx >= 0 && idx < factors.length - 1)
                                ? factors[idx + 1] : factors[0];
                     currentPage.speed = next;
-                    singleChart.speedFactorValue = next;
                     saveSettings();
                 }
             }

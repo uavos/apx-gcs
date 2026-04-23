@@ -40,6 +40,36 @@ Fact {
     property string warningMsg: ""
     property real _warnTimestamp: 0
 
+    // Cached compiled functions – rebuilt only when expressions change
+    property var _bindFn: null
+    property var _warnFn: null
+    property var _alarmFn: null
+
+    function _recompileBindFn() {
+        var expr = mBind.text;
+        if (!expr || expr === "") { _bindFn = null; return; }
+        try {
+            // eval creates a closure in QML scope, giving the compiled function
+            // access to context properties (mandala, apx, Math, etc.).
+            // Expressions are user-authored in signals.json — not external input.
+            _bindFn = eval("(function() { return (" + expr + "); })");
+        } catch(e) { _bindFn = null; }
+    }
+    function _recompileWarnFn() {
+        var expr = mWarn.text;
+        if (!expr || expr === "") { _warnFn = null; return; }
+        try {
+            _warnFn = new Function("value", "return !!(" + expr + ")");
+        } catch(e) { _warnFn = null; }
+    }
+    function _recompileAlarmFn() {
+        var expr = mAlarm.text;
+        if (!expr || expr === "") { _alarmFn = null; return; }
+        try {
+            _alarmFn = new Function("value", "return !!(" + expr + ")");
+        } catch(e) { _alarmFn = null; }
+    }
+
     signal addTriggered
     signal removeTriggered
 
@@ -52,7 +82,20 @@ Fact {
     property string itemColor: mColor.value ? mColor.value : "#ffffff"
 
     Component.onCompleted: {
+        // Wire expression changes to recompile cached functions before loading
+        // so the initial load triggers them automatically.
+        mBind.textChanged.connect(_recompileBindFn);
+        mWarn.textChanged.connect(_recompileWarnFn);
+        mAlarm.textChanged.connect(_recompileAlarmFn);
+
         load(data);
+
+        // Explicit recompile after load() in case textChanged did not fire
+        // (e.g. the Fact text was already equal to the loaded value).
+        _recompileBindFn();
+        _recompileWarnFn();
+        _recompileAlarmFn();
+
         updateTitle();
         updateDescr();
         mTitle.valueChanged.connect(updateTitle);
@@ -140,19 +183,14 @@ Fact {
 
     // Telemetry update — computes filtered value and evaluates warn/alarm
     function updateValue() {
-        var expr = mBind.text;
-        if (!expr || expr === "")
-            return;
+        if (!_bindFn) return;
         var v;
         try {
-            // 'mandala' is available as a QML context property;
-            // expressions like "mandala.est.att.roll.value" or
-            // "Math.atan(mandala.est.att.pitch.value / mandala.est.att.roll.value)" work.
-            v = eval(expr);
+            v = _bindFn();
         } catch (e) {
             // Fallback: treat as a plain mandala fact path
             try {
-                var _f = apx.fleet.current.mandala.fact(expr, false);
+                var _f = apx.fleet.current.mandala.fact(mBind.text, false);
                 if (_f) v = _f.value;
             } catch (e2) {}
         }
@@ -168,15 +206,9 @@ Fact {
         currentValue = filtered;
         menuItem.value = filtered;  // ChartsView reads fact.value
 
-        // Evaluate warning/alarm expressions
-        try {
-            var warnExpr = mWarn.text;
-            hasWarning = warnExpr ? !!eval(warnExpr.replace(/\bvalue\b/g, filtered)) : false;
-        } catch (e) { hasWarning = false; }
-        try {
-            var alarmExpr = mAlarm.text;
-            hasAlarm = alarmExpr ? !!eval(alarmExpr.replace(/\bvalue\b/g, filtered)) : false;
-        } catch (e) { hasAlarm = false; }
+        // Evaluate warning/alarm using pre-compiled functions
+        try { hasWarning = _warnFn ? _warnFn(filtered) : false; } catch(e) { hasWarning = false; }
+        try { hasAlarm = _alarmFn ? _alarmFn(filtered) : false; } catch(e) { hasAlarm = false; }
     }
 
     function saveValue2Fact() {

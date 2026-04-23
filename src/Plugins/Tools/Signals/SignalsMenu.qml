@@ -98,6 +98,7 @@ Fact {
 
         for (var i in sets) {
             var c = createSetFact(sets[i]);
+            if (!c) continue;
             c.selected.connect(select);
             c.selected.connect(saveSettings);
         }
@@ -294,6 +295,7 @@ Fact {
         onTriggered: {
             var newSet = { title: "#" + (setsFact.size + 1), pages: [] };
             var c = createSetFact(newSet);
+            if (!c) return;
             c.selected.connect(select);
             c.selected.connect(saveSettings);
             c.trigger();
