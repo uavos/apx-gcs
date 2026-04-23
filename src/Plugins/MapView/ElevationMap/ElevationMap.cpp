@@ -518,9 +518,12 @@ void ElevationMap::insertMissionWaypoints()
         jsa.append(wp->toJson());
     }
 
+    auto startElevation = m->startElevation();
+    m->setStartElevation(0); // eliminate re-calculation when creating waypoints. 
     m->f_wp->fromJson(jsa);
     auto lastWp = static_cast<Waypoint *>(m->f_wp->facts().last());
-    if(lastWp) {
+    m->setStartElevation(startElevation);
+    if (lastWp) {
         connect(lastWp, &Waypoint::terrainProfileChanged, this, &ElevationMap::completeCorrection);
         return;
     }
