@@ -20,28 +20,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 
-import Apx.Common
+import Apx.Menu
 
-TextButton {
-    Layout.fillHeight: true
-    checkable: true
-    ButtonGroup.group: buttonGroup
+FactMenuPopup {
+    id: popup
+    pinned: true
 
-    property var values: []
-    onActivated: signals.facts=Qt.binding(function(){return values})
+    signal accepted()
 
-    toolTip: getToolTip(values)
-
-    function getToolTip(facts)
-    {
-        var s=[]
-        for(var i=0;i<facts.length;++i){
-            var fact=facts[i]
-            s.push("<font color='"+fact.opts.color+"'>"+fact.descr+"</font>")
-        }
-        return s.join("<br>")
+    fact: menuFact
+    SignalsMenu {
+        id: menuFact
+        onAccepted: popup.accepted()
     }
+    onClosed: menuFact.destroy()
 }
