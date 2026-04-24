@@ -81,7 +81,7 @@ Rectangle {
         }
         // Create charts
         for (var i in sets) {
-            if(i < buttonGroup.buttons.length) {
+            if (i < buttonGroup.buttons.length) {
                 buttonGroup.buttons[i].loadSet(sets[i]);
             }
         }
@@ -90,20 +90,21 @@ Rectangle {
     function checkScrMatches(val) {
         var matches = false;
         for (var i = 0; i < buttonGroup.buttons.length; ++i)
-            if(buttonGroup.buttons[i].getScrMatches(val)) matches = true;
+            if (buttonGroup.buttons[i].getScrMatches(val))
+                matches = true;
         return matches;
     }
 
     function changeSpeed() {
-        if(fcCharts.speedFactorValue !== fcCharts.speedFactor[fcCharts.speedFactor.length - 1]) {
-            for (var i = 0; i < fcCharts.speedFactor.length-1; ++i) {
-                if (fcCharts.speedFactor[i] <= fcCharts.speedFactorValue && fcCharts.speedFactorValue < fcCharts.speedFactor[i+1]) {
-                    buttonGroup.checkedButton.setSpeed(fcCharts.speedFactor[i+1])
+        if (fcCharts.speedFactorValue !== fcCharts.speedFactor[fcCharts.speedFactor.length - 1]) {
+            for (var i = 0; i < fcCharts.speedFactor.length - 1; ++i) {
+                if (fcCharts.speedFactor[i] <= fcCharts.speedFactorValue && fcCharts.speedFactorValue < fcCharts.speedFactor[i + 1]) {
+                    buttonGroup.checkedButton.setSpeed(fcCharts.speedFactor[i + 1]);
                     break;
                 }
             }
         } else {
-            buttonGroup.checkedButton.setSpeed(fcCharts.speedFactor[0])
+            buttonGroup.checkedButton.setSpeed(fcCharts.speedFactor[0]);
         }
     }
 
@@ -131,44 +132,44 @@ Rectangle {
             Layout.margins: Style.spacing
             spacing: 3
             Layout.maximumHeight: 24 * ui.scale
-            FcButton {
+            PageButton {
                 text: "1"
                 checked: true
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "2"
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "3"
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "4"
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "5"
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "6"
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "7"
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "8"
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "9"
                 values: []
             }
-            FcButton {
+            PageButton {
                 text: "10"
                 values: []
             }

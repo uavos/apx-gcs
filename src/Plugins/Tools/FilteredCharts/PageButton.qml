@@ -27,7 +27,7 @@ import QtQuick.Controls.Material
 import Apx.Common
 
 TextButton {
-    id: fcBtn
+    id: pageBtn
 
     property var values: []
 
