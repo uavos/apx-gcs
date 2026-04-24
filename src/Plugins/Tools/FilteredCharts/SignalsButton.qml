@@ -27,7 +27,7 @@ import QtQuick.Controls.Material
 import Apx.Common
 
 TextButton {
-    id: pageBtn
+    id: sgBtn
 
     property var values: []
 
@@ -37,12 +37,12 @@ TextButton {
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
 
     onCheckedChanged: if (checked)
-        fcCharts.speedFactorValue = fcMenuPage.speed
-    onPressed: if (checked && !fcMenuPage.active)
-        fcMenuPage.trigger()
+        sgCharts.speedFactorValue = sgMenuPage.speed
+    onPressed: if (checked && !sgMenuPage.active)
+        sgMenuPage.trigger()
     onActivated: {
-        fcCharts.resetEnable = true;
-        fcCharts.facts = Qt.binding(function () {
+        sgCharts.resetEnable = true;
+        sgCharts.facts = Qt.binding(function () {
             return values;
         });
     }
@@ -51,13 +51,13 @@ TextButton {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
             // if (checked) // Comment it to calculate all values ​​at once
-            fcMenuPage.updateChartsValues();
+            sgMenuPage.updateChartsValues();
         }
     }
 
     function updateToolTip(facts) {
         var s = [];
-        s.push("<strong>" + fcMenuPage.title + "</strong>");
+        s.push("<strong>" + sgMenuPage.title + "</strong>");
         for (var i = 0; i < facts.length; ++i) {
             var fact = facts[i];
             s.push("<font color='" + fact.opts.color + "'>" + fact.title + "</font>");
@@ -66,23 +66,23 @@ TextButton {
     }
 
     function callQuickChart() {
-        fcMenuPage.addNewChart();
+        sgMenuPage.addNewChart();
     }
 
     function getSet() {
-        return fcMenuPage.save();
+        return sgMenuPage.save();
     }
 
     function loadSet(set) {
-        fcMenuPage.load(set);
+        sgMenuPage.load(set);
     }
 
     function getScrMatches(val) {
-        return fcMenuPage.checkScrs(val);
+        return sgMenuPage.checkScrs(val);
     }
 
     function setSpeed(val) {
-        fcMenuPage.speed = val;
+        sgMenuPage.speed = val;
         saveTimer.restart(); // save settings after speed changed
     }
 
@@ -94,10 +94,10 @@ TextButton {
     Timer {
         id: saveTimer
         interval: 1000
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgControl.saveSettings()
     }
 
-    FcMenuPage {
-        id: fcMenuPage
+    SignalsMenuPage {
+        id: sgMenuPage
     }
 }

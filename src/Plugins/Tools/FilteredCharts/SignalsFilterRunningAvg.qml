@@ -24,14 +24,15 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: fMenu
+    id: raFilter
+    
+    flags: Fact.Group
 
     property bool changes: false
     property var data: ({})
+    property var coef: 1
 
-    signal removeTriggered
-
-    onChangesChanged: { if (changes) mChart.changes = true;}
+    onChangesChanged: { if (changes) fMenu.changes = true;}
 
     function load() {
         for (var i = 0; i < size; ++i) {
@@ -39,7 +40,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
-        changes = false;
+        updateCoef();
     }
 
     function save() {
@@ -47,13 +48,11 @@ Fact {
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var s = f.text.trim();
-            if (f.size != 0)
-                s = f.save();
             if (s === "")
                 continue;
             data[settingName(f)] = s;
         }
-        changes = false;
+        updateCoef();
         return data;
     }
 
@@ -68,42 +67,28 @@ Fact {
         if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
             data = value;
             load();
-            fRunningAvg.fillData();
-            fKalmanSimple.fillData();
-            changes = false;
         }
     }
 
-    // Getting filter data
-    function getRunningAvgCoef() {
-        return fRunningAvg.coef;
-    }
-
-    function getKalmanSimpleCoefs() {
-        return fKalmanSimple.coefs
+    function updateCoef() {
+        coef = raCoef.value;
+        changes = false;
     }
 
     Fact {
-        id: fTypes
-        name: "filters"
-        title: qsTr("Filter")
-        descr: qsTr("Selecting the filter to use")
-        flags: Fact.Enum
-        enumStrings: ["none", "running_avg", "kalman_smp"]
-        onTextChanged: fMenu.value = text
-        onValueChanged: changes = true // combobox index changed
-    }
-    FcFilterRunningAvg {
-        id: fRunningAvg
-        name: "running_avg"
-        title: qsTr("Running average")
-        descr: qsTr("Running average filter settings")
-    }
-    FcFilterKalmanSimple {
-        id: fKalmanSimple
-        name: "kalman_smp"
-        title: qsTr("Kalman simple")
-        descr: qsTr("Simple kalman filter settings")
+        id: raCoef
+        name: "coefficient"
+        title: qsTr("Coefficient")
+        descr: qsTr("Coefficient for filtration")
+        flags: Fact.Float
+        value: 1
+        min: 0
+        max: 1
+        precision: 3
+        onValueChanged: {
+            raFilter.value = "K=" + value;
+            changes = true;
+        }
     }
 
     // Actions
@@ -112,6 +97,6 @@ Fact {
         title: qsTr("Save")
         enabled: !mChart.newItem && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgControl.saveSettings()
     }
 }

@@ -142,7 +142,7 @@ Fact {
         mChart.opts = opt;
         mColor.changes = false;
         pageFact.updateBtnValues();
-        fcCharts.updateSeriesColor();
+        sgCharts.updateSeriesColor();
     }
 
     function updateValue() {
@@ -246,13 +246,13 @@ Fact {
         flags: Fact.Text
         onTextChanged: changes = true
     }
-    FcMenuColor {
+    SignalsMenuColor {
         id: mColor
         name: "color"
         title: qsTr("Color")
         descr: qsTr("Chart color")
     }
-    FcMenuFilters {
+    SignalsMenuFilters {
         id: mFilters
         name: "filt"
         title: qsTr("Filters")
@@ -290,7 +290,7 @@ Fact {
         flags: Fact.Int
         units: "mandala"
         onTextChanged: {
-            fcControl.checkScrMatches(text);
+            sgControl.checkScrMatches(text);
             changes = true;
         }
     }
@@ -312,7 +312,7 @@ Fact {
         title: qsTr("Save")
         enabled: !newItem && !mAdd.enabled && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgControl.saveSettings()
     }
     Fact {
         flags: (Fact.Action | Fact.Remove)

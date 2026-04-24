@@ -32,7 +32,7 @@ Fact {
     onChangesChanged: { if (changes) mChart.changes = true;}
     Component.onCompleted: {
         var opt = opts;
-        opt.page = "qrc:/FilteredCharts/FcColorChooser.qml";
+        opt.page = "qrc:/FilteredCharts/SignalsColorChooser.qml";
         opts = opt;
     }
 
@@ -42,6 +42,6 @@ Fact {
         title: qsTr("Save")
         enabled: !mChart.newItem && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgControl.saveSettings()
     }
 }

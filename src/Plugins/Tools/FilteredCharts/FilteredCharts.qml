@@ -28,7 +28,7 @@ import QtCore
 import Apx.Common
 
 Rectangle {
-    id: fcControl
+    id: sgControl
 
     implicitHeight: layout.implicitHeight
     implicitWidth: layout.implicitWidth
@@ -38,7 +38,7 @@ Rectangle {
     Component.onCompleted: {
         for (var i = 0; i < buttonGroup.buttons.length; ++i) {
             var b = buttonGroup.buttons[i];
-            if (b.text !== fcControl.currentPage)
+            if (b.text !== sgControl.currentPage)
                 continue;
             buttonGroup.checkedButton = b;
             break;
@@ -96,15 +96,15 @@ Rectangle {
     }
 
     function changeSpeed() {
-        if (fcCharts.speedFactorValue !== fcCharts.speedFactor[fcCharts.speedFactor.length - 1]) {
-            for (var i = 0; i < fcCharts.speedFactor.length - 1; ++i) {
-                if (fcCharts.speedFactor[i] <= fcCharts.speedFactorValue && fcCharts.speedFactorValue < fcCharts.speedFactor[i + 1]) {
-                    buttonGroup.checkedButton.setSpeed(fcCharts.speedFactor[i + 1]);
+        if (sgCharts.speedFactorValue !== sgCharts.speedFactor[sgCharts.speedFactor.length - 1]) {
+            for (var i = 0; i < sgCharts.speedFactor.length - 1; ++i) {
+                if (sgCharts.speedFactor[i] <= sgCharts.speedFactorValue && sgCharts.speedFactorValue < sgCharts.speedFactor[i + 1]) {
+                    buttonGroup.checkedButton.setSpeed(sgCharts.speedFactor[i + 1]);
                     break;
                 }
             }
         } else {
-            buttonGroup.checkedButton.setSpeed(fcCharts.speedFactor[0]);
+            buttonGroup.checkedButton.setSpeed(sgCharts.speedFactor[0]);
         }
     }
 
@@ -113,8 +113,8 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        FcChartsView {
-            id: fcCharts
+        SignalsChartView {
+            id: sgCharts
             facts: []
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -132,50 +132,50 @@ Rectangle {
             Layout.margins: Style.spacing
             spacing: 3
             Layout.maximumHeight: 24 * ui.scale
-            PageButton {
+            SignalsButton {
                 text: "1"
                 checked: true
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "2"
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "3"
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "4"
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "5"
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "6"
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "7"
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "8"
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "9"
                 values: []
             }
-            PageButton {
+            SignalsButton {
                 text: "10"
                 values: []
             }
 
             TextButton {
-                text: fcCharts.speedFactorValue + "x"
+                text: sgCharts.speedFactorValue + "x"
                 Layout.fillHeight: true
                 Layout.minimumWidth: height * 4
                 onClicked: changeSpeed()
@@ -201,6 +201,6 @@ Rectangle {
 
     Settings {
         category: "filteredCharts"
-        property alias page: fcControl.currentPage
+        property alias page: sgControl.currentPage
     }
 }

@@ -27,7 +27,7 @@ Fact {
     id: pageFact
 
     flags: (Fact.Group | Fact.FlatModel)
-    title: "Page #" + fcBtn.text
+    title: "Page #" + sgBtn.text
 
     property bool changes: false
     property alias speed: msSpeed.value
@@ -40,10 +40,10 @@ Fact {
     }
 
     function updateBtnValues() {
-        fcBtn.values = [];
+        sgBtn.values = [];
         for (var i = 0; i < msValues.size; ++i)
-            fcBtn.values.push(msValues.child(i));
-        fcBtn.updateToolTip(fcBtn.values);
+            sgBtn.values.push(msValues.child(i));
+        sgBtn.updateToolTip(sgBtn.values);
     }
 
     function updateChartsValues() {
@@ -89,7 +89,7 @@ Fact {
             return;
         if (mchart.bind === "")
             return;
-        var c = createFact(msValues, "FcMenuChart.qml", {
+        var c = createFact(msValues, "SignalsMenuChart.qml", {
             "data": mchart
         });
         c.removeTriggered.connect(function () {
@@ -138,13 +138,13 @@ Fact {
         min: 0.2
         max: 4
         onValueChanged: {
-            if (!fcBtn.checked)
+            if (!sgBtn.checked)
                 return;
-            fcCharts.speedFactorValue = value;
+            sgCharts.speedFactorValue = value;
             changes = true;
         }
     }
-    FcMenuChart {
+    SignalsMenuChart {
         id: msMenuChart
         title: qsTr("Add new chart")
         descr: qsTr("Creating and setting a new chart")
@@ -156,7 +156,7 @@ Fact {
         id: msValues
         title: qsTr("Values")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: fcCharts.resetEnable = true
+        onSizeChanged: sgCharts.resetEnable = true
     }
 
     // Actions
@@ -165,6 +165,6 @@ Fact {
         title: qsTr("Save")
         visible: changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgControl.saveSettings()
     }
 }

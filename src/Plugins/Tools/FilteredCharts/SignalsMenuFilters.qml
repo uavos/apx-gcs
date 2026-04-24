@@ -24,15 +24,14 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: ksFilter
-    
-    flags: Fact.Group
+    id: fMenu
 
     property bool changes: false
-    property var coefs: [1,1]
     property var data: ({})
 
-    onChangesChanged: { if (changes) fMenu.changes = true;}
+    signal removeTriggered
+
+    onChangesChanged: { if (changes) mChart.changes = true;}
 
     function load() {
         for (var i = 0; i < size; ++i) {
@@ -40,7 +39,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
-        updateCoefs();
+        changes = false;
     }
 
     function save() {
@@ -48,11 +47,13 @@ Fact {
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var s = f.text.trim();
+            if (f.size != 0)
+                s = f.save();
             if (s === "")
                 continue;
             data[settingName(f)] = s;
         }
-        updateCoefs();
+        changes = false;
         return data;
     }
 
@@ -67,42 +68,42 @@ Fact {
         if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
             data = value;
             load();
+            fRunningAvg.fillData();
+            fKalmanSimple.fillData();
+            changes = false;
         }
     }
 
-    function updateFilterValue() {
-        ksFilter.value = "Km=" + ksMeasNoise.value + ",Ke=" + ksEnvNoise.value;
-        changes = true; 
+    // Getting filter data
+    function getRunningAvgCoef() {
+        return fRunningAvg.coef;
     }
 
-    function updateCoefs() {
-        coefs = [ksMeasNoise.value, ksEnvNoise.value]
-        changes = false;
+    function getKalmanSimpleCoefs() {
+        return fKalmanSimple.coefs
     }
 
     Fact {
-        id: ksMeasNoise
-        name: "measurement_noise"
-        title: qsTr("Measurement noise")
-        descr: qsTr("Coefficient of measurement noise")
-        flags: Fact.Float
-        value: 1
-        min: 0
-        max: 10000
-        precision: 3
-        onValueChanged: updateFilterValue()
+        id: fTypes
+        name: "filters"
+        title: qsTr("Filter")
+        descr: qsTr("Selecting the filter to use")
+        flags: Fact.Enum
+        enumStrings: ["none", "running_avg", "kalman_smp"]
+        onTextChanged: fMenu.value = text
+        onValueChanged: changes = true // combobox index changed
     }
-    Fact {
-        id: ksEnvNoise
-        name: "environment_noise"
-        title: qsTr("Environment noise")
-        descr: qsTr("Coefficient of environment noise")
-        flags: Fact.Float
-        value: 1
-        min: 0
-        max: 10000
-        precision: 3
-        onValueChanged: updateFilterValue()
+    SignalsFilterRunningAvg {
+        id: fRunningAvg
+        name: "running_avg"
+        title: qsTr("Running average")
+        descr: qsTr("Running average filter settings")
+    }
+    SignalsFilterKalmanSimple {
+        id: fKalmanSimple
+        name: "kalman_smp"
+        title: qsTr("Kalman simple")
+        descr: qsTr("Simple kalman filter settings")
     }
 
     // Actions
@@ -111,6 +112,6 @@ Fact {
         title: qsTr("Save")
         enabled: !mChart.newItem && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgControl.saveSettings()
     }
 }
