@@ -79,6 +79,8 @@ Fact {
     ]
 
     flags: Fact.Group
+    title: newItem ? qsTr("Add new item") : bindText()
+    descr: itemDescription()
 
     signal addTriggered()
     signal removeTriggered()
@@ -86,8 +88,6 @@ Fact {
     Component.onCompleted: {
         load()
         rebuildColorChoices()
-        updateTitle()
-        updateDescr()
     }
 
     function rootEditor()
@@ -176,6 +176,16 @@ Fact {
         return normalizeBindValue(factTextValue(mSaveFact))
     }
 
+    function colorValueCurrent()
+    {
+        return colorValue
+    }
+
+    function warningText()
+    {
+        return factTextValue(mWarning)
+    }
+
     function colorSummary()
     {
         return colorValue !== "" ? colorValue : qsTr("Auto")
@@ -188,6 +198,14 @@ Fact {
         if (filter.enabled === false)
             label += " (" + qsTr("off") + ")"
         return label
+    }
+
+    function liveFilterSummary(filterFact)
+    {
+        if (!filterFact)
+            return ""
+
+        return filterFact.descr !== "" ? filterFact.title + ": " + filterFact.descr : filterFact.title
     }
 
     function clearFilterFacts()
@@ -211,13 +229,28 @@ Fact {
         if (!child)
             return null
 
-        child.titleChanged.connect(updateDescr)
-        child.descrChanged.connect(updateDescr)
-        child.removeTriggered.connect(updateDescr)
         return child
     }
 
     function exportFilters()
+    {
+        var list = []
+
+        var liveFilters = filterFacts()
+        for (var i = 0; i < liveFilters.length; ++i) {
+            var child = liveFilters[i]
+            if (!child || typeof child.save !== "function")
+                continue
+
+            var filterData = child.save()
+            if (filterData)
+                list.push(filterRegistry.normalizeFilter(filterData))
+        }
+
+        return list
+    }
+
+    function filterFacts()
     {
         var list = []
 
@@ -226,12 +259,8 @@ Fact {
 
         for (var i = 0; i < mFiltersGroup.size; ++i) {
             var child = mFiltersGroup.child(i)
-            if (!child || !child.isFilterItem || typeof child.save !== "function")
-                continue
-
-            var filterData = child.save()
-            if (filterData)
-                list.push(filterRegistry.normalizeFilter(filterData))
+            if (child && child.isFilterItem)
+                list.push(child)
         }
 
         return list
@@ -256,6 +285,14 @@ Fact {
 
     function filtersSummary()
     {
+        var liveFilters = filterFacts()
+        if (liveFilters.length > 0) {
+            var liveParts = []
+            for (var i = 0; i < liveFilters.length; ++i)
+                liveParts.push(liveFilterSummary(liveFilters[i]))
+            return liveParts.join(", ")
+        }
+
         var list = currentFilters()
         if (!(list instanceof Array) || list.length <= 0)
             return qsTr("None")
@@ -266,10 +303,28 @@ Fact {
         return parts.join(", ")
     }
 
+    // The item owns the live filter chain so the chart only provides a raw sample.
+    function updateFilters(inputValue)
+    {
+        var output = Number(inputValue)
+        if (!isFinite(output))
+            output = 0
+
+        var liveFilters = filterFacts()
+        for (var i = 0; i < liveFilters.length; ++i) {
+            var filterFact = liveFilters[i]
+            if (!filterFact || typeof filterFact.update !== "function")
+                continue
+
+            output = filterFact.update(output)
+        }
+
+        return output
+    }
+
     function setColorValue(value)
     {
         colorValue = normalizeColorValue(value)
-        updateDescr()
     }
 
     function clearColorChoices()
@@ -318,15 +373,11 @@ Fact {
     {
         filtersData = filterRegistry.normalizeFilters(cloneValue(value))
         rebuildFilters()
-        updateDescr()
     }
 
     function addFilter()
     {
-        var child = createFilterFact(filterRegistry.defaultFilter(filterRegistry.defaultType()))
-        if (child)
-            updateDescr()
-        return child
+        return createFilterFact(filterRegistry.defaultFilter(filterRegistry.defaultType()))
     }
 
     function validationError()
@@ -352,7 +403,6 @@ Fact {
     function refreshValidation()
     {
         saveError = validationError()
-        updateDescr()
     }
 
     function canSave()
@@ -393,20 +443,12 @@ Fact {
         return item
     }
 
-    function updateTitle()
-    {
-        if (newItem)
-            return
-
-        title = bindText()
-    }
-
-    function updateDescr()
+    function itemDescription()
     {
         var details = []
         if (colorValue !== "")
             details.push(qsTr("Color") + ": " + colorValue)
-        if (currentFilters().length > 0)
+        if (filtersSummary() !== qsTr("None"))
             details.push(qsTr("Filters") + ": " + filtersSummary())
         if (factTextValue(mWarning) !== "")
             details.push(qsTr("Warning") + ": " + factTextValue(mWarning))
@@ -415,9 +457,7 @@ Fact {
         if (saveError !== "")
             details.push(saveError)
 
-        descr = details.join(", ")
-        if (mFiltersGroup)
-            mFiltersGroup.descr = filtersSummary()
+        return details.join(", ")
     }
 
     Fact {
@@ -438,10 +478,6 @@ Fact {
         title: qsTr("Expression")
         descr: qsTr("Mandala path or JavaScript expression")
         flags: Fact.Text
-        onValueChanged: {
-            itemFact.updateTitle()
-            itemFact.updateDescr()
-        }
     }
 
     Fact {
@@ -459,7 +495,7 @@ Fact {
     Fact {
         id: mFiltersGroup
         title: qsTr("Filters")
-        descr: qsTr("Ordered filter stack")
+        descr: itemFact.filtersSummary()
         // icon: "tune"
         flags: (Fact.Group | Fact.DragChildren)
 
@@ -487,7 +523,6 @@ Fact {
         title: qsTr("Warning")
         descr: qsTr("Expression that raises a page warning")
         flags: Fact.Text
-        onValueChanged: itemFact.updateDescr()
     }
 
     Fact {

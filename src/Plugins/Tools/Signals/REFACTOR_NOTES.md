@@ -87,11 +87,13 @@ Notes:
 - `ColorChooser.qml`
   - 12x4 Material palette plus hex input.
 - `FilterFact.qml`
-  - Plain Fact-based filter row.
-  - `Fact.Group | Fact.Bool` with type-specific parameter visibility.
-  - Save/remove actions on the filter page.
+  - Generic filter row with enable toggle, type selector, save/remove actions, and a dynamic settings section.
+- `FilterBase.qml`
+  - Shared base for the type-specific settings Fact loaded inside `FilterFact.qml`.
+- `FilterRunningAverage.qml`, `FilterKalman.qml`
+  - Dedicated filter settings Facts; each file owns its own editor fields and runtime math.
 - `FilterRegistry.qml`
-  - Filter defaults, titles, type normalization, runtime component lookup.
+  - Filter defaults, titles, type normalization, and component lookup.
 
 ## Filter implementation
 
@@ -102,11 +104,11 @@ Current filter types:
 
 Current pattern:
 
-- Filters are plain Fact children inside the item’s `Filters` group.
+- Filters are generic `FilterFact.qml` rows inside the item’s `Filters` group.
 - Each filter is ordered and draggable.
 - Each filter has an enable toggle on the row itself.
-- Parameter facts are shown/hidden from the selected `type`.
-- Runtime execution is still registry-driven in `SignalsView.qml`.
+- Each filter row owns the enable/type shell while the loaded settings Fact owns the runtime state and `update()` implementation.
+- `MenuItem.qml` applies the live filter chain; `SignalsView.qml` only provides raw samples.
 
 ## Current UX decisions
 
@@ -133,7 +135,10 @@ Current pattern:
 | `MenuPage.qml` | page editor | active |
 | `MenuItem.qml` | item editor | active |
 | `ColorChooser.qml` | color editor page | active |
-| `FilterFact.qml` | filter editor/runtime row | active |
+| `FilterFact.qml` | generic filter shell | active |
+| `FilterBase.qml` | shared filter Fact contract | active |
+| `FilterRunningAverage.qml` | running average filter | active |
+| `FilterKalman.qml` | Kalman filter | active |
 | `FilterRegistry.qml` | filter metadata and normalization | active |
 | `PageButton.qml` | old experiment from an earlier tab rewrite | currently unused |
 

@@ -29,24 +29,21 @@ Fact {
     property var data: ({})
     property var filterRegistry: FilterRegistry {}
     property bool isFilterItem: true
-
-    property bool initialized: false
-    property real outputValue: 0
-    property real stateValue: 0
-    property real covariance: 0.1
     property bool loading: false
+    property string filterType: filterRegistry.defaultType()
 
     flags: (Fact.Group | Fact.Bool)
     icon: "tune"
     value: true
+    title: filterRegistry.titleForType(filterType)
+    descr: filterDescription()
 
     signal removeTriggered()
 
-    Component.onCompleted: {
-        load(data)
-        updateTitle()
-        updateDescr()
-    }
+    readonly property bool filterEnabled: value !== false
+    readonly property var currentFilterFact: filterBody.size > 0 ? filterBody.child(0) : null
+
+    Component.onCompleted: load(data)
 
     function itemEditor()
     {
@@ -71,54 +68,58 @@ Fact {
             owner.saveAll()
     }
 
-    function asNumber(value, fallback)
+    function createFact(parent, url, opts)
     {
-        var number = Number(value)
-        return isFinite(number) ? number : fallback
+        var component = Qt.createComponent(Qt.resolvedUrl(url))
+        if (component.status === Component.Ready) {
+            var properties = opts || {}
+            properties.parentFact = parent
+            return component.createObject(parent, properties)
+        }
+
+        console.log(component.errorString())
+        return null
     }
 
-    function clamp(value, minValue, maxValue)
+    function selectedTypeText()
     {
-        return Math.max(minValue, Math.min(maxValue, value))
+        if (typeFact.text !== undefined && typeFact.text !== null)
+            return String(typeFact.text).trim()
+
+        if (typeFact.value !== undefined && typeFact.value !== null)
+            return String(typeFact.value).trim()
+
+        return ""
     }
 
-    function enabledValue()
+    function filterDescription()
     {
-        return value ? true : false
+        var details = currentFilterFact && currentFilterFact.descr !== undefined ? String(currentFilterFact.descr) : ""
+        if (filterEnabled)
+            return details
+
+        return details !== "" ? qsTr("Off") + ", " + details : qsTr("Off")
     }
 
-    function typeValue()
+    function createFilterBody(filterData)
     {
-        var text = String(typeFact.value === undefined || typeFact.value === null
-                          ? typeFact.text
-                          : typeFact.value).trim()
-        var info = filterRegistry.typeInfo(text)
-        return info ? info.value : filterRegistry.defaultType()
+        var info = filterRegistry.typeInfo(filterType)
+        if (!info)
+            return null
+
+        filterBody.deleteChildren()
+        return createFact(filterBody, info.source, {
+                              "data": filterData
+                          })
     }
 
-    function isRunningAverage()
+    function setFilterType(type, filterData)
     {
-        return typeValue() === "running_avg"
-    }
+        var normalizedType = filterRegistry.valueForType(type)
+        var normalizedData = filterRegistry.normalizeFilter(filterData)
 
-    function isKalman()
-    {
-        return typeValue() === "kalman_smp"
-    }
-
-    function runningAvgCoef()
-    {
-        return clamp(asNumber(coefFact.value, 0.2), 0.0, 1.0)
-    }
-
-    function kalmanR()
-    {
-        return Math.max(0.0, asNumber(rFact.value, 0.1))
-    }
-
-    function kalmanQ()
-    {
-        return Math.max(0.0, asNumber(qFact.value, 0.001))
+        filterType = normalizedType
+        createFilterBody(normalizedData ? normalizedData : filterRegistry.defaultFilter(normalizedType))
     }
 
     function load(filterData)
@@ -129,113 +130,51 @@ Fact {
 
         loading = true
         value = filter.enabled !== false
-        typeFact.value = filter.type
-        coefFact.value = filter.coef !== undefined ? filter.coef : 0.2
-        rFact.value = filter.r !== undefined ? filter.r : 0.1
-        qFact.value = filter.q !== undefined ? filter.q : 0.001
+        filterType = filter.type
+        typeFact.value = filterRegistry.titleForType(filter.type)
+        createFilterBody(filter)
         reset()
         loading = false
-        updateTitle()
-        updateDescr()
     }
 
     function save()
     {
-        var filter = {
-            "type": typeValue(),
-            "enabled": enabledValue()
-        }
+        var filter = currentFilterFact && typeof currentFilterFact.save === "function"
+                     ? currentFilterFact.save()
+                     : filterRegistry.defaultFilter(filterType)
+        if (!filter)
+            return null
 
-        switch (filter.type) {
-        case "running_avg":
-            filter.coef = runningAvgCoef()
-            break
-        case "kalman_smp":
-            filter.r = kalmanR()
-            filter.q = kalmanQ()
-            break
-        }
-
+        filter.enabled = filterEnabled
+        filter.type = filterType
         return filterRegistry.normalizeFilter(filter)
     }
 
     function reset()
     {
-        initialized = false
-        outputValue = 0
-        stateValue = 0
-        covariance = 0.1
+        if (currentFilterFact && typeof currentFilterFact.reset === "function")
+            currentFilterFact.reset()
     }
 
-    function step(inputValue)
+    // The wrapper controls enable/type while the loaded child owns the actual math.
+    function update(inputValue)
     {
-        var input = asNumber(inputValue, 0)
-        var type = typeValue()
+        var input = Number(inputValue)
+        if (!isFinite(input))
+            input = 0
 
-        if (!enabledValue())
+        if (!filterEnabled)
             return input
 
-        switch (type) {
-        case "running_avg":
-            if (!initialized) {
-                outputValue = input
-                initialized = true
-                return outputValue
-            }
+        if (currentFilterFact && typeof currentFilterFact.update === "function")
+            return currentFilterFact.update(input)
 
-            outputValue = outputValue * (1.0 - runningAvgCoef()) + input * runningAvgCoef()
-            return outputValue
-        case "kalman_smp":
-            if (!initialized) {
-                stateValue = input
-                covariance = 0.1
-                initialized = true
-                return stateValue
-            }
-
-            covariance = covariance + kalmanQ()
-
-            var denominator = covariance + kalmanR()
-            var gain = denominator > 0 ? covariance / denominator : 0
-
-            stateValue = stateValue + gain * (input - stateValue)
-            covariance = (1.0 - gain) * covariance
-            return stateValue
-        default:
-            return input
-        }
-    }
-
-    function updateTitle()
-    {
-        title = filterRegistry.titleForType(typeValue())
-    }
-
-    function updateDescr()
-    {
-        var parts = []
-
-        if (!enabledValue())
-            parts.push(qsTr("Off"))
-
-        switch (typeValue()) {
-        case "running_avg":
-            parts.push(qsTr("Coef") + ": " + Number(runningAvgCoef()).toFixed(2))
-            break
-        case "kalman_smp":
-            parts.push(qsTr("R") + ": " + Number(kalmanR()))
-            parts.push(qsTr("Q") + ": " + Number(kalmanQ()))
-            break
-        }
-
-        descr = parts.join(", ")
+        return input
     }
 
     onValueChanged: {
-        if (!loading) {
+        if (!loading)
             reset()
-            updateDescr()
-        }
     }
 
     Fact {
@@ -244,63 +183,26 @@ Fact {
         title: qsTr("Type")
         descr: qsTr("Filter algorithm")
         flags: Fact.Enum
-        enumStrings: filterRegistry.typeValues()
-        value: filterRegistry.defaultType()
+        enumStrings: filterRegistry.typeTitles()
+        value: filterRegistry.titleForType(filterRegistry.defaultType())
         onValueChanged: {
-            if (!filterFact.loading) {
-                filterFact.reset()
-                filterFact.updateTitle()
-                filterFact.updateDescr()
-            }
+            if (filterFact.loading)
+                return
+
+            var selectedType = filterRegistry.valueForType(filterFact.selectedTypeText())
+            if (selectedType === filterFact.filterType)
+                return
+
+            filterFact.setFilterType(selectedType, filterRegistry.defaultFilter(selectedType))
+            filterFact.reset()
         }
     }
 
     Fact {
-        id: coefFact
-        name: "coef"
-        title: qsTr("Coefficient")
-        descr: qsTr("Running average blend coefficient")
-        flags: Fact.Float
-        visible: filterFact.isRunningAverage()
-        value: 0.2
-        onValueChanged: {
-            if (!filterFact.loading) {
-                filterFact.reset()
-                filterFact.updateDescr()
-            }
-        }
-    }
-
-    Fact {
-        id: rFact
-        name: "r"
-        title: qsTr("R")
-        descr: qsTr("Measurement noise")
-        flags: Fact.Float
-        visible: filterFact.isKalman()
-        value: 0.1
-        onValueChanged: {
-            if (!filterFact.loading) {
-                filterFact.reset()
-                filterFact.updateDescr()
-            }
-        }
-    }
-
-    Fact {
-        id: qFact
-        name: "q"
-        title: qsTr("Q")
-        descr: qsTr("Process noise")
-        flags: Fact.Float
-        visible: filterFact.isKalman()
-        value: 0.001
-        onValueChanged: {
-            if (!filterFact.loading) {
-                filterFact.reset()
-                filterFact.updateDescr()
-            }
-        }
+        id: filterBody
+        title: qsTr("Settings")
+        descr: qsTr("Parameters for the selected filter type")
+        flags: (Fact.Group | Fact.Section)
     }
 
     Fact {

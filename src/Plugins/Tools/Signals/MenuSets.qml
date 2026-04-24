@@ -29,6 +29,7 @@ Fact {
     property var signalsModel: null
     property bool destroyOnClose: true
     property string defaultDescr: qsTr("Chart configuration editor")
+    property bool loading: false
 
     name: setsFact.signalsModel && setsFact.signalsModel.settingsName ? setsFact.signalsModel.settingsName : "signals"
     flags: (Fact.Group | Fact.FlatModel)
@@ -37,6 +38,7 @@ Fact {
     icon: "poll"
 
     signal accepted()
+    signal stateChanged()
 
     Component.onCompleted: {
         loadSettings()
@@ -45,8 +47,6 @@ Fact {
     function close()
     {
         if (!setsFact.destroyOnClose) {
-            setsList.deleteChildren()
-            setsFact.loadSettings()
             setsFact.menuBack()
             return
         }
@@ -79,8 +79,90 @@ Fact {
             return null
 
         child.selected.connect(select)
-        child.selected.connect(saveSettings)
+        child.stateChanged.connect(markChanged)
         return child
+    }
+
+    function activeSetIndex()
+    {
+        for (var i = 0; i < setsList.size; ++i) {
+            if (setsList.child(i).active)
+                return i
+        }
+
+        return setsList.size > 0 ? 0 : -1
+    }
+
+    function activeSetFact()
+    {
+        var index = activeSetIndex()
+        return index >= 0 && index < setsList.size ? setsList.child(index) : null
+    }
+
+    function activePages()
+    {
+        var activeSet = activeSetFact()
+        return activeSet && typeof activeSet.pageFacts === "function" ? activeSet.pageFacts() : []
+    }
+
+    function activeSetTitle()
+    {
+        var activeSet = activeSetFact()
+        return activeSet ? activeSet.title : ""
+    }
+
+    function exportSettings()
+    {
+        var settings = {
+            "active": {
+                "signals": 0
+            },
+            "sets": []
+        }
+
+        for (var i = 0; i < setsList.size; ++i) {
+            var setEditor = setsList.child(i)
+            var setData = setEditor.save()
+            if (setData === null)
+                return null
+
+            settings.sets.push(setData)
+            if (setEditor.active)
+                settings.active.signals = i
+        }
+
+        if (settings.sets.length <= 0) {
+            var defaults = defaultSettings()
+            settings.sets = defaults.sets instanceof Array ? defaults.sets : []
+            settings.active.signals = defaults.active ? defaults.active.signals : 0
+        }
+
+        return settings
+    }
+
+    function markChanged()
+    {
+        if (loading)
+            return
+
+        stateChanged()
+    }
+
+    function loadTree(settings)
+    {
+        loading = true
+        setsFact.descr = setsFact.defaultDescr
+        setsList.deleteChildren()
+
+        var sets = settings && settings.sets instanceof Array ? settings.sets : []
+        var currentSetIdx = settings && settings.active ? settings.active.signals : 0
+
+        for (var i = 0; i < sets.length; ++i)
+            setsFact.createSet(sets[i])
+
+        setsFact.select(currentSetIdx)
+        loading = false
+        markChanged()
     }
 
     function defaultSettings()
@@ -98,9 +180,6 @@ Fact {
 
     function loadSettings()
     {
-        setsFact.descr = setsFact.defaultDescr
-        setsList.deleteChildren()
-
         var settings = setsFact.defaultSettings()
         if (setsFact.signalsModel) {
             if (!setsFact.signalsModel.loaded && typeof setsFact.signalsModel.loadSettings === "function")
@@ -109,56 +188,56 @@ Fact {
                 settings = setsFact.signalsModel.exportSettings()
         }
 
-        var sets = settings && settings.sets instanceof Array ? settings.sets : []
-        var currentSetIdx = settings && settings.active ? settings.active.signals : 0
-
-        for (var i = 0; i < sets.length; ++i)
-            setsFact.createSet(sets[i])
-
-        setsFact.select(currentSetIdx)
+        loadTree(settings)
     }
 
     function saveSettings()
     {
         setsFact.descr = setsFact.defaultDescr
 
-        var settings = {
-            "active": {
-                "signals": 0
-            },
-            "sets": []
-        }
-
-        for (var i = 0; i < setsList.size; ++i) {
-            var setEditor = setsList.child(i)
-            var setData = setEditor.save()
-            if (setData === null) {
-                setsFact.descr = qsTr("Fix editor errors before saving")
-                return
-            }
-
-            settings.sets.push(setData)
-            if (setEditor.active)
-                settings.active.signals = i
+        var settings = exportSettings()
+        if (settings === null) {
+            setsFact.descr = qsTr("Fix editor errors before saving")
+            return
         }
 
         if (setsFact.signalsModel && typeof setsFact.signalsModel.saveSettings === "function")
             setsFact.signalsModel.saveSettings(settings)
 
         setsFact.accepted()
-        setsFact.close()
     }
 
     function resetToDefaults()
     {
-        setsFact.descr = setsFact.defaultDescr
-        setsList.deleteChildren()
+        var settings = exportSettings()
+        if (settings === null)
+            return
 
-        var settings = setsFact.defaultSettings()
-        for (var i = 0; i < settings.sets.length; ++i)
-            setsFact.createSet(settings.sets[i])
+        var defaults = defaultSettings()
+        var defaultSet = defaults.sets instanceof Array && defaults.sets.length > 0
+                         ? defaults.sets[0]
+                         : null
+        if (!defaultSet)
+            return
 
-        setsFact.select(settings.active.signals)
+        var targetIndex = -1
+        for (var i = 0; i < settings.sets.length; ++i) {
+            var title = String(settings.sets[i].title === undefined ? "" : settings.sets[i].title).trim().toLowerCase()
+            if (title === "default") {
+                targetIndex = i
+                break
+            }
+        }
+
+        if (targetIndex < 0) {
+            settings.sets.unshift(defaultSet)
+            targetIndex = 0
+        } else {
+            settings.sets[targetIndex] = defaultSet
+        }
+
+        settings.active.signals = targetIndex
+        loadTree(settings)
     }
 
     function select(num)
@@ -167,6 +246,8 @@ Fact {
             var setEditor = setsList.child(i)
             setEditor.active = setEditor.num === num
         }
+
+        markChanged()
     }
 
     Fact {
@@ -188,8 +269,10 @@ Fact {
                                       "title": setTitle,
                                       "pages": []
                                   })
-            if (child)
+            if (child) {
                 child.trigger()
+                markChanged()
+            }
         }
     }
 

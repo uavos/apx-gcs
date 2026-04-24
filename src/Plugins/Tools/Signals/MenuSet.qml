@@ -31,13 +31,14 @@ Fact {
     property var data: ({})
 
     flags: (Fact.Group | Fact.FlatModel)
+    title: setTitleText()
+    descr: pagesSummary()
 
     signal selected(var num)
+    signal stateChanged()
 
     Component.onCompleted: {
         load()
-        updateTitle()
-        updateDescr()
         refreshSaveWarnings()
     }
 
@@ -79,10 +80,25 @@ Fact {
         return qsTr("Set") + " " + (Math.max(setFact.num, 0) + 1)
     }
 
+    function pageFacts()
+    {
+        var pages = []
+
+        for (var i = 0; i < setPages.size; ++i)
+            pages.push(setPages.child(i))
+
+        return pages
+    }
+
     function load()
     {
         setTitle.value = data && data.title !== undefined ? data.title : defaultTitle()
         updatePages()
+    }
+
+    function setTitleText()
+    {
+        return setTitle.text.trim() !== "" ? setTitle.text.trim() : setFact.defaultTitle()
     }
 
     function save()
@@ -99,7 +115,7 @@ Fact {
         }
 
         return {
-            "title": setTitle.text.trim() !== "" ? setTitle.text.trim() : setFact.defaultTitle(),
+            "title": setTitleText(),
             "pages": pages
         }
     }
@@ -122,9 +138,6 @@ Fact {
                                })
         if (!child)
             return null
-
-        child.titleChanged.connect(updateDescr)
-        child.removeTriggered.connect(updateDescr)
         return child
     }
 
@@ -167,17 +180,12 @@ Fact {
         return false
     }
 
-    function updateTitle()
-    {
-        title = setTitle.text.trim() !== "" ? setTitle.text.trim() : setFact.defaultTitle()
-    }
-
-    function updateDescr()
+    function pagesSummary()
     {
         var pages = []
         for (var i = 0; i < setPages.size; ++i)
             pages.push(setPages.child(i).title)
-        descr = pages.join(", ")
+        return pages.join(", ")
     }
 
     Fact {
@@ -186,10 +194,6 @@ Fact {
         descr: qsTr("Saved chart configuration name")
         flags: Fact.Text
         icon: "rename-box"
-        onValueChanged: {
-            setFact.updateTitle()
-            setFact.updateDescr()
-        }
     }
 
     MenuPage {
@@ -200,8 +204,10 @@ Fact {
         setFact: setFact
         onAddTriggered: {
             var pageData = save()
-            if (pageData)
+            if (pageData) {
                 setFact.createPage(pageData)
+                setFact.stateChanged()
+            }
         }
     }
 
@@ -219,6 +225,7 @@ Fact {
         onTriggered: {
             if (setFact.active)
                 selected(0)
+            setFact.stateChanged()
             setFact.deleteFact()
         }
     }
@@ -233,8 +240,8 @@ Fact {
 
     Fact {
         flags: (Fact.Action | Fact.Apply)
-        title: qsTr("Select and save")
-        descr: qsTr("Make this set active and save it")
+        title: qsTr("Select")
+        descr: qsTr("Make this set active")
         visible: !setFact.active
         icon: "check-circle"
         onTriggered: {

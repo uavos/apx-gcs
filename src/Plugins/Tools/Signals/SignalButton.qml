@@ -35,10 +35,13 @@ TextButton {
     property string pageToolTip: ""
     property bool pageWarning: false
 
+    signal editTriggered()
+
     textColor: pageWarning ? Material.color(Material.Orange)
                            : Material.primaryTextColor
 
-    onActivated: signals.facts=Qt.binding(function(){return values})
+    onDoubleClicked: editTriggered()
+    onPressAndHold: editTriggered()
 
     toolTip: pageToolTip !== "" ? pageToolTip : getToolTip(values)
 

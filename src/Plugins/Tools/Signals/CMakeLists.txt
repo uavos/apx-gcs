@@ -1,8 +1,11 @@
 set(QRC_QML
     ColorChoiceFact.qml
     ColorChooser.qml
+    FilterBase.qml
     FilterFact.qml
+    FilterKalman.qml
     FilterRegistry.qml
+    FilterRunningAverage.qml
     MenuItem.qml
     MenuPage.qml
     MenuSet.qml

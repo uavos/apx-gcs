@@ -24,18 +24,28 @@ import QtQml
 QtObject {
     id: registry
 
-    readonly property string genericFilterSource: Qt.resolvedUrl("FilterFact.qml")
-
+    // To add a filter: create a dedicated Filter*.qml component and register it here.
     readonly property var typeOptions: [
         {
             "title": qsTr("Running average"),
             "value": "running_avg",
-            "source": genericFilterSource
+            "source": Qt.resolvedUrl("FilterRunningAverage.qml"),
+            "defaults": {
+                "type": "running_avg",
+                "enabled": true,
+                "coef": 0.2
+            }
         },
         {
             "title": qsTr("Simple Kalman"),
             "value": "kalman_smp",
-            "source": genericFilterSource
+            "source": Qt.resolvedUrl("FilterKalman.qml"),
+            "defaults": {
+                "type": "kalman_smp",
+                "enabled": true,
+                "r": 0.1,
+                "q": 0.001
+            }
         }
     ]
 
@@ -45,14 +55,6 @@ QtObject {
             return value
 
         return JSON.parse(JSON.stringify(value))
-    }
-
-    function asObject(value)
-    {
-        if (!value || value instanceof Array || typeof value !== "object")
-            return {}
-
-        return value
     }
 
     function asString(value, fallback)
@@ -66,43 +68,16 @@ QtObject {
         return String(value)
     }
 
-    function asBool(value, fallback)
-    {
-        if (value === undefined || value === null)
-            return fallback
-
-        return !!value
-    }
-
-    function asNumber(value, fallback)
-    {
-        var number = Number(value)
-        return isFinite(number) ? number : fallback
-    }
-
-    function clamp(value, minValue, maxValue)
-    {
-        return Math.max(minValue, Math.min(maxValue, value))
-    }
-
     function typeInfo(type)
     {
+        var text = asString(type, "")
+
         for (var i = 0; i < typeOptions.length; ++i) {
-            if (typeOptions[i].value === type)
+            if (typeOptions[i].value === text || typeOptions[i].title === text)
                 return typeOptions[i]
         }
 
         return null
-    }
-
-    function typeIndex(type)
-    {
-        for (var i = 0; i < typeOptions.length; ++i) {
-            if (typeOptions[i].value === type)
-                return i
-        }
-
-        return 0
     }
 
     function titleForType(type)
@@ -117,63 +92,50 @@ QtObject {
         return info ? info.source : ""
     }
 
+    function typeTitles()
+    {
+        var values = []
+
+        for (var i = 0; i < typeOptions.length; ++i)
+            values.push(typeOptions[i].title)
+
+        return values
+    }
+
+    function valueForType(type)
+    {
+        var info = typeInfo(type)
+        return info ? info.value : defaultType()
+    }
+
     function defaultType()
     {
         return typeOptions.length > 0 ? typeOptions[0].value : ""
     }
 
-    function typeValues()
-    {
-        var values = []
-
-        for (var i = 0; i < typeOptions.length; ++i)
-            values.push(typeOptions[i].value)
-
-        return values
-    }
-
     function defaultFilter(type)
     {
-        switch (type) {
-        case "kalman_smp":
-            return {
-                "type": "kalman_smp",
-                "enabled": true,
-                "r": 0.1,
-                "q": 0.001
-            }
-        case "running_avg":
-            return {
-                "type": "running_avg",
-                "enabled": true,
-                "coef": 0.2
-            }
-        default:
-            return null
-        }
+        var info = typeInfo(type)
+        return info ? cloneValue(info.defaults) : null
     }
 
     function normalizeFilter(filterData)
     {
-        var source = asObject(filterData)
-        var type = asString(source.type, "")
-        var filter = defaultFilter(type)
+        if (!filterData || filterData instanceof Array || typeof filterData !== "object")
+            return null
+
+        var source = cloneValue(filterData)
+        var filter = defaultFilter(source.type)
 
         if (!filter)
             return null
 
-        filter = cloneValue(filter)
-        filter.enabled = asBool(source.enabled, true)
+        for (var key in source)
+            filter[key] = source[key]
 
-        switch (filter.type) {
-        case "running_avg":
-            filter.coef = clamp(asNumber(source.coef, filter.coef), 0.0, 1.0)
-            break
-        case "kalman_smp":
-            filter.r = Math.max(0.0, asNumber(source.r, filter.r))
-            filter.q = Math.max(0.0, asNumber(source.q, filter.q))
-            break
-        }
+        filter.type = defaultFilter(source.type).type
+        if (filter.enabled === undefined)
+            filter.enabled = true
 
         return filter
     }

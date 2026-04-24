@@ -45,12 +45,6 @@ Item {
                                       ? speedFactor[speedFactor.length - 1]
                                       : speedFactor[speed]
 
-    property var seriesState: []
-
-    FilterRegistry {
-        id: filterRegistry
-    }
-
     QtObject {
         id: colorProbe
 
@@ -58,8 +52,6 @@ Item {
     }
 
     onFactsChanged: chartView.reset()
-
-    Component.onDestruction: destroySeriesState()
 
     Connections {
         target: chartItem.apxContext ? chartItem.apxContext.fleet.current.mandala : null
@@ -91,6 +83,9 @@ Item {
         if (!fact)
             return ""
 
+        if (typeof fact.bindText === "function")
+            return normalizeBindText(fact.bindText())
+
         if (fact.bind !== undefined && fact.bind !== null && String(fact.bind) !== "")
             return normalizeBindText(fact.bind)
         if (fact.name !== undefined && fact.name !== null)
@@ -101,6 +96,9 @@ Item {
 
     function itemTitle(fact, index)
     {
+        if (fact && fact.title !== undefined && String(fact.title) !== "")
+            return String(fact.title)
+
         var bind = itemBind(fact)
         if (bind !== "")
             return bind
@@ -126,6 +124,10 @@ Item {
     function itemColor(fact, index)
     {
         if (fact) {
+            if (typeof fact.colorValueCurrent === "function"
+                    && String(fact.colorValueCurrent()) !== "")
+                return resolvedColor(fact.colorValueCurrent(), defaultSeriesColor(index))
+
             if (fact.color !== undefined && fact.color !== null && String(fact.color) !== "")
                 return resolvedColor(fact.color, defaultSeriesColor(index))
 
@@ -138,7 +140,13 @@ Item {
 
     function itemSaveTarget(fact)
     {
-        if (!fact || fact.save === undefined || fact.save === null)
+        if (!fact)
+            return ""
+
+        if (typeof fact.saveTarget === "function")
+            return fact.saveTarget()
+
+        if (fact.save === undefined || fact.save === null || typeof fact.save === "function")
             return ""
 
         return String(fact.save).trim()
@@ -146,7 +154,7 @@ Item {
 
     function evaluateValue(fact, bind)
     {
-        if (fact && fact.value !== undefined)
+        if (fact && typeof fact.bindText !== "function" && fact.value !== undefined)
             return fact.value
 
         if (!bind)
@@ -159,120 +167,23 @@ Item {
         }
     }
 
-    function destroySeriesState()
+    function filteredItemValue(fact, value)
     {
-        for (var i = 0; i < seriesState.length; ++i) {
-            var state = seriesState[i]
-            if (!state || !(state.filters instanceof Array))
-                continue
+        if (fact && typeof fact.updateFilters === "function")
+            return fact.updateFilters(value)
 
-            for (var j = 0; j < state.filters.length; ++j) {
-                var filterObject = state.filters[j]
-                if (filterObject)
-                    filterObject.destroy()
-            }
-        }
-
-        seriesState = []
+        return value
     }
 
-    function invokeFilterMethod(filterObject, methodName, argument)
+    function writeSavedValue(fact, value)
     {
-        if (!filterObject)
-            return undefined
-
-        var method = filterObject[methodName]
-        if (!method)
-            return undefined
-
-        if (argument === undefined)
-            return method.call(filterObject)
-
-        return method.call(filterObject, argument)
-    }
-
-    function buildSeriesState(fact, index)
-    {
-        var bind = itemBind(fact)
-        var filterDefs = filterRegistry.normalizeFilters(fact && fact.filters instanceof Array
-                                                         ? fact.filters
-                                                         : [])
-        var filters = []
-
-        for (var i = 0; i < filterDefs.length; ++i) {
-            var filterData = filterDefs[i]
-            var source = filterRegistry.componentSource(filterData.type)
-            if (!source)
-                continue
-
-            var component = Qt.createComponent(source)
-            if (!component || component.status !== Component.Ready) {
-                if (component)
-                    component.destroy()
-                continue
-            }
-
-            var filterObject = component.createObject(chartItem)
-            component.destroy()
-
-            if (!filterObject)
-                continue
-
-            invokeFilterMethod(filterObject, "load", filterData)
-            invokeFilterMethod(filterObject, "reset")
-            filters.push(filterObject)
-        }
-
         var saveTarget = itemSaveTarget(fact)
-
-        return {
-            "bind": bind,
-            "title": itemTitle(fact, index),
-            "color": itemColor(fact, index),
-            "filters": filters,
-            "saveTarget": saveTarget,
-            "saveFact": saveTarget !== "" && chartItem.apxContext
-                        ? chartItem.apxContext.fleet.current.mandala.fact(saveTarget, true)
-                        : null
-        }
-    }
-
-    function seriesStateAt(index)
-    {
-        while (seriesState.length <= index)
-            seriesState.push(null)
-
-        if (!seriesState[index])
-            seriesState[index] = buildSeriesState(chartItem.facts[index], index)
-
-        return seriesState[index]
-    }
-
-    function applyFilterChain(state, value)
-    {
-        var filtered = value
-
-        if (!state || !(state.filters instanceof Array))
-            return filtered
-
-        for (var i = 0; i < state.filters.length; ++i) {
-            var filterObject = state.filters[i]
-            var stepFilter = filterObject ? filterObject["step"] : null
-            if (!stepFilter)
-                continue
-
-            filtered = stepFilter.call(filterObject, filtered)
-        }
-
-        return filtered
-    }
-
-    function writeSavedValue(state, value)
-    {
-        if (!state || !state.saveFact)
+        if (saveTarget === "" || !chartItem.apxContext)
             return
 
-        state.saveFact.setRawValueLocal(value)
+        var saveFact = chartItem.apxContext.fleet.current.mandala.fact(saveTarget, true)
+        if (saveFact)
+            saveFact.setRawValueLocal(value)
     }
 
     function isCommandBind(bind)
@@ -280,14 +191,15 @@ Item {
         return bind.indexOf("cmd.") === 0 || bind.indexOf("cmd") === 0
     }
 
-    function applySeriesStyle(series, state)
+    function applySeriesStyle(series, fact, index)
     {
-        if (!series || !state)
+        if (!series || !fact)
             return
 
-        var color = state.color
+        var bind = itemBind(fact)
+        var color = itemColor(fact, index)
 
-        if (isCommandBind(state.bind)) {
+        if (isCommandBind(bind)) {
             series.width = Qt.binding(function() {
                 return lineWidthCmd
             })
@@ -303,19 +215,24 @@ Item {
         }
     }
 
-    function updateSeriesColor(index, color)
+    function syncSeries(series, fact, index)
     {
-        if (index < 0 || index >= chartItem.facts.length)
+        if (!series || !fact)
             return
 
-        var state = seriesStateAt(index)
-        if (!state)
+        var title = itemTitle(fact, index)
+        if (series.name !== title)
+            series.name = title
+
+        applySeriesStyle(series, fact, index)
+    }
+
+    function updateSeriesColor(index)
+    {
+        if (index < 0 || index >= chartItem.facts.length || index >= chartView.count)
             return
 
-        state.color = resolvedColor(color, defaultSeriesColor(index))
-
-        if (index < chartView.count)
-            applySeriesStyle(chartView.series(index), state)
+        syncSeries(chartView.series(index), chartItem.facts[index], index)
     }
 
     ChartView {
@@ -387,7 +304,6 @@ Item {
 
         function reset()
         {
-            chartItem.destroySeriesState()
             chartView.removeAllSeries()
             chartView.sdata = []
             chartView.time = 0
@@ -443,18 +359,19 @@ Item {
                 addFactSeries(fact, i)
 
             var series = chartView.series(i)
-            var state = chartItem.seriesStateAt(i)
-            var value = chartItem.evaluateValue(fact, state.bind)
+            chartItem.syncSeries(series, fact, i)
+
+            var value = chartItem.evaluateValue(fact, chartItem.itemBind(fact))
 
             if (!isFinite(value))
                 value = 0
 
-            value = chartItem.applyFilterChain(state, value)
+            value = chartItem.filteredItemValue(fact, value)
 
             if (!isFinite(value))
                 value = 0
 
-            chartItem.writeSavedValue(state, value)
+            chartItem.writeSavedValue(fact, value)
 
             series.append(t, value)
             sdata.push(value)
@@ -469,19 +386,18 @@ Item {
 
         function addFactSeries(fact, index)
         {
-            var state = chartItem.seriesStateAt(index)
             var series = chartView.createSeries(chartItem.uiContext
                                                 && chartItem.uiContext.antialiasing
                                                 ? ChartView.SeriesTypeLine
                                                 : ChartView.SeriesTypeLine,
-                                                state.title,
+                                                chartItem.itemTitle(fact, index),
                                                 axisX,
                                                 axisY)
             series.useOpenGL = Qt.binding(function() {
                 return openGL
             })
             series.capStyle = Qt.RoundCap
-            chartItem.applySeriesStyle(series, state)
+            chartItem.applySeriesStyle(series, fact, index)
             return series
         }
     }

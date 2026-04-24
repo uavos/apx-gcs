@@ -28,26 +28,22 @@ Fact {
     id: pageFact
 
     property bool newItem: false
-    property bool standaloneEditor: false
     property var data: ({})
     property var signalsModel: null
     property var setFact: null
     property real speedValue: 1.0
-    property bool loading: false
 
     property alias itemsFact: pageItems
 
     flags: (Fact.Group | Fact.FlatModel)
+    title: newItem ? qsTr("Add new page") : pageName()
+    descr: newItem ? qsTr("Create a new chart page") : pageDescription()
 
     signal addTriggered()
-    signal accepted(var pageData)
     signal removeTriggered()
-    signal removedStandalone()
 
     Component.onCompleted: {
         load()
-        updateTitle()
-        updateDescr()
     }
 
     function rootEditor()
@@ -135,6 +131,37 @@ Fact {
         return pageFact.defaultTitle()
     }
 
+    function currentSpeedValue()
+    {
+        return speedValue
+    }
+
+    function setSpeedValue(value)
+    {
+        var nextSpeed = signalsModel && typeof signalsModel.normalizeSpeed === "function"
+                        ? signalsModel.normalizeSpeed(value)
+                        : asNumber(value, 1.0)
+        if (nextSpeed === speedValue)
+            return
+
+        speedValue = nextSpeed
+    }
+
+    function isPinned()
+    {
+        return !!mPin.value
+    }
+
+    function itemFacts()
+    {
+        var items = []
+
+        for (var i = 0; i < pageItems.size; ++i)
+            items.push(pageItems.child(i))
+
+        return items
+    }
+
     function speedText()
     {
         if (signalsModel && typeof signalsModel.formatSpeed === "function")
@@ -188,26 +215,13 @@ Fact {
         return 1.0
     }
 
-    function syncSpeedFact()
-    {
-        if (!mSpeed)
-            return
-
-        loading = true
-        mSpeed.value = speedText()
-        loading = false
-    }
-
     function load()
     {
-        loading = true
         mName.value = data && data.name !== undefined ? data.name : ""
         mPin.value = data && data.pin !== undefined ? data.pin : false
         speedValue = signalsModel && typeof signalsModel.normalizeSpeed === "function"
                      ? signalsModel.normalizeSpeed(data ? data.speed : undefined)
                      : asNumber(data ? data.speed : undefined, 1.0)
-        syncSpeedFact()
-        loading = false
         updateItems()
     }
 
@@ -240,9 +254,6 @@ Fact {
                                })
         if (!child)
             return null
-
-        child.titleChanged.connect(updateDescr)
-        child.removeTriggered.connect(updateDescr)
 
         if (itemData && itemData.bind !== undefined)
             maybeAdoptNameFromBind(itemData.bind)
@@ -290,15 +301,7 @@ Fact {
         }
     }
 
-    function updateTitle()
-    {
-        if (newItem)
-            return
-
-        title = pageName()
-    }
-
-    function updateDescr()
+    function pageDescription()
     {
         var parts = []
         if (mPin.value)
@@ -312,7 +315,7 @@ Fact {
         if (items.length > 0)
             parts.push(items.join(", "))
 
-        descr = parts.join(", ")
+        return parts.join(", ")
     }
 
     Fact {
@@ -321,10 +324,6 @@ Fact {
         descr: qsTr("Tab label for this page")
         flags: Fact.Text
         icon: "rename-box"
-        onValueChanged: {
-            pageFact.updateTitle()
-            pageFact.updateDescr()
-        }
     }
 
     Fact {
@@ -333,7 +332,6 @@ Fact {
         descr: qsTr("Show this page in the stacked pinned layout")
         flags: Fact.Bool
         icon: "pin"
-        onValueChanged: pageFact.updateDescr()
     }
 
     Fact {
@@ -345,17 +343,12 @@ Fact {
         enumStrings: pageFact.speedOptions()
         value: pageFact.speedText()
         onValueChanged: {
-            if (pageFact.loading)
-                return
-
             var selectedText = value === undefined || value === null ? text : value
             var selectedSpeed = pageFact.speedValueFromText(selectedText)
             if (selectedSpeed === pageFact.speedValue)
                 return
 
             pageFact.speedValue = selectedSpeed
-            pageFact.updateDescr()
-            pageFact.syncSpeedFact()
         }
     }
 
@@ -384,23 +377,10 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        descr: pageFact.standaloneEditor ? qsTr("Apply page changes")
-                                         : qsTr("Save chart changes")
+        descr: qsTr("Save chart changes")
         visible: !pageFact.newItem
         icon: "check-circle"
-        onTriggered: {
-            if (!pageFact.standaloneEditor) {
-                pageFact.saveAll()
-                return
-            }
-
-            var pageData = pageFact.save()
-            if (pageData === null)
-                return
-
-            pageFact.accepted(pageData)
-            pageFact.menuBack()
-        }
+        onTriggered: pageFact.saveAll()
     }
 
     Fact {
@@ -422,14 +402,9 @@ Fact {
         visible: !newItem
         icon: "delete"
         onTriggered: {
-            if (pageFact.standaloneEditor) {
-                removeTriggered()
-                removedStandalone()
-                pageFact.menuBack()
-                return
-            }
-
             var ownerSet = setFact
+            if (ownerSet && ownerSet.stateChanged)
+                ownerSet.stateChanged()
             removeTriggered()
             pageFact.deleteFact()
             if (ownerSet && typeof ownerSet.refreshSaveWarnings === "function")

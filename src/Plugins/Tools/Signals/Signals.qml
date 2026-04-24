@@ -40,6 +40,7 @@ Rectangle {
     color: "#000000"
 
     property string selectedPage: ""
+    property var selectedPageFact: null
     property bool pageStateRefreshPending: false
     property var pageStates: []
     property var globalUi: ui
@@ -47,8 +48,18 @@ Rectangle {
     property var prefsStore: application.prefs
     property real uiScale: control.globalUi ? control.globalUi.scale : 1
 
-    readonly property var pages: signalsModel.pages
-    readonly property var pinnedPages: signalsModel.pinnedPages
+    readonly property var pages: setsFact.activePages()
+    readonly property var pinnedPages: {
+        var list = []
+        var source = setsFact.activePages()
+
+        for (var i = 0; i < source.length; ++i) {
+            if (control.pagePinned(source[i]))
+                list.push(source[i])
+        }
+
+        return list
+    }
     readonly property int activePageIndex: checkedPageIndex()
     readonly property var activePage: pageAt(activePageIndex)
     readonly property real pinnedChartHeight: Math.max(44 * uiScale,
@@ -59,9 +70,21 @@ Rectangle {
     SignalsModel {
         id: signalsModel
         prefsAdapter: control.prefsStore
+    }
 
-        onSettingsLoaded: control.handleModelChanged()
-        onSettingsSaved: control.handleModelChanged()
+    MenuSets {
+        id: setsFact
+        signalsModel: signalsModel
+        destroyOnClose: false
+    }
+
+    Connections {
+        target: setsFact
+
+        function onStateChanged()
+        {
+            control.handleModelChanged()
+        }
     }
 
     Component {
@@ -126,9 +149,24 @@ Rectangle {
         if (!popup)
             return
 
-        createPopupFact(popup, "MenuSets.qml", {
-                            "signalsModel": signalsModel
-        })
+        popup.showFact(setsFact)
+        popup.open()
+    }
+
+    function openPageEditor(page)
+    {
+        if (!page)
+            return
+
+        selectedPageFact = page
+        selectedPage = pageTitle(page, pageIndexFor(page))
+
+        var popup = createEditorPopup(Qt.point(0.76, 0.08))
+        if (!popup)
+            return
+
+        popup.showFact(page)
+        popup.open()
     }
 
     function pageAt(index)
@@ -149,6 +187,8 @@ Rectangle {
     function pageName(index)
     {
         var page = pageAt(index)
+        if (page && typeof page.pageName === "function")
+            return String(page.pageName())
         if (page && page.name)
             return String(page.name)
         return signalsModel.defaultPageTitle(Math.max(index, 0))
@@ -157,11 +197,15 @@ Rectangle {
     function pageFacts(index)
     {
         var page = pageAt(index)
+        if (page && typeof page.itemFacts === "function")
+            return page.itemFacts()
         return page && page.items instanceof Array ? page.items : []
     }
 
     function pageTitle(page, fallbackIndex)
     {
+        if (page && typeof page.pageName === "function")
+            return String(page.pageName())
         if (page && page.name)
             return String(page.name)
         return signalsModel.defaultPageTitle(Math.max(fallbackIndex, 0))
@@ -169,9 +213,18 @@ Rectangle {
 
     function activeSetTitle()
     {
-        if (signalsModel.activeSet && signalsModel.activeSet.title)
-            return String(signalsModel.activeSet.title)
+        if (typeof setsFact.activeSetTitle === "function")
+            return String(setsFact.activeSetTitle())
         return ""
+    }
+
+    function pagePinned(page)
+    {
+        if (!page)
+            return false
+        if (typeof page.isPinned === "function")
+            return page.isPinned()
+        return !!page.pin
     }
 
     function pageIndexFor(page)
@@ -189,7 +242,7 @@ Rectangle {
         var match = 0
 
         for (var i = 0; i < pages.length; ++i) {
-            if (!pages[i] || !pages[i].pin)
+            if (!control.pagePinned(pages[i]))
                 continue
 
             if (match === pinnedIndex)
@@ -213,6 +266,9 @@ Rectangle {
     {
         if (!page)
             return 1.0
+
+        if (typeof page.currentSpeedValue === "function")
+            return page.currentSpeedValue()
 
         if (signalsModel && typeof signalsModel.normalizeSpeed === "function")
             return signalsModel.normalizeSpeed(page.speed)
@@ -254,7 +310,7 @@ Rectangle {
     function itemBind(item)
     {
         if (!item || item.bind === undefined)
-            return ""
+            return item && typeof item.bindText === "function" ? item.bindText() : ""
 
         return normalizeBindText(item.bind)
     }
@@ -266,6 +322,10 @@ Rectangle {
 
     function itemColor(item, index)
     {
+        if (item && typeof item.colorValueCurrent === "function"
+                && String(item.colorValueCurrent()).trim() !== "")
+            return item.colorValueCurrent()
+
         if (item && item.color !== undefined && String(item.color).trim() !== "")
             return item.color
         return defaultItemColor(index)
@@ -273,9 +333,20 @@ Rectangle {
 
     function itemTitle(item, index)
     {
+        if (item && item.title !== undefined && String(item.title) !== "")
+            return String(item.title)
         if (item)
             return itemBind(item)
         return qsTr("Item") + " " + (index + 1)
+    }
+
+    function itemWarningText(item)
+    {
+        if (!item)
+            return ""
+        if (typeof item.warningText === "function")
+            return item.warningText()
+        return item.warning !== undefined ? String(item.warning) : ""
     }
 
     function escapeHtml(text)
@@ -303,7 +374,7 @@ Rectangle {
         var rawValue = value
         var bind = itemBind(item)
         var title = itemTitle(item, 0)
-        var pageNameValue = page && page.name ? page.name : ""
+        var pageNameValue = page ? pageTitle(page, 0) : ""
 
         try {
             return !!eval(expression)
@@ -325,7 +396,7 @@ Rectangle {
             return state
 
         var lines = ["<b>" + escapeHtml(pageName(index)) + "</b>"]
-        var items = page.items instanceof Array ? page.items : []
+        var items = pageFacts(index)
 
         for (var i = 0; i < items.length; ++i) {
             var item = items[i]
@@ -334,9 +405,10 @@ Rectangle {
                        + escapeHtml(title))
 
             var value = evaluateBinding(itemBind(item))
-            if (item.warning && evaluateCondition(item.warning, value, item, page)) {
+            var warningExpr = itemWarningText(item)
+            if (warningExpr !== "" && evaluateCondition(warningExpr, value, item, page)) {
                 state.warning = true
-                state.messages.push(qsTr("Warning") + ": " + title + " (" + item.warning + ")")
+                state.messages.push(qsTr("Warning") + ": " + title + " (" + warningExpr + ")")
             }
         }
 
@@ -384,18 +456,29 @@ Rectangle {
     function selectSavedPage()
     {
         if (pages.length <= 0) {
+            selectedPageFact = null
             selectedPage = ""
             signals.facts = []
             return
         }
 
+        if (selectedPageFact && pageIndexFor(selectedPageFact) >= 0) {
+            selectedPage = pageTitle(selectedPageFact, pageIndexFor(selectedPageFact))
+            return
+        }
+
+        selectedPageFact = null
+
         if (selectedPage !== "") {
             for (var i = 0; i < pages.length; ++i) {
-                if (pageName(i) === selectedPage)
+                if (pageName(i) === selectedPage) {
+                    selectedPageFact = pageAt(i)
                     return
+                }
             }
         }
 
+        selectedPageFact = pageAt(0)
         selectedPage = pageName(0)
     }
 
@@ -415,6 +498,11 @@ Rectangle {
         if (!activePage)
             return
 
+        if (typeof activePage.setSpeedValue === "function") {
+            activePage.setSpeedValue(signalsModel.nextSpeedValue(pageSpeedValue(activePage)))
+            return
+        }
+
         signalsModel.setPageSpeed(activePageIndex,
                                   signalsModel.nextSpeedValue(activePage.speed))
     }
@@ -424,6 +512,11 @@ Rectangle {
         var index = pageIndexFor(page)
         if (index < 0)
             return
+
+        if (typeof page.setSpeedValue === "function") {
+            page.setSpeedValue(signalsModel.nextSpeedValue(pageSpeedValue(page)))
+            return
+        }
 
         signalsModel.setPageSpeed(index,
                                   signalsModel.nextSpeedValue(page.speed))
@@ -440,6 +533,11 @@ Rectangle {
         var targetPage = pageAt(index)
         if (!targetPage)
             return
+
+        if (typeof targetPage.setSpeedValue === "function") {
+            targetPage.setSpeedValue(signalsModel.nextSpeedValue(pageSpeedValue(targetPage)))
+            return
+        }
 
         signalsModel.setPageSpeed(index,
                                   signalsModel.nextSpeedValue(targetPage.speed))
@@ -469,11 +567,9 @@ Rectangle {
                     uiContext: control.globalUi
                     apxContext: control.globalApx
                     facts: pinnedChartPane.modelData && pinnedChartPane.modelData.items instanceof Array
-                           ? pinnedChartPane.modelData.items
-                           : []
-                    speed: signalsModel.speedIndex(pinnedChartPane.modelData
-                                                   ? pinnedChartPane.modelData.speed
-                                                   : 1.0)
+                              ? pinnedChartPane.modelData.items
+                              : control.pageFacts(control.pageIndexFor(pinnedChartPane.modelData))
+                          speed: signalsModel.speedIndex(control.pageSpeedValue(pinnedChartPane.modelData))
                 }
 
                 MouseArea {
@@ -536,7 +632,7 @@ Rectangle {
                 apxContext: control.globalApx
                 facts: []
                 speed: control.activePage
-                       ? signalsModel.speedIndex(control.activePage.speed)
+                       ? signalsModel.speedIndex(control.pageSpeedValue(control.activePage))
                        : signalsModel.speedIndex(1.0)
             }
 
@@ -616,11 +712,13 @@ Rectangle {
 
             onCheckedButtonChanged: {
                 if (checkedButton) {
-                    control.selectedPage = checkedButton.text
+                    control.selectedPageFact = checkedButton.pageFact
+                    control.selectedPage = control.pageName(checkedButton.pageIndex)
                     signals.facts = Qt.binding(function() {
                         return checkedButton ? checkedButton.values : []
                     })
                 } else {
+                    control.selectedPageFact = null
                     signals.facts = []
                 }
             }
@@ -646,14 +744,16 @@ Rectangle {
                     required property int index
 
                     property int pageIndex: index
+                    property var pageFact: modelData
 
                     text: control.pageName(index)
-                    checked: control.selectedPage !== ""
-                             ? text === control.selectedPage
+                    checked: control.selectedPageFact
+                             ? pageFact === control.selectedPageFact
                              : index === 0
                     values: control.pageFacts(index)
                     pageToolTip: control.pageState(index).toolTip
                     pageWarning: control.pageState(index).warning
+                    onEditTriggered: control.openPageEditor(pageFact)
                 }
             }
 
