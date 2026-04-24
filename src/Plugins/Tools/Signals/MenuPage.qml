@@ -22,224 +22,418 @@
 import QtQuick
 
 import APX.Facts
+import "."
 
 Fact {
-    id: menuPage
+    id: pageFact
+
+    property bool newItem: false
+    property bool standaloneEditor: false
+    property var data: ({})
+    property var signalsModel: null
+    property var setFact: null
+    property real speedValue: 1.0
+    property bool loading: false
+
+    property alias itemsFact: pageItems
 
     flags: (Fact.Group | Fact.FlatModel)
 
-    // Page properties
-    property bool pinned: false
-    property real speed: 1.0
-
-    // Values list for the chart renderer — array of MenuItem objects
-    property var values: []
-
-    // Warning/alarm aggregated from items
-    property bool hasWarning: false
-    property bool hasAlarm: false
-    property string warningText: ""
-
-    // Set to true when created directly from Signals.qml (page-button flow)
-    // to show the per-page Save button. False when used inside SignalsMenu popup.
-    property bool isDirectEdit: false
+    signal addTriggered()
+    signal accepted(var pageData)
+    signal removeTriggered()
+    signal removedStandalone()
 
     Component.onCompleted: {
-        pTitle.value = title;
+        load()
+        updateTitle()
+        updateDescr()
     }
 
-    function addNewItem() {
-        mMenuNewItem.trigger();
-    }
-
-    // Rebuild the values array from current items
-    function updatePageValues() {
-        var list = [];
-        for (var i = 0; i < mItems.size; ++i) {
-            var it = mItems.child(i);
-            list.push(it);
+    function rootEditor()
+    {
+        for (var parent = pageFact.parentFact; parent; parent = parent.parentFact) {
+            if (typeof parent.saveSettings === "function")
+                return parent
         }
-        values = list;
-        // Rebuild opts colors for chart
-        updateWarnings();
+
+        return null
     }
 
-    function updateWarnings() {
-        var warn = false;
-        var alarm = false;
-        var message = "";
-        for (var i = 0; i < mItems.size; ++i) {
-            var it = mItems.child(i);
-            if (it.hasWarning) {
-                warn = true;
-                if (message === "")
-                    message = it.alertText || it.warningMsg;
-            }
-            if (it.hasAlarm) {
-                alarm = true;
-                if (message === "")
-                    message = it.alertText || it.warningMsg;
-            }
-        }
-        hasWarning = warn;
-        hasAlarm = alarm;
-        warningText = message;
+    function saveAll()
+    {
+        var root = rootEditor()
+        if (root)
+            root.saveSettings()
     }
 
-    function updateChartsValues() {
-        for (var i = 0; i < mItems.size; ++i)
-            mItems.child(i).updateValue();
-        updateWarnings();
-    }
-
-    function setSpeed(value) {
-        if (mSpeed.value === value)
-            return;
-        mSpeed.value = value;
-    }
-
-    function save() {
-        var items = [];
-        for (var i = 0; i < mItems.size; ++i) {
-            var item = mItems.child(i).save();
-            if (!item.bind)
-                continue;
-            items.push(item);
-        }
-        return {
-            name: pTitle.value,
-            pin: mPin.value ? true : false,
-            speed: mSpeed.value,
-            items: items
-        };
-    }
-
-    function load(pageData) {
-        pTitle.value = pageData.name ? pageData.name : title;
-        pinned = pageData.pin ? true : false;
-        mPin.value = pinned;
-        speed = pageData.speed !== undefined ? pageData.speed : 1.0;
-        mSpeed.value = speed;
-        mItems.deleteChildren();
-        var items = pageData.items ? pageData.items : [];
-        for (var i in items)
-            createItem(items[i]);
-        updatePageValues();
-    }
-
-    function createItem(itemData) {
-        if (!itemData.bind || itemData.bind === "")
-            return;
-        var wasEmpty = mItems.size === 0;
-        var c = createFact(mItems, "MenuItem.qml", { "data": itemData });
-        c.parentFact = mItems;
-        c.removeTriggered.connect(function () { updatePageValues(); });
-        c.titleChanged.connect(updatePageValues);
-        if (wasEmpty && (!pTitle.value || /^P\d+$/.test(pTitle.value)))
-            pTitle.value = defaultPageName(itemData.bind);
-        return c;
-    }
-
-    function defaultPageName(bindExpr) {
-        if (!bindExpr || bindExpr === "")
-            return "P";
-        var expr = bindExpr.replace(/^mandala\./, "").replace(/\.value$/, "");
-        var parts = expr.split(".");
-        var leaf = parts.length > 0 ? parts[parts.length - 1] : expr;
-        return leaf.length > 0 ? leaf.charAt(0).toUpperCase() : "P";
-    }
-
-    function createFact(parent, url, opts) {
-        var component = Qt.createComponent(url);
+    function createFact(parent, url, opts)
+    {
+        var component = Qt.createComponent(Qt.resolvedUrl(url))
         if (component.status === Component.Ready) {
-            var c = component.createObject(parent, opts);
-            c.parentFact = parent;
-            return c;
+            var properties = opts || {}
+            properties.parentFact = parent
+            var child = component.createObject(parent, properties)
+            return child
         }
-        console.warn("MenuPage.createFact: failed to load " + url + ": " + component.errorString());
+
+        console.log(component.errorString())
+        return null
     }
 
-    function checkScrs(val) {
-        var matches = false;
-        for (var i = 0; i < mItems.size; ++i)
-            if (mItems.child(i).hasScr(val))
-                matches = true;
-        return matches;
+    function asNumber(value, fallback)
+    {
+        var number = Number(value)
+        return isFinite(number) ? number : fallback
     }
 
-    // Page title fact
+    function defaultTitle()
+    {
+        if (signalsModel && typeof signalsModel.defaultPageTitle === "function")
+            return pageFact.signalsModel.defaultPageTitle(Math.max(pageFact.num, 0))
+        return qsTr("Page") + " " + (Math.max(pageFact.num, 0) + 1)
+    }
+
+    function pageNameFromBind(bind)
+    {
+        var text = String(bind).trim()
+        var simplePath = /^(?:mandala\.)?[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+(?:\.value)?$/
+
+        if (simplePath.test(text)) {
+            if (text.startsWith("mandala."))
+                text = text.slice(8)
+            if (text.endsWith(".value"))
+                text = text.slice(0, -6)
+        }
+
+        if (text === "")
+            return ""
+
+        var parts = text.split(".")
+        var token = parts.length > 0 ? parts[parts.length - 1] : text
+        if (token.length <= 0)
+            return ""
+
+        return token.charAt(0).toUpperCase()
+    }
+
+    function pageName()
+    {
+        var text = mName.text.trim()
+        if (text !== "")
+            return text
+
+        if (pageItems.size > 0) {
+            var firstItem = pageItems.child(0)
+            if (firstItem && typeof firstItem.bindText === "function") {
+                var guessed = pageNameFromBind(firstItem.bindText())
+                if (guessed !== "")
+                    return guessed
+            }
+        }
+
+        return pageFact.defaultTitle()
+    }
+
+    function speedText()
+    {
+        if (signalsModel && typeof signalsModel.formatSpeed === "function")
+            return signalsModel.formatSpeed(speedValue)
+
+        var text = String(speedValue)
+        if (text.endsWith(".0"))
+            text = text.slice(0, -2)
+        return text + "x"
+    }
+
+    function speedOptions()
+    {
+        var factors = signalsModel && signalsModel.speedFactors instanceof Array
+                      ? signalsModel.speedFactors
+                      : [0.2, 0.5, 1.0, 2.0, 4.0]
+        var values = []
+
+        for (var i = 0; i < factors.length; ++i) {
+            if (signalsModel && typeof signalsModel.formatSpeed === "function")
+                values.push(signalsModel.formatSpeed(factors[i]))
+            else {
+                var text = String(factors[i])
+                if (text.endsWith(".0"))
+                    text = text.slice(0, -2)
+                values.push(text + "x")
+            }
+        }
+
+        return values
+    }
+
+    function speedValueFromText(value)
+    {
+        var text = String(value === undefined || value === null ? "" : value).trim()
+        var factors = signalsModel && signalsModel.speedFactors instanceof Array
+                      ? signalsModel.speedFactors
+                      : [0.2, 0.5, 1.0, 2.0, 4.0]
+
+        for (var i = 0; i < factors.length; ++i) {
+            var optionText = signalsModel && typeof signalsModel.formatSpeed === "function"
+                             ? signalsModel.formatSpeed(factors[i])
+                             : String(factors[i]).replace(/\.0$/, "") + "x"
+            if (optionText === text)
+                return Number(factors[i])
+        }
+
+        if (signalsModel && typeof signalsModel.normalizeSpeed === "function")
+            return signalsModel.normalizeSpeed(text)
+
+        return 1.0
+    }
+
+    function syncSpeedFact()
+    {
+        if (!mSpeed)
+            return
+
+        loading = true
+        mSpeed.value = speedText()
+        loading = false
+    }
+
+    function load()
+    {
+        loading = true
+        mName.value = data && data.name !== undefined ? data.name : ""
+        mPin.value = data && data.pin !== undefined ? data.pin : false
+        speedValue = signalsModel && typeof signalsModel.normalizeSpeed === "function"
+                     ? signalsModel.normalizeSpeed(data ? data.speed : undefined)
+                     : asNumber(data ? data.speed : undefined, 1.0)
+        syncSpeedFact()
+        loading = false
+        updateItems()
+    }
+
+    function updateItems()
+    {
+        pageItems.deleteChildren()
+
+        var items = data && data.items instanceof Array ? data.items : []
+        for (var i = 0; i < items.length; ++i)
+            createItem(items[i])
+    }
+
+    function maybeAdoptNameFromBind(bind)
+    {
+        if (mName.text.trim() !== "")
+            return
+
+        var guessed = pageNameFromBind(bind)
+        if (guessed !== "")
+            mName.setValue(guessed)
+    }
+
+    function createItem(itemData)
+    {
+        var child = createFact(pageItems, "MenuItem.qml", {
+                                   "data": itemData,
+                                   "signalsModel": signalsModel,
+                                   "setFact": setFact,
+                                   "pageFact": pageFact
+                               })
+        if (!child)
+            return null
+
+        child.titleChanged.connect(updateDescr)
+        child.removeTriggered.connect(updateDescr)
+
+        if (itemData && itemData.bind !== undefined)
+            maybeAdoptNameFromBind(itemData.bind)
+
+        if (setFact && typeof setFact.refreshSaveWarnings === "function")
+            setFact.refreshSaveWarnings()
+
+        return child
+    }
+
+    function isSaveTargetUsedLocal(saveTarget, skipItem)
+    {
+        var target = String(saveTarget).trim()
+        if (target === "")
+            return false
+
+        for (var i = 0; i < pageItems.size; ++i) {
+            var itemEditor = pageItems.child(i)
+            if (!itemEditor || itemEditor === skipItem)
+                continue
+            if (typeof itemEditor.saveTarget === "function"
+                    && itemEditor.saveTarget() === target)
+                return true
+        }
+
+        return false
+    }
+
+    function save()
+    {
+        var items = []
+        for (var i = 0; i < pageItems.size; ++i) {
+            var itemEditor = pageItems.child(i)
+            var itemData = itemEditor.save()
+            if (itemData === null)
+                return null
+            items.push(itemData)
+        }
+
+        return {
+            "name": pageName(),
+            "pin": mPin.value,
+            "speed": speedValue,
+            "items": items
+        }
+    }
+
+    function updateTitle()
+    {
+        if (newItem)
+            return
+
+        title = pageName()
+    }
+
+    function updateDescr()
+    {
+        var parts = []
+        if (mPin.value)
+            parts.push(qsTr("Pinned"))
+
+        parts.push(qsTr("Speed") + ": " + speedText())
+
+        var items = []
+        for (var i = 0; i < pageItems.size; ++i)
+            items.push(pageItems.child(i).title)
+        if (items.length > 0)
+            parts.push(items.join(", "))
+
+        descr = parts.join(", ")
+    }
+
     Fact {
-        id: pTitle
+        id: mName
         title: qsTr("Page name")
-        descr: qsTr("Short name shown on tab")
+        descr: qsTr("Tab label for this page")
         flags: Fact.Text
         icon: "rename-box"
         onValueChanged: {
-            menuPage.title = value;
+            pageFact.updateTitle()
+            pageFact.updateDescr()
         }
     }
+
     Fact {
         id: mPin
-        name: "pin"
         title: qsTr("Pinned")
-        descr: qsTr("Show this page stacked with other pinned pages")
+        descr: qsTr("Show this page in the stacked pinned layout")
         flags: Fact.Bool
-        onValueChanged: {
-            menuPage.pinned = value > 0;
-            if (typeof signalsWidget !== 'undefined' && signalsWidget)
-                signalsWidget.updateLayout();
-        }
+        icon: "pin"
+        onValueChanged: pageFact.updateDescr()
     }
+
     Fact {
         id: mSpeed
-        name: "speed"
         title: qsTr("Speed")
-        descr: qsTr("Chart scroll speed factor")
-        flags: Fact.Float
-        enumStrings: ["0.2", "0.5", "1", "2", "4"]
-        value: 1.0
-        precision: 1
+        descr: qsTr("Default chart speed for this page")
+        flags: Fact.Enum
+        icon: "play-speed"
+        enumStrings: pageFact.speedOptions()
+        value: pageFact.speedText()
         onValueChanged: {
-            menuPage.speed = value;
+            if (pageFact.loading)
+                return
+
+            var selectedText = value === undefined || value === null ? text : value
+            var selectedSpeed = pageFact.speedValueFromText(selectedText)
+            if (selectedSpeed === pageFact.speedValue)
+                return
+
+            pageFact.speedValue = selectedSpeed
+            pageFact.updateDescr()
+            pageFact.syncSpeedFact()
         }
     }
 
-    // Add new item action
     MenuItem {
-        id: mMenuNewItem
-        title: qsTr("Add new chart")
-        descr: qsTr("Create and configure a new chart item")
+        title: qsTr("Add new item")
         icon: "plus-circle"
         newItem: true
-        onAddTriggered: createItem(save())
+        visible: !pageFact.newItem
+        signalsModel: pageFact.signalsModel
+        setFact: pageFact.setFact
+        pageFact: pageFact
+        onAddTriggered: {
+            var itemData = save()
+            if (itemData)
+                pageFact.createItem(itemData)
+        }
     }
 
     Fact {
-        id: mItems
+        id: pageItems
         title: qsTr("Items")
+        visible: !pageFact.newItem
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: {
-            menuPage.updatePageValues();
-            if (typeof signalsWidget !== 'undefined' && signalsWidget)
-                signalsWidget.updateLayout();
-        }
-        onItemMoved: menuPage.updatePageValues()
     }
 
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        visible: menuPage.isDirectEdit
+        descr: pageFact.standaloneEditor ? qsTr("Apply page changes")
+                                         : qsTr("Save chart changes")
+        visible: !pageFact.newItem
         icon: "check-circle"
         onTriggered: {
-            if (typeof signalsWidget !== 'undefined' && signalsWidget)
-                signalsWidget.saveSettings();
+            if (!pageFact.standaloneEditor) {
+                pageFact.saveAll()
+                return
+            }
+
+            var pageData = pageFact.save()
+            if (pageData === null)
+                return
+
+            pageFact.accepted(pageData)
+            pageFact.menuBack()
         }
     }
+
+    Fact {
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Add")
+        descr: qsTr("Add this page")
+        enabled: newItem
+        icon: "plus-circle"
+        onTriggered: {
+            pageFact.menuBack()
+            addTriggered()
+        }
+    }
+
     Fact {
         flags: (Fact.Action | Fact.Remove)
-        title: qsTr("Remove page")
+        title: qsTr("Remove")
+        descr: qsTr("Remove this page")
+        visible: !newItem
         icon: "delete"
-        onTriggered: menuPage.deleteFact()
+        onTriggered: {
+            if (pageFact.standaloneEditor) {
+                removeTriggered()
+                removedStandalone()
+                pageFact.menuBack()
+                return
+            }
+
+            var ownerSet = setFact
+            removeTriggered()
+            pageFact.deleteFact()
+            if (ownerSet && typeof ownerSet.refreshSaveWarnings === "function")
+                ownerSet.refreshSaveWarnings()
+        }
     }
 }

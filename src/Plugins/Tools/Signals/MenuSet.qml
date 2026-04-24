@@ -22,151 +22,224 @@
 import QtQuick
 
 import APX.Facts
+import "."
 
-// One set — a named collection of pages.
-// Mirrors NumbersMenuSet but contains pages (MenuPage) instead of values.
 Fact {
     id: setFact
 
-    flags: (Fact.Group | Fact.FlatModel)
+    property var signalsModel: null
+    property var data: ({})
 
-    property var pages: [] // from config / JSON
-    property var titleFact: setTitle
-    property var addPageFact: addPage
-    property var pagesFact: mPages
+    flags: (Fact.Group | Fact.FlatModel)
 
     signal selected(var num)
 
+    Component.onCompleted: {
+        load()
+        updateTitle()
+        updateDescr()
+        refreshSaveWarnings()
+    }
+
+    function rootEditor()
+    {
+        for (var parent = setFact.parentFact; parent; parent = parent.parentFact) {
+            if (typeof parent.saveSettings === "function")
+                return parent
+        }
+
+        return null
+    }
+
+    function saveAll()
+    {
+        var root = rootEditor()
+        if (root)
+            root.saveSettings()
+    }
+
+    function createFact(parent, url, opts)
+    {
+        var component = Qt.createComponent(Qt.resolvedUrl(url))
+        if (component.status === Component.Ready) {
+            var properties = opts || {}
+            properties.parentFact = parent
+            var child = component.createObject(parent, properties)
+            return child
+        }
+
+        console.log(component.errorString())
+        return null
+    }
+
+    function defaultTitle()
+    {
+        if (signalsModel && typeof signalsModel.defaultSetTitle === "function")
+            return setFact.signalsModel.defaultSetTitle(Math.max(setFact.num, 0))
+        return qsTr("Set") + " " + (Math.max(setFact.num, 0) + 1)
+    }
+
+    function load()
+    {
+        setTitle.value = data && data.title !== undefined ? data.title : defaultTitle()
+        updatePages()
+    }
+
+    function save()
+    {
+        refreshSaveWarnings()
+
+        var pages = []
+        for (var i = 0; i < setPages.size; ++i) {
+            var pageEditor = setPages.child(i)
+            var pageData = pageEditor.save()
+            if (pageData === null)
+                return null
+            pages.push(pageData)
+        }
+
+        return {
+            "title": setTitle.text.trim() !== "" ? setTitle.text.trim() : setFact.defaultTitle(),
+            "pages": pages
+        }
+    }
+
+    function updatePages()
+    {
+        setPages.deleteChildren()
+
+        var pages = data && data.pages instanceof Array ? data.pages : []
+        for (var i = 0; i < pages.length; ++i)
+            createPage(pages[i])
+    }
+
+    function createPage(pageData)
+    {
+        var child = createFact(setPages, "MenuPage.qml", {
+                                   "data": pageData,
+                                   "signalsModel": setFact.signalsModel,
+                                   "setFact": setFact
+                               })
+        if (!child)
+            return null
+
+        child.titleChanged.connect(updateDescr)
+        child.removeTriggered.connect(updateDescr)
+        return child
+    }
+
+    function refreshSaveWarnings()
+    {
+        for (var i = 0; i < setPages.size; ++i) {
+            var pageEditor = setPages.child(i)
+            if (!pageEditor || !pageEditor.itemsFact)
+                continue
+
+            for (var j = 0; j < pageEditor.itemsFact.size; ++j) {
+                var itemEditor = pageEditor.itemsFact.child(j)
+                if (itemEditor && typeof itemEditor.refreshValidation === "function")
+                    itemEditor.refreshValidation()
+            }
+        }
+    }
+
+    function isSaveTargetUsed(saveTarget, skipItem)
+    {
+        var target = String(saveTarget).trim()
+        if (target === "")
+            return false
+
+        for (var i = 0; i < setPages.size; ++i) {
+            var pageEditor = setPages.child(i)
+            if (!pageEditor || !pageEditor.itemsFact)
+                continue
+
+            for (var j = 0; j < pageEditor.itemsFact.size; ++j) {
+                var itemEditor = pageEditor.itemsFact.child(j)
+                if (!itemEditor || itemEditor === skipItem)
+                    continue
+                if (typeof itemEditor.saveTarget === "function"
+                        && itemEditor.saveTarget() === target)
+                    return true
+            }
+        }
+
+        return false
+    }
+
+    function updateTitle()
+    {
+        title = setTitle.text.trim() !== "" ? setTitle.text.trim() : setFact.defaultTitle()
+    }
+
+    function updateDescr()
+    {
+        var pages = []
+        for (var i = 0; i < setPages.size; ++i)
+            pages.push(setPages.child(i).title)
+        descr = pages.join(", ")
+    }
+
     Fact {
         id: setTitle
-        title: qsTr("Description")
+        title: qsTr("Set name")
+        descr: qsTr("Saved chart configuration name")
         flags: Fact.Text
         icon: "rename-box"
-        value: setFact.title
-        onValueChanged: setFact.title = value
+        onValueChanged: {
+            setFact.updateTitle()
+            setFact.updateDescr()
+        }
     }
 
-    // Add a new blank page (up to 10)
-    Fact {
-        id: addPage
-        title: qsTr("Add page")
+    MenuPage {
+        title: qsTr("Add new page")
         icon: "plus-circle"
-        flags: Fact.Action
-        enabled: mPages.size < 10
-        onTriggered: {
-            var n = mPages.size + 1;
-            var pageData = { name: "P" + n, pin: false, speed: 1.0, items: [] };
-            createPage(pageData);
+        newItem: true
+        signalsModel: setFact.signalsModel
+        setFact: setFact
+        onAddTriggered: {
+            var pageData = save()
+            if (pageData)
+                setFact.createPage(pageData)
         }
     }
 
     Fact {
-        id: mPages
+        id: setPages
         title: qsTr("Pages")
-        flags: (Fact.Group | Fact.Section | Fact.Count | Fact.DragChildren)
-        onSizeChanged: updateDescr()
-        onItemMoved: updateDescr()
-    }
-
-    Component.onCompleted: {
-        var opt = opts;
-        opt.page = "qrc:/Signals/MenuSetPage.qml";
-        opts = opt;
-        updateSetItems();
-    }
-
-    function save() {
-        var savedPages = [];
-        for (var i = 0; i < mPages.size; ++i) {
-            var pg = mPages.child(i);
-            savedPages.push(pg.save());
-        }
-        return {
-            title: title,
-            pages: savedPages
-        };
-    }
-
-    function loadSet(setData) {
-        title = setData.title ? setData.title : title;
-        setTitle.value = title;
-        pages = setData.pages ? setData.pages : [];
-        updateSetItems();
-    }
-
-    function updateSetItems() {
-        mPages.deleteChildren();
-        var plist = pages ? pages : [];
-        for (var i in plist)
-            createPage(plist[i]);
-        updateDescr();
-    }
-
-    function createPage(pageData) {
-        if (mPages.size >= 10)
-            return null;
-        var component = Qt.createComponent("MenuPage.qml");
-        if (component.status !== Component.Ready) {
-            console.warn("MenuSet: cannot load MenuPage.qml: " + component.errorString());
-            return null;
-        }
-        var pg = component.createObject(mPages, {
-            "title": pageData.name ? pageData.name : ("P" + (mPages.size + 1))
-        });
-        if (!pg) {
-            console.warn("MenuSet: failed to create MenuPage instance");
-            return null;
-        }
-        pg.parentFact = mPages;
-        pg.load(pageData);
-        if (pg.titleChanged)
-            pg.titleChanged.connect(updateDescr);
-        updateDescr();
-        return pg;
-    }
-
-    function getPages() {
-        var list = [];
-        for (var i = 0; i < mPages.size; ++i)
-            list.push(mPages.child(i));
-        return list;
-    }
-
-    function updateDescr() {
-        if (!setFact)
-            return;
-        var s = [];
-        for (var i = 0; i < mPages.size; ++i)
-            s.push(mPages.child(i).title);
-        descr = s.join(", ");
-    }
-
-    function checkScrs(val) {
-        var matches = false;
-        for (var i = 0; i < mPages.size; ++i)
-            if (mPages.child(i).checkScrs(val))
-                matches = true;
-        return matches;
+        flags: (Fact.Group | Fact.Section | Fact.DragChildren)
     }
 
     Fact {
         flags: (Fact.Action | Fact.Remove)
         title: qsTr("Remove set")
+        descr: qsTr("Delete this chart set")
         icon: "delete"
         onTriggered: {
             if (setFact.active)
-                selected(0);
-            setFact.destroy();
+                selected(0)
+            setFact.deleteFact()
         }
     }
+
+    Fact {
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Save")
+        descr: qsTr("Save chart changes")
+        icon: "check-circle"
+        onTriggered: setFact.saveAll()
+    }
+
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Select and save")
+        descr: qsTr("Make this set active and save it")
         visible: !setFact.active
         icon: "check-circle"
         onTriggered: {
-            setFact.menuBack();
-            setFact.selected(setFact.num);
+            setFact.menuBack()
+            setFact.selected(setFact.num)
         }
     }
 }

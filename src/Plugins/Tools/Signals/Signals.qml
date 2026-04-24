@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 /*
  * APX Autopilot project <http://docs.uavos.com>
  *
@@ -23,337 +25,645 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import QtCore
 
 import Apx.Common
+import Apx.Menu
 
-// Root widget for the Signals plugin.
-// Accessible from child QML files via id: signalsWidget (context property set below).
 Rectangle {
-    id: signalsWidget
+    id: control
+
+    implicitHeight: layout.implicitHeight
+    implicitWidth: layout.implicitWidth
+
+    border.width: 0
+    color: "#000000"
+
+    property string selectedPage: ""
+    property bool pageStateRefreshPending: false
+    property var pageStates: []
+    property var globalUi: ui
+    property var globalApx: apx
+    property var prefsStore: application.prefs
+    property real uiScale: control.globalUi ? control.globalUi.scale : 1
+
+    readonly property var pages: signalsModel.pages
+    readonly property var pinnedPages: signalsModel.pinnedPages
+    readonly property int activePageIndex: checkedPageIndex()
+    readonly property var activePage: pageAt(activePageIndex)
+    readonly property real pinnedChartHeight: Math.max(44 * uiScale,
+                                                       Math.min(96 * uiScale,
+                                                                (control.height - bottomArea.implicitHeight)
+                                                                / Math.max(pinnedPages.length + 1, 2)))
 
     SignalsModel {
         id: signalsModel
+        prefsAdapter: control.prefsStore
+
+        onSettingsLoaded: control.handleModelChanged()
+        onSettingsSaved: control.handleModelChanged()
     }
 
-    implicitHeight: mainLayout.implicitHeight
-    implicitWidth: mainLayout.implicitWidth
-    border.width: 0
-    color: "#000"
+    Component {
+        id: factPopupComponent
 
-    // Active pages — array of MenuPage Fact objects rebuilt from the active set
-    property var activePages: []
-    // Currently selected (non-pinned) page
-    property var currentPage: null
-    // Pinned pages shown stacked
-    property var pinnedPages: []
-    // Title of the active set
-    property string activeSetTitle: ""
-    // Index of the active set in the JSON
-    property int activeSetIndex: 0
-
-    // -----------------------------------------------------------------
-    // Public API — called from child components (MenuItem, MenuPage, etc.)
-    // -----------------------------------------------------------------
-
-    function saveSettings() {
-        var json = signalsModel.loadJson();
-        json.sets = [];
-        var activeSets = _buildSetsFromPages();
-        json.sets = activeSets.sets;
-        if (!json.active) json.active = {};
-        json.active["signals"] = activeSetIndex;
-        signalsModel.saveJson(json);
-    }
-
-    function checkScrMatches(val) {
-        if (!val || val === "") return false;
-        var matches = false;
-        for (var i = 0; i < activePages.length; ++i) {
-            if (activePages[i].checkScrs(val)) matches = true;
-        }
-        return matches;
-    }
-
-    function updateLayout() {
-        pinnedPages = activePages.filter(function(p) { return p.pinned; });
-        var nonPinnedPages = activePages.filter(function(p) { return !p.pinned; });
-        if (currentPage && currentPage.pinned)
-            currentPage = nonPinnedPages.length > 0 ? nonPinnedPages[0] : null;
-        if (!currentPage && nonPinnedPages.length > 0)
-            currentPage = nonPinnedPages[0];
-    }
-
-    function updateSeriesColors() {
-        singleChart.updateSeriesColor();
-        for (var i = 0; i < pinnedChartsRepeater.count; ++i) {
-            var item = pinnedChartsRepeater.itemAt(i);
-            if (item)
-                item.updateSeriesColor();
+        FactMenuPopup {
+            pinned: true
         }
     }
 
-    function activatePage(page) {
-        if (!page) return;
-        if (page.pinned)
-            return;
-        currentPage = page;
-        singleChart.resetEnable = true;
-        singleChart.facts = Qt.binding(function() {
-            return signalsWidget.currentPage ? signalsWidget.currentPage.values : [];
-        });
-        singleChart.speedFactorValue = Qt.binding(function() {
-            return signalsWidget.currentPage ? signalsWidget.currentPage.speed : 1.0;
-        });
+    Settings {
+        category: "signals"
+        property alias page: control.selectedPage
     }
-
-    // -----------------------------------------------------------------
-    // Initialization
-    // -----------------------------------------------------------------
-
-    Component.onCompleted: {
-        loadSettings();
-    }
-
-    function loadSettings() {
-        // Destroy old page facts
-        _destroyActivePages();
-
-        var json = signalsModel.loadJson();
-        var sets = json.sets;
-        var idx = signalsModel.activeIndex(json);
-
-        activeSetIndex = idx;
-        var activeSet = sets[idx];
-        activeSetTitle = activeSet.title || qsTr("default");
-
-        var pages = activeSet.pages || [];
-        var newPages = [];
-        for (var i = 0; i < pages.length && i < 10; ++i) {
-            var pg = _createMenuPage(pages[i]);
-            if (pg) newPages.push(pg);
-        }
-        activePages = newPages;
-        pinnedPages = newPages.filter(function(p) { return p.pinned; });
-        var nonPinnedPages = newPages.filter(function(p) { return !p.pinned; });
-        currentPage = nonPinnedPages.length > 0 ? nonPinnedPages[0] : null;
-
-        if (currentPage) {
-            singleChart.resetEnable = true;
-            singleChart.facts = Qt.binding(function() {
-                return signalsWidget.currentPage ? signalsWidget.currentPage.values : [];
-            });
-            singleChart.speedFactorValue = Qt.binding(function() {
-                return signalsWidget.currentPage ? signalsWidget.currentPage.speed : 1.0;
-            });
-        } else {
-            singleChart.facts = [];
-            singleChart.speedFactorValue = 1.0;
-        }
-    }
-
-    function _loadJson() {
-        return signalsModel.loadJson();
-    }
-
-    function _destroyActivePages() {
-        for (var i = 0; i < activePages.length; ++i) {
-            if (activePages[i] && typeof activePages[i].deleteFact === 'function')
-                activePages[i].deleteFact();
-        }
-        activePages = [];
-    }
-
-    function _createMenuPage(pageData) {
-        var component = Qt.createComponent("MenuPage.qml");
-        if (component.status !== Component.Ready) {
-            console.warn("Signals: cannot load MenuPage.qml: " + component.errorString());
-            return null;
-        }
-        var pg = component.createObject(signalsWidget, {
-            "title": pageData.name ? pageData.name : qsTr("P"),
-            "isDirectEdit": true
-        });
-        pg.parentFact = apx.fleet.local;
-        pg.load(pageData);
-        return pg;
-    }
-
-    // Collect current page data back into sets JSON structure
-    function _buildSetsFromPages() {
-        var savedPages = [];
-        for (var i = 0; i < activePages.length; ++i)
-            savedPages.push(activePages[i].save());
-
-        // Load existing sets, replace active one
-        var json = signalsModel.loadJson();
-        var sets = (json && json.sets) ? JSON.parse(JSON.stringify(json.sets)) : [];
-        if (sets.length === 0) sets.push({ title: activeSetTitle, pages: [] });
-        if (activeSetIndex >= sets.length) activeSetIndex = 0;
-        sets[activeSetIndex].pages = savedPages;
-        sets[activeSetIndex].title = activeSetTitle;
-        return { sets: sets };
-    }
-
-    // -----------------------------------------------------------------
-    // Telemetry update
-    // -----------------------------------------------------------------
 
     Connections {
-        target: apx.fleet.current.mandala
-        function onTelemetryDecoded() {
-            for (var i = 0; i < activePages.length; ++i)
-                activePages[i].updateChartsValues();
+        target: control.globalApx ? control.globalApx.fleet.current.mandala : null
+
+        function onTelemetryDecoded()
+        {
+            control.schedulePageStateRefresh()
         }
     }
 
-    // -----------------------------------------------------------------
-    // Layout
-    // -----------------------------------------------------------------
+    Component.onCompleted: handleModelChanged()
 
-    ColumnLayout {
-        id: mainLayout
-        anchors.fill: parent
-        spacing: 0
+    function createEditorPopup(pos)
+    {
+        var popupParent = control.globalUi && control.globalUi.window ? control.globalUi.window
+                                                                      : control
 
-        // Pinned pages stacked above the main view
-        Repeater {
-            id: pinnedChartsRepeater
-            model: pinnedPages
+        return factPopupComponent.createObject(popupParent, {
+                                                   "pos": pos
+                                               })
+    }
 
-            delegate: ChartsView {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 80 * ui.scale
-                Layout.minimumHeight: 20
-                facts: modelData.values
-                speedFactorValue: modelData.speed
+    function createPopupFact(popup, url, properties)
+    {
+        var component = Qt.createComponent(Qt.resolvedUrl(url))
+        if (component.status !== Component.Ready) {
+            console.log(component.errorString())
+            popup.destroy()
+            return null
+        }
+
+        var fact = component.createObject(popup, properties)
+        component.destroy()
+
+        if (!fact) {
+            popup.destroy()
+            return null
+        }
+
+        popup.showFact(fact)
+        popup.open()
+        return fact
+    }
+
+    function openSetsEditor()
+    {
+        var popup = createEditorPopup(Qt.point(0.76, 0.08))
+        if (!popup)
+            return
+
+        createPopupFact(popup, "MenuSets.qml", {
+                            "signalsModel": signalsModel
+        })
+    }
+
+    function pageAt(index)
+    {
+        return index >= 0 && index < pages.length ? pages[index] : null
+    }
+
+    function checkedPageIndex()
+    {
+        var button = buttonGroup.checkedButton
+        if (!button)
+            return -1
+
+        var index = button["pageIndex"]
+        return index === undefined ? -1 : Number(index)
+    }
+
+    function pageName(index)
+    {
+        var page = pageAt(index)
+        if (page && page.name)
+            return String(page.name)
+        return signalsModel.defaultPageTitle(Math.max(index, 0))
+    }
+
+    function pageFacts(index)
+    {
+        var page = pageAt(index)
+        return page && page.items instanceof Array ? page.items : []
+    }
+
+    function pageTitle(page, fallbackIndex)
+    {
+        if (page && page.name)
+            return String(page.name)
+        return signalsModel.defaultPageTitle(Math.max(fallbackIndex, 0))
+    }
+
+    function activeSetTitle()
+    {
+        if (signalsModel.activeSet && signalsModel.activeSet.title)
+            return String(signalsModel.activeSet.title)
+        return ""
+    }
+
+    function pageIndexFor(page)
+    {
+        for (var i = 0; i < pages.length; ++i) {
+            if (pages[i] === page)
+                return i
+        }
+
+        return -1
+    }
+
+    function pinnedPageIndex(pinnedIndex)
+    {
+        var match = 0
+
+        for (var i = 0; i < pages.length; ++i) {
+            if (!pages[i] || !pages[i].pin)
+                continue
+
+            if (match === pinnedIndex)
+                return i
+
+            match++
+        }
+
+        return -1
+    }
+
+    function overlayFont(pixelSize)
+    {
+        var size = Math.max(9, pixelSize)
+        if (control.globalApx && typeof control.globalApx.font_narrow === "function")
+            return control.globalApx.font_narrow(size)
+        return Qt.font({"pixelSize": size})
+    }
+
+    function pageSpeedValue(page)
+    {
+        if (!page)
+            return 1.0
+
+        if (signalsModel && typeof signalsModel.normalizeSpeed === "function")
+            return signalsModel.normalizeSpeed(page.speed)
+
+        return Number(page.speed)
+    }
+
+    function pageSpeedText(page)
+    {
+        var speedValue = pageSpeedValue(page)
+        if (speedValue === 1.0)
+            return ""
+
+        if (signalsModel && typeof signalsModel.formatSpeed === "function")
+            return signalsModel.formatSpeed(speedValue)
+
+        var text = String(speedValue)
+        if (text.endsWith(".0"))
+            text = text.slice(0, -2)
+        return text + "x"
+    }
+
+    function normalizeBindText(value)
+    {
+        var text = String(value === undefined || value === null ? "" : value).trim()
+        var simplePath = /^(?:mandala\.)?[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+(?:\.value)?$/
+
+        if (text === "" || !simplePath.test(text))
+            return text
+
+        if (text.startsWith("mandala."))
+            text = text.slice(8)
+        if (text.endsWith(".value"))
+            text = text.slice(0, -6)
+
+        return text
+    }
+
+    function itemBind(item)
+    {
+        if (!item || item.bind === undefined)
+            return ""
+
+        return normalizeBindText(item.bind)
+    }
+
+    function defaultItemColor(index)
+    {
+        return Material.color(Material.Blue + index * 2)
+    }
+
+    function itemColor(item, index)
+    {
+        if (item && item.color !== undefined && String(item.color).trim() !== "")
+            return item.color
+        return defaultItemColor(index)
+    }
+
+    function itemTitle(item, index)
+    {
+        if (item)
+            return itemBind(item)
+        return qsTr("Item") + " " + (index + 1)
+    }
+
+    function escapeHtml(text)
+    {
+        return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+    }
+
+    function evaluateBinding(bind)
+    {
+        try {
+            return eval(normalizeBindText(bind))
+        } catch (error) {
+            return NaN
+        }
+    }
+
+    function evaluateCondition(expression, value, item, page)
+    {
+        if (!expression || String(expression).trim() === "")
+            return false
+
+        var rawValue = value
+        var bind = itemBind(item)
+        var title = itemTitle(item, 0)
+        var pageNameValue = page && page.name ? page.name : ""
+
+        try {
+            return !!eval(expression)
+        } catch (error) {
+            return false
+        }
+    }
+
+    function evaluatePageState(index)
+    {
+        var page = pageAt(index)
+        var state = {
+            "warning": false,
+            "messages": [],
+            "toolTip": ""
+        }
+
+        if (!page)
+            return state
+
+        var lines = ["<b>" + escapeHtml(pageName(index)) + "</b>"]
+        var items = page.items instanceof Array ? page.items : []
+
+        for (var i = 0; i < items.length; ++i) {
+            var item = items[i]
+            var title = itemTitle(item, i)
+            lines.push("<font color='" + String(itemColor(item, i)) + "'>\u25A0</font> "
+                       + escapeHtml(title))
+
+            var value = evaluateBinding(itemBind(item))
+            if (item.warning && evaluateCondition(item.warning, value, item, page)) {
+                state.warning = true
+                state.messages.push(qsTr("Warning") + ": " + title + " (" + item.warning + ")")
             }
         }
 
-        // Main (non-pinned) single chart
-        ChartsView {
-            id: singleChart
-            facts: []
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumHeight: 20
-            Layout.preferredHeight: 130 * ui.scale
+        if (state.messages.length > 0) {
+            lines.push("<br><b>" + escapeHtml(qsTr("Alerts")) + "</b>")
+            for (var j = 0; j < state.messages.length; ++j)
+                lines.push(escapeHtml(state.messages[j]))
         }
 
-        ButtonGroup {
-            id: pageButtonGroup
+        state.toolTip = lines.join("<br>")
+        return state
+    }
+
+    function refreshPageStates()
+    {
+        var states = []
+        for (var i = 0; i < pages.length; ++i)
+            states.push(evaluatePageState(i))
+        pageStates = states
+    }
+
+    function schedulePageStateRefresh()
+    {
+        if (pageStateRefreshPending)
+            return
+
+        pageStateRefreshPending = true
+        Qt.callLater(function() {
+            pageStateRefreshPending = false
+            refreshPageStates()
+        })
+    }
+
+    function pageState(index)
+    {
+        return index >= 0 && index < pageStates.length
+               ? pageStates[index]
+               : {
+                     "warning": false,
+                     "messages": [],
+                     "toolTip": ""
+                 }
+    }
+
+    function selectSavedPage()
+    {
+        if (pages.length <= 0) {
+            selectedPage = ""
+            signals.facts = []
+            return
         }
 
-        // Bottom bar: page tabs, set label, speed button
-        RowLayout {
-            id: bottomBar
-            Layout.fillWidth: true
-            Layout.margins: Style.spacing
-            spacing: 3
-            Layout.maximumHeight: 24 * ui.scale
+        if (selectedPage !== "") {
+            for (var i = 0; i < pages.length; ++i) {
+                if (pageName(i) === selectedPage)
+                    return
+            }
+        }
 
-            Repeater {
-                id: pageTabsRepeater
-                model: activePages
+        selectedPage = pageName(0)
+    }
 
-                delegate: PageButton {
-                    page: modelData
-                    text: modelData.title
-                    Layout.fillHeight: true
-                    ButtonGroup.group: pageButtonGroup
-                    checked: !modelData.pinned && modelData === signalsWidget.currentPage
-                    onClicked: {
-                        var wasCurrent = modelData === signalsWidget.currentPage;
-                        if (modelData.pinned) {
-                            if (modelData)
-                                modelData.trigger();
-                        } else if (wasCurrent) {
-                            // already active — open page editor
-                            if (modelData) modelData.trigger();
-                        } else {
-                            signalsWidget.activatePage(modelData);
+    function handleModelChanged()
+    {
+        Qt.callLater(function() {
+            selectSavedPage()
+            Qt.callLater(function() {
+                selectSavedPage()
+                schedulePageStateRefresh()
+            })
+        })
+    }
+
+    function cyclePageSpeed()
+    {
+        if (!activePage)
+            return
+
+        signalsModel.setPageSpeed(activePageIndex,
+                                  signalsModel.nextSpeedValue(activePage.speed))
+    }
+
+    function cycleSpeedForPage(page)
+    {
+        var index = pageIndexFor(page)
+        if (index < 0)
+            return
+
+        signalsModel.setPageSpeed(index,
+                                  signalsModel.nextSpeedValue(page.speed))
+    }
+
+    function cycleSpeedForPinnedPage(pinnedIndex, page)
+    {
+        var index = pinnedPageIndex(pinnedIndex)
+        if (index < 0 && page)
+            index = pageIndexFor(page)
+        if (index < 0)
+            return
+
+        var targetPage = pageAt(index)
+        if (!targetPage)
+            return
+
+        signalsModel.setPageSpeed(index,
+                                  signalsModel.nextSpeedValue(targetPage.speed))
+    }
+
+    ColumnLayout {
+        id: layout
+        anchors.fill: parent
+        spacing: 2 * control.uiScale
+
+        Repeater {
+            model: control.pinnedPages
+
+            delegate: Item {
+                id: pinnedChartPane
+
+                required property var modelData
+                required property int index
+
+                Layout.fillWidth: true
+                Layout.preferredHeight: control.pinnedChartHeight
+                Layout.minimumHeight: 36 * control.uiScale
+                clip: true
+
+                SignalsView {
+                    anchors.fill: parent
+                    uiContext: control.globalUi
+                    apxContext: control.globalApx
+                    facts: pinnedChartPane.modelData && pinnedChartPane.modelData.items instanceof Array
+                           ? pinnedChartPane.modelData.items
+                           : []
+                    speed: signalsModel.speedIndex(pinnedChartPane.modelData
+                                                   ? pinnedChartPane.modelData.speed
+                                                   : 1.0)
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton
+                    onClicked: control.cycleSpeedForPinnedPage(pinnedChartPane.index,
+                                                               pinnedChartPane.modelData)
+                }
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.topMargin: 4 * control.uiScale
+                    anchors.rightMargin: 4 * control.uiScale
+                    radius: 2 * control.uiScale
+                    color: "#A0000000"
+                    visible: titleLabel.text !== ""
+
+                    implicitWidth: titleColumn.implicitWidth + 10 * control.uiScale
+                    implicitHeight: titleColumn.implicitHeight + 4 * control.uiScale
+
+                    Column {
+                        id: titleColumn
+                        anchors.centerIn: parent
+                        spacing: 1 * control.uiScale
+
+                        Label {
+                            id: titleLabel
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: control.pageTitle(pinnedChartPane.modelData, pinnedChartPane.index)
+                            color: "#FFFFFF"
+                            font: control.overlayFont(10 * control.uiScale)
+                        }
+
+                        Label {
+                            id: titleSpeedLabel
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: text !== ""
+                            text: control.pageSpeedText(pinnedChartPane.modelData)
+                            color: "#CCCCCC"
+                            font: control.overlayFont(8 * control.uiScale)
                         }
                     }
                 }
             }
+        }
 
-            Item { Layout.fillWidth: true }
+        Item {
+            id: mainChartArea
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.minimumHeight: 20
+            Layout.preferredHeight: 130 * control.uiScale
+            clip: true
 
-            // Set name label — click opens sets editor
-            TextButton {
-                text: activeSetTitle || qsTr("default")
-                Layout.fillHeight: true
-                Layout.minimumWidth: height * 3
-                toolTip: qsTr("Click to edit chart sets")
-                onClicked: openSetsEditor()
+            SignalsView {
+                id: signals
+                anchors.fill: parent
+                uiContext: control.globalUi
+                apxContext: control.globalApx
+                facts: []
+                speed: control.activePage
+                       ? signalsModel.speedIndex(control.activePage.speed)
+                       : signalsModel.speedIndex(1.0)
             }
 
-            // Speed button — cycles per-page speed factor
-            TextButton {
-                text: currentPage ? (currentPage.speed + "x") : "1x"
-                Layout.fillHeight: true
-                Layout.minimumWidth: height * 3
-                toolTip: qsTr("Chart scroll speed")
-                onClicked: {
-                    if (!currentPage) return;
-                    var factors = [0.2, 0.5, 1, 2, 4];
-                    var idx = factors.indexOf(currentPage.speed);
-                    var next = (idx >= 0 && idx < factors.length - 1)
-                               ? factors[idx + 1] : factors[0];
-                    currentPage.setSpeed(next);
-                    saveSettings();
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+                onClicked: control.cyclePageSpeed()
+            }
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.topMargin: 4 * control.uiScale
+                anchors.rightMargin: 4 * control.uiScale
+                radius: 2 * control.uiScale
+                color: "#A0000000"
+                visible: mainTitleLabel.text !== ""
+
+                implicitWidth: mainTitleColumn.implicitWidth + 10 * control.uiScale
+                implicitHeight: mainTitleColumn.implicitHeight + 4 * control.uiScale
+
+                Column {
+                    id: mainTitleColumn
+                    anchors.centerIn: parent
+                    spacing: 1 * control.uiScale
+
+                    Label {
+                        id: mainTitleLabel
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: control.activePage ? control.pageTitle(control.activePage, control.activePageIndex) : ""
+                        color: "#FFFFFF"
+                        font: control.overlayFont(10 * control.uiScale)
+                    }
+
+                    Label {
+                        id: mainSpeedLabel
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: text !== ""
+                        text: control.pageSpeedText(control.activePage)
+                        color: "#CCCCCC"
+                        font: control.overlayFont(8 * control.uiScale)
+                    }
+                }
+            }
+
+            Rectangle {
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.rightMargin: 4 * control.uiScale
+                anchors.bottomMargin: 4 * control.uiScale
+                radius: 2 * control.uiScale
+                color: "#A0000000"
+                visible: mainSetLabel.text !== ""
+
+                implicitWidth: mainSetLabel.implicitWidth + 10 * control.uiScale
+                implicitHeight: mainSetLabel.implicitHeight + 4 * control.uiScale
+
+                Label {
+                    id: mainSetLabel
+                    anchors.centerIn: parent
+                    text: control.activeSetTitle()
+                    color: "#FFFFFF"
+                    font: control.overlayFont(10 * control.uiScale)
+                }
+            }
+
+            Label {
+                anchors.centerIn: parent
+                visible: control.pages.length <= 0
+                text: qsTr("No pages in the active set.")
+                color: Material.secondaryTextColor
+            }
+        }
+
+        ButtonGroup {
+            id: buttonGroup
+
+            onCheckedButtonChanged: {
+                if (checkedButton) {
+                    control.selectedPage = checkedButton.text
+                    signals.facts = Qt.binding(function() {
+                        return checkedButton ? checkedButton.values : []
+                    })
+                } else {
+                    signals.facts = []
                 }
             }
         }
-    }
 
-    // + button (top-right) — opens current page editor
-    IconButton {
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: Style.spacing
-        size: Style.buttonSize * 0.7
-        iconName: "plus"
-        toolTip: qsTr("Edit current page")
-        opacity: ui.effects ? (hovered ? 1 : 0.5) : 1
-        onTriggered: {
-            if (currentPage)
-                currentPage.trigger();
+        RowLayout {
+            id: bottomArea
+            Layout.fillWidth: true
+            Layout.margins: Style.spacing
+            spacing: 3
+            Layout.maximumHeight: 24 * control.uiScale
+
+            Repeater {
+                id: tabsRepeater
+                model: control.pages
+
+                onItemAdded: function(index, item) {
+                    if (index === tabsRepeater.count - 1)
+                        Qt.callLater(control.selectSavedPage)
+                }
+
+                delegate: SignalButton {
+                    required property int index
+
+                    property int pageIndex: index
+
+                    text: control.pageName(index)
+                    checked: control.selectedPage !== ""
+                             ? text === control.selectedPage
+                             : index === 0
+                    values: control.pageFacts(index)
+                    pageToolTip: control.pageState(index).toolTip
+                    pageWarning: control.pageState(index).warning
+                }
+            }
+
+            IconButton {
+                iconName: "plus"
+                toolTip: qsTr("Edit chart configuration")
+                Layout.fillHeight: true
+                Layout.minimumWidth: height
+                onTriggered: control.openSetsEditor()
+            }
         }
-    }
-
-    // -----------------------------------------------------------------
-    // Sets editor popup
-    // -----------------------------------------------------------------
-
-    property var setsEditorPopup: null
-
-    function openSetsEditor() {
-        if (setsEditorPopup) return;
-        var c = Qt.createComponent("SignalsMenuPopup.qml", Component.PreferSynchronous, ui.window);
-        if (c.status === Component.Ready) {
-            var obj = c.createObject(ui.window);
-            setsEditorPopup = obj;
-            obj.accepted.connect(function() { loadSettings(); });
-            obj.closed.connect(function() { setsEditorPopup = null; });
-            obj.open();
-        } else {
-            console.warn("Signals: cannot open sets editor: " + c.errorString());
-        }
-    }
-
-    // -----------------------------------------------------------------
-    // Legacy migration
-    // -----------------------------------------------------------------
-
-    function _migrateLegacy(oldJson) {
-        return signalsModel.migrateLegacy(oldJson);
-    }
-
-    // -----------------------------------------------------------------
-    // Default set (mirrors the hardcoded buttons from the old Signals.qml)
-    // -----------------------------------------------------------------
-
-    function _buildDefaultSet() {
-        return signalsModel.buildDefaultSet();
     }
 }

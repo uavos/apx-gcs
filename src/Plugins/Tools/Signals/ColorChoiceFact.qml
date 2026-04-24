@@ -21,18 +21,22 @@
  */
 import QtQuick
 
-import Apx.Menu
+import APX.Facts
 
-FactMenuPopup {
-    id: popup
-    pinned: true
+Fact {
+    id: colorFact
 
-    signal accepted()
+    property bool isColorChoice: true
+    property var itemOwner: null
+    property string colorValue: ""
 
-    fact: menuFact
-    SignalsMenu {
-        id: menuFact
-        onAccepted: popup.accepted()
+    flags: Fact.CloseOnTrigger
+    opts: ({
+               "editor": Qt.resolvedUrl("ColorChooser.qml")
+           })
+
+    onTriggered: {
+        if (itemOwner && typeof itemOwner.setColorValue === "function")
+            itemOwner.setColorValue(colorValue)
     }
-    onClosed: menuFact.destroy()
 }

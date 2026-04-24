@@ -58,7 +58,8 @@ ColumnLayout {
     }
     Connections {
         enabled: valid
-        target: fact
+        target: fact ? fact : null
+        ignoreUnknownSignals: true
         function onMenuBack()
         {
             //console.log("menuBack")
@@ -71,8 +72,6 @@ ColumnLayout {
             fact=factC.createObject(this)
         }
     }
-
-
     property real padding: Style.spacing
     clip: true
 
@@ -98,12 +97,13 @@ ColumnLayout {
         Layout.rightMargin: padding
         Layout.topMargin: padding
         clip: true
+        onLoaded: menuPage.applyPageContext()
     }
 
     function pageSource()
     {
-        if(fact.opts.page){
-            var s=fact.opts.page
+        if(fact && fact.opts && fact.opts.page){
+            var s=String(fact.opts.page)
             if(s.indexOf(":")>=0){
                 return s
             }
@@ -112,8 +112,23 @@ ColumnLayout {
         return "FactMenuPageList.qml"
     }
 
+    function applyPageContext()
+    {
+        if(!pageLoader.item)
+            return
+
+        if(pageLoader.item.hasOwnProperty("fact"))
+            pageLoader.item.fact = fact
+        if(pageLoader.item.hasOwnProperty("menuPage"))
+            pageLoader.item.menuPage = menuPage
+    }
+
     function factButtonTriggered(fact)
     {
+        if(fact && fact.dataType === Fact.Apply && pageLoader.item
+                && typeof pageLoader.item.applyPendingChanges === "function")
+            pageLoader.item.applyPendingChanges()
+
         if(factMenu)
             factMenu.factButtonTriggered(fact)
     }
@@ -134,8 +149,8 @@ ColumnLayout {
         property alias model: repeater.model
         Repeater {
             id: repeater
-            model: fact.actionsModel
-            delegate: Loader{
+            model: fact ? fact.actionsModel : null
+            delegate: Loader {
                 active: modelData && modelData.visible && ((modelData.options&Fact.ShowDisabled)?true:modelData.enabled)
                 visible: active
                 sourceComponent: Component {

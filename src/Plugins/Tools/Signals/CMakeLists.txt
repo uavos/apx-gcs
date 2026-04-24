@@ -1,25 +1,20 @@
-set(SIGNALS_QML
-    ChartsView.qml
+set(QRC_QML
+    ColorChoiceFact.qml
     ColorChooser.qml
-    FilterItem.qml
-    FilterKalmanSimple.qml
-    FilterRunningAvg.qml
-    MenuColor.qml
-    MenuFilterItemPage.qml
-    MenuFilters.qml
-    MenuFiltersPage.qml
+    FilterFact.qml
+    FilterRegistry.qml
     MenuItem.qml
     MenuPage.qml
     MenuSet.qml
-    MenuSetPage.qml
+    MenuSets.qml
     PageButton.qml
+    SignalButton.qml
     Signals.qml
     SignalsModel.qml
-    SignalsMenu.qml
-    SignalsMenuPopup.qml
     SignalsPlugin.qml
+    SignalsView.qml
 )
 
-apx_plugin(SRCS ${SIGNALS_QML})
+apx_plugin(SRCS ${QRC_QML})
 
-apx_qrc(${MODULE} PREFIX ${MODULE} SRCS ${SIGNALS_QML})
+apx_qrc(${MODULE} PREFIX ${MODULE} SRCS ${QRC_QML})

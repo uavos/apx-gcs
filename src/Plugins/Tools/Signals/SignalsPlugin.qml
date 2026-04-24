@@ -31,7 +31,9 @@ AppPlugin {
     descr: qsTr("Realtime chart")
     icon: "poll"
 
-    sourceComponent: Signals { }
+    sourceComponent: Signals {
+        implicitWidth: Style.buttonSize * 15
+     }
     uiComponent: "main"
     onConfigure: {
         ui.main.add(plugin, GroundControl.Layout.Main)

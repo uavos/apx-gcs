@@ -45,7 +45,8 @@ StackView {
 
     Component.onCompleted: {
         Menu.registerMenuView(stackView)
-        showFact(fact)
+        if (fact)
+            showFact(fact)
     }
     Component.onDestruction: {
         Menu.unregisterMenuView(stackView)
@@ -93,6 +94,9 @@ StackView {
     //menu.js helpers
     function showFact(f)
     {
+        if (!f)
+            return
+
         var opts={}
         opts.fact=f
         var c=pageDelegate.createObject(this, opts)
@@ -135,4 +139,3 @@ StackView {
         openFact(apx)
     }
 }
-

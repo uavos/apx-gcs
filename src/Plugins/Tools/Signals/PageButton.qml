@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 /*
  * APX Autopilot project <http://docs.uavos.com>
  *
@@ -20,60 +22,51 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import QtQuick.Controls.Material
 
 import Apx.Common
 
 ValueButton {
-    id: pageBtn
+    id: control
 
-    Layout.fillHeight: true
+    property bool selected: false
+    property bool pinned: false
+    property bool pageWarning: false
+
+    hoverEnabled: true
     checkable: true
-    ButtonGroup.group: pageButtonGroup
+    checked: selected
+    active: selected
+
     showValue: false
-    alerts: true
+    alerts: false
+    warning: pageWarning
+    normalColor: pinned ? "#4a4a22" : "#202020"
+    textBold: selected
+    textScale: 0.62
+    minimumWidth: Math.max(28, height * 1.15)
+    maximumWidth: Math.max(minimumWidth, height * 3.0)
+    toolTipItem.delay: 500
 
-    // The MenuPage Fact this button represents
-    property var page: null
+    onTriggered: checked = true
 
-    warning: page && page.hasWarning && !page.hasAlarm
-    error: page && page.hasAlarm
-    active: checked
-    normalColor: "#222"
-    activeColor: Qt.darker(Material.color(Material.BlueGrey), 1.5)
-
-    // Pinned indicator — a subtle border
-    background: Rectangle {
-        color: checked
-               ? Qt.darker(Material.color(Material.BlueGrey), 1.5)
-               : "transparent"
-        border.width: (page && page.pinned) ? 1 : 0
-        border.color: Material.color(Material.Cyan)
-        radius: height / 6
+    Rectangle {
+        anchors.fill: parent
+        radius: 4
+        color: "transparent"
+        border.width: control.pinned ? 1 : 0
+        border.color: control.pageWarning
+                      ? Material.color(Material.Orange)
+                      : Material.color(Material.BlueGrey)
     }
 
-    descr: page && page.warningText ? page.warningText : ""
-
-    toolTip: buildToolTip()
-
-    function buildToolTip() {
-        if (!page)
-            return text;
-        var s = [];
-        s.push("<strong>" + page.title + "</strong>");
-        if (page.warningText && page.warningText !== "") {
-            var warnColor = page.hasAlarm ? Material.color(Material.Red) : Material.color(Material.Orange);
-            s.push("<font color='" + warnColor + "'>" + page.warningText + "</font>");
-        }
-        var values = page.values;
-        for (var i = 0; i < values.length; ++i) {
-            var it = values[i];
-            s.push("<font color='" + it.itemColor + "'>" + it.itemTitle + "</font>");
-        }
-        if (page.pinned)
-            s.push(qsTr("(pinned)"));
-        return s.join("<br>");
+    MaterialIcon {
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.margins: 2
+        visible: control.pinned
+        name: "pin"
+        size: Math.max(8, control.height * 0.34)
+        color: Material.color(Material.LightBlue)
     }
 }
