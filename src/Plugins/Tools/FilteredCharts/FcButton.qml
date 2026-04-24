@@ -37,9 +37,9 @@ TextButton {
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
 
     onCheckedChanged: if (checked)
-        fcCharts.speedFactorValue = fcMenuSet.speed
-    onPressed: if (checked && !fcMenuSet.active)
-        fcMenuSet.trigger()
+        fcCharts.speedFactorValue = fcMenuPage.speed
+    onPressed: if (checked && !fcMenuPage.active)
+        fcMenuPage.trigger()
     onActivated: {
         fcCharts.resetEnable = true;
         fcCharts.facts = Qt.binding(function () {
@@ -51,13 +51,13 @@ TextButton {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
             // if (checked) // Comment it to calculate all values ​​at once
-            fcMenuSet.updateChartsValues();
+            fcMenuPage.updateChartsValues();
         }
     }
 
     function updateToolTip(facts) {
         var s = [];
-        s.push("<strong>" + fcMenuSet.title + "</strong>");
+        s.push("<strong>" + fcMenuPage.title + "</strong>");
         for (var i = 0; i < facts.length; ++i) {
             var fact = facts[i];
             s.push("<font color='" + fact.opts.color + "'>" + fact.title + "</font>");
@@ -66,23 +66,23 @@ TextButton {
     }
 
     function callQuickChart() {
-        fcMenuSet.addNewChart();
+        fcMenuPage.addNewChart();
     }
 
     function getSet() {
-        return fcMenuSet.save();
+        return fcMenuPage.save();
     }
 
     function loadSet(set) {
-        fcMenuSet.load(set);
+        fcMenuPage.load(set);
     }
 
     function getScrMatches(val) {
-        return fcMenuSet.checkScrs(val);
+        return fcMenuPage.checkScrs(val);
     }
 
     function setSpeed(val) {
-        fcMenuSet.speed = val;
+        fcMenuPage.speed = val;
         saveTimer.restart(); // save settings after speed changed
     }
 
@@ -97,7 +97,7 @@ TextButton {
         onTriggered: fcControl.saveSettings()
     }
 
-    FcMenuSet {
-        id: fcMenuSet
+    FcMenuPage {
+        id: fcMenuPage
     }
 }

@@ -24,10 +24,10 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: chartFact
-    
+    id: pageFact
+
     flags: (Fact.Group | Fact.FlatModel)
-    title: "Charts #" + fcBtn.text
+    title: "Page #" + fcBtn.text
 
     property bool changes: false
     property alias speed: msSpeed.value
@@ -43,7 +43,7 @@ Fact {
         fcBtn.values = [];
         for (var i = 0; i < msValues.size; ++i)
             fcBtn.values.push(msValues.child(i));
-        fcBtn.updateToolTip(fcBtn.values);   
+        fcBtn.updateToolTip(fcBtn.values);
     }
 
     function updateChartsValues() {
@@ -64,7 +64,7 @@ Fact {
         set.title = msTitle.value;
         set.speed = msSpeed.value;
         set.values = tmpValues;
-        updateBtnValues()
+        updateBtnValues();
         return set;
     }
 
@@ -81,7 +81,7 @@ Fact {
         for (var i in values) {
             createChart(values[i]);
         }
-        updateBtnValues()
+        updateBtnValues();
     }
 
     function createChart(mchart) {
@@ -109,8 +109,9 @@ Fact {
 
     function checkScrs(val) {
         var matches = false;
-        for(var i = 0; i < msValues.size; ++i)
-            if(msValues.child(i).hasScr(val)) matches = true;
+        for (var i = 0; i < msValues.size; ++i)
+            if (msValues.child(i).hasScr(val))
+                matches = true;
         return matches;
     }
 
@@ -120,9 +121,9 @@ Fact {
         descr: qsTr("Charts title")
         flags: Fact.Text
         icon: "rename-box"
-        value: chartFact.title
+        value: pageFact.title
         onValueChanged: {
-            chartFact.title = value;
+            pageFact.title = value;
             changes = true;
         }
     }
@@ -137,7 +138,7 @@ Fact {
         min: 0.2
         max: 4
         onValueChanged: {
-            if(!fcBtn.checked)
+            if (!fcBtn.checked)
                 return;
             fcCharts.speedFactorValue = value;
             changes = true;
@@ -155,7 +156,7 @@ Fact {
         id: msValues
         title: qsTr("Values")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: fcCharts.resetEnable = true;
+        onSizeChanged: fcCharts.resetEnable = true
     }
 
     // Actions

@@ -141,7 +141,7 @@ Fact {
             opt.iconColor = opt.color;
         mChart.opts = opt;
         mColor.changes = false;
-        chartFact.updateBtnValues();
+        pageFact.updateBtnValues();
         fcCharts.updateSeriesColor();
     }
 
