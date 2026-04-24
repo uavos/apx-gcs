@@ -9,9 +9,10 @@ Configurable telemetry chart plugin for APX GCS.
 ## Current behavior
 
 - Saved configurations live in `signals.json` as sets of pages and items.
-- The bottom tab row keeps the original `Signals` workflow: `SignalButton` tabs only switch pages.
+- The bottom tab row uses `SignalButton`: single click switches pages, and double-click or long-press opens that page editor.
 - The `+` button opens the full editor for sets, pages, items, colors, filters, and save targets.
 - Pinned pages are rendered as stacked charts above the main chart inside the same widget.
+- Page tabs highlight active warnings and their tooltips include the page items plus any warning messages.
 - Chart overlays use `apx.font_narrow`:
   - top-right page name on every chart
   - speed label directly below the page name when the page speed is not `1x`
@@ -39,14 +40,20 @@ Notes:
 
 ## Filters
 
-Filters are plain `Fact` children, not a custom editor page.
+Filters are edited inline from the item editor, without a separate custom filter page.
 
 Current filter types:
 
-- `running_avg`
-- `kalman_smp`
+- `running_avg` (`Running average`)
+- `kalman_smp` (`Simple Kalman`)
 
-The filter stack is ordered, draggable, and can be enabled or disabled per filter. The rendered series value and the optional `save` output both use the filtered result.
+The filter stack is ordered and draggable. A single `Add filter` action appends a generic filter row that owns:
+
+- an enable toggle
+- a filter `type` selector
+- a dynamically loaded settings section for the selected filter type
+
+The concrete math and parameter fields live in dedicated settings facts such as `FilterRunningAverage.qml` and `FilterKalman.qml`, loaded through `FilterFact.qml`. The rendered series value and the optional `save` output both use the filtered result.
 
 ## Persistence
 

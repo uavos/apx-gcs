@@ -19,11 +19,14 @@ Current implementation snapshot for `src/Plugins/Tools/Signals/`.
 - `SignalsView.qml`
   - Owns the chart renderer.
   - Builds series from page items.
-  - Runs the filter chain per item.
+  - Reads raw samples from live page items.
+  - Delegates filter execution to each item's `updateFilters()` chain.
   - Writes filtered values to `sns.scr.*` save targets.
   - Preserves `cmd.*` desaturated styling and grow-only Y-axis behavior.
 - `SignalButton.qml`
-  - Remains the active tab-button implementation and behavioral baseline.
+  - Remains the active tab-button implementation.
+  - Single click switches pages; double-click / long-press opens that page editor.
+  - Surfaces warning state through tab color and tooltip content.
 
 ## Persistence and model
 
@@ -105,16 +108,22 @@ Current filter types:
 Current pattern:
 
 - Filters are generic `FilterFact.qml` rows inside the item’s `Filters` group.
+- One generic `Add filter` action appends a new wrapper row with the registry default type.
 - Each filter is ordered and draggable.
 - Each filter has an enable toggle on the row itself.
-- Each filter row owns the enable/type shell while the loaded settings Fact owns the runtime state and `update()` implementation.
+- Each filter row owns the enable/type shell and swaps the loaded settings Fact when the type changes.
+- Each loaded settings Fact owns the runtime state and `update()` implementation.
 - `MenuItem.qml` applies the live filter chain; `SignalsView.qml` only provides raw samples.
 
 ## Current UX decisions
 
 - `+` opens the full Signals editor, not a quick-bind field.
-- Tabs only switch pages. No edit affordances or pin actions are attached to the tabs.
+- Single click on a tab switches pages.
+- Double-click or long-press on a tab opens that page editor.
+- Pin actions remain in the page editor; there is no tab pin control.
 - Pinned pages are controlled from the page editor.
+- Page-tab tooltips list item labels and active warning messages.
+- Warning state colors the affected tab.
 - Speed is per page.
 - The dedicated bottom speed button was removed.
 - Clicking a chart cycles that page’s speed.
@@ -136,9 +145,9 @@ Current pattern:
 | `MenuItem.qml` | item editor | active |
 | `ColorChooser.qml` | color editor page | active |
 | `FilterFact.qml` | generic filter shell | active |
-| `FilterBase.qml` | shared filter Fact contract | active |
-| `FilterRunningAverage.qml` | running average filter | active |
-| `FilterKalman.qml` | Kalman filter | active |
+| `FilterBase.qml` | shared base for filter settings facts | active |
+| `FilterRunningAverage.qml` | running average settings + runtime | active |
+| `FilterKalman.qml` | Kalman settings + runtime | active |
 | `FilterRegistry.qml` | filter metadata and normalization | active |
 | `PageButton.qml` | old experiment from an earlier tab rewrite | currently unused |
 
@@ -151,4 +160,7 @@ The markdown files should reflect these current decisions:
 - chart click cycles speed
 - speed label sits below the page title and is hidden at `1x`
 - `SignalButton.qml` remains the active tab path
+- tab double-click / long-press opens the page editor
+- page tabs surface warning state and warning text
 - item schema is `bind/color/filters/warning/save`
+- filters use a generic wrapper row with a type selector that swaps dedicated settings facts
