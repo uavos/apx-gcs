@@ -1,3 +1,23 @@
-apx_plugin(SRCS "*.qml")
+set(QRC_QML
+    ColorChoiceFact.qml
+    ColorChooser.qml
+    FilterBase.qml
+    FilterFact.qml
+    FilterKalman.qml
+    FilterRegistry.qml
+    FilterRunningAverage.qml
+    MenuItem.qml
+    MenuPage.qml
+    MenuSet.qml
+    MenuSets.qml
+    PageButton.qml
+    SignalButton.qml
+    Signals.qml
+    SignalsModel.qml
+    SignalsPlugin.qml
+    SignalsView.qml
+)
 
-apx_qrc(${MODULE} PREFIX ${MODULE} SRCS "*.qml")
+apx_plugin(SRCS ${QRC_QML})
+
+apx_qrc(${MODULE} PREFIX ${MODULE} SRCS ${QRC_QML})

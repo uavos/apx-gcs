@@ -21,21 +21,22 @@
  */
 import QtQuick
 
-import Apx.Common
-import Apx.Application
+import APX.Facts
 
-AppPlugin {
-    id: plugin
+Fact {
+    id: colorFact
 
-    title: qsTr("Signals")
-    descr: qsTr("Realtime chart")
-    icon: "poll"
+    property bool isColorChoice: true
+    property var itemOwner: null
+    property string colorValue: ""
 
-    sourceComponent: Signals {
-        implicitWidth: Style.buttonSize * 15
-     }
-    uiComponent: "main"
-    onConfigure: {
-        ui.main.add(plugin, GroundControl.Layout.Main)
+    flags: Fact.CloseOnTrigger
+    opts: ({
+               "editor": Qt.resolvedUrl("ColorChooser.qml")
+           })
+
+    onTriggered: {
+        if (itemOwner && typeof itemOwner.setColorValue === "function")
+            itemOwner.setColorValue(colorValue)
     }
 }

@@ -21,38 +21,224 @@
  */
 import QtQuick
 import QtCharts
-import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQml
 
 Item {
     id: chartItem
-    //clip: true
+
     property var facts: []
+    property var uiContext: ui
+    property var apxContext: apx
 
     property bool openGL: false //apx.settings.graphics.opengl.value
-    property bool smoothLines: ui.smooth
-
+    property bool smoothLines: uiContext ? uiContext.smooth : false
 
     property real speed: 0
-    property real lineWidth: ui.antialiasing?1.5:1
-    property real lineWidthCmd: ui.antialiasing?2.1:2
+    property real lineWidth: uiContext && uiContext.antialiasing ? 1.5 : 1
+    property real lineWidthCmd: uiContext && uiContext.antialiasing ? 2.1 : 2
 
-    property var speedFactor: [ 1, 2, 4, 0.5, 0.2 ]
-    property real speedFactorValue: speed<0?speedFactor[0]:speed>=speedFactor.length?speedFactor[speedFactor.length-1]:speedFactor[speed]
+    property var speedFactor: [0.2, 0.5, 1, 2, 4]
+    property real speedFactorValue: speed < 0
+                                    ? speedFactor[0]
+                                    : speed >= speedFactor.length
+                                      ? speedFactor[speedFactor.length - 1]
+                                      : speedFactor[speed]
 
-    onFactsChanged: {
-        chartView.reset()
+    QtObject {
+        id: colorProbe
+
+        property color value: "white"
     }
 
+    onFactsChanged: chartView.reset()
+
     Connections {
-        target: apx.fleet.current.mandala
-        function onTelemetryDecoded(){ chartView.appendData() }
+        target: chartItem.apxContext ? chartItem.apxContext.fleet.current.mandala : null
+
+        function onTelemetryDecoded()
+        {
+            chartView.appendData()
+        }
+    }
+
+    function normalizeBindText(value)
+    {
+        var text = String(value === undefined || value === null ? "" : value).trim()
+        var simplePath = /^(?:mandala\.)?[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+(?:\.value)?$/
+
+        if (text === "" || !simplePath.test(text))
+            return text
+
+        if (text.startsWith("mandala."))
+            text = text.slice(8)
+        if (text.endsWith(".value"))
+            text = text.slice(0, -6)
+
+        return text
+    }
+
+    function itemBind(fact)
+    {
+        if (!fact)
+            return ""
+
+        if (typeof fact.bindText === "function")
+            return normalizeBindText(fact.bindText())
+
+        if (fact.bind !== undefined && fact.bind !== null && String(fact.bind) !== "")
+            return normalizeBindText(fact.bind)
+        if (fact.name !== undefined && fact.name !== null)
+            return normalizeBindText(fact.name)
+
+        return ""
+    }
+
+    function itemTitle(fact, index)
+    {
+        if (fact && fact.title !== undefined && String(fact.title) !== "")
+            return String(fact.title)
+
+        var bind = itemBind(fact)
+        if (bind !== "")
+            return bind
+
+        return qsTr("Signal") + " " + (index + 1)
+    }
+
+    function defaultSeriesColor(index)
+    {
+        return Material.color(Material.Blue + index * 2)
+    }
+
+    function resolvedColor(value, fallback)
+    {
+        var source = value
+        if (source === undefined || source === null || source === "")
+            source = fallback
+
+        colorProbe.value = source
+        return colorProbe.value
+    }
+
+    function itemColor(fact, index)
+    {
+        if (fact) {
+            if (typeof fact.colorValueCurrent === "function"
+                    && String(fact.colorValueCurrent()) !== "")
+                return resolvedColor(fact.colorValueCurrent(), defaultSeriesColor(index))
+
+            if (fact.color !== undefined && fact.color !== null && String(fact.color) !== "")
+                return resolvedColor(fact.color, defaultSeriesColor(index))
+
+            if (fact.opts && fact.opts.color)
+                return resolvedColor(fact.opts.color, defaultSeriesColor(index))
+        }
+
+        return resolvedColor("", defaultSeriesColor(index))
+    }
+
+    function itemSaveTarget(fact)
+    {
+        if (!fact)
+            return ""
+
+        if (typeof fact.saveTarget === "function")
+            return fact.saveTarget()
+
+        if (fact.save === undefined || fact.save === null || typeof fact.save === "function")
+            return ""
+
+        return String(fact.save).trim()
+    }
+
+    function evaluateValue(fact, bind)
+    {
+        if (fact && typeof fact.bindText !== "function" && fact.value !== undefined)
+            return fact.value
+
+        if (!bind)
+            return NaN
+
+        try {
+            return eval(normalizeBindText(bind))
+        } catch (error) {
+            return NaN
+        }
+    }
+
+    function filteredItemValue(fact, value)
+    {
+        if (fact && typeof fact.updateFilters === "function")
+            return fact.updateFilters(value)
+
+        return value
+    }
+
+    function writeSavedValue(fact, value)
+    {
+        var saveTarget = itemSaveTarget(fact)
+        if (saveTarget === "" || !chartItem.apxContext)
+            return
+
+        var saveFact = chartItem.apxContext.fleet.current.mandala.fact(saveTarget, true)
+        if (saveFact)
+            saveFact.setRawValueLocal(value)
+    }
+
+    function isCommandBind(bind)
+    {
+        return bind.indexOf("cmd.") === 0 || bind.indexOf("cmd") === 0
+    }
+
+    function applySeriesStyle(series, fact, index)
+    {
+        if (!series || !fact)
+            return
+
+        var bind = itemBind(fact)
+        var color = itemColor(fact, index)
+
+        if (isCommandBind(bind)) {
+            series.width = Qt.binding(function() {
+                return lineWidthCmd
+            })
+            series.color = Qt.hsla(color.hslHue,
+                                   color.hslSaturation / 2,
+                                   color.hslLightness * 1.2,
+                                   1)
+        } else {
+            series.width = Qt.binding(function() {
+                return lineWidth
+            })
+            series.color = color
+        }
+    }
+
+    function syncSeries(series, fact, index)
+    {
+        if (!series || !fact)
+            return
+
+        var title = itemTitle(fact, index)
+        if (series.name !== title)
+            series.name = title
+
+        applySeriesStyle(series, fact, index)
+    }
+
+    function updateSeriesColor(index)
+    {
+        if (index < 0 || index >= chartItem.facts.length || index >= chartView.count)
+            return
+
+        syncSeries(chartView.series(index), chartItem.facts[index], index)
     }
 
     ChartView {
         id: chartView
 
-        antialiasing: ui.antialiasing
+        antialiasing: chartItem.uiContext && chartItem.uiContext.antialiasing
         legend.visible: false
         margins.top: 0
         margins.left: 0
@@ -65,26 +251,33 @@ Item {
         anchors.bottomMargin: margin
         anchors.leftMargin: margin
         anchors.rightMargin: margin
-        //onPlotAreaChanged: margin=-plotArea.y/3
 
         plotAreaColor: "black"
         backgroundColor: "black"
         backgroundRoundness: 0
         dropShadowEnabled: false
 
-        property int samples: Math.min(1000,Math.max(25,width/(3*speedFactorValue)))
+        property int samples: Math.min(1000,
+                                       Math.max(25, width / (3 * chartItem.speedFactorValue)))
         property int time: 0
 
         property bool dataExist: false
 
         ValueAxis {
             id: axisX
+
             property real t: chartView.time
-            Behavior on t { enabled: ui.smooth && chartView.dataExist; NumberAnimation {duration: 500; } }
-            min: t-chartView.samples+20
+
+            Behavior on t {
+                enabled: chartItem.uiContext && chartItem.uiContext.smooth && chartView.dataExist
+
+                NumberAnimation {
+                    duration: 500
+                }
+            }
+
+            min: t - chartView.samples + 20
             max: t
-            //min: -chartView.samples //t-chartView.samples+20
-            //max: 0 //t
             visible: false
             gridVisible: false
             labelsVisible: false
@@ -92,16 +285,17 @@ Item {
             shadesVisible: false
             titleVisible: false
         }
+
         ValueAxis {
             id: axisY
+
             min: -0
             max: 0
             tickCount: 4
             labelsColor: "white"
-            labelsFont.pixelSize: Qt.application.font.pixelSize * 0.7
-            gridLineColor: "#555"
+            labelsFont.pixelSize: 8
+            gridLineColor: "#555555"
         }
-
 
         property real dataPadding: 0.05
         property real dataPaddingZero: 0.05
@@ -110,103 +304,109 @@ Item {
 
         function reset()
         {
-            chartView.removeAllSeries();
-            chartView.sdata=[]
-            chartView.time=0
-            axisY.min=-dataPaddingZero
-            axisY.max=dataPaddingZero
-            axisY.tickCount=4
+            chartView.removeAllSeries()
+            chartView.sdata = []
+            chartView.time = 0
+            chartView.dataExist = false
+            chartView.timeRescale = 0
+            axisY.min = -dataPaddingZero
+            axisY.max = dataPaddingZero
+            axisY.tickCount = 4
             axisY.applyNiceNumbers()
-            speed=0
         }
 
         function appendData()
         {
-            var t=time+1;
-            var v=0
-            var fact={}
-            for(var i=0;i<facts.length;++i){
-                appendDataValue(facts[i],t,i)
-            }
-            //calc scale - reduce
-            if((t-timeRescale)>21){
-                timeRescale=t
-                var d=sdata.length-samples*facts.length
-                if(d>0)sdata.splice(0,d)
-                var p=apx.seriesBounds(sdata)
-                var min=p.x-dataPadding
-                var max=p.y+dataPadding
-                if(min==max){
-                    min-=dataPaddingZero
-                    max+=dataPaddingZero
+            var t = time + 1
+
+            for (var i = 0; i < chartItem.facts.length; ++i)
+                appendDataValue(chartItem.facts[i], t, i)
+
+            if ((t - timeRescale) > 21) {
+                timeRescale = t
+                var d = sdata.length - samples * chartItem.facts.length
+                if (d > 0)
+                    sdata.splice(0, d)
+                var p = chartItem.apxContext ? chartItem.apxContext.seriesBounds(sdata)
+                                             : Qt.point(0, 0)
+                var min = p.x - dataPadding
+                var max = p.y + dataPadding
+                if (min === max) {
+                    min -= dataPaddingZero
+                    max += dataPaddingZero
                 }
-                var bmod=false
-                if(axisY.min<min){
-                    axisY.min=min
-                    bmod=true
+                var bmod = false
+                if (axisY.min < min) {
+                    axisY.min = min
+                    bmod = true
                 }
-                if(axisY.max>max){
-                    axisY.max=max
-                    bmod=true
+                if (axisY.max > max) {
+                    axisY.max = max
+                    bmod = true
                 }
-                if(bmod){
-                    axisY.tickCount=4
+                if (bmod) {
+                    axisY.tickCount = 4
                     axisY.applyNiceNumbers()
                 }
             }
-            time=t
-            dataExist=true
+            time = t
+            dataExist = true
         }
 
-        function appendDataValue(fact, t, i){
-            if(i>=chartView.count)addFactSeries(fact)
-            var s=chartView.series(i)
-
-            var value=fact.value!=undefined?fact.value:eval(fact.name)
-
-            if(!isFinite(value))value=0
-            s.append(t,value);
-            sdata.push(value)
-            //instant rescale - grow
-            if(axisY.max<value){
-                axisY.max=value+dataPadding;
-            }
-            if(axisY.min>value){
-                axisY.min=value-dataPadding;
-            }
-            //remove old
-            var cnt=samples
-            if(s.count>cnt) s.removePoints(0,s.count-cnt)
-        }
-
-        function addFactSeries(fact)
+        function appendDataValue(fact, t, i)
         {
-            var s = chartView.createSeries(ui.antialiasing?ChartView.SeriesTypeLine:ChartView.SeriesTypeLine,fact.title,axisX, axisY)
-            s.useOpenGL = Qt.binding(function(){return openGL})
-            s.capStyle=Qt.RoundCap
-            //s.opacity=0.7
+            if (i >= chartView.count)
+                addFactSeries(fact, i)
 
-            var color = fact.opts.color
-            if(!color) color = Qt.rgba(1,1,1,1)
+            var series = chartView.series(i)
+            chartItem.syncSeries(series, fact, i)
 
-            if(fact.name.startsWith("cmd")){
-                s.width=Qt.binding(function(){return lineWidthCmd})
-                s.color=Qt.hsla(color.hslHue, color.hslSaturation/2, color.hslLightness*1.2, 1)
-            }else{
-                s.width=Qt.binding(function(){return lineWidth})
-                s.color=color
-            }
-            return s
+            var value = chartItem.evaluateValue(fact, chartItem.itemBind(fact))
+
+            if (!isFinite(value))
+                value = 0
+
+            value = chartItem.filteredItemValue(fact, value)
+
+            if (!isFinite(value))
+                value = 0
+
+            chartItem.writeSavedValue(fact, value)
+
+            series.append(t, value)
+            sdata.push(value)
+            if (axisY.max < value)
+                axisY.max = value + dataPadding
+            if (axisY.min > value)
+                axisY.min = value - dataPadding
+            var cnt = samples
+            if (series.count > cnt)
+                series.removePoints(0, series.count - cnt)
         }
 
+        function addFactSeries(fact, index)
+        {
+            var series = chartView.createSeries(chartItem.uiContext
+                                                && chartItem.uiContext.antialiasing
+                                                ? ChartView.SeriesTypeLine
+                                                : ChartView.SeriesTypeLine,
+                                                chartItem.itemTitle(fact, index),
+                                                axisX,
+                                                axisY)
+            series.useOpenGL = Qt.binding(function() {
+                return openGL
+            })
+            series.capStyle = Qt.RoundCap
+            chartItem.applySeriesStyle(series, fact, index)
+            return series
+        }
     }
-
 
     function changeSpeed()
     {
-        if((speed+1)<speedFactor.length)speed++
-        else speed=0
-        //console.log(speed)
+        if ((speed + 1) < speedFactor.length)
+            speed++
+        else
+            speed = 0
     }
 }
-

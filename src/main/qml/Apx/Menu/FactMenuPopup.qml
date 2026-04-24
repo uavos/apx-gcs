@@ -96,7 +96,8 @@ Popup {
             else popup.raise()
         }
         Connections {
-            target: factMenu.fact
+            target: factMenu.fact ? factMenu.fact : null
+            ignoreUnknownSignals: true
             function onProgressChanged(){ popup.pinned=true }
         }
         onStackEmpty: popup.close()

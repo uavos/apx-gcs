@@ -22,6 +22,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Controls.Material
 
 import Apx.Common
 
@@ -31,16 +32,32 @@ TextButton {
     ButtonGroup.group: buttonGroup
 
     property var values: []
-    onActivated: signals.facts=Qt.binding(function(){return values})
+    property string pageToolTip: ""
+    property bool pageWarning: false
 
-    toolTip: getToolTip(values)
+    signal editTriggered()
+
+    textColor: pageWarning ? Material.color(Material.Orange)
+                           : Material.primaryTextColor
+
+    onDoubleClicked: editTriggered()
+    onPressAndHold: editTriggered()
+
+    toolTip: pageToolTip !== "" ? pageToolTip : getToolTip(values)
 
     function getToolTip(facts)
     {
         var s=[]
         for(var i=0;i<facts.length;++i){
             var fact=facts[i]
-            s.push("<font color='"+fact.opts.color+"'>"+fact.descr+"</font>")
+            var color = fact && fact.color ? fact.color
+                                           : (fact && fact.opts ? fact.opts.color : undefined)
+            var label = fact && fact.title ? fact.title
+                                           : (fact && fact.descr ? fact.descr : fact.bind)
+            if(color)
+                s.push("<font color='"+color+"'>"+label+"</font>")
+            else
+                s.push(label)
         }
         return s.join("<br>")
     }
