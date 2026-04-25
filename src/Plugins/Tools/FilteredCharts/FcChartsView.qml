@@ -25,33 +25,46 @@ import QtQuick.Controls
 import QtQml
 
 Item {
-    id: chartItem
-    //clip: true
+    id: fcChartItem
+
     property var facts: []
 
     property bool openGL: false //apx.settings.graphics.opengl.value
     property bool smoothLines: ui.smooth
 
-    property real speed: 0
     property real lineWidth: ui.antialiasing ? 1.5 : 1
     property real lineWidthCmd: ui.antialiasing ? 2.1 : 2
 
-    property var speedFactor: [1, 2, 4, 0.5, 0.2]
-    property real speedFactorValue: speed < 0 ? speedFactor[0] : speed >= speedFactor.length ? speedFactor[speedFactor.length - 1] : speedFactor[speed]
+    property var speedFactor: [0.2, 0.5, 1, 2, 4]
+    property real speedFactorValue: 1
 
-    onFactsChanged: {
-        chartView.reset();
+    property bool resetEnable: false
+    
+    onFactsChanged: if(resetEnable) {
+        fcChartView.reset();
+        resetEnable = false;
     }
 
     Connections {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
-            chartView.appendData();
+            fcChartView.appendData();
+        }
+    }
+
+    function updateSeriesColor() {
+        for (var i = 0; i < facts.length; ++i) {
+            if(!fcChartView.series(i))
+                continue;
+            if(!facts || !facts[i] || !facts[i].opts)
+                continue;
+            if (fcChartView.series(i).color != facts[i].opts.color)
+                fcChartView.series(i).color = facts[i].opts.color;
         }
     }
 
     ChartView {
-        id: chartView
+        id: fcChartView
 
         antialiasing: ui.antialiasing
         legend.visible: false
@@ -66,7 +79,6 @@ Item {
         anchors.bottomMargin: margin
         anchors.leftMargin: margin
         anchors.rightMargin: margin
-        //onPlotAreaChanged: margin=-plotArea.y/3
 
         plotAreaColor: "black"
         backgroundColor: "black"
@@ -75,22 +87,19 @@ Item {
 
         property int samples: Math.min(1000, Math.max(25, width / (3 * speedFactorValue)))
         property int time: 0
-
         property bool dataExist: false
 
         ValueAxis {
             id: axisX
-            property real t: chartView.time
+            property real t: fcChartView.time
             Behavior on t {
-                enabled: ui.smooth && chartView.dataExist
+                enabled: ui.smooth && fcChartView.dataExist
                 NumberAnimation {
                     duration: 500
                 }
             }
-            min: t - chartView.samples + 20
+            min: t - fcChartView.samples + 20
             max: t
-            //min: -chartView.samples //t-chartView.samples+20
-            //max: 0 //t
             visible: false
             gridVisible: false
             labelsVisible: false
@@ -114,14 +123,13 @@ Item {
         property int timeRescale: 0
 
         function reset() {
-            chartView.removeAllSeries();
-            chartView.sdata = [];
-            chartView.time = 0;
+            fcChartView.removeAllSeries();
+            fcChartView.sdata = [];
+            fcChartView.time = 0;
             axisY.min = -dataPaddingZero;
             axisY.max = dataPaddingZero;
             axisY.tickCount = 4;
             axisY.applyNiceNumbers();
-            speed = 0;
         }
 
         function appendData() {
@@ -129,7 +137,7 @@ Item {
             for (var i = 0; i < facts.length; ++i) {
                 appendDataValue(facts[i], t, i);
             }
-            //calc scale - reduce
+            // Calc scale - reduce
             if ((t - timeRescale) > 21) {
                 timeRescale = t;
                 var d = sdata.length - samples * facts.length;
@@ -161,9 +169,9 @@ Item {
         }
 
         function appendDataValue(fact, t, i) {
-            if (i >= chartView.count)
+            if (i >= fcChartView.count)
                 addFactSeries(fact);
-            var s = chartView.series(i);
+            var s = fcChartView.series(i);
 
             var value = fact.value != undefined ? fact.value : eval(fact.name);
 
@@ -171,26 +179,25 @@ Item {
                 value = 0;
             s.append(t, value);
             sdata.push(value);
-            //instant rescale - grow
+            // Instant rescale - grow
             if (axisY.max < value) {
                 axisY.max = value + dataPadding;
             }
             if (axisY.min > value) {
                 axisY.min = value - dataPadding;
             }
-            //remove old
+            // Remove old
             var cnt = samples;
             if (s.count > cnt)
                 s.removePoints(0, s.count - cnt);
         }
 
         function addFactSeries(fact) {
-            var s = chartView.createSeries(ui.antialiasing ? ChartView.SeriesTypeLine : ChartView.SeriesTypeLine, fact.title, axisX, axisY);
+            var s = fcChartView.createSeries(ui.antialiasing ? ChartView.SeriesTypeLine : ChartView.SeriesTypeLine, fact.title, axisX, axisY);
             s.useOpenGL = Qt.binding(function () {
                 return openGL;
             });
             s.capStyle = Qt.RoundCap;
-            //s.opacity=0.7
 
             var color = fact.opts.color;
             if (!color)
@@ -209,13 +216,5 @@ Item {
             }
             return s;
         }
-    }
-
-    function changeSpeed() {
-        if ((speed + 1) < speedFactor.length)
-            speed++;
-        else
-            speed = 0;
-        //console.log(speed)
     }
 }
