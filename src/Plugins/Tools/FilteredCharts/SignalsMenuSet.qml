@@ -32,7 +32,7 @@ Fact {
     property bool newItem: false
     // property bool changes: false
     // property var values //from config
-    property var pages
+    property var values
 
     signal removeTriggered
 
@@ -56,22 +56,20 @@ Fact {
 
     function save() {
         // changes = false;
-        var tmpPages = [];
+        var tmpValues = [];
         for (var i = 0; i < mPages.size; ++i) {
             var mpage = mPages.child(i).save();
-            if (!mpage.bind)
-                continue;
             tmpPages.push(mpage);
         }
         var set = {};
-        set.title = msName.value;
+        set.title = mSetName.value;
         set.values = tmpValues;
         return set;
     }
 
     function load(set) {
-        // msName.value = set.title;
-        // msSpeed.value = set.speed;
+        // mSetName.value = set.title;
+        // mSpeed.value = set.speed;
         // values = set.values;
         // updateSetItems();
         // changes = false;
@@ -84,14 +82,14 @@ Fact {
         // }
     }
 
-    // function createPage(mset) {
-    function createPage() {
-        // var c = createFact(setFact, "SignalsMenuPage.qml", {
-        //     "data": mset
-        // });
-        var page = {};
-        page.values = [];
-        var c = createFact(mPages, "SignalsMenuPage.qml", page);
+    function createPage(mset) {
+    // function createPage() {
+        var c = createFact(mPages, "SignalsMenuPage.qml", {
+            "data": mset
+        });
+        // var page = {};
+        // page.values = [];
+        // var c = createFact(mPages, "SignalsMenuPage.qml", page);
         // c.trigger();
 
         // c.removeTriggered.connect(function () {
@@ -127,8 +125,8 @@ Fact {
         descr: qsTr("Creating and add new page")
         icon: "plus-circle"
         newItem: true
-        onAddTriggered: createPage()
-        // onAddTriggered: createPage(save())
+        // onAddTriggered: createPage()
+        onAddTriggered: createPage(save())
     }
     Fact {
         id: mPages

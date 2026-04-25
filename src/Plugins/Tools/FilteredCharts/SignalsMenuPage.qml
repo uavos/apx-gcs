@@ -30,19 +30,22 @@ Fact {
 
     property var newItem: false
     property bool changes: false
-    property alias speed: msSpeed.value
+    property alias speed: mSpeed.value
     property var values //from config
+    property var data: ({})
+
+    onNumChanged: updateTitle()
 
     signal addTriggered
     signal removeTriggered
 
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
-
-    function updateTitle() {
-        if (newItem)
-            return;
-        pageFact.title = msPageName.value ? msPageName.value : "Page #" + pageFact.num;
+    Component.onCompleted: {
+        load(data);
+        updateTitle();
+        updateDescr();
     }
+
 
     function addNewChart() {
         mMenuChart.trigger();
@@ -69,17 +72,17 @@ Fact {
                 continue;
             tmpValues.push(mchart);
         }
-        var set = {};
-        page.title = msPageName.value;
-        page.speed = msSpeed.value;
+        var page = {};
+        page.title = mPageName.value;
+        page.speed = mSpeed.value;
         page.values = tmpValues;
         updateBtnValues();
         return page;
     }
 
     function load(page) {
-        msPageName.value = page.title;
-        msSpeed.value = page.speed;
+        mPageName.value = page.title;
+        mSpeed.value = page.speed;
         values = page.values;
         updateSetItems();
         changes = false;
@@ -124,17 +127,28 @@ Fact {
         return matches;
     }
 
+    function updateTitle() {
+        if (newItem)
+            return;
+        var text =  mPageName.text.trim();     
+        title = text != "" ? text : qsTr("Page") + " " + (Math.max(pageFact.num, 0) + 1)
+    }
+
+    function updateDescr() {
+
+    }
+
     Fact {
-        id: msPageName
+        id: mPageName
         title: qsTr("Page name")
         descr: qsTr("Charts page name")
         flags: Fact.Text
         icon: "rename-box"
-        value: "Page #" + pageFact.num
-        onValueChanged: updateTitle()
+        value: qsTr("Page") + " " + (mPages.size + 1)
+        onTextChanged: updateTitle()
     }
     Fact {
-        id: msSpeed
+        id: mSpeed
         title: qsTr("Speed")
         descr: qsTr("Charts speed")
         flags: Fact.Float
@@ -144,7 +158,7 @@ Fact {
         min: 0.2
         max: 4
         onValueChanged: {
-            if (!sgBtn.checked)
+            if (!sgBtn || !sgBtn.checked)
                 return;
             sgCharts.speedFactorValue = value;
             changes = true;

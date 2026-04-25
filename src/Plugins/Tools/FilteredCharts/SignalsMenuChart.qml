@@ -263,24 +263,6 @@ Fact {
         title: qsTr("Warning")
         descr: qsTr("Expression for warning")
         flags: Fact.Text
-        enabled: false
-        visible: false
-    }
-    Fact {
-        name: "alarm"
-        title: qsTr("Alarm")
-        descr: "value>1.8 || (value>0 && value<1)"
-        flags: Fact.Text
-        enabled: false
-        visible: false
-    }
-    Fact {
-        name: "act"
-        title: qsTr("Action")
-        descr: "cmd.proc.action=proc_action_reset"
-        flags: Fact.Text
-        enabled: false
-        visible: false
     }
     Fact {
         id: mFact2Save
