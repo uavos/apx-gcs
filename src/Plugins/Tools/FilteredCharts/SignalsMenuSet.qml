@@ -24,7 +24,7 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: mSet
+    id: setFact
 
     flags: (Fact.Group | Fact.FlatModel)
     title: "Set"
@@ -64,41 +64,40 @@ Fact {
             tmpPages.push(mpage);
         }
         var set = {};
-        set.title = msTitle.value;
-        set.speed = msSpeed.value;
+        set.title = msName.value;
         set.values = tmpValues;
-        // updateBtnValues();
         return set;
     }
 
     function load(set) {
-        msTitle.value = set.title;
-        msSpeed.value = set.speed;
-        values = set.values;
-        updateSetItems();
-        changes = false;
+        // msName.value = set.title;
+        // msSpeed.value = set.speed;
+        // values = set.values;
+        // updateSetItems();
+        // changes = false;
     }
 
     function updateSetItems() {
-        mPages.deleteChildren();
-        for (var i in values) {
-            createChart(values[i]);
-        }
-        // updateBtnValues();
+        // mPages.deleteChildren();
+        // for (var i in values) {
+        //     createPage(values[i]);
+        // }
     }
 
-    function createPage(mset) {
-        if (!mset.bind)
-            return;
-        if (mset.bind === "")
-            return;
-        var c = createFact(mSet, "SignalsMenuPage.qml", {
-            "data": mset
-        });
-        c.removeTriggered.connect(function () {
-        // changes = true;
-        });
-        // changes = true;
+    // function createPage(mset) {
+    function createPage() {
+        // var c = createFact(setFact, "SignalsMenuPage.qml", {
+        //     "data": mset
+        // });
+        var page = {};
+        page.values = [];
+        var c = createFact(mPages, "SignalsMenuPage.qml", page);
+        // c.trigger();
+
+        // c.removeTriggered.connect(function () {
+        // // changes = true;
+        // });
+        // // changes = true;
     }
 
     function createFact(parent, url, opts) {
@@ -111,24 +110,25 @@ Fact {
     }
 
     Fact {
-        id: msTitle
+        id: mSetName
         title: qsTr("Set name")
         descr: qsTr("Saved chart configuration name")
         flags: Fact.Text
         icon: "rename-box"
-        value: mSet.title
+        value: setFact.title
         onValueChanged: {
-            mSet.title = value;
+            setFact.title = value;
             // changes = true;
         }
     }
-    SignalsMenuChart {
+    SignalsMenuPage {
         id: mMenuPage
         title: qsTr("Add new page")
         descr: qsTr("Creating and add new page")
         icon: "plus-circle"
         newItem: true
-        onAddTriggered: createPage(save())
+        onAddTriggered: createPage()
+        // onAddTriggered: createPage(save())
     }
     Fact {
         id: mPages
@@ -143,8 +143,8 @@ Fact {
         title: qsTr("Save")
         visible: !newItem // && changes
         icon: "check-circle"
-        // onTriggered: sgControl.saveSettings()
         onTriggered: console.log("Not implemented")
+        // onTriggered: sgControl.saveSettings()
     }
     Fact {
         flags: (Fact.Action | Fact.Apply)
@@ -152,8 +152,8 @@ Fact {
         visible: !setFact.active
         icon: "check-circle"
         onTriggered: {
-            mSet.menuBack();
-            // mSet.selected(mSet.num);
+            setFact.menuBack();
+            // setFact.selected(setFact.num);
         }
     }
     Fact {
@@ -163,7 +163,7 @@ Fact {
         icon: "delete"
         onTriggered: {
             removeTriggered();
-            mSet.deleteFact();
+            setFact.deleteFact();
         }
     }
 }

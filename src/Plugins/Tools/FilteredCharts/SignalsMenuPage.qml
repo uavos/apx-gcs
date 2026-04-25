@@ -27,23 +27,32 @@ Fact {
     id: pageFact
 
     flags: (Fact.Group | Fact.FlatModel)
-    title: "Page #" + sgBtn.text
 
+    property var newItem: false
     property bool changes: false
     property alias speed: msSpeed.value
     property var values //from config
 
+    signal addTriggered
+    signal removeTriggered
+
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
+
+    function updateTitle() {
+        if (newItem)
+            return;
+        pageFact.title = msPageName.value ? msPageName.value : "Page #" + pageFact.num;
+    }
 
     function addNewChart() {
         mMenuChart.trigger();
     }
 
     function updateBtnValues() {
-        sgBtn.values = [];
-        for (var i = 0; i < mCharts.size; ++i)
-            sgBtn.values.push(mCharts.child(i));
-        sgBtn.updateToolTip(sgBtn.values);
+        // sgBtn.values = [];
+        // for (var i = 0; i < mCharts.size; ++i)
+        //     sgBtn.values.push(mCharts.child(i));
+        // sgBtn.updateToolTip(sgBtn.values);
     }
 
     function updateChartsValues() {
@@ -60,8 +69,8 @@ Fact {
                 continue;
             tmpValues.push(mchart);
         }
-        var page = {};
-        page.title = msTitle.value;
+        var set = {};
+        page.title = msPageName.value;
         page.speed = msSpeed.value;
         page.values = tmpValues;
         updateBtnValues();
@@ -69,7 +78,7 @@ Fact {
     }
 
     function load(page) {
-        msTitle.value = page.title;
+        msPageName.value = page.title;
         msSpeed.value = page.speed;
         values = page.values;
         updateSetItems();
@@ -116,16 +125,13 @@ Fact {
     }
 
     Fact {
-        id: msTitle
-        title: qsTr("Title")
-        descr: qsTr("Charts title")
+        id: msPageName
+        title: qsTr("Page name")
+        descr: qsTr("Charts page name")
         flags: Fact.Text
         icon: "rename-box"
-        value: pageFact.title
-        onValueChanged: {
-            pageFact.title = value;
-            changes = true;
-        }
+        value: "Page #" + pageFact.num
+        onValueChanged: updateTitle()
     }
     Fact {
         id: msSpeed
@@ -161,10 +167,31 @@ Fact {
 
     // Actions
     Fact {
+        id: pageAdd
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Add")
+        enabled: newItem
+        icon: "plus-circle"
+        onTriggered: {
+            pageFact.menuBack();
+            addTriggered();
+        }
+    }
+    Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        visible: changes
+        enabled: !newItem
         icon: "check-circle"
         onTriggered: sgControl.saveSettings()
+    }
+    Fact {
+        flags: (Fact.Action | Fact.Remove)
+        title: qsTr("Remove")
+        visible: !newItem
+        icon: "delete"
+        onTriggered: {
+            removeTriggered();
+            pageFact.deleteFact();
+        }
     }
 }
