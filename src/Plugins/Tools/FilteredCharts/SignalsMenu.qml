@@ -35,123 +35,122 @@ Fact {
     descr: qsTr("Realtime chart configuration editor")
     icon: "gauge"
 
-    signal accepted()
+    // signal accepted
 
-    Component.onCompleted: open()
+    // Component.onCompleted: open()
 
-    function open() {
-        //ensure mandala linked to unit
-        if(!parentFact){
-            var p=parent
-            parentFact=apx.fleet.local
-            parent=p
-        }
-        loadSettings()
-    }
+    // function open() {
+    //     //ensure mandala linked to unit
+    //     if (!parentFact) {
+    //         var p = parent;
+    //         parentFact = apx.fleet.local;
+    //         parent = p;
+    //     }
+    //     loadSettings();
+    // }
 
-    function close()
-    {
-        if(!destroyOnClose){
-            sgMenu.deleteChildren()
-            loadSettings()
-            menuBack()
-            return
-        }
-        sgMenu.deleteChildren()
-        menuBack()
-        parentFact=null
-    }
+    // function close() {
+    //     if (!destroyOnClose) {
+    //         sgMenu.deleteChildren();
+    //         loadSettings();
+    //         menuBack();
+    //         return;
+    //     }
+    //     sgMenu.deleteChildren();
+    //     menuBack();
+    //     parentFact = null;
+    // }
 
-    function loadSettings()
-    {
-        var sets=[]
-        var f=application.prefs.loadFile("signals_2.json")
-        var json=f?JSON.parse(f):{}
-        var set={}
-        var currentSetIdx=-1
-        if(json && json.sets){
-            for(var i in json.sets){
-                set=json.sets[i]
-                if(!(set.values && (set.values instanceof Array))) continue
-                sets.push(set)
-            }
-            //set index
-            var setIdx=json.active[settingsName]
-            if(setIdx>=0 && setIdx<sets.length)
-                currentSetIdx=setIdx
-            else if(sets.length>0)
-                currentSetIdx=0
-        }
-        //defaults
-        if(sets.length<=0 || !json.active){
-            set={}
-            set.title=settingsName
-            set.values=defaults
-            sets.push(set)
-            currentSetIdx=sets.length-1
-        }
+    // function loadSettings() {
+    //     var sets = [];
+    //     var f = application.prefs.loadFile("signals_2.json");
+    //     var json = f ? JSON.parse(f) : {};
+    //     var set = {};
+    //     var currentSetIdx = -1;
+    //     if (json && json.sets) {
+    //         for (var i in json.sets) {
+    //             set = json.sets[i];
+    //             if (!(set.values && (set.values instanceof Array)))
+    //                 continue;
+    //             sets.push(set);
+    //         }
+    //         //set index
+    //         var setIdx = json.active[settingsName];
+    //         if (setIdx >= 0 && setIdx < sets.length)
+    //             currentSetIdx = setIdx;
+    //         else if (sets.length > 0)
+    //             currentSetIdx = 0;
+    //     }
+    //     //defaults
+    //     if (sets.length <= 0 || !json.active) {
+    //         set = {};
+    //         set.title = settingsName;
+    //         set.values = defaults;
+    //         sets.push(set);
+    //         currentSetIdx = sets.length - 1;
+    //     }
 
-        //create facts
-        for(i in sets){
-            var c=createFact(sgMenu, "SignalsMenuSet.qml", sets[i])
-            c.selected.connect(select)
-            c.selected.connect(saveSettings)
-        }
-        select(currentSetIdx)
-    }
+    //     //create facts
+    //     for (i in sets) {
+    //         var c = createFact(sgMenu, "SignalsMenuSet.qml", sets[i]);
+    //         c.selected.connect(select);
+    //         c.selected.connect(saveSettings);
+    //     }
+    //     select(currentSetIdx);
+    // }
 
-    function saveSettings()
-    {
-        var fjson=application.prefs.loadFile("signals_2.json") // TODO Refactor file name
-        var json=fjson?JSON.parse(fjson):{
-            if(!json.active)json.active={}
-            json.active[settingsName]=0
-            json.sets=[]
-            for(var i=0;i<size;++i){
-                var setFact=child(i)
-                var set=setFact.save()
-                if(!set)continue
-                json.sets.push(set)
-                if(setFact.active)
-                    json.active[settingsName]=i
-            }
-            application.prefs.saveFile("numbers.json",JSON.stringify(json,' ',2))
-            accepted()
-            close()
-        }
-    }
+    // function saveSettings()
+    // {
+    //     var fjson = application.prefs.loadFile("signals_2.json"); // TODO Refactor file name
+    //     var json =fjson ? JSON.parse(fjson):{
+    //         if (!json.active)json.active={}
+    //         json.active[settingsName]=0
+    //         json.sets=[]
+    //         for(var i=0;i<size;++i){
+    //             var setFact=child(i)
+    //             var set=setFact.save()
+    //             if(!set)continue
+    //             json.sets.push(set)
+    //             if(setFact.active)
+    //                 json.active[settingsName]=i
+    //         }
+    //         application.prefs.saveFile("numbers.json",JSON.stringify(json,' ',2))
+    //         accepted()
+    //         close()
+    //     }
+    // }
 
-    function createFact(parent, url, opts)
-    {
+    function createFact(parent, url, opts) {
         var component = Qt.createComponent(url);
         if (component.status === Component.Ready) {
-            var c=component.createObject(parent,opts)
-            c.parentFact=parent
-            return c
+            var c = component.createObject(parent, opts);
+            c.parentFact = parent;
+            return c;
         }
     }
 
-    function select(num)
-    {
-        for(var i=0;i<sgMenu.size;++i){
-            var set=sgMenu.child(i)
-            set.active = set.num == num
+    function select(num) {
+        for (var i = 0; i < sgMenu.size; ++i) {
+            var set = sgMenu.child(i);
+            set.active = set.num == num;
         }
+    }
+
+    function createSet() {
+        var set = {};
+        set.title = "#" + (sgMenu.size + 1);
+        set.values = [];
+        var c = createFact(sgMenu, "SignalsMenuSet.qml", set);
+        // c.selected.connect(select);
+        // c.selected.connect(saveSettings);
+        c.trigger();
     }
 
     Fact {
         title: qsTr("Add set")
         flags: Fact.Action
         icon: "plus-circle"
-        onTriggered: {
-            var set={}
-            set.title="#"+(sgMenu.size+1)
-            set.values=[]
-            var c=createFact(sgMenu, "NumbersMenuSet.qml", set)
-            c.selected.connect(select)
-            c.selected.connect(saveSettings)
-            c.trigger()
-        }
+        onTriggered: createSet()
     }
     Fact {
         title: qsTr("Reset defaults")
@@ -165,6 +164,6 @@ Fact {
         title: qsTr("Save")
         flags: (Fact.Action | Fact.Apply)
         icon: "check-circle"
-        onTriggered: saveSettings()
+        // onTriggered: saveSettings()
     }
 }

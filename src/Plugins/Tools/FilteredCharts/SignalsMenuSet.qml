@@ -34,6 +34,8 @@ Fact {
     // property var values //from config
     property var pages
 
+    signal removeTriggered
+
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
 
     // function addNewPage() {
@@ -85,16 +87,16 @@ Fact {
         // updateBtnValues();
     }
 
-    function createChart(mset) {
+    function createPage(mset) {
         if (!mset.bind)
             return;
         if (mset.bind === "")
             return;
-        var c = createFact(mPages, "SignalsMenuPage.qml", {
-            "data": mpage
+        var c = createFact(mSet, "SignalsMenuPage.qml", {
+            "data": mset
         });
         c.removeTriggered.connect(function () {
-            // changes = true;
+        // changes = true;
         });
         // changes = true;
     }
@@ -116,7 +118,7 @@ Fact {
         icon: "rename-box"
         value: mSet.title
         onValueChanged: {
-            pageFact.title = value;
+            mSet.title = value;
             // changes = true;
         }
     }
@@ -126,7 +128,7 @@ Fact {
         descr: qsTr("Creating and add new page")
         icon: "plus-circle"
         newItem: true
-        onAddTriggered: createChart(save())
+        onAddTriggered: createPage(save())
     }
     Fact {
         id: mPages
@@ -137,23 +139,22 @@ Fact {
 
     // Actions
     Fact {
-        id: add
-        flags: (Fact.Action | Fact.Apply)
-        title: qsTr("Add")
-        enabled: newItem // && mBind && mBind.value
-        icon: "plus-circle"
-        onTriggered: {
-            mSet.menuBack();
-            addTriggered();
-        }
-    }
-    Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
         visible: !newItem // && changes
         icon: "check-circle"
         // onTriggered: sgControl.saveSettings()
         onTriggered: console.log("Not implemented")
+    }
+    Fact {
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Select and save")
+        visible: !setFact.active
+        icon: "check-circle"
+        onTriggered: {
+            mSet.menuBack();
+            // mSet.selected(mSet.num);
+        }
     }
     Fact {
         flags: (Fact.Action | Fact.Remove)
@@ -166,4 +167,3 @@ Fact {
         }
     }
 }
-

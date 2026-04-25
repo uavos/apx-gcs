@@ -175,6 +175,15 @@ Rectangle {
             }
 
             TextButton {
+                text: "+"
+                onClicked: sgMenu.trigger()
+
+                SignalsMenu {
+                    id: sgMenu
+                }
+            }
+
+            TextButton {
                 text: sgCharts.speedFactorValue + "x"
                 Layout.fillHeight: true
                 Layout.minimumWidth: height * 4
