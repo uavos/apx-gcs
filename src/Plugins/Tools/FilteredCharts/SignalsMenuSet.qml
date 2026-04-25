@@ -24,47 +24,48 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: chartFact
+    id: mSet
 
     flags: (Fact.Group | Fact.FlatModel)
-    title: "Charts #" + sigBtn.text
+    title: "Set"
 
-    property bool changes: false
-    property alias speed: msSpeed.value
-    property var values //from config
+    property bool newItem: false
+    // property bool changes: false
+    // property var values //from config
+    property var pages
 
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
 
-    function addNewChart() {
-        msMenuChart.trigger();
-    }
+    // function addNewPage() {
+    //     mMenuPage.trigger();
+    // }
 
-    function updateBtnValues() {
-        sigBtn.values = [];
-        for (var i = 0; i < msValues.size; ++i)
-            sigBtn.values.push(msValues.child(i));
-        sigBtn.updateToolTip(sigBtn.values);
-    }
+    // function updateBtnValues() {
+    //     sgBtn.values = [];
+    //     for (var i = 0; i < mPages.size; ++i)
+    //         sgBtn.values.push(mPages.child(i));
+    //     sgBtn.updateToolTip(sgBtn.values);
+    // }
 
-    function updateChartsValues() {
-        for (var i = 0; i < msValues.size; ++i)
-            msValues.child(i).updateValue();
-    }
+    // function updateChartsValues() {
+    //     for (var i = 0; i < mPages.size; ++i)
+    //         mPages.child(i).updateValue();
+    // }
 
     function save() {
-        changes = false;
-        var tmpValues = [];
-        for (var i = 0; i < msValues.size; ++i) {
-            var mchart = msValues.child(i).save();
-            if (!mchart.bind)
+        // changes = false;
+        var tmpPages = [];
+        for (var i = 0; i < mPages.size; ++i) {
+            var mpage = mPages.child(i).save();
+            if (!mpage.bind)
                 continue;
-            tmpValues.push(mchart);
+            tmpPages.push(mpage);
         }
         var set = {};
         set.title = msTitle.value;
         set.speed = msSpeed.value;
         set.values = tmpValues;
-        updateBtnValues();
+        // updateBtnValues();
         return set;
     }
 
@@ -77,25 +78,25 @@ Fact {
     }
 
     function updateSetItems() {
-        msValues.deleteChildren();
+        mPages.deleteChildren();
         for (var i in values) {
             createChart(values[i]);
         }
-        updateBtnValues();
+        // updateBtnValues();
     }
 
-    function createChart(mchart) {
-        if (!mchart.bind)
+    function createChart(mset) {
+        if (!mset.bind)
             return;
-        if (mchart.bind === "")
+        if (mset.bind === "")
             return;
-        var c = createFact(msValues, "SignalMenuChart.qml", {
-            "data": mchart
+        var c = createFact(mPages, "SignalsMenuPage.qml", {
+            "data": mpage
         });
         c.removeTriggered.connect(function () {
-            changes = true;
+            // changes = true;
         });
-        changes = true;
+        // changes = true;
     }
 
     function createFact(parent, url, opts) {
@@ -107,64 +108,62 @@ Fact {
         }
     }
 
-    function checkScrs(val) {
-        var matches = false;
-        for (var i = 0; i < msValues.size; ++i)
-            if (msValues.child(i).hasScr(val))
-                matches = true;
-        return matches;
-    }
-
     Fact {
         id: msTitle
-        title: qsTr("Title")
-        descr: qsTr("Charts title")
+        title: qsTr("Set name")
+        descr: qsTr("Saved chart configuration name")
         flags: Fact.Text
         icon: "rename-box"
-        value: chartFact.title
+        value: mSet.title
         onValueChanged: {
-            chartFact.title = value;
-            changes = true;
-        }
-    }
-    Fact {
-        id: msSpeed
-        title: qsTr("Speed")
-        descr: qsTr("Charts speed")
-        flags: Fact.Float
-        icon: "speedometer"
-        value: 1.0
-        precision: 1
-        min: 0.2
-        max: 4
-        onValueChanged: {
-            if (!sigBtn.checked)
-                return;
-            sgCharts.speedFactorValue = value;
-            changes = true;
+            pageFact.title = value;
+            // changes = true;
         }
     }
     SignalsMenuChart {
-        id: msMenuChart
-        title: qsTr("Add new chart")
-        descr: qsTr("Creating and setting a new chart")
+        id: mMenuPage
+        title: qsTr("Add new page")
+        descr: qsTr("Creating and add new page")
         icon: "plus-circle"
         newItem: true
         onAddTriggered: createChart(save())
     }
     Fact {
-        id: msValues
-        title: qsTr("Values")
+        id: mPages
+        title: qsTr("Pages")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: sgCharts.resetEnable = true
+        // onSizeChanged: sgCharts.resetEnable = true
     }
 
     // Actions
     Fact {
+        id: add
+        flags: (Fact.Action | Fact.Apply)
+        title: qsTr("Add")
+        enabled: newItem // && mBind && mBind.value
+        icon: "plus-circle"
+        onTriggered: {
+            mSet.menuBack();
+            addTriggered();
+        }
+    }
+    Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        visible: changes
+        visible: !newItem // && changes
         icon: "check-circle"
-        onTriggered: sgControl.saveSettings()
+        // onTriggered: sgControl.saveSettings()
+        onTriggered: console.log("Not implemented")
+    }
+    Fact {
+        flags: (Fact.Action | Fact.Remove)
+        title: qsTr("Remove")
+        visible: !newItem
+        icon: "delete"
+        onTriggered: {
+            removeTriggered();
+            mSet.deleteFact();
+        }
     }
 }
+

@@ -36,48 +36,48 @@ Fact {
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
 
     function addNewChart() {
-        msMenuChart.trigger();
+        mMenuChart.trigger();
     }
 
     function updateBtnValues() {
         sgBtn.values = [];
-        for (var i = 0; i < msValues.size; ++i)
-            sgBtn.values.push(msValues.child(i));
+        for (var i = 0; i < mCharts.size; ++i)
+            sgBtn.values.push(mCharts.child(i));
         sgBtn.updateToolTip(sgBtn.values);
     }
 
     function updateChartsValues() {
-        for (var i = 0; i < msValues.size; ++i)
-            msValues.child(i).updateValue();
+        for (var i = 0; i < mCharts.size; ++i)
+            mCharts.child(i).updateValue();
     }
 
     function save() {
         changes = false;
         var tmpValues = [];
-        for (var i = 0; i < msValues.size; ++i) {
-            var mchart = msValues.child(i).save();
+        for (var i = 0; i < mCharts.size; ++i) {
+            var mchart = mCharts.child(i).save();
             if (!mchart.bind)
                 continue;
             tmpValues.push(mchart);
         }
-        var set = {};
-        set.title = msTitle.value;
-        set.speed = msSpeed.value;
-        set.values = tmpValues;
+        var page = {};
+        page.title = msTitle.value;
+        page.speed = msSpeed.value;
+        page.values = tmpValues;
         updateBtnValues();
-        return set;
+        return page;
     }
 
-    function load(set) {
-        msTitle.value = set.title;
-        msSpeed.value = set.speed;
-        values = set.values;
+    function load(page) {
+        msTitle.value = page.title;
+        msSpeed.value = page.speed;
+        values = page.values;
         updateSetItems();
         changes = false;
     }
 
     function updateSetItems() {
-        msValues.deleteChildren();
+        mCharts.deleteChildren();
         for (var i in values) {
             createChart(values[i]);
         }
@@ -89,7 +89,7 @@ Fact {
             return;
         if (mchart.bind === "")
             return;
-        var c = createFact(msValues, "SignalsMenuChart.qml", {
+        var c = createFact(mCharts, "SignalsMenuChart.qml", {
             "data": mchart
         });
         c.removeTriggered.connect(function () {
@@ -109,8 +109,8 @@ Fact {
 
     function checkScrs(val) {
         var matches = false;
-        for (var i = 0; i < msValues.size; ++i)
-            if (msValues.child(i).hasScr(val))
+        for (var i = 0; i < mCharts.size; ++i)
+            if (mCharts.child(i).hasScr(val))
                 matches = true;
         return matches;
     }
@@ -145,7 +145,7 @@ Fact {
         }
     }
     SignalsMenuChart {
-        id: msMenuChart
+        id: mMenuChart
         title: qsTr("Add new chart")
         descr: qsTr("Creating and setting a new chart")
         icon: "plus-circle"
@@ -153,8 +153,8 @@ Fact {
         onAddTriggered: createChart(save())
     }
     Fact {
-        id: msValues
-        title: qsTr("Values")
+        id: mCharts
+        title: qsTr("Charts")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
         onSizeChanged: sgCharts.resetEnable = true
     }
