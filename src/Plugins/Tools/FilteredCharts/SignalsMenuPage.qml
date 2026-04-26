@@ -31,7 +31,7 @@ Fact {
     property var newItem: false
     property bool changes: false
     property alias speed: mSpeed.value
-    property var values //from config
+    property var charts //from config
     property var data: ({})
 
     signal addTriggered
@@ -62,17 +62,17 @@ Fact {
 
     function save() {
         changes = false;
-        var tmpValues = [];
+        var tmpCharts = [];
         for (var i = 0; i < mCharts.size; ++i) {
             var mchart = mCharts.child(i).save();
             if (!mchart.bind)
                 continue;
-            tmpValues.push(mchart);
+            tmpCharts.push(mchart);
         }
         var page = {};
         page.title = mPageName.value;
         page.speed = mSpeed.value;
-        page.values = tmpValues;
+        page.charts = tmpCharts;
         updateBtnValues();
         return page;
     }
@@ -81,15 +81,15 @@ Fact {
         // console.log("page: ", JSON.stringify(data));
         mPageName.value = page.title;
         mSpeed.value = page.speed ? page.speed : 1;
-        values = page.values;
+        charts = page.charts;
         updateSetItems();
         changes = false;
     }
 
     function updateSetItems() {
         mCharts.deleteChildren();
-        for (var i in values) {
-            createChart(values[i]);
+        for (var i in charts) {
+            createChart(charts[i]);
         }
         updateBtnValues();
     }

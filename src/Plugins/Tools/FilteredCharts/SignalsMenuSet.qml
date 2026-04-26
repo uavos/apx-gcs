@@ -31,7 +31,7 @@ Fact {
 
     property bool newItem: false
     // property bool changes: false
-    property var values //from config
+    property var pages //from config
     property var data: ({})
 
     signal selected(var num)
@@ -58,29 +58,29 @@ Fact {
 
     function save() {
         // changes = false;
-        var tmpValues = [];
+        var tmpPages = [];
         for (var i = 0; i < mPages.size; ++i) {
             var mpage = mPages.child(i).save();
-            tmpValues.push(mpage);
+            tmpPages.push(mpage);
         }
         var set = {};
         set.title = mSetName.value;
-        set.values = tmpValues;
+        set.pages = tmpPages;
         return set;
     }
 
     function load(set) {
         mSetName.value = set.title;
-        values = set.values;
-        console.log("load set", JSON.stringify(values));
+        pages = set.pages;
+        console.log("load set", JSON.stringify(pages));
         updateSetItems();
         // changes = false;
     }
 
     function updateSetItems() {
         mPages.deleteChildren();
-        for (var i in values) {
-            createPage(values[i]);
+        for (var i in pages) {
+            createPage(pages[i]);
         }
     }
 

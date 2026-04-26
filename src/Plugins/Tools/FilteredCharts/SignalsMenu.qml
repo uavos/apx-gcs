@@ -62,6 +62,66 @@ Fact {
     //     parentFact = null;
     // }
 
+    function createDefaultSet() {
+        var specs = [
+            {
+                "name": "R",
+                "bindings": ["cmd.att.roll", "est.att.roll"]
+            },
+            {
+                "name": "P",
+                "bindings": ["cmd.att.pitch", "est.att.pitch"]
+            },
+            {
+                "name": "Y",
+                "bindings": ["cmd.pos.bearing", "cmd.att.yaw", "est.att.yaw"]
+            },
+            {
+                "name": "Axy",
+                "bindings": ["est.acc.x", "est.acc.y"]
+            },
+            {
+                "name": "Az",
+                "bindings": ["est.acc.z"]
+            },
+            {
+                "name": "G",
+                "bindings": ["est.gyro.x", "est.gyro.y", "est.gyro.z"]
+            },
+            {
+                "name": "Pt",
+                "bindings": ["est.pos.altitude", "est.pos.vspeed", "est.air.airspeed"]
+            },
+            {
+                "name": "Ctr",
+                "bindings": ["ctr.att.ail", "ctr.att.elv", "ctr.att.rud", "ctr.eng.thr", "ctr.eng.prop", "ctr.str.rud"]
+            },
+            {
+                "name": "RC",
+                "bindings": ["cmd.rc.roll", "cmd.rc.pitch", "cmd.rc.thr", "cmd.rc.yaw"]
+            },
+            {
+                "name": "Usr",
+                "bindings": ["est.usr.u1", "est.usr.u2", "est.usr.u3", "est.usr.u4", "est.usr.u5", "est.usr.u6"]
+            }
+        ];
+        var set = {
+            "title": "default",
+            "values": []
+        };
+
+        return set;
+    }
+
+    function createDefaultSignals() {
+        return {
+            "active": {
+                "signals": 0
+            },
+            "sets": [createDefaultSet()]
+        };
+    }
+
     function loadSettings() {
         var sets = [];
         var f = application.prefs.loadFile("signals_2.json");
@@ -71,7 +131,7 @@ Fact {
         if (json && json.sets) {
             for (var i in json.sets) {
                 set = json.sets[i];
-                if (!(set.values && (set.values instanceof Array)))
+                if (!(set.pages && (set.pages instanceof Array)))
                     continue;
                 sets.push(set);
             }
@@ -84,12 +144,12 @@ Fact {
         }
         //defaults
         // if (sets.length <= 0 || !json.active) {
-        // createDefault();
-        // set = {};
-        // set.title = settingsName;
-        // set.values = defaults;
-        // sets.push(set);
-        // currentSetIdx = sets.length - 1;
+        //     set = createDefaultSignals();
+        //     set = {};
+        //     set.title = "default";
+        //     set.values = defaults;
+        //     // sets.push(set);
+        //     // currentSetIdx = sets.length - 1;
         // }
 
         //create facts
