@@ -174,10 +174,10 @@ Rectangle {
                 values: []
             }
 
-            TextButton {
-                text: "+"
+            IconButton {
+                iconName: "plus"
+                toolTip: qsTr("Edit chart configuration")
                 onClicked: sgMenu.trigger()
-
                 SignalsMenu {
                     id: sgMenu
                 }
