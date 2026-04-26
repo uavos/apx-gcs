@@ -158,8 +158,8 @@ Fact {
         title: qsTr("Save")
         visible: !newItem // && changes
         icon: "check-circle"
-        onTriggered: console.log("Not implemented")
-        // onTriggered: sgControl.saveSettings()
+        // onTriggered: console.log("Not implemented")
+        onTriggered: setFact.parent.saveSettings()
     }
     Fact {
         flags: (Fact.Action | Fact.Apply)

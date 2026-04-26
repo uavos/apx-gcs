@@ -26,10 +26,9 @@ import APX.Facts
 Fact {
     id: sgMenu
     property var defaults
-    property string settingsName
     property bool destroyOnClose: true
 
-    name: settingsName
+    name: "signals"
     flags: (Fact.Group | Fact.DragChildren)
     title: qsTr("Signals")
     descr: qsTr("Realtime chart configuration editor")
@@ -99,26 +98,26 @@ Fact {
     //     select(currentSetIdx);
     // }
 
-    // function saveSettings()
-    // {
-    //     var fjson = application.prefs.loadFile("signals_2.json"); // TODO Refactor file name
-    //     var json =fjson ? JSON.parse(fjson):{
-    //         if (!json.active)json.active={}
-    //         json.active[settingsName]=0
-    //         json.sets=[]
-    //         for(var i=0;i<size;++i){
-    //             var setFact=child(i)
-    //             var set=setFact.save()
-    //             if(!set)continue
-    //             json.sets.push(set)
-    //             if(setFact.active)
-    //                 json.active[settingsName]=i
-    //         }
-    //         application.prefs.saveFile("numbers.json",JSON.stringify(json,' ',2))
-    //         accepted()
-    //         close()
-    //     }
-    // }
+    function saveSettings() {
+        var fjson = application.prefs.loadFile("signals_2.json");
+        var json = fjson ? JSON.parse(fjson) : {};
+        if (!json.active)
+            json.active = {};
+        json.active[name] = 0;
+        json.sets = [];
+        for (var i = 0; i < size; ++i) {
+            var setFact = child(i);
+            var set = setFact.save();
+            if (!set)
+                continue;
+            json.sets.push(set);
+            if (setFact.active)
+                json.active[name] = i;
+        }
+        application.prefs.saveFile("signals_2.json", JSON.stringify(json, ' ', 2));
+        // accepted();
+        // close();
+    }
 
     function createFact(parent, url, opts) {
         var component = Qt.createComponent(url);
@@ -144,7 +143,7 @@ Fact {
             "data": set
         });
         c.selected.connect(select);
-        // c.selected.connect(saveSettings);
+        c.selected.connect(saveSettings);
         c.trigger();
     }
 
@@ -161,11 +160,10 @@ Fact {
         // onTriggered: sgMenu.resetToDefaults()
         onTriggered: console.log("Not implemented")
     }
-
     Fact {
         title: qsTr("Save")
         flags: (Fact.Action | Fact.Apply)
         icon: "check-circle"
-        // onTriggered: saveSettings()
+        onTriggered: saveSettings()
     }
 }
