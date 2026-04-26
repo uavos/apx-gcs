@@ -238,6 +238,17 @@ Fact {
         flags: Fact.Text
         onTextChanged: changes = true
     }
+    // Fact {
+    //     id: mFact
+    //     title: qsTr("Binding")
+    //     descr: qsTr("Fact value")
+    //     flags: Fact.Int
+    //     units: "mandala"
+    //     onTextChanged: {
+    //         if (value)
+    //             mBind.setValue(text);
+    //     }
+    // }
     Fact {
         id: mBind
         name: "bind"

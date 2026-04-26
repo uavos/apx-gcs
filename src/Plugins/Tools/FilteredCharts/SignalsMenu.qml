@@ -143,7 +143,7 @@ Fact {
         var c = createFact(sgMenu, "SignalsMenuSet.qml", {
             "data": set
         });
-        // c.selected.connect(select);
+        c.selected.connect(select);
         // c.selected.connect(saveSettings);
         c.trigger();
     }

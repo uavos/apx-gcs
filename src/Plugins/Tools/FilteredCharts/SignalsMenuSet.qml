@@ -34,6 +34,7 @@ Fact {
     property var values //from config
     property var data: ({})
 
+    signal selected(var num)
     signal removeTriggered
 
     Component.onCompleted: load(data)
@@ -104,12 +105,9 @@ Fact {
     }
 
     function createFact(parent, url, opts) {
-        console.log("Start create component");
         var component = Qt.createComponent(url);
         if (component.status === Component.Ready) {
-            console.log("Start create object");
             var c = component.createObject(parent, opts);
-            console.log("Set parent");
             c.parentFact = parent;
             return c;
         }
@@ -169,8 +167,8 @@ Fact {
         visible: !setFact.active
         icon: "check-circle"
         onTriggered: {
+            setFact.selected(setFact.num);
             setFact.menuBack();
-            // setFact.selected(setFact.num);
         }
     }
     Fact {
