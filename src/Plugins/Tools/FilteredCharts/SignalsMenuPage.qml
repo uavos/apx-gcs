@@ -78,7 +78,6 @@ Fact {
     }
 
     function load(page) {
-        // console.log("page: ", JSON.stringify(data));
         mPageName.value = page.title;
         mSpeed.value = page.speed ? page.speed : 1;
         charts = page.charts;

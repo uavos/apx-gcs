@@ -72,7 +72,6 @@ Fact {
     function load(set) {
         mSetName.value = set.title;
         pages = set.pages;
-        // console.log("load set", JSON.stringify(pages));
         updateSetItems();
         // changes = false;
     }
@@ -178,6 +177,10 @@ Fact {
         visible: !newItem
         icon: "delete"
         onTriggered: {
+            if(setFact.num <= 0) {  // don't delete default set
+                console.warn(qsTr("Can't delete default set"))
+                return;
+            }
             removeTriggered();
             setFact.deleteFact();
         }

@@ -192,7 +192,6 @@ Fact {
 
         //create facts
         for (i in sets) {
-            console.log("set: ", JSON.stringify(sets[i]));
             var c = createFact(sgMenu, "SignalsMenuSet.qml", {
                 "data": sets[i]
             });
@@ -251,6 +250,14 @@ Fact {
         c.trigger();
     }
 
+    function resetToDefaults() {
+        if(sgMenu.size <=0)
+            return;
+        var defaultSet = sgMenu.child(0);
+        defaultSet.data = createDefaultSet();
+        defaultSet.load(defaultSet.data);
+    }
+
     Fact {
         title: qsTr("Add set")
         flags: Fact.Action
@@ -261,8 +268,7 @@ Fact {
         title: qsTr("Reset defaults")
         flags: Fact.Action
         icon: "restore"
-        // onTriggered: sgMenu.resetToDefaults()
-        onTriggered: console.log("Not implemented")
+        onTriggered: resetToDefaults()
     }
     Fact {
         title: qsTr("Save")
