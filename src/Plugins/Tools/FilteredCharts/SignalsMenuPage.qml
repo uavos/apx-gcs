@@ -34,8 +34,6 @@ Fact {
     property var values //from config
     property var data: ({})
 
-    onNumChanged: updateTitle()
-
     signal addTriggered
     signal removeTriggered
 
@@ -45,7 +43,6 @@ Fact {
         updateTitle();
         updateDescr();
     }
-
 
     function addNewChart() {
         mMenuChart.trigger();
@@ -81,8 +78,9 @@ Fact {
     }
 
     function load(page) {
+        console.log("page: ", JSON.stringify(data));
         mPageName.value = page.title;
-        mSpeed.value = page.speed;
+        mSpeed.value = page.speed ? page.speed : 1;
         values = page.values;
         updateSetItems();
         changes = false;
@@ -130,12 +128,11 @@ Fact {
     function updateTitle() {
         if (newItem)
             return;
-        var text =  mPageName.text.trim();     
-        title = text != "" ? text : qsTr("Page") + " " + (Math.max(pageFact.num, 0) + 1)
+        var text = mPageName.text.trim();
+        title = text != "" ? text : qsTr("P") + (Math.max(pageFact.num, 0) + 1);
     }
 
     function updateDescr() {
-
     }
 
     Fact {
@@ -144,7 +141,6 @@ Fact {
         descr: qsTr("Charts page name")
         flags: Fact.Text
         icon: "rename-box"
-        value: qsTr("Page") + " " + (mPages.size + 1)
         onTextChanged: updateTitle()
     }
     Fact {

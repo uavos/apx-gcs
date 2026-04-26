@@ -31,11 +31,12 @@ Fact {
 
     property bool newItem: false
     // property bool changes: false
-    // property var values //from config
-    property var values
+    property var values //from config
+    property var data: ({})
 
     signal removeTriggered
 
+    Component.onCompleted: load(data)
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
 
     // function addNewPage() {
@@ -59,7 +60,7 @@ Fact {
         var tmpValues = [];
         for (var i = 0; i < mPages.size; ++i) {
             var mpage = mPages.child(i).save();
-            tmpPages.push(mpage);
+            tmpValues.push(mpage);
         }
         var set = {};
         set.title = mSetName.value;
@@ -68,8 +69,7 @@ Fact {
     }
 
     function load(set) {
-        // mSetName.value = set.title;
-        // mSpeed.value = set.speed;
+        mSetName.value = set.title;
         // values = set.values;
         // updateSetItems();
         // changes = false;
@@ -83,7 +83,12 @@ Fact {
     }
 
     function createPage(mset) {
-    // function createPage() {
+        // function createPage() {
+        var text = mset.title.trim();
+        if (text == "")
+            mset.title = "P" + (mPages.size + 1);
+        if (mset.speed <= 0)
+            mset.speed = 1;
         var c = createFact(mPages, "SignalsMenuPage.qml", {
             "data": mset
         });
@@ -99,9 +104,12 @@ Fact {
     }
 
     function createFact(parent, url, opts) {
+        console.log("Start create component");
         var component = Qt.createComponent(url);
         if (component.status === Component.Ready) {
+            console.log("Start create object");
             var c = component.createObject(parent, opts);
+            console.log("Set parent");
             c.parentFact = parent;
             return c;
         }
@@ -113,7 +121,6 @@ Fact {
         descr: qsTr("Saved chart configuration name")
         flags: Fact.Text
         icon: "rename-box"
-        value: setFact.title
         onValueChanged: {
             setFact.title = value;
             // changes = true;

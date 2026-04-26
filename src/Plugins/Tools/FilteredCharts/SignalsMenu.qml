@@ -138,9 +138,11 @@ Fact {
 
     function createSet() {
         var set = {};
-        set.title = "#" + (sgMenu.size + 1);
+        set.title = "Set" + (sgMenu.size + 1);
         set.values = [];
-        var c = createFact(sgMenu, "SignalsMenuSet.qml", set);
+        var c = createFact(sgMenu, "SignalsMenuSet.qml", {
+            "data": set
+        });
         // c.selected.connect(select);
         // c.selected.connect(saveSettings);
         c.trigger();
