@@ -72,7 +72,7 @@ Fact {
     function load(set) {
         mSetName.value = set.title;
         pages = set.pages;
-        console.log("load set", JSON.stringify(pages));
+        // console.log("load set", JSON.stringify(pages));
         updateSetItems();
         // changes = false;
     }

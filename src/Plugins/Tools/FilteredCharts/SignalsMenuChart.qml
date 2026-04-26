@@ -57,7 +57,7 @@ Fact {
 
     onValueChanged: saveValue2Fact()
 
-    function load() {
+    function load(data) {
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
@@ -238,17 +238,18 @@ Fact {
         flags: Fact.Text
         onTextChanged: changes = true
     }
-    // Fact {
-    //     id: mFact
-    //     title: qsTr("Binding")
-    //     descr: qsTr("Fact value")
-    //     flags: Fact.Int
-    //     units: "mandala"
-    //     onTextChanged: {
-    //         if (value)
-    //             mBind.setValue(text);
-    //     }
-    // }
+    Fact {
+        id: mFact
+        name: "binding"
+        title: qsTr("Binding")
+        descr: qsTr("Fact value")
+        flags: Fact.Int
+        units: "mandala"
+        onTextChanged: {
+            if (value)
+                mBind.setValue(text);
+        }
+    }
     Fact {
         id: mBind
         name: "bind"

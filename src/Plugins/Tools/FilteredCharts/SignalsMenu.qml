@@ -63,64 +63,104 @@ Fact {
     // }
 
     function createDefaultSet() {
-        var specs = [
-            {
-                "name": "R",
-                "bindings": ["cmd.att.roll", "est.att.roll"]
-            },
-            {
-                "name": "P",
-                "bindings": ["cmd.att.pitch", "est.att.pitch"]
-            },
-            {
-                "name": "Y",
-                "bindings": ["cmd.pos.bearing", "cmd.att.yaw", "est.att.yaw"]
-            },
-            {
-                "name": "Axy",
-                "bindings": ["est.acc.x", "est.acc.y"]
-            },
-            {
-                "name": "Az",
-                "bindings": ["est.acc.z"]
-            },
-            {
-                "name": "G",
-                "bindings": ["est.gyro.x", "est.gyro.y", "est.gyro.z"]
-            },
-            {
-                "name": "Pt",
-                "bindings": ["est.pos.altitude", "est.pos.vspeed", "est.air.airspeed"]
-            },
-            {
-                "name": "Ctr",
-                "bindings": ["ctr.att.ail", "ctr.att.elv", "ctr.att.rud", "ctr.eng.thr", "ctr.eng.prop", "ctr.str.rud"]
-            },
-            {
-                "name": "RC",
-                "bindings": ["cmd.rc.roll", "cmd.rc.pitch", "cmd.rc.thr", "cmd.rc.yaw"]
-            },
-            {
-                "name": "Usr",
-                "bindings": ["est.usr.u1", "est.usr.u2", "est.usr.u3", "est.usr.u4", "est.usr.u5", "est.usr.u6"]
-            }
-        ];
         var set = {
             "title": "default",
-            "values": []
+            "pages": [
+                {
+                    "title": "R",
+                    "charts": [
+                        {"bind": "cmd.att.roll", "color": "#ffffff"}, 
+                        {"bind": "est.att.roll", "color": "#ffffff"}]
+                },
+                {
+                    "title": "P",
+                    "charts": [ 
+                        {"bind": "cmd.att.pitch", "color": "#ffffff"},
+                        {"bind": "est.att.pitch", "color": "#ffffff"}
+                    ]
+                },
+                {
+                    "title": "Y",
+                    "charts": [
+                        {"bind": "cmd.pos.bearing", "color": "#ffffff"},
+                        {"bind": "cmd.att.yaw", "color": "#ffffff"},
+                        {"bind": "est.att.yaw", "color": "#ffffff"}
+                    ]
+                },
+                {
+                    "title": "Axy",
+                    "charts": [
+                        {"bind": "est.acc.x", "color": "#ffffff"},
+                        {"bind": "est.acc.y", "color": "#ffffff"}
+                    ]
+                },
+                {
+                    "title": "Az",
+                    "charts": [
+                        {"bind": "est.acc.z", "color": "#ffffff"}
+                    ]
+                },
+                {
+                    "title": "G",
+                    "charts": [
+                        {"bind": "est.gyro.x", "color": "#ffffff"},
+                        {"bind": "est.gyro.y", "color": "#ffffff"},
+                        {"bind": "est.gyro.z", "color": "#ffffff"}
+                    ]
+                },
+                {
+                    "title": "Pt",
+                    "charts": [
+                        {"bind": "est.pos.altitude", "color": "#ffffff"},
+                        {"bind": "est.pos.vspeed", "color": "#ffffff"},
+                        {"bind": "est.air.airspeed", "color": "#ffffff"}
+                    ]
+                },
+                {
+                    "title": "Ctr",
+                    "charts": [
+                        {"bind": "ctr.att.ail", "color": "#ffffff"},
+                        {"bind": "ctr.att.elv", "color": "#ffffff"},
+                        {"bind": "ctr.att.rud", "color": "#ffffff"},
+                        {"bind": "ctr.eng.thr", "color": "#ffffff"},
+                        {"bind": "ctr.eng.prop", "color": "#ffffff"},
+                        {"bind": "ctr.str.rud", "color": "#ffffff"}
+                    ]
+                },
+                {
+                    "title": "RC",
+                    "charts": [
+                        {"bind": "cmd.rc.roll", "color": "#ffffff"},
+                        {"bind": "cmd.rc.pitch", "color": "#ffffff"},
+                        {"bind": "cmd.rc.thr", "color": "#ffffff"},
+                        {"bind": "cmd.rc.yaw", "color": "#ffffff"}
+                    ]
+                },
+                {
+                    "title": "Usr",
+                    "charts": [
+                        {"bind": "est.usr.u1", "color": "#ffffff"},
+                        {"bind": "est.usr.u2", "color": "#ffffff"},
+                        {"bind": "est.usr.u3", "color": "#ffffff"},
+                        {"bind": "est.usr.u4", "color": "#ffffff"},
+                        {"bind": "est.usr.u5", "color": "#ffffff"},
+                        {"bind": "est.usr.u6", "color": "#ffffff"}
+                    ]
+                }
+            ]
         };
 
         return set;
     }
 
-    function createDefaultSignals() {
-        return {
-            "active": {
-                "signals": 0
-            },
-            "sets": [createDefaultSet()]
-        };
-    }
+    // function createDefaultSignals() {
+        // return {
+        //     "active": {
+        //         "signals": 0
+        //     },
+        //     "sets": [createDefaultSet()]
+        // };
+    // }
 
     function loadSettings() {
         var sets = [];
@@ -143,17 +183,16 @@ Fact {
                 currentSetIdx = 0;
         }
         //defaults
-        // if (sets.length <= 0 || !json.active) {
-        //     set = createDefaultSignals();
-        //     set = {};
-        //     set.title = "default";
-        //     set.values = defaults;
-        //     // sets.push(set);
-        //     // currentSetIdx = sets.length - 1;
-        // }
+        if (sets.length <= 0 || !json.active) {
+            set = {};
+            set = createDefaultSet();
+            sets.push(set);
+            currentSetIdx = sets.length - 1;
+        }
 
         //create facts
         for (i in sets) {
+            console.log("set: ", JSON.stringify(sets[i]));
             var c = createFact(sgMenu, "SignalsMenuSet.qml", {
                 "data": sets[i]
             });
