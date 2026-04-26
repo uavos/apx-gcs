@@ -115,6 +115,18 @@ Fact {
         }
     }
 
+    function updateDescr() {
+        var descrList = [];
+        for (var i = 0; i < mPages.size; ++i) {
+            var f = mPages.child(i);
+            if (!f)
+                continue;
+            var text = f.title ? f.title.trim() : "";
+            descrList.push(text);
+        }
+        descr = descrList.length > 0 ? descrList.join(", ") : "";
+    }
+
     Fact {
         id: mSetName
         title: qsTr("Set name")
@@ -139,7 +151,7 @@ Fact {
         id: mPages
         title: qsTr("Pages")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        // onSizeChanged: sgCharts.resetEnable = true
+        onSizeChanged: updateDescr()
     }
 
     // Actions

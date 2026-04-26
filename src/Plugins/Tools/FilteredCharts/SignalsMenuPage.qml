@@ -133,6 +133,23 @@ Fact {
     }
 
     function updateDescr() {
+        var descrList = [];
+        var speedDescr = "SPEED: " + mSpeed.value;
+        descrList.push(speedDescr);
+        var descrCharts = [];
+        for (var i = 0; i < mCharts.size; ++i) {
+            var f = mCharts.child(i);
+            if (!f)
+                continue;
+            var text = f.title ? f.title.trim() : "";
+            descrCharts.push(text);
+        }
+        if (descrCharts.length > 0) {
+            var chartsDescr = descrCharts.join(", ");
+            chartsDescr = "CHARTS: " + chartsDescr;
+            descrList.push(chartsDescr);
+        }
+        descr = descrList.length > 0 ? descrList.join(", ") : "";
     }
 
     Fact {
@@ -154,6 +171,9 @@ Fact {
         min: 0.2
         max: 4
         onValueChanged: {
+            // New functionality
+            updateDescr();
+            // =================
             if (!sgBtn || !sgBtn.checked)
                 return;
             sgCharts.speedFactorValue = value;
@@ -172,7 +192,12 @@ Fact {
         id: mCharts
         title: qsTr("Charts")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: sgCharts.resetEnable = true
+        onSizeChanged: {
+            // New functionality
+            updateDescr();
+            // =================
+            sgCharts.resetEnable = true;
+        }
     }
 
     // Actions
