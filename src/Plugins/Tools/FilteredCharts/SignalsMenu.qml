@@ -38,6 +38,8 @@ Fact {
 
     // Component.onCompleted: open()
 
+    Component.onCompleted: loadSettings()
+
     // function open() {
     //     //ensure mandala linked to unit
     //     if (!parentFact) {
@@ -60,43 +62,46 @@ Fact {
     //     parentFact = null;
     // }
 
-    // function loadSettings() {
-    //     var sets = [];
-    //     var f = application.prefs.loadFile("signals_2.json");
-    //     var json = f ? JSON.parse(f) : {};
-    //     var set = {};
-    //     var currentSetIdx = -1;
-    //     if (json && json.sets) {
-    //         for (var i in json.sets) {
-    //             set = json.sets[i];
-    //             if (!(set.values && (set.values instanceof Array)))
-    //                 continue;
-    //             sets.push(set);
-    //         }
-    //         //set index
-    //         var setIdx = json.active[settingsName];
-    //         if (setIdx >= 0 && setIdx < sets.length)
-    //             currentSetIdx = setIdx;
-    //         else if (sets.length > 0)
-    //             currentSetIdx = 0;
-    //     }
-    //     //defaults
-    //     if (sets.length <= 0 || !json.active) {
-    //         set = {};
-    //         set.title = settingsName;
-    //         set.values = defaults;
-    //         sets.push(set);
-    //         currentSetIdx = sets.length - 1;
-    //     }
+    function loadSettings() {
+        var sets = [];
+        var f = application.prefs.loadFile("signals_2.json");
+        var json = f ? JSON.parse(f) : {};
+        var set = {};
+        var currentSetIdx = -1;
+        if (json && json.sets) {
+            for (var i in json.sets) {
+                set = json.sets[i];
+                if (!(set.values && (set.values instanceof Array)))
+                    continue;
+                sets.push(set);
+            }
+            //set index
+            var setIdx = json.active[name];
+            if (setIdx >= 0 && setIdx < sets.length)
+                currentSetIdx = setIdx;
+            else if (sets.length > 0)
+                currentSetIdx = 0;
+        }
+        //defaults
+        // if (sets.length <= 0 || !json.active) {
+        // createDefault();
+        // set = {};
+        // set.title = settingsName;
+        // set.values = defaults;
+        // sets.push(set);
+        // currentSetIdx = sets.length - 1;
+        // }
 
-    //     //create facts
-    //     for (i in sets) {
-    //         var c = createFact(sgMenu, "SignalsMenuSet.qml", sets[i]);
-    //         c.selected.connect(select);
-    //         c.selected.connect(saveSettings);
-    //     }
-    //     select(currentSetIdx);
-    // }
+        //create facts
+        for (i in sets) {
+            var c = createFact(sgMenu, "SignalsMenuSet.qml", {
+                "data": sets[i]
+            });
+            c.selected.connect(select);
+            c.selected.connect(saveSettings);
+        }
+        select(currentSetIdx);
+    }
 
     function saveSettings() {
         var fjson = application.prefs.loadFile("signals_2.json");

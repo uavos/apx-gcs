@@ -71,16 +71,17 @@ Fact {
 
     function load(set) {
         mSetName.value = set.title;
-        // values = set.values;
-        // updateSetItems();
+        values = set.values;
+        console.log("load set", JSON.stringify(values));
+        updateSetItems();
         // changes = false;
     }
 
     function updateSetItems() {
-        // mPages.deleteChildren();
-        // for (var i in values) {
-        //     createPage(values[i]);
-        // }
+        mPages.deleteChildren();
+        for (var i in values) {
+            createPage(values[i]);
+        }
     }
 
     function createPage(mset) {
