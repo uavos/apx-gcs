@@ -62,90 +62,68 @@ Fact {
     //     parentFact = null;
     // }
 
+    function getCharts() {
+        var charts = []
+        for (var i = 0; i < arguments.length; i++) {
+            var fact = arguments[i];
+            if(!fact)
+                continue;
+            if(!fact.opts)
+                continue;
+            if(!fact.opts.color)
+                continue;
+            var chart =  {
+                "bind": fact.mpath(),
+                "color": fact.opts.color.toString()
+            }       
+            charts.push(chart);
+        }
+        return charts;
+    }
+
     function createDefaultSet() {
         var set = {
             "title": "default",
             "pages": [
                 {
                     "title": "R",
-                    "charts": [
-                        {"bind": "cmd.att.roll", "color": "#ffffff"}, 
-                        {"bind": "est.att.roll", "color": "#ffffff"}]
+                    "charts": getCharts(mandala.cmd.att.roll, mandala.est.att.roll)
                 },
                 {
                     "title": "P",
-                    "charts": [ 
-                        {"bind": "cmd.att.pitch", "color": "#ffffff"},
-                        {"bind": "est.att.pitch", "color": "#ffffff"}
-                    ]
+                    "charts": getCharts(mandala.cmd.att.pitch, mandala.est.att.pitch)
                 },
                 {
                     "title": "Y",
-                    "charts": [
-                        {"bind": "cmd.pos.bearing", "color": "#ffffff"},
-                        {"bind": "cmd.att.yaw", "color": "#ffffff"},
-                        {"bind": "est.att.yaw", "color": "#ffffff"}
-                    ]
+                    "charts": getCharts(mandala.cmd.pos.bearing, mandala.cmd.att.yaw, mandala.est.att.yaw)
                 },
                 {
                     "title": "Axy",
-                    "charts": [
-                        {"bind": "est.acc.x", "color": "#ffffff"},
-                        {"bind": "est.acc.y", "color": "#ffffff"}
-                    ]
+                    "charts":getCharts(mandala.est.acc.x, mandala.est.acc.y)
                 },
                 {
                     "title": "Az",
-                    "charts": [
-                        {"bind": "est.acc.z", "color": "#ffffff"}
-                    ]
+                    "charts": getCharts(mandala.est.acc.z)
                 },
                 {
                     "title": "G",
-                    "charts": [
-                        {"bind": "est.gyro.x", "color": "#ffffff"},
-                        {"bind": "est.gyro.y", "color": "#ffffff"},
-                        {"bind": "est.gyro.z", "color": "#ffffff"}
-                    ]
+                    "charts": getCharts(mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z)
                 },
                 {
                     "title": "Pt",
-                    "charts": [
-                        {"bind": "est.pos.altitude", "color": "#ffffff"},
-                        {"bind": "est.pos.vspeed", "color": "#ffffff"},
-                        {"bind": "est.air.airspeed", "color": "#ffffff"}
-                    ]
+                    "charts": getCharts(mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed)
                 },
                 {
                     "title": "Ctr",
-                    "charts": [
-                        {"bind": "ctr.att.ail", "color": "#ffffff"},
-                        {"bind": "ctr.att.elv", "color": "#ffffff"},
-                        {"bind": "ctr.att.rud", "color": "#ffffff"},
-                        {"bind": "ctr.eng.thr", "color": "#ffffff"},
-                        {"bind": "ctr.eng.prop", "color": "#ffffff"},
-                        {"bind": "ctr.str.rud", "color": "#ffffff"}
-                    ]
+                    "charts": getCharts(mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.att.rud, mandala.ctr.eng.thr, mandala.ctr.eng.prop, mandala.ctr.str.rud)
                 },
                 {
                     "title": "RC",
-                    "charts": [
-                        {"bind": "cmd.rc.roll", "color": "#ffffff"},
-                        {"bind": "cmd.rc.pitch", "color": "#ffffff"},
-                        {"bind": "cmd.rc.thr", "color": "#ffffff"},
-                        {"bind": "cmd.rc.yaw", "color": "#ffffff"}
-                    ]
+                    "charts": getCharts(mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.thr, mandala.cmd.rc.yaw)
                 },
                 {
                     "title": "Usr",
-                    "charts": [
-                        {"bind": "est.usr.u1", "color": "#ffffff"},
-                        {"bind": "est.usr.u2", "color": "#ffffff"},
-                        {"bind": "est.usr.u3", "color": "#ffffff"},
-                        {"bind": "est.usr.u4", "color": "#ffffff"},
-                        {"bind": "est.usr.u5", "color": "#ffffff"},
-                        {"bind": "est.usr.u6", "color": "#ffffff"}
-                    ]
+                    "charts": getCharts(mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6)
                 }
             ]
         };
