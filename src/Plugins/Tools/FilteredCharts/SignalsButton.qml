@@ -31,22 +31,26 @@ TextButton {
 
     property var pageFact: null
     property var values: []
+    property string pageToolTip: ""
+    property bool pageWarning: false
 
     Layout.fillHeight: true
     checkable: true
     ButtonGroup.group: buttonGroup
     text: pageFact ? pageFact.title.slice(0, 3) : getDefaultText()
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
-    toolTip: getToolTip()
+    toolTip: pageToolTip !== "" ? pageToolTip : getToolTip(values)
 
     onCheckedChanged: if (checked)
         sgCharts.speedFactorValue = sgMenuPage.speed
+
     onPressed: {
         if (!pageFact)
             return;
         if (checked && !pageFact.active)
             pageFact.trigger();
     }
+
     onActivated: {
         sgCharts.resetEnable = true;
         sgCharts.facts = Qt.binding(function () {
@@ -54,20 +58,23 @@ TextButton {
         });
     }
 
-    function getDefaultText() {
-        return "#" + buttonGroup.buttons.indexOf(this);
-    }
-
-    function getToolTip() {
-        if (!pageFact)
-            return "<strong>" + text + "</strong>";
+    function getToolTip(facts) {
         var s = [];
-        s.push("<strong>" + pageFact.title + "</strong>");
-        for (var i = 0; i < values.length; ++i) {
-            var fact = values[i];
-            s.push("<font color='" + fact.opts.color + "'>" + fact.title + "</font>");
+        s.push("<strong>" + text + "</strong>");
+        for (var i = 0; i < facts.length; ++i) {
+            var fact = facts[i];
+            var color = fact && fact.color ? fact.color : (fact && fact.opts ? fact.opts.color : undefined);
+            var label = fact && fact.title ? fact.title : (fact && fact.descr ? fact.descr : fact.bind);
+            if (color)
+                s.push("<font color='" + color + "'>" + label + "</font>");
+            else
+                s.push(label);
         }
         return s.join("<br>");
+    }
+
+    function getDefaultText() {
+        return "#" + buttonGroup.buttons.indexOf(this);
     }
 
     function callQuickChart() {
