@@ -174,9 +174,9 @@ Fact {
     }
     Fact {
         flags: (Fact.Action | Fact.Apply)
-        title: qsTr("Select and save")
+        title: qsTr("Select")
         visible: !setFact.active
-        icon: "check-circle"
+        icon: "text-box-check"
         onTriggered: {
             setFact.selected(setFact.num);
             setFact.menuBack();
