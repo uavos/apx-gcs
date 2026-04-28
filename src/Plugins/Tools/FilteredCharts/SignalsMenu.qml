@@ -63,19 +63,19 @@ Fact {
     // }
 
     function getCharts() {
-        var charts = []
+        var charts = [];
         for (var i = 0; i < arguments.length; i++) {
             var fact = arguments[i];
-            if(!fact)
+            if (!fact)
                 continue;
-            if(!fact.opts)
+            if (!fact.opts)
                 continue;
-            if(!fact.opts.color)
+            if (!fact.opts.color)
                 continue;
-            var chart =  {
+            var chart = {
                 "bind": fact.mpath(),
                 "color": fact.opts.color.toString()
-            }       
+            };
             charts.push(chart);
         }
         return charts;
@@ -99,7 +99,7 @@ Fact {
                 },
                 {
                     "title": "Axy",
-                    "charts":getCharts(mandala.est.acc.x, mandala.est.acc.y)
+                    "charts": getCharts(mandala.est.acc.x, mandala.est.acc.y)
                 },
                 {
                     "title": "Az",
@@ -132,12 +132,12 @@ Fact {
     }
 
     // function createDefaultSignals() {
-        // return {
-        //     "active": {
-        //         "signals": 0
-        //     },
-        //     "sets": [createDefaultSet()]
-        // };
+    // return {
+    //     "active": {
+    //         "signals": 0
+    //     },
+    //     "sets": [createDefaultSet()]
+    // };
     // }
 
     function loadSettings() {
@@ -229,11 +229,35 @@ Fact {
     }
 
     function resetToDefaults() {
-        if(sgMenu.size <=0)
+        if (sgMenu.size <= 0)
             return;
         var defaultSet = sgMenu.child(0);
         defaultSet.data = createDefaultSet();
         defaultSet.load(defaultSet.data);
+    }
+
+    function getActiveSetIndex() {
+        for (var i = 0; i < sgMenu.size; ++i) {
+            if (sgMenu.child(i).active)
+                return i;
+        }
+        return sgMenu.size > 0 ? 0 : -1;
+    }
+
+    function getActiveSet() {
+        var index = getActiveSetIndex();
+        if (index < 0 || index >= sgMenu.size)
+            return null;
+        return sgMenu.child(index);
+    }
+
+    function getActivePages() {
+        if (sgMenu.size <= 0)
+            return [];
+        var activeSet = getActiveSet();
+        if (!activeSet)
+            return [];
+        return activeSet.getPages();
     }
 
     Fact {

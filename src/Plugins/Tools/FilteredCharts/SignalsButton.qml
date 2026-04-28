@@ -29,17 +29,24 @@ import Apx.Common
 TextButton {
     id: sgBtn
 
+    property var pageFact: null
     property var values: []
 
     Layout.fillHeight: true
     checkable: true
     ButtonGroup.group: buttonGroup
+    text: pageFact ? pageFact.title.slice(0, 3) : getDefaultText()
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
+    toolTip: getToolTip()
 
     onCheckedChanged: if (checked)
         sgCharts.speedFactorValue = sgMenuPage.speed
-    onPressed: if (checked && !sgMenuPage.active)
-        sgMenuPage.trigger()
+    onPressed: {
+        if (!pageFact)
+            return;
+        if (checked && !pageFact.active)
+            pageFact.trigger();
+    }
     onActivated: {
         sgCharts.resetEnable = true;
         sgCharts.facts = Qt.binding(function () {
@@ -47,22 +54,20 @@ TextButton {
         });
     }
 
-    Connections {
-        target: apx.fleet.current.mandala
-        function onTelemetryDecoded() {
-            // if (checked) // Comment it to calculate all values ​​at once
-            sgMenuPage.updateChartsValues();
-        }
+    function getDefaultText() {
+        return "#" + buttonGroup.buttons.indexOf(this);
     }
 
-    function updateToolTip(facts) {
+    function getToolTip() {
+        if (!pageFact)
+            return "<strong>" + text + "</strong>";
         var s = [];
-        s.push("<strong>" + sgMenuPage.title + "</strong>");
-        for (var i = 0; i < facts.length; ++i) {
-            var fact = facts[i];
+        s.push("<strong>" + pageFact.title + "</strong>");
+        for (var i = 0; i < values.length; ++i) {
+            var fact = values[i];
             s.push("<font color='" + fact.opts.color + "'>" + fact.title + "</font>");
         }
-        toolTip = s.join("<br>");
+        return s.join("<br>");
     }
 
     function callQuickChart() {

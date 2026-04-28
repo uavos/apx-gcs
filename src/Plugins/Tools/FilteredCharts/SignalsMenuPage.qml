@@ -32,6 +32,7 @@ Fact {
     property bool changes: false
     property alias speed: mSpeed.value
     property var charts //from config
+    property var values: []
     property var data: ({})
 
     signal addTriggered
@@ -49,13 +50,14 @@ Fact {
     }
 
     function updateBtnValues() {
-        // sgBtn.values = [];
-        // for (var i = 0; i < mCharts.size; ++i)
-        //     sgBtn.values.push(mCharts.child(i));
+        values = [];
+        for (var i = 0; i < mCharts.size; ++i)
+            values.push(mCharts.child(i));
         // sgBtn.updateToolTip(sgBtn.values);
     }
 
     function updateChartsValues() {
+        console.log("update values for: ", title);
         for (var i = 0; i < mCharts.size; ++i)
             mCharts.child(i).updateValue();
     }

@@ -35,6 +35,8 @@ Rectangle {
     border.width: 0
     color: "#000"
 
+    readonly property var pages: sgMenu.getActivePages()
+
     Component.onCompleted: {
         for (var i = 0; i < buttonGroup.buttons.length; ++i) {
             var b = buttonGroup.buttons[i];
@@ -43,10 +45,20 @@ Rectangle {
             buttonGroup.checkedButton = b;
             break;
         }
-        if (buttonGroup.checkedButton == null) {
-            buttonGroup.checkedButton = buttonGroup.buttons[0]; // check button #1
-        }
+        //if (buttonGroup.checkedButton == null) {
+        //    buttonGroup.checkedButton = buttonGroup.buttons[0]; // check button #1
+        //}
         loadSettings();
+    }
+
+    Connections {
+        target: apx.fleet.current.mandala
+        function onTelemetryDecoded() {
+            if (pages.length <= 0)
+                return;
+            for (var i = 0; i < pages.length; ++i)
+                pages[i].updateChartsValues();
+        }
     }
 
     function saveSettings() {
@@ -132,55 +144,84 @@ Rectangle {
             Layout.margins: Style.spacing
             spacing: 3
             Layout.maximumHeight: 24 * ui.scale
-            SignalsButton {
-                text: "1"
-                checked: true
-                values: []
-            }
-            SignalsButton {
-                text: "2"
-                values: []
-            }
-            SignalsButton {
-                text: "3"
-                values: []
-            }
-            SignalsButton {
-                text: "4"
-                values: []
-            }
-            SignalsButton {
-                text: "5"
-                values: []
-            }
-            SignalsButton {
-                text: "6"
-                values: []
-            }
-            SignalsButton {
-                text: "7"
-                values: []
-            }
-            SignalsButton {
-                text: "8"
-                values: []
-            }
-            SignalsButton {
-                text: "9"
-                values: []
-            }
-            SignalsButton {
-                text: "10"
-                values: []
-            }
+            // SignalsButton {
+            //     text: "1"
+            //     checked: true
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "2"
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "3"
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "4"
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "5"
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "6"
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "7"
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "8"
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "9"
+            //     values: []
+            // }
+            // SignalsButton {
+            //     text: "10"
+            //     values: []
+            // }
 
+            Repeater {
+                id: btnRepeater
+                model: sgControl.pages
+
+                // onItemAdded: function(index, item) {
+                //     if (index === tabsRepeater.count - 1)
+                //         Qt.callLater(control.selectSavedPage)
+                // }
+
+                delegate: SignalsButton {
+                    required property int index
+                    required property var modelData
+
+                    property int pageIndex: index
+
+                    pageFact: modelData
+                    values: pageFact.values
+
+                    //text: pageFact.title.slice(0, 3)
+
+                    // checked: control.selectedPageFact
+                    //          ? pageFact === control.selectedPageFact
+                    //          : index === 0
+                    // values: control.pageFacts(index)
+                    // pageToolTip: control.pageState(index).toolTip
+                    // pageWarning: control.pageState(index).warning
+                    // onEditTriggered: control.openPageEditor(pageFact)
+                }
+            }
             IconButton {
                 iconName: "plus"
                 toolTip: qsTr("Edit chart configuration")
                 onClicked: sgMenu.trigger()
-                SignalsMenu {
-                    id: sgMenu
-                }
+                // SignalsMenu {
+                //     id: sgMenu
+                // }
             }
 
             TextButton {
@@ -191,7 +232,6 @@ Rectangle {
             }
         }
     }
-
     IconButton {
         anchors.top: parent.top
         anchors.right: parent.right
@@ -204,6 +244,10 @@ Rectangle {
             var activeButton = buttonGroup.checkedButton;
             activeButton.callQuickChart();
         }
+    }
+
+    SignalsMenu {
+        id: sgMenu
     }
 
     property string currentPage: buttonGroup.checkedButton.text

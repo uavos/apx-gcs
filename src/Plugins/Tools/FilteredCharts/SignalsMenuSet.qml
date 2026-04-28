@@ -125,6 +125,17 @@ Fact {
         descr = descrList.length > 0 ? descrList.join(", ") : "";
     }
 
+    function getPages() {
+        var pages = [];
+        for (var i = 0; i < mPages.size; ++i) {
+            var f = mPages.child(i);
+            if (!f)
+                continue;
+            pages.push(f);
+        }
+        return pages.length > 0 ? pages : [];
+    }
+
     Fact {
         id: mSetName
         title: qsTr("Set name")
@@ -177,8 +188,8 @@ Fact {
         visible: !newItem
         icon: "delete"
         onTriggered: {
-            if(setFact.num <= 0) {  // don't delete default set
-                console.warn(qsTr("Can't delete default set"))
+            if (setFact.num <= 0) {  // don't delete default set
+                console.warn(qsTr("Can't delete default set"));
                 return;
             }
             removeTriggered();
