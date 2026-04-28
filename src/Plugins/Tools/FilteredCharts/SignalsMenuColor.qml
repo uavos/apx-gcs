@@ -42,6 +42,6 @@ Fact {
         title: qsTr("Save")
         enabled: !mChart.newItem && changes
         icon: "check-circle"
-        onTriggered: sgControl.saveSettings()
+        onTriggered: sgMenu.saveSettings()
     }
 }

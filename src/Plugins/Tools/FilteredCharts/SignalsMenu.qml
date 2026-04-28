@@ -198,6 +198,7 @@ Fact {
         application.prefs.saveFile("signals_2.json", JSON.stringify(json, ' ', 2));
         // accepted();
         // close();
+        console.log("Signals settings saved")
     }
 
     function createFact(parent, url, opts) {

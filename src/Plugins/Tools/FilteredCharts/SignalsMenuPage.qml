@@ -218,7 +218,7 @@ Fact {
         title: qsTr("Save")
         enabled: !newItem
         icon: "check-circle"
-        onTriggered: sgControl.saveSettings()
+        onTriggered: sgMenu.saveSettings()
     }
     Fact {
         flags: (Fact.Action | Fact.Remove)
