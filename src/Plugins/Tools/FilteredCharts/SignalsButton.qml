@@ -63,10 +63,12 @@ TextButton {
         s.push("<strong>" + text + "</strong>");
         for (var i = 0; i < facts.length; ++i) {
             var fact = facts[i];
-            var color = fact && fact.color ? fact.color : (fact && fact.opts ? fact.opts.color : undefined);
-            var label = fact && fact.title ? fact.title : (fact && fact.descr ? fact.descr : fact.bind);
+            if(!fact)
+                continue;
+            var color = fact.color ? fact.color : (fact.opts ? fact.opts.color : undefined);
+            var label = fact.title ? fact.title : (fact.descr ? fact.descr : fact.bind);
             if (color)
-                s.push("<font color='" + color + "'>" + label + "</font>");
+                s.push("<font color='" + color + "'>\u25A0</font> " + label);
             else
                 s.push(label);
         }
