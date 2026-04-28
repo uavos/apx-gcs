@@ -48,7 +48,7 @@ Fact {
         load(data);
         updateTitle();
         updateDescr();
-        mTitle.valueChanged.connect(updateTitle);
+        mBind.valueChanged.connect(updateTitle);
         mBind.valueChanged.connect(updateDescr);
         mColor.valueChanged.connect(updateDescr);
         mFilters.valueChanged.connect(updateDescr);
@@ -106,7 +106,8 @@ Fact {
     function updateTitle() {
         if (newItem)
             return;
-        title = mTitle.text ? mTitle.text : mBind.text;
+        if (mBind.text != "")
+            title = mBind.text;
     }
 
     function updateDescr() {
@@ -123,8 +124,6 @@ Fact {
                 continue;
             if (f.text === "")
                 continue;
-            if (f.name === "color")
-                descrList.push(f.name.toUpperCase() + ": <font color='" + f.text + "'>" + f.text.toUpperCase() + "</font>");
             else
                 descrList.push(f.name.toUpperCase() + ": " + f.text);
         }
@@ -230,14 +229,6 @@ Fact {
         value = state;
     }
 
-    Fact {
-        id: mTitle
-        name: "chartname"
-        title: qsTr("Title")
-        descr: qsTr("Chart name")
-        flags: Fact.Text
-        onTextChanged: changes = true
-    }
     Fact {
         id: mFact
         name: "binding"
