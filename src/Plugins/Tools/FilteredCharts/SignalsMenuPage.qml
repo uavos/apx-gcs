@@ -73,6 +73,7 @@ Fact {
         }
         var page = {};
         page.title = mPageName.value;
+        page.pinned = mPinned.value;
         page.speed = mSpeed.value;
         page.charts = tmpCharts;
         updateBtnValues();
@@ -82,7 +83,7 @@ Fact {
     function load(page) {
         mPageName.value = page.title;
         mSpeed.value = page.speed ? page.speed : 1;
-        charts = page.charts;
+        mPinned.value = charts = page.charts;
         updateSetItems();
         changes = false;
     }
@@ -160,6 +161,14 @@ Fact {
         flags: Fact.Text
         icon: "rename-box"
         onTextChanged: updateTitle()
+    }
+    Fact {
+        id: mPinned
+        title: qsTr("Pinned")
+        descr: qsTr("Pin this page to the signals layout")
+        flags: Fact.Bool
+        icon: "pin"
+        onValueChanged: console.log("Not implemented")
     }
     Fact {
         id: mSpeed

@@ -144,48 +144,6 @@ Rectangle {
             Layout.margins: Style.spacing
             spacing: 3
             Layout.maximumHeight: 24 * ui.scale
-            // SignalsButton {
-            //     text: "1"
-            //     checked: true
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "2"
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "3"
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "4"
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "5"
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "6"
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "7"
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "8"
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "9"
-            //     values: []
-            // }
-            // SignalsButton {
-            //     text: "10"
-            //     values: []
-            // }
-
             Repeater {
                 id: btnRepeater
                 model: sgControl.pages
@@ -248,12 +206,5 @@ Rectangle {
 
     SignalsMenu {
         id: sgMenu
-    }
-
-    property string currentPage: buttonGroup.checkedButton.text
-
-    Settings {
-        category: "filteredCharts"
-        property alias page: sgControl.currentPage
     }
 }
