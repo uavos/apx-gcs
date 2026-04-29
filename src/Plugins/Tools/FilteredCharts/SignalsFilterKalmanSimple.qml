@@ -26,7 +26,11 @@ import APX.Facts
 Fact {
     id: ksFilter
     
-    flags: Fact.Group
+    title: qsTr("Kalman simple")
+    descr: qsTr("Simple kalman filter settings")
+    icon: "tune"
+    
+    flags: (Fact.Group | Fact.Bool)
 
     property bool changes: false
     property var coefs: [1,1]
@@ -109,8 +113,17 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        enabled: !mChart.newItem && changes
+        // enabled: !mChart.newItem && changes
         icon: "check-circle"
         onTriggered: sgMenu.saveSettings()
+    }
+    Fact {
+        flags: (Fact.Action | Fact.Remove)
+        title: qsTr("Remove")
+        icon: "delete"
+        onTriggered: {
+            removeTriggered();
+            ksFilter.deleteFact();
+        }
     }
 }

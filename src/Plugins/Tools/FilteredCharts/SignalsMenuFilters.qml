@@ -26,6 +26,10 @@ import APX.Facts
 Fact {
     id: fMenu
 
+    title: qsTr("Kalman simple")
+    descr: qsTr("Simple kalman filter settings")
+    flags: (Fact.Group | Fact.FlatModel)
+
     property bool changes: false
     property var data: ({})
 
@@ -68,10 +72,37 @@ Fact {
         if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
             data = value;
             load();
-            fRunningAvg.fillData();
-            fKalmanSimple.fillData();
+            // fRunningAvg.fillData();
+            // fKalmanSimple.fillData();
             changes = false;
         }
+    }
+
+    // Filters creation
+    function createFilter(filterName) {
+        console.log("Create filter:", filterName);
+        switch (filterName) {
+            case "running_avg":
+                createRunningAvg();
+                break;
+            case "kalman_smp":
+                createKalmanSimple()
+                break;
+            default:
+                console.warn(qsTr("Wrong filter type. Filter creation failed"))
+        }
+    }
+
+    function createRunningAvg(filterData) {
+        var c = createFact(fFilters, "SignalsFilterRunningAvg.qml", {
+            "data": filterData
+        });
+    }
+
+    function createKalmanSimple(filterData) {
+        var c = createFact(fFilters, "SignalsFilterKalmanSimple.qml", {
+            "data": filterData
+        });
     }
 
     // Getting filter data
@@ -83,34 +114,36 @@ Fact {
         return fKalmanSimple.coefs
     }
 
+    SignalsFilterChooser {
+        title: qsTr("Add new filter")
+        descr: qsTr("Selecting and adding filters")
+        icon: "plus-circle"
+    }
+
     Fact {
-        id: fTypes
-        name: "filters"
-        title: qsTr("Filter")
-        descr: qsTr("Selecting the filter to use")
-        flags: Fact.Enum
-        enumStrings: ["none", "running_avg", "kalman_smp"]
-        onTextChanged: fMenu.value = text
-        onValueChanged: changes = true // combobox index changed
+        id: fFilters
+        title: qsTr("Filters")
+        flags: (Fact.Group | Fact.Section | Fact.DragChildren)
     }
-    SignalsFilterRunningAvg {
-        id: fRunningAvg
-        name: "running_avg"
-        title: qsTr("Running average")
-        descr: qsTr("Running average filter settings")
-    }
-    SignalsFilterKalmanSimple {
-        id: fKalmanSimple
-        name: "kalman_smp"
-        title: qsTr("Kalman simple")
-        descr: qsTr("Simple kalman filter settings")
-    }
+
+    // SignalsFilterRunningAvg {
+    //     id: fRunningAvg
+    //     name: "running_avg"
+    //     title: qsTr("Running average")
+    //     descr: qsTr("Running average filter settings")
+    // }
+    // SignalsFilterKalmanSimple {
+    //     id: fKalmanSimple
+    //     name: "kalman_smp"
+    //     title: qsTr("Kalman simple")
+    //     descr: qsTr("Simple kalman filter settings")
+    // }
 
     // Actions
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        enabled: !mChart.newItem && changes
+        // enabled: !mChart.newItem && changes
         icon: "check-circle"
         onTriggered: sgMenu.saveSettings()
     }

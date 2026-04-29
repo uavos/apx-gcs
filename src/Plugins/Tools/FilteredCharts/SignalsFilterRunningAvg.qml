@@ -25,8 +25,11 @@ import APX.Facts
 
 Fact {
     id: raFilter
-    
-    flags: Fact.Group
+    title: qsTr("Running average")
+    descr: qsTr("Running average filter settings")
+    icon: "tune"
+
+    flags: (Fact.Group | Fact.Bool)
 
     property bool changes: false
     property var data: ({})
@@ -95,8 +98,17 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        enabled: !mChart.newItem && changes
+        // enabled: !mChart.newItem && changes
         icon: "check-circle"
         onTriggered: sgMenu.saveSettings()
+    }
+    Fact {
+        flags: (Fact.Action | Fact.Remove)
+        title: qsTr("Remove")
+        icon: "delete"
+        onTriggered: {
+            removeTriggered();
+            raFilter.deleteFact();
+        }
     }
 }
