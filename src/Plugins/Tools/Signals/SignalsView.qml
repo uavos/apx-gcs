@@ -216,6 +216,5 @@ Item {
             speed++;
         else
             speed = 0;
-        //console.log(speed)
     }
 }

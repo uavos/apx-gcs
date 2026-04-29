@@ -141,7 +141,7 @@ Fact {
         mChart.opts = opt;
         mColor.changes = false;
         pageFact.updateBtnValues();
-        sgCharts.updateSeriesColor();
+        sgMainChart.updateSeriesColor();
     }
 
     function updateValue() {

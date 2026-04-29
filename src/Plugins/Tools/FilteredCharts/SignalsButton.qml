@@ -33,6 +33,7 @@ TextButton {
     property var values: []
     property string pageToolTip: ""
     property bool pageWarning: false
+    property var speed: pageFact ? pageFact.speed : 1
 
     Layout.fillHeight: true
     checkable: true
@@ -41,19 +42,32 @@ TextButton {
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
     toolTip: pageToolTip !== "" ? pageToolTip : getToolTip(values)
 
-    onCheckedChanged: if (checked)
-        sgCharts.speedFactorValue = sgMenuPage.speed
+    onCheckedChanged: {
+        if (!pageFact)
+            return;
+        if (checked) 
+            sgMainChart.speedFactorValue = pageFact.speed;
+        pageFact.active = checked;
+    }
 
     onPressed: {
         if (!pageFact)
             return;
-        if (checked && !pageFact.active)
+        if (checked)
             pageFact.trigger();
+        else
+            sgMainChart.speedFactorValue = speed;
+    }
+    onSpeedChanged: {
+        if (!pageFact)
+            return;
+        if (pageFact.active)
+            sgMainChart.speedFactorValue = speed;
     }
 
     onActivated: {
-        sgCharts.resetEnable = true;
-        sgCharts.facts = Qt.binding(function () {
+        sgMainChart.resetEnable = true;
+        sgMainChart.facts = Qt.binding(function () {
             return values;
         });
     }
@@ -63,7 +77,7 @@ TextButton {
         s.push("<strong>" + text + "</strong>");
         for (var i = 0; i < facts.length; ++i) {
             var fact = facts[i];
-            if(!fact)
+            if (!fact)
                 continue;
             var color = fact.color ? fact.color : (fact.opts ? fact.opts.color : undefined);
             var label = fact.title ? fact.title : (fact.descr ? fact.descr : fact.bind);
@@ -94,24 +108,14 @@ TextButton {
     function getScrMatches(val) {
         return sgMenuPage.checkScrs(val);
     }
-
-    function setSpeed(val) {
-        sgMenuPage.speed = val;
-        saveTimer.restart(); // save settings after speed changed
-    }
-
-    Timer {
-        id: timer
-        interval: 10000
-    }
+    // Timer {
+    //     id: timer
+    //     interval: 10000
+    // }
 
     Timer {
         id: saveTimer
         interval: 1000
-        onTriggered: sgControl.saveSettings()
-    }
-
-    SignalsMenuPage {
-        id: sgMenuPage
+        onTriggered: sgMenu.saveSettings()
     }
 }

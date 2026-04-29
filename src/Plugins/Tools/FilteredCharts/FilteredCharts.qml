@@ -36,6 +36,8 @@ Rectangle {
     color: "#000"
 
     readonly property var pages: sgMenu.getActivePages()
+    readonly property var activeSet: sgMenu.getActiveSet()
+    readonly property var activePage: sgMenu.getActivePage()
 
     Component.onCompleted: {
         for (var i = 0; i < buttonGroup.buttons.length; ++i) {
@@ -48,7 +50,6 @@ Rectangle {
         //if (buttonGroup.checkedButton == null) {
         //    buttonGroup.checkedButton = buttonGroup.buttons[0]; // check button #1
         //}
-        loadSettings();
     }
 
     Connections {
@@ -61,44 +62,6 @@ Rectangle {
         }
     }
 
-    function saveSettings() {
-        var fjson = application.prefs.loadFile("charts.json");
-        var json = fjson ? JSON.parse(fjson) : {};
-        json.sets = [];
-        for (var i = 0; i < buttonGroup.buttons.length; ++i) {
-            var b = buttonGroup.buttons[i];
-            var set = buttonGroup.buttons[i].getSet();
-            if (!set)
-                continue;
-            json.sets.push(set);
-        }
-        application.prefs.saveFile("charts.json", JSON.stringify(json, ' ', 2));
-    }
-
-    function loadSettings() {
-        var sets = [];
-        var fjson = application.prefs.loadFile("charts.json");
-        var json = fjson ? JSON.parse(fjson) : {};
-        var set = {};
-        if (json && json.sets) {
-            for (var i in json.sets) {
-                set = json.sets[i];
-                if (!(typeof set === 'object' && !Array.isArray(set) && set !== null))
-                    continue;
-                sets.push(set);
-            }
-        }
-        if (sets.length <= 0) {
-            return;
-        }
-        // Create charts
-        for (var i in sets) {
-            if (i < buttonGroup.buttons.length) {
-                buttonGroup.buttons[i].loadSet(sets[i]);
-            }
-        }
-    }
-
     function checkScrMatches(val) {
         var matches = false;
         for (var i = 0; i < buttonGroup.buttons.length; ++i)
@@ -108,15 +71,18 @@ Rectangle {
     }
 
     function changeSpeed() {
-        if (sgCharts.speedFactorValue !== sgCharts.speedFactor[sgCharts.speedFactor.length - 1]) {
-            for (var i = 0; i < sgCharts.speedFactor.length - 1; ++i) {
-                if (sgCharts.speedFactor[i] <= sgCharts.speedFactorValue && sgCharts.speedFactorValue < sgCharts.speedFactor[i + 1]) {
-                    buttonGroup.checkedButton.setSpeed(sgCharts.speedFactor[i + 1]);
+        if(!activePage)
+            return;
+        var newSpeed = 1;
+        if (sgMainChart.speedFactorValue !== sgMainChart.speedFactor[sgMainChart.speedFactor.length - 1]) {
+            for (var i = 0; i < sgMainChart.speedFactor.length - 1; ++i) {
+                if (sgMainChart.speedFactor[i] <= sgMainChart.speedFactorValue && sgMainChart.speedFactorValue < sgMainChart.speedFactor[i + 1]) {
+                    activePage.speed = sgMainChart.speedFactor[i + 1]
                     break;
                 }
             }
         } else {
-            buttonGroup.checkedButton.setSpeed(sgCharts.speedFactor[0]);
+            activePage.speed = sgMainChart.speedFactor[0];
         }
     }
 
@@ -125,13 +91,82 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        SignalsChartView {
-            id: sgCharts
-            facts: []
+        Item {
+            id: mainChartArea
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumHeight: 20
             Layout.preferredHeight: 130 * ui.scale
+            clip: true
+
+            SignalsChartView {
+                id: sgMainChart
+                anchors.fill: parent
+                facts: []
+            }
+            Rectangle {
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: 4 * ui.scale
+                radius: 2 * ui.scale
+                visible: lblMainPage.text !== ""
+                implicitWidth: columnMainPage.implicitWidth + 10 * ui.scale
+                implicitHeight: columnMainPage.implicitHeight + 4 * ui.scale
+                color: mouseArea.containsMouse ? "#40ffffff" : "#20ffffff"
+                opacity: 0.7
+
+                Column {
+                    id: columnMainPage
+                    anchors.centerIn: parent
+                    spacing: 1 * ui.scale
+
+                    Label {
+                        id: lblMainPage
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: sgControl.activePage ? sgControl.activePage.title : ""
+                        // font: 14 * ui.scale
+                    }
+                    Label {
+                        id: lblMainSpeed
+                        anchors.right: parent.right
+                        text: sgMainChart.speedFactorValue + "x"
+                    }
+                }
+                MouseArea {
+                    id: mouseArea
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton
+                    hoverEnabled: true
+                    onClicked: changeSpeed()
+                }
+            }
+
+            Rectangle {
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.rightMargin: 4 * ui.scale
+                visible: lblMainSet.text !== ""
+                radius: ui.scale
+                color: "#30ffffff"
+                opacity: 0.7
+
+                implicitWidth: lblMainSet.implicitWidth + 10 * ui.scale
+                implicitHeight: lblMainSet.implicitHeight + 4 * ui.scale
+
+                Label {
+                    id: lblMainSet
+                    anchors.centerIn: parent
+                    text: sgControl.activeSet ? sgControl.activeSet.title : ""
+                    // font: control.overlayFont(14 * control.uiScale)
+                }
+            }
+
+            Label {
+                anchors.centerIn: parent
+                visible: btnRepeater.count <= 0
+                text: qsTr("No pages in the active set.")
+                color: Material.secondaryTextColor
+            }
         }
 
         ButtonGroup {
@@ -148,11 +183,6 @@ Rectangle {
                 id: btnRepeater
                 model: sgControl.pages
 
-                // onItemAdded: function(index, item) {
-                //     if (index === tabsRepeater.count - 1)
-                //         Qt.callLater(control.selectSavedPage)
-                // }
-
                 delegate: SignalsButton {
                     required property int index
                     required property var modelData
@@ -162,12 +192,9 @@ Rectangle {
                     pageFact: modelData
                     values: pageFact.values
 
-                    //text: pageFact.title.slice(0, 3)
-
                     // checked: control.selectedPageFact
                     //          ? pageFact === control.selectedPageFact
                     //          : index === 0
-                    // values: control.pageFacts(index)
                     // pageToolTip: control.pageState(index).toolTip
                     // pageWarning: control.pageState(index).warning
                     // onEditTriggered: control.openPageEditor(pageFact)
@@ -181,26 +208,6 @@ Rectangle {
                 //     id: sgMenu
                 // }
             }
-
-            TextButton {
-                text: sgCharts.speedFactorValue + "x"
-                Layout.fillHeight: true
-                Layout.minimumWidth: height * 4
-                onClicked: changeSpeed()
-            }
-        }
-    }
-    IconButton {
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: Style.spacing
-        size: Style.buttonSize * 0.7
-        iconName: "plus"
-        toolTip: qsTr("Edit charts")
-        opacity: ui.effects ? (hovered ? 1 : 0.5) : 1
-        onTriggered: {
-            var activeButton = buttonGroup.checkedButton;
-            activeButton.callQuickChart();
         }
     }
 

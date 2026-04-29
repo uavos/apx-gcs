@@ -261,6 +261,15 @@ Fact {
         return activeSet.getPages();
     }
 
+    function getActivePage() {
+        if (sgMenu.size <= 0)
+            return null;
+        var activeSet = getActiveSet();
+        if (!activeSet)
+            return null;
+        return activeSet.getActivePage();
+    }
+
     Fact {
         title: qsTr("Add set")
         flags: Fact.Action

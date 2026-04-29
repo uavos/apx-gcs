@@ -57,7 +57,6 @@ Fact {
     }
 
     function updateChartsValues() {
-        console.log("update values for: ", title);
         for (var i = 0; i < mCharts.size; ++i)
             mCharts.child(i).updateValue();
     }
@@ -181,13 +180,10 @@ Fact {
         min: 0.2
         max: 4
         onValueChanged: {
-            // New functionality
+            if (active && setFact.active)
+                sgMainChart.speedFactorValue = value;
             updateDescr();
-            // =================
-            if (!sgBtn || !sgBtn.checked)
-                return;
-            sgCharts.speedFactorValue = value;
-            changes = true;
+            // changes = true;
         }
     }
     SignalsMenuChart {
@@ -206,7 +202,7 @@ Fact {
             // New functionality
             updateDescr();
             // =================
-            sgCharts.resetEnable = true;
+            sgMainChart.resetEnable = true;
         }
     }
 

@@ -136,6 +136,17 @@ Fact {
         return pages.length > 0 ? pages : [];
     }
 
+    function getActivePage() {
+        for (var i = 0; i < mPages.size; ++i) {
+            var f = mPages.child(i);
+            if (!f)
+                continue;
+            if(f.active)
+                return f;
+        }
+        return null;
+    }
+
     Fact {
         id: mSetName
         title: qsTr("Set name")
