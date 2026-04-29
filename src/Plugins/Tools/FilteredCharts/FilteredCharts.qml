@@ -31,7 +31,7 @@ Rectangle {
     id: sgControl
 
     implicitHeight: layout.implicitHeight
-    implicitWidth: layout.implicitWidth
+    implicitWidth: Style.buttonSize * 15
     border.width: 0
     color: "#000"
 
@@ -71,13 +71,13 @@ Rectangle {
     }
 
     function changeSpeed() {
-        if(!activePage)
+        if (!activePage)
             return;
         var newSpeed = 1;
         if (sgMainChart.speedFactorValue !== sgMainChart.speedFactor[sgMainChart.speedFactor.length - 1]) {
             for (var i = 0; i < sgMainChart.speedFactor.length - 1; ++i) {
                 if (sgMainChart.speedFactor[i] <= sgMainChart.speedFactorValue && sgMainChart.speedFactorValue < sgMainChart.speedFactor[i + 1]) {
-                    activePage.speed = sgMainChart.speedFactor[i + 1]
+                    activePage.speed = sgMainChart.speedFactor[i + 1];
                     break;
                 }
             }
