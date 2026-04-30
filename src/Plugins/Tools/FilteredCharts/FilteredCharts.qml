@@ -112,24 +112,23 @@ Rectangle {
                 visible: lblMainPage.text !== ""
                 implicitWidth: columnMainPage.implicitWidth + 10 * ui.scale
                 implicitHeight: columnMainPage.implicitHeight + 4 * ui.scale
-                color: mouseArea.containsMouse ? "#40ffffff" : "#20ffffff"
+                color: mouseArea.containsMouse ? "#50ffffff" : "#30ffffff"
                 opacity: 0.7
 
                 Column {
                     id: columnMainPage
                     anchors.centerIn: parent
-                    spacing: 1 * ui.scale
-
                     Label {
                         id: lblMainPage
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: sgControl.activePage ? sgControl.activePage.title : ""
-                        // font: 14 * ui.scale
+                        font: apx.font_narrow(Style.fontSize * 0.8)
                     }
                     Label {
                         id: lblMainSpeed
                         anchors.right: parent.right
                         text: sgMainChart.speedFactorValue + "x"
+                        font: apx.font_narrow(Style.fontSize * 0.8)
                     }
                 }
                 MouseArea {
@@ -157,7 +156,7 @@ Rectangle {
                     id: lblMainSet
                     anchors.centerIn: parent
                     text: sgControl.activeSet ? sgControl.activeSet.title : ""
-                    // font: control.overlayFont(14 * control.uiScale)
+                    font: apx.font_narrow(Style.fontSize * 0.8)
                 }
             }
 
@@ -165,6 +164,7 @@ Rectangle {
                 anchors.centerIn: parent
                 visible: btnRepeater.count <= 0
                 text: qsTr("No pages in the active set.")
+                font: apx.font_narrow(Style.fontSize * 0.8)
                 color: Material.secondaryTextColor
             }
         }
