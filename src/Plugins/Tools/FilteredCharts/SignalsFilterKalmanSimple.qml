@@ -32,14 +32,14 @@ Fact {
 
     property var filterType: "kalman_smp"
     property bool changes: false
-    property var coefs: [1,1]
+    property var measCoef: 1
+    property var envCoef: 1
     property var data: ({})
 
     Component.onCompleted: load(data)
     // onChangesChanged: { if (changes) fMenu.changes = true;}
 
     function load(data) {
-        console.log("load kalman: ", JSON.stringify(data))
         value = data.value !== undefined ? data.value : 0
         for (var i = 0; i < size; ++i) {
             var f = child(i);
@@ -63,7 +63,6 @@ Fact {
             data[settingName(f)] = s;
         }
         updateCoefs();
-        console.log("save ", title)
         return data;
     }
 
@@ -80,8 +79,32 @@ Fact {
     }
 
     function updateCoefs() {
-        coefs = [ksMeasNoise.value, ksEnvNoise.value]
+        measCoef = ksMeasNoise.value;
+        envCoef = ksEnvNoise.value;
+        // coefs = [ksMeasNoise.value, ksEnvNoise.value]
         changes = false;
+    }
+
+    // Use Kalman Simple filter
+    property var state: 0
+    property var covariance: 0.1
+
+    function setKalmanState(st, cv) {
+        state = st;
+        covariance = cv;
+    }
+
+    function processValue(value, v) {
+        // Time update - prediction
+        var x0 = state;
+        var p0 = covariance + measCoef;
+
+        // Measurement update - correction
+        var k = p0 / (p0 + envCoef);
+        state = x0 + k * (v - x0);
+        covariance = (1 - k) * p0;
+        value = state;
+        return value;
     }
 
     Fact {

@@ -39,7 +39,6 @@ Fact {
     // onChangesChanged: { if (changes) fMenu.changes = true;}
 
     function load(data) {
-        console.log("load running: ", JSON.stringify(data))
         value = data.value !== undefined ? data.value : 0
         for (var i = 0; i < size; ++i) {
             var f = child(i);
@@ -63,7 +62,6 @@ Fact {
             data[settingName(f)] = s;
         }
         updateCoef();
-        console.log("save ", title)
         return data;
     }
 
@@ -82,6 +80,12 @@ Fact {
     function updateCoef() {
         coef = raCoef.value;
         changes = false;
+    }
+
+    // Use Running Average filter
+    function processValue(value, v) {
+        value += (v - value) * coef;
+        return value;
     }
 
     Fact {

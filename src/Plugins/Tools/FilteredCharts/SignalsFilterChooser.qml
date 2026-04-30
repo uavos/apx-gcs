@@ -27,7 +27,6 @@ Fact {
     id: filterChooser
 
     function addSelected() {
-        console.log("size:", filterChooser.size)
         for(var i = 0; i < filterChooser.size; ++i) {
             var fact = filterChooser.child(i)
             if(fact && fact.value)

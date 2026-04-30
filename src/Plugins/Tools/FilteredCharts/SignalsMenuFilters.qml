@@ -71,7 +71,6 @@ Fact {
     // Filters creation
     function createFilter(filterData) {
         var type =  filterData.type; 
-        console.log("Create filter:", type, JSON.stringify(filterData));
         switch (type) {
             case "running_avg":
                 createRunningAvg(filterData);
@@ -96,13 +95,20 @@ Fact {
         });
     }
 
-    // Getting filter data
-    function getRunningAvgCoef() {
-        return fRunningAvg.coef;
+    // Using filters
+    function useFilters(value, v) {
+        for(var i = 0; i < fSet.size; ++i) {
+            if(!fSet.child(i).value)
+                continue;
+            v = fSet.child(i).processValue(value, v)    
+        }
+        return v;
     }
 
-    function getKalmanSimpleCoefs() {
-        return fKalmanSimple.coefs
+    function setKalmanSimpleState(st, cv) {
+        for(var i = 0; i < fSet.size; ++i)
+            if(fSet.child(i).filterType === "kalman_smp")
+                fSet.child(i).setKalmanState(st, cv);
     }
 
     SignalsFilterChooser {
@@ -116,19 +122,6 @@ Fact {
         title: qsTr("Filters")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
     }
-
-    // SignalsFilterRunningAvg {
-    //     id: fRunningAvg
-    //     name: "running_avg"
-    //     title: qsTr("Running average")
-    //     descr: qsTr("Running average filter settings")
-    // }
-    // SignalsFilterKalmanSimple {
-    //     id: fKalmanSimple
-    //     name: "kalman_smp"
-    //     title: qsTr("Kalman simple")
-    //     descr: qsTr("Simple kalman filter settings")
-    // }
 
     // Actions
     Fact {

@@ -97,7 +97,7 @@ Fact {
         scr = mFact2Save.text;
         if (type === "kalman_smp") {
             var v = value !== undefined ? value : 0;
-            setKalmanState(v, 0.1); // set start state and covariance
+            mFilters.setKalmanSimpleState(v, 0.1); // set start state and covariance
         }
         changes = false;
         setColor();
@@ -151,21 +151,12 @@ Fact {
                 throw new Error(qsTr("expression is undefined"));
             // For first init
             if (value === undefined) {
-                setKalmanState(v, 0.1);
+                mFilters.setKalmanSimpleState(v, 0.1);
                 value = v;
                 return;
             }
             // Use filters
-            switch (type) {
-            case "running_avg":
-                useRunningAvgFilter(v);
-                break;
-            case "kalman_smp":
-                useKalmanSmpFilter(v);
-                break;
-            default:
-                value = v;
-            }
+            value = mFilters.useFilters(value, v)
         } catch (e) {
             chartWarning(e.message);
         }
@@ -197,36 +188,6 @@ Fact {
             return false;
         chartWarning(val + " " + qsTr("variable already used"));
         return true;
-    }
-
-    // Filters functions
-    // Running average filter
-    function useRunningAvgFilter(v) {
-        var k = mFilters.getRunningAvgCoef();
-        value += (v - value) * k;
-    }
-
-    // Kalman simple filter
-    property var state: 0
-    property var covariance: 0.1
-
-    function setKalmanState(st, cv) {
-        state = st;
-        covariance = cv;
-    }
-
-    function useKalmanSmpFilter(v) {
-        var coefs = mFilters.getKalmanSimpleCoefs();
-
-        // Time update - prediction
-        var x0 = state;
-        var p0 = covariance + coefs[0];
-
-        // Measurement update - correction
-        var k = p0 / (p0 + coefs[1]);
-        state = x0 + k * (v - x0);
-        covariance = (1 - k) * p0;
-        value = state;
     }
 
     Fact {
