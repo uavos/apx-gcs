@@ -40,11 +40,14 @@ Fact {
 
     function load(data) {
         console.log("load running: ", JSON.stringify(data))
+        value = data.value !== undefined ? data.value : 0
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
-            f.value = v;
+            if(v !== undefined)
+                f.value = v;
         }
+        updateDescr();
         updateCoef();
     }
 
