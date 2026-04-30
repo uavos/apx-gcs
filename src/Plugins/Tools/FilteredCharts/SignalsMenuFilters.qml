@@ -26,8 +26,6 @@ import APX.Facts
 Fact {
     id: fMenu
 
-    title: qsTr("Kalman simple")
-    descr: qsTr("Simple kalman filter settings")
     flags: (Fact.Group | Fact.FlatModel)
 
     property bool changes: false
@@ -35,30 +33,32 @@ Fact {
 
     signal removeTriggered
 
+    Component.onCompleted: load(value)
     onChangesChanged: { if (changes) mChart.changes = true;}
 
-    function load() {
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            var v = data[settingName(f)];
-            f.value = v;
+    function load(value) {
+        if(!value)
+            return;
+        var filters = value.filters    
+        if (filters === undefined || filters.length === 0)
+            return;
+        fSet.deleteChildren();
+        for (var i in filters) {
+            createFilter(filters[i]);
         }
+        updateBtnValues();
         changes = false;
     }
 
     function save() {
-        data = {};
-        for (var i = 0; i < size; ++i) {
-            var f = child(i);
-            var s = f.text.trim();
-            if (f.size != 0)
-                s = f.save();
-            if (s === "")
-                continue;
-            data[settingName(f)] = s;
+        var tmpFilters = [];
+        for (var i = 0; i < fSet.size; ++i) {
+            var mfilter = fSet.child(i).save();
+            tmpFilters.push(mfilter);
         }
-        changes = false;
-        return data;
+        var fmenu = {};
+        fmenu.filters = tmpFilters; 
+        return fmenu;
     }
 
     function settingName(f) {
@@ -68,25 +68,16 @@ Fact {
         return n;
     }
 
-    function fillData() {
-        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-            data = value;
-            load();
-            // fRunningAvg.fillData();
-            // fKalmanSimple.fillData();
-            changes = false;
-        }
-    }
-
     // Filters creation
-    function createFilter(filterName) {
-        console.log("Create filter:", filterName);
-        switch (filterName) {
+    function createFilter(filterData) {
+        var type =  filterData.type; 
+        console.log("Create filter:", type, JSON.stringify(filterData));
+        switch (type) {
             case "running_avg":
-                createRunningAvg();
+                createRunningAvg(filterData);
                 break;
             case "kalman_smp":
-                createKalmanSimple()
+                createKalmanSimple(filterData)
                 break;
             default:
                 console.warn(qsTr("Wrong filter type. Filter creation failed"))
@@ -94,13 +85,13 @@ Fact {
     }
 
     function createRunningAvg(filterData) {
-        var c = createFact(fFilters, "SignalsFilterRunningAvg.qml", {
+        var c = createFact(fSet, "SignalsFilterRunningAvg.qml", {
             "data": filterData
         });
     }
 
     function createKalmanSimple(filterData) {
-        var c = createFact(fFilters, "SignalsFilterKalmanSimple.qml", {
+        var c = createFact(fSet, "SignalsFilterKalmanSimple.qml", {
             "data": filterData
         });
     }
@@ -121,7 +112,7 @@ Fact {
     }
 
     Fact {
-        id: fFilters
+        id: fSet
         title: qsTr("Filters")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
     }

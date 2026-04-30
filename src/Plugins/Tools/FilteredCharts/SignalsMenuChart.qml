@@ -63,7 +63,7 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
-        mFilters.fillData();
+        // mFilters.fillData();
         updateChartVars();
     }
 

@@ -31,7 +31,7 @@ Fact {
         for(var i = 0; i < filterChooser.size; ++i) {
             var fact = filterChooser.child(i)
             if(fact && fact.value)
-                fMenu.createFilter(fact.name) 
+                fMenu.createFilter({"type": fact.name})
         }
     }
     
@@ -42,7 +42,7 @@ Fact {
         descr: qsTr("Select running average filter")
         flags: Fact.Bool
         onTriggered: {
-            fMenu.createFilter(name);
+            fMenu.createFilter({"type": name});
             filterChooser.menuBack()
         }
     }
@@ -53,7 +53,7 @@ Fact {
         descr: qsTr("Select simple kalman filter")
         flags: Fact.Bool
         onTriggered: {
-            fMenu.createFilter(name)
+            fMenu.createFilter({"type": name});
             filterChooser.menuBack()
         }    
     }

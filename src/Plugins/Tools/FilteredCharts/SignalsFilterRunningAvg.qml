@@ -28,16 +28,18 @@ Fact {
     title: qsTr("Running average")
     descr: qsTr("Running average filter settings")
     icon: "tune"
-
     flags: (Fact.Group | Fact.Bool)
 
+    property var filterType: "running_avg"
     property bool changes: false
     property var data: ({})
     property var coef: 1
 
-    onChangesChanged: { if (changes) fMenu.changes = true;}
+    Component.onCompleted: load(data)
+    // onChangesChanged: { if (changes) fMenu.changes = true;}
 
-    function load() {
+    function load(data) {
+        console.log("load running: ", JSON.stringify(data))
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
@@ -48,6 +50,8 @@ Fact {
 
     function save() {
         data = {};
+        data.type = filterType;
+        data.value = value;
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var s = f.text.trim();
@@ -56,6 +60,7 @@ Fact {
             data[settingName(f)] = s;
         }
         updateCoef();
+        console.log("save ", title)
         return data;
     }
 
@@ -65,12 +70,10 @@ Fact {
             return n.slice(0, n.indexOf("_"));
         return n;
     }
-
-    function fillData() {
-        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-            data = value;
-            load();
-        }
+    
+    function updateDescr() {
+        descr = qsTr("COEF") + ": K=" + raCoef.value
+        changes = true; 
     }
 
     function updateCoef() {
@@ -88,10 +91,7 @@ Fact {
         min: 0
         max: 1
         precision: 3
-        onValueChanged: {
-            raFilter.value = "K=" + value;
-            changes = true;
-        }
+        onValueChanged: updateDescr()
     }
 
     // Actions
