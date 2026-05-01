@@ -190,8 +190,6 @@ Rectangle {
                     property int pageIndex: index
 
                     pageFact: modelData
-                    values: pageFact.values
-
                     // checked: control.selectedPageFact
                     //          ? pageFact === control.selectedPageFact
                     //          : index === 0

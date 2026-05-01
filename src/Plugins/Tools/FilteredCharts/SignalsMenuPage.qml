@@ -30,6 +30,8 @@ Fact {
 
     property var newItem: false
     property bool changes: false
+    property bool warning: false
+    property string pageToolTip: ""
     property alias speed: mSpeed.value
     property var charts //from config
     property var values: []
@@ -53,7 +55,7 @@ Fact {
         values = [];
         for (var i = 0; i < mCharts.size; ++i)
             values.push(mCharts.child(i));
-        // sgBtn.updateToolTip(sgBtn.values);
+            updateToolTip();
     }
 
     function updateChartsValues() {
@@ -151,6 +153,21 @@ Fact {
             descrList.push(chartsDescr);
         }
         descr = descrList.length > 0 ? descrList.join(", ") : "";
+    }
+
+    function updateToolTip() {
+        var s = [];
+        s.push("<strong>" + title + "</strong>");
+        for (var i = 0; i < mCharts.size; ++i) {
+            var fact = mCharts.child(i)
+            var color = fact.color ? fact.color : (fact.opts ? fact.opts.color : undefined);
+            var label = fact.title ? fact.title : (fact.descr ? fact.descr : fact.bind);
+            if (color)
+                s.push("<font color='" + color + "'>\u25A0</font> " + label);
+            else
+                s.push(label);
+        }
+        pageToolTip = s.join("<br>");
     }
 
     Fact {

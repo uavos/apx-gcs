@@ -30,9 +30,9 @@ TextButton {
     id: sgBtn
 
     property var pageFact: null
-    property var values: []
-    property string pageToolTip: ""
-    property bool pageWarning: false
+    property var values: pageFact ? pageFact.values : []
+    property string pageToolTip: pageFact ? pageFact.pageToolTip : ""
+    property bool pageWarning: pageFact ? pageFact.warnings : false
     property var speed: pageFact ? pageFact.speed : 1
 
     Layout.fillHeight: true
@@ -40,7 +40,7 @@ TextButton {
     ButtonGroup.group: buttonGroup
     text: pageFact ? pageFact.title.slice(0, 3) : getDefaultText()
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
-    toolTip: pageToolTip !== "" ? pageToolTip : getToolTip(values)
+    toolTip: pageFact ? pageFact.pageToolTip : ""
 
     onCheckedChanged: {
         if (!pageFact)
@@ -70,23 +70,6 @@ TextButton {
         sgMainChart.facts = Qt.binding(function () {
             return values;
         });
-    }
-
-    function getToolTip(facts) {
-        var s = [];
-        s.push("<strong>" + text + "</strong>");
-        for (var i = 0; i < facts.length; ++i) {
-            var fact = facts[i];
-            if (!fact)
-                continue;
-            var color = fact.color ? fact.color : (fact.opts ? fact.opts.color : undefined);
-            var label = fact.title ? fact.title : (fact.descr ? fact.descr : fact.bind);
-            if (color)
-                s.push("<font color='" + color + "'>\u25A0</font> " + label);
-            else
-                s.push(label);
-        }
-        return s.join("<br>");
     }
 
     function getDefaultText() {
