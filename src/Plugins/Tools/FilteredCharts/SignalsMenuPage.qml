@@ -30,7 +30,7 @@ Fact {
 
     property var newItem: false
     property bool changes: false
-    property bool warning: false
+    property bool warnings: false
     property string pageToolTip: ""
     property alias speed: mSpeed.value
     property var charts //from config
@@ -59,8 +59,21 @@ Fact {
     }
 
     function updateChartsValues() {
-        for (var i = 0; i < mCharts.size; ++i)
+        for (var i = 0; i < mCharts.size; ++i) {
             mCharts.child(i).updateValue();
+            mCharts.child(i).updateWarning();
+        }
+        updatePageWarning();    
+    }
+
+    function updatePageWarning() {
+        for (var i = 0; i < mCharts.size; ++i) {
+            if(mCharts.child(i).warning) {
+                warnings = true;
+                return;
+            }
+        }
+        warnings = false;
     }
 
     function save() {

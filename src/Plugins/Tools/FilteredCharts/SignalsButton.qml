@@ -41,6 +41,7 @@ TextButton {
     text: pageFact ? pageFact.title.slice(0, 3) : getDefaultText()
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
     toolTip: pageFact ? pageFact.pageToolTip : ""
+    Material.background: pageWarning ? Material.color(Material.Orange) : color
 
     onCheckedChanged: {
         if (!pageFact)

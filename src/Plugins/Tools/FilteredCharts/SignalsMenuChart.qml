@@ -33,12 +33,14 @@ Fact {
 
     property bool changes: false
     property bool newItem: false
-    property var warning: ""
+    property bool warning: false
+    property var warningMsg: ""
     property var data: ({})
 
     // Chart values
     property var type: "none"
     property var expr: ""
+    property var exprW: ""
     property var scr: ""
 
     signal addTriggered
@@ -93,6 +95,7 @@ Fact {
 
     function updateChartVars() {
         expr = mBind.text;
+        exprW = mWarn.text;
         type = mFilters.value;
         scr = mFact2Save.text;
         if (type === "kalman_smp") {
@@ -162,6 +165,21 @@ Fact {
         }
     }
 
+    function updateWarning () {
+        try {
+            if(exprW === "")
+                return;
+            var v = new Function('return ' + exprW)();
+            if (v === undefined)
+                throw new Error(qsTr("expression is undefined"));
+            if(typeof v !== 'boolean')
+                throw new Error(qsTr("wrong warning condition (not true/false)"));
+            warning = v;
+        } catch (e) {
+            chartWarning(e.message);
+        }
+    }
+
     function saveValue2Fact() {
         var fname = scr;
         if (!fname || fname === "" || fname === undefined)
@@ -176,9 +194,9 @@ Fact {
     }
 
     function chartWarning(msg) {
-        if (warning == msg && timer.running)
+        if (warningMsg == msg && timer.running)
             return;
-        warning = msg;
+        warningMsg = msg;
         console.warn(qsTr("Chart") + " " + title + ": " + msg);
         timer.restart();
     }
@@ -223,10 +241,12 @@ Fact {
         descr: qsTr("Filters settings")
     }
     Fact {
+        id: mWarn
         name: "warn"
         title: qsTr("Warning")
         descr: qsTr("Expression for warning")
         flags: Fact.Text
+        onTextChanged: changes = true
     }
     Fact {
         id: mFact2Save
