@@ -32,6 +32,7 @@ Fact {
     property bool newItem: false
     // property bool changes: false
     property var pages //from config
+    property var pinnedPages: []
     property var data: ({})
 
     signal selected(var num)
@@ -125,6 +126,18 @@ Fact {
         descr = descrList.length > 0 ? descrList.join(", ") : "";
     }
 
+    function updatePinnedPages() {
+        var pages = [];
+        for (var i = 0; i < mPages.size; ++i) {
+            var f = mPages.child(i);
+            if (!f)
+                continue;
+            if (f.pinned)
+                pages.push(f);
+        }
+        pinnedPages = pages.length > 0 ? pages : [];
+    }
+
     function getPages() {
         var pages = [];
         for (var i = 0; i < mPages.size; ++i) {
@@ -141,7 +154,7 @@ Fact {
             var f = mPages.child(i);
             if (!f)
                 continue;
-            if(f.active)
+            if (f.active)
                 return f;
         }
         return null;

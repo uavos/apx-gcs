@@ -33,6 +33,7 @@ Fact {
     property bool warnings: false
     property string pageToolTip: ""
     property alias speed: mSpeed.value
+    property alias pinned: mPinned.value
     property var charts //from config
     property var values: []
     property var data: ({})
@@ -55,7 +56,7 @@ Fact {
         values = [];
         for (var i = 0; i < mCharts.size; ++i)
             values.push(mCharts.child(i));
-            updateToolTip();
+        updateToolTip();
     }
 
     function updateChartsValues() {
@@ -63,12 +64,12 @@ Fact {
             mCharts.child(i).updateValue();
             mCharts.child(i).updateWarning();
         }
-        updatePageWarning();    
+        updatePageWarning();
     }
 
     function updatePageWarning() {
         for (var i = 0; i < mCharts.size; ++i) {
-            if(mCharts.child(i).warning) {
+            if (mCharts.child(i).warning) {
                 warnings = true;
                 return;
             }
@@ -97,7 +98,8 @@ Fact {
     function load(page) {
         mPageName.value = page.title;
         mSpeed.value = page.speed ? page.speed : 1;
-        mPinned.value = charts = page.charts;
+        mPinned.value = page.pinned;
+        charts = page.charts;
         updateSetItems();
         changes = false;
     }
@@ -172,7 +174,7 @@ Fact {
         var s = [];
         s.push("<strong>" + title + "</strong>");
         for (var i = 0; i < mCharts.size; ++i) {
-            var fact = mCharts.child(i)
+            var fact = mCharts.child(i);
             var color = fact.color ? fact.color : (fact.opts ? fact.opts.color : undefined);
             var label = fact.title ? fact.title : (fact.descr ? fact.descr : fact.bind);
             if (color)
@@ -197,7 +199,7 @@ Fact {
         descr: qsTr("Pin this page to the signals layout")
         flags: Fact.Bool
         icon: "pin"
-        onValueChanged: console.log("Not implemented")
+        onValueChanged: setFact.updatePinnedPages()
     }
     Fact {
         id: mSpeed

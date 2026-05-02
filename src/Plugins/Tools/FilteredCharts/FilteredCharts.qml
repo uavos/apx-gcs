@@ -38,6 +38,7 @@ Rectangle {
     readonly property var pages: sgMenu.getActivePages()
     readonly property var activeSet: sgMenu.getActiveSet()
     readonly property var activePage: sgMenu.getActivePage()
+    readonly property var pinnedPages: activeSet.pinnedPages
 
     Component.onCompleted: {
         for (var i = 0; i < buttonGroup.buttons.length; ++i) {
@@ -73,7 +74,7 @@ Rectangle {
     function changeSpeed() {
         if (!activePage)
             return;
-        var newSpeed = 1;
+        // var newSpeed = 1;
         if (sgMainChart.speedFactorValue !== sgMainChart.speedFactor[sgMainChart.speedFactor.length - 1]) {
             for (var i = 0; i < sgMainChart.speedFactor.length - 1; ++i) {
                 if (sgMainChart.speedFactor[i] <= sgMainChart.speedFactorValue && sgMainChart.speedFactorValue < sgMainChart.speedFactor[i + 1]) {
@@ -91,12 +92,86 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
+        Repeater {
+            model: sgControl.pinnedPages
+
+            delegate: Item {
+                id: pinnedChartArea
+
+                required property var modelData
+                required property int index
+
+                property var pinnedPageFact: modelData
+
+                Layout.fillWidth: true
+                Layout.preferredHeight: 110 * ui.scale
+                Layout.minimumHeight: 20
+                
+                SignalsChartView {
+                    id: sgPinnedChart
+                    anchors.fill: parent
+                    facts: pinnedPageFact ? pinnedPageFact.values : []
+                    speedFactorValue: pinnedPageFact ? pinnedPageFact.speed : 1
+                }
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: 4 * ui.scale
+                    radius: 2 * ui.scale
+                    visible: lblPinnedPage.text !== ""
+                    color: maPinned.containsMouse ? "#50ffffff" : "#30ffffff"
+                    implicitWidth: columnPinnedPage.implicitWidth + 10 * ui.scale
+                    implicitHeight: columnPinnedPage.implicitHeight + 4 * ui.scale
+
+                    Column {
+                        id: columnPinnedPage
+                        anchors.centerIn: parent
+                        Label {
+                            id: lblPinnedPage
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text:  pinnedPageFact ? pinnedPageFact.title : ""
+                            font: apx.font_narrow(Style.fontSize * 0.8)
+                        }
+                        Label {
+                            id: lblPinnedSpeed
+                            anchors.right: parent.right
+                            text: sgPinnedChart.speedFactorValue + "x"
+                            font: apx.font_narrow(Style.fontSize * 0.8)
+                        }
+                    }
+                    MouseArea {
+                        id: maPinned
+                        anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton
+                        hoverEnabled: true
+                        onClicked: changePinnedSpeed()
+                    }
+                }
+
+                function changePinnedSpeed() {
+                    if(!pinnedPageFact)
+                        return;
+                    if (sgPinnedChart.speedFactorValue !== sgPinnedChart.speedFactor[sgPinnedChart.speedFactor.length - 1]) {
+                        for (var i = 0; i < sgPinnedChart.speedFactor.length - 1; ++i) {
+                            if (sgPinnedChart.speedFactor[i] <= sgPinnedChart.speedFactorValue && sgPinnedChart.speedFactorValue < sgPinnedChart.speedFactor[i + 1]) {
+                                pinnedPageFact.speed = sgPinnedChart.speedFactor[i + 1];
+                                break;
+                            }
+                        }
+                    } else {
+                        pinnedPageFact.speed = sgMainChart.speedFactor[0];
+                    }
+                }
+            }
+        }
+
         Item {
             id: mainChartArea
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumHeight: 20
-            Layout.preferredHeight: 130 * ui.scale
+            Layout.preferredHeight: 110 * ui.scale // 130 * ui.scale
             clip: true
 
             SignalsChartView {
@@ -112,7 +187,7 @@ Rectangle {
                 visible: lblMainPage.text !== ""
                 implicitWidth: columnMainPage.implicitWidth + 10 * ui.scale
                 implicitHeight: columnMainPage.implicitHeight + 4 * ui.scale
-                color: mouseArea.containsMouse ? "#50ffffff" : "#30ffffff"
+                color: maMain.containsMouse ? "#50ffffff" : "#30ffffff"
                 opacity: 0.7
 
                 Column {
@@ -132,7 +207,7 @@ Rectangle {
                     }
                 }
                 MouseArea {
-                    id: mouseArea
+                    id: maMain
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton
                     hoverEnabled: true
