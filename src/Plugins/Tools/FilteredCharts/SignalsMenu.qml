@@ -102,7 +102,6 @@ Fact {
                 }
             ]
         };
-
         return set;
     }
 

@@ -33,7 +33,7 @@ Fact {
     // property bool changes: false
     property var pages //from config
     property var pinnedPages: []
-    property var activePage: 0
+    property var checked: 0
     property var data: ({})
 
     signal selected(var num)
@@ -51,15 +51,18 @@ Fact {
         }
         var set = {};
         set.title = mSetName.value;
+        set.checked = checked;
         set.pages = tmpPages;
         return set;
     }
 
     function load(set) {
         mSetName.value = set.title;
+        checked = set.checked;
         pages = set.pages;
         updateSetItems();
-        // changes = false;
+        updateCheckedPage();
+       // changes = false;
     }
 
     function updateSetItems() {
@@ -69,14 +72,19 @@ Fact {
         }
     }
 
-    function createPage(mset) {
-        var text = mset.title.trim();
+    function updateCheckedPage() {
+        for (var i = 0; i < mPages.size; ++i)
+            mPages.child(i).active = i == checked; 
+    }
+
+    function createPage(mpage) {
+        var text = mpage.title.trim();
         if (text == "")
-            mset.title = "P" + (mPages.size + 1);
-        if (mset.speed <= 0)
-            mset.speed = 1;
+            mpage.title = "P" + (mPages.size + 1);
+        if (mpage.speed <= 0)
+            mpage.speed = 1;
         var c = createFact(mPages, "SignalsMenuPage.qml", {
-            "data": mset
+            "data": mpage
         });
         // c.removeTriggered.connect(function () {
         // // changes = true;

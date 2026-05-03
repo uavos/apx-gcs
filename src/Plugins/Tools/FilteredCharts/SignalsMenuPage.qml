@@ -47,6 +47,10 @@ Fact {
         updateTitle();
         updateDescr();
     }
+    onActiveChanged: {
+        if (active) 
+        setFact.checked = num;
+    }
 
     function addNewChart() {
         mMenuChart.trigger();

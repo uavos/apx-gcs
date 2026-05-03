@@ -42,12 +42,15 @@ TextButton {
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
     toolTip: pageFact ? pageFact.pageToolTip : ""
     Material.background: pageWarning ? Material.color(Material.Orange) : color
+    checked: pageFact ? pageFact.active : false
 
     onCheckedChanged: {
         if (!pageFact)
             return;
-        if (checked)
+        if (checked) {
             sgMainChart.speedFactorValue = pageFact.speed;
+            autosaveTimer.restart();
+        }
         pageFact.active = checked;
     }
 
