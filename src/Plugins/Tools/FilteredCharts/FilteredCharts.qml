@@ -264,6 +264,8 @@ Rectangle {
             IconButton {
                 iconName: "plus"
                 toolTip: qsTr("Edit chart configuration")
+                Layout.fillHeight: true
+                Layout.minimumWidth: height
                 onClicked: sgMenu.trigger()
             }
         }
