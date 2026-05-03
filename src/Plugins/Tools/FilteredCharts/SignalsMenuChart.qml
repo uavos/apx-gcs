@@ -194,18 +194,17 @@ Fact {
     }
 
     function chartWarning(msg) {
-        if (warningMsg == msg && timer.running)
+        if (warningMsg == msg && warnTimer.running)
             return;
         warningMsg = msg;
         console.warn(qsTr("Chart") + " " + title + ": " + msg);
-        timer.restart();
+        warnTimer.restart();
     }
 
     function hasScr(val) {
         if (!val || val !== scr)
-            return false;
+            return;
         chartWarning(val + " " + qsTr("variable already used"));
-        return true;
     }
 
     Fact {
@@ -256,7 +255,7 @@ Fact {
         flags: Fact.Int
         units: "mandala"
         onTextChanged: {
-            sgControl.checkScrMatches(text);
+            setFact.checkScrMatches(text);
             changes = true;
         }
     }

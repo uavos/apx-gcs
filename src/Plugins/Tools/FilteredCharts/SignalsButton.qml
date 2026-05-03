@@ -80,24 +80,7 @@ TextButton {
         return "#" + buttonGroup.buttons.indexOf(this);
     }
 
-    function callQuickChart() {
-        sgMenuPage.addNewChart();
-    }
-
-    function getSet() {
-        return sgMenuPage.save();
-    }
-
-    function loadSet(set) {
-        sgMenuPage.load(set);
-    }
-
     function getScrMatches(val) {
         return sgMenuPage.checkScrs(val);
     }
-
-    // Timer {
-    //     id: timer
-    //     interval: 10000
-    // }
 }

@@ -139,12 +139,10 @@ Fact {
         }
     }
 
+    // Check for binding script variable matches
     function checkScrs(val) {
-        var matches = false;
         for (var i = 0; i < mCharts.size; ++i)
-            if (mCharts.child(i).hasScr(val))
-                matches = true;
-        return matches;
+            mCharts.child(i).hasScr(val)
     }
 
     function updateTitle() {

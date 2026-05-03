@@ -280,4 +280,9 @@ Rectangle {
         interval: 1000
         onTriggered: sgMenu.saveSettings()
     }
+
+    Timer {
+        id: warnTimer
+        interval: 10000
+    }
 }

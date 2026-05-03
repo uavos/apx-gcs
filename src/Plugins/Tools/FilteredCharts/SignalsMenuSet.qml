@@ -147,6 +147,12 @@ Fact {
         return null;
     }
 
+    // Check for binding script variable matches
+    function checkScrMatches(val) {
+        for (var i = 0; i < mPages.size; ++i)
+            mPages.child(i).checkScrs(val)
+    }
+
     Fact {
         id: mSetName
         title: qsTr("Set name")
@@ -164,7 +170,6 @@ Fact {
         descr: qsTr("Creating and add new page")
         icon: "plus-circle"
         newItem: true
-        // onAddTriggered: createPage()
         onAddTriggered: createPage(save())
     }
     Fact {
