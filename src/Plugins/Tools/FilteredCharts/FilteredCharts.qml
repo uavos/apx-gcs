@@ -41,16 +41,10 @@ Rectangle {
     readonly property var pinnedPages: activeSet.pinnedPages
 
     Component.onCompleted: {
-        for (var i = 0; i < buttonGroup.buttons.length; ++i) {
-            var b = buttonGroup.buttons[i];
-            if (b.text !== sgControl.currentPage)
-                continue;
-            buttonGroup.checkedButton = b;
-            break;
-        }
-        //if (buttonGroup.checkedButton == null) {
-        //    buttonGroup.checkedButton = buttonGroup.buttons[0]; // check button #1
-        //}
+        if (buttonGroup.buttons.length <= 0)
+            return;
+        if (buttonGroup.checkedButton == null)
+            buttonGroup.checkedButton = buttonGroup.buttons[0]; // check button #1
     }
 
     Connections {
@@ -74,7 +68,6 @@ Rectangle {
     function changeSpeed() {
         if (!activePage)
             return;
-        // var newSpeed = 1;
         if (sgMainChart.speedFactorValue !== sgMainChart.speedFactor[sgMainChart.speedFactor.length - 1]) {
             for (var i = 0; i < sgMainChart.speedFactor.length - 1; ++i) {
                 if (sgMainChart.speedFactor[i] <= sgMainChart.speedFactorValue && sgMainChart.speedFactorValue < sgMainChart.speedFactor[i + 1]) {
@@ -85,12 +78,12 @@ Rectangle {
         } else {
             activePage.speed = sgMainChart.speedFactor[0];
         }
+        autosaveTimer.restart();
     }
 
     ColumnLayout {
         id: layout
         anchors.fill: parent
-        spacing: 0
 
         Repeater {
             model: sgControl.pinnedPages
@@ -106,7 +99,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 110 * ui.scale
                 Layout.minimumHeight: 20
-                
+
                 SignalsChartView {
                     id: sgPinnedChart
                     anchors.fill: parent
@@ -130,7 +123,7 @@ Rectangle {
                         Label {
                             id: lblPinnedPage
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text:  pinnedPageFact ? pinnedPageFact.title : ""
+                            text: pinnedPageFact ? pinnedPageFact.title : ""
                             font: apx.font_narrow(Style.fontSize * 0.8)
                         }
                         Label {
@@ -150,7 +143,7 @@ Rectangle {
                 }
 
                 function changePinnedSpeed() {
-                    if(!pinnedPageFact)
+                    if (!pinnedPageFact)
                         return;
                     if (sgPinnedChart.speedFactorValue !== sgPinnedChart.speedFactor[sgPinnedChart.speedFactor.length - 1]) {
                         for (var i = 0; i < sgPinnedChart.speedFactor.length - 1; ++i) {
@@ -162,6 +155,7 @@ Rectangle {
                     } else {
                         pinnedPageFact.speed = sgMainChart.speedFactor[0];
                     }
+                    autosaveTimer.restart();
                 }
             }
         }
@@ -265,26 +259,23 @@ Rectangle {
                     property int pageIndex: index
 
                     pageFact: modelData
-                    // checked: control.selectedPageFact
-                    //          ? pageFact === control.selectedPageFact
-                    //          : index === 0
-                    // pageToolTip: control.pageState(index).toolTip
-                    // pageWarning: control.pageState(index).warning
-                    // onEditTriggered: control.openPageEditor(pageFact)
                 }
             }
             IconButton {
                 iconName: "plus"
                 toolTip: qsTr("Edit chart configuration")
                 onClicked: sgMenu.trigger()
-                // SignalsMenu {
-                //     id: sgMenu
-                // }
             }
         }
     }
 
     SignalsMenu {
         id: sgMenu
+    }
+
+    Timer {
+        id: autosaveTimer
+        interval: 1000
+        onTriggered: sgMenu.saveSettings()
     }
 }

@@ -27,6 +27,7 @@ Fact {
     id: sgMenu
     property var defaults
     property bool destroyOnClose: true
+    readonly property string configs: "signals_2.json"  // TODO: rename to "signals.json" after all tests  
 
     name: "signals"
     flags: (Fact.Group | Fact.DragChildren)
@@ -34,33 +35,7 @@ Fact {
     descr: qsTr("Realtime chart configuration editor")
     icon: "gauge"
 
-    // signal accepted
-
-    // Component.onCompleted: open()
-
     Component.onCompleted: loadSettings()
-
-    // function open() {
-    //     //ensure mandala linked to unit
-    //     if (!parentFact) {
-    //         var p = parent;
-    //         parentFact = apx.fleet.local;
-    //         parent = p;
-    //     }
-    //     loadSettings();
-    // }
-
-    // function close() {
-    //     if (!destroyOnClose) {
-    //         sgMenu.deleteChildren();
-    //         loadSettings();
-    //         menuBack();
-    //         return;
-    //     }
-    //     sgMenu.deleteChildren();
-    //     menuBack();
-    //     parentFact = null;
-    // }
 
     function getCharts() {
         var charts = [];
@@ -131,18 +106,9 @@ Fact {
         return set;
     }
 
-    // function createDefaultSignals() {
-    // return {
-    //     "active": {
-    //         "signals": 0
-    //     },
-    //     "sets": [createDefaultSet()]
-    // };
-    // }
-
     function loadSettings() {
         var sets = [];
-        var f = application.prefs.loadFile("signals_2.json");
+        var f = application.prefs.loadFile(configs);
         var json = f ? JSON.parse(f) : {};
         var set = {};
         var currentSetIdx = -1;
@@ -180,7 +146,7 @@ Fact {
     }
 
     function saveSettings() {
-        var fjson = application.prefs.loadFile("signals_2.json");
+        var fjson = application.prefs.loadFile(configs);
         var json = fjson ? JSON.parse(fjson) : {};
         if (!json.active)
             json.active = {};
@@ -195,10 +161,8 @@ Fact {
             if (setFact.active)
                 json.active[name] = i;
         }
-        application.prefs.saveFile("signals_2.json", JSON.stringify(json, ' ', 2));
-        // accepted();
-        // close();
-        console.log("Signals settings saved")
+        application.prefs.saveFile(configs, JSON.stringify(json, ' ', 2));
+        console.log("Signals settings saved");
     }
 
     function createFact(parent, url, opts) {

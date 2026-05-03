@@ -46,7 +46,7 @@ TextButton {
     onCheckedChanged: {
         if (!pageFact)
             return;
-        if (checked) 
+        if (checked)
             sgMainChart.speedFactorValue = pageFact.speed;
         pageFact.active = checked;
     }
@@ -92,14 +92,9 @@ TextButton {
     function getScrMatches(val) {
         return sgMenuPage.checkScrs(val);
     }
+
     // Timer {
     //     id: timer
     //     interval: 10000
     // }
-
-    Timer {
-        id: saveTimer
-        interval: 1000
-        onTriggered: sgMenu.saveSettings()
-    }
 }

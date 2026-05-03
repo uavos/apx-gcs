@@ -115,7 +115,7 @@ Item {
             max: 0
             tickCount: 4
             labelsColor: "white"
-            labelsFont: apx.font_narrow(Style.fontSize * 0.75)
+            labelsFont: apx.font_narrow(Style.fontSize * 0.7)
             gridLineColor: "#555"
         }
 

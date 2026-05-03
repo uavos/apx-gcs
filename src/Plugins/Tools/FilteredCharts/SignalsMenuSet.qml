@@ -33,6 +33,7 @@ Fact {
     // property bool changes: false
     property var pages //from config
     property var pinnedPages: []
+    property var activePage: 0
     property var data: ({})
 
     signal selected(var num)
@@ -40,22 +41,6 @@ Fact {
 
     Component.onCompleted: load(data)
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
-
-    // function addNewPage() {
-    //     mMenuPage.trigger();
-    // }
-
-    // function updateBtnValues() {
-    //     sgBtn.values = [];
-    //     for (var i = 0; i < mPages.size; ++i)
-    //         sgBtn.values.push(mPages.child(i));
-    //     sgBtn.updateToolTip(sgBtn.values);
-    // }
-
-    // function updateChartsValues() {
-    //     for (var i = 0; i < mPages.size; ++i)
-    //         mPages.child(i).updateValue();
-    // }
 
     function save() {
         // changes = false;
@@ -85,7 +70,6 @@ Fact {
     }
 
     function createPage(mset) {
-        // function createPage() {
         var text = mset.title.trim();
         if (text == "")
             mset.title = "P" + (mPages.size + 1);
@@ -94,11 +78,6 @@ Fact {
         var c = createFact(mPages, "SignalsMenuPage.qml", {
             "data": mset
         });
-        // var page = {};
-        // page.values = [];
-        // var c = createFact(mPages, "SignalsMenuPage.qml", page);
-        // c.trigger();
-
         // c.removeTriggered.connect(function () {
         // // changes = true;
         // });
