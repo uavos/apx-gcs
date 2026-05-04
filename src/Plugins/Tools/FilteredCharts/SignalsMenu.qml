@@ -59,6 +59,7 @@ Fact {
     function createDefaultSet() {
         var set = {
             "title": "default",
+            "checked": 0,
             "pages": [
                 {
                     "title": "R",
