@@ -26,7 +26,7 @@ import APX.Facts
 Fact {
     value: "#ffffff"
 
-    property var changes: false
+    property bool changes: false
 
     onValueChanged: changes = true
     onChangesChanged: { if (changes) mChart.changes = true;}

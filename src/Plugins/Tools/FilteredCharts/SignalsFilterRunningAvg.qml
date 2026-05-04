@@ -39,7 +39,7 @@ Fact {
     onChangesChanged: changed(changes)
     Component.onCompleted: load(data)
 
-    signal changed(var changesValue)
+    signal changed(bool changesValue)
 
     function load(data) {
         value = data.value !== undefined ? data.value : 0

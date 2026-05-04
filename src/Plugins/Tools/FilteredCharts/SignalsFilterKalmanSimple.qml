@@ -40,7 +40,7 @@ Fact {
     onChangesChanged: {if (changes) fMenu.changes = true}
     Component.onCompleted: load(data)
 
-    signal changed(var changesValue)
+    signal changed(bool changesValue)
 
     function load(data) {
         value = data.value !== undefined ? data.value : 0
