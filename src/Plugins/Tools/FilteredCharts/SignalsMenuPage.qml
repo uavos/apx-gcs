@@ -39,7 +39,6 @@ Fact {
     property var data: ({})
 
     signal addTriggered
-    signal removeTriggered
 
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
     Component.onCompleted: {
@@ -123,9 +122,6 @@ Fact {
             return;
         var c = createFact(mCharts, "SignalsMenuChart.qml", {
             "data": mchart
-        });
-        c.removeTriggered.connect(function () {
-            changes = true;
         });
         changes = true;
     }
@@ -269,8 +265,9 @@ Fact {
         visible: !newItem
         icon: "delete"
         onTriggered: {
-            removeTriggered();
+            var active = pageFact.active;
             pageFact.deleteFact();
+            if(active) setFact.setChecked(0);
         }
     }
 }

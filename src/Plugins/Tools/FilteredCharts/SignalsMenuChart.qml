@@ -44,7 +44,6 @@ Fact {
     property var scr: ""
 
     signal addTriggered
-    signal removeTriggered
 
     Component.onCompleted: {
         load(data);
@@ -284,9 +283,6 @@ Fact {
         title: qsTr("Remove")
         visible: !newItem
         icon: "delete"
-        onTriggered: {
-            removeTriggered();
-            mChart.deleteFact();
-        }
+        onTriggered: mChart.deleteFact();
     }
 }

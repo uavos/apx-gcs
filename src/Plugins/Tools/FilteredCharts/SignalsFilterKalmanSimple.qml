@@ -146,9 +146,6 @@ Fact {
         flags: (Fact.Action | Fact.Remove)
         title: qsTr("Remove")
         icon: "delete"
-        onTriggered: {
-            removeTriggered();
-            ksFilter.deleteFact();
-        }
+        onTriggered: ksFilter.deleteFact();
     }
 }

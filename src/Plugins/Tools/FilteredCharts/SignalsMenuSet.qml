@@ -59,7 +59,7 @@ Fact {
         checked = set.checked;
         pages = set.pages;
         updateSetItems();
-        updateCheckedPage();
+        setChecked(checked);
         changes = false;
     }
 
@@ -70,9 +70,10 @@ Fact {
         }
     }
 
-    function updateCheckedPage() {
-        for (var i = 0; i < mPages.size; ++i)
-            mPages.child(i).active = i == checked; 
+    function setChecked(num) {
+        for (var i = 0; i < mPages.size; ++i) {
+            mPages.child(i).active = i == num;
+        } 
     }
 
     function createPage(mpage) {
@@ -165,7 +166,10 @@ Fact {
         descr: qsTr("Creating and add new page")
         icon: "plus-circle"
         newItem: true
-        onAddTriggered: createPage(save())
+        onAddTriggered: {
+            createPage(save());
+            if(mPages.size === 1) setChecked(0);
+        }
     }
     Fact {
         id: mPages
@@ -201,7 +205,7 @@ Fact {
                 console.warn(qsTr("Can't delete default set"));
                 return;
             }
-            if(setFact.active)select(0)
+            if (setFact.active) select(0);
             setFact.deleteFact();
         }
     }

@@ -31,8 +31,6 @@ Fact {
     property bool changes: false
     property var data: ({})
 
-    signal removeTriggered
-
     Component.onCompleted: load(value)
     onChangesChanged: { if (changes) mChart.changes = true;}
 
