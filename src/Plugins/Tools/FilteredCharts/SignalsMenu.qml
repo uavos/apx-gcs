@@ -199,6 +199,7 @@ Fact {
         var defaultSet = sgMenu.child(0);
         defaultSet.data = createDefaultSet();
         defaultSet.load(defaultSet.data);
+        select(0);
     }
 
     function getActiveSetIndex() {
@@ -241,7 +242,7 @@ Fact {
         onTriggered: createSet()
     }
     Fact {
-        title: qsTr("Reset defaults")
+        title: qsTr("Reset to defaults")
         flags: Fact.Action
         icon: "restore"
         onTriggered: resetToDefaults()
