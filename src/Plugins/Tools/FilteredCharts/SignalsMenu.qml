@@ -194,11 +194,26 @@ Fact {
     }
 
     function resetToDefaults() {
-        if (sgMenu.size <= 0)
-            return;
-        var defaultSet = sgMenu.child(0);
-        defaultSet.data = createDefaultSet();
-        defaultSet.load(defaultSet.data);
+        var setIndex = -1
+        var set = createDefaultSet();
+        for(var i = 0; i < sgMenu.size; ++ i) {
+            var title = sgMenu.child(i).title.trim().toLowerCase()
+            if (title === "default") {
+                var defaultSet = sgMenu.child(i);
+                defaultSet.load(set);
+                defaultSet.move(0)
+                setIndex = i;
+                break;
+           }
+        }
+        if (setIndex < 0) {
+            var c = createFact(sgMenu, "SignalsMenuSet.qml", {
+                "data": set
+            });
+            c.selected.connect(select);
+            c.selected.connect(saveSettings);
+            c.move(0);
+        }
         select(0);
     }
 

@@ -38,7 +38,7 @@ Rectangle {
     readonly property var pages: sgMenu.getActivePages()
     readonly property var activeSet: sgMenu.getActiveSet()
     readonly property var activePage: sgMenu.getActivePage()
-    readonly property var pinnedPages: activeSet.pinnedPages
+    readonly property var pinnedPages: activeSet ? activeSet.pinnedPages : []
 
     Component.onCompleted: {
         if (buttonGroup.buttons.length <= 0)

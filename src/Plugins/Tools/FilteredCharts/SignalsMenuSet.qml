@@ -201,10 +201,6 @@ Fact {
         title: qsTr("Remove")
         icon: "delete"
         onTriggered: {
-            if (setFact.num <= 0) {  // don't delete default set
-                console.warn(qsTr("Can't delete default set"));
-                return;
-            }
             if (setFact.active) select(0);
             setFact.deleteFact();
         }
