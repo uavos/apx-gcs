@@ -36,7 +36,6 @@ Fact {
     property var data: ({})
 
     signal selected(var num)
-    signal removeTriggered
 
     Component.onCompleted: load(data)
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
@@ -202,7 +201,7 @@ Fact {
                 console.warn(qsTr("Can't delete default set"));
                 return;
             }
-            removeTriggered();
+            if(setFact.active)select(0)
             setFact.deleteFact();
         }
     }
