@@ -29,8 +29,7 @@ Fact {
     flags: (Fact.Group | Fact.FlatModel)
     title: "Set"
 
-    property bool newItem: false
-    // property bool changes: false
+    property bool changes: false
     property var pages //from config
     property var pinnedPages: []
     property var checked: 0
@@ -43,7 +42,7 @@ Fact {
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
 
     function save() {
-        // changes = false;
+        changes = false;
         var tmpPages = [];
         for (var i = 0; i < mPages.size; ++i) {
             var mpage = mPages.child(i).save();
@@ -62,7 +61,7 @@ Fact {
         pages = set.pages;
         updateSetItems();
         updateCheckedPage();
-       // changes = false;
+        changes = false;
     }
 
     function updateSetItems() {
@@ -86,10 +85,6 @@ Fact {
         var c = createFact(mPages, "SignalsMenuPage.qml", {
             "data": mpage
         });
-        // c.removeTriggered.connect(function () {
-        // // changes = true;
-        // });
-        // // changes = true;
     }
 
     function createFact(parent, url, opts) {
@@ -111,6 +106,7 @@ Fact {
             descrList.push(text);
         }
         descr = descrList.length > 0 ? descrList.join(", ") : "";
+        changes = true;
     }
 
     function updatePinnedPages() {
@@ -161,7 +157,7 @@ Fact {
         icon: "rename-box"
         onValueChanged: {
             setFact.title = value;
-            // changes = true;
+            changes = true;
         }
     }
     SignalsMenuPage {
@@ -183,7 +179,7 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        visible: !newItem // && changes
+        visible: changes
         icon: "check-circle"
         onTriggered: sgMenu.saveSettings()
     }
@@ -200,7 +196,6 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Remove)
         title: qsTr("Remove")
-        visible: !newItem
         icon: "delete"
         onTriggered: {
             if (setFact.num <= 0) {  // don't delete default set

@@ -150,10 +150,13 @@ Fact {
             return;
         var text = mPageName.text.trim();
         title = text != "" ? text : qsTr("P") + (Math.max(pageFact.num, 0) + 1);
+        changes = true;
     }
 
     function updateDescr() {
         var descrList = [];
+        if(mPinned.value)
+             descrList.push("PINNED")
         var speedDescr = "SPEED: " + mSpeed.value;
         descrList.push(speedDescr);
         var descrCharts = [];
@@ -170,6 +173,7 @@ Fact {
             descrList.push(chartsDescr);
         }
         descr = descrList.length > 0 ? descrList.join(", ") : "";
+        changes = true;
     }
 
     function updateToolTip() {
@@ -201,7 +205,10 @@ Fact {
         descr: qsTr("Pin this page to the signals layout")
         flags: Fact.Bool
         icon: "pin"
-        onValueChanged: setFact.updatePinnedPages()
+        onValueChanged: { 
+            setFact.updatePinnedPages()
+            updateDescr();
+        }
     }
     Fact {
         id: mSpeed
@@ -217,7 +224,6 @@ Fact {
             if (active && setFact.active)
                 sgMainChart.speedFactorValue = value;
             updateDescr();
-            // changes = true;
         }
     }
     SignalsMenuChart {
@@ -253,7 +259,7 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        enabled: !newItem
+        enabled: !newItem && changes
         icon: "check-circle"
         onTriggered: sgMenu.saveSettings()
     }

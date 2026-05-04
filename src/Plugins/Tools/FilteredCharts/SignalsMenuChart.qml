@@ -58,6 +58,7 @@ Fact {
     }
 
     onValueChanged: saveValue2Fact()
+    onChangesChanged: {if (changes) pageFact.changes = true}
 
     function load(data) {
         for (var i = 0; i < mChart.size; ++i) {
@@ -65,7 +66,6 @@ Fact {
             var v = data[settingName(f)];
             f.value = v;
         }
-        // mFilters.fillData();
         updateChartVars();
     }
 
