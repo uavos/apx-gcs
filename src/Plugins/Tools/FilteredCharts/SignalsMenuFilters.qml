@@ -136,6 +136,7 @@ Fact {
         title: qsTr("Filters")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
         onSizeChanged: changes = true
+        onItemMoved: changes = true
     }
 
     // Actions
