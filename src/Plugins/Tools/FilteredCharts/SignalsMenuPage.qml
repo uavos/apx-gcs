@@ -227,6 +227,7 @@ Fact {
         title: qsTr("Add new chart")
         descr: qsTr("Creating and setting a new chart")
         icon: "plus-circle"
+        visible: !pageFact.newItem
         newItem: true
         onAddTriggered: createChart(save())
     }
