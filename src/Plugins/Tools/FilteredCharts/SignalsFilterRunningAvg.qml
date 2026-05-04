@@ -35,8 +35,11 @@ Fact {
     property var data: ({})
     property var coef: 1
 
+    onValueChanged: changes = true;
+    onChangesChanged: changed(changes)
     Component.onCompleted: load(data)
-    // onChangesChanged: { if (changes) fMenu.changes = true;}
+
+    signal changed(var changesValue)
 
     function load(data) {
         value = data.value !== undefined ? data.value : 0
@@ -105,7 +108,7 @@ Fact {
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        // enabled: !mChart.newItem && changes
+        enabled: !mChart.newItem && changes
         icon: "check-circle"
         onTriggered: sgMenu.saveSettings()
     }

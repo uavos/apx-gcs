@@ -57,7 +57,8 @@ Fact {
             tmpFilters.push(mfilter);
         }
         var fmenu = {};
-        fmenu.filters = tmpFilters; 
+        fmenu.filters = tmpFilters;
+        changes = false;
         return fmenu;
     }
 
@@ -95,6 +96,21 @@ Fact {
         });
     }
 
+    function createFact(parent, url, opts) {
+        var component = Qt.createComponent(url);
+        if (component.status === Component.Ready) {
+            var c = component.createObject(parent, opts);
+            c.parentFact = parent;
+            c.changed.connect(setChanges)
+            return c;
+        }
+    }
+
+    function setChanges(changesValue) {
+        if(changesValue)
+            fMenu.changes = changesValue;
+    }
+
     // Using filters
     function useFilters(value, v) {
         for(var i = 0; i < fSet.size; ++i) {
@@ -121,13 +137,14 @@ Fact {
         id: fSet
         title: qsTr("Filters")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
+        onSizeChanged: changes = true
     }
 
     // Actions
     Fact {
         flags: (Fact.Action | Fact.Apply)
         title: qsTr("Save")
-        // enabled: !mChart.newItem && changes
+        enabled: !mChart.newItem && changes
         icon: "check-circle"
         onTriggered: sgMenu.saveSettings()
     }
