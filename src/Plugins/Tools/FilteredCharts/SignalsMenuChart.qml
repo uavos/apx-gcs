@@ -74,7 +74,7 @@ Fact {
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
             var s = f.text.trim();
-            if (f.size != 0) {
+            if (f.size != 0 && f.name !== "color") {
                 s = f.save();
             }
             if (s === "") {

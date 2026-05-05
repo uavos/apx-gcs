@@ -20,22 +20,101 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
+import QtQuick.Controls.Material
 
 import APX.Facts
 
 Fact {
+    id: mColor
     property bool changes: false
+
+    readonly property var colorBaseLabels: [
+        qsTr("Red"),
+        qsTr("Pink"),
+        qsTr("Purple"),
+        qsTr("Deep Purple"),
+        qsTr("Indigo"),
+        qsTr("Blue"),
+        qsTr("Light Blue"),
+        qsTr("Cyan"),
+        qsTr("Teal"),
+        qsTr("Green"),
+        qsTr("Orange"),
+        qsTr("Blue Grey")
+    ]
+    readonly property var colorBaseValues: [
+        Material.Red,
+        Material.Pink,
+        Material.Purple,
+        Material.DeepPurple,
+        Material.Indigo,
+        Material.Blue,
+        Material.LightBlue,
+        Material.Cyan,
+        Material.Teal,
+        Material.Green,
+        Material.Orange,
+        Material.BlueGrey
+    ]
+    readonly property var colorShadeLabels: [
+        qsTr("300"),
+        qsTr("500"),
+        qsTr("700"),
+        qsTr("900")
+    ]
+    readonly property var colorShadeValues: [
+        Material.Shade300,
+        Material.Shade500,
+        Material.Shade700,
+        Material.Shade900
+    ]
+    readonly property var colorsCount: colorBaseValues.length * colorShadeValues.length
+    readonly property var chartsCount: mCharts.size
 
     onValueChanged: updateDescr()
     onChangesChanged: { if (changes) mChart.changes = true;}
     Component.onCompleted: {
         if (!value || value === undefined) 
             value = qsTr("Auto")
-        console.log("Component created", value)
-            
-        var opt = opts;
-        opt.page = "qrc:/FilteredCharts/SignalsColorChooser.qml";
-        opts = opt;
+        rebuildColorChoices()
+    }
+
+    function clearColorChoices()
+    {
+        if (!mColor)
+            return
+        for (var i = mColor.size - 1; i >= 0; --i) {
+            var child = mColor.child(i)
+            if (child) {
+                child.deleteFact()
+            }
+        }
+    }
+
+    function rebuildColorChoices()
+    {
+        clearColorChoices();
+        createFact(mColor, "SignalsColorChooser.qml", {
+                       "title": qsTr("Auto"),
+                       "descr": qsTr("Use automatic series color"),
+                       "colorValue": "",
+                       "section": "",
+                       "value": qsTr("Auto")
+                   })
+        for (var i = 0; i < colorShadeValues.length; ++i) {
+            var shadeLabel = colorShadeLabels[i]
+            for (var j = 0; j < colorBaseValues.length; ++j) {
+                var colorCode = Material.color(colorBaseValues[j],
+                                               colorShadeValues[i]).toString().toUpperCase()
+                createFact(mColor, "SignalsColorChooser.qml", {
+                               "title": colorBaseLabels[j],
+                               "descr": colorCode,
+                               "colorValue": colorCode,
+                               "section": shadeLabel,
+                               "value": colorCode
+                           })
+            }
+        }
     }
 
     function updateDescr() {
