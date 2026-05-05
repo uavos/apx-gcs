@@ -31,7 +31,6 @@ Fact {
     precision: 2
     icon: "rectangle"
 
-    property var chartsCount: mCharts.size
     property bool changes: false
     property bool newItem: false
     property bool warning: false

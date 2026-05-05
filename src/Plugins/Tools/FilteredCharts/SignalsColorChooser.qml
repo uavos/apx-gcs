@@ -28,21 +28,9 @@ Fact {
     function setAutoColor() {
         if (title !== qsTr("Auto"))
             return;
-        var f = parentFact    
-        if (!f)
+        if (!parentFact)
             return;
-        if(f.colorsCount <= 0) {
-            f.value = "#ffffff"
-            return;
-        }
-        var index = 0
-        if(!f.parentFact.newItem) {
-            index = f.parentFact.num % f.colorsCount + 1
-            console.log(index)
-        }
-        else 
-            index = f.chartsCount
-        f.value = f.child(num + index).colorValue
+        parentFact.setDefaultColor()
     }
 }
 

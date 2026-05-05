@@ -68,9 +68,7 @@ Fact {
         Material.Shade700,
         Material.Shade900
     ]
-    readonly property var colorsCount: colorBaseValues.length * colorShadeValues.length
-    readonly property var chartsCount: mCharts.size
-
+  
     onValueChanged: updateDescr()
     onChangesChanged: { if (changes) mChart.changes = true;}
     Component.onCompleted: {
@@ -125,5 +123,27 @@ Fact {
             descrText = value
         descr = qsTr("COLOR") + ": " + descrText.toString().toUpperCase();
         changes = true;
+    }
+
+    function setDefaultColor()
+    {
+        // var index = 1
+        // if(colorsCount <= 0)
+        //     value = "#FFFFFF";
+        // if(!mChart.newItem)
+        //     index += mChart.num % colorsCount
+        // else 
+        //     index += mCharts.size
+        // value = mColor.child(index).colorValue
+        // console.log("color: ", value , "-", mColor.size)
+        var index = 0;
+        var colorsCount = colorBaseValues.length
+        if(colorsCount <= 0)
+            value = "#FFFFFF";
+        if(!mChart.newItem)
+            index = mChart.num % colorsCount
+        else 
+            index = mCharts.size % colorsCount
+        value = Material.color(colorBaseValues[index], colorShadeValues[0]).toString().toUpperCase();
     }
 }
