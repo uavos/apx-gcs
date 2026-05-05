@@ -24,24 +24,27 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    value: "#ffffff"
-
     property bool changes: false
 
-    onValueChanged: changes = true
+    onValueChanged: updateDescr()
     onChangesChanged: { if (changes) mChart.changes = true;}
     Component.onCompleted: {
+        if (!value || value === undefined) 
+            value = qsTr("Auto")
+        console.log("Component created", value)
+            
         var opt = opts;
         opt.page = "qrc:/FilteredCharts/SignalsColorChooser.qml";
         opts = opt;
     }
 
-    Fact {
-        id: mApply
-        flags: (Fact.Action | Fact.Apply)
-        title: qsTr("Save")
-        enabled: !mChart.newItem && changes
-        icon: "check-circle"
-        onTriggered: sgMenu.saveSettings()
+    function updateDescr() {
+        var descrText = "";
+        if(!value || value === undefined)
+            descrText = qsTr("Auto")
+        else
+            descrText = value
+        descr = qsTr("COLOR") + ": " + descrText.toString().toUpperCase();
+        changes = true;
     }
 }

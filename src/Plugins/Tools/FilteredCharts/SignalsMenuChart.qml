@@ -31,6 +31,7 @@ Fact {
     precision: 2
     icon: "rectangle"
 
+    property var chartsCount: mCharts.size
     property bool changes: false
     property bool newItem: false
     property bool warning: false
@@ -122,10 +123,12 @@ Fact {
             var f = child(i);
             if (!f.name)
                 continue;
-            if (f.name === "title")
-                continue;
+            // if (f.name === "title")
+            //     continue;
             if (f.text === "")
                 continue;
+            if (f.name === "color")
+                descrList.push(f.name.toUpperCase() + ": " + f.text.toUpperCase());    
             else
                 descrList.push(f.name.toUpperCase() + ": " + f.text);
         }
@@ -231,6 +234,10 @@ Fact {
         name: "color"
         title: qsTr("Color")
         descr: qsTr("Chart color")
+        opts: ({
+            "editor": Qt.resolvedUrl("SignalsColorEditor.qml")
+        })
+        value: "#ffffff"
     }
     SignalsMenuFilters {
         id: mFilters
