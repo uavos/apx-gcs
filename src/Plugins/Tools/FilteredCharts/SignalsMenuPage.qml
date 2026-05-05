@@ -48,7 +48,7 @@ Fact {
     }
     onActiveChanged: {
         if (active) 
-        setFact.checked = num;
+            setFact.checked = num;
     }
 
     function addNewChart() {

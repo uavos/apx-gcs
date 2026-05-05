@@ -47,10 +47,8 @@ TextButton {
     onCheckedChanged: {
         if (!pageFact)
             return;
-        if (checked) {
+        if (checked)
             sgMainChart.speedFactorValue = pageFact.speed;
-            autosaveTimer.restart();
-        }
         pageFact.active = checked;
     }
 

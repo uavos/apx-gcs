@@ -32,13 +32,14 @@ Fact {
     property bool changes: false
     property var pages //from config
     property var pinnedPages: []
-    property var checked: 0
+    property var checkedPage: 0
     property var data: ({})
 
     signal selected(var num)
 
     Component.onCompleted: load(data)
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
+    onCheckedPageChanged: if(active) sgMenu.saveSettings() 
 
     function save() {
         changes = false;
@@ -49,17 +50,17 @@ Fact {
         }
         var set = {};
         set.title = mSetName.value;
-        set.checked = checked;
+        set.checked = checkedPage;
         set.pages = tmpPages;
         return set;
     }
 
     function load(set) {
         mSetName.value = set.title;
-        checked = set.checked;
+        checkedPage = set.checked;
         pages = set.pages;
         updateSetItems();
-        setChecked(checked);
+        setChecked(checkedPage);
         changes = false;
     }
 
