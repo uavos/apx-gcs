@@ -26,8 +26,8 @@ import APX.Facts
 
 Fact {
     id: mColor
-    property bool changes: false
 
+    property bool changes: false
     readonly property var colorBaseLabels: [
         qsTr("Red"),
         qsTr("Pink"),
@@ -127,15 +127,6 @@ Fact {
 
     function setDefaultColor()
     {
-        // var index = 1
-        // if(colorsCount <= 0)
-        //     value = "#FFFFFF";
-        // if(!mChart.newItem)
-        //     index += mChart.num % colorsCount
-        // else 
-        //     index += mCharts.size
-        // value = mColor.child(index).colorValue
-        // console.log("color: ", value , "-", mColor.size)
         var index = 0;
         var colorsCount = colorBaseValues.length
         if(colorsCount <= 0)
