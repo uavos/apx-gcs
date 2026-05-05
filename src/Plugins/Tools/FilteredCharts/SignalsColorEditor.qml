@@ -25,24 +25,15 @@ import QtQuick.Controls.Material
 Rectangle {
     id: editor
 
-    // readonly property string colorText: fact && fact.colorValue !== undefined
-    //                                     ? String(fact.colorValue).trim().toUpperCase()
-    //                                     : (fact && fact.itemOwner && fact.itemOwner.colorValue !== undefined
-    //                                        ? String(fact.itemOwner.colorValue).trim().toUpperCase()
-    //                                        : "")
-    // readonly property bool selected: fact && fact.itemOwner
-    //                                  && fact.itemOwner.colorValue === colorText
-
-    
-    readonly property string colorText: fact && fact.value !== undefined ? fact.value.trim().toUpperCase() : qsTr("Auto")
-    readonly property bool auto: colorText.toUpperCase() === "AUTO"                           
+    readonly property string colorText: fact && fact.value !== undefined ? fact.value.trim() : qsTr("Auto")
+    readonly property bool auto: colorText === qsTr("Auto")                           
 
     implicitHeight: factButton.height * 0.6
     implicitWidth: factButton.height * 1.8
     radius: height / 12
     border.width: 2
     border.color: Material.hintTextColor
-    color: !auto ? colorText : "transparent"
+    color: !auto ? colorText.toUpperCase() : "transparent"
 
    Text {
         anchors.centerIn: parent

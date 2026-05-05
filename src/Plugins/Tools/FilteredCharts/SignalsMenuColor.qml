@@ -69,11 +69,13 @@ Fact {
         Material.Shade900
     ]
   
-    onValueChanged: updateDescr()
+    onValueChanged: updateChartColor()
     onChangesChanged: { if (changes) mChart.changes = true;}
     Component.onCompleted: {
         if (!value || value === undefined) 
             value = qsTr("Auto")
+        if(!mChart.newItem && value ===  qsTr("Auto"))
+            setDefaultColor()
         rebuildColorChoices()
     }
 
@@ -115,6 +117,31 @@ Fact {
         }
     }
 
+    function setDefaultColor()
+    {
+        var colorsCount = colorBaseValues.length
+        if (colorsCount <= 0) {
+            value = "#FFFFFF";
+            return;
+        }
+        var index = 0;
+        if (mCharts.size !== 0) {
+            if(mChart.num === 0) {
+                var f = mChart.parentFact
+                index = !(f && f.title === "Charts") ? mCharts.size % colorsCount : 0
+            } else {
+                index = mChart.num % colorsCount
+            }
+        }
+        value = Material.color(colorBaseValues[index], colorShadeValues[0]).toString().toUpperCase();
+    }
+
+    function updateChartColor() {
+        if(!mChart.newItem)
+            mChart.updateIconColor(value)
+        updateDescr();
+    }
+
     function updateDescr() {
         var descrText = "";
         if(!value || value === undefined)
@@ -123,18 +150,5 @@ Fact {
             descrText = value
         descr = qsTr("COLOR") + ": " + descrText.toString().toUpperCase();
         changes = true;
-    }
-
-    function setDefaultColor()
-    {
-        var index = 0;
-        var colorsCount = colorBaseValues.length
-        if(colorsCount <= 0)
-            value = "#FFFFFF";
-        if(!mChart.newItem)
-            index = mChart.num % colorsCount
-        else 
-            index = mCharts.size % colorsCount
-        value = Material.color(colorBaseValues[index], colorShadeValues[0]).toString().toUpperCase();
     }
 }

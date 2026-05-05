@@ -162,7 +162,7 @@ Fact {
                 json.active[name] = i;
         }
         application.prefs.saveFile(configs, JSON.stringify(json, ' ', 2));
-        console.log("Signals settings saved");
+        // console.log("Signals settings saved");
     }
 
     function createFact(parent, url, opts) {

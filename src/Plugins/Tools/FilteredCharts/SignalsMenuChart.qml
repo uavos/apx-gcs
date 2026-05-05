@@ -122,8 +122,6 @@ Fact {
             var f = child(i);
             if (!f.name)
                 continue;
-            // if (f.name === "title")
-            //     continue;
             if (f.text === "")
                 continue;
             if (f.name === "color")
@@ -140,12 +138,18 @@ Fact {
     function setColor() {
         var opt = mChart.opts;
         opt.color = mColor.text ? mColor.text : "#ffffff"; // Black color for chart turn into white
-        if (!newItem)
-            opt.iconColor = opt.color;
         mChart.opts = opt;
+        if (!newItem)
+            updateIconColor(opt.color)
         mColor.changes = false;
         pageFact.updateBtnValues();
         sgMainChart.updateSeriesColor();
+    }
+
+    function updateIconColor(iconColor) {
+        var opt = mChart.opts;
+        opt.iconColor = iconColor;
+        mChart.opts = opt;
     }
 
     function updateValue() {
