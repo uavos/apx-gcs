@@ -153,8 +153,8 @@ Fact {
     function updateDescr() {
         var descrList = [];
         if(mPinned.value)
-             descrList.push("PINNED")
-        var speedDescr = "SPEED: " + mSpeed.value;
+             descrList.push(qsTr("Pinned").toUpperCase())
+        var speedDescr = qsTr("Speed").toUpperCase() + ": " + mSpeed.value;
         descrList.push(speedDescr);
         var descrCharts = [];
         for (var i = 0; i < mCharts.size; ++i) {
@@ -166,7 +166,7 @@ Fact {
         }
         if (descrCharts.length > 0) {
             var chartsDescr = descrCharts.join(", ");
-            chartsDescr = "CHARTS: " + chartsDescr;
+            chartsDescr = qsTr("Charts").toUpperCase() + ": " + chartsDescr;
             descrList.push(chartsDescr);
         }
         descr = descrList.length > 0 ? descrList.join(", ") : "";

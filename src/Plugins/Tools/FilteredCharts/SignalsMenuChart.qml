@@ -214,7 +214,7 @@ Fact {
 
     Fact {
         id: mFact
-        name: "binding"
+        // name: "binding"
         title: qsTr("Binding")
         descr: qsTr("Fact value")
         flags: Fact.Int

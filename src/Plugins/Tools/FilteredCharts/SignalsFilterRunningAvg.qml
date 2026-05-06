@@ -35,7 +35,7 @@ Fact {
     property var data: ({})
     property var coef: 1
 
-    onValueChanged: changes = true;
+    onValueChanged: fMenu.updateDescr()
     onChangesChanged: changed(changes)
     Component.onCompleted: load(data)
 

@@ -36,8 +36,8 @@ Fact {
     property var envCoef: 1
     property var data: ({})
 
-    onValueChanged: changes = true
-    onChangesChanged: {if (changes) fMenu.changes = true}
+    onValueChanged: fMenu.updateDescr()
+    onChangesChanged: changed(changes)
     Component.onCompleted: load(data)
 
     signal changed(bool changesValue)

@@ -109,6 +109,31 @@ Fact {
             fMenu.changes = changesValue;
     }
 
+    function updateDescr() {
+        var descrList = [];
+        var filtersCount = qsTr("Count").toUpperCase() + ": " + fSet.size;
+        descrList.push(filtersCount);
+        var filtersList = getUsedFiltersTitles();
+        if (filtersList.length > 0) {
+            var filtersOn = qsTr("On").toUpperCase() + ": " + filtersList.join(", ");
+            descrList.push(filtersOn);
+        }
+        descr = descrList.join(", ");
+        changes = true;
+    }
+
+    function getUsedFiltersTitles() {
+        var filtersList = [];
+        for(var i = 0; i < fSet.size; ++i) {
+            var f = fSet.child(i);
+            if(!f || !f.value) 
+                continue;
+            if(f.value)
+                filtersList.push(f.title)
+        }
+        return filtersList;
+    }
+
     // Using filters
     function useFilters(value, v) {
         for(var i = 0; i < fSet.size; ++i) {
@@ -135,8 +160,8 @@ Fact {
         id: fSet
         title: qsTr("Filters")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: changes = true
-        onItemMoved: changes = true
+        onSizeChanged: updateDescr();
+        onItemMoved: updateDescr();
     }
 
     // Actions
