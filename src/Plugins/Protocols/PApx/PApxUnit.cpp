@@ -116,11 +116,11 @@ void PApxUnit::send_uplink(QByteArray packet)
 
     _req.request(pid);
 
-    _req.write<xbus::unit::squawk_t>(_squawk);
     trace()->block(PApx::squawkText(_squawk));
     trace()->block(title().append(':'));
-    _req.append(stream.payload());
 
+    _req << _squawk;
+    _req.append(stream.payload());
     _req.send();
 }
 
