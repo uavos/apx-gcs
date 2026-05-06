@@ -18,7 +18,7 @@ Fact {
     function setColor() {
         if(!parentFact)
             return;
-        if(title === "Auto") {  
+        if(title === qsTr("Auto")) {  
             setAutoColor()
             return;
         }

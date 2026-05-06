@@ -50,6 +50,7 @@ Fact {
         if (active) 
             setFact.checkedPage = num;
     }
+    onPinnedChanged: setFact.updatePinnedPages()
 
     function addNewChart() {
         mMenuChart.trigger();
@@ -201,10 +202,7 @@ Fact {
         descr: qsTr("Pin this page to the signals layout")
         flags: Fact.Bool
         icon: "pin"
-        onValueChanged: { 
-            setFact.updatePinnedPages()
-            updateDescr();
-        }
+        onValueChanged: updateDescr();
     }
     Fact {
         id: mSpeed

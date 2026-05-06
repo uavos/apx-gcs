@@ -60,6 +60,7 @@ Fact {
         checkedPage = set.checked;
         pages = set.pages;
         updateSetItems();
+        updatePinnedPages();
         setChecked(checkedPage);
         changes = false;
     }
