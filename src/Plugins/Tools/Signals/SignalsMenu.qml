@@ -250,6 +250,15 @@ Fact {
         return activeSet.getActivePage();
     }
 
+    function getPinnedPages() {
+        if (sgMenu.size <= 0)
+            return [];
+        var activeSet = getActiveSet();
+        if (!activeSet)
+            return [];
+        return activeSet.getPinned();
+    }
+
     Fact {
         title: qsTr("Add set")
         flags: Fact.Action

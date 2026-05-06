@@ -31,7 +31,6 @@ Fact {
 
     property bool changes: false
     property var pages //from config
-    property var pinnedPages: []
     property var checkedPage: 0
     property var data: ({})
 
@@ -62,7 +61,6 @@ Fact {
         checkedPage = set.checked;
         pages = set.pages;
         updateSetItems();
-        updatePinnedPages();
         setChecked(checkedPage);
         changes = false;
     }
@@ -113,16 +111,16 @@ Fact {
         changes = true;
     }
 
-    function updatePinnedPages() {
-        var pages = [];
+    function getPinned() {
+        var pinnedPages = [];
         for (var i = 0; i < mPages.size; ++i) {
             var f = mPages.child(i);
             if (!f)
                 continue;
-            if (f.pinned)
-                pages.push(f);
+            if (f.pinned)    
+                pinnedPages.push(f);
         }
-        pinnedPages = pages.length > 0 ? pages : [];
+        return pinnedPages.length > 0 ? pinnedPages : [];
     }
 
     function getPages() {

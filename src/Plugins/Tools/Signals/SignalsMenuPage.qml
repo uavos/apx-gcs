@@ -50,7 +50,6 @@ Fact {
         if (active) 
             setFact.checkedPage = num;
     }
-    onPinnedChanged: setFact.updatePinnedPages()
 
     function addNewChart() {
         mMenuChart.trigger();
