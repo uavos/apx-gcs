@@ -1,6 +1,5 @@
 add_subdirectory("DatalinkInspector")
 add_subdirectory("VcpForwarding")
-add_subdirectory("FilteredCharts")
 add_subdirectory("Signals")
 add_subdirectory("Ats")
 add_subdirectory("Swarm")
