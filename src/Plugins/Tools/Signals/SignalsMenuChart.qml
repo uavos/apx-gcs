@@ -33,22 +33,23 @@ Fact {
 
     property bool changes: false
     property bool newItem: false
-    property var warning: ""
+    property bool warning: false
+    property var warningMsg: ""
     property var data: ({})
 
     // Chart values
     property var type: "none"
     property var expr: ""
+    property var exprW: ""
     property var scr: ""
 
     signal addTriggered
-    signal removeTriggered
 
     Component.onCompleted: {
         load(data);
         updateTitle();
         updateDescr();
-        mTitle.valueChanged.connect(updateTitle);
+        mBind.valueChanged.connect(updateTitle);
         mBind.valueChanged.connect(updateDescr);
         mColor.valueChanged.connect(updateDescr);
         mFilters.valueChanged.connect(updateDescr);
@@ -56,14 +57,14 @@ Fact {
     }
 
     onValueChanged: saveValue2Fact()
+    onChangesChanged: {if (changes) pageFact.changes = true}
 
-    function load() {
+    function load(data) {
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
             f.value = v;
         }
-        mFilters.fillData();
         updateChartVars();
     }
 
@@ -72,7 +73,7 @@ Fact {
         for (var i = 0; i < mChart.size; ++i) {
             var f = child(i);
             var s = f.text.trim();
-            if (f.size != 0) {
+            if (f.size != 0 && f.name !== "color") {
                 s = f.save();
             }
             if (s === "") {
@@ -93,11 +94,12 @@ Fact {
 
     function updateChartVars() {
         expr = mBind.text;
+        exprW = mWarn.text;
         type = mFilters.value;
         scr = mFact2Save.text;
         if (type === "kalman_smp") {
             var v = value !== undefined ? value : 0;
-            setKalmanState(v, 0.1); // set start state and covariance
+            mFilters.setKalmanSimpleState(v, 0.1); // set start state and covariance
         }
         changes = false;
         setColor();
@@ -106,7 +108,8 @@ Fact {
     function updateTitle() {
         if (newItem)
             return;
-        title = mTitle.text ? mTitle.text : mBind.text;
+        if (mBind.text != "")
+            title = mBind.text;
     }
 
     function updateDescr() {
@@ -119,12 +122,10 @@ Fact {
             var f = child(i);
             if (!f.name)
                 continue;
-            if (f.name === "title")
-                continue;
             if (f.text === "")
                 continue;
             if (f.name === "color")
-                descrList.push(f.name.toUpperCase() + ": <font color='" + f.text + "'>" + f.text.toUpperCase() + "</font>");
+                descrList.push(f.name.toUpperCase() + ": " + f.text.toUpperCase());    
             else
                 descrList.push(f.name.toUpperCase() + ": " + f.text);
         }
@@ -137,12 +138,18 @@ Fact {
     function setColor() {
         var opt = mChart.opts;
         opt.color = mColor.text ? mColor.text : "#ffffff"; // Black color for chart turn into white
-        if (!newItem)
-            opt.iconColor = opt.color;
         mChart.opts = opt;
+        if (!newItem)
+            updateIconColor(opt.color)
         mColor.changes = false;
-        chartFact.updateBtnValues();
-        fcCharts.updateSeriesColor();
+        pageFact.updateBtnValues();
+        sgMainChart.updateSeriesColor();
+    }
+
+    function updateIconColor(iconColor) {
+        var opt = mChart.opts;
+        opt.iconColor = iconColor;
+        mChart.opts = opt;
     }
 
     function updateValue() {
@@ -152,21 +159,27 @@ Fact {
                 throw new Error(qsTr("expression is undefined"));
             // For first init
             if (value === undefined) {
-                setKalmanState(v, 0.1);
+                mFilters.setKalmanSimpleState(v, 0.1);
                 value = v;
                 return;
             }
             // Use filters
-            switch (type) {
-            case "running_avg":
-                useRunningAvgFilter(v);
-                break;
-            case "kalman_smp":
-                useKalmanSmpFilter(v);
-                break;
-            default:
-                value = v;
-            }
+            value = mFilters.useFilters(value, v)
+        } catch (e) {
+            chartWarning(e.message);
+        }
+    }
+
+    function updateWarning () {
+        try {
+            if(exprW === "")
+                return;
+            var v = new Function('return ' + exprW)();
+            if (v === undefined)
+                throw new Error(qsTr("expression is undefined"));
+            if(typeof v !== 'boolean')
+                throw new Error(qsTr("wrong warning condition (not true/false)"));
+            warning = v;
         } catch (e) {
             chartWarning(e.message);
         }
@@ -186,57 +199,30 @@ Fact {
     }
 
     function chartWarning(msg) {
-        if (warning == msg && timer.running)
+        if (warningMsg == msg && warnTimer.running)
             return;
-        warning = msg;
+        warningMsg = msg;
         console.warn(qsTr("Chart") + " " + title + ": " + msg);
-        timer.restart();
+        warnTimer.restart();
     }
 
     function hasScr(val) {
         if (!val || val !== scr)
-            return false;
+            return;
         chartWarning(val + " " + qsTr("variable already used"));
-        return true;
-    }
-
-    // Filters functions
-    // Running average filter
-    function useRunningAvgFilter(v) {
-        var k = mFilters.getRunningAvgCoef();
-        value += (v - value) * k;
-    }
-
-    // Kalman simple filter
-    property var state: 0
-    property var covariance: 0.1
-
-    function setKalmanState(st, cv) {
-        state = st;
-        covariance = cv;
-    }
-
-    function useKalmanSmpFilter(v) {
-        var coefs = mFilters.getKalmanSimpleCoefs();
-
-        // Time update - prediction
-        var x0 = state;
-        var p0 = covariance + coefs[0];
-
-        // Measurement update - correction
-        var k = p0 / (p0 + coefs[1]);
-        state = x0 + k * (v - x0);
-        covariance = (1 - k) * p0;
-        value = state;
     }
 
     Fact {
-        id: mTitle
-        name: "chartname"
-        title: qsTr("Title")
-        descr: qsTr("Chart name")
-        flags: Fact.Text
-        onTextChanged: changes = true
+        id: mFact
+        // name: "binding"
+        title: qsTr("Binding")
+        descr: qsTr("Fact value")
+        flags: Fact.Int
+        units: "mandala"
+        onTextChanged: {
+            if (value)
+                mBind.setValue(text);
+        }
     }
     Fact {
         id: mBind
@@ -246,41 +232,29 @@ Fact {
         flags: Fact.Text
         onTextChanged: changes = true
     }
-    FcMenuColor {
+    SignalsMenuColor {
         id: mColor
         name: "color"
         title: qsTr("Color")
         descr: qsTr("Chart color")
+        opts: ({
+            "editor": Qt.resolvedUrl("SignalsColorEditor.qml")
+        })
+        value: "#ffffff"
     }
-    FcMenuFilters {
+    SignalsMenuFilters {
         id: mFilters
         name: "filt"
         title: qsTr("Filters")
         descr: qsTr("Filters settings")
     }
     Fact {
+        id: mWarn
         name: "warn"
         title: qsTr("Warning")
         descr: qsTr("Expression for warning")
         flags: Fact.Text
-        enabled: false
-        visible: false
-    }
-    Fact {
-        name: "alarm"
-        title: qsTr("Alarm")
-        descr: "value>1.8 || (value>0 && value<1)"
-        flags: Fact.Text
-        enabled: false
-        visible: false
-    }
-    Fact {
-        name: "act"
-        title: qsTr("Action")
-        descr: "cmd.proc.action=proc_action_reset"
-        flags: Fact.Text
-        enabled: false
-        visible: false
+        onTextChanged: changes = true
     }
     Fact {
         id: mFact2Save
@@ -290,7 +264,7 @@ Fact {
         flags: Fact.Int
         units: "mandala"
         onTextChanged: {
-            fcControl.checkScrMatches(text);
+            setFact.checkScrMatches(text);
             changes = true;
         }
     }
@@ -312,16 +286,13 @@ Fact {
         title: qsTr("Save")
         enabled: !newItem && !mAdd.enabled && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgMenu.saveSettings()
     }
     Fact {
         flags: (Fact.Action | Fact.Remove)
         title: qsTr("Remove")
         visible: !newItem
         icon: "delete"
-        onTriggered: {
-            removeTriggered();
-            mChart.deleteFact();
-        }
+        onTriggered: mChart.deleteFact();
     }
 }

@@ -24,36 +24,47 @@ import QtQuick
 import APX.Facts
 
 Fact {
-    id: fMenu
+    id: raFilter
+    title: qsTr("Running average")
+    descr: qsTr("Running average filter settings")
+    icon: "tune"
+    flags: (Fact.Group | Fact.Bool)
 
+    property var filterType: "running_avg"
     property bool changes: false
     property var data: ({})
+    property var coef: 1
 
-    signal removeTriggered
+    onValueChanged: fMenu.updateDescr()
+    onChangesChanged: changed(changes)
+    Component.onCompleted: load(data)
 
-    onChangesChanged: { if (changes) mChart.changes = true;}
+    signal changed(bool changesValue)
 
-    function load() {
+    function load(data) {
+        value = data.value !== undefined ? data.value : 0
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
-            f.value = v;
+            if(v !== undefined)
+                f.value = v;
         }
-        changes = false;
+        updateDescr();
+        updateCoef();
     }
 
     function save() {
         data = {};
+        data.type = filterType;
+        data.value = value;
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var s = f.text.trim();
-            if (f.size != 0)
-                s = f.save();
             if (s === "")
                 continue;
             data[settingName(f)] = s;
         }
-        changes = false;
+        updateCoef();
         return data;
     }
 
@@ -63,47 +74,34 @@ Fact {
             return n.slice(0, n.indexOf("_"));
         return n;
     }
-
-    function fillData() {
-        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-            data = value;
-            load();
-            fRunningAvg.fillData();
-            fKalmanSimple.fillData();
-            changes = false;
-        }
+    
+    function updateDescr() {
+        descr = qsTr("COEF") + ": K=" + raCoef.value
+        changes = true; 
     }
 
-    // Getting filter data
-    function getRunningAvgCoef() {
-        return fRunningAvg.coef;
+    function updateCoef() {
+        coef = raCoef.value;
+        changes = false;
     }
 
-    function getKalmanSimpleCoefs() {
-        return fKalmanSimple.coefs
+    // Use Running Average filter
+    function processValue(value, v) {
+        value += (v - value) * coef;
+        return value;
     }
 
     Fact {
-        id: fTypes
-        name: "filters"
-        title: qsTr("Filter")
-        descr: qsTr("Selecting the filter to use")
-        flags: Fact.Enum
-        enumStrings: ["none", "running_avg", "kalman_smp"]
-        onTextChanged: fMenu.value = text
-        onValueChanged: changes = true // combobox index changed
-    }
-    FcFilterRunningAvg {
-        id: fRunningAvg
-        name: "running_avg"
-        title: qsTr("Running average")
-        descr: qsTr("Running average filter settings")
-    }
-    FcFilterKalmanSimple {
-        id: fKalmanSimple
-        name: "kalman_smp"
-        title: qsTr("Kalman simple")
-        descr: qsTr("Simple kalman filter settings")
+        id: raCoef
+        name: "coefficient"
+        title: qsTr("Coefficient")
+        descr: qsTr("Coefficient for filtration")
+        flags: Fact.Float
+        value: 1
+        min: 0
+        max: 1
+        precision: 3
+        onValueChanged: updateDescr()
     }
 
     // Actions
@@ -112,6 +110,12 @@ Fact {
         title: qsTr("Save")
         enabled: !mChart.newItem && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgMenu.saveSettings()
+    }
+    Fact {
+        flags: (Fact.Action | Fact.Remove)
+        title: qsTr("Remove")
+        icon: "delete"
+        onTriggered: raFilter.deleteFact();
     }
 }

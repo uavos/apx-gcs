@@ -25,26 +25,39 @@ import APX.Facts
 
 Fact {
     id: ksFilter
-    
-    flags: Fact.Group
+    title: qsTr("Kalman simple")
+    descr: qsTr("Simple kalman filter settings")
+    icon: "tune"
+    flags: (Fact.Group | Fact.Bool)
 
+    property var filterType: "kalman_smp"
     property bool changes: false
-    property var coefs: [1,1]
+    property var measCoef: 1
+    property var envCoef: 1
     property var data: ({})
 
-    onChangesChanged: { if (changes) fMenu.changes = true;}
+    onValueChanged: fMenu.updateDescr()
+    onChangesChanged: changed(changes)
+    Component.onCompleted: load(data)
 
-    function load() {
+    signal changed(bool changesValue)
+
+    function load(data) {
+        value = data.value !== undefined ? data.value : 0
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var v = data[settingName(f)];
-            f.value = v;
+            if(v !== undefined)
+                f.value = v;
         }
+        updateDescr()
         updateCoefs();
     }
 
     function save() {
         data = {};
+        data.type = filterType;
+        data.value = value;
         for (var i = 0; i < size; ++i) {
             var f = child(i);
             var s = f.text.trim();
@@ -63,21 +76,37 @@ Fact {
         return n;
     }
 
-    function fillData() {
-        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-            data = value;
-            load();
-        }
-    }
-
-    function updateFilterValue() {
-        ksFilter.value = "Km=" + ksMeasNoise.value + ",Ke=" + ksEnvNoise.value;
+    function updateDescr() {
+        descr = qsTr("COEF") + ": " + "Km=" + ksMeasNoise.value + ", Ke=" + ksEnvNoise.value;
         changes = true; 
     }
 
     function updateCoefs() {
-        coefs = [ksMeasNoise.value, ksEnvNoise.value]
+        measCoef = ksMeasNoise.value;
+        envCoef = ksEnvNoise.value;
         changes = false;
+    }
+
+    // Use Kalman Simple filter
+    property var state: 0
+    property var covariance: 0.1
+
+    function setKalmanState(st, cv) {
+        state = st;
+        covariance = cv;
+    }
+
+    function processValue(value, v) {
+        // Time update - prediction
+        var x0 = state;
+        var p0 = covariance + measCoef;
+
+        // Measurement update - correction
+        var k = p0 / (p0 + envCoef);
+        state = x0 + k * (v - x0);
+        covariance = (1 - k) * p0;
+        value = state;
+        return value;
     }
 
     Fact {
@@ -90,7 +119,7 @@ Fact {
         min: 0
         max: 10000
         precision: 3
-        onValueChanged: updateFilterValue()
+        onValueChanged: updateDescr()
     }
     Fact {
         id: ksEnvNoise
@@ -102,7 +131,7 @@ Fact {
         min: 0
         max: 10000
         precision: 3
-        onValueChanged: updateFilterValue()
+        onValueChanged: updateDescr()
     }
 
     // Actions
@@ -111,6 +140,12 @@ Fact {
         title: qsTr("Save")
         enabled: !mChart.newItem && changes
         icon: "check-circle"
-        onTriggered: fcControl.saveSettings()
+        onTriggered: sgMenu.saveSettings()
+    }
+    Fact {
+        flags: (Fact.Action | Fact.Remove)
+        title: qsTr("Remove")
+        icon: "delete"
+        onTriggered: ksFilter.deleteFact();
     }
 }

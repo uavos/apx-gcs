@@ -24,8 +24,10 @@ import QtCharts
 import QtQuick.Controls
 import QtQml
 
+import Apx.Common
+
 Item {
-    id: fcChartItem
+    id: chartItem
 
     property var facts: []
 
@@ -39,32 +41,32 @@ Item {
     property real speedFactorValue: 1
 
     property bool resetEnable: false
-    
-    onFactsChanged: if(resetEnable) {
-        fcChartView.reset();
+
+    onFactsChanged: if (resetEnable) {
+        chartView.reset();
         resetEnable = false;
     }
 
     Connections {
         target: apx.fleet.current.mandala
         function onTelemetryDecoded() {
-            fcChartView.appendData();
+            chartView.appendData();
         }
     }
 
     function updateSeriesColor() {
         for (var i = 0; i < facts.length; ++i) {
-            if(!fcChartView.series(i))
+            if (!chartView.series(i))
                 continue;
-            if(!facts || !facts[i] || !facts[i].opts)
+            if (!facts || !facts[i] || !facts[i].opts)
                 continue;
-            if (fcChartView.series(i).color != facts[i].opts.color)
-                fcChartView.series(i).color = facts[i].opts.color;
+            if (chartView.series(i).color != facts[i].opts.color)
+                chartView.series(i).color = facts[i].opts.color;
         }
     }
 
     ChartView {
-        id: fcChartView
+        id: chartView
 
         antialiasing: ui.antialiasing
         legend.visible: false
@@ -91,14 +93,14 @@ Item {
 
         ValueAxis {
             id: axisX
-            property real t: fcChartView.time
+            property real t: chartView.time
             Behavior on t {
-                enabled: ui.smooth && fcChartView.dataExist
+                enabled: ui.smooth && chartView.dataExist
                 NumberAnimation {
                     duration: 500
                 }
             }
-            min: t - fcChartView.samples + 20
+            min: t - chartView.samples + 20
             max: t
             visible: false
             gridVisible: false
@@ -113,7 +115,7 @@ Item {
             max: 0
             tickCount: 4
             labelsColor: "white"
-            labelsFont.pixelSize: Qt.application.font.pixelSize * 0.7
+            labelsFont: apx.font_narrow(Style.fontSize * 0.7)
             gridLineColor: "#555"
         }
 
@@ -123,9 +125,9 @@ Item {
         property int timeRescale: 0
 
         function reset() {
-            fcChartView.removeAllSeries();
-            fcChartView.sdata = [];
-            fcChartView.time = 0;
+            chartView.removeAllSeries();
+            chartView.sdata = [];
+            chartView.time = 0;
             axisY.min = -dataPaddingZero;
             axisY.max = dataPaddingZero;
             axisY.tickCount = 4;
@@ -169,9 +171,9 @@ Item {
         }
 
         function appendDataValue(fact, t, i) {
-            if (i >= fcChartView.count)
+            if (i >= chartView.count)
                 addFactSeries(fact);
-            var s = fcChartView.series(i);
+            var s = chartView.series(i);
 
             var value = fact.value != undefined ? fact.value : eval(fact.name);
 
@@ -193,7 +195,7 @@ Item {
         }
 
         function addFactSeries(fact) {
-            var s = fcChartView.createSeries(ui.antialiasing ? ChartView.SeriesTypeLine : ChartView.SeriesTypeLine, fact.title, axisX, axisY);
+            var s = chartView.createSeries(ui.antialiasing ? ChartView.SeriesTypeLine : ChartView.SeriesTypeLine, fact.title, axisX, axisY);
             s.useOpenGL = Qt.binding(function () {
                 return openGL;
             });
