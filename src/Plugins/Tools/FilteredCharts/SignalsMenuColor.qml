@@ -28,6 +28,7 @@ Fact {
     id: mColor
 
     property bool changes: false
+    
     readonly property var colorBaseLabels: [
         qsTr("Red"),
         qsTr("Pink"),

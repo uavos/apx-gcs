@@ -35,6 +35,8 @@ Fact {
     property var checkedPage: 0
     property var data: ({})
 
+    readonly property var pagesLimit: 10
+
     signal selected(var num)
 
     Component.onCompleted: load(data)
@@ -169,6 +171,10 @@ Fact {
         icon: "plus-circle"
         newItem: true
         onAddTriggered: {
+            if (mPages.size >= pagesLimit) {
+                console.warn(qsTr("Maximum page limit reached"))
+                return;
+            }
             createPage(save());
             if(mPages.size === 1) setChecked(0);
         }
