@@ -172,8 +172,10 @@ Fact {
 
     function updateWarning () {
         try {
-            if(exprW === "")
+            if(exprW.trim() === "") {
+                warning = false;
                 return;
+            }
             var v = new Function('return ' + exprW)();
             if (v === undefined)
                 throw new Error(qsTr("expression is undefined"));
