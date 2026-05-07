@@ -85,6 +85,8 @@ Rectangle {
         id: layout
         anchors.fill: parent
 
+        property var chartLabelFont: apx.font_narrow(Style.fontSize * 0.8) 
+
         Repeater {
             model: sgControl.pinnedPages
 
@@ -124,13 +126,13 @@ Rectangle {
                             id: lblPinnedPage
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: pinnedPageFact ? pinnedPageFact.title : ""
-                            font: apx.font_narrow(Style.fontSize * 0.8)
+                            font: layout.chartLabelFont
                         }
                         Label {
                             id: lblPinnedSpeed
                             anchors.right: parent.right
                             text: sgPinnedChart.speedFactorValue + "x"
-                            font: apx.font_narrow(Style.fontSize * 0.8)
+                            font: layout.chartLabelFont
                         }
                     }
                     MouseArea {
@@ -191,13 +193,13 @@ Rectangle {
                         id: lblMainPage
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: sgControl.activePage ? sgControl.activePage.title : ""
-                        font: apx.font_narrow(Style.fontSize * 0.8)
+                        font: layout.chartLabelFont
                     }
                     Label {
                         id: lblMainSpeed
                         anchors.right: parent.right
                         text: sgMainChart.speedFactorValue + "x"
-                        font: apx.font_narrow(Style.fontSize * 0.8)
+                        font: layout.chartLabelFont
                     }
                 }
                 MouseArea {
