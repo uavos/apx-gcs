@@ -27,6 +27,7 @@ import APX.Facts
 Fact {
     id: mColor
 
+    readonly property var colorAuto: qsTr("Auto")
     property bool changes: false
     
     readonly property var colorBaseLabels: [
@@ -74,8 +75,8 @@ Fact {
     onChangesChanged: { if (changes) mChart.changes = true;}
     Component.onCompleted: {
         if (!value || value === undefined) 
-            value = qsTr("Auto")
-        if(!mChart.newItem && value ===  qsTr("Auto"))
+            value = colorAuto
+        if(!mChart.newItem && value ===  colorAuto)
             setDefaultColor()
         rebuildColorChoices()
     }
@@ -96,11 +97,11 @@ Fact {
     {
         clearColorChoices();
         createFact(mColor, "SignalsColorChooser.qml", {
-                       "title": qsTr("Auto"),
+                       "title": colorAuto,
                        "descr": qsTr("Use automatic series color"),
                        "colorValue": "",
                        "section": "",
-                       "value": qsTr("Auto")
+                       "value": colorAuto
                    })
         for (var i = 0; i < colorShadeValues.length; ++i) {
             var shadeLabel = colorShadeLabels[i]
@@ -146,10 +147,10 @@ Fact {
     function updateDescr() {
         var descrText = "";
         if(!value || value === undefined)
-            descrText = qsTr("Auto")
+            descrText = colorAuto
         else
             descrText = value
-        descr = qsTr("COLOR") + ": " + descrText.toString().toUpperCase();
+        descr = qsTr("Color").toUpperCase() + ": " + descrText.toString().toUpperCase();
         changes = true;
     }
 }

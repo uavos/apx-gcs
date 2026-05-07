@@ -6,6 +6,7 @@ import APX.Facts
 Fact {
     id: colorFact
 
+    property string colorAuto: parentFact ? parentFact.colorAuto : "#E57373" 
     property string colorValue: ""
 
     flags: Fact.CloseOnTrigger
@@ -18,7 +19,7 @@ Fact {
     function setColor() {
         if(!parentFact)
             return;
-        if(title === qsTr("Auto")) {  
+        if(title === colorAuto) {  
             setAutoColor()
             return;
         }
@@ -26,7 +27,7 @@ Fact {
     }
 
     function setAutoColor() {
-        if (title !== qsTr("Auto"))
+        if (title !== colorAuto)
             return;
         if (!parentFact)
             return;

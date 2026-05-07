@@ -25,8 +25,9 @@ import QtQuick.Controls.Material
 Rectangle {
     id: editor
 
-    readonly property string colorText: fact && fact.value !== undefined ? fact.value.trim() : qsTr("Auto")
-    readonly property bool auto: colorText === qsTr("Auto")                           
+    readonly property string colorAuto: qsTr("Auto")
+    readonly property string colorText: fact && fact.value !== undefined ? fact.value.trim() : colorAuto 
+    readonly property bool auto: colorText === colorAuto                          
 
     implicitHeight: factButton.height * 0.6
     implicitWidth: factButton.height * 1.8
