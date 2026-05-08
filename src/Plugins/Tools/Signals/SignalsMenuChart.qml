@@ -150,7 +150,6 @@ Fact {
             updateIconColor(opt.color)
         mColor.changes = false;
         pageFact.updateBtnValues();
-        sgMainChart.updateSeriesColor();
     }
 
     function updateIconColor(iconColor) {

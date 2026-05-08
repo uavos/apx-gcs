@@ -54,17 +54,6 @@ Item {
         }
     }
 
-    function updateSeriesColor() {
-        for (var i = 0; i < facts.length; ++i) {
-            if (!chartView.series(i))
-                continue;
-            if (!facts || !facts[i] || !facts[i].opts)
-                continue;
-            if (chartView.series(i).color != facts[i].opts.color)
-                chartView.series(i).color = facts[i].opts.color;
-        }
-    }
-
     ChartView {
         id: chartView
 
@@ -192,6 +181,12 @@ Item {
             var cnt = samples;
             if (s.count > cnt)
                 s.removePoints(0, s.count - cnt);
+            // Check color
+            var color = fact.opts.color;
+            if(!color)
+                return;
+            if(s.color !== color)
+                s.color = color
         }
 
         function addFactSeries(fact) {
