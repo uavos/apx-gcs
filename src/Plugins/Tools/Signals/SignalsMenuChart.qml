@@ -40,7 +40,7 @@ Fact {
     // Chart values
     property var type: "none"
     property var expr: ""
-    property var exprW: ""
+    property var exprWarn: ""
     property var scr: ""
 
     signal addTriggered
@@ -95,7 +95,7 @@ Fact {
 
     function updateChartVars() {
         expr = mBind.text;
-        exprW = mWarn.text;
+        exprWarn = mWarn.text;
         type = mFilters.value;
         scr = mFact2Save.text;
         if (type === "kalman_smp") {
@@ -177,19 +177,15 @@ Fact {
     }
 
     function updateWarning () {
+        if (!exprWarn || String(exprWarn).trim() === "") {
+            warning = false;
+            return;
+        }
         try {
-            if(exprW.trim() === "") {
-                warning = false;
-                return;
-            }
-            var v = new Function('return ' + exprW)();
-            if (v === undefined)
-                throw new Error(qsTr("expression is undefined"));
-            if(typeof v !== 'boolean')
-                throw new Error(qsTr("wrong warning condition (not true/false)"));
-            warning = v;
-        } catch (e) {
-            chartWarning(e.message);
+            warning = !!eval(exprWarn)
+        } catch (error) {
+            chartWarning(error.message)
+            warning = false;
         }
     }
 
@@ -257,7 +253,7 @@ Fact {
         id: mWarn
         name: "warn"
         title: qsTr("Warning")
-        descr: qsTr("Expression for warning")
+        descr: qsTr("Expression for warning") + "(value>1.5 || value <0)"
         flags: Fact.Text
         onTextChanged: changes = true;
     }
