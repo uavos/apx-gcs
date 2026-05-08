@@ -234,14 +234,24 @@ Rectangle {
             Label {
                 anchors.centerIn: parent
                 visible: btnRepeater.count <= 0
-                text: qsTr("No pages in the active set.")
+                text: qsTr("No pages in the active set")
                 font: apx.font_narrow(Style.fontSize * 0.8)
                 color: Material.secondaryTextColor
+                background: Rectangle {
+                    color: sgControl.color
+                }
             }
         }
 
         ButtonGroup {
             id: buttonGroup
+
+            onCheckedButtonChanged: {
+                if (checkedButton)
+                    return;
+                sgMainChart.resetEnable = true;    
+                sgMainChart.facts = []
+            }
         }
 
         RowLayout {
