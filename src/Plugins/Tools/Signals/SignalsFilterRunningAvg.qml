@@ -76,7 +76,7 @@ Fact {
     }
     
     function updateDescr() {
-        descr = qsTr("COEF") + ": K=" + raCoef.value
+        descr = qsTr("Coef").toUpperCase() + ": K=" + raCoef.value
         changes = true; 
     }
 

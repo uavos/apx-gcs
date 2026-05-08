@@ -52,12 +52,13 @@ Fact {
         mBind.valueChanged.connect(updateTitle);
         mBind.valueChanged.connect(updateDescr);
         mColor.valueChanged.connect(updateDescr);
-        mFilters.valueChanged.connect(updateDescr);
+        mFilters.descrChanged.connect(updateDescr);
+        mWarn.textChanged.connect(updateDescr);
         mFact2Save.valueChanged.connect(updateDescr);
     }
 
     onValueChanged: saveValue2Fact()
-    onChangesChanged: {if (changes) pageFact.changes = true}
+    onChangesChanged: {if (changes && !newItem) pageFact.changes = true}
 
     function load(data) {
         for (var i = 0; i < mChart.size; ++i) {
@@ -124,10 +125,16 @@ Fact {
                 continue;
             if (f.text === "")
                 continue;
-            if (f.name === "color")
-                descrList.push(f.name.toUpperCase() + ": " + f.text.toUpperCase());    
-            else
+            if (f.name === "filt") {
+                var usedFilters = f.getUsedFilterNames();
+                if (usedFilters.length > 0) {
+                    descrList.push(f.name.toUpperCase() + ": " + f.getUsedFilterNames().join(", "));
+                } 
+            } else if (f.name === "color") {
+                descrList.push(f.name.toUpperCase() + ": " + f.text.toUpperCase()); 
+            } else {
                 descrList.push(f.name.toUpperCase() + ": " + f.text);
+            }
         }
         if (descrList.length > 0)
             descr = descrList.join(", ");
@@ -216,15 +223,11 @@ Fact {
 
     Fact {
         id: mFact
-        // name: "binding"
         title: qsTr("Binding")
         descr: qsTr("Fact value")
         flags: Fact.Int
         units: "mandala"
-        onTextChanged: {
-            if (value)
-                mBind.setValue(text);
-        }
+        onTextChanged: if (value) mBind.setValue(text)
     }
     Fact {
         id: mBind
@@ -232,7 +235,7 @@ Fact {
         title: qsTr("Expression")
         descr: "Math.atan(est.att.pitch/est.att.roll)"
         flags: Fact.Text
-        onTextChanged: changes = true
+        onTextChanged: changes = true;
     }
     SignalsMenuColor {
         id: mColor
@@ -249,6 +252,7 @@ Fact {
         name: "filt"
         title: qsTr("Filters")
         descr: qsTr("Filters settings")
+        onDescrChanged: changes = true
     }
     Fact {
         id: mWarn
@@ -256,7 +260,7 @@ Fact {
         title: qsTr("Warning")
         descr: qsTr("Expression for warning")
         flags: Fact.Text
-        onTextChanged: changes = true
+        onTextChanged: changes = true;
     }
     Fact {
         id: mFact2Save

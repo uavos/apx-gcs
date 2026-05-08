@@ -77,7 +77,7 @@ Fact {
     }
 
     function updateDescr() {
-        descr = qsTr("COEF") + ": " + "Km=" + ksMeasNoise.value + ", Ke=" + ksEnvNoise.value;
+        descr = qsTr("Coef").toUpperCase() + ": " + "Km=" + ksMeasNoise.value + ", Ke=" + ksEnvNoise.value;
         changes = true; 
     }
 

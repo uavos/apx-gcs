@@ -111,9 +111,7 @@ Fact {
 
     function updateDescr() {
         var descrList = [];
-        var filtersCount = qsTr("Count").toUpperCase() + ": " + fSet.size;
-        descrList.push(filtersCount);
-        var filtersList = getUsedFiltersTitles();
+        var filtersList = getUsedFilterNames();
         if (filtersList.length > 0) {
             var filtersOn = qsTr("On").toUpperCase() + ": " + filtersList.join(", ");
             descrList.push(filtersOn);
@@ -122,14 +120,14 @@ Fact {
         changes = true;
     }
 
-    function getUsedFiltersTitles() {
+    function getUsedFilterNames() {
         var filtersList = [];
         for(var i = 0; i < fSet.size; ++i) {
             var f = fSet.child(i);
-            if(!f || !f.value) 
+            if(!f || !f.value)
                 continue;
-            if(f.value)
-                filtersList.push(f.title)
+            var  shortName = f.filterType.replace(/(?:_| |\b)(\w)/g, (match, c1) => c1.toUpperCase());
+            filtersList.push(shortName);
         }
         return filtersList;
     }
@@ -160,8 +158,11 @@ Fact {
         id: fSet
         title: qsTr("Filters")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
-        onSizeChanged: updateDescr();
         onItemMoved: updateDescr();
+        onSizeChanged: {
+            fMenu.value = size > 0 ? size : ""
+            updateDescr();
+        }
     }
 
     // Actions
