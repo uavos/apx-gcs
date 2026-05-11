@@ -235,7 +235,8 @@ Fact {
         title: qsTr("Charts")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
         onSizeChanged: {
-            sgMainChart.resetEnable = true;
+            if (pageFact.active) 
+                sgMainChart.resetEnable = true;
             changes = true;
         }
     }

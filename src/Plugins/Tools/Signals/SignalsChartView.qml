@@ -182,8 +182,8 @@ Item {
             if (s.count > cnt)
                 s.removePoints(0, s.count - cnt);
             // Check color
-            var color = fact.opts.color;
-            if(!color)
+            var color = fact.opts!== undefined ? fact.opts.color : undefined
+            if(!color || color === undefined)
                 return;
             if(s.color !== color)
                 s.color = color

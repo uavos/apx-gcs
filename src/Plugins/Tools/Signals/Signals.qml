@@ -155,7 +155,7 @@ Rectangle {
                             }
                         }
                     } else {
-                        pinnedPageFact.speed = sgMainChart.speedFactor[0];
+                        pinnedPageFact.speed = sgPinnedChart.speedFactor[0];
                     }
                     autosaveTimer.restart();
                 }
