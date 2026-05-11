@@ -77,8 +77,4 @@ TextButton {
     function getDefaultText() {
         return "#" + buttonGroup.buttons.indexOf(this);
     }
-
-    function getScrMatches(val) {
-        return sgMenuPage.checkScrs(val);
-    }
 }

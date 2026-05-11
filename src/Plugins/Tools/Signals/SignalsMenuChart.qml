@@ -202,6 +202,12 @@ Fact {
         apx.fleet.current.mandala.fact(fname, true).setRawValueLocal(value);
     }
 
+    function checkFact2SaveName(fname) {
+        if (fname.trim() === "" || fname.includes("sns.scr"))
+            return;
+        console.warn(qsTr("Chart") + " " + mBind.text + ": " + qsTr("Unacceptable variable name. Use 'sns.scr' vars for saving!"));
+    }
+
     function chartWarning(msg) {
         if (warningMsg == msg && warnTimer.running)
             return;
@@ -265,6 +271,7 @@ Fact {
         flags: Fact.Int
         units: "mandala"
         onTextChanged: {
+            checkFact2SaveName(text);
             setFact.checkScrMatches(text);
             changes = true;
         }
