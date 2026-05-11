@@ -207,7 +207,7 @@ Fact {
         title: qsTr("Remove")
         icon: "delete"
         onTriggered: {
-            if (setFact.active) select(0);
+            if (setFact.active) setFact.selected(0);
             setFact.deleteFact();
         }
     }
