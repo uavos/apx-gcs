@@ -44,7 +44,7 @@ Fact {
         for (var i in filters) {
             createFilter(filters[i]);
         }
-        updateBtnValues();
+        pageFact.updateBtnValues();
         changes = false;
     }
 
