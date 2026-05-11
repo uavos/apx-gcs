@@ -30,7 +30,7 @@ Fact {
     title: "Set"
 
     property bool changes: false
-    property var pages //from config
+    property var pages: [] //from config
     property var checkedPage: 0
     property var data: ({})
 
