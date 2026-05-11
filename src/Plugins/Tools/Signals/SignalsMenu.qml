@@ -36,6 +36,7 @@ Fact {
     icon: "gauge"
 
     Component.onCompleted: loadSettings()
+    Component.onDestruction: removed()
 
     function getCharts() {
         var charts = [];
