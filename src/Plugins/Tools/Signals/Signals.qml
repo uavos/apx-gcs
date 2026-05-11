@@ -81,6 +81,13 @@ Rectangle {
         autosaveTimer.restart();
     }
 
+    function allowResetChart(num) {
+        for(var i = 0; i < pinsRepeater.count; ++i) {
+            if(num === pinsRepeater.itemAt(i).num)
+                pinsRepeater.itemAt(i).allowReset()
+        }
+    }
+
     ColumnLayout {
         id: layout
         anchors.fill: parent
@@ -88,6 +95,8 @@ Rectangle {
         property var chartLabelFont: apx.font_narrow(Style.fontSize * 0.8) 
 
         Repeater {
+            id: pinsRepeater
+
             model: sgControl.pinnedPages
 
             delegate: Item {
@@ -97,6 +106,7 @@ Rectangle {
                 required property int index
 
                 property var pinnedPageFact: modelData
+                property var num: pinnedPageFact.num
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: 110 * ui.scale
@@ -159,6 +169,11 @@ Rectangle {
                     }
                     autosaveTimer.restart();
                 }
+
+                function allowReset() {
+                    sgPinnedChart.resetEnable = true;
+                }
+
             }
         }
 

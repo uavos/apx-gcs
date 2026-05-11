@@ -237,6 +237,8 @@ Fact {
         onSizeChanged: {
             if (pageFact.active) 
                 sgMainChart.resetEnable = true;
+            if(pageFact.pinned)
+                sgControl.allowResetChart(pageFact.num)
             changes = true;
         }
     }
