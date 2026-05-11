@@ -119,6 +119,15 @@ Fact {
         }
     }
 
+    function createFact(parent, url, opts) {
+        var component = Qt.createComponent(url);
+        if (component.status === Component.Ready) {
+            var c = component.createObject(parent, opts);
+            c.parentFact = parent;
+            return c;
+        }
+    }
+
     function setDefaultColor()
     {
         var colorsCount = colorBaseValues.length
