@@ -186,6 +186,8 @@ Fact {
         var set = {};
         set.title = "Set" + (sgMenu.size + 1);
         set.values = [];
+        set.pages = [];
+        set.checked = 0;
         var c = createFact(sgMenu, "SignalsMenuSet.qml", {
             "data": set
         });
