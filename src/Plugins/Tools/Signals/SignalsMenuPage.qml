@@ -34,7 +34,7 @@ Fact {
     property string pageToolTip: ""
     property alias speed: mSpeed.value
     property alias pinned: mPinned.value
-    property var charts //from config
+    property var charts: [] //from config
     property var values: []
     property var data: ({})
 
@@ -107,11 +107,11 @@ Fact {
         mSpeed.value = page.speed ? page.speed : 1;
         mPinned.value = page.pinned;
         charts = page.charts;
-        updateSetItems();
+        updatePageItems();
         changes = false;
     }
 
-    function updateSetItems() {
+    function updatePageItems() {
         mCharts.deleteChildren();
         for (var i in charts) {
             createChart(charts[i]);
