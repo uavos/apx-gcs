@@ -117,6 +117,7 @@ Item {
             chartView.removeAllSeries();
             chartView.sdata = [];
             chartView.time = 0;
+            chartView.timeRescale = 0;
             axisY.min = -dataPaddingZero;
             axisY.max = dataPaddingZero;
             axisY.tickCount = 4;
