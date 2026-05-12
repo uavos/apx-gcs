@@ -117,8 +117,9 @@ Fact {
             var f = mPages.child(i);
             if (!f)
                 continue;
-            if (f.pinned)    
-                pinnedPages.push(f);
+            if (!f.pinned)
+                continue;
+            pinnedPages.push(f);
         }
         return pinnedPages.length > 0 ? pinnedPages : [];
     }
@@ -139,8 +140,9 @@ Fact {
             var f = mPages.child(i);
             if (!f)
                 continue;
-            if (f.active)
-                return f;
+            if (!f.active)
+                continue;
+            return f;
         }
         return null;
     }
