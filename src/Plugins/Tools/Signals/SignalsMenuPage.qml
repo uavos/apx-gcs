@@ -150,6 +150,7 @@ Fact {
             return;
         var text = mPageName.text.trim();
         title = text != "" ? text : qsTr("P") + (Math.max(pageFact.num, 0) + 1);
+        setFact.updateDescr();
     }
 
     function updateDescr() {

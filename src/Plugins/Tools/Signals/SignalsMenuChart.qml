@@ -111,6 +111,7 @@ Fact {
             return;
         if (mBind.text != "")
             title = mBind.text;
+        pageFact.updateDescr();    
     }
 
     function updateDescr() {
