@@ -65,22 +65,6 @@ Rectangle {
         return matches;
     }
 
-    function changeSpeed() {
-        if (!activePage)
-            return;
-        if (sgMainChart.speedFactorValue !== sgMainChart.speedFactor[sgMainChart.speedFactor.length - 1]) {
-            for (var i = 0; i < sgMainChart.speedFactor.length - 1; ++i) {
-                if (sgMainChart.speedFactor[i] <= sgMainChart.speedFactorValue && sgMainChart.speedFactorValue < sgMainChart.speedFactor[i + 1]) {
-                    activePage.speed = sgMainChart.speedFactor[i + 1];
-                    break;
-                }
-            }
-        } else {
-            activePage.speed = sgMainChart.speedFactor[0];
-        }
-        autosaveTimer.restart();
-    }
-
     function allowResetChart(num) {
         for(var i = 0; i < pinsRepeater.count; ++i) {
             if(num === pinsRepeater.itemAt(i).num)
@@ -92,139 +76,32 @@ Rectangle {
         id: layout
         anchors.fill: parent
 
-        property var chartLabelFont: apx.font_narrow(Style.fontSize * 0.8) 
-
         Repeater {
             id: pinsRepeater
 
             model: sgControl.pinnedPages
 
-            delegate: Item {
-                id: pinnedChartArea
-
+            delegate: SignalsChartItem {
                 required property var modelData
                 required property int index
 
-                property var pinnedPageFact: modelData
-                property var num: pinnedPageFact.num
+                ciPageFact: modelData
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: 110 * ui.scale
                 Layout.minimumHeight: 20
-
-                SignalsChartView {
-                    id: sgPinnedChart
-                    anchors.fill: parent
-                    facts: pinnedPageFact ? pinnedPageFact.values : []
-                    speedFactorValue: pinnedPageFact ? pinnedPageFact.speed : 1
-                }
-
-                Rectangle {
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.margins: 4 * ui.scale
-                    radius: 2 * ui.scale
-                    visible: lblPinnedPage.text !== ""
-                    color: maPinned.containsMouse ? "#50ffffff" : "#30ffffff"
-                    implicitWidth: columnPinnedPage.implicitWidth + 10 * ui.scale
-                    implicitHeight: columnPinnedPage.implicitHeight + 4 * ui.scale
-
-                    Column {
-                        id: columnPinnedPage
-                        anchors.centerIn: parent
-                        Label {
-                            id: lblPinnedPage
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: pinnedPageFact ? pinnedPageFact.title : ""
-                            font: layout.chartLabelFont
-                        }
-                        Label {
-                            id: lblPinnedSpeed
-                            anchors.right: parent.right
-                            text: sgPinnedChart.speedFactorValue + "x"
-                            font: layout.chartLabelFont
-                        }
-                    }
-                    MouseArea {
-                        id: maPinned
-                        anchors.fill: parent
-                        acceptedButtons: Qt.LeftButton
-                        hoverEnabled: true
-                        onClicked: changePinnedSpeed()
-                    }
-                }
-
-                function changePinnedSpeed() {
-                    if (!pinnedPageFact)
-                        return;
-                    if (sgPinnedChart.speedFactorValue !== sgPinnedChart.speedFactor[sgPinnedChart.speedFactor.length - 1]) {
-                        for (var i = 0; i < sgPinnedChart.speedFactor.length - 1; ++i) {
-                            if (sgPinnedChart.speedFactor[i] <= sgPinnedChart.speedFactorValue && sgPinnedChart.speedFactorValue < sgPinnedChart.speedFactor[i + 1]) {
-                                pinnedPageFact.speed = sgPinnedChart.speedFactor[i + 1];
-                                break;
-                            }
-                        }
-                    } else {
-                        pinnedPageFact.speed = sgPinnedChart.speedFactor[0];
-                    }
-                    autosaveTimer.restart();
-                }
-
-                function allowReset() {
-                    sgPinnedChart.resetEnable = true;
-                }
-
+                clip: true
             }
         }
 
-        Item {
+        SignalsChartItem {
             id: mainChartArea
+
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumHeight: 20
             Layout.preferredHeight: 110 * ui.scale // 130 * ui.scale
             clip: true
-
-            SignalsChartView {
-                id: sgMainChart
-                anchors.fill: parent
-                facts: []
-            }
-            Rectangle {
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.margins: 4 * ui.scale
-                radius: 2 * ui.scale
-                visible: lblMainPage.text !== ""
-                implicitWidth: columnMainPage.implicitWidth + 10 * ui.scale
-                implicitHeight: columnMainPage.implicitHeight + 4 * ui.scale
-                color: maMain.containsMouse ? "#50ffffff" : "#30ffffff"
-                opacity: 0.7
-
-                Column {
-                    id: columnMainPage
-                    anchors.centerIn: parent
-                    Label {
-                        id: lblMainPage
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: sgControl.activePage ? sgControl.activePage.title : ""
-                        font: layout.chartLabelFont
-                    }
-                    Label {
-                        id: lblMainSpeed
-                        anchors.right: parent.right
-                        text: sgMainChart.speedFactorValue + "x"
-                        font: layout.chartLabelFont
-                    }
-                }
-                MouseArea {
-                    id: maMain
-                    anchors.fill: parent
-                    acceptedButtons: Qt.LeftButton
-                    hoverEnabled: true
-                    onClicked: changeSpeed()
-                }
-            }
 
             Rectangle {
                 anchors.right: parent.right
@@ -264,8 +141,8 @@ Rectangle {
             onCheckedButtonChanged: {
                 if (checkedButton)
                     return;
-                sgMainChart.resetEnable = true;    
-                sgMainChart.facts = []
+                mainChartArea.allowReset();    
+                mainChartArea.ciPageFact = null;
             }
         }
 

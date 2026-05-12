@@ -30,10 +30,8 @@ TextButton {
     id: sgBtn
 
     property var pageFact: null
-    property var values: pageFact ? pageFact.values : []
     property string pageToolTip: pageFact ? pageFact.pageToolTip : ""
     property bool pageWarning: pageFact ? pageFact.warnings : false
-    property var speed: pageFact ? pageFact.speed : 1
 
     Layout.fillHeight: true
     checkable: true
@@ -48,7 +46,7 @@ TextButton {
         if (!pageFact)
             return;
         if (checked)
-            sgMainChart.speedFactorValue = pageFact.speed;
+            mainChartArea.ciPageFact = pageFact;
         pageFact.active = checked;
     }
 
@@ -57,20 +55,12 @@ TextButton {
             return;
         if (checked)
             pageFact.trigger();
-        else
-            sgMainChart.speedFactorValue = speed;
-    }
-    onSpeedChanged: {
-        if (!pageFact)
-            return;
-        if (pageFact.active)
-            sgMainChart.speedFactorValue = speed;
     }
 
     onActivated: {
-        sgMainChart.resetEnable = true;
-        sgMainChart.facts = Qt.binding(function () {
-            return values;
+        mainChartArea.allowReset()
+        mainChartArea.ciPageFact = Qt.binding(function () {
+            return pageFact;
         });
     }
 

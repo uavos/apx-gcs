@@ -215,11 +215,7 @@ Fact {
         precision: 1
         min: 0.2
         max: 4
-        onValueChanged: {
-            if (active && setFact.active)
-                sgMainChart.speedFactorValue = value;
-            changes = true;
-        }
+        onValueChanged: changes = true;
     }
     SignalsMenuChart {
         id: mMenuChart
@@ -236,7 +232,7 @@ Fact {
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
         onSizeChanged: {
             if (pageFact.active) 
-                sgMainChart.resetEnable = true;
+                mainChartArea.allowReset();
             if(pageFact.pinned)
                 sgControl.allowResetChart(pageFact.num)
             changes = true;
