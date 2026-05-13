@@ -37,11 +37,11 @@ Fact {
         qsTr("Deep Purple"),
         qsTr("Indigo"),
         qsTr("Blue"),
-        qsTr("Light Blue"),
         qsTr("Cyan"),
         qsTr("Teal"),
         qsTr("Green"),
         qsTr("Orange"),
+        qsTr("Yellow"),
         qsTr("Blue Grey")
     ]
     readonly property var colorBaseValues: [
@@ -51,10 +51,10 @@ Fact {
         Material.DeepPurple,
         Material.Indigo,
         Material.Blue,
-        Material.LightBlue,
         Material.Cyan,
         Material.Teal,
         Material.Green,
+        Material.Yellow,
         Material.Orange,
         Material.BlueGrey
     ]
