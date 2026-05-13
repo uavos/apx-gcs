@@ -37,9 +37,8 @@ Rectangle {
 
     readonly property var pages: sgMenu.getActivePages()
     readonly property var activeSet: sgMenu.getActiveSet()
-    readonly property var activePage: sgMenu.getActivePage()
-    readonly property var pinnedPages: sgMenu.getPinnedPages()
-
+    
+    onActiveSetChanged: pinnedModel.updateModel(sgMenu.getPinnedPages())
     Component.onCompleted: {
         if (buttonGroup.buttons.length <= 0)
             return;
@@ -66,9 +65,9 @@ Rectangle {
     }
 
     function allowResetChart(num) {
-        for(var i = 0; i < pinsRepeater.count; ++i) {
-            if(num === pinsRepeater.itemAt(i).num)
-                pinsRepeater.itemAt(i).allowReset()
+        for(var i = 0; i < pinnedRepeater.count; ++i) {
+            if(num === pinnedRepeater.itemAt(i).num)
+                pinnedRepeater.itemAt(i).allowReset()
         }
     }
 
@@ -76,22 +75,13 @@ Rectangle {
         id: layout
         anchors.fill: parent
 
+        SignalsPinnedModel {
+            id: pinnedModel
+        }
+
         Repeater {
-            id: pinsRepeater
-
-            model: sgControl.pinnedPages
-
-            delegate: SignalsChartItem {
-                required property var modelData
-                required property int index
-
-                ciPageFact: modelData
-
-                Layout.fillWidth: true
-                Layout.preferredHeight: 110 * ui.scale
-                Layout.minimumHeight: 20
-                clip: true
-            }
+            id: pinnedRepeater
+            model: pinnedModel
         }
 
         SignalsChartItem {

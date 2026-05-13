@@ -40,6 +40,7 @@ Fact {
 
     signal addTriggered
 
+    onPinnedChanged: updatePinnedModel()
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
     Component.onCompleted: {
         load(data);
@@ -190,6 +191,15 @@ Fact {
         pageToolTip = s.join("<br>");
     }
 
+    function updatePinnedModel() {
+        if(!setFact.active)
+            return;
+        if(pinned)
+            pinnedModel.addPage(pageFact);
+        else
+            pinnedModel.removePage(num);
+    }
+
     Fact {
         id: mPageName
         title: qsTr("Page name")
@@ -265,9 +275,10 @@ Fact {
         visible: !newItem
         icon: "delete"
         onTriggered: {
-            var active = pageFact.active;
+            if(pageFact.active) 
+                setFact.setChecked(0)
+            pageFact.pinned = false;
             pageFact.deleteFact();
-            if(active) setFact.setChecked(0);
         }
     }
 }
