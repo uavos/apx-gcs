@@ -33,7 +33,7 @@ Item {
     
     property var ciPageFact: null
     property var num: ciPageFact ? ciPageFact.num : 0
-    property var chartLabelFont: apx.font_narrow(Style.fontSize * 0.8) 
+    property var labelFont: apx.font_narrow(Style.fontSize * 0.8) 
 
     SignalsChartView {
         id: ciChart
@@ -55,17 +55,19 @@ Item {
         Column {
             id: columnPage
             anchors.centerIn: parent
+            opacity: 0.7
+
             Label {
                 id: lblPage
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: ciPageFact ? ciPageFact.title : ""
-                font: chartLabelFont
+                font: labelFont
             }
             Label {
                 id: lblSpeed
                 anchors.right: parent.right
                 text: ciChart.speedFactorValue + "x"
-                font: chartLabelFont
+                font: labelFont
             }
         }
         MouseArea {

@@ -109,7 +109,7 @@ Rectangle {
                     id: lblMainSet
                     anchors.centerIn: parent
                     text: sgControl.activeSet ? sgControl.activeSet.title : ""
-                    font: apx.font_narrow(Style.fontSize * 0.8)
+                    font: mainChartArea.labelFont
                 }
             }
 
@@ -117,7 +117,7 @@ Rectangle {
                 anchors.centerIn: parent
                 visible: btnRepeater.count <= 0
                 text: qsTr("No pages in the active set")
-                font: apx.font_narrow(Style.fontSize * 0.8)
+                font: mainChartArea.labelFont
                 color: Material.secondaryTextColor
                 background: Rectangle {
                     color: sgControl.color
