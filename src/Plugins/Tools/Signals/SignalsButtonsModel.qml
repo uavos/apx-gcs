@@ -46,17 +46,7 @@ ObjectModel {
                 continue;
             buttonsModel.remove(i);
         }
-
-        if(buttonsModel.count === 0)
-            return;
-
-        var index = 0;    
-        for(var i = 0; i < buttonsModel.count; ++i) {
-            if (buttonsModel.get(i).checked){ 
-                index = i;
-            }
-        }
-        buttonsModel.get(index).checked = true;
+        autoChecked();
     }
 
     function updateModel(pageList) {
@@ -72,6 +62,18 @@ ObjectModel {
                 continue;
             buttonsModel.addButton(f)
         }
+    }
+
+    function autoChecked() {
+        if(buttonsModel.count === 0)
+            return;
+        var index = 0;    
+        for(var i = 0; i < buttonsModel.count; ++i) {
+            if (buttonsModel.get(i).checked){ 
+                index = i;
+            }
+        }
+        buttonsModel.get(index).checked = true;
     }
 
     function clearModel() {

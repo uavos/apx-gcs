@@ -210,6 +210,7 @@ Fact {
                 defaultSet.load(set);
                 defaultSet.move(0)
                 setIndex = i;
+                buttonsModel.autoChecked()
                 break;
            }
         }
