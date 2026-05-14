@@ -40,8 +40,8 @@ Fact {
         qsTr("Cyan"),
         qsTr("Teal"),
         qsTr("Green"),
-        qsTr("Orange"),
         qsTr("Yellow"),
+        qsTr("Orange"),
         qsTr("Blue Grey")
     ]
     readonly property var colorBaseValues: [
