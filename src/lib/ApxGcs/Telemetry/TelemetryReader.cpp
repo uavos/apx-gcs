@@ -197,7 +197,7 @@ void TelemetryReader::do_rec_values(quint64 timestamp_ms, Values data, bool upli
         else {
             auto dist = _geoPath.coordinateAt(_geoPath.size() - 1).distanceTo(_geoPos);
             _totalDistance += dist;
-            if (dist >= 10)
+            if (dist >= 10.0) // ignore small movements
                 _geoPath.addCoordinate(_geoPos);
         }
         _geoPos = {};
