@@ -76,6 +76,11 @@ Rectangle {
         }
     }
 
+    function clearButtonGroup() {
+        buttonGroup.buttons = [];
+        buttonGroup.checkedButton = null;
+    }
+
     ColumnLayout {
         id: layout
         anchors.fill: parent

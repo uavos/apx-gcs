@@ -44,20 +44,38 @@ ObjectModel {
             var btn = buttonsModel.get(i);
             if(btn.num !== num)
                 continue;
-            // Check if this is the main chart button    
-            if(btn.checked)
-                buttonsModel.get(0).checked = true;    
-            buttonsModel.remove(i)
+            buttonsModel.remove(i);
         }
+
+        if(buttonsModel.count === 0)
+            return;
+
+        var index = 0;    
+        for(var i = 0; i < buttonsModel.count; ++i) {
+            if (buttonsModel.get(i).checked){ 
+                index = i;
+            }
+        }
+        buttonsModel.get(index).checked = true;
     }
 
     function updateModel(pageList) {
-        buttonsModel.clear();
+        // for(var i = 0; i < buttonsModel.count; ++i) {
+        //     var btn =  buttonsModel.get(i);
+        //     buttonsModel.remove(i);
+        //     btn.destroy();
+        // }
+        clearModel();
         for(var i = 0; i < pageList.length; ++i) {
             var f = pageList[i]
             if(!f)
                 continue;
             buttonsModel.addButton(f)
         }
+    }
+
+    function clearModel() {
+        buttonsModel.clear();
+        sgControl.clearButtonGroup(); // ButtonGroup keep model element after clear
     }
 }

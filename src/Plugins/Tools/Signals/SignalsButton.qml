@@ -52,6 +52,9 @@ TextButton {
             return;
         if (checked)
             mainChartArea.ciPageFact = pageFact;
+        // Check if set changed and model reset
+        if(buttonsModel.count === 0)
+            return;
         pageFact.active = checked;
     }
 
