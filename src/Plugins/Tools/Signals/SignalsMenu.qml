@@ -197,12 +197,16 @@ Fact {
     }
 
     function resetToDefaults() {
+
         var setIndex = -1
         var set = createDefaultSet();
         for(var i = 0; i < sgMenu.size; ++ i) {
             var title = sgMenu.child(i).title.trim().toLowerCase()
             if (title === "default") {
                 var defaultSet = sgMenu.child(i);
+                if(defaultSet.active) {
+                    buttonsModel.clearModel()
+                }
                 defaultSet.load(set);
                 defaultSet.move(0)
                 setIndex = i;
