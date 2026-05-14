@@ -121,6 +121,7 @@ Fact {
                 sets.push(set);
             }
             //set index
+            if(!json.active)json.active={}
             var setIdx = json.active[name];
             if (setIdx >= 0 && setIdx < sets.length)
                 currentSetIdx = setIdx;
