@@ -308,7 +308,7 @@ void Unit::updateFlightState()
         //setFlightState(FS_LANDED);
         // TODO improve landed condition detector, independently checking the state of the unit
     } else if ((f_mode->value().toUInt() == mandala::proc_mode_TAKEOFF)
-               && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
+               && (f_stage->value().toUInt() >= 1) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);
     } else
         setFlightState(FS_UNKNOWN);
