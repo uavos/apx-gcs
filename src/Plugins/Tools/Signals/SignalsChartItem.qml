@@ -32,7 +32,7 @@ Item {
     id: chartItem
     
     property var ciPageFact: null
-    property var num: ciPageFact ? ciPageFact.num : 0
+    property var num: ciPageFact ? ciPageFact.num : -1
     property var labelFont: apx.font_narrow(Style.fontSize * 0.8) 
 
     SignalsChartView {

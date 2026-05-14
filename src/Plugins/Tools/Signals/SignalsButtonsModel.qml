@@ -25,38 +25,39 @@ import QtQuick.Layouts
 
 import Apx.Common
 
-ObjectModel {
-    id: pinnedModel
 
-    function addPage(fact) {
+ObjectModel {
+    id: buttonsModel
+
+    function addButton(fact) {
         if(!fact)
             return;
-        var component = Qt.createComponent("SignalsChartItem.qml");
+        var component = Qt.createComponent("SignalsButton.qml");
         if (component.status === Component.Ready) {
-            var c=component.createObject(layout, {"ciPageFact": fact,
-                                                "Layout.fillWidth": true,
-                                                "Layout.preferredHeight": Qt.binding(function(){return 110 * ui.scale}),
-                                                "Layout.minimumHeight": 20,
-                                                "clip": true});
-            pinnedModel.append(c);
+            var c=component.createObject(bottomArea, {"pageFact": fact});
+            buttonsModel.append(c);
         }
     }
 
-    function removePage(num) {
-        for(var i = 0; i < pinnedModel.count; ++i) {
-            if(pinnedModel.get(i).num !== num)
+    function removeButton(num) {
+        for(var i = 0; i < buttonsModel.count; ++i) {
+            var btn = buttonsModel.get(i);
+            if(btn.num !== num)
                 continue;
-            pinnedModel.remove(i)
+            // Check if this is the main chart button    
+            if(btn.checked)
+                buttonsModel.get(0).checked = true;    
+            buttonsModel.remove(i)
         }
     }
 
     function updateModel(pageList) {
-        pinnedModel.clear();
+        buttonsModel.clear();
         for(var i = 0; i < pageList.length; ++i) {
             var f = pageList[i]
             if(!f)
                 continue;
-            pinnedModel.addPage(f)
+            buttonsModel.addButton(f)
         }
     }
 }

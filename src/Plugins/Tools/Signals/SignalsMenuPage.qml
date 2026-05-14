@@ -275,8 +275,10 @@ Fact {
         visible: !newItem
         icon: "delete"
         onTriggered: {
-            if(pageFact.active) 
+            if(pageFact.active)
                 setFact.setChecked(0)
+            if(setFact.active)
+                buttonsModel.removeButton(pageFact.num)      
             pageFact.pinned = false;
             pageFact.deleteFact();
         }

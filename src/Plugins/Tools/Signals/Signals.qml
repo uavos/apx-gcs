@@ -38,7 +38,7 @@ Rectangle {
     readonly property var pages: sgMenu.getActivePages()
     readonly property var activeSet: sgMenu.getActiveSet()
     
-    onActiveSetChanged: pinnedModel.updateModel(sgMenu.getPinnedPages())
+    onActiveSetChanged: updateModels()
     Component.onCompleted: {
         if (buttonGroup.buttons.length <= 0)
             return;
@@ -54,6 +54,11 @@ Rectangle {
             for (var i = 0; i < pages.length; ++i)
                 pages[i].updateChartsValues();
         }
+    }
+
+    function updateModels() {
+        pinnedModel.updateModel(sgMenu.getPinnedPages())
+        buttonsModel.updateModel(sgMenu.getActivePages())
     }
 
     function checkScrMatches(val) {
@@ -140,20 +145,15 @@ Rectangle {
             id: bottomArea
             Layout.fillWidth: true
             Layout.margins: Style.spacing
-            spacing: 3
             Layout.maximumHeight: 24 * ui.scale
+            spacing: 3
+            
+            SignalsButtonsModel {
+               id: buttonsModel
+            }
             Repeater {
                 id: btnRepeater
-                model: sgControl.pages
-
-                delegate: SignalsButton {
-                    required property int index
-                    required property var modelData
-
-                    property int pageIndex: index
-
-                    pageFact: modelData
-                }
+                model: buttonsModel
             }
             IconButton {
                 iconName: "plus"

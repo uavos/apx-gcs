@@ -40,7 +40,7 @@ Fact {
 
     Component.onCompleted: load(data)
     Component.onDestruction: removed() // pinned menu closes when the plugin is closed
-    onCheckedPageChanged: if(active) sgMenu.saveSettings() 
+    onCheckedPageChanged: if(active) sgMenu.saveSettings()
 
     function save() {
         changes = false;
@@ -172,6 +172,7 @@ Fact {
         title: qsTr("Pages")
         flags: (Fact.Group | Fact.Section | Fact.DragChildren)
         onSizeChanged: updateDescr()
+        onItemInserted: (fact)=>{if(setFact.active) buttonsModel.addButton(fact)}
     }
 
     // Actions

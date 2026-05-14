@@ -32,6 +32,7 @@ TextButton {
     property var pageFact: null
     property string pageToolTip: pageFact ? pageFact.pageToolTip : ""
     property bool pageWarning: pageFact ? pageFact.warnings : false
+    property var num: pageFact ? pageFact.num : -1
 
     Layout.fillHeight: true
     checkable: true
@@ -40,8 +41,12 @@ TextButton {
     textColor: checked ? Material.color(Material.Yellow) : Material.primaryTextColor
     toolTip: pageFact ? pageFact.pageToolTip : ""
     Material.background: pageWarning ? Material.color(Material.Orange) : color
-    checked: pageFact ? pageFact.active : false
 
+    Component.onCompleted: {
+        if(!pageFact)
+            return;
+        checked = pageFact.active    
+    } 
     onCheckedChanged: {
         if (!pageFact)
             return;
