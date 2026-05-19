@@ -110,6 +110,11 @@ QJsonValue MissionItem::toJson()
 }
 void MissionItem::fromJson(const QJsonValue &jsv)
 {
+    //reset all child facts value if some fields are missing in json
+    for (int i = 0; i < size(); ++i) {
+        child(i)->setValue(QVariant());
+    }
+
     // fix json
     auto jso = jsv.toObject();
     // pos from lat/lon
