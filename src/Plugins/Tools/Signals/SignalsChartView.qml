@@ -152,7 +152,6 @@ Item {
                     bmod = true;
                 }
                 if (bmod) {
-                    axisY.tickCount = 4;
                     axisY.applyNiceNumbers();
                 }
             }
