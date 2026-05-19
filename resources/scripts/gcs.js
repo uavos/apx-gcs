@@ -49,11 +49,6 @@ function req(n) {
 }
 req.info = "request var n from UAV";
 
-function send(n) {
-    apx.fleet.current.mandala.fact(n).send();
-}
-send.info = "send var n to UAV";
-
 function serial(p, v) {
     apx.fleet.current.protocol.data.sendSerial(p, v);
 }

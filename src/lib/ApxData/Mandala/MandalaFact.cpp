@@ -116,7 +116,7 @@ MandalaFact::MandalaFact(Mandala *tree, Fact *parent, const mandala::meta_s &met
             sendTime.start();
             sendTimer.setInterval(100);
             sendTimer.setSingleShot(true);
-            connect(&sendTimer, &QTimer::timeout, this, &MandalaFact::send);
+            connect(&sendTimer, &QTimer::timeout, this, &MandalaFact::sendShadowValue);
         } else {
             setDataType(Int);
         }
@@ -140,12 +140,16 @@ bool MandalaFact::setValue(const QVariant &v)
 
     //always send uplink
     bool rv = Fact::setValue(v);
+    if (rv) {
+        shadow_value = value();
+        // qDebug() << "setValue:" << mpath() << value();
+    }
 
     // qDebug() << name() << text() << rv;
     if (sendTimer.isActive())
         return rv;
     if (sendTime.elapsed() >= sendTimer.interval())
-        send();
+        sendShadowValue();
     else
         sendTimer.start();
     return rv;
@@ -231,6 +235,10 @@ void MandalaFact::request()
 void MandalaFact::send()
 {
     sendValue(value());
+}
+void MandalaFact::sendShadowValue()
+{
+    sendValue(shadow_value);
 }
 void MandalaFact::sendValue(QVariant v)
 {
