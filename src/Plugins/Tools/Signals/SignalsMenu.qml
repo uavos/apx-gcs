@@ -206,6 +206,7 @@ Fact {
             if (title === "default") {
                 var defaultSet = sgMenu.child(i);
                 if(defaultSet.active) {
+                    pinnedModel.clear();
                     buttonsModel.clearModel()
                 }
                 defaultSet.load(set);
