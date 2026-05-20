@@ -198,8 +198,9 @@ Fact {
         title: qsTr("Remove")
         icon: "delete"
         onTriggered: {
-            if (setFact.active) setFact.selected(0);
+            var isActive = setFact.active;
             setFact.deleteFact();
+            if (isActive) setFact.selected(0);
         }
     }
 }
