@@ -33,11 +33,12 @@ ObjectModel {
             return;
         var component = Qt.createComponent("SignalsChartItem.qml");
         if (component.status === Component.Ready) {
-            var c=component.createObject(layout, {"ciPageFact": fact,
-                                                "Layout.fillWidth": true,
+            var c=component.createObject(layout, {"Layout.fillWidth": true,
                                                 "Layout.preferredHeight": Qt.binding(function(){return 110 * ui.scale}),
                                                 "Layout.minimumHeight": 20,
                                                 "clip": true});
+            c.allowReset();
+            c.ciPageFact = fact;
             pinnedModel.append(c);
         }
     }
