@@ -106,6 +106,7 @@ Item {
             labelsColor: "white"
             labelsFont: apx.font_narrow(Style.fontSize * 0.65)
             gridLineColor: "#555"
+            truncateLabels: false // don't hide labels with small vertical space
         }
 
         property real dataPadding: 0.05
