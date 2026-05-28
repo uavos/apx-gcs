@@ -232,10 +232,6 @@ void MandalaFact::request()
 {
     sendValue(QVariant());
 }
-void MandalaFact::send()
-{
-    sendValue(value());
-}
 void MandalaFact::sendShadowValue()
 {
     sendValue(shadow_value);

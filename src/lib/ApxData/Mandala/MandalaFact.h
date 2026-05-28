@@ -42,7 +42,6 @@ public:
 
     // send value to uplink when set
     bool setValue(const QVariant &v) override;
-    void send();
     void sendShadowValue();
 
     Q_INVOKABLE mandala::uid_t uid() const;
