@@ -112,6 +112,14 @@ void MissionItem::fromJson(const QJsonValue &jsv)
 {
     // fix json
     auto jso = jsv.toObject();
+    for (int i = 0; i < size(); ++i) {
+        Fact *c = child(i);
+        if (!jso.contains(c->name())) {
+            //field is missing in json, reset to default value
+            c->setValue(QVariant());
+        }
+    }
+
     // pos from lat/lon
     if (jso.contains("lat") && jso.contains("lon")) {
         const double lat = jso["lat"].toVariant().toDouble();
