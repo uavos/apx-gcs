@@ -110,13 +110,12 @@ QJsonValue MissionItem::toJson()
 }
 void MissionItem::fromJson(const QJsonValue &jsv)
 {
-    // fix json
     auto jso = jsv.toObject();
-    for (int i = 0; i < size(); ++i) {
-        Fact *c = child(i);
-        if (!jso.contains(c->name())) {
-            //field is missing in json, reset to default value
-            c->setValue(QVariant());
+
+    // set zero values for missing fields in json
+    for (auto f : facts()) {
+        if (!jso.contains(f->name())) {
+            f->setValue({});
         }
     }
 
