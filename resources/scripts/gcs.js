@@ -49,11 +49,6 @@ function req(n) {
 }
 req.info = "request var n from UAV";
 
-function send(n) {
-    apx.fleet.current.mandala.fact(n).send();
-}
-send.info = "send var n to UAV";
-
 function serial(p, v) {
     apx.fleet.current.protocol.data.sendSerial(p, v);
 }
@@ -162,9 +157,9 @@ function jsw_T(v) { cmd.rc.thr = limit(v, 0, 1); }
 function jsw_Y(v, h) { cmd.rc.yaw = limit(v, -1, 1); }
 
 // Encoders
-function inc_ALT(v) { cmd.pos.altitude = limit(cmd.pos.altitude + v, 0, 30000); }
+function inc_ALT(v) { cmd.pos.altitude = limit(cmd.pos.altitude + v, -100, 30000); }
 function inc_CRS(v) { cmd.pos.bearing = bound(cmd.pos.bearing + v); }
-function inc_SPD(v) { cmd.pos.airspeed = limit(cmd.pos.airspeed + v, 0, 100); }
+function inc_SPD(v) { cmd.pos.airspeed = limit(cmd.pos.airspeed + v, 0, 1000); }
 function inc_ADJ(v) { cmd.proc.adj = limit(cmd.proc.adj + v, -100, +100); }
 function inc_FLAPS(v) { ctr.wing.flaps = limit(ctr.wing.flaps + v, 0, 1); }
 function inc_AIRBRK(v) { ctr.wing.airbrk = limit(ctr.wing.airbrk + v, 0, 1); }

@@ -308,7 +308,7 @@ void Unit::updateFlightState()
         //setFlightState(FS_LANDED);
         // TODO improve landed condition detector, independently checking the state of the unit
     } else if ((f_mode->value().toUInt() == mandala::proc_mode_TAKEOFF)
-               && (f_stage->value().toUInt() >= 2) && (f_stage->value().toUInt() < 100)) {
+               && (f_stage->value().toUInt() >= 1) && (f_stage->value().toUInt() < 100)) {
         setFlightState(FS_TAKEOFF);
     } else
         setFlightState(FS_UNKNOWN);
@@ -322,16 +322,19 @@ void Unit::updateGeoPath()
         return;
     if (c.longitude() == 0.0)
         return;
+
     if (!m_geoPath.isEmpty()) {
         QGeoCoordinate c0(m_geoPath.path().last());
-        /*if (c0.latitude() == c.latitude())
+        if (c0.latitude() == c.latitude())
             return;
         if (c0.longitude() == c.longitude())
-            return;*/
-        quint64 d = static_cast<quint64>(c0.distanceTo(c));
-        if (d < 10)
             return;
-        setTotalDistance(totalDistance() + static_cast<quint64>(d));
+
+        const double d = c0.distanceTo(c);
+        if (d < 10.0) // ignore small movements
+            return;
+
+        setTotalDistance(totalDistance() + d);
     }
 
     m_geoPath.addCoordinate(c);
@@ -562,11 +565,11 @@ void Unit::setGeoPath(const QGeoPath &v)
     m_geoPath = v;
     emit geoPathChanged();
 }
-quint64 Unit::totalDistance() const
+double Unit::totalDistance() const
 {
     return m_totalDistance;
 }
-void Unit::setTotalDistance(quint64 v)
+void Unit::setTotalDistance(double v)
 {
     if (m_totalDistance == v)
         return;

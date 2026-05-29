@@ -110,8 +110,15 @@ QJsonValue MissionItem::toJson()
 }
 void MissionItem::fromJson(const QJsonValue &jsv)
 {
-    // fix json
     auto jso = jsv.toObject();
+
+    // set zero values for missing fields in json
+    for (auto f : facts()) {
+        if (!jso.contains(f->name())) {
+            f->setValue({});
+        }
+    }
+
     // pos from lat/lon
     if (jso.contains("lat") && jso.contains("lon")) {
         const double lat = jso["lat"].toVariant().toDouble();

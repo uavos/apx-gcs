@@ -87,6 +87,12 @@ bool MissionPoint::setValue(const QVariant &v)
             return true;
         }
 
+        // null or unsupported type, reset coordinate
+        if (v.isNull()) {
+            setCoordinate(QGeoCoordinate());
+            return true;
+        }
+
     } while (0);
 
     // some value parsing error
