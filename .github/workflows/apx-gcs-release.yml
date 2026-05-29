@@ -50,7 +50,7 @@ jobs:
     name: Build MacOS
     runs-on: macos-latest
     env:
-      VERSION_QT: 6.10.0
+      VERSION_QT: 6.11.1
       VERSION_SDL: 2.30.8
       VERSION_GST: 1.26.0
 
@@ -78,7 +78,7 @@ jobs:
         run: |
           aqt install-qt mac desktop $VERSION_QT -m \
             qtshadertools qt5compat qtcharts qtmultimedia \
-            qtspeech qtlocation qtpositioning qtserialport
+            qtspeech qtlocation qtpositioning qtserialport qttasktree
           echo "/tmp/$VERSION_QT/macos/bin" >> $GITHUB_PATH
 
       - name: Install SDL

@@ -1,11 +1,11 @@
-FROM ubuntu:22.04
+FROM ubuntu:26.04
 LABEL description="Linux development environment for APX Ground Control"
 LABEL maintainer="sa@uavos.com"
 
 ENV TERM=xterm-color
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 # basic APT packages
 RUN apt-get update && \
@@ -52,9 +52,9 @@ RUN curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous
 
 
 # libs: apt
-RUN apt-get install -y --no-install-recommends \
+RUN apt install -y --no-install-recommends \
     libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
-    libodbc1 libpq5 \
+    libpq5 \
     libcups2 \
     libz-dev libsdl2-dev zsync \
     \
@@ -78,18 +78,19 @@ RUN cd $LIBS_DIST_DIR && apt-get download libsdl2-2.0-0 libsndio7.0
 
 
 # python tools
-RUN pip3 install networkx simplejson jinja2 pyyaml
+RUN pip install --break-system-packages \
+    networkx simplejson jinja2 pyyaml
 
 # Qt packages
 RUN apt install -y --no-install-recommends \
     python3-dev && rm -Rf /var/cache/apt
 
-# Qt 6.8 does not work with Ubuntu 22.04
-ARG VERSION_QT=6.7.1
-RUN pip install aqtinstall &&\
+# Qt
+ARG VERSION_QT=6.11.1
+RUN pip install --break-system-packages aqtinstall &&\
     aqt install-qt linux$(cat /arch_qt) desktop ${VERSION_QT} -m \
     qtshadertools qt5compat qtcharts qtmultimedia \
-    qtspeech qtlocation qtpositioning qtserialport &&\
+    qtspeech qtlocation qtpositioning qtserialport qttasktree &&\
     rsync -av /${VERSION_QT}/*/ /usr/local/ && rm -Rf /${VERSION_QT}
 
 # build patches
