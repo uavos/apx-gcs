@@ -114,7 +114,7 @@ void MissionItem::fromJson(const QJsonValue &jsv)
 
     // set zero values for missing fields in json
     for (auto f : facts()) {
-        if (!jso.contains(f->name())) {
+        if (!jso.contains(f->name()) && f != f_order && f != f_pos) {
             f->setValue({});
         }
     }
