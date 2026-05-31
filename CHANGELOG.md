@@ -1,3 +1,13 @@
+# [APX Ground Control v11.2.26](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.26) (05/30/26)
+
+> Branch: `main`\
+> Date: `05/30/26 17:03:55`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/197e987086a590dd1772ae9149c547c14e781f52...e510d6705bbf447bf2e57c7928218420c67293c7)
+
+## Bug Fixes
+* telemetry plot filter
+* json set zero value
+
 # [APX Ground Control v11.2.25](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.25) (05/28/26)
 
 > Branch: `main`\
