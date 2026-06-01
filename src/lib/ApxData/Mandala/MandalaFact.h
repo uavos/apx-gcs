@@ -53,10 +53,10 @@ public:
 
     Q_INVOKABLE mandala::uid_t offset() const;
 
+    Q_INVOKABLE bool setRawValueLocal(QVariant v);
+
     // units conversions
     void setValueFromStream(const QVariant &v);
-
-    bool setRawValueLocal(QVariant v);
 
     void increment_rx_cnt();
     auto rx_cnt() const { return _rx_cnt; }
