@@ -170,7 +170,7 @@ public:
     void clearLegenedLabels();
 
 private:
-    QList<QwtLegendLabel *> legendLabels;
+    QList<QPointer<LegendItem>> legendLabels;
     QLineEdit *filter_le = nullptr;
 
 private slots:

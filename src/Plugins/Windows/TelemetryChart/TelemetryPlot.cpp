@@ -700,7 +700,7 @@ PlotLegend::PlotLegend(QWidget *parent)
 QWidget *PlotLegend::createWidget(const QwtLegendData &data) const
 {
     Q_UNUSED(data)
-    QwtLegendLabel *w = new LegendItem();
+    LegendItem *w = new LegendItem();
     w->setItemMode(defaultItemMode());
     w->setSpacing(3);
     w->setMargin(0);
@@ -719,23 +719,29 @@ void PlotLegend::clearLegenedLabels()
 void PlotLegend::onFilter(QString text)
 {
     QLayout *contentsLayout = contentsWidget()->layout();
-    auto it = legendLabels.begin();
-    for (; it != legendLabels.constEnd(); ++it) {
-        QwtLegendLabel *label = *it;
-        if (label) {
-            contentsLayout->removeWidget(label);
-            label->setVisible(false);
-        }
+
+    if (!contentsLayout) {
+        return;
     }
 
-    it = legendLabels.begin();
-    for (; it != legendLabels.constEnd(); ++it) {
-        QwtLegendLabel *label = *it;
-        if (label && label->text().text().contains(text.replace(" ", ""))) {
-            if (contentsLayout->indexOf(label) == -1) {
+    text.remove(' ');
+
+    for (const auto &ptr : legendLabels) {
+        if (!ptr) {
+            continue;
+        }
+
+        LegendItem *label = ptr.data();
+        const bool match = label->text().text().contains(text, Qt::CaseInsensitive);
+
+        if (match) {
+            if (contentsLayout->indexOf(label) < 0) {
                 contentsLayout->addWidget(label);
-                label->setVisible(true);
             }
+            label->setVisible(true);
+        } else {
+            contentsLayout->removeWidget(label);
+            label->setVisible(false);
         }
     }
 }

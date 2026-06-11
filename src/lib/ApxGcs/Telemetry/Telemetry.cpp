@@ -74,7 +74,7 @@ Telemetry::Telemetry(Unit *parent)
         connect(f_reader,
                 &TelemetryReader::geoPathCollected,
                 this,
-                [this](const QGeoPath &path, quint64 totalDistance) {
+                [this](const QGeoPath &path, double totalDistance) {
                     unit->setGeoPath(path);
                     unit->setTotalDistance(totalDistance);
                 });

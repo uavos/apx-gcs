@@ -89,7 +89,7 @@ ComboBox {
         font: editor.font
         color: editor.enabled ? editor.Material.foreground : editor.Material.hintTextColor
         verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideMiddle
+        elide: text.length>12 ? Text.ElideMiddle : Text.ElideNone
     }
 
     function updateIndex()

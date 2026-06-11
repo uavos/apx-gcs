@@ -1,3 +1,36 @@
+# [APX Ground Control v11.2.26](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.26) (05/30/26)
+
+> Branch: `main`\
+> Date: `05/30/26 17:03:55`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/197e987086a590dd1772ae9149c547c14e781f52...e510d6705bbf447bf2e57c7928218420c67293c7)
+
+## Bug Fixes
+* telemetry plot filter
+* json set zero value
+
+# [APX Ground Control v11.2.25](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.25) (05/28/26)
+
+> Branch: `main`\
+> Date: `05/28/26 19:57:48`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/b0181148c911e37e906778cc9677cb7b4418f813...743a5d59c8201b1c4ce46edb8a9be55a00c44dec)
+
+## Bug Fixes
+* combo box elide mode for short texts
+* flight state on takeoff stage 1
+* js script helpers inc/dec limits
+* flight path distance calculation
+* telemetry flight path distance calc errors
+* fact reset for incomplete JSON
+* send uplink value
+
+# [APX Ground Control v11.2.24](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.24) (04/24/26)
+
+> Branch: `main`\
+> Date: `04/24/26 21:49:22`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/0fa879d9da365cf980d2a94f975762a9320c35bc...0ab2b1ca899a129bbb401d27620e64b7fbbdd25b)
+
+Security updates
+
 # [APX Ground Control v11.2.23](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.23) (03/26/26)
 
 > Branch: `main`\

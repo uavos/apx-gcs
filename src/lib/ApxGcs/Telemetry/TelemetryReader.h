@@ -65,7 +65,7 @@ private:
 
     // geo path calculation
     QGeoPath _geoPath;
-    quint64 _totalDistance;
+    double _totalDistance;
     int _index_lat;
     int _index_lon;
     int _index_hmsl;
@@ -105,7 +105,7 @@ signals:
 
     // called when file parsed and header info collected
     void recordInfoUpdated(quint64 id, QJsonObject info);
-    void geoPathCollected(QGeoPath path, quint64 totalDistance);
+    void geoPathCollected(QGeoPath path, double totalDistance);
 
     // stats text changed
     void recordInfoChanged();

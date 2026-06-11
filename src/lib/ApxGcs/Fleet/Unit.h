@@ -54,7 +54,7 @@ class Unit : public Fact
     Q_PROPERTY(FlightState flightState READ flightState NOTIFY flightStateChanged)
 
     Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
-    Q_PROPERTY(quint64 totalDistance READ totalDistance NOTIFY totalDistanceChanged)
+    Q_PROPERTY(double totalDistance READ totalDistance NOTIFY totalDistanceChanged)
 
     Q_PROPERTY(PUnit *protocol READ protocol CONSTANT)
     Q_PROPERTY(PUnit::StreamType streamType READ streamType NOTIFY streamTypeChanged)
@@ -117,8 +117,8 @@ public:
     QGeoPath geoPath() const;
     void setGeoPath(const QGeoPath &v);
 
-    quint64 totalDistance() const;
-    void setTotalDistance(quint64 v);
+    double totalDistance() const;
+    void setTotalDistance(double v);
 
     bool isLocal() const { return m_is_local; }
     bool isReplay() const { return m_is_replay; }
@@ -134,7 +134,7 @@ protected:
     QGeoCoordinate m_coordinate;
     FlightState m_flightState{FS_UNKNOWN};
     QGeoPath m_geoPath;
-    quint64 m_totalDistance{0};
+    double m_totalDistance{};
 
     bool m_is_local{};
     bool m_is_replay{};

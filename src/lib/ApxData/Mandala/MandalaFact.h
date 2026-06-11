@@ -42,10 +42,10 @@ public:
 
     // send value to uplink when set
     bool setValue(const QVariant &v) override;
+    void sendShadowValue();
 
     Q_INVOKABLE mandala::uid_t uid() const;
     Q_INVOKABLE void request();
-    Q_INVOKABLE void send();
     Q_INVOKABLE void sendValue(QVariant v);
 
     Q_INVOKABLE Fact *classFact() const;
@@ -85,6 +85,8 @@ private:
     const mandala::fmt_s &m_fmt;
 
     QList<MandalaConverter *> _converters;
+
+    QVariant shadow_value;
 
     QElapsedTimer sendTime;
     QTimer sendTimer;
