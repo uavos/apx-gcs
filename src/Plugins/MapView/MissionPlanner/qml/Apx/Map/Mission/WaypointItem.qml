@@ -69,7 +69,8 @@ MissionObject {
     property var pluginOn: plugin ? apx.settings.application.plugins.elevationmap.value : false
     property var alarmOn: use && pluginOn
     property var coordinate: fact?fact.coordinate:0
-    property var agl: fact?fact.child("agl").value:0
+    property var aglFact: fact?fact.child("agl"):null
+    property var agl: aglFact?aglFact.value:0
     property var elevation: fact?fact.elevation:NaN
     property var collision: (fact && alarmOn)?fact.collision:false
     property var unsafeAgl: fact?fact.unsafeAgl:100 // default unsafe agl = 100 m
