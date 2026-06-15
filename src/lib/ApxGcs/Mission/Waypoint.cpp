@@ -160,7 +160,9 @@ void Waypoint::initElevationMap()
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if (prevWp) {
         Fact *prevAltitude = prevWp->f_altitude;
+        Fact *prevAgl = prevWp->f_agl;
         connect(prevAltitude, &Fact::valueChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
+        connect(prevAgl, &Fact::valueChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
     }
     connect(&m_watcher, &QFutureWatcher<TerrainInfo>::finished, this, &Waypoint::updateTerrainInfo, Qt::UniqueConnection);
     connect(App::instance(), &App::appQuit, &m_watcher, &QFutureWatcher<TerrainInfo>::cancel, Qt::UniqueConnection);
