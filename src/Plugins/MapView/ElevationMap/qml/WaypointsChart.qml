@@ -22,11 +22,11 @@ Repeater {
         Item { 
             id: wpItem
             property bool created: false
-            property bool amsl: modelData.child("amsl").value
-            property var startHmsl: mission.startElevation
+            property bool amsl: modelData.child("amsl") ? modelData.child("amsl").value : false
+            property var startHmsl: Math.round(mission.startElevation)
             property var startPoint: mission.startPoint
-            property var altitude: modelData.child("altitude").value
-            property var agl: modelData.child("agl").value
+            property var altitude: modelData.child("altitude") ? modelData.child("altitude").value : 0
+            property var agl: modelData.child("agl") ? modelData.child("agl").value : 0
             property var elevation: modelData.elevation
             property var unsafeAgl: modelData.unsafeAgl
             property bool collision: modelData.collision

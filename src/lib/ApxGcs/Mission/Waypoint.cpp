@@ -702,7 +702,7 @@ void Waypoint::checkCollision()
 
 double Waypoint::getStartHMSL()
 {
-    return group->mission->startElevation();
+    return std::round(group->mission->startElevation());
 }
 
 void Waypoint::updateMinMaxHeight()
