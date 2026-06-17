@@ -240,6 +240,9 @@ void Runway::setAppPoint(const QGeoCoordinate &v)
     else if (dist > 100)
         dist = (dist / 10) * 10;
     f_approach->setValue(dist);
+    // For feets
+    auto ft = static_cast<int>(dist * M2FT_COEF);
+    f_approach->setOpt("ft", ft);
 }
 double Runway::heading() const
 {
