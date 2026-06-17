@@ -23,6 +23,9 @@
 
 #include "PApx.h"
 
+#include <QElapsedTimer>
+#include <QHash>
+
 class PApx;
 
 class PApxUnit : public PUnit
@@ -55,4 +58,9 @@ private:
     xbus::unit::uid_t _vuid{};
 
     PApxRequest _req;
+
+    // duplicate packet detection
+    QElapsedTimer _packetTimer;
+    QHash<QByteArray, qint64> _packetHistory;
+    int _packetCleanupCounter{0};
 };

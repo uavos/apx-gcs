@@ -47,6 +47,8 @@ PApxUnit::PApxUnit(PApx *parent,
     m_nodes = new PApxNodes(this);
     m_mission = new PApxMission(this);
 
+    _packetTimer.start();
+
     AppGcs::jsync(this);
 }
 
@@ -83,6 +85,32 @@ void PApxUnit::process_incoming_data(PStreamReader &stream, bool is_remote_uplin
     if (static_cast<PApxNodes *>(m_nodes)->process_incoming_data(pid, stream, is_remote_uplink)) {
         setStreamType(NMT);
         return;
+    }
+
+    // duplicate packet detection (full payload comparison)
+    {
+        const QByteArray &payload = stream.payload();
+        const int keyLen = qMin(payload.size(), 4);
+        const QByteArray key = payload.left(keyLen);
+        const qint64 now = _packetTimer.elapsed();
+
+        if (++_packetCleanupCounter > 200 || _packetHistory.size() > 1000) {
+            _packetCleanupCounter = 0;
+            for (auto it = _packetHistory.begin(); it != _packetHistory.end();) {
+                if (now - it.value() > 5000) {
+                    it = _packetHistory.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+
+        auto it = _packetHistory.find(key);
+        if (it != _packetHistory.end() && (now - it.value()) < 5000) {
+            // duplicate within 5s window, skip
+            return;
+        }
+        _packetHistory.insert(key, now);
     }
 
     if (static_cast<PApxData *>(m_data)->process_incoming_data(pid, stream, is_remote_uplink)) {
