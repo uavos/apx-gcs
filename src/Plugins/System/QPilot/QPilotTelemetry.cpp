@@ -50,7 +50,12 @@ const QList<TrackedFactDef> &trackedFactDefs()
         {QStringLiteral("est.att.roll"), mandala::est::nav::att::roll::uid},
         {QStringLiteral("est.att.pitch"), mandala::est::nav::att::pitch::uid},
         {QStringLiteral("est.att.yaw"), mandala::est::nav::att::yaw::uid},
+
         {QStringLiteral("est.air.airspeed"), mandala::est::nav::air::airspeed::uid},
+
+        {QStringLiteral("est.pos.lat"), mandala::est::nav::pos::lat::uid},
+        {QStringLiteral("est.pos.lon"), mandala::est::nav::pos::lon::uid},
+        {QStringLiteral("est.pos.bearing"), mandala::est::nav::pos::bearing::uid},
         {QStringLiteral("est.pos.speed"), mandala::est::nav::pos::speed::uid},
         {QStringLiteral("est.pos.altitude"), mandala::est::nav::pos::hmsl::uid},
         {QStringLiteral("est.pos.vspeed"), mandala::est::nav::pos::vspeed::uid},
