@@ -28,6 +28,7 @@ import Apx.Common
 SpinBox {
     id: editor
     property var opts: fact.opts
+    property var enumString: fact.enumStrings
     property var measurementsystem: apx.settings.interface.measurementsystem
     property bool tooltip: measurementsystem ? measurementsystem.tooltip.value : false
     property bool isFeets: measurementsystem ? measurementsystem.feets.value : false
@@ -90,22 +91,14 @@ SpinBox {
         return fact.name!=="speed"?m2ft(value):mps2kn(fact.value)
     }
 
-    // Temporary meters/feets stub for Runway and Point of interest
     onOptsChanged: zeroCheck()
     function zeroCheck()
     {
-        var names = ["hmsl", "speed"]
-        if(!names.includes(fact.name))
-            return
-        if(fact.parentFact.name == "p#" && opts.ft == 0)  // Point of interest
-            opts.ft = "ground"
-        if(fact.parentFact.name == "r#" && opts.ft == 0)  // Runway
-            opts.ft = "default"
-        if(fact.parentFact.name == "actions" && opts.ft == 0)
-            if(fact.name == "speed")
-                opts.ft = "off"
+        if(enumString.length != 1)
+            return;
+        if(opts.ft == 0)
+            opts.ft = enumString[0]  
     }
-    // Stub END 
 
     contentItem: Item{
         implicitWidth: isFeets ? textInputFt.width : textInput.width
