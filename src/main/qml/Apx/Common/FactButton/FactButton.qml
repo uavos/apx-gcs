@@ -372,24 +372,24 @@ ActionButton {
     }
 
     // Feets / meters conversion
-    property var m2ft_coef: 3.2808
+    readonly property var m2ftCoef: 3.2808
 
     function m2ft(value) {
-        return Math.round(value * m2ft_coef)
+        return Math.round(value * m2ftCoef)
     }
 
     function ft2m(value) {
-        return Math.round(value / m2ft_coef)
+        return Math.round(value / m2ftCoef)
     }
 
     // Knots / meters per second conversion
-    property var mps2kn_coef: 1.9438
+    readonly property var mps2knCoef: 1.9438
 
     function mps2kn(value) {
-        return Math.round(value * mps2kn_coef)
+        return Math.round(value * mps2knCoef)
     }
 
     function kn2mps(value) {
-        return Math.round(value / mps2kn_coef)
+        return Math.round(value / mps2knCoef)
     }
 }

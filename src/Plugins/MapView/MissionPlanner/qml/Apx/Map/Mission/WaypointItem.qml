@@ -107,6 +107,7 @@ MissionObject {
     contentsTop: [
         Loader {
             property bool isFeets: fact?fact.isFeets:false
+            readonly property var m2ftCoef: waypointItem.m2ftCoef
             active: dragging||hover
             // asynchronous: true
             sourceComponent: Component {
@@ -115,7 +116,7 @@ MissionObject {
                     color: Style.cNormal
                     text: {
                         if(isFeets)
-                            return apx.distanceToStringFt(f_distance * 3.2808)+"/"+apx.distanceToStringFt(f_totalDistance * 3.2808)
+                            return apx.distanceToStringFt(f_distance * m2ftCoef)+"/"+apx.distanceToStringFt(f_totalDistance * m2ftCoef)
                         else
                             return apx.distanceToString(f_distance)+"/"+apx.distanceToString(f_totalDistance)
                     }

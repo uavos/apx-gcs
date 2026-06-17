@@ -114,7 +114,7 @@ MissionObject {
                     implicitZ: geoItem.implicitZ-1
                     color: "white"
                     textColor: "black"
-                    title: !isFeets?apx.distanceToString(lineDistance):apx.distanceToStringFt(lineDistance * 3.2808)
+                    title: !isFeets?apx.distanceToString(lineDistance):apx.distanceToStringFt(lineDistance * m2ftCoef)
                     opacity: (geoItem.hover || geoItem.selected || selected)?(ui.effects?0.8:1):0
                     visible: opacity>0
                     implicitCoordinate: linePointCoordinate

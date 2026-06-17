@@ -30,6 +30,7 @@ MapObject {
     id: missionObject
 
     property var fact: null
+    readonly property var m2ftCoef: 3.2808
 
     visible: mission.visible //&& visibleOnMap
 

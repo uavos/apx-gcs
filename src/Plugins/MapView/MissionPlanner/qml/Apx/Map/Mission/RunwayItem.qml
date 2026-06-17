@@ -179,6 +179,7 @@ MissionObject {
         property bool isFeets: fact?fact.isFeets:false
         property int approach: runwayItem.f_approach
         property var rwObjTitle: getTitle()
+        readonly property var m2ftCoef: runwayItem.m2ftCoef  
 
         onIsFeetsChanged: rwObjTitle=getTitle()
         onOptsChanged: rwObjTitle=getTitle()
@@ -186,7 +187,7 @@ MissionObject {
 
         function getTitle() {
             if(isFeets)
-                return f_approach>0?(apx.distanceToStringFt(f_approach * 3.2808)):"H----"
+                return f_approach>0?(apx.distanceToStringFt(f_approach * m2ftCoef)):"H----"
             else
                 return f_approach>0?(apx.distanceToString(f_approach)):"H----"
         }
