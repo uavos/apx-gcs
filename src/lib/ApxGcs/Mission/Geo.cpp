@@ -103,6 +103,20 @@ Geo::Geo(MissionGroup *parent)
 
     f_p2 = new MissionPoint(this, "p2", tr("Point 2"), tr("Second point of line"));
 
+    // Add feets option
+    f_top->setOpt("editor", "EditorIntWithFeet.qml");
+    f_bottom->setOpt("editor", "EditorIntWithFeet.qml");
+    f_radius->setOpt("editor", "EditorIntWithFeet.qml");
+
+    auto ft = std::round(f_top->value().toInt() * M2FT_COEF);
+    f_top->setOpt("ft", ft);
+    ft = std::round(f_bottom->value().toInt() * M2FT_COEF);
+    f_bottom->setOpt("ft", ft);
+    ft = std::round(f_radius->value().toInt() * M2FT_COEF);
+    f_radius->setOpt("ft", ft);
+
+    connect(this, &MissionItem::isFeetsChanged, this, &Geo::updateTitle);
+
     // select applicable shape parameters
     connect(f_shape, &Fact::valueChanged, this, [this]() {
         switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
@@ -230,27 +244,52 @@ void Geo::updateTitle()
 
     auto top = f_top->value().toInt();
     auto bottom = f_bottom->value().toInt();
-    if (bottom != 0 && top != 0) {
-        st.append(QString("%1-%2")
-                      .arg(AppRoot::distanceToString(bottom))
-                      .arg(AppRoot::distanceToString(top)));
-    } else if (bottom != 0) {
-        st.append(QString("%1+").arg(AppRoot::distanceToString(bottom)));
-    } else if (top != 0) {
-        st.append(QString("0-%1").arg(AppRoot::distanceToString(top)));
-    }
-
-    switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
-    case xbus::mission::geo_s::CIRCLE:
-        st.append(QString("C%1").arg(AppRoot::distanceToString(f_radius->value().toInt())));
-        break;
-    case xbus::mission::geo_s::LINE:
-        st.append(QString("L%1").arg(
-            AppRoot::distanceToString((coordinate().distanceTo(f_p2->coordinate())))));
-        break;
-    case xbus::mission::geo_s::POLYGON:
-        st.append(QString("[%1]").arg(f_points->size()));
-        break;
+    auto topFt = f_top->opts().value("ft", 0).toInt();
+    auto bottomFt = f_bottom->opts().value("ft", 0).toInt();
+    if (m_isFeets) { // for feets
+        if (bottomFt != 0 && topFt != 0) {
+            st.append(QString("%1-%2")
+                        .arg(AppRoot::distanceToStringFt(bottomFt))
+                        .arg(AppRoot::distanceToStringFt(topFt)));
+        } else if (bottom != 0) {
+            st.append(QString("%1+").arg(AppRoot::distanceToStringFt(bottomFt)));
+        } else if (top != 0) {
+            st.append(QString("0-%1").arg(AppRoot::distanceToString(topFt)));
+        }
+        switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
+        case xbus::mission::geo_s::CIRCLE:
+            st.append(QString("C%1").arg(AppRoot::distanceToStringFt(f_radius->opts().value("ft", 0).toInt())));
+            break;
+        case xbus::mission::geo_s::LINE:
+            st.append(QString("L%1").arg(
+                AppRoot::distanceToStringFt((coordinate().distanceTo(f_p2->coordinate()) * M2FT_COEF))));
+            break;
+        case xbus::mission::geo_s::POLYGON:
+            st.append(QString("[%1]").arg(f_points->size()));
+            break;
+        }
+    } else { // for meters
+        if (bottom != 0 && top != 0) {
+            st.append(QString("%1-%2")
+                        .arg(AppRoot::distanceToString(bottom))
+                        .arg(AppRoot::distanceToString(top)));
+        } else if (bottom != 0) {
+            st.append(QString("%1+").arg(AppRoot::distanceToString(bottom)));
+        } else if (top != 0) {
+            st.append(QString("0-%1").arg(AppRoot::distanceToString(top)));
+        }
+        switch ((xbus::mission::geo_s::shape_e) f_shape->value().toInt()) {
+        case xbus::mission::geo_s::CIRCLE:
+            st.append(QString("C%1").arg(AppRoot::distanceToString(f_radius->value().toInt())));
+            break;
+        case xbus::mission::geo_s::LINE:
+            st.append(QString("L%1").arg(
+                AppRoot::distanceToString((coordinate().distanceTo(f_p2->coordinate())))));
+            break;
+        case xbus::mission::geo_s::POLYGON:
+            st.append(QString("[%1]").arg(f_points->size()));
+            break;
+        }
     }
 
     setTitle(st.join(' '));
