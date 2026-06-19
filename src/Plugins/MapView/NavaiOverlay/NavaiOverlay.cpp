@@ -591,24 +591,35 @@ void NavaiOverlay::handleDatagram(
 
 void NavaiOverlay::postToGcsConsole(const QString &text)
 {
-    if (text.trimmed().isEmpty())
+    const QString trimmed =
+        text.trimmed();
+
+    if (trimmed.isEmpty())
         return;
 
-    const QString message =
-        QString("[NAVAI] %1").arg(text);
+    const QString logDir =
+        QStandardPaths::writableLocation(
+            QStandardPaths::DocumentsLocation
+        ) + "/UAVOS/Logs";
 
-    qInfo().noquote() << message;
+    QDir().mkpath(logDir);
 
-    QMetaObject::invokeMethod(
-        QCoreApplication::instance(),
-        [message]() {
-            AppNotify::instance()->notification(
-                message,
-                "NAVAI",
-                AppNotify::Info,
-                nullptr
-            );
-        },
-        Qt::QueuedConnection
-    );
+    QFile file(logDir + "/navai-overlay.log");
+
+    if (!file.open(QIODevice::WriteOnly |
+                   QIODevice::Append |
+                   QIODevice::Text)) {
+        return;
+    }
+
+    const QString line =
+        QString("[%1] [NAVAI] %2\n")
+            .arg(
+                QDateTime::currentDateTime()
+                    .toString("yyyy-MM-dd HH:mm:ss.zzz")
+            )
+            .arg(trimmed);
+
+    file.write(line.toUtf8());
+    file.close();
 }
