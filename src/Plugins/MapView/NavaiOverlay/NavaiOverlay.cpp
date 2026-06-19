@@ -232,7 +232,7 @@ NavaiOverlay::NavaiOverlay(Fact *parent)
            tr("Navai"),
            tr("Navai UDP results overlay"),
            Group,
-           "location")
+           "crosshairs-gps")
 {
     f_enabled =
         new Fact(
