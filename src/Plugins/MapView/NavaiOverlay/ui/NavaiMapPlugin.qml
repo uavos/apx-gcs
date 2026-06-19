@@ -16,8 +16,12 @@ AppPlugin {
             property var navai: apx.tools.navai
             property int mapRevision: 0
 
+            property bool navaiAvailable: navai !== null && navai !== undefined
+            property bool navaiActive: navaiAvailable && navai.active
+            property bool navaiUdpReady: navaiAvailable && navai.udpReady
+
             anchors.fill: parent
-            visible: navai && navai.udpReady
+            visible: navaiAvailable && navaiActive
             z: 100000
 
             Component.onCompleted: {
@@ -26,6 +30,7 @@ AppPlugin {
 
             Connections {
                 target: navaiLayer.baseMap
+                ignoreUnknownSignals: true
 
                 function onCenterChanged() {
                     navaiLayer.mapRevision++
@@ -53,45 +58,70 @@ AppPlugin {
             }
 
             Repeater {
-                model: navaiLayer.navai
+                model: navaiLayer.navaiActive && navaiLayer.navaiUdpReady
                     ? navaiLayer.navai.resultsModel
-                    : null
+                    : 0
 
                 delegate: Item {
                     id: resultItem
 
-                    property var centerCoord: QtPositioning.coordinate(
-                        latitude,
-                        longitude
-                    )
+                    required property real latitude
+                    required property real longitude
+                    required property real radiusMeters
+                    required property real percent
+                    required property string label
+                    required property real itemOpacity
 
-                    property var edgeCoord: centerCoord.atDistanceAndAzimuth(
-                        radiusMeters,
-                        90
-                    )
+                    property bool validCoordinate:
+                        isFinite(latitude) &&
+                        isFinite(longitude) &&
+                        isFinite(radiusMeters) &&
+                        latitude >= -90 &&
+                        latitude <= 90 &&
+                        longitude >= -180 &&
+                        longitude <= 180 &&
+                        radiusMeters > 0
+
+                    property var centerCoord: validCoordinate
+                        ? QtPositioning.coordinate(latitude, longitude)
+                        : QtPositioning.coordinate(0, 0)
+
+                    property var edgeCoord: validCoordinate
+                        ? centerCoord.atDistanceAndAzimuth(radiusMeters, 90)
+                        : QtPositioning.coordinate(0, 0)
 
                     property var centerPoint: {
                         navaiLayer.mapRevision
 
-                        if (!navaiLayer.baseMap)
+                        if (!validCoordinate || !navaiLayer.baseMap)
                             return Qt.point(0, 0)
 
-                        return navaiLayer.baseMap.fromCoordinate(
+                        var p = navaiLayer.baseMap.fromCoordinate(
                             centerCoord,
                             false
                         )
+
+                        if (!p)
+                            return Qt.point(0, 0)
+
+                        return p
                     }
 
                     property var edgePoint: {
                         navaiLayer.mapRevision
 
-                        if (!navaiLayer.baseMap)
+                        if (!validCoordinate || !navaiLayer.baseMap)
                             return Qt.point(0, 0)
 
-                        return navaiLayer.baseMap.fromCoordinate(
+                        var p = navaiLayer.baseMap.fromCoordinate(
                             edgeCoord,
                             false
                         )
+
+                        if (!p)
+                            return Qt.point(0, 0)
+
+                        return p
                     }
 
                     property real rawPixelRadius: Math.sqrt(
@@ -111,7 +141,7 @@ AppPlugin {
                     height: pixelRadius * 2
 
                     opacity: itemOpacity
-                    visible: itemOpacity > 0.01
+                    visible: validCoordinate && itemOpacity > 0.01
 
                     z: 100000
 
@@ -119,23 +149,11 @@ AppPlugin {
                         id: circle
 
                         anchors.fill: parent
-
                         radius: width / 2
 
-                        color: Qt.rgba(
-                            0.0,
-                            0.25,
-                            1.0,
-                            0.25
-                        )
+                        color: Qt.rgba(0.0, 0.25, 1.0, 0.25)
 
-                        border.color: Qt.rgba(
-                            0.0,
-                            0.55,
-                            1.0,
-                            1.0
-                        )
-
+                        border.color: Qt.rgba(0.0, 0.55, 1.0, 1.0)
                         border.width: 4
                     }
 
@@ -144,17 +162,11 @@ AppPlugin {
 
                         width: 8
                         height: 8
-
                         radius: 4
 
                         anchors.centerIn: parent
 
-                        color: Qt.rgba(
-                            0.0,
-                            0.65,
-                            1.0,
-                            1.0
-                        )
+                        color: Qt.rgba(0.0, 0.65, 1.0, 1.0)
                     }
 
                     Rectangle {
@@ -168,20 +180,9 @@ AppPlugin {
 
                         radius: 5
 
-                        color: Qt.rgba(
-                            0.0,
-                            0.08,
-                            0.30,
-                            0.90
-                        )
+                        color: Qt.rgba(0.0, 0.08, 0.30, 0.90)
 
-                        border.color: Qt.rgba(
-                            0.0,
-                            0.55,
-                            1.0,
-                            1.0
-                        )
-
+                        border.color: Qt.rgba(0.0, 0.55, 1.0, 1.0)
                         border.width: 1
 
                         Text {
@@ -189,7 +190,7 @@ AppPlugin {
 
                             anchors.centerIn: parent
 
-                            text: label
+                            text: resultItem.label
                             color: "white"
 
                             font.pixelSize: 14

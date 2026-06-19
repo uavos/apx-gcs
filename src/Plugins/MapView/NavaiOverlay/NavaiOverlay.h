@@ -73,6 +73,8 @@ class NavaiOverlay : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QAbstractListModel *resultsModel READ resultsModel CONSTANT)
+    Q_PROPERTY(Fact *enableFact READ enableFact CONSTANT)
+    Q_PROPERTY(bool active READ active NOTIFY activeChanged)
     Q_PROPERTY(bool udpReady READ udpReady NOTIFY udpReadyChanged)
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
 
@@ -83,6 +85,16 @@ public:
     QAbstractListModel *resultsModel()
     {
         return &_resultsModel;
+    }
+
+    Fact *enableFact() const
+    {
+        return f_enabled;
+    }
+
+    bool active() const
+    {
+        return _active;
     }
 
     bool udpReady() const
@@ -96,15 +108,21 @@ public:
     }
 
 signals:
+    void activeChanged();
     void udpReadyChanged();
 
 private slots:
     void readUdpDatagrams();
+    void updateEnabled();
 
 private:
     QString uiDir() const;
 
     void setupUdp();
+    void stopUdp();
+
+    bool isOverlayEnabled() const;
+
     void handleDatagram(
         const QByteArray &data,
         const QHostAddress &sender,
@@ -119,10 +137,13 @@ private:
 
     void postToGcsConsole(const QString &text);
 
+    Fact *f_enabled = nullptr;
+
     NavaiResultModel _resultsModel;
 
     QUdpSocket *_udpSocket = nullptr;
 
+    bool _active = false;
     bool _udpReady = false;
     quint16 _udpPort = 9300;
 };

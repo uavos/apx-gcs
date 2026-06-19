@@ -10,8 +10,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError>
+#include <QJsonValue>
 #include <QStandardPaths>
-#include <QUrl>
 
 #include <cmath>
 
@@ -234,30 +234,54 @@ NavaiOverlay::NavaiOverlay(Fact *parent)
            Group,
            "location")
 {
+    f_enabled =
+        new Fact(
+            this,
+            "enable",
+            tr("Enable"),
+            tr("Enable Navai UDP overlay"),
+            Fact::Bool | Fact::PersistentValue,
+            "link"
+        );
+
+    f_enabled->setDefaultValue(false);
+
+    connect(
+        f_enabled,
+        SIGNAL(valueChanged()),
+        this,
+        SLOT(updateEnabled())
+    );
+
     const QString mapPluginPath =
         uiDir() + "/NavaiMapPlugin.qml";
 
-    if (QFileInfo::exists(mapPluginPath))
+    if (QFileInfo::exists(mapPluginPath)) {
         loadQml(mapPluginPath);
+    } else {
+        qWarning().noquote()
+            << "[NAVAI] UI file not found:"
+            << mapPluginPath;
+    }
 
-    setupUdp();
+    updateEnabled();
 }
 
 QString NavaiOverlay::uiDir() const
 {
+    const QString appDir =
+        QCoreApplication::applicationDirPath();
+
     const QString docs =
         QStandardPaths::writableLocation(
             QStandardPaths::DocumentsLocation
         );
 
     const QStringList candidates = {
-        docs + "/UAVOS/Plugins/navai-overlay-ui",
-        QCoreApplication::applicationDirPath()
-            + "/../share/gcs/plugins/navai-overlay-ui",
-        QCoreApplication::applicationDirPath()
-            + "/../plugins/navai-overlay-ui",
-        QCoreApplication::applicationDirPath()
-            + "/navai-overlay-ui"
+        appDir + "/../plugins/navai-overlay-ui",
+        appDir + "/navai-overlay-ui",
+        appDir + "/../share/gcs/plugins/navai-overlay-ui",
+        docs + "/UAVOS/Plugins/navai-overlay-ui"
     };
 
     for (const QString &path : candidates) {
@@ -268,8 +292,41 @@ QString NavaiOverlay::uiDir() const
     return candidates.first();
 }
 
+bool NavaiOverlay::isOverlayEnabled() const
+{
+    return f_enabled &&
+           f_enabled->value().toBool();
+}
+
+void NavaiOverlay::updateEnabled()
+{
+    const bool nextActive =
+        isOverlayEnabled();
+
+    if (_active != nextActive) {
+        _active = nextActive;
+        emit activeChanged();
+    }
+
+    if (_active) {
+        setupUdp();
+
+        postToGcsConsole(
+            QString("Navai overlay enabled, UDP port %1")
+                .arg(_udpPort)
+        );
+    } else {
+        stopUdp();
+
+        postToGcsConsole("Navai overlay disabled");
+    }
+}
+
 void NavaiOverlay::setupUdp()
 {
+    if (_udpSocket)
+        return;
+
     _udpSocket =
         new QUdpSocket(this);
 
@@ -294,6 +351,9 @@ void NavaiOverlay::setupUdp()
                 .arg(_udpPort)
         );
     } else {
+        _udpSocket->deleteLater();
+        _udpSocket = nullptr;
+
         postToGcsConsole(
             QString("Navai UDP receiver failed on port %1")
                 .arg(_udpPort)
@@ -303,8 +363,38 @@ void NavaiOverlay::setupUdp()
     emit udpReadyChanged();
 }
 
+void NavaiOverlay::stopUdp()
+{
+    if (_udpSocket) {
+        disconnect(
+            _udpSocket,
+            nullptr,
+            this,
+            nullptr
+        );
+
+        _udpSocket->close();
+        _udpSocket->deleteLater();
+        _udpSocket = nullptr;
+    }
+
+    const bool wasReady =
+        _udpReady;
+
+    _udpReady =
+        false;
+
+    if (wasReady)
+        emit udpReadyChanged();
+
+    _resultsModel.clear();
+}
+
 void NavaiOverlay::readUdpDatagrams()
 {
+    if (!_active)
+        return;
+
     while (_udpSocket &&
            _udpSocket->hasPendingDatagrams()) {
 
@@ -378,6 +468,9 @@ void NavaiOverlay::handleDatagram(
     const QHostAddress &sender,
     quint16 senderPort)
 {
+    if (!_active)
+        return;
+
     QJsonParseError error;
 
     const QJsonDocument doc =
@@ -463,15 +556,20 @@ void NavaiOverlay::handleDatagram(
         return;
     }
 
+    const QString payloadLabel =
+        obj.value("label").toString().trimmed();
+
+    const QString percentText =
+        QString::number(
+            percent,
+            'f',
+            1
+        );
+
     const QString label =
-        QString("Navai result - %1%")
-            .arg(
-                QString::number(
-                    percent,
-                    'f',
-                    1
-                )
-            );
+        payloadLabel.isEmpty()
+            ? QString("Navai result - %1%").arg(percentText)
+            : QString("%1 - %2%").arg(payloadLabel, percentText);
 
     const QString consoleText =
         QString("%1, lat=%2 lon=%3 spread=%4 m")
