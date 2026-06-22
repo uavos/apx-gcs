@@ -36,6 +36,7 @@ class Waypoint : public MissionItem
     Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
     Q_PROPERTY(bool collision READ collision WRITE setCollision NOTIFY collisionChanged)
     Q_PROPERTY(ChosenFact chosen READ chosen WRITE setChosen NOTIFY chosenChanged)
+    Q_PROPERTY(double chartOffset READ chartOffset NOTIFY chartOffsetChanged)
     Q_PROPERTY(int unsafeAgl READ unsafeAgl CONSTANT)
 
 public:
@@ -74,6 +75,7 @@ public:
 
 protected:
     QGeoPath getPath() override;
+    QGeoPath getPointPath();
     void calcAltitude();
     void recalcAltitude();
     void processAgl();
@@ -118,6 +120,7 @@ public slots:
 
     // New functionality
     void correctPath(bool reply = false);
+    void updateChartOffset();
 
     //---------------------------------------
     // PROPERTIES
@@ -130,6 +133,9 @@ public:
 
     double maxHeight() const;
     void setMaxHeight(const double v);
+
+    double chartOffset() const;
+    void setChartOffset(const uint v);
 
     bool reachable() const;
     void setReachable(bool v);
@@ -148,6 +154,7 @@ protected:
     ChosenFact m_chosen{ALT};
     double m_minHeight{0};
     double m_maxHeight{200};
+    double m_chartOffset{0}; // the mission start point and takeoff point are different
     bool m_reachable{};
     bool m_warning{};
     bool m_collision{};
@@ -159,6 +166,7 @@ signals:
     void responseCorrectPath(QList<QGeoCoordinate> v, int index);
     void minHeightChanged();
     void maxHeightChanged();
+    void chartOffsetChanged();
     void reachableChanged();
     void collisionChanged();
     void warningChanged();

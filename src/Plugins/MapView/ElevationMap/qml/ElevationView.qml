@@ -147,7 +147,10 @@ Window {
         ChartView {
             id: chartView
             property int margin: 5
-            property var distance: mission.wp.distance
+            property var startPoint: mission.startPoint
+            property var rwLength: 0
+            property var dist: mission.wp.distance
+            property var distance:  dist + rwLength
             property var minHeight: mission.minHeight
             property var maxHeight: mission.maxHeight
             anchors.fill: parent
@@ -158,6 +161,8 @@ Window {
             backgroundColor: "transparent"
             legend.visible: false
             antialiasing: true
+
+            onStartPointChanged: rwTimer.restart() 
 
             ValueAxis {
                 id: axisX
@@ -187,6 +192,18 @@ Window {
                 id: lineSeries
                 axisX: axisX
                 axisY: axisY
+            }
+            Timer {
+                id: rwTimer
+                interval: 1000
+                running: true
+                onTriggered: chartView.updateRwLength()
+            }
+            function updateRwLength() 
+            {
+                var p1 = mission.coordinate
+                var p2 = mission.startPoint
+                rwLength = p1.isValid && p2.isValid ? p1.distanceTo(p2) : 0
             }
         }
 

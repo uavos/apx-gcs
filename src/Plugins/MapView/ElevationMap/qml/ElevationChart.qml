@@ -14,26 +14,35 @@ Repeater {
     id: repeater
     model: mission.wp.mapModel
     delegate: Item {
+        id: epItem
+
         required property var modelData
         required property var index
 
+        property var fact: modelData
+        property var terrainProfile: fact ? fact.terrainProfile : null
+        property var offset: fact ? fact.chartOffset : 0
+        property var totalDistance: fact ? (fact.totalDistance + offset) : -1
+        property var dist: fact ? fact.distance  : -1
+        property var num: fact ? fact.num : -1
+        property var distance: num == 0 ? (dist + offset) : dist
+        // property var distance: fact ? fact.distance  : -1
+        property var collision: fact ? fact.collision : false
+        property var maxWidth: Screen.desktopAvailableWidth - 50
+        property alias chartVisible: elevationProfile.visible
+  
+        onTerrainProfileChanged: epRect.updateLineSeriesData()
+        onDistanceChanged: elevationProfile.visible = false
+
         // TerrainProfile 
         Rectangle {
-            id: epItem
-            property var fact: modelData 
+            id: epRect
             property var scaleX: axisX.max/chartView.plotArea.width
             property var scaleY: axisY.max/chartView.plotArea.height
-            property var terrainProfile: fact ? fact.terrainProfile : null
-            property var totalDistance: fact ? fact.totalDistance : -1
-            property var distance: fact ? fact.distance : -1
-            property var collision: fact ? fact.collision : false
-            property var maxWidth: Screen.desktopAvailableWidth - 50
-            property alias chartVisible: elevationProfile.visible
-
             visible: totalDistance >=0 && distance >=0 && x>=0 && y>=0
             height: chartView.plotArea.height
             width: distance/scaleX
-            x:  chartView.plotArea.x + (totalDistance -  distance)/scaleX
+            x:  chartView.plotArea.x + (totalDistance - distance)/scaleX
             y:  chartView.plotArea.y
             color: "transparent"
 
@@ -81,8 +90,6 @@ Repeater {
                     }
                 }
             }
-            onTerrainProfileChanged: updateLineSeriesData()
-            onDistanceChanged: elevationProfile.visible = false
             function updateLineSeriesData() {
                 if(!terrainProfile)
                     return;
@@ -104,8 +111,6 @@ Repeater {
         }
         Item {
             id: loading
-            property var totalDistance: modelData.totalDistance
-            property var distance: modelData.distance
             property var chartWidth: chartView.plotArea.width
             property var chartHeight: chartView.plotArea.height
             property var scaleX: axisX.max/chartWidth

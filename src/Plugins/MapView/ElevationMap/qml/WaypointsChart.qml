@@ -32,7 +32,9 @@ Repeater {
             property bool collision: modelData.collision
             property bool alarmOn: !isNaN(elevation) ? (agl < unsafeAgl || collision) : false
             property var hAMSL: amsl ? altitude : altitude + startHmsl
-            property var distance: modelData ? modelData.totalDistance : -1
+            property var offset: modelData ? modelData.chartOffset : 0
+            property var totalDistance: modelData ? modelData.totalDistance : -1
+            property var distance: modelData ? (totalDistance + offset) : -1
             property var coordinate: modelData.coordinate
             property var num: modelData.num
             property var chartWidth: chartView.plotArea.width

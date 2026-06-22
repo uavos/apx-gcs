@@ -131,6 +131,7 @@ void Waypoint::initElevationMap()
     auto mission = group->mission;
     auto order = f_order->value().toInt();
     connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
+    connect(mission, &UnitMission::startPointChanged, this, &Waypoint::updateChartOffset, Qt::UniqueConnection);
     if (order == 1) {
         connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
     }
@@ -177,7 +178,8 @@ void Waypoint::initElevationMap()
             &m_pointsWatcher,
             &QFutureWatcher<QList<QGeoCoordinate>>::cancel,
             Qt::UniqueConnection);
-
+    
+    updateChartOffset();
     updateMinMaxHeight();
     updateAgl();
 }
@@ -270,6 +272,16 @@ void Waypoint::updateAMSL()
     } else {
         f_altitude->setUnits(_altUnits);
     }
+}
+
+void Waypoint::updateChartOffset() {
+    auto p1 = group->mission->coordinate();
+    auto p2 = group->mission->startPoint();
+    if(p1.isValid() && p2.isValid()) {
+        setChartOffset(p1.distanceTo(p2));
+    } else {
+        setChartOffset(0);
+    }    
 }
 
 QGeoPath Waypoint::getPath()
@@ -426,6 +438,19 @@ void Waypoint::setMaxHeight(const double v)
     emit maxHeightChanged();
 }
 
+double Waypoint::chartOffset() const
+{
+    return m_chartOffset;
+}
+
+void Waypoint::setChartOffset(const uint v)
+{
+    if (m_chartOffset == v)
+        return;
+    m_chartOffset = v;
+    emit chartOffsetChanged();
+}
+
 bool Waypoint::reachable() const
 {
     return m_reachable;
@@ -572,14 +597,16 @@ void Waypoint::setAglEnabled()
 
 void Waypoint::sendTerrainProfileRequest()
 {
-    emit requestTerrainProfile(m_geoPath);
+    auto geoPath= getPointPath();
+    emit requestTerrainProfile(geoPath);
 }
 
 void Waypoint::buildTerrainProfile(const QGeoPath &path)
 {
-    auto end = m_geoPath.size() - 1;
-    auto first = m_geoPath.coordinateAt(0);
-    auto last = m_geoPath.coordinateAt(end);
+    auto geoPath = getPointPath();
+    auto end = geoPath.size() - 1;
+    auto first = geoPath.coordinateAt(0);
+    auto last = geoPath.coordinateAt(end);
 
     auto inEnd = path.size() - 1;
     auto firstIn = path.coordinateAt(0);
@@ -598,7 +625,7 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
 
     clearTerrainProfile();
 
-    if (m_geoPath == path) {
+    if (geoPath == path) {
         setCollision(false);
         return;
     }
@@ -606,6 +633,17 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     QFuture<TerrainInfo> future;
     future = QtConcurrent::run(createTerrainInfo, path);
     m_watcher.setFuture(future);
+}
+
+QGeoPath Waypoint::getPointPath() {
+    auto geoPath = m_geoPath;
+    if (num() == 0) {
+        auto coordinate = group->mission->coordinate();
+        if(coordinate.isValid()) {
+            geoPath.insertCoordinate(0, coordinate);
+        }
+    }
+    return geoPath;
 }
 
 void Waypoint::createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path)
