@@ -44,7 +44,7 @@ Repeater {
             property var oldDistance: -1
             property var oldHAMSL: -1
             
-            visible: distance > 0 || created 
+            visible: totalDistance > 0 || created //
             x: chartView.plotArea.x + distance/scaleX
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
             Rectangle {

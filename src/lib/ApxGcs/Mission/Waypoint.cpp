@@ -131,10 +131,13 @@ void Waypoint::initElevationMap()
     auto mission = group->mission;
     auto order = f_order->value().toInt();
     connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
-    connect(mission, &UnitMission::startPointChanged, this, &Waypoint::updateChartOffset, Qt::UniqueConnection);
     if (order == 1) {
         connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
     }
+
+    // The chartOffset is updated when the mission distance changes for sync with the chart view changes on UI
+    auto waypoints = mission->f_wp;
+    connect(waypoints, &MissionGroup::distanceChanged, this, &Waypoint::updateChartOffset, Qt::UniqueConnection);
 
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude, Qt::UniqueConnection);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);

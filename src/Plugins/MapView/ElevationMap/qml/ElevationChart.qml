@@ -26,13 +26,12 @@ Repeater {
         property var dist: fact ? fact.distance  : -1
         property var num: fact ? fact.num : -1
         property var distance: num == 0 ? (dist + offset) : dist
-        // property var distance: fact ? fact.distance  : -1
         property var collision: fact ? fact.collision : false
         property var maxWidth: Screen.desktopAvailableWidth - 50
         property alias chartVisible: elevationProfile.visible
   
         onTerrainProfileChanged: epRect.updateLineSeriesData()
-        onDistanceChanged: elevationProfile.visible = false
+        onDistChanged: elevationProfile.visible = false
 
         // TerrainProfile 
         Rectangle {
@@ -136,7 +135,7 @@ Repeater {
             }
             Rectangle {
                 height: parent.height
-                width: loading.distance/loading.scaleX
+                width: epItem.distance/loading.scaleX
                 anchors.centerIn: parent
                 visible: !busyTimer.running
                 color: Material.accent
