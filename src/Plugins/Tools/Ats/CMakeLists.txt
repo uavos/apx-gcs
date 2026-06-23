@@ -1,1 +1,1 @@
-apx_plugin(DEPENDS lib.ApxGcs)
+apx_plugin(DEPENDS lib.ApxGcs QT Location Positioning)
