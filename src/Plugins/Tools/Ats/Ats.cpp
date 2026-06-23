@@ -10,9 +10,56 @@ Ats::Ats(Fact *parent)
 {
     f_ats_enabled = new Fact(this, "enable", tr("Enable"), tr("Enable ATS"), Fact::Bool, "link");
 
+    f_overlay = new Fact(this,
+                         "overlay",
+                         tr("Overlay"),
+                         tr("Map overlay settings"),
+                         Fact::Group,
+                         "layers");
+
+    f_show_beam = new Fact(f_overlay,
+                           "show_beam",
+                           tr("Show beam"),
+                           tr("Show beam line on map"),
+                           Fact::Bool | Fact::PersistentValue,
+                           "ray-start");
+    f_show_beam->setDefaultValue(false);
+
+    f_beam_distance = new Fact(f_overlay,
+                               "beam_distance",
+                               tr("Beam distance"),
+                               tr("Beam cone length in km"),
+                               Fact::Int | Fact::PersistentValue,
+                               "arrow-expand-horizontal");
+    f_beam_distance->setMin(5);
+    f_beam_distance->setMax(100);
+    f_beam_distance->setUnits("km");
+    f_beam_distance->setDefaultValue(30);
+
+    f_show_compass = new Fact(f_overlay,
+                              "show_compass",
+                              tr("Show compass"),
+                              tr("Show compass circle with degrees on map"),
+                              Fact::Bool | Fact::PersistentValue,
+                              "compass-outline");
+    f_show_compass->setDefaultValue(false);
+
+    f_compass_radius = new Fact(f_overlay,
+                                "compass_radius",
+                                tr("Compass radius"),
+                                tr("Compass circle radius in km"),
+                                Fact::Int | Fact::PersistentValue,
+                                "circle-outline");
+    f_compass_radius->setMin(1);
+    f_compass_radius->setMax(100);
+    f_compass_radius->setUnits("km");
+    f_compass_radius->setDefaultValue(5);
+
     _ats_timer.setInterval(100);
     connect(&_ats_timer, &QTimer::timeout, this, &Ats::onAtsTimer);
     _ats_timer.start();
+
+    loadQml("qrc:/" PLUGIN_NAME "/AtsPlugin.qml");
 }
 
 void Ats::onAtsTimer()

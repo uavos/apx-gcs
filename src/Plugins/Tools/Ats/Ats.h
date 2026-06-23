@@ -16,6 +16,11 @@ public:
 
 private:
     Fact *f_ats_enabled;
+    Fact *f_overlay;
+    Fact *f_show_beam;
+    Fact *f_beam_distance;
+    Fact *f_show_compass;
+    Fact *f_compass_radius;
 
     QTimer _ats_timer;
 
