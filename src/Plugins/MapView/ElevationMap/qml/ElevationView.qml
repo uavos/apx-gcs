@@ -51,7 +51,7 @@ Window {
     minimumHeight: 200
     minimumWidth: 600
     title: chartOn ? name : name + " " + disabled
-    color: "#CC000000"
+    color: "#cc000000"
     visible: true
     x: 25
     y: Screen.desktopAvailableHeight - height - 50
@@ -95,10 +95,10 @@ Window {
 
             height: txt.height
             width: icon.width + txt.width + 2*margin
-            color: "red"
+            color: "#ff0000"
             radius: 2
             border.width: radius
-            border.color: "white"
+            border.color: "#ffffff"
             visible: mission.collision
             anchors {
                 top: parent.top
@@ -119,7 +119,7 @@ Window {
             Text {
                 id: txt
                 text: qsTr("Alarm")
-                color: "white"
+                color: "#ffffff"
                 font.bold: true
                 font.pixelSize: Style.fontSize*0.8
                 anchors.left: icon.right
@@ -183,7 +183,7 @@ Window {
                 labelsFont.family: axisYLabel.font.family
                 labelsFont.pointSize: axisYLabel.font.pointSize
                 labelsColor: axisYLabel.color
-                gridLineColor: "#40FFFFFF"
+                gridLineColor: "#40ffffff"
                 tickCount: 5
                 labelFormat: "%.0f"
             }
@@ -223,12 +223,13 @@ Window {
                 x: -width/2
                 y: -height/2 - startPoint.hStartPoint
                 radius: height/8
-                color: "white"
+                color: "#3779c5"
                 Text {
                     anchors.centerIn: parent
                     text: qsTr("R")
                     font.pixelSize: 12
                     font.bold: true
+                    color: "#ffffff"
                 }
             }
 

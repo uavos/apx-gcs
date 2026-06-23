@@ -53,7 +53,7 @@ Repeater {
                 width: 1
                 x: -width/2
                 y: 0
-                color: "#7FFFFFFF"
+                color: "#7fffffff"
             }
             Rectangle {
                 id: chartPoint
@@ -62,13 +62,13 @@ Repeater {
                 x: -width/2
                 y: -height/2
                 radius: height/8
-                color: wpItem.alarmOn ? "#ffdead" : "yellow"
-                border.color: wpItem.alarmOn ? "red" : "#40000000"
+                color: wpItem.alarmOn ? "#ffdead" : "#ffff00"
+                border.color: wpItem.alarmOn ? "#ff0000" : "#40000000"
                 border.width: 1
                 Text {
                     anchors.centerIn: parent
                     text: wpItem.num + 1
-                    color: wpItem.alarmOn ? "red" : "black"
+                    color: wpItem.alarmOn ? "#ff0000" : "#000000"
                     font.pixelSize: 12
                     font.bold: true
                 }
