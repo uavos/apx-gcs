@@ -73,11 +73,11 @@ void Ats::onAtsTimer()
         return;
     }
 
-    PData *pdata{};
+    // If current unit is GCS, send manual mode to it only
     if (current->isGroundControl()) {
         auto protocol = current->protocol();
         if (protocol) {
-            pdata = current->protocol()->data();
+            PData *pdata = protocol->data();
             if (pdata) {
                 pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_manual);
             }
@@ -85,16 +85,23 @@ void Ats::onAtsTimer()
         return;
     }
 
-    if (Fleet::instance()->gcs()->protocol()) {
-        pdata = Fleet::instance()->gcs()->protocol()->data();
-        if (pdata) {
-            QGeoCoordinate uav = current->coordinate();
-            QVariantList value;
-            value << uav.latitude();
-            value << uav.longitude();
-            value << uav.altitude();
-            pdata->sendValue(mandala::cmd::nav::ats::uid, value);
-            pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_track);
-        }
+    // Send track command to all GCS units
+    QGeoCoordinate uav = current->coordinate();
+    QVariantList value;
+    value << uav.latitude();
+    value << uav.longitude();
+    value << uav.altitude();
+
+    for (auto fact : Fleet::instance()->facts()) {
+        auto unit = qobject_cast<Unit *>(fact);
+        if (!unit || !unit->isGroundControl())
+            continue;
+        if (!unit->protocol())
+            continue;
+        PData *pdata = unit->protocol()->data();
+        if (!pdata)
+            continue;
+        pdata->sendValue(mandala::cmd::nav::ats::uid, value);
+        pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_track);
     }
 }
