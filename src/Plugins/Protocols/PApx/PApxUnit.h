@@ -23,7 +23,7 @@
 
 #include "PApx.h"
 
-#include <QElapsedTimer>
+#include <QDateTime>
 #include <QHash>
 
 class PApx;
@@ -60,7 +60,7 @@ private:
     PApxRequest _req;
 
     // duplicate packet detection
-    QElapsedTimer _packetTimer;
+    qint64 _packetCleanupTime{0};
     QHash<QByteArray, qint64> _packetHistory;
     int _packetCleanupCounter{0};
 };
