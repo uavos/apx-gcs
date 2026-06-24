@@ -42,7 +42,7 @@ public:
     void start();
     void stop();
 
-    QJsonObject toolJson(const QString &idsCsv) const;
+    QJsonObject toolJson(const QString &idsCsv, int batteryCells = 6) const;
 
 private:
     struct FactValue
@@ -63,9 +63,18 @@ private:
     void bindUnit(Unit *unit);
     void sampleFacts();
 
+    void collectFactTree(Fact *fact, const QString &prefix, int depth = 0);
+    void insertFact(const QString &id, Fact *fact);
+    void insertAlias(const QString &id, Fact *fact);
+
     QStringList trackedIds() const;
     bool isTracked(const QString &id) const;
 
     FactValue readFact(Fact *fact) const;
     QJsonObject factPayloadJson(const QString &id) const;
+
+    QStringList batteryCandidateIds() const;
+    QJsonObject batteryJson(int cells) const;
+
+    static double estimateLipoSocPercent(double cellVoltage);
 };

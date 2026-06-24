@@ -271,7 +271,7 @@ QJsonObject QPilotStats::OnlineCorr::toJson() const
 
     out["correlation"] =
         denom > std::numeric_limits<double>::epsilon() && std::isfinite(denom)
-        ? numerator / denom
+        ? QJsonValue(numerator / denom)
         : QJsonValue(QJsonValue::Null);
 
     return out;
@@ -325,19 +325,25 @@ QJsonObject QPilotStats::WindowCorr::toJson() const
 
     out["correlation"] =
         denom > std::numeric_limits<double>::epsilon() && std::isfinite(denom)
-        ? numerator / denom
+        ? QJsonValue(numerator / denom)
         : QJsonValue(QJsonValue::Null);
 
     return out;
 }
 
-void QPilotStats::ingestBatch(const QMap<QString, double> &values, qint64 timestampMs)
+void QPilotStats::ingestBatch(const QMap<QString, double> &values,
+                              qint64 timestampMs,
+                              bool collectCorrelations)
 {
     for (auto it = values.constBegin(); it != values.constEnd(); ++it) {
         FactSeries &series = _facts[it.key()];
 
         series.total.ingest(it.value(), timestampMs);
         series.window.ingest(it.value(), timestampMs);
+    }
+
+    if (!collectCorrelations) {
+        return;
     }
 
     const QStringList ids = values.keys();

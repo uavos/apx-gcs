@@ -34,7 +34,9 @@ class QPilotStats
 public:
     static int windowSeconds();
 
-    void ingestBatch(const QMap<QString, double> &values, qint64 timestampMs);
+    void ingestBatch(const QMap<QString, double> &values,
+                     qint64 timestampMs,
+                     bool collectCorrelations = true);
 
     QJsonObject statsJson(const QString &id, double currentValue) const;
     QJsonObject correlationsJson(const QStringList &ids) const;

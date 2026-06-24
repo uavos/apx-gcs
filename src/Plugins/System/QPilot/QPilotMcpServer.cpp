@@ -185,7 +185,7 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
 
         QJsonObject serverInfo;
         serverInfo["name"] = "qpilot";
-        serverInfo["version"] = "0.1.0";
+        serverInfo["version"] = "0.2.0";
 
         QJsonObject result;
         result["protocolVersion"] = "2025-06-18";
@@ -193,7 +193,8 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
         result["serverInfo"] = serverInfo;
         result["instructions"] =
             "QPilot is a read-only APX Ground Control telemetry MCP server. "
-            "Use gcs_telemetry_json to read current telemetry, statistics, 30-second window analysis, and correlations. "
+            "Use gcs_telemetry_json to read all collected Mandala leaf facts, current values, statistics, "
+            "30-second window analysis, and a 6S LiPo battery charge summary when battery facts are available. "
             "QPilot does not write facts, execute commands, upload missions, or control vehicles.";
 
         sendResult(socket, id, result);
@@ -209,11 +210,17 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
         QJsonObject ids;
         ids["type"] = "string";
         ids["description"] =
-            "Optional comma-separated tracked telemetry identifiers. "
-            "If omitted, all QPilot startup-tracked identifiers are returned.";
+            "Optional comma-separated telemetry identifiers. "
+            "If omitted, all QPilot collected Mandala leaf facts are returned.";
+
+        QJsonObject batteryCells;
+        batteryCells["type"] = "integer";
+        batteryCells["description"] =
+            "Battery cell count for voltage-based charge estimate. Default is 6.";
 
         QJsonObject properties;
         properties["ids"] = ids;
+        properties["battery_cells"] = batteryCells;
 
         QJsonObject inputSchema;
         inputSchema["type"] = "object";
@@ -224,8 +231,8 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
         tool["name"] = "gcs_telemetry_json";
         tool["description"] =
             "Read QPilot telemetry JSON from APX Ground Control. "
-            "Returns current values, total statistics, 30-second window statistics, and correlations. "
-            "Read-only. No raw flight history is returned.";
+            "Returns current values for all collected Mandala leaf facts, total statistics, 30-second window statistics, "
+            "and battery summary. Read-only. No raw flight history is returned.";
         tool["inputSchema"] = inputSchema;
 
         sendResult(socket, id, QJsonObject{{"tools", QJsonArray{tool}}});
@@ -240,7 +247,8 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
         QJsonObject payload;
 
         if (name == "gcs_telemetry_json") {
-            payload = _telemetry->toolJson(arguments.value("ids").toString());
+            payload = _telemetry->toolJson(arguments.value("ids").toString(),
+                                           arguments.value("battery_cells").toInt(6));
         } else {
             payload["ok"] = false;
             payload["error"] = "unknown_tool";
