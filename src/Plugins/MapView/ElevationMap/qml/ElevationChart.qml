@@ -20,12 +20,11 @@ Repeater {
         required property var index
 
         property var fact: modelData
-        property var terrainProfile: fact ? fact.terrainProfile : null
-        property var offset: fact ? fact.chartOffset : 0
-        property var totalDistance: fact ? (fact.totalDistance + offset) : -1
-        property var dist: fact ? fact.distance  : -1
         property var num: fact ? fact.num : -1
-        property var distance: num == 0 ? (dist + offset) : dist
+        property var dist: fact ? fact.distance  : -1
+        property var totalDistance: fact ? fact.totalDistanceWithRw : -1
+        property var distance: num == 0 ? totalDistance : dist
+        property var terrainProfile: fact ? fact.terrainProfile : null
         property var collision: fact ? fact.collision : false
         property var maxWidth: Screen.desktopAvailableWidth - 50
         property alias chartVisible: elevationProfile.visible
@@ -81,8 +80,8 @@ Repeater {
                     id: areaSeries
                     axisX: epAxisX
                     axisY: epAxisY
-                    color: epItem.collision ? "#FF0000" : "#00FF00"
-                    borderColor: epItem.collision ? "#FF0000" : "#00FF00"
+                    color: epItem.collision ? "#ff0000" : "#00ff00"
+                    borderColor: epItem.collision ? "#ff0000" : "#00ff00"
                     opacity: 0.25
                     upperSeries: LineSeries {
                         id: epLineSeries

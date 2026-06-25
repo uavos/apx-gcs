@@ -135,10 +135,6 @@ void Waypoint::initElevationMap()
         connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
     }
 
-    // The chartOffset is updated when the mission distance changes for sync with the chart view changes on UI
-    auto waypoints = mission->f_wp;
-    connect(waypoints, &MissionGroup::distanceChanged, this, &Waypoint::updateChartOffset, Qt::UniqueConnection);
-
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::recalcAltitude, Qt::UniqueConnection);
     connect(f_amsl, &Fact::valueChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
     connect(f_altitude, &Fact::valueChanged, this, &Waypoint::updateMinMaxHeight, Qt::UniqueConnection);
@@ -146,6 +142,7 @@ void Waypoint::initElevationMap()
 
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::setAglEnabled, Qt::UniqueConnection);
+    connect(this, &MissionItem::totalDistanceChanged, this, &Waypoint::updateTotalDistanceWithRw, Qt::UniqueConnection);
 
     m_timer.setSingleShot(true);
     m_timer.setInterval(TIMEOUT);
@@ -182,7 +179,6 @@ void Waypoint::initElevationMap()
             &QFutureWatcher<QList<QGeoCoordinate>>::cancel,
             Qt::UniqueConnection);
     
-    updateChartOffset();
     updateMinMaxHeight();
     updateAgl();
 }
@@ -277,15 +273,6 @@ void Waypoint::updateAMSL()
     }
 }
 
-void Waypoint::updateChartOffset() {
-    auto p1 = group->mission->coordinate();
-    auto p2 = group->mission->startPoint();
-    if(p1.isValid() && p2.isValid()) {
-        setChartOffset(p1.distanceTo(p2));
-    } else {
-        setChartOffset(0);
-    }    
-}
 
 QGeoPath Waypoint::getPath()
 {
@@ -441,17 +428,15 @@ void Waypoint::setMaxHeight(const double v)
     emit maxHeightChanged();
 }
 
-double Waypoint::chartOffset() const
-{
-    return m_chartOffset;
+uint Waypoint::totalDistanceWithRw() const {
+    return m_totalDistanceWithRw;
 }
 
-void Waypoint::setChartOffset(const uint v)
-{
-    if (m_chartOffset == v)
+void Waypoint::setTotalDistanceWithRw(uint v) {
+    if(m_totalDistanceWithRw == v)
         return;
-    m_chartOffset = v;
-    emit chartOffsetChanged();
+    m_totalDistanceWithRw = v;
+    emit totalDistanceWithRwChanged();
 }
 
 bool Waypoint::reachable() const
@@ -768,6 +753,18 @@ void Waypoint::updateTerrainInfo()
     updateMinMaxHeight();
     setTerrainProfile(result.terrainProfile);
     checkCollision();
+}
+
+void Waypoint::updateTotalDistanceWithRw()
+{
+    auto p1 = group->mission->coordinate();
+    auto p2 = group->mission->startPoint();
+    if(p1.isValid() && p2.isValid()) {
+        auto totalDistanceWithRw = m_totalDistance + p1.distanceTo(p2);
+        setTotalDistanceWithRw(totalDistanceWithRw);
+    } else {
+        setTotalDistanceWithRw(m_totalDistance);
+    }    
 }
 
 // Waypoint path correction
