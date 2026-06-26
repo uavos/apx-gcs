@@ -23,6 +23,7 @@ import QtQuick
 import QtCharts
 import QtQuick.Controls
 import QtQuick.Window
+import QtQuick.Layouts
 import QtQml
 
 import QtQml.Models
@@ -44,6 +45,10 @@ Window {
     property var chartOn: use && pluginOn
     property var name: qsTr("Terrain elevation")
     property var disabled: qsTr("(disabled)")
+    property var scaleStep: 0.25
+    property var minScale: 1
+    property var maxScale: 4
+    property var chartScale: minScale
 
     flags: Qt.WindowStaysOnTopHint
     width: Screen.desktopAvailableWidth - 50
@@ -75,6 +80,7 @@ Window {
         rotation: -90
         visible: elevationView.chartOn
     }
+
     Label {
         id: axisXLabel
         anchors.bottom: parent.bottom
@@ -83,66 +89,67 @@ Window {
         horizontalAlignment: Text.AlignHCenter
         visible: elevationView.chartOn
     }
-    Item {
-        id: chartItem
-        height: elevationView.height
-        width: elevationView.width
-        visible: elevationView.chartOn
 
-        Rectangle {
-            id: alarm
-            property int margin: 5
+    Rectangle {
+        id: alarm
+        property int margin: 5
 
-            height: txt.height
-            width: icon.width + txt.width + 2*margin
-            color: "#ff0000"
-            radius: 2
-            border.width: radius
-            border.color: "#ffffff"
-            visible: mission.collision
-            anchors {
-                top: parent.top
-                left: parent.left
-                topMargin: margin
-                leftMargin: margin
-            }
+        height: txt.height
+        width: icon.width + txt.width + 2*margin
+        color: "#ff0000"
+        radius: 2
+        border.width: radius
+        border.color: "#ffffff"
+        visible: mission.collision
+        anchors {
+            top: parent.top
+            left: parent.left
+            topMargin: margin
+            leftMargin: margin
+        }
 
-            MaterialIcon {
-                id: icon
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.leftMargin: alarm.margin/2
-                name: "alert-circle"
-                color: txt.color
-                size: txt.font.pixelSize
+        MaterialIcon {
+            id: icon
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: alarm.margin/2
+            name: "alert-circle"
+            color: txt.color
+            size: txt.font.pixelSize
+        }
+        Text {
+            id: txt
+            text: qsTr("Alarm")
+            color: "#ffffff"
+            font.bold: true
+            font.pixelSize: Style.fontSize*0.8
+            anchors.left: icon.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: alarm.margin/2
+        }
+        SequentialAnimation {
+            running: true
+            loops: Animation.Infinite
+            PropertyAnimation {
+                target: alarm
+                property: "opacity"
+                    to: 0.5
+                duration: 1500
             }
-            Text {
-                id: txt
-                text: qsTr("Alarm")
-                color: "#ffffff"
-                font.bold: true
-                font.pixelSize: Style.fontSize*0.8
-                anchors.left: icon.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.leftMargin: alarm.margin/2
-            }
-            SequentialAnimation {
-                running: true
-                loops: Animation.Infinite
-                PropertyAnimation {
-                    target: alarm
-                    property: "opacity"
-                      to: 0.5
-                    duration: 1500
-                }
-                PropertyAnimation {
-                    target: alarm
-                    property: "opacity"
-                    to: 1
-                    duration: 1500
-                }
+            PropertyAnimation {
+                target: alarm
+                property: "opacity"
+                to: 1
+                duration: 1500
             }
         }
+    }
+
+    Item {
+        id: chartItem
+        height: elevationView.height * chartScale
+        width: elevationView.width * chartScale
+        visible: elevationView.chartOn
 
         ChartView {
             id: chartView
@@ -273,6 +280,58 @@ Window {
             asynchronous: true
             sourceComponent: Component { ElevationChart { } }
         }
+    }
+    
+    ColumnLayout {
+        id: zoomLayout
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: 2
+        z: 5
+
+        property real btnSize: 28
+
+        IconButton {
+            visible: true
+            iconName: "fullscreen"
+            size: zoomLayout.btnSize
+            onTriggered: {
+                chartItem.x = 0;
+                chartItem.y = 0;
+                chartScale = 1;
+            }
+        }
+        IconButton {
+            visible: true
+            iconName: "magnify-plus"
+            size: zoomLayout.btnSize
+            onTriggered: setChartScale(scaleStep)
+        }
+        IconButton {
+            visible: true
+            iconName: "magnify-minus"
+            size: zoomLayout.btnSize
+            onTriggered: setChartScale(-scaleStep)
+        }
+    }
+
+    WheelHandler {
+        target: chartItem
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: function (event) {
+            var value = event.angleDelta.y > 0 ? 0.1 : -0.1;
+            setChartScale(value);
+        }
+    }
+
+    DragHandler {
+        target: chartItem
+        enabled: chartScale != minScale 
+        acceptedButtons: Qt.LeftButton
+    }
+    function setChartScale(value) {
+        value += chartScale;
+        chartScale =  Math.min(Math.max(value, minScale), maxScale) // scale min = 1, max = 4
     }
 }
 
