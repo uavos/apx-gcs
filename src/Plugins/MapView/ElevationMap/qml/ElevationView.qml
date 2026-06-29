@@ -45,10 +45,11 @@ Window {
     property var chartOn: use && pluginOn
     property var name: qsTr("Terrain elevation")
     property var disabled: qsTr("(disabled)")
-    property var scaleStep: 0.25
+    property var scaleStep: 0.2
     property var minScale: 1
     property var maxScale: 4
     property var chartScale: minScale
+    property var newScale: minScale 
 
     flags: Qt.WindowStaysOnTopHint
     width: Screen.desktopAvailableWidth - 50
@@ -107,7 +108,6 @@ Window {
             topMargin: margin
             leftMargin: margin
         }
-
         MaterialIcon {
             id: icon
             anchors.left: parent.left
@@ -150,6 +150,8 @@ Window {
         height: elevationView.height * chartScale
         width: elevationView.width * chartScale
         visible: elevationView.chartOn
+        layer.enabled: dragHandler.active || wheelHandler.active
+        layer.smooth: true
 
         ChartView {
             id: chartView
@@ -305,33 +307,44 @@ Window {
             visible: true
             iconName: "magnify-plus"
             size: zoomLayout.btnSize
-            onTriggered: setChartScale(scaleStep)
+            onTriggered: setNewScale(scaleStep)
         }
         IconButton {
             visible: true
             iconName: "magnify-minus"
             size: zoomLayout.btnSize
-            onTriggered: setChartScale(-scaleStep)
+            onTriggered: setNewScale(-scaleStep)
         }
     }
 
     WheelHandler {
+        id: wheelHandler
+        property var scaleFactor: 1
         target: chartItem
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: function (event) {
-            var value = event.angleDelta.y > 0 ? 0.1 : -0.1;
-            setChartScale(value);
+            var val = scaleStep * event.angleDelta.y / 240
+            setNewScale(val);
         }
     }
 
     DragHandler {
+        id: dragHandler
         target: chartItem
         enabled: chartScale != minScale 
         acceptedButtons: Qt.LeftButton
     }
-    function setChartScale(value) {
-        value += chartScale;
-        chartScale =  Math.min(Math.max(value, minScale), maxScale) // scale min = 1, max = 4
+
+    // Item scaling is a heavy operation
+    Timer {
+        id: scaleTimer
+        interval: 50
+        onTriggered: chartScale = newScale
+    }
+
+    function setNewScale(val) {
+        val +=  chartScale ;
+        chartScale =  Math.min(Math.max(val, minScale), maxScale)
     }
 }
 
