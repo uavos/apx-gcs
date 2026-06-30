@@ -37,7 +37,10 @@ Repeater {
             id: epRect
             property var scaleX: axisX.max/chartView.plotArea.width
             property var scaleY: axisY.max/chartView.plotArea.height
-            visible: totalDistance >=0 && distance >=0 && x>=0 && y>=0
+            property var totalX: chartItem.x + x
+            property var totalY: chartItem.y + y
+            property bool inViewArea: (totalY <= elevationView.height && totalY + height >= 0) && (totalX <= elevationView.width && totalX + width >= 0)
+            visible: (totalDistance >=0 && distance >=0) && (x>=0 && y>=0) && inViewArea
             height: chartView.plotArea.height
             width: distance/scaleX
             x:  chartView.plotArea.x + (totalDistance - distance)/scaleX
@@ -50,7 +53,6 @@ Repeater {
                 anchors.margins: -10
                 anchors.leftMargin: -11 // -1 is the bias for bad positioning
 
-                // plotArea: Qt.rect(x, y, width, height)
                 backgroundColor: "transparent"
                 legend.visible: false
                 antialiasing: true

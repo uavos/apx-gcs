@@ -54,6 +54,8 @@ Window {
     flags: Qt.WindowStaysOnTopHint
     width: Screen.desktopAvailableWidth - 50
     height: 200
+    maximumHeight: Screen.desktopAvailableHeight / 3
+    maximumWidth: Screen.desktopAvailableWidth
     minimumHeight: 200
     minimumWidth: 600
     title: chartOn ? name : name + " " + disabled
@@ -64,6 +66,10 @@ Window {
 
     onClosing: plugin.active=false
     onVisibleChanged: timer.restart()
+    onVisibilityChanged: {
+        if (visibility === Window.Maximized)
+            height = maximumHeight
+    }
 
     Timer {
         id: timer
