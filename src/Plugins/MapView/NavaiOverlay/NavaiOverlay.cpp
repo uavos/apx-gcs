@@ -1,11 +1,14 @@
 #include "NavaiOverlay.h"
 
 #include <App/AppNotify.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
 
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -14,6 +17,126 @@
 #include <QStandardPaths>
 
 #include <cmath>
+
+namespace {
+
+QString cleanId(QString id)
+{
+    id = id.trimmed();
+
+    while (id.contains(QStringLiteral(".."))) {
+        id.replace(QStringLiteral(".."), QStringLiteral("."));
+    }
+
+    if (id.startsWith(QLatin1Char('.')))
+        id.remove(0, 1);
+
+    if (id.endsWith(QLatin1Char('.')))
+        id.chop(1);
+
+    return id;
+}
+
+void insertFact(
+    QHash<QString, Fact *> &facts,
+    const QString &id,
+    Fact *fact)
+{
+    const QString key =
+        cleanId(id);
+
+    if (!fact || key.isEmpty())
+        return;
+
+    facts.insert(key, fact);
+}
+
+void collectFactTree(
+    QHash<QString, Fact *> &facts,
+    Fact *fact,
+    const QString &prefix = QString(),
+    int depth = 0)
+{
+    if (!fact || depth > 64)
+        return;
+
+    const QString name =
+        fact->name().trimmed();
+
+    const QString id =
+        name.isEmpty()
+            ? cleanId(prefix)
+            : cleanId(prefix.isEmpty()
+                          ? name
+                          : prefix + QLatin1Char('.') + name);
+
+    const auto children =
+        fact->facts();
+
+    if (children.isEmpty()) {
+        QString key =
+            id;
+
+        if (key.isEmpty())
+            key = cleanId(fact->titlePath(QLatin1Char('.')));
+
+        insertFact(
+            facts,
+            key,
+            fact
+        );
+
+        return;
+    }
+
+    for (Fact *child : children) {
+        collectFactTree(
+            facts,
+            child,
+            id,
+            depth + 1
+        );
+    }
+}
+
+Fact *factByAnyId(
+    const QHash<QString, Fact *> &facts,
+    const QStringList &ids,
+    QString *matchedId = nullptr)
+{
+    for (const QString &id : ids) {
+        const QString key =
+            cleanId(id);
+
+        if (facts.contains(key)) {
+            if (matchedId)
+                *matchedId = key;
+
+            return facts.value(key);
+        }
+    }
+
+    for (const QString &id : ids) {
+        const QString key =
+            cleanId(id);
+
+        const QString suffix =
+            QStringLiteral(".") + key;
+
+        for (auto it = facts.constBegin(); it != facts.constEnd(); ++it) {
+            if (it.key().endsWith(suffix)) {
+                if (matchedId)
+                    *matchedId = it.key();
+
+                return it.value();
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+} // namespace
 
 // ======================= MODEL =======================
 
@@ -253,6 +376,19 @@ NavaiOverlay::NavaiOverlay(Fact *parent)
         SLOT(updateEnabled())
     );
 
+    if (Fleet::instance()) {
+        connect(
+            Fleet::instance(),
+            &Fleet::unitSelected,
+            this,
+            &NavaiOverlay::bindUnit
+        );
+
+        bindUnit(Fleet::instance()->current());
+    } else {
+        postToGcsConsole("Fleet instance not available");
+    }
+
     const QString mapPluginPath =
         uiDir() + "/NavaiMapPlugin.qml";
 
@@ -296,6 +432,89 @@ bool NavaiOverlay::isOverlayEnabled() const
 {
     return f_enabled &&
            f_enabled->value().toBool();
+}
+
+void NavaiOverlay::bindUnit(Unit *unit)
+{
+    _mandalaFacts.clear();
+    f_camLat = nullptr;
+    f_camLon = nullptr;
+
+    if (!unit || !unit->f_mandala) {
+        postToGcsConsole("Mandala bind failed: no current unit mandala");
+        return;
+    }
+
+    collectFactTree(
+        _mandalaFacts,
+        unit->f_mandala,
+        QString()
+    );
+
+    QString latKey;
+    QString lonKey;
+
+    f_camLat =
+        factByAnyId(
+            _mandalaFacts,
+            {
+                "est.cam.lat",
+                "est.nav.cam.lat",
+                "mandala.est.cam.lat",
+                "mandala.est.nav.cam.lat",
+                "cam.lat"
+            },
+            &latKey
+        );
+
+    f_camLon =
+        factByAnyId(
+            _mandalaFacts,
+            {
+                "est.cam.lon",
+                "est.nav.cam.lon",
+                "mandala.est.cam.lon",
+                "mandala.est.nav.cam.lon",
+                "cam.lon"
+            },
+            &lonKey
+        );
+
+    postToGcsConsole(
+        QString("Mandala facts bound: total=%1 est.cam.lat=%2 key=%3 est.cam.lon=%4 key=%5")
+            .arg(_mandalaFacts.size())
+            .arg(f_camLat ? "OK" : "FAIL")
+            .arg(latKey)
+            .arg(f_camLon ? "OK" : "FAIL")
+            .arg(lonKey)
+    );
+}
+
+void NavaiOverlay::writeCameraFacts(
+    double lat,
+    double lon)
+{
+    if (!f_camLat || !f_camLon) {
+        bindUnit(
+            Fleet::instance()
+                ? Fleet::instance()->current()
+                : nullptr
+        );
+    }
+
+    if (f_camLat)
+        f_camLat->setValue(lat);
+
+    if (f_camLon)
+        f_camLon->setValue(lon);
+
+    postToGcsConsole(
+        QString("MANDALA CAM WRITE est.cam.lat=%1 est.cam.lon=%2 bind_lat=%3 bind_lon=%4")
+            .arg(lat, 0, 'f', 7)
+            .arg(lon, 0, 'f', 7)
+            .arg(f_camLat ? "OK" : "FAIL")
+            .arg(f_camLon ? "OK" : "FAIL")
+    );
 }
 
 void NavaiOverlay::updateEnabled()
@@ -555,6 +774,11 @@ void NavaiOverlay::handleDatagram(
         postToGcsConsole("Invalid Navai result payload");
         return;
     }
+
+    writeCameraFacts(
+        lat,
+        lon
+    );
 
     const QString payloadLabel =
         obj.value("label").toString().trimmed();

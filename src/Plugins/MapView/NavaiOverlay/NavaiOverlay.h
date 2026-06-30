@@ -3,10 +3,14 @@
 #include <Fact/Fact.h>
 
 #include <QAbstractListModel>
+#include <QHash>
 #include <QHostAddress>
+#include <QJsonObject>
 #include <QTimer>
 #include <QUdpSocket>
 #include <QtCore>
+
+class Unit;
 
 class NavaiResultModel : public QAbstractListModel
 {
@@ -115,6 +119,8 @@ private slots:
     void readUdpDatagrams();
     void updateEnabled();
 
+    void bindUnit(Unit *unit);
+
 private:
     QString uiDir() const;
 
@@ -135,9 +141,19 @@ private:
         bool *ok
     ) const;
 
+    void writeCameraFacts(
+        double lat,
+        double lon
+    );
+
     void postToGcsConsole(const QString &text);
 
     Fact *f_enabled = nullptr;
+
+    Fact *f_camLat = nullptr;
+    Fact *f_camLon = nullptr;
+
+    QHash<QString, Fact *> _mandalaFacts;
 
     NavaiResultModel _resultsModel;
 
