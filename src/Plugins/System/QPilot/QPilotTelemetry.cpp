@@ -30,7 +30,10 @@
 #include <QDebug>
 #include <QJsonArray>
 #include <QJsonValue>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QVariant>
+#include <QXmlStreamReader>
 
 #include <cmath>
 #include <limits>
@@ -54,6 +57,24 @@ QString cleanId(QString id)
     }
 
     return id;
+}
+
+QString ecamId(const QString &name)
+{
+    const QString clean = cleanId(name);
+
+    return clean.isEmpty()
+        ? QString()
+        : QStringLiteral("ecam.") + clean;
+}
+
+QString derivedId(const QString &name)
+{
+    const QString clean = cleanId(name);
+
+    return clean.isEmpty()
+        ? QString()
+        : QStringLiteral("haps.") + clean;
 }
 
 QString factSearchText(const QString &id, Fact *fact)
@@ -106,15 +127,76 @@ bool looksLikeVoltageText(const QString &text, Fact *fact)
         || units == QStringLiteral("volts");
 }
 
+QPilotTelemetry::FactValue valueFromText(const QString &text, qint64 timestampMs)
+{
+    QPilotTelemetry::FactValue out;
+    out.ok = true;
+    out.raw = text.trimmed();
+    out.timestampMs = timestampMs;
+
+    bool ok = false;
+    const double number = out.raw.toDouble(&ok);
+
+    if (ok && std::isfinite(number)) {
+        out.numeric = true;
+        out.number = number;
+    }
+
+    return out;
+}
+
+bool numericValue(const QHash<QString, QPilotTelemetry::FactValue> &values,
+                  const QString &id,
+                  double *out)
+{
+    const auto it = values.constFind(id);
+
+    if (it == values.constEnd() || !it.value().ok || !it.value().numeric) {
+        return false;
+    }
+
+    if (out) {
+        *out = it.value().number;
+    }
+
+    return true;
+}
+
+void insertDerived(QHash<QString, QPilotTelemetry::FactValue> *current,
+                   QMap<QString, double> *statsValues,
+                   const QString &id,
+                   double value,
+                   qint64 timestampMs)
+{
+    if (!current || !statsValues || id.isEmpty() || !std::isfinite(value)) {
+        return;
+    }
+
+    QPilotTelemetry::FactValue out;
+    out.ok = true;
+    out.numeric = true;
+    out.number = value;
+    out.raw = QString::number(value, 'g', 12);
+    out.timestampMs = timestampMs;
+
+    current->insert(id, out);
+    statsValues->insert(id, value);
+}
+
 } // namespace
 
 QPilotTelemetry::QPilotTelemetry(QObject *parent)
     : QObject(parent)
+    , _ecamUrl(QStringLiteral("http://172.29.100.57:9380/ecam"))
 {
     _timer.setInterval(200);
     _timer.setTimerType(Qt::CoarseTimer);
 
+    _ecamTimer.setInterval(1000);
+    _ecamTimer.setTimerType(Qt::CoarseTimer);
+
     connect(&_timer, &QTimer::timeout, this, &QPilotTelemetry::sampleFacts);
+    connect(&_ecamTimer, &QTimer::timeout, this, &QPilotTelemetry::fetchEcam);
 
     connect(Fleet::instance(), &Fleet::unitSelected, this, [this](Unit *unit) {
         bindUnit(unit);
@@ -126,19 +208,33 @@ QPilotTelemetry::QPilotTelemetry(QObject *parent)
 void QPilotTelemetry::start()
 {
     sampleFacts();
+    fetchEcam();
 
     if (!_timer.isActive()) {
         _timer.start();
     }
 
+    if (!_ecamTimer.isActive()) {
+        _ecamTimer.start();
+    }
+
     qInfo().noquote()
-        << "[QPilot] telemetry timer started, tracked facts:"
-        << _facts.size();
+        << "[QPilot] telemetry timer started, tracked mandala facts:"
+        << _facts.size()
+        << "ecam url:"
+        << _ecamUrl.toString();
 }
 
 void QPilotTelemetry::stop()
 {
     _timer.stop();
+    _ecamTimer.stop();
+
+    if (_ecamReply) {
+        _ecamReply->abort();
+        _ecamReply->deleteLater();
+        _ecamReply = nullptr;
+    }
 }
 
 void QPilotTelemetry::insertFact(const QString &id, Fact *fact)
@@ -223,9 +319,49 @@ QStringList QPilotTelemetry::trackedIds() const
     return ids;
 }
 
+QStringList QPilotTelemetry::ecamIds() const
+{
+    QStringList ids = _ecamCurrent.keys();
+    ids.removeDuplicates();
+    ids.sort();
+    return ids;
+}
+
+QStringList QPilotTelemetry::derivedIds() const
+{
+    QStringList ids = _derivedCurrent.keys();
+    ids.removeDuplicates();
+    ids.sort();
+    return ids;
+}
+
+QStringList QPilotTelemetry::allIds() const
+{
+    QStringList ids;
+
+    ids.append(trackedIds());
+    ids.append(ecamIds());
+    ids.append(derivedIds());
+
+    ids.removeDuplicates();
+    ids.sort();
+
+    return ids;
+}
+
 bool QPilotTelemetry::isTracked(const QString &id) const
 {
     return _facts.contains(id);
+}
+
+bool QPilotTelemetry::isEcamTracked(const QString &id) const
+{
+    return _ecamCurrent.contains(id);
+}
+
+bool QPilotTelemetry::isDerivedTracked(const QString &id) const
+{
+    return _derivedCurrent.contains(id);
 }
 
 QPilotTelemetry::FactValue QPilotTelemetry::readFact(Fact *fact) const
@@ -272,11 +408,182 @@ void QPilotTelemetry::sampleFacts()
     }
 }
 
+void QPilotTelemetry::fetchEcam()
+{
+    if (_ecamReply) {
+        return;
+    }
+
+    _ecamLastAttemptMs = QDateTime::currentMSecsSinceEpoch();
+
+    QNetworkRequest request(_ecamUrl);
+    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("QPilot/0.3"));
+
+    _ecamReply = _network.get(request);
+
+    connect(_ecamReply, &QNetworkReply::finished, this, [this]() {
+        QNetworkReply *reply = _ecamReply;
+        _ecamReply = nullptr;
+
+        handleEcamReply(reply);
+    });
+}
+
+void QPilotTelemetry::handleEcamReply(QNetworkReply *reply)
+{
+    if (!reply) {
+        return;
+    }
+
+    const QByteArray data = reply->readAll();
+    const QNetworkReply::NetworkError err = reply->error();
+    const QString errText = reply->errorString();
+
+    reply->deleteLater();
+
+    if (err != QNetworkReply::NoError) {
+        _ecamLastError = errText;
+
+        qWarning().noquote()
+            << "[QPilot] ECAM fetch failed:"
+            << _ecamUrl.toString()
+            << errText;
+
+        return;
+    }
+
+    ingestEcamXml(data, QDateTime::currentMSecsSinceEpoch());
+}
+
+void QPilotTelemetry::ingestEcamXml(const QByteArray &xml, qint64 timestampMs)
+{
+    QXmlStreamReader reader(xml);
+    QMap<QString, double> values;
+
+    while (!reader.atEnd()) {
+        reader.readNext();
+
+        if (!reader.isStartElement()) {
+            continue;
+        }
+
+        const QString tag = reader.name().toString().trimmed();
+
+        if (tag.isEmpty() || tag == QStringLiteral("ecam")) {
+            continue;
+        }
+
+        const QString id = ecamId(tag);
+
+        if (id.isEmpty()) {
+            continue;
+        }
+
+        const QString text = reader.readElementText(QXmlStreamReader::SkipChildElements).trimmed();
+        const FactValue value = valueFromText(text, timestampMs);
+
+        _ecamCurrent.insert(id, value);
+
+        if (value.ok && value.numeric) {
+            values.insert(id, value.number);
+        }
+    }
+
+    if (reader.hasError()) {
+        _ecamLastError = reader.errorString();
+
+        qWarning().noquote()
+            << "[QPilot] ECAM XML parse failed:"
+            << _ecamLastError;
+
+        return;
+    }
+
+    _ecamLastError.clear();
+    _ecamLastOkMs = timestampMs;
+
+    if (!values.isEmpty()) {
+        _ecamStats.ingestBatch(values, timestampMs, false);
+    }
+
+    updateDerivedHaps(timestampMs);
+}
+
+void QPilotTelemetry::updateDerivedHaps(qint64 timestampMs)
+{
+    QMap<QString, double> values;
+
+    double spCalcPwr = 0.0;
+    double escCalcPwr = 0.0;
+
+    if (numericValue(_ecamCurrent, QStringLiteral("ecam.sp_calc_pwr"), &spCalcPwr)
+        && numericValue(_ecamCurrent, QStringLiteral("ecam.esc_calc_pwr"), &escCalcPwr)) {
+        insertDerived(&_derivedCurrent,
+                      &values,
+                      derivedId(QStringLiteral("power_balance")),
+                      spCalcPwr - escCalcPwr,
+                      timestampMs);
+    }
+
+    double worstCellDelta = std::numeric_limits<double>::quiet_NaN();
+
+    for (int i = 1; i <= 4; ++i) {
+        double delta = 0.0;
+
+        if (!numericValue(_ecamCurrent, QStringLiteral("ecam.mc%1_delta").arg(i), &delta)) {
+            continue;
+        }
+
+        if (!std::isfinite(worstCellDelta) || delta > worstCellDelta) {
+            worstCellDelta = delta;
+        }
+    }
+
+    if (std::isfinite(worstCellDelta)) {
+        insertDerived(&_derivedCurrent,
+                      &values,
+                      derivedId(QStringLiteral("battery_worst_cell_delta")),
+                      worstCellDelta,
+                      timestampMs);
+    }
+
+    double worstPitchError = std::numeric_limits<double>::quiet_NaN();
+
+    for (int i = 1; i <= 2; ++i) {
+        double pitch = 0.0;
+        double cmdPitch = 0.0;
+
+        if (!numericValue(_ecamCurrent, QStringLiteral("ecam.m_haps_pitch%1").arg(i), &pitch)
+            || !numericValue(_ecamCurrent, QStringLiteral("ecam.m_haps_cmd_pitch%1").arg(i), &cmdPitch)) {
+            continue;
+        }
+
+        const double error = std::abs(pitch - cmdPitch);
+
+        if (!std::isfinite(worstPitchError) || error > worstPitchError) {
+            worstPitchError = error;
+        }
+    }
+
+    if (std::isfinite(worstPitchError)) {
+        insertDerived(&_derivedCurrent,
+                      &values,
+                      derivedId(QStringLiteral("tracking_error_pitch_abs")),
+                      worstPitchError,
+                      timestampMs);
+    }
+
+    if (!values.isEmpty()) {
+        _derivedStats.ingestBatch(values, timestampMs, false);
+    }
+}
+
 QJsonObject QPilotTelemetry::factPayloadJson(const QString &id) const
 {
     if (!isTracked(id)) {
         return QJsonObject{
             {"fact", id},
+            {"source", "mandala"},
             {"ok", false},
             {"error", "fact_not_tracked"}
         };
@@ -285,6 +592,7 @@ QJsonObject QPilotTelemetry::factPayloadJson(const QString &id) const
     if (!_current.contains(id)) {
         return QJsonObject{
             {"fact", id},
+            {"source", "mandala"},
             {"ok", false},
             {"error", "fact_not_sampled_yet"}
         };
@@ -294,6 +602,7 @@ QJsonObject QPilotTelemetry::factPayloadJson(const QString &id) const
 
     QJsonObject out;
     out["fact"] = id;
+    out["source"] = "mandala";
     out["ok"] = value.ok;
     out["updated_utc"] = value.timestampMs > 0
         ? QDateTime::fromMSecsSinceEpoch(value.timestampMs, Qt::UTC).toString(Qt::ISODateWithMs)
@@ -326,6 +635,109 @@ QJsonObject QPilotTelemetry::factPayloadJson(const QString &id) const
     }
 
     return out;
+}
+
+QJsonObject QPilotTelemetry::ecamPayloadJson(const QString &id) const
+{
+    if (!isEcamTracked(id)) {
+        return QJsonObject{
+            {"fact", id},
+            {"source", "ecam"},
+            {"ok", false},
+            {"error", "ecam_fact_not_tracked"}
+        };
+    }
+
+    const FactValue value = _ecamCurrent.value(id);
+
+    QJsonObject out;
+    out["fact"] = id;
+    out["source"] = "ecam";
+    out["ok"] = value.ok;
+    out["updated_utc"] = value.timestampMs > 0
+        ? QDateTime::fromMSecsSinceEpoch(value.timestampMs, Qt::UTC).toString(Qt::ISODateWithMs)
+        : QString();
+
+    if (!value.ok) {
+        out["error"] = value.error;
+        return out;
+    }
+
+    out["raw"] = value.raw;
+    out["numeric"] = value.numeric;
+    out["value"] = value.numeric ? QJsonValue(value.number) : QJsonValue(value.raw);
+
+    if (value.numeric) {
+        const QJsonObject stats = _ecamStats.statsJson(id, value.number);
+
+        for (auto it = stats.constBegin(); it != stats.constEnd(); ++it) {
+            out[it.key()] = it.value();
+        }
+    }
+
+    return out;
+}
+
+QJsonObject QPilotTelemetry::derivedPayloadJson(const QString &id) const
+{
+    if (!isDerivedTracked(id)) {
+        return QJsonObject{
+            {"fact", id},
+            {"source", "haps_derived"},
+            {"ok", false},
+            {"error", "derived_fact_not_tracked"}
+        };
+    }
+
+    const FactValue value = _derivedCurrent.value(id);
+
+    QJsonObject out;
+    out["fact"] = id;
+    out["source"] = "haps_derived";
+    out["ok"] = value.ok;
+    out["updated_utc"] = value.timestampMs > 0
+        ? QDateTime::fromMSecsSinceEpoch(value.timestampMs, Qt::UTC).toString(Qt::ISODateWithMs)
+        : QString();
+
+    if (!value.ok) {
+        out["error"] = value.error;
+        return out;
+    }
+
+    out["raw"] = value.raw;
+    out["numeric"] = value.numeric;
+    out["value"] = value.numeric ? QJsonValue(value.number) : QJsonValue(value.raw);
+
+    if (value.numeric) {
+        const QJsonObject stats = _derivedStats.statsJson(id, value.number);
+
+        for (auto it = stats.constBegin(); it != stats.constEnd(); ++it) {
+            out[it.key()] = it.value();
+        }
+    }
+
+    return out;
+}
+
+QJsonObject QPilotTelemetry::telemetryPayloadJson(const QString &id) const
+{
+    if (isTracked(id)) {
+        return factPayloadJson(id);
+    }
+
+    if (isEcamTracked(id)) {
+        return ecamPayloadJson(id);
+    }
+
+    if (isDerivedTracked(id)) {
+        return derivedPayloadJson(id);
+    }
+
+    return QJsonObject{
+        {"fact", id},
+        {"ok", false},
+        {"error", "telemetry_id_not_tracked"}
+    };
 }
 
 double QPilotTelemetry::estimateLipoSocPercent(double cellVoltage)
@@ -389,6 +801,14 @@ QStringList QPilotTelemetry::batteryCandidateIds() const
         }
     }
 
+    for (const QString &id : _ecamCurrent.keys()) {
+        const QString text = id.toLower();
+
+        if (looksLikeBatteryText(text)) {
+            out.append(id);
+        }
+    }
+
     out.removeDuplicates();
     out.sort();
 
@@ -425,19 +845,30 @@ QJsonObject QPilotTelemetry::batteryJson(int cells) const
     double cellVoltage = std::numeric_limits<double>::quiet_NaN();
 
     for (const QString &id : candidates) {
-        const FactValue value = _current.value(id);
+        FactValue value;
+        Fact *fact = nullptr;
+        QString text;
+
+        if (id.startsWith(QStringLiteral("ecam."))) {
+            value = _ecamCurrent.value(id);
+            text = id.toLower();
+        } else {
+            value = _current.value(id);
+            fact = _facts.value(id, nullptr);
+            text = factSearchText(id, fact);
+        }
 
         if (!value.ok || !value.numeric) {
             continue;
         }
 
-        Fact *fact = _facts.value(id, nullptr);
-        const QString text = factSearchText(id, fact);
         const double v = value.number;
 
         const bool batteryScoped =
             id.contains(QStringLiteral(".sns.bat."), Qt::CaseInsensitive)
             || id.contains(QStringLiteral(".battery."), Qt::CaseInsensitive)
+            || id.contains(QStringLiteral(".bat"), Qt::CaseInsensitive)
+            || id.contains(QStringLiteral("_bat"), Qt::CaseInsensitive)
             || text.contains(QStringLiteral("battery"));
 
         const bool socCandidate =
@@ -502,6 +933,23 @@ QJsonObject QPilotTelemetry::batteryJson(int cells) const
     return out;
 }
 
+QJsonObject QPilotTelemetry::ecamStatusJson() const
+{
+    QJsonObject out;
+    out["url"] = _ecamUrl.toString();
+    out["tracked_facts"] = _ecamCurrent.size();
+    out["last_error"] = _ecamLastError;
+    out["last_attempt_utc"] = _ecamLastAttemptMs > 0
+        ? QDateTime::fromMSecsSinceEpoch(_ecamLastAttemptMs, Qt::UTC).toString(Qt::ISODateWithMs)
+        : QString();
+    out["last_ok_utc"] = _ecamLastOkMs > 0
+        ? QDateTime::fromMSecsSinceEpoch(_ecamLastOkMs, Qt::UTC).toString(Qt::ISODateWithMs)
+        : QString();
+    out["ok"] = !_ecamCurrent.isEmpty() && _ecamLastError.isEmpty();
+
+    return out;
+}
+
 QJsonObject QPilotTelemetry::toolJson(const QString &idsCsv, int batteryCells) const
 {
     QStringList ids;
@@ -519,7 +967,7 @@ QJsonObject QPilotTelemetry::toolJson(const QString &idsCsv, int batteryCells) c
     const bool explicitIds = !ids.isEmpty();
 
     if (ids.isEmpty()) {
-        ids = trackedIds();
+        ids = allIds();
     }
 
     QJsonArray requested;
@@ -527,26 +975,34 @@ QJsonObject QPilotTelemetry::toolJson(const QString &idsCsv, int batteryCells) c
 
     for (const QString &id : ids) {
         requested.append(id);
-        facts[id] = factPayloadJson(id);
+        facts[id] = telemetryPayloadJson(id);
     }
 
     QJsonObject meta;
     meta["read_only"] = true;
     meta["raw_history_output"] = false;
     meta["window_s"] = QPilotStats::windowSeconds();
-    meta["total_tracked_facts"] = _facts.size();
+    meta["mandala_tracked_facts"] = _facts.size();
+    meta["ecam_tracked_facts"] = _ecamCurrent.size();
+    meta["derived_tracked_facts"] = _derivedCurrent.size();
+    meta["total_tracked_facts"] = allIds().size();
     meta["correlations"] = "disabled_for_all_telemetry_collection";
 
     QJsonObject out;
     out["ok"] = true;
     out["server"] = "qpilot";
-    out["mode"] = "mcp_only_all_mandala_leaf_facts";
+    out["mode"] = "mcp_mandala_facts_plus_ecam";
     out["requested_ids"] = requested;
     out["explicit_ids"] = explicitIds;
-    out["tracked_ids"] = QJsonArray::fromStringList(trackedIds());
+    out["tracked_ids"] = QJsonArray::fromStringList(allIds());
+    out["mandala_tracked_ids"] = QJsonArray::fromStringList(trackedIds());
+    out["ecam_tracked_ids"] = QJsonArray::fromStringList(ecamIds());
+    out["derived_tracked_ids"] = QJsonArray::fromStringList(derivedIds());
     out["sample_period_ms"] = _timer.interval();
+    out["ecam_sample_period_ms"] = _ecamTimer.interval();
     out["facts"] = facts;
     out["battery"] = batteryJson(batteryCells);
+    out["ecam"] = ecamStatusJson();
     out["correlations"] = QJsonObject{
         {"total", QJsonObject{}},
         {"window", QJsonObject{}}

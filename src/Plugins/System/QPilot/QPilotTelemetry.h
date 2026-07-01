@@ -25,11 +25,14 @@
 
 #include <QHash>
 #include <QJsonObject>
+#include <QNetworkAccessManager>
 #include <QObject>
 #include <QStringList>
 #include <QTimer>
+#include <QUrl>
 
 class Fact;
+class QNetworkReply;
 class Unit;
 
 class QPilotTelemetry : public QObject
@@ -44,7 +47,6 @@ public:
 
     QJsonObject toolJson(const QString &idsCsv, int batteryCells = 6) const;
 
-private:
     struct FactValue
     {
         bool ok = false;
@@ -55,26 +57,58 @@ private:
         qint64 timestampMs = 0;
     };
 
+private:
     QTimer _timer;
+    QTimer _ecamTimer;
+
+    QNetworkAccessManager _network;
+    QNetworkReply *_ecamReply = nullptr;
+
     QHash<QString, Fact *> _facts;
     QHash<QString, FactValue> _current;
+    QHash<QString, FactValue> _ecamCurrent;
+    QHash<QString, FactValue> _derivedCurrent;
+
     QPilotStats _stats;
+    QPilotStats _ecamStats;
+    QPilotStats _derivedStats;
+
+    QUrl _ecamUrl;
+    QString _ecamLastError;
+    qint64 _ecamLastOkMs = 0;
+    qint64 _ecamLastAttemptMs = 0;
 
     void bindUnit(Unit *unit);
     void sampleFacts();
+
+    void fetchEcam();
+    void handleEcamReply(QNetworkReply *reply);
+    void ingestEcamXml(const QByteArray &xml, qint64 timestampMs);
+    void updateDerivedHaps(qint64 timestampMs);
 
     void collectFactTree(Fact *fact, const QString &prefix, int depth = 0);
     void insertFact(const QString &id, Fact *fact);
     void insertAlias(const QString &id, Fact *fact);
 
     QStringList trackedIds() const;
+    QStringList ecamIds() const;
+    QStringList derivedIds() const;
+    QStringList allIds() const;
+
     bool isTracked(const QString &id) const;
+    bool isEcamTracked(const QString &id) const;
+    bool isDerivedTracked(const QString &id) const;
 
     FactValue readFact(Fact *fact) const;
+
     QJsonObject factPayloadJson(const QString &id) const;
+    QJsonObject ecamPayloadJson(const QString &id) const;
+    QJsonObject derivedPayloadJson(const QString &id) const;
+    QJsonObject telemetryPayloadJson(const QString &id) const;
 
     QStringList batteryCandidateIds() const;
     QJsonObject batteryJson(int cells) const;
+    QJsonObject ecamStatusJson() const;
 
     static double estimateLipoSocPercent(double cellVoltage);
 };

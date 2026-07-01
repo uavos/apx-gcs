@@ -185,7 +185,7 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
 
         QJsonObject serverInfo;
         serverInfo["name"] = "qpilot";
-        serverInfo["version"] = "0.2.0";
+        serverInfo["version"] = "0.3.0";
 
         QJsonObject result;
         result["protocolVersion"] = "2025-06-18";
@@ -193,8 +193,9 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
         result["serverInfo"] = serverInfo;
         result["instructions"] =
             "QPilot is a read-only APX Ground Control telemetry MCP server. "
-            "Use gcs_telemetry_json to read all collected Mandala leaf facts, current values, statistics, "
-            "30-second window analysis, and a 6S LiPo battery charge summary when battery facts are available. "
+            "Use gcs_telemetry_json to read collected Mandala leaf facts, ECAM telemetry from http://172.29.100.57:9380/ecam, "
+            "current values, total statistics, 30-second window statistics, HAPS derived facts when available, "
+            "and a LiPo battery charge summary when battery facts are available. "
             "QPilot does not write facts, execute commands, upload missions, or control vehicles.";
 
         sendResult(socket, id, result);
@@ -211,7 +212,9 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
         ids["type"] = "string";
         ids["description"] =
             "Optional comma-separated telemetry identifiers. "
-            "If omitted, all QPilot collected Mandala leaf facts are returned.";
+            "Mandala facts use their original ids, ECAM facts use the ecam.* prefix, "
+            "and HAPS derived facts use the haps.* prefix. "
+            "If omitted, all collected telemetry facts are returned.";
 
         QJsonObject batteryCells;
         batteryCells["type"] = "integer";
@@ -231,8 +234,9 @@ void QPilotMcpServer::handleMcp(QTcpSocket *socket, const QJsonObject &request)
         tool["name"] = "gcs_telemetry_json";
         tool["description"] =
             "Read QPilot telemetry JSON from APX Ground Control. "
-            "Returns current values for all collected Mandala leaf facts, total statistics, 30-second window statistics, "
-            "and battery summary. Read-only. No raw flight history is returned.";
+            "Returns current values for collected Mandala facts, ECAM facts, HAPS derived facts, "
+            "total statistics, 30-second window statistics, and battery summary. "
+            "Read-only. No raw flight history is returned.";
         tool["inputSchema"] = inputSchema;
 
         sendResult(socket, id, QJsonObject{{"tools", QJsonArray{tool}}});
