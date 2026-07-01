@@ -42,10 +42,14 @@ Repeater {
             property var scaleY: axisY.max/chartHeight
             property var oldDistance: -1
             property var oldHAMSL: -1
+            property var totalX: chartItem.x + x
+            property var totalY: chartItem.y + y
+            property bool inViewArea: (totalY <= elevationView.height && totalY - height >= 0) && (totalX <= elevationView.width && totalX + width >= 0)
             
-            visible: totalDistance > 0 || created
+            visible: (totalDistance > 0 || created) && inViewArea
             x: chartView.plotArea.x + distance/scaleX
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
+
             Rectangle {
                 id: verticalLine
                 height: wpItem.hAMSL/wpItem.scaleY
@@ -57,7 +61,7 @@ Repeater {
             Rectangle {
                 id: chartPoint
                 height: 18
-                width: height
+                width: Math.max(height, pointText.contentWidth + 4)
                 x: -width/2
                 y: -height/2
                 radius: height/8
@@ -65,6 +69,7 @@ Repeater {
                 border.color: wpItem.alarmOn ? "#ff0000" : "#40000000"
                 border.width: 1
                 Text {
+                    id: pointText
                     anchors.centerIn: parent
                     text: wpItem.num + 1
                     color: wpItem.alarmOn ? "#ff0000" : "#000000"
