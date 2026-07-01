@@ -47,7 +47,7 @@ Window {
     property var disabled: qsTr("(disabled)")
     property var scaleStep: 0.2
     property var minScale: 1
-    property var maxScale: 4
+    property var maxScale: 10
     property var chartScale: minScale
     property var newScale: minScale 
 
@@ -70,6 +70,7 @@ Window {
         if (visibility === Window.Maximized)
             height = maximumHeight
     }
+    onEmptyChanged: if(empty) resetChartScale()
 
     Timer {
         id: timer
@@ -153,11 +154,11 @@ Window {
 
     Item {
         id: chartItem
-        height: elevationView.height * chartScale
+        height: elevationView.height
         width: elevationView.width * chartScale
         visible: elevationView.chartOn
-        layer.enabled: dragHandler.active || wheelHandler.active
-        layer.smooth: true
+        // layer.enabled: dragHandler.active || wheelHandler.active
+        // layer.smooth: true
 
         ChartView {
             id: chartView
@@ -187,7 +188,7 @@ Window {
                 labelsFont.pointSize: axisXLabel.font.pointSize
                 labelsColor: axisXLabel.color
                 gridVisible: false
-                tickCount: 11
+                tickCount: (Math.pow(2, Math.floor(Math.log2(chartScale)))) * 10 + 1    // adds a label when zooming in 2x
                 labelFormat: "%.0f"
             }
             ValueAxis {
@@ -303,11 +304,7 @@ Window {
             visible: true
             iconName: "fullscreen"
             size: zoomLayout.btnSize
-            onTriggered: {
-                chartItem.x = 0;
-                chartItem.y = 0;
-                chartScale = 1;
-            }
+            onTriggered: resetChartScale()
         }
         IconButton {
             visible: true
@@ -337,20 +334,27 @@ Window {
     DragHandler {
         id: dragHandler
         target: chartItem
-        enabled: chartScale != minScale 
         acceptedButtons: Qt.LeftButton
     }
 
     // Item scaling is a heavy operation
     Timer {
         id: scaleTimer
-        interval: 50
+        interval: 80
         onTriggered: chartScale = newScale
     }
 
     function setNewScale(val) {
-        val +=  chartScale ;
-        chartScale =  Math.min(Math.max(val, minScale), maxScale)
+        val += newScale ;
+        newScale =  Math.min(Math.max(val, minScale), maxScale)
+        scaleTimer.restart();
+    }
+
+    function resetChartScale() {
+        chartItem.x = 0;
+        chartItem.y = 0;
+        newScale = 1
+        chartScale = 1
     }
 }
 
