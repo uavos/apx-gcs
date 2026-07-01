@@ -47,6 +47,7 @@ AppPlugin {
                 visible: overlayRoot.visible
                 enabled: false
                 color: "transparent"
+                opacity: 0.95
 
                 center: overlayRoot.baseMap
                     ? overlayRoot.baseMap.center
@@ -83,7 +84,7 @@ AppPlugin {
                 }
 
                 Timer {
-                    interval: 1000
+                    interval: 2000
                     repeat: true
                     running: true
 

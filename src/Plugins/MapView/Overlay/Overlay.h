@@ -55,6 +55,7 @@ signals:
 
 private slots:
     void telemetryPulse();
+    void fadePulse();
 
 private:
     QString uiDir() const;
@@ -68,18 +69,11 @@ private:
 
     void postToGcsConsole(const QString &text);
 
-    QString sourceText(
-        double energy,
-        bool inFlight,
-        double altitude
-    ) const;
-
     bool shouldUseSample(
         double lat,
         double lon,
         double altitude,
-        double airspeed,
-        const QString &source
+        double airspeed
     ) const;
 
     bool shouldDrawFootprint(
@@ -89,10 +83,15 @@ private:
         double airspeed
     ) const;
 
+    double readMaxValue() const;
+
     QTimer _timer;
+    QTimer _fadeTimer;
 
     OverlayTileModel _overlayTileModel;
     OverlayTileServer _tileServer;
+
+    Fact *_maxFact = nullptr;
 
     Fact *_vspeedFact = nullptr;
     Fact *_vseFact = nullptr;
@@ -103,6 +102,8 @@ private:
 
     QGeoCoordinate _lastDrawCoord;
     bool _hasLastDrawCoord = false;
+
+    double _lastDrawValue = 0.0;
 
     bool _active = false;
     int _sample = 0;

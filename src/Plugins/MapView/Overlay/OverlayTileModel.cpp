@@ -5,10 +5,13 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QPainter>
+#include <QPen>
+#include <QRadialGradient>
 #include <QStandardPaths>
 #include <QUrl>
 #include <QtMath>
 
+#include <algorithm>
 #include <cmath>
 
 static constexpr double PI_VALUE = 3.14159265358979323846;
@@ -33,6 +36,8 @@ void OverlayTileWorker::resetSession(
 
     _tileCache.clear();
     _dirtyTiles.clear();
+    _tileLastDrawMs.clear();
+    _tileFadeOpacity.clear();
 
     QDir().mkpath(_sessionDir);
 }
@@ -41,13 +46,15 @@ void OverlayTileWorker::drawSample(
     double lat,
     double lon,
     double altitude,
-    const QString &source)
+    double value,
+    double maxValue)
 {
-    drawFootprint(
+    drawPoint(
         lat,
         lon,
         altitude,
-        source
+        value,
+        maxValue
     );
 
     maybeFlush();
@@ -59,95 +66,111 @@ void OverlayTileWorker::drawSegment(
     double lat2,
     double lon2,
     double altitude,
-    const QString &source)
+    double value1,
+    double value2,
+    double maxValue)
 {
-    Q_UNUSED(altitude)
-
-    if (source != "CHARGE" &&
-        source != "NEUTRAL" &&
-        source != "ENGINE")
-        return;
-
     const QGeoCoordinate a(lat1, lon1);
     const QGeoCoordinate b(lat2, lon2);
 
     const double distance =
         a.distanceTo(b);
 
-    if (distance > 1000.0) {
-        drawFootprint(
+    if (distance <= 0.01) {
+        drawPoint(
             lat2,
             lon2,
-            0.0,
-            source
+            altitude,
+            value2,
+            maxValue
         );
 
         maybeFlush();
         return;
     }
 
-    const double step = 8.0;
+    if (distance > 1000.0) {
+        drawPoint(
+            lat2,
+            lon2,
+            altitude,
+            value2,
+            maxValue
+        );
+
+        maybeFlush();
+        return;
+    }
+
+    const double stepMeters = 6.0;
 
     const int steps =
         qMax(
             1,
             static_cast<int>(
-                std::ceil(distance / step)
+                std::ceil(distance / stepMeters)
             )
         );
 
     const double azimuth =
         a.azimuthTo(b);
 
-    for (int i = 0; i <= steps; ++i) {
-        const double d =
-            distance *
+    QGeoCoordinate prevCoord = a;
+    double prevValue = value1;
+
+    for (int i = 1; i <= steps; ++i) {
+        const double k =
             static_cast<double>(i) /
             static_cast<double>(steps);
+
+        const double d =
+            distance * k;
 
         const QGeoCoordinate p =
             a.atDistanceAndAzimuth(d, azimuth);
 
-        drawFootprint(
+        const double v =
+            value1 + (value2 - value1) * k;
+
+        drawLine(
+            prevCoord.latitude(),
+            prevCoord.longitude(),
             p.latitude(),
             p.longitude(),
-            0.0,
-            source
+            altitude,
+            (prevValue + v) * 0.5,
+            maxValue
         );
+
+        drawPoint(
+            p.latitude(),
+            p.longitude(),
+            altitude,
+            v,
+            maxValue
+        );
+
+        prevCoord = p;
+        prevValue = v;
     }
 
     maybeFlush();
 }
 
-double OverlayTileWorker::footprintMeters(double altitude) const
-{
-    Q_UNUSED(altitude)
-
-    return 20.0;
-}
-
-void OverlayTileWorker::drawFootprint(
+void OverlayTileWorker::drawPoint(
     double lat,
     double lon,
     double altitude,
-    const QString &source)
+    double value,
+    double maxValue)
 {
-    if (_sessionDir.isEmpty())
-        return;
+    Q_UNUSED(altitude)
 
-    if (source != "CHARGE" &&
-        source != "NEUTRAL" &&
-        source != "ENGINE")
+    if (_sessionDir.isEmpty())
         return;
 
     if (lat == 0.0 || lon == 0.0)
         return;
-
-    QColor color(
-        colorForSource(source)
-    );
-
-    color.setAlpha(150); 
 
     const double mpp =
         metersPerPixel(lat, _nativeZoom);
@@ -155,10 +178,20 @@ void OverlayTileWorker::drawFootprint(
     if (mpp <= 0.0)
         return;
 
-    const double fpPixels =
-        qMax(
-            2.0,
-            footprintMeters(altitude) / mpp
+    const double widthMeters =
+        lineWidthMetersForValue(
+            value,
+            maxValue
+        );
+
+    const double pointMeters =
+        widthMeters * 1.45;
+
+    const double diameterPixels =
+        qBound(
+            5.0,
+            pointMeters / mpp,
+            42.0
         );
 
     const double cx =
@@ -168,11 +201,23 @@ void OverlayTileWorker::drawFootprint(
         latToGlobalPixelY(lat, _nativeZoom);
 
     const QRectF globalRect(
-        cx - fpPixels / 2.0,
-        cy - fpPixels / 2.0,
-        fpPixels,
-        fpPixels
+        cx - diameterPixels / 2.0,
+        cy - diameterPixels / 2.0,
+        diameterPixels,
+        diameterPixels
     );
+
+    const QColor color =
+        colorForValue(
+            value,
+            maxValue
+        );
+
+    const QString source =
+        sourceText(
+            value,
+            maxValue
+        );
 
     const int minTileX =
         static_cast<int>(
@@ -196,7 +241,7 @@ void OverlayTileWorker::drawFootprint(
 
     for (int ty = minTileY; ty <= maxTileY; ++ty) {
         for (int tx = minTileX; tx <= maxTileX; ++tx) {
-            drawFootprintIntoTile(
+            drawPointIntoTile(
                 _nativeZoom,
                 tx,
                 ty,
@@ -208,7 +253,110 @@ void OverlayTileWorker::drawFootprint(
     }
 }
 
-void OverlayTileWorker::drawFootprintIntoTile(
+void OverlayTileWorker::drawLine(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+    double altitude,
+    double value,
+    double maxValue)
+{
+    Q_UNUSED(altitude)
+
+    if (_sessionDir.isEmpty())
+        return;
+
+    if (lat1 == 0.0 || lon1 == 0.0 ||
+        lat2 == 0.0 || lon2 == 0.0)
+        return;
+
+    const double mpp =
+        metersPerPixel(
+            (lat1 + lat2) * 0.5,
+            _nativeZoom
+        );
+
+    if (mpp <= 0.0)
+        return;
+
+    const QPointF a(
+        lonToGlobalPixelX(lon1, _nativeZoom),
+        latToGlobalPixelY(lat1, _nativeZoom)
+    );
+
+    const QPointF b(
+        lonToGlobalPixelX(lon2, _nativeZoom),
+        latToGlobalPixelY(lat2, _nativeZoom)
+    );
+
+    const double widthPixels =
+        qBound(
+            3.0,
+            lineWidthMetersForValue(value, maxValue) / mpp,
+            34.0
+        );
+
+    QRectF globalRect =
+        QRectF(a, b).normalized();
+
+    globalRect.adjust(
+        -widthPixels * 1.2,
+        -widthPixels * 1.2,
+        widthPixels * 1.2,
+        widthPixels * 1.2
+    );
+
+    const QColor color =
+        colorForValue(
+            value,
+            maxValue
+        );
+
+    const QString source =
+        sourceText(
+            value,
+            maxValue
+        );
+
+    const int minTileX =
+        static_cast<int>(
+            std::floor(globalRect.left() / _tileSize)
+        );
+
+    const int maxTileX =
+        static_cast<int>(
+            std::floor(globalRect.right() / _tileSize)
+        );
+
+    const int minTileY =
+        static_cast<int>(
+            std::floor(globalRect.top() / _tileSize)
+        );
+
+    const int maxTileY =
+        static_cast<int>(
+            std::floor(globalRect.bottom() / _tileSize)
+        );
+
+    for (int ty = minTileY; ty <= maxTileY; ++ty) {
+        for (int tx = minTileX; tx <= maxTileX; ++tx) {
+            drawLineIntoTile(
+                _nativeZoom,
+                tx,
+                ty,
+                globalRect,
+                a,
+                b,
+                widthPixels,
+                color,
+                source
+            );
+        }
+    }
+}
+
+void OverlayTileWorker::drawPointIntoTile(
     int z,
     int x,
     int y,
@@ -246,6 +394,294 @@ void OverlayTileWorker::drawFootprintIntoTile(
     const QString path =
         tilePath(z, x, y, true);
 
+    QImage img =
+        loadTile(key, path);
+
+    const QPointF localCenter =
+        globalRect.center() -
+        tileGlobalRect.topLeft();
+
+    const double radius =
+        globalRect.width() * 0.5;
+
+    QColor centerColor = color;
+    centerColor.setAlpha(170);
+
+    QColor midColor = color;
+    midColor.setAlpha(80);
+
+    QColor edgeColor = color;
+    edgeColor.setAlpha(0);
+
+    QRadialGradient gradient(
+        localCenter,
+        radius
+    );
+
+    gradient.setColorAt(0.0, centerColor);
+    gradient.setColorAt(0.55, midColor);
+    gradient.setColorAt(1.0, edgeColor);
+
+    QRectF localRect =
+        globalRect.translated(
+            -tileGlobalRect.left(),
+            -tileGlobalRect.top()
+        );
+
+    QPainter p(&img);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    p.setBrush(gradient);
+    p.setPen(Qt::NoPen);
+    p.drawEllipse(localRect);
+    p.end();
+
+    putTile(
+        key,
+        img,
+        z,
+        x,
+        y,
+        source,
+        color,
+        path,
+        true
+    );
+}
+
+void OverlayTileWorker::drawLineIntoTile(
+    int z,
+    int x,
+    int y,
+    const QRectF &globalRect,
+    const QPointF &globalA,
+    const QPointF &globalB,
+    double widthPixels,
+    const QColor &color,
+    const QString &source)
+{
+    if (x < 0 || y < 0)
+        return;
+
+    const int maxIndex =
+        static_cast<int>(
+            qPow(2.0, z)
+        ) - 1;
+
+    if (x > maxIndex || y > maxIndex)
+        return;
+
+    const QRectF tileGlobalRect(
+        x * _tileSize,
+        y * _tileSize,
+        _tileSize,
+        _tileSize
+    );
+
+    const QRectF clipped =
+        globalRect.intersected(tileGlobalRect);
+
+    if (clipped.isEmpty())
+        return;
+
+    const QString key =
+        tileKey(z, x, y);
+
+    const QString path =
+        tilePath(z, x, y, true);
+
+    QImage img =
+        loadTile(key, path);
+
+    QColor lineColor = color;
+    lineColor.setAlpha(200);
+
+    const QPointF localA =
+        globalA - tileGlobalRect.topLeft();
+
+    const QPointF localB =
+        globalB - tileGlobalRect.topLeft();
+
+    QPainter p(&img);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+    QPen pen(
+        lineColor,
+        widthPixels,
+        Qt::SolidLine,
+        Qt::RoundCap,
+        Qt::RoundJoin
+    );
+
+    p.setPen(pen);
+    p.drawLine(localA, localB);
+    p.end();
+
+    putTile(
+        key,
+        img,
+        z,
+        x,
+        y,
+        source,
+        color,
+        path,
+        true
+    );
+}
+
+void OverlayTileWorker::fade()
+{
+    if (_sessionDir.isEmpty())
+        return;
+
+    const qint64 now =
+        QDateTime::currentMSecsSinceEpoch();
+
+    QSet<QString> changedTiles;
+
+    for (auto it = _tileLastDrawMs.begin(); it != _tileLastDrawMs.end();) {
+        const QString key = it.key();
+        const qint64 age = now - it.value();
+
+        if (age <= _fadeStartMs) {
+            ++it;
+            continue;
+        }
+
+        const double desiredOpacity =
+            qBound(
+                0.0,
+                1.0 - static_cast<double>(age - _fadeStartMs) /
+                          static_cast<double>(_fadeDurationMs),
+                1.0
+            );
+
+        const double previousOpacity =
+            _tileFadeOpacity.value(key, 1.0);
+
+        if (desiredOpacity >= previousOpacity - 0.005 &&
+            desiredOpacity > 0.0) {
+            ++it;
+            continue;
+        }
+
+        int z = 0;
+        int x = 0;
+        int y = 0;
+
+        if (!parseTileKey(key, &z, &x, &y)) {
+            it = _tileLastDrawMs.erase(it);
+            _tileFadeOpacity.remove(key);
+            continue;
+        }
+
+        const QString path =
+            tilePath(z, x, y, true);
+
+        QImage img =
+            loadTile(key, path);
+
+        const double factor =
+            previousOpacity > 0.0
+            ? desiredOpacity / previousOpacity
+            : 0.0;
+
+        applyOpacityToTile(
+            &img,
+            factor
+        );
+
+        img.save(path, "PNG");
+
+        _tileCache.insert(key, img);
+        _tileFadeOpacity.insert(key, desiredOpacity);
+
+        changedTiles.insert(key);
+
+        emit tileUpdated(
+            z,
+            x,
+            y,
+            QStringLiteral("FADE"),
+            QStringLiteral("#000000"),
+            path
+        );
+
+        if (desiredOpacity <= 0.001) {
+            _tileCache.remove(key);
+            _tileFadeOpacity.remove(key);
+            it = _tileLastDrawMs.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    if (!changedTiles.isEmpty()) {
+        QSet<QString> rebuilt;
+
+        for (const QString &key : changedTiles) {
+            int z = 0;
+            int x = 0;
+            int y = 0;
+
+            if (!parseTileKey(key, &z, &x, &y))
+                continue;
+
+            buildPyramidFromChild(
+                z,
+                x,
+                y,
+                &rebuilt
+            );
+        }
+    }
+
+    trimCache();
+}
+
+void OverlayTileWorker::applyOpacityToTile(
+    QImage *img,
+    double opacityFactor) const
+{
+    if (!img || img->isNull())
+        return;
+
+    opacityFactor =
+        qBound(
+            0.0,
+            opacityFactor,
+            1.0
+        );
+
+    if (opacityFactor <= 0.001) {
+        img->fill(Qt::transparent);
+        return;
+    }
+
+    QPainter p(img);
+    p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+
+    const int alpha =
+        qBound(
+            0,
+            static_cast<int>(255.0 * opacityFactor),
+            255
+        );
+
+    p.fillRect(
+        img->rect(),
+        QColor(0, 0, 0, alpha)
+    );
+
+    p.end();
+}
+
+QImage OverlayTileWorker::loadTile(
+    const QString &key,
+    const QString &path) const
+{
     QImage img;
 
     if (_tileCache.contains(key)) {
@@ -268,19 +704,33 @@ void OverlayTileWorker::drawFootprintIntoTile(
         img.fill(Qt::transparent);
     }
 
-    QRectF localRect =
-        clipped.translated(
-            -tileGlobalRect.left(),
-            -tileGlobalRect.top()
+    return img;
+}
+
+void OverlayTileWorker::putTile(
+    const QString &key,
+    const QImage &img,
+    int z,
+    int x,
+    int y,
+    const QString &source,
+    const QColor &color,
+    const QString &path,
+    bool markDraw)
+{
+    _tileCache.insert(key, img);
+
+    if (markDraw) {
+        _tileLastDrawMs.insert(
+            key,
+            QDateTime::currentMSecsSinceEpoch()
         );
 
-    QPainter p(&img);
-    p.setRenderHint(QPainter::Antialiasing, false);
-    p.setCompositionMode(QPainter::CompositionMode_Source);
-    p.fillRect(localRect, color);
-    p.end();
-
-    _tileCache.insert(key, img);
+        _tileFadeOpacity.insert(
+            key,
+            1.0
+        );
+    }
 
     DirtyTile dirty;
     dirty.z = z;
@@ -407,10 +857,11 @@ void OverlayTileWorker::buildParentTile(
     const QString key =
         tileKey(z, x, y);
 
-    if (rebuilt->contains(key))
+    if (rebuilt && rebuilt->contains(key))
         return;
 
-    rebuilt->insert(key);
+    if (rebuilt)
+        rebuilt->insert(key);
 
     QImage parent(
         _tileSize,
@@ -513,6 +964,46 @@ QString OverlayTileWorker::tileKey(
             .arg(y);
 }
 
+bool OverlayTileWorker::parseTileKey(
+    const QString &key,
+    int *z,
+    int *x,
+    int *y)
+{
+    const QStringList parts =
+        key.split(QLatin1Char('/'));
+
+    if (parts.size() != 3)
+        return false;
+
+    bool okZ = false;
+    bool okX = false;
+    bool okY = false;
+
+    const int zz =
+        parts.at(0).toInt(&okZ);
+
+    const int xx =
+        parts.at(1).toInt(&okX);
+
+    const int yy =
+        parts.at(2).toInt(&okY);
+
+    if (!okZ || !okX || !okY)
+        return false;
+
+    if (z)
+        *z = zz;
+
+    if (x)
+        *x = xx;
+
+    if (y)
+        *y = yy;
+
+    return true;
+}
+
 void OverlayTileWorker::trimCache()
 {
     if (_tileCache.size() <= _maxCachedTiles)
@@ -582,16 +1073,96 @@ double OverlayTileWorker::metersPerPixel(
         qPow(2.0, z);
 }
 
-QString OverlayTileWorker::colorForSource(
-    const QString &source) const
+double OverlayTileWorker::normalizedValue(
+    double value,
+    double maxValue)
 {
-    if (source == "CHARGE")
-        return "#00FF00";
+    if (!std::isfinite(value) ||
+        !std::isfinite(maxValue) ||
+        maxValue <= 0.0)
+        return 0.0;
 
-    if (source == "ENGINE")
-        return "#FF0000";
+    return qBound(
+        0.0,
+        value / maxValue,
+        1.0
+    );
+}
 
-    return "#FFFF00";
+QColor OverlayTileWorker::colorForValue(
+    double value,
+    double maxValue)
+{
+    const double n =
+        normalizedValue(
+            value,
+            maxValue
+        );
+
+    const QColor blue(0, 110, 255);
+    const QColor yellow(255, 215, 0);
+    const QColor red(255, 0, 0);
+
+    auto mix = [](const QColor &a, const QColor &b, double k) {
+        return QColor(
+            qBound(0, static_cast<int>(a.red() + (b.red() - a.red()) * k), 255),
+            qBound(0, static_cast<int>(a.green() + (b.green() - a.green()) * k), 255),
+            qBound(0, static_cast<int>(a.blue() + (b.blue() - a.blue()) * k), 255)
+        );
+    };
+
+    if (n < 0.5) {
+        const double k =
+            n / 0.5;
+
+        return mix(
+            blue,
+            yellow,
+            k
+        );
+    }
+
+    const double k =
+        (n - 0.5) / 0.5;
+
+    return mix(
+        yellow,
+        red,
+        k
+    );
+}
+
+double OverlayTileWorker::lineWidthMetersForValue(
+    double value,
+    double maxValue)
+{
+    const double n =
+        normalizedValue(
+            value,
+            maxValue
+        );
+
+    const double blueWidth = 10.0;
+    const double redWidth = 34.0;
+
+    return
+        blueWidth +
+        (redWidth - blueWidth) * n;
+}
+
+QString OverlayTileWorker::sourceText(
+    double value,
+    double maxValue)
+{
+    const double n =
+        normalizedValue(
+            value,
+            maxValue
+        );
+
+    return
+        QString("OVERLAY:%1")
+            .arg(n, 0, 'f', 2);
 }
 
 QString OverlayTileWorker::tilePath(
@@ -655,6 +1226,14 @@ OverlayTileModel::OverlayTileModel(QObject *parent)
         &OverlayTileModel::workerDrawSegment,
         _worker,
         &OverlayTileWorker::drawSegment,
+        Qt::QueuedConnection
+    );
+
+    connect(
+        this,
+        &OverlayTileModel::workerFade,
+        _worker,
+        &OverlayTileWorker::fade,
         Qt::QueuedConnection
     );
 
@@ -834,6 +1413,11 @@ void OverlayTileModel::startNewSession()
     );
 }
 
+void OverlayTileModel::fade()
+{
+    emit workerFade();
+}
+
 void OverlayTileModel::flush()
 {
     if (!_worker)
@@ -850,13 +1434,15 @@ void OverlayTileModel::addSample(
     double lat,
     double lon,
     double altitude,
-    const QString &source)
+    double value,
+    double maxValue)
 {
     emit workerDrawSample(
         lat,
         lon,
         altitude,
-        source
+        value,
+        maxValue
     );
 }
 
@@ -866,7 +1452,9 @@ void OverlayTileModel::addSegment(
     double lat2,
     double lon2,
     double altitude,
-    const QString &source)
+    double value1,
+    double value2,
+    double maxValue)
 {
     emit workerDrawSegment(
         lat1,
@@ -874,7 +1462,9 @@ void OverlayTileModel::addSegment(
         lat2,
         lon2,
         altitude,
-        source
+        value1,
+        value2,
+        maxValue
     );
 }
 
@@ -1031,7 +1621,7 @@ void OverlayTileModel::writeManifest() const
             .toString(Qt::ISODate);
 
     root["algorithm"] =
-        "est.pos.vspeed - est.air.vse";
+        "value = est.pos.vspeed - est.air.vse; blue=low, red=high lift";
 
     root["nativeZoom"] = _nativeZoom;
     root["minZoom"] = _minZoom;
@@ -1040,9 +1630,16 @@ void OverlayTileModel::writeManifest() const
     root["layout"] = "z/x/y.png";
     root["pyramid"] = true;
     root["threaded"] = true;
-    root["opacityInQml"] = 0.4;
-    root["footprintMeters"] = 20.0;
-    root["sampleStepMeters"] = 8.0;
+    root["style"] = "transparent gradient dots and round lines with alpha fade";
+    root["minValue"] = 0.0;
+    root["maxValueSource"] = "tools.overlay.max";
+    root["blueMeans"] = "low or zero value";
+    root["redMeans"] = "high lift / strong value";
+    root["blueWidthMeters"] = 10.0;
+    root["redWidthMeters"] = 34.0;
+    root["sampleStepMeters"] = 6.0;
+    root["fadeStartSeconds"] = 60;
+    root["fadeDurationSeconds"] = 120;
 
     QFile f(
         sessionDir() + "/manifest.json"

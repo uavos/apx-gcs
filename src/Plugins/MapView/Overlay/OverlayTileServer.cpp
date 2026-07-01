@@ -139,8 +139,20 @@ bool OverlayTileServer::parseTileRequest(
     QByteArray rawPath =
         firstLine.mid(a + 1, b - a - 1);
 
-    const QString path =
+    QString path =
         QUrl::fromPercentEncoding(rawPath);
+
+    const int queryPos =
+        path.indexOf(QLatin1Char('?'));
+
+    if (queryPos >= 0)
+        path.truncate(queryPos);
+
+    const int hashPos =
+        path.indexOf(QLatin1Char('#'));
+
+    if (hashPos >= 0)
+        path.truncate(hashPos);
 
     QStringList parts =
         path.split('/', Qt::SkipEmptyParts);
@@ -148,8 +160,14 @@ bool OverlayTileServer::parseTileRequest(
     QList<int> numbers;
 
     for (QString p : parts) {
-        if (p.endsWith(".png"))
+        if (p.endsWith(QStringLiteral(".png")))
             p.chop(4);
+
+        const int pngPos =
+            p.indexOf(QStringLiteral(".png"));
+
+        if (pngPos >= 0)
+            p.truncate(pngPos);
 
         bool ok = false;
         const int value = p.toInt(&ok);

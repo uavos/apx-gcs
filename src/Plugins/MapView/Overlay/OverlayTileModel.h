@@ -7,6 +7,7 @@
 #include <QHash>
 #include <QImage>
 #include <QObject>
+#include <QPointF>
 #include <QRectF>
 #include <QSet>
 #include <QString>
@@ -32,7 +33,8 @@ public slots:
         double lat,
         double lon,
         double altitude,
-        const QString &source
+        double value,
+        double maxValue
     );
 
     void drawSegment(
@@ -41,9 +43,12 @@ public slots:
         double lat2,
         double lon2,
         double altitude,
-        const QString &source
+        double value1,
+        double value2,
+        double maxValue
     );
 
+    void fade();
     void flush();
 
 signals:
@@ -67,20 +72,41 @@ private:
         QString path;
     };
 
-    double footprintMeters(double altitude) const;
-
-    void drawFootprint(
+    void drawPoint(
         double lat,
         double lon,
         double altitude,
-        const QString &source
+        double value,
+        double maxValue
     );
 
-    void drawFootprintIntoTile(
+    void drawLine(
+        double lat1,
+        double lon1,
+        double lat2,
+        double lon2,
+        double altitude,
+        double value,
+        double maxValue
+    );
+
+    void drawPointIntoTile(
         int z,
         int x,
         int y,
         const QRectF &globalRect,
+        const QColor &color,
+        const QString &source
+    );
+
+    void drawLineIntoTile(
+        int z,
+        int x,
+        int y,
+        const QRectF &globalRect,
+        const QPointF &globalA,
+        const QPointF &globalB,
+        double widthPixels,
         const QColor &color,
         const QString &source
     );
@@ -102,18 +128,44 @@ private:
     );
 
     static QString tileKey(int z, int x, int y);
+    static bool parseTileKey(const QString &key, int *z, int *x, int *y);
 
     static double lonToGlobalPixelX(double lon, int z);
     static double latToGlobalPixelY(double lat, int z);
     static double metersPerPixel(double lat, int z);
 
-    QString colorForSource(const QString &source) const;
+    static double normalizedValue(double value, double maxValue);
+    static QColor colorForValue(double value, double maxValue);
+    static double lineWidthMetersForValue(double value, double maxValue);
+    static QString sourceText(double value, double maxValue);
 
     QString tilePath(
         int z,
         int x,
         int y,
         bool createDir = true
+    ) const;
+
+    QImage loadTile(
+        const QString &key,
+        const QString &path
+    ) const;
+
+    void putTile(
+        const QString &key,
+        const QImage &img,
+        int z,
+        int x,
+        int y,
+        const QString &source,
+        const QColor &color,
+        const QString &path,
+        bool markDraw
+    );
+
+    void applyOpacityToTile(
+        QImage *img,
+        double opacityFactor
     ) const;
 
     void trimCache();
@@ -127,11 +179,17 @@ private:
     QHash<QString, QImage> _tileCache;
     QHash<QString, DirtyTile> _dirtyTiles;
 
+    QHash<QString, qint64> _tileLastDrawMs;
+    QHash<QString, double> _tileFadeOpacity;
+
     qint64 _lastFlushMs = 0;
 
     int _flushIntervalMs = 300;
     int _maxDirtyBeforeFlush = 32;
     int _maxCachedTiles = 256;
+
+    qint64 _fadeStartMs = 60000;
+    qint64 _fadeDurationMs = 120000;
 };
 
 class OverlayTileModel : public QAbstractListModel
@@ -197,6 +255,7 @@ public:
 
     Q_INVOKABLE void clear();
     Q_INVOKABLE void startNewSession();
+    Q_INVOKABLE void fade();
     Q_INVOKABLE void flush();
 
     Q_INVOKABLE QString sessionId() const { return _sessionId; }
@@ -220,7 +279,8 @@ public:
         double lat,
         double lon,
         double altitude,
-        const QString &source
+        double value,
+        double maxValue
     );
 
     void addSegment(
@@ -229,7 +289,9 @@ public:
         double lat2,
         double lon2,
         double altitude,
-        const QString &source
+        double value1,
+        double value2,
+        double maxValue
     );
 
 signals:
@@ -246,7 +308,8 @@ signals:
         double lat,
         double lon,
         double altitude,
-        const QString &source
+        double value,
+        double maxValue
     );
 
     void workerDrawSegment(
@@ -255,8 +318,12 @@ signals:
         double lat2,
         double lon2,
         double altitude,
-        const QString &source
+        double value1,
+        double value2,
+        double maxValue
     );
+
+    void workerFade();
 
 private slots:
     void onWorkerTileUpdated(

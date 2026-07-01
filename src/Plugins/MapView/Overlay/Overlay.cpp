@@ -14,9 +14,9 @@
 
 #include <cmath>
 
-static constexpr double ENERGY_THRESHOLD = 0.5;
 static constexpr double FLIGHT_AIRSPEED_THRESHOLD = 5.0;
 static constexpr double MIN_ALTITUDE_FOR_TILES = 30.0;
+static constexpr double DEFAULT_MAX_VALUE = 5.0;
 
 Overlay::Overlay(Fact *parent)
     : Fact(parent,
@@ -26,6 +26,18 @@ Overlay::Overlay(Fact *parent)
            Group,
            "chart-line")
 {
+    _maxFact =
+        new Fact(
+            this,
+            "max",
+            tr("Max"),
+            tr("Maximum value for red lift color"),
+            Float,
+            "tune"
+        );
+
+    _maxFact->setValue(DEFAULT_MAX_VALUE);
+
     const QString mapPluginPath =
         uiDir() + "/OverlayMapPlugin.qml";
 
@@ -35,11 +47,21 @@ Overlay::Overlay(Fact *parent)
     _timer.setInterval(200);
     _timer.setTimerType(Qt::CoarseTimer);
 
+    _fadeTimer.setInterval(1000);
+    _fadeTimer.setTimerType(Qt::CoarseTimer);
+
     connect(
         &_timer,
         &QTimer::timeout,
         this,
         &Overlay::telemetryPulse
+    );
+
+    connect(
+        &_fadeTimer,
+        &QTimer::timeout,
+        this,
+        &Overlay::fadePulse
     );
 
     connect(
@@ -79,7 +101,7 @@ Overlay::Overlay(Fact *parent)
     }
 
     postToGcsConsole(
-        "Overlay ready: transparent map tile layer"
+        "Overlay ready: smooth fading gradient line layer"
     );
 
     startMonitoring();
@@ -120,6 +142,7 @@ void Overlay::bindUnit(Unit *unit)
     _lonFact = nullptr;
 
     _hasLastDrawCoord = false;
+    _lastDrawValue = 0.0;
 
     if (!unit || !unit->f_mandala) {
         postToGcsConsole("No current unit mandala");
@@ -183,6 +206,28 @@ bool Overlay::readFactDouble(
     return true;
 }
 
+double Overlay::readMaxValue() const
+{
+    double maxValue = DEFAULT_MAX_VALUE;
+
+    if (_maxFact) {
+        bool ok = false;
+
+        double v =
+            _maxFact->value().toDouble(&ok);
+
+        if (!ok || !std::isfinite(v)) {
+            v =
+                _maxFact->valueText().toDouble(&ok);
+        }
+
+        if (ok && std::isfinite(v) && v > 0.0)
+            maxValue = v;
+    }
+
+    return maxValue;
+}
+
 void Overlay::startMonitoring()
 {
     if (_active)
@@ -191,6 +236,7 @@ void Overlay::startMonitoring()
     _active = true;
     _sample = 0;
     _hasLastDrawCoord = false;
+    _lastDrawValue = 0.0;
 
     _overlayTileModel.startNewSession();
 
@@ -206,6 +252,7 @@ void Overlay::startMonitoring()
     emit overlayTileServerChanged();
 
     _timer.start();
+    _fadeTimer.start();
 
     postToGcsConsole("Overlay monitor started.");
 
@@ -220,6 +267,7 @@ void Overlay::stopMonitoring()
     _active = false;
 
     _timer.stop();
+    _fadeTimer.stop();
 
     _overlayTileModel.flush();
 
@@ -293,31 +341,22 @@ void Overlay::telemetryPulse()
             ? airspeed >= FLIGHT_AIRSPEED_THRESHOLD
             : true;
 
-    const double safeAltitude =
-        okAltitude
-            ? altitude
-            : 0.0;
-
-    const double energy =
+    const double value =
         vspeed - vse;
 
-    const QString source =
-        sourceText(
-            energy,
-            inFlight,
-            safeAltitude
-        );
+    const double maxValue =
+        readMaxValue();
 
     if (okLat &&
         okLon &&
         okAltitude &&
         okAirspeed &&
+        inFlight &&
         shouldUseSample(
             lat,
             lon,
             altitude,
-            airspeed,
-            source
+            airspeed
         )) {
 
         if (shouldDrawFootprint(
@@ -333,32 +372,36 @@ void Overlay::telemetryPulse()
                     lat,
                     lon,
                     altitude,
-                    source
+                    _lastDrawValue,
+                    value,
+                    maxValue
                 );
             } else {
                 _overlayTileModel.addSample(
                     lat,
                     lon,
                     altitude,
-                    source
+                    value,
+                    maxValue
                 );
             }
 
             _lastDrawCoord =
                 QGeoCoordinate(lat, lon);
 
+            _lastDrawValue = value;
             _hasLastDrawCoord = true;
         }
     }
 
     if (_sample % 10 == 0) {
         const QString line =
-            QString("sample=%1 flight=%2 source=%3 energy=%4 "
+            QString("sample=%1 value=%2 max=%3 norm=%4 "
                     "vspeed=%5 vse=%6 airspeed=%7 altitude=%8 lat=%9 lon=%10")
                 .arg(_sample)
-                .arg(inFlight ? "yes" : "no")
-                .arg(source)
-                .arg(QString::number(energy, 'f', 2))
+                .arg(QString::number(value, 'f', 2))
+                .arg(QString::number(maxValue, 'f', 2))
+                .arg(QString::number(qBound(0.0, value / maxValue, 1.0), 'f', 2))
                 .arg(vspeed, 0, 'f', 2)
                 .arg(vse, 0, 'f', 2)
                 .arg(airspeed, 0, 'f', 2)
@@ -370,38 +413,20 @@ void Overlay::telemetryPulse()
     }
 }
 
-QString Overlay::sourceText(
-    double energy,
-    bool inFlight,
-    double altitude) const
+void Overlay::fadePulse()
 {
-    if (!inFlight)
-        return "GROUND";
+    if (!_active)
+        return;
 
-    if (altitude < MIN_ALTITUDE_FOR_TILES)
-        return "TAKEOFF_RUNWAY";
-
-    if (energy > ENERGY_THRESHOLD)
-        return "CHARGE";
-
-    if (energy < -ENERGY_THRESHOLD)
-        return "ENGINE";
-
-    return "NEUTRAL";
+    _overlayTileModel.fade();
 }
 
 bool Overlay::shouldUseSample(
     double lat,
     double lon,
     double altitude,
-    double airspeed,
-    const QString &source) const
+    double airspeed) const
 {
-    if (source != "CHARGE" &&
-        source != "NEUTRAL" &&
-        source != "ENGINE")
-        return false;
-
     if (lat == 0.0 || lon == 0.0)
         return false;
 
