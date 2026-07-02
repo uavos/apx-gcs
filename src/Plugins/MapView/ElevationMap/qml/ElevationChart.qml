@@ -116,7 +116,7 @@ Repeater {
             property var scaleX: axisX.max/chartWidth
 
             height: 3
-            visible: !epItem.chartVisible
+            visible: !epItem.chartVisible && epRect.inViewArea
             y: chartView.plotArea.y + chartHeight
 
             onScaleXChanged: updateX()
