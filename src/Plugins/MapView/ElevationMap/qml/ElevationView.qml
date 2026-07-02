@@ -66,11 +66,11 @@ Window {
 
     onClosing: plugin.active=false
     onVisibleChanged: timer.restart()
+    onEmptyChanged: if(empty) resetChartScale()
     onVisibilityChanged: {
         if (visibility === Window.Maximized)
             height = maximumHeight
     }
-    onEmptyChanged: if(empty) resetChartScale()
 
     Timer {
         id: timer

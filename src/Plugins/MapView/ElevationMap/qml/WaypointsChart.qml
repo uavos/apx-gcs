@@ -44,11 +44,17 @@ Repeater {
             property var oldHAMSL: -1
             property var totalX: chartItem.x + x
             property var totalY: chartItem.y + y
-            property bool inViewArea: (totalY <= elevationView.height && totalY - height >= 0) && (totalX <= elevationView.width && totalX + width >= 0)
             
-            visible: (totalDistance > 0 || created) && inViewArea
+            visible: totalDistance > 0 || created
             x: chartView.plotArea.x + distance/scaleX
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
+
+            Component.onCompleted: timer.start()
+            Component.onDestruction: removeData()
+            onVisibleChanged: if(visible) timer.start()
+            onDistanceChanged: updateData()
+            onHAMSLChanged: updateData()
+            onCoordinateChanged: updateData() 
 
             Rectangle {
                 id: verticalLine
@@ -57,6 +63,7 @@ Repeater {
                 x: -width/2
                 y: 0
                 color: "#7fffffff"
+                visible: wpItem.getInViewArea(wpItem.totalX, wpItem.totalY, width, height)
             }
             Rectangle {
                 id: chartPoint
@@ -68,6 +75,8 @@ Repeater {
                 color: wpItem.alarmOn ? "#ffdead" : "#ffff00"
                 border.color: wpItem.alarmOn ? "#ff0000" : "#40000000"
                 border.width: 1
+                visible: wpItem.getInViewArea(wpItem.totalX + x, wpItem.totalY + y, width, height)
+                
                 Text {
                     id: pointText
                     anchors.centerIn: parent
@@ -88,12 +97,6 @@ Repeater {
                 interval: 100
                 onTriggered: wpItem.appendData()
             }
-            Component.onCompleted: timer.start()
-            Component.onDestruction: removeData()
-            onVisibleChanged: if(visible) timer.start()
-            onDistanceChanged: updateData()
-            onHAMSLChanged: updateData()
-            onCoordinateChanged: updateData() 
 
             function appendData() {
                 if(!visible) {
@@ -118,18 +121,25 @@ Repeater {
                 setOldValues()
                 created = true
             }
+
             function updateData() {
                 if(!created)
                     return
                 lineSeries.replace(oldDistance, oldHAMSL, distance, hAMSL)
                 setOldValues()
             }
+
             function removeData() {
                 lineSeries.remove(oldDistance, oldHAMSL)
             }
+
             function setOldValues() {
                 oldDistance = distance
                 oldHAMSL = hAMSL 
+            }
+            
+            function getInViewArea(totalX, totalY, width, height) {
+                return (totalY <= elevationView.height && totalY + height >= 0) && (totalX <= elevationView.width && totalX + width >= 0)
             }
         }
     }
