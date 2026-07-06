@@ -27,6 +27,7 @@
 #include <QFile>
 #include <QFuture>
 #include <QtConcurrent>
+#include <QMutexLocker>
 
 #include <cmath>
 #include <vector>
@@ -38,6 +39,9 @@
 // #include "gdal_version.h"
 // #include "ogr_spatialref.h"
 #endif
+
+QMutex OfflineElevationDB::m_mutex;
+QCache<QString, QImage> OfflineElevationDB::m_imageCache;
 
 void AbstractElevationDB::receiveCoordinate(const QGeoCoordinate &coordinate)
 {
@@ -61,6 +65,7 @@ OfflineElevationDB::OfflineElevationDB(const QString &path)
             << "/usr/local/bin/"
             << "/opt/bin/"
             << "/opt/homebrew/bin/";
+    m_imageCache.setMaxCost(CACHE_SIZE);
     connect(this, &OfflineElevationDB::utilChanged, this, &OfflineElevationDB::updateUtilPath);
 }
 
@@ -255,7 +260,8 @@ void OfflineElevationDB::setImage(const QString &file)
 
     if (m_fileName != file) {
         m_fileName = file;
-        m_image = QImage(m_fileName);
+        QFuture<QImage> future = QtConcurrent::run(getImageFromCache, file);
+        m_image = future.result();
     }
 }
 
@@ -299,10 +305,7 @@ void OfflineElevationDB::requestTerrainProfileASTER(QPromise<QGeoPath> &promise,
         if (u == GDALLOCATIONINFO) {
             elevation = getElevationGdallocationInfo(util, filePath, latitude, longitude);
         } else {
-            if (imageFile != filePath) {
-                imageFile = filePath;
-                image = QImage(imageFile);
-            }
+            auto image = getImageFromCache(filePath);
             elevation = getElevationTiffASTER(image, filePath, latitude, longitude);
         }
         point.setAltitude(elevation);
@@ -333,6 +336,16 @@ QGeoPath OfflineElevationDB::prepareRoute(const QGeoPath &path)
     route.addCoordinate(points.last());
     return route;
 }
+
+QImage OfflineElevationDB::getImageFromCache(const QString &fileName) {
+    QMutexLocker lock(&m_mutex);
+    if(!m_imageCache.contains(fileName)) {
+         QImage* imageToCache = new QImage(fileName);
+         m_imageCache.insert(fileName, imageToCache);
+    }
+    return *m_imageCache.object(fileName);
+}
+
 // ===== Add route analyze =====
 
 double OfflineElevationDB::getElevationFromGeoFile(QString file, double lat, double lon)

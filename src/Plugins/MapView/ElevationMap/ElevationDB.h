@@ -27,6 +27,8 @@
 #include <QImage>
 #include <QString>
 #include <QtCore>
+#include <QCache>
+#include <QMutex>
 
 class AbstractElevationDB : public QObject
 {
@@ -67,6 +69,9 @@ public:
 
 private:
     static constexpr int TERRAIN_STEP = 30; // terrain profile step in meters
+    static constexpr int CACHE_SIZE = 10;   // image cache size
+    static QCache<QString, QImage> m_imageCache;
+    static QMutex m_mutex;
     QImage m_image;
     QString m_dbPath;
     QString m_fileName;
@@ -85,6 +90,7 @@ private:
     static double getElevationTiffASTER(const QImage &image, const QString &file, double lat, double lon);
     static double getElevationGdallocationInfo(const QString &util, const QString &file, double lat, double lon);
     static QString getDataFromGdallocationInfo(const QString &command);
+    static QImage getImageFromCache(const QString &fileName);
 
     // Getting data from a geofile. 
     // Uses the gdal library, which supports the main geofile formats.
