@@ -301,7 +301,7 @@ void ElevationMap::setWaypointsValues(bool b)
         auto str = wp->coordinate().toString();
         auto alt = wp->f_altitude->value().toInt();
         if (!m_waypoints.contains(str) || m_waypoints[str] != alt) {
-            setCoordinateWithElevation(wp->coordinate());
+            QMetaObject::invokeMethod(this, [=]() {setCoordinateWithElevation(wp->coordinate());}, Qt::QueuedConnection);
         }
 
         tempMap[str] = alt;
@@ -321,7 +321,7 @@ void ElevationMap::setRunwaysValues(bool b) {
         connect(runway, &Runway::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
         auto str = runway->coordinate().toString();
         if (!m_runways.contains(str)) {
-            setCoordinateWithElevation(runway->coordinate());
+            QMetaObject::invokeMethod(this, [=]() {setCoordinateWithElevation(runway->coordinate());}, Qt::QueuedConnection);
         }
         tempSet.insert(str);
     }
@@ -340,7 +340,7 @@ void ElevationMap::setPoisValues(bool b) {
         connect(poi, &Poi::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
         auto str = poi->coordinate().toString();
         if (!m_pois.contains(str)) {
-            setCoordinateWithElevation(poi->coordinate());
+            QMetaObject::invokeMethod(this, [=]() {setCoordinateWithElevation(poi->coordinate());}, Qt::QueuedConnection);
         }
         tempSet.insert(str);
     }
