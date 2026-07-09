@@ -277,6 +277,8 @@ void ElevationMap::setWaypointsValues(bool b)
 {
     auto m = mission();
     QMap<QString, int> tempMap;
+    int batchSize = 0; // 
+
     for (int i = 0; i < m->f_wp->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
         wp->f_agl->setVisible(b);
@@ -301,11 +303,17 @@ void ElevationMap::setWaypointsValues(bool b)
         auto str = wp->coordinate().toString();
         auto alt = wp->f_altitude->value().toInt();
         if (!m_waypoints.contains(str) || m_waypoints[str] != alt) {
-            QMetaObject::invokeMethod(this, [=]() {setCoordinateWithElevation(wp->coordinate());}, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(this, [=]() { setCoordinateWithElevation(wp->coordinate()); }, Qt::QueuedConnection);
+            batchSize++;
+            if(batchSize > 30) {
+                batchSize = 0;
+                sleep(0);
+            }
         }
 
         tempMap[str] = alt;
     }
+
     m_waypoints = tempMap;
 }
 
@@ -569,4 +577,10 @@ void ElevationMap::checkCorrectionResult()
     apxMsgW() << tr("The path of points %1 has been changed or could not be corrected. "
                     "Check  these points and try again")
                      .arg(wpWarnings);
+}
+
+void ElevationMap::sleep(uint ms) {
+    QEventLoop loop;
+    QTimer::singleShot(ms, &loop, &QEventLoop::quit);
+    loop.exec();
 }
