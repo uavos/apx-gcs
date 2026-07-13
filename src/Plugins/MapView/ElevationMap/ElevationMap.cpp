@@ -79,6 +79,7 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
     connect(f_util, &Fact::valueChanged, this, &ElevationMap::updateDBUtility);
+    createDir(path);
     updateMission();
     createElevationDatabase();
     updateDBUtility();
@@ -577,6 +578,14 @@ void ElevationMap::checkCorrectionResult()
     apxMsgW() << tr("The path of points %1 has been changed or could not be corrected. "
                     "Check  these points and try again")
                      .arg(wpWarnings);
+}
+
+void ElevationMap::createDir(const QString &path) {
+    QDir dir(path);
+    if (dir.exists())
+        return;
+    if (!AppDirs::db().mkdir(dir.dirName()))
+        apxMsgW() << tr("Failed to create default elevation dir");
 }
 
 void ElevationMap::sleep(uint ms) {

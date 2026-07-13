@@ -93,6 +93,7 @@ private:
     QSet<QString> m_pois;
     bool m_isCorrect{false};
 
+    void createDir(const QString &path);
     void createElevationDatabase();
     void setMissionValues(bool b);
     void setWaypointsValues(bool b);
