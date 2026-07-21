@@ -436,11 +436,32 @@ bool NavaiOverlay::isOverlayEnabled() const
 
 void NavaiOverlay::bindUnit(Unit *unit)
 {
+    if (_unit)
+        disconnect(_unit, nullptr, this, nullptr);
+
+    _unit = unit;
+    _positionBuffer.clear();
+    clearTrajectory();
+
     _mandalaFacts.clear();
     f_camLat = nullptr;
     f_camLon = nullptr;
 
-    if (!unit || !unit->f_mandala) {
+    if (!unit) {
+        postToGcsConsole("Unit bind failed: no current unit");
+        return;
+    }
+
+    connect(
+        unit,
+        &Unit::coordinateChanged,
+        this,
+        &NavaiOverlay::recordGpsPosition
+    );
+
+    recordGpsPosition();
+
+    if (!unit->f_mandala) {
         postToGcsConsole("Mandala bind failed: no current unit mandala");
         return;
     }
@@ -490,18 +511,133 @@ void NavaiOverlay::bindUnit(Unit *unit)
     );
 }
 
+void NavaiOverlay::recordGpsPosition()
+{
+    if (!_active || !_unit)
+        return;
+
+    processGpsPosition(
+        _unit->coordinate(),
+        QDateTime::currentMSecsSinceEpoch()
+    );
+}
+
+void NavaiOverlay::processGpsPosition(
+    const QGeoCoordinate &coordinate,
+    qint64 timestampMs)
+{
+    if (!coordinate.isValid() || timestampMs <= 0)
+        return;
+
+    if (!_positionBuffer.isEmpty() &&
+        timestampMs < _positionBuffer.back().timestampMs) {
+        _positionBuffer.clear();
+        clearTrajectory();
+    }
+
+    if (_positionBuffer.size() >= PositionBufferSize)
+        _positionBuffer.remove(0);
+
+    _positionBuffer.push_back({coordinate, timestampMs});
+
+    if (!_trajectoryActive)
+        return;
+
+    const QGeoCoordinate aligned = alignPosition(coordinate);
+    if (!aligned.isValid())
+        return;
+
+    if (_lastTrajectoryPoint.isValid() &&
+        _lastTrajectoryPoint.distanceTo(aligned) < 0.5) {
+        return;
+    }
+
+    _matchedTrajectoryCoordinates.push_back(
+        QVariant::fromValue(aligned)
+    );
+
+    _lastTrajectoryPoint = aligned;
+    emit matchedTrajectoryChanged();
+}
+
+QGeoCoordinate NavaiOverlay::alignPosition(
+    const QGeoCoordinate &coordinate) const
+{
+    if (!_matchedPoint.isValid() ||
+        !_sourceAnchor.isValid() ||
+        !coordinate.isValid()) {
+        return {};
+    }
+
+    return _matchedPoint.atDistanceAndAzimuth(
+        _sourceAnchor.distanceTo(coordinate),
+        _sourceAnchor.azimuthTo(coordinate)
+    );
+}
+
+void NavaiOverlay::startMatchedTrajectory(
+    const QGeoCoordinate &navaiPoint,
+    qint64 timestampMs)
+{
+    clearTrajectory();
+
+    if (!navaiPoint.isValid() || _positionBuffer.isEmpty())
+        return;
+
+    int matchedIndex = _positionBuffer.size() - 1;
+
+    if (timestampMs > 0) {
+        qint64 bestDelta =
+            qAbs(_positionBuffer.first().timestampMs - timestampMs);
+
+        matchedIndex = 0;
+
+        for (int i = 1; i < _positionBuffer.size(); ++i) {
+            const qint64 delta =
+                qAbs(_positionBuffer.at(i).timestampMs - timestampMs);
+
+            if (delta < bestDelta) {
+                bestDelta = delta;
+                matchedIndex = i;
+            }
+        }
+    }
+
+    _matchedPoint = navaiPoint;
+    _sourceAnchor = _positionBuffer.at(matchedIndex).coordinate;
+    _trajectoryActive = true;
+
+    for (int i = matchedIndex; i < _positionBuffer.size(); ++i) {
+        const QGeoCoordinate aligned =
+            alignPosition(_positionBuffer.at(i).coordinate);
+
+        if (!aligned.isValid())
+            continue;
+
+        _matchedTrajectoryCoordinates.push_back(
+            QVariant::fromValue(aligned)
+        );
+
+        _lastTrajectoryPoint = aligned;
+    }
+
+    emit matchedTrajectoryChanged();
+}
+
+void NavaiOverlay::clearTrajectory()
+{
+    _trajectoryActive = false;
+    _matchedTrajectoryCoordinates.clear();
+    _matchedPoint = {};
+    _sourceAnchor = {};
+    _lastTrajectoryPoint = {};
+    emit matchedTrajectoryChanged();
+}
+
 void NavaiOverlay::writeCameraFacts(
     double lat,
     double lon)
 {
-    if (!f_camLat || !f_camLon) {
-        bindUnit(
-            Fleet::instance()
-                ? Fleet::instance()->current()
-                : nullptr
-        );
-    }
-
     if (f_camLat)
         f_camLat->setValue(lat);
 
@@ -529,6 +665,7 @@ void NavaiOverlay::updateEnabled()
 
     if (_active) {
         setupUdp();
+        recordGpsPosition();
 
         postToGcsConsole(
             QString("Navai overlay enabled, UDP port %1")
@@ -607,6 +744,8 @@ void NavaiOverlay::stopUdp()
         emit udpReadyChanged();
 
     _resultsModel.clear();
+    _positionBuffer.clear();
+    clearTrajectory();
 }
 
 void NavaiOverlay::readUdpDatagrams()
@@ -713,6 +852,29 @@ void NavaiOverlay::handleDatagram(
     const QJsonObject obj =
         doc.object();
 
+    if (obj.value("type").toString().compare("gps", Qt::CaseInsensitive) == 0) {
+        bool okGpsLat = false;
+        bool okGpsLon = false;
+        bool okGpsTimestamp = false;
+        const double gpsLat = jsonNumber(obj, {"lat", "latitude"}, &okGpsLat);
+        const double gpsLon = jsonNumber(obj, {"lon", "longitude"}, &okGpsLon);
+        double gpsTimestamp = jsonNumber(obj, {"timestamp_ms", "timestamp", "ts"},
+                                         &okGpsTimestamp);
+        if (okGpsTimestamp && gpsTimestamp > 0.0 && gpsTimestamp < 100000000000.0)
+            gpsTimestamp *= 1000.0;
+
+        const QGeoCoordinate coordinate(gpsLat, gpsLon);
+        if (!okGpsLat || !okGpsLon || !coordinate.isValid()) {
+            postToGcsConsole("Invalid Navai GPS test payload");
+            return;
+        }
+
+        processGpsPosition(coordinate,
+                           okGpsTimestamp ? static_cast<qint64>(gpsTimestamp)
+                                          : QDateTime::currentMSecsSinceEpoch());
+        return;
+    }
+
     bool okLat = false;
     bool okLon = false;
     bool okPercent = false;
@@ -779,6 +941,13 @@ void NavaiOverlay::handleDatagram(
         lat,
         lon
     );
+
+    bool okTimestamp = false;
+    double timestamp = jsonNumber(obj, {"timestamp_ms", "timestamp", "ts"}, &okTimestamp);
+    if (okTimestamp && timestamp > 0.0 && timestamp < 100000000000.0)
+        timestamp *= 1000.0; // Unix seconds -> milliseconds.
+    startMatchedTrajectory(QGeoCoordinate(lat, lon),
+                           okTimestamp ? static_cast<qint64>(timestamp) : 0);
 
     const QString payloadLabel =
         obj.value("label").toString().trimmed();

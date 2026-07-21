@@ -3,6 +3,7 @@
 #include <Fact/Fact.h>
 
 #include <QAbstractListModel>
+#include <QGeoCoordinate>
 #include <QHash>
 #include <QHostAddress>
 #include <QJsonObject>
@@ -81,6 +82,7 @@ class NavaiOverlay : public Fact
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
     Q_PROPERTY(bool udpReady READ udpReady NOTIFY udpReadyChanged)
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
+    Q_PROPERTY(QVariantList matchedTrajectoryCoordinates READ matchedTrajectoryCoordinates NOTIFY matchedTrajectoryChanged)
 
 public:
     explicit NavaiOverlay(Fact *parent = nullptr);
@@ -111,15 +113,22 @@ public:
         return _udpPort;
     }
 
+    QVariantList matchedTrajectoryCoordinates() const
+    {
+        return _matchedTrajectoryCoordinates;
+    }
+
 signals:
     void activeChanged();
     void udpReadyChanged();
+    void matchedTrajectoryChanged();
 
 private slots:
     void readUdpDatagrams();
     void updateEnabled();
 
     void bindUnit(Unit *unit);
+    void recordGpsPosition();
 
 private:
     QString uiDir() const;
@@ -148,12 +157,45 @@ private:
 
     void postToGcsConsole(const QString &text);
 
+    struct TimedPosition
+    {
+        QGeoCoordinate coordinate;
+        qint64 timestampMs = 0;
+    };
+
+    void processGpsPosition(
+        const QGeoCoordinate &coordinate,
+        qint64 timestampMs
+    );
+
+    void startMatchedTrajectory(
+        const QGeoCoordinate &navaiPoint,
+        qint64 timestampMs
+    );
+
+    QGeoCoordinate alignPosition(
+        const QGeoCoordinate &coordinate
+    ) const;
+
+    void clearTrajectory();
+
     Fact *f_enabled = nullptr;
 
     Fact *f_camLat = nullptr;
     Fact *f_camLon = nullptr;
 
     QHash<QString, Fact *> _mandalaFacts;
+
+    Unit *_unit = nullptr;
+
+    static constexpr int PositionBufferSize = 6000;
+    QVector<TimedPosition> _positionBuffer;
+
+    QVariantList _matchedTrajectoryCoordinates;
+    QGeoCoordinate _matchedPoint;
+    QGeoCoordinate _sourceAnchor;
+    QGeoCoordinate _lastTrajectoryPoint;
+    bool _trajectoryActive = false;
 
     NavaiResultModel _resultsModel;
 

@@ -1,5 +1,6 @@
 import QtQuick
 import QtPositioning
+import QtLocation
 
 import Apx.Application
 
@@ -13,6 +14,7 @@ AppPlugin {
             objectName: "NavaiResultsOverlay"
 
             property var baseMap: ui.map
+            property var attachedMap: null
             property var navai: apx.tools.navai
             property int mapRevision: 0
 
@@ -24,8 +26,30 @@ AppPlugin {
             visible: navaiAvailable && navaiActive
             z: 100000
 
+            function attachTrajectory()
+            {
+                if (attachedMap === baseMap)
+                    return
+
+                if (attachedMap)
+                    attachedMap.removeMapItem(matchedTrajectoryLine)
+
+                attachedMap = baseMap
+
+                if (attachedMap)
+                    attachedMap.addMapItem(matchedTrajectoryLine)
+            }
+
+            onBaseMapChanged: Qt.callLater(attachTrajectory)
+
             Component.onCompleted: {
                 console.log("NavaiMapPlugin loaded", navaiLayer.navai)
+                Qt.callLater(attachTrajectory)
+            }
+
+            Component.onDestruction: {
+                if (attachedMap)
+                    attachedMap.removeMapItem(matchedTrajectoryLine)
             }
 
             Connections {
@@ -55,6 +79,22 @@ AppPlugin {
                 function onHeightChanged() {
                     navaiLayer.mapRevision++
                 }
+            }
+
+            MapPolyline {
+                id: matchedTrajectoryLine
+
+                visible: navaiLayer.navaiAvailable &&
+                         navaiLayer.navaiActive &&
+                         navaiLayer.navai.matchedTrajectoryCoordinates.length > 1
+
+                z: 99999
+                line.width: 6
+                line.color: "#ff7a00"
+
+                path: navaiLayer.navaiAvailable
+                    ? navaiLayer.navai.matchedTrajectoryCoordinates
+                    : []
             }
 
             Repeater {
@@ -214,6 +254,7 @@ AppPlugin {
         plugin.item.parent = ui.map
         plugin.item.anchors.fill = ui.map
         plugin.item.z = 100000
+        Qt.callLater(plugin.item.attachTrajectory)
     }
 
     Connections {
