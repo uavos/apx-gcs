@@ -82,9 +82,8 @@ Repeater {
                     id: areaSeries
                     axisX: epAxisX
                     axisY: epAxisY
-                    color: epItem.collision ? "#ff0000" : "#00ff00"
+                    color: epItem.collision ? "#40ff0000" : "#4000ff00"
                     borderColor: epItem.collision ? "#ff0000" : "#00ff00"
-                    opacity: 0.25
                     upperSeries: LineSeries {
                         id: epLineSeries
                     }
