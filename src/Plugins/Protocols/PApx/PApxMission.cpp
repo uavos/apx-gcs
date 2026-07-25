@@ -161,6 +161,7 @@ static uint _pack_act(QVariantList *actions_list, const QVariantMap &wp)
     _pack_act_wp(&m, wp, "script");
     _pack_act_wp(&m, wp, "shot");
     _pack_act_wp(&m, wp, "dshot");
+    _pack_act_wp(&m, wp, "tshot");
 
     if (m.isEmpty())
         return 0;
@@ -375,12 +376,12 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                     qWarning() << "error reading act_shot" << i << hdr.items.act.cnt;
                     return {};
                 }
-                if (e.shot == xbus::mission::act_shot_s::SINGLE)
+                if (e.mode == xbus::mission::act_shot_s::SINGLE)
                     m.insert("shot", "single");
-                else if (e.shot == xbus::mission::act_shot_s::START)
-                    m.insert("shot", "start");
-                else if (e.shot == xbus::mission::act_shot_s::STOP)
-                    m.insert("shot", "stop");
+                else if (e.mode == xbus::mission::act_shot_s::DIST)
+                    m.insert("shot", "dist");
+                else if (e.mode == xbus::mission::act_shot_s::TIME)
+                    m.insert("shot", "time");
                 break;
             }
             case xbus::mission::act_s::TRG_DSHOT: {
@@ -390,6 +391,15 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                     return {};
                 }
                 m.insert("dshot", QVariant::fromValue((uint) e.dist));
+                break;
+            }
+            case xbus::mission::act_s::TRG_TSHOT: {
+                xbus::mission::act_tshot_s e;
+                if (stream.read(&e, sizeof(e)) != sizeof(e)) {
+                    qWarning() << "error reading act_tshot" << i << hdr.items.act.cnt;
+                    return {};
+                }
+                m.insert("tshot", QVariant::fromValue((uint) e.time));
                 break;
             }
             }
@@ -713,18 +723,23 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             e.type = xbus::mission::act_s::TRG_SHOT;
             auto s = m.value(key).toString();
             if (s == "single")
-                e.shot = xbus::mission::act_shot_s::SINGLE;
-            else if (s == "start")
-                e.shot = xbus::mission::act_shot_s::START;
-            else if (s == "stop")
-                e.shot = xbus::mission::act_shot_s::STOP;
+                e.mode = xbus::mission::act_shot_s::SINGLE;
+            else if (s == "dist")
+                e.mode = xbus::mission::act_shot_s::DIST;
+            else if (s == "time")
+                e.mode = xbus::mission::act_shot_s::TIME;
             else
-                e.shot = xbus::mission::act_shot_s::OFF;
+                e.mode = xbus::mission::act_shot_s::OFF;
             stream.write(&e, sizeof(e));
         } else if (key == "dshot") {
             xbus::mission::act_dshot_s e{};
             e.type = xbus::mission::act_s::TRG_DSHOT;
             e.dist = m.value(key).toUInt();
+            stream.write(&e, sizeof(e));
+        } else if (key == "tshot") {
+            xbus::mission::act_tshot_s e{};
+            e.type = xbus::mission::act_s::TRG_TSHOT;
+            e.time = m.value(key).toUInt();
             stream.write(&e, sizeof(e));
         } else {
             qWarning() << "Unknown action" << key;

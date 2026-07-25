@@ -55,18 +55,26 @@ WaypointActions::WaypointActions(Waypoint *parent)
     QStringList st;
     st << "off";
     st << "single";
-    st << "start";
-    st << "stop";
+    st << "dist";
+    st << "time";
     f_shot->setEnumStrings(st);
     f_shot->setDefaultValue(st.at(0));
 
     f_dshot = new MissionField(this,
                                "dshot",
-                               tr("Auto Shot"),
+                               tr("Dist"),
                                tr("Continuous cam shots distance"),
                                Int);
     f_dshot->setUnits("m");
     f_dshot->setMin(0);
+
+    f_tshot = new MissionField(this,
+                               "tshot",
+                               tr("Time"),
+                               tr("Continuous cam shots time interval"),
+                               Int);
+    f_tshot->setUnits("ms");
+    f_tshot->setMin(0);
 
     connect(this, &Fact::valueChanged, this, &WaypointActions::actionsValueChanged);
     updateActionsValue();
