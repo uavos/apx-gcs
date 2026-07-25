@@ -51,6 +51,23 @@ WaypointActions::WaypointActions(Waypoint *parent)
                                 tr("Execute VM script (@function) on waypoint"),
                                 Text);
 
+    f_shot = new MissionField(this, "shot", tr("Shot"), tr("Make a cam shot on waypoint"), Enum);
+    QStringList st;
+    st << "off";
+    st << "single";
+    st << "start";
+    st << "stop";
+    f_shot->setEnumStrings(st);
+    f_shot->setDefaultValue(st.at(0));
+
+    f_dshot = new MissionField(this,
+                               "dshot",
+                               tr("Auto Shot"),
+                               tr("Continuous cam shots distance"),
+                               Int);
+    f_dshot->setUnits("m");
+    f_dshot->setMin(0);
+
     connect(this, &Fact::valueChanged, this, &WaypointActions::actionsValueChanged);
     updateActionsValue();
 
