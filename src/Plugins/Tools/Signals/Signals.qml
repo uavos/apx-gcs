@@ -27,177 +27,161 @@ import QtCore
 
 import Apx.Common
 
-
 Rectangle {
-    id: control
+    id: sgControl
 
     implicitHeight: layout.implicitHeight
-    implicitWidth: layout.implicitWidth
-
+    implicitWidth: Style.buttonSize * 15
     border.width: 0
     color: "#000"
+
+    readonly property var pages: sgMenu.getActivePages()
+    readonly property var activeSet: sgMenu.getActiveSet()
+    
+    onActiveSetChanged: updateModels()
+    Component.onCompleted: {
+        if (buttonGroup.buttons.length <= 0)
+            return;
+        if (buttonGroup.checkedButton == null)
+            buttonGroup.checkedButton = buttonGroup.buttons[0]; // check button #1
+    }
+
+    Connections {
+        target: apx.fleet.current.mandala
+        function onTelemetryDecoded() {
+            if (pages.length <= 0)
+                return;
+            for (var i = 0; i < pages.length; ++i)
+                pages[i].updateChartsValues();
+        }
+    }
+
+    function updateModels() {
+        pinnedModel.updateModel(sgMenu.getPinnedPages())
+        buttonsModel.updateModel(sgMenu.getActivePages())
+    }
+
+    function checkScrMatches(val) {
+        var matches = false;
+        for (var i = 0; i < buttonGroup.buttons.length; ++i)
+            if (buttonGroup.buttons[i].getScrMatches(val))
+                matches = true;
+        return matches;
+    }
+
+    function allowResetChart(num) {
+        for(var i = 0; i < pinnedRepeater.count; ++i) {
+            if(num === pinnedRepeater.itemAt(i).num)
+                pinnedRepeater.itemAt(i).allowReset()
+        }
+    }
+
+    function clearButtonGroup() {
+        buttonGroup.buttons = [];
+        buttonGroup.checkedButton = null;
+    }
 
     ColumnLayout {
         id: layout
         anchors.fill: parent
-        spacing: 0
 
-        SignalsView {
-            id: signals
-            facts: []
+        SignalsPinnedModel {
+            id: pinnedModel
+        }
+
+        Repeater {
+            id: pinnedRepeater
+            model: pinnedModel
+        }
+
+        SignalsChartItem {
+            id: mainChartArea
+
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumHeight: 20
-            Layout.preferredHeight: 130*ui.scale
-        }
+            Layout.preferredHeight: 110 * ui.scale // 130 * ui.scale
+            clip: true
 
-        TextInput {
-            id: textInput
+            Rectangle {
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.rightMargin: 4 * ui.scale
+                visible: lblMainSet.text !== ""
+                radius: ui.scale
+                color: "#30ffffff"
+                opacity: 0.7
 
-            Layout.fillWidth: true
-            Layout.minimumHeight: Style.fontSize
+                implicitWidth: lblMainSet.implicitWidth + 10 * ui.scale
+                implicitHeight: lblMainSet.implicitHeight + 4 * ui.scale
 
-            // clip: true
-            // focus: true
-            visible: false
-
-            horizontalAlignment: Text.AlignRight
-            verticalAlignment: Text.AlignVCenter
-
-            font: apx.font_narrow(Style.fontSize)
-
-            color: activeFocus?Material.color(Material.Yellow):Material.primaryTextColor
-            text: "est.air.airspeed"
-
-            activeFocusOnTab: true
-            selectByMouse: true
-
-            onEditingFinished: {
-                updateFacts()
-            }
-            onActiveFocusChanged: {
-                if(activeFocus)selectAll();
-            }
-            onVisibleChanged: if(visible)forceActiveFocus()
-            Component.onCompleted: updateFacts()
-
-            property var facts: []
-            function updateFacts()
-            {
-                var flist=[]
-                var list=textInput.text.split(',')
-                for(var i=0;i<list.length;++i){
-                    var f=list[i]
-                    var fact={}
-                    if(eval(f)==undefined) continue
-                    fact.title=f
-                    fact.name=f
-                    fact.descr=f
-                    fact.opts={}
-                    fact.opts.color=Material.color(Material.Blue+i*2)
-                    flist.push(fact)
+                Label {
+                    id: lblMainSet
+                    anchors.centerIn: parent
+                    text: sgControl.activeSet ? sgControl.activeSet.title : ""
+                    font: mainChartArea.labelFont
                 }
-                if(JSON.stringify(textInput.facts)==JSON.stringify(flist))
-                    return
-                textInput.facts=flist
+            }
 
-                if(plusButton.checked)
-                    signals.facts=flist
+            Label {
+                anchors.centerIn: parent
+                visible: btnRepeater.count <= 0
+                text: qsTr("No pages in the active set")
+                font: mainChartArea.labelFont
+                color: Material.secondaryTextColor
+                background: Rectangle {
+                    color: sgControl.color
+                }
             }
         }
 
         ButtonGroup {
             id: buttonGroup
-            //buttons: bottomArea.buttons
+
+            onCheckedButtonChanged: {
+                if (checkedButton)
+                    return;
+                mainChartArea.allowReset();    
+                mainChartArea.ciPageFact = null;
+            }
         }
 
         RowLayout {
             id: bottomArea
             Layout.fillWidth: true
             Layout.margins: Style.spacing
+            Layout.maximumHeight: 24 * ui.scale
             spacing: 3
-            Layout.maximumHeight: 24*ui.scale
-            SignalButton {
-                text: "R"
-                values: [ mandala.cmd.att.roll, mandala.est.att.roll ]
+            
+            SignalsButtonsModel {
+               id: buttonsModel
             }
-            SignalButton {
-                text: "P"
-                values: [ mandala.cmd.att.pitch, mandala.est.att.pitch ]
+            Repeater {
+                id: btnRepeater
+                model: buttonsModel
             }
-            SignalButton {
-                text: "Y"
-                values: [ mandala.cmd.pos.bearing, mandala.cmd.att.yaw, mandala.est.att.yaw ]
-            }
-            SignalButton {
-                text: "Axy"
-                values: [ mandala.est.acc.x, mandala.est.acc.y ]
-            }
-            SignalButton {
-                text: "Az"
-                values: [ mandala.est.acc.z ]
-            }
-            SignalButton {
-                text: "G"
-                values: [ mandala.est.gyro.x, mandala.est.gyro.y, mandala.est.gyro.z ]
-            }
-            SignalButton {
-                text: "Pt"
-                values: [ mandala.est.pos.altitude, mandala.est.pos.vspeed, mandala.est.air.airspeed ]
-            }
-            SignalButton {
-                text: "Ctr"
-                values: [ mandala.ctr.att.ail, mandala.ctr.att.elv, mandala.ctr.att.rud, mandala.ctr.eng.thr, mandala.ctr.eng.prop, mandala.ctr.str.rud ]
-            }
-            SignalButton {
-                text: "RC"
-                values: [ mandala.cmd.rc.roll, mandala.cmd.rc.pitch, mandala.cmd.rc.thr, mandala.cmd.rc.yaw ]
-            }
-            SignalButton {
-                text: "Usr"
-                values: [ mandala.est.usr.u1, mandala.est.usr.u2, mandala.est.usr.u3, mandala.est.usr.u4, mandala.est.usr.u5, mandala.est.usr.u6 ]
-            }
-
-            SignalButton {
-                id: plusButton
-                text: "+"
-                values: textInput.facts
-                onCheckedChanged: {
-                    if(!checked)
-                        textInput.visible=false
-                }
-                onPressed: {
-                    if(checked)
-                        textInput.visible=!textInput.visible
-                }
-            }
-
-            TextButton {
-                text: signals.speedFactorValue+"x"
-                onClicked: signals.changeSpeed()
+            IconButton {
+                iconName: "plus"
+                toolTip: qsTr("Edit chart configuration")
                 Layout.fillHeight: true
-                Layout.minimumWidth: height*3
+                Layout.minimumWidth: height
+                onClicked: sgMenu.trigger()
             }
         }
     }
 
-    property string currentPage: buttonGroup.checkedButton.text
-
-    Settings {
-        category: "signals"
-        property alias page: control.currentPage
-        property alias custom: textInput.text
-    }
-    Component.onCompleted: {
-        for(var i=0;i<buttonGroup.buttons.length;++i){
-            var b=buttonGroup.buttons[i]
-            if(b.text!==control.currentPage)continue
-            buttonGroup.checkedButton=b
-            break
-        }
-        if(buttonGroup.checkedButton==null){
-            buttonGroup.checkedButton=buttonGroup.buttons[0] //showPage("R")
-        }
+    SignalsMenu {
+        id: sgMenu
     }
 
+    Timer {
+        id: autosaveTimer
+        interval: 1000
+        onTriggered: sgMenu.saveSettings()
+    }
+
+    Timer {
+        id: warnTimer
+        interval: 10000
+    }
 }

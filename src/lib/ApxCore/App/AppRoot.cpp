@@ -65,7 +65,7 @@ void AppRoot::createTools()
     f_pluginsSettings = new Fact(f_settings->f_application,
                                  "plugins",
                                  tr("Plugins"),
-                                 tr("Application PligIns"),
+                                 tr("Application Plugins"),
                                  Group);
     App::jsync(f_settings);
 }
