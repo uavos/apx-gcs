@@ -42,14 +42,12 @@ Waypoint::Waypoint(MissionGroup *parent)
                                   Int);
     _altUnits = "m";
 
-    f_altitude->setOpt("editor", "EditorIntWithFeet.qml");
     f_altitude->setOpt("extrainfo", "ExtraInfoAltitude.qml");
 
     f_agl = new MissionField(this, "agl", tr("AGL"), tr("Height above ground level"), Int);
     f_agl->setUnits("m");
     f_agl->setVisible(false);
     f_agl->setDefaultValue(0);
-    f_agl->setOpt("editor", "EditorIntWithFeet.qml");
     f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
 
     f_atrack = new MissionField(this,
@@ -77,18 +75,6 @@ Waypoint::Waypoint(MissionGroup *parent)
         f_altitude->setValue(f0->f_altitude->value());
     else
         f_altitude->setValue(200);
-
-    // Add feets options
-    auto ft = std::round(f_altitude->value().toInt() * M2FT_COEF);
-    f_altitude->setOpt("ft", ft);
-
-    ft = std::round(f_agl->value().toInt() * M2FT_COEF);
-    f_agl->setOpt("ft", ft);
-
-    connect(this, &MissionItem::isFeetsChanged, this, &Waypoint::updateTitle);
-    connect(f_altitude, &Fact::optsChanged, this, &Waypoint::updateTitle);
-    connect(f_altitude, &Fact::optsChanged, this, &Waypoint::processAglFt);
-    connect(f_agl, &Fact::optsChanged, this, [this]() {if (this->chosen() == AGL) calcAltitudeFt();});
 
     // Elevation map and agl
     connect(f_altitude, &Fact::valueChanged, this, [this]() { if (this->chosen() == ALT) processAgl();});
@@ -217,10 +203,6 @@ void Waypoint::fromJson(const QJsonValue &jsv)
         }
         ++i;
     }
-    // Add feets options
-    auto ft = std::round(f_altitude->value().toInt() * M2FT_COEF);
-    f_altitude->setOpt("ft", ft);
-
     if (!jso_actions.isEmpty())
         jso.insert("actions", jso_actions);
     MissionItem::fromJson(jso);
@@ -237,16 +219,7 @@ void Waypoint::updateTitle()
         st.append("T");
     if (f_atrack->value().toBool())
         st.append("H");
-    // st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
-
-    // Feets functionality
-    if (m_isFeets) {
-        QString ftUnits = f_amsl->value().toBool() ? "ft AMSL" : "ft";
-        st.append(f_altitude->opts().value("ft", 0).toString() + ftUnits);
-    } else {
-        st.append(f_altitude->valueText() + f_altitude->units());
-    }
-
+    st.append(f_altitude->valueText() + f_altitude->units()); // no space between value and units
     setTitle(st.join(' '));
 }
 
@@ -506,12 +479,6 @@ void Waypoint::calcAltitude()
 void Waypoint::recalcAltitude()
 {
     auto startHmsl = getStartHMSL();
-    if (m_isFeets) {
-        int ft = f_altitude->opts().value("ft", 0).toInt();
-        int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
-        ft += f_amsl->value().toBool() ? startHmslFt : -startHmslFt;
-        f_altitude->setOpt("ft", ft);
-    }
     auto alt = f_altitude->value().toDouble();
     alt += f_amsl->value().toBool() ? startHmsl : -startHmsl;
     f_altitude->setValue(alt);
@@ -536,46 +503,9 @@ void Waypoint::calcAgl()
     f_agl->setValue(diff);
 }
 
-// Feets processing
-void Waypoint::calcAltitudeFt()
-{
-    if (std::isnan(m_elevation))
-        return;
-
-    auto startHmsl = getStartHMSL();
-    int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
-    int hAmsl = static_cast<int>(f_agl->opts().value("ft", 0).toInt() + std::round(m_elevation * M2FT_COEF));
-    int ft = f_amsl->value().toBool() ? hAmsl : hAmsl - startHmslFt;
-    f_altitude->setOpt("ft", ft);
-}
-
-void Waypoint::processAglFt()
-{
-    if (chosen() == AGL)
-        return;
-
-    if (std::isnan(m_elevation)) {
-        f_agl->setOpt("ft", 0);
-        return;
-    }
-
-    calcAglFt();
-}
-
-void Waypoint::calcAglFt()
-{
-    auto startHmsl = getStartHMSL();
-    int startHmslFt = static_cast<int>(startHmsl * M2FT_COEF);
-    int diff = static_cast<int>(f_altitude->opts().value("ft", 0).toInt()
-                                - std::round(m_elevation * M2FT_COEF));
-    int ft = f_amsl->value().toBool() ? diff : startHmslFt + diff;
-    f_agl->setOpt("ft", ft);
-}
-
 void Waypoint::updateAgl()
 {
     processAgl();
-    processAglFt();
 }
 
 void Waypoint::setAglEnabled()

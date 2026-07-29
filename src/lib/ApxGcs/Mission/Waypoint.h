@@ -81,11 +81,6 @@ protected:
     void processAgl();
     void calcAgl();
 
-    // Feets processing
-    void calcAltitudeFt();
-    void processAglFt();
-    void calcAglFt();
-
 private:
     QString _altUnits;
     double m_terrainProfileMin{0};
