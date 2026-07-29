@@ -20,28 +20,27 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick.Controls.Material
 
-import Apx.Common
+Rectangle {
+    id: editor
 
-TextButton {
-    Layout.fillHeight: true
-    checkable: true
-    ButtonGroup.group: buttonGroup
+    readonly property string colorAuto: qsTr("Auto")
+    readonly property string colorText: fact && fact.value !== undefined ? fact.value.trim() : colorAuto 
+    readonly property bool auto: colorText === colorAuto                          
 
-    property var values: []
-    onActivated: signals.facts=Qt.binding(function(){return values})
+    implicitHeight: factButton.height * 0.6
+    implicitWidth: factButton.height * 1.8
+    radius: height / 12
+    border.width: 2
+    border.color: Material.hintTextColor
+    color: !auto ? colorText.toUpperCase() : "transparent"
 
-    toolTip: getToolTip(values)
-
-    function getToolTip(facts)
-    {
-        var s=[]
-        for(var i=0;i<facts.length;++i){
-            var fact=facts[i]
-            s.push("<font color='"+fact.opts.color+"'>"+fact.descr+"</font>")
-        }
-        return s.join("<br>")
+   Text {
+        anchors.centerIn: parent
+        text: qsTr("A")
+        font: apx.font_narrow(Math.max(10, parent.height * 0.55))
+        color: Material.hintTextColor
+        visible: auto
     }
 }
