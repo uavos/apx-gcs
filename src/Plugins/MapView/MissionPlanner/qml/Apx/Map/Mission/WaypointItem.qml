@@ -106,20 +106,13 @@ MissionObject {
 
     contentsTop: [
         Loader {
-            property bool isFeets: fact?fact.isFeets:false
-            readonly property var m2ftCoef: waypointItem.m2ftCoef
             active: dragging||hover
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cNormal
-                    text: {
-                        if(isFeets)
-                            return apx.distanceToStringFt(f_distance * m2ftCoef)+"/"+apx.distanceToStringFt(f_totalDistance * m2ftCoef)
-                        else
-                            return apx.distanceToString(f_distance)+"/"+apx.distanceToString(f_totalDistance)
-                    }
+                    text: apx.distanceToString(f_distance)+"/"+apx.distanceToString(f_totalDistance)
                 }
             }
         },
@@ -137,21 +130,13 @@ MissionObject {
     ]
     contentsRight: [
         Loader {
-            // Feets 
-            property var isFeets: fact?fact.isFeets:false
-            property var opts: fact?fact.child("altitude").opts:""
-            property var amsl: fact?fact.child("amsl").value:""
-           
             active: (!dragging) && (hover||selected)?1:0
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: {
-                        var txt = isFeets? opts.ft + "ft" : f_altitude.toFixed()+"m"
-                        return !amsl?txt:txt+" AMSL"
-                    }
+                    text: f_altitude.toFixed()+"m"
                 }
             }
         }
