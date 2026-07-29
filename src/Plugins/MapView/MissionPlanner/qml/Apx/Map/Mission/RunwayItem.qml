@@ -83,18 +83,13 @@ MissionObject {
             }
         },
         Loader {
-            property var opts: fact?fact.hmsl.opts:0
-            property bool isFeets: fact?fact.isFeets:false
-            property int feets: !isNaN(parseInt(opts.ft))?opts.ft:0
-            property int hmsl: isFeets ? feets : f_hmsl
-            active: showDetails && hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
-            //active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
+            active: showDetails && f_hmsl!=0 && ((!dragging)?((hover||selected)?1:(ui.effects?0.6:1)):0)
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: isFeets ? feets+"ft" : f_hmsl+"m"
+                    text: f_hmsl+"m"
                 }
             }
         }
@@ -174,25 +169,6 @@ MissionObject {
 
     //handles
     Loader {
-        // Feets
-        property var opts: fact?fact.approach.opts:0
-        property bool isFeets: fact?fact.isFeets:false
-        property int approach: runwayItem.f_approach
-        property var rwObjTitle: getTitle()
-        readonly property var m2ftCoef: runwayItem.m2ftCoef  
-
-        onIsFeetsChanged: rwObjTitle=getTitle()
-        onOptsChanged: rwObjTitle=getTitle()
-        onApproachChanged: rwObjTitle=getTitle()
-
-        function getTitle() {
-            if(isFeets)
-                return f_approach>0?(apx.distanceToStringFt(f_approach * m2ftCoef)):"H----"
-            else
-                return f_approach>0?(apx.distanceToString(f_approach)):"H----"
-        }
-
-
         //appPoint
         // asynchronous: true
         active: fact
@@ -206,8 +182,7 @@ MissionObject {
                 visible: runwayItem.visible && showDetailsApp
                 color: "white"
                 textColor: "black"
-                // title: f_approach>0?(apx.distanceToString(f_approach)):"H----"
-                title: rwObjTitle
+                title: f_approach>0?(apx.distanceToString(f_approach)):"H----"
                 property double r: runwayItem.f_heading-90;
                 rotation: f_approach>0?apx.angle90(r):apx.angle(r);
                 implicitCoordinate: appPointCoordinate
