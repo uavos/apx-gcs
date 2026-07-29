@@ -48,13 +48,6 @@ MissionItem::MissionItem(MissionGroup *parent,
 
     f_pos = new MissionPoint(this, "pos", tr("Position"), tr("Global position"));
 
-    // This is a temporary solution until the feet-meters conversion of gcs is completed.
-    f_feets = AppSettings::instance()->f_interface->findChild("measurementsystem.feets");
-    if (f_feets) {
-        connect(f_feets, &Fact::valueChanged, this, &MissionItem::changeFeetMeters);
-        setIsFeets(f_feets->value().toBool());
-    }
-
     f_remove = new Fact(this, "remove", tr("Remove"), tr("Remove mission item"), Action | Remove);
     connect(f_remove, &Fact::triggered, this, &Fact::deleteFact);
 
@@ -95,8 +88,6 @@ MissionItem::MissionItem(MissionGroup *parent,
     connect(this, &MissionItem::totalTimeChanged, this, &MissionItem::updateStatus);
     connect(this, &MissionItem::totalDistanceChanged, this, &MissionItem::updateStatus);
     
-    // For feets functionality 
-    connect(this, &MissionItem::isFeetsChanged, this, &MissionItem::updateStatus);
     updateStatus();
 }
 
@@ -122,6 +113,7 @@ QJsonValue MissionItem::toJson()
     jso["lon"] = f_pos->coordinate().longitude();
     return jso;
 }
+
 void MissionItem::fromJson(const QJsonValue &jsv)
 {
     auto jso = jsv.toObject();
@@ -156,17 +148,12 @@ void MissionItem::updateTitle()
 void MissionItem::updateStatus()
 {
     uint d = totalDistance();
-    if (m_isFeets)
-        d = static_cast<uint>(d * M2FT_COEF);
     uint t = totalTime();
     if ((d | t) == 0)
         setValue(QVariant());
     else {
         QStringList st;
-        if (m_isFeets)
-            st.append(AppRoot::distanceToStringFt(d));
-        else
-            st.append(AppRoot::distanceToString(d));
+        st.append(AppRoot::distanceToString(d));
         st.append(AppRoot::timeToString(t, false));
         setValue(st.join(' '));
     }
@@ -368,25 +355,6 @@ void MissionItem::extractElevation(const QGeoCoordinate &coordinate)
         return;    
     setElevation(coordinate.altitude());
 }
-
-bool MissionItem::isFeets() const
-{
-    return m_isFeets;
-}
-
-void MissionItem::setIsFeets(bool v)
-{
-    if (m_isFeets == v)
-        return;
-    m_isFeets = v;
-    emit isFeetsChanged();
-}
-
-void MissionItem::changeFeetMeters()
-{
-    setIsFeets(!m_isFeets);
-}
-
 
 // ===== Mission analyze =====
 void MissionItem::startTimer()
