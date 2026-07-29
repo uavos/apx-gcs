@@ -203,22 +203,6 @@ QString AppRoot::distanceToString(uint v, bool units)
     return s;
 }
 
-QString AppRoot::distanceToStringFt(uint v, bool units)
-{
-    QString s, su = "nm";
-    if (v >= 6076120)
-        s = QString("%1").arg(v / 6076.12, 0, 'f', 0);
-    else if (v >= 6076.12)
-        s = QString("%1").arg(v / 6076.12, 0, 'f', 1);
-    else {
-        s = QString("%1").arg(static_cast<ulong>(v));
-        su = "ft";
-    }
-    if (units)
-        s.append(su);
-    return s;
-}
-
 QString AppRoot::timeToString(quint64 v, bool seconds)
 {
     //if(v==0)return "--:--";
