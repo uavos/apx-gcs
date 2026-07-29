@@ -40,7 +40,6 @@ Poi::Poi(MissionGroup *parent)
     f_radius->setMin(-10000);
     f_radius->setMax(10000);
     f_radius->setValue(800);
-    f_radius->setOpt("editor", "EditorIntWithFeet.qml");
 
     f_orbs = new MissionField(this, "orbits", tr("Orbits"), tr("Number of orbits to loiter"), Int);
     f_orbs->setEnumStrings(QStringList() << "default");
@@ -51,21 +50,10 @@ Poi::Poi(MissionGroup *parent)
     f_time->setEnumStrings(QStringList() << "default");
     f_time->setUnits("min");
     f_time->setMin(0);
-    f_time->setMax(0xFFFF);
-
-    // Add feets option
-    f_hmsl->setOpt("editor", "EditorIntWithFeet.qml");
-    f_radius->setOpt("editor", "EditorIntWithFeet.qml");
-
-    auto ft = std::round(f_radius->value().toInt() * M2FT_COEF);
-    f_radius->setOpt("ft", ft);
-    ft = std::round(f_hmsl->value().toInt() * M2FT_COEF);
-    f_hmsl->setOpt("ft", ft);
+    f_time->setMax(0xFFFF / 60);
 
     connect(f_radius, &Fact::optsChanged, this, &Poi::updateTitle);
-    connect(this, &MissionItem::isFeetsChanged, this, &Poi::updateTitle);
     connect(f_hmsl, &Fact::optsChanged, this, &Poi::updateDescr);
-    connect(this, &MissionItem::isFeetsChanged, this, &Poi::updateDescr);
 
     //conversions
     connect(this, &MissionItem::coordinateChanged, this, &Poi::radiusPointChanged);
@@ -98,19 +86,12 @@ void Poi::initElevationMap()
 
 void Poi::updateTitle()
 {
-    int r{0};
     QStringList st;
     st.append(QString::number(num() + 1));
-    if (m_isFeets)
-        r = f_radius->opts().value("ft", 0).toInt();
-    else
-        r = f_radius->value().toInt();
+    int r = f_radius->value().toInt();
 
     if (std::abs(r) > 0) {
-        if (m_isFeets)
-            st.append(AppRoot::distanceToStringFt(std::abs(r)));
-        else
-            st.append(AppRoot::distanceToString(std::abs(r)));
+        st.append(AppRoot::distanceToString(std::abs(r)));
         if (r < 0)
             st.append(tr("CCW"));
     } else
@@ -121,22 +102,10 @@ void Poi::updateDescr()
 {
     QStringList st;
     QString sts;
-    // Add feets option
-    if (m_isFeets) {
-        if (f_hmsl->opts().value("ft").toInt() != 0) {
-            st.append("MSL" + f_hmsl->opts().value("ft").toString());
-            sts.append("H");
-        }
-    } else {
-        if (!f_hmsl->isZero()) {
-            st.append("MSL" + f_hmsl->valueText());
-            sts.append("H");
-        }
+    if (!f_hmsl->isZero()) {
+        st.append("MSL" + f_hmsl->valueText());
+        sts.append("H");
     }
-    // if (!f_hmsl->isZero()) {
-    //     st.append("MSL" + f_hmsl->valueText());
-    //     sts.append("H");
-    // }
     if (!f_orbs->isZero()) {
         st.append("R" + f_orbs->valueText());
         sts.append("R");
