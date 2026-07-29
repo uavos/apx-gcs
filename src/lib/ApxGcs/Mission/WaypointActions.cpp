@@ -51,17 +51,6 @@ WaypointActions::WaypointActions(Waypoint *parent)
                                 tr("Execute VM script (@function) on waypoint"),
                                 Text);
 
-    // Add feets options
-    m_isFeets = parent->isFeets();
-    auto kn = std::round(f_speed->value().toInt() * parent->M2KN_COEF);
-    f_speed->setOpt("editor", "EditorIntWithFeet.qml");
-    f_speed->setOpt("ft", kn);
-    
-    connect(f_speed, &Fact::optsChanged, this, &WaypointActions::updateActionsValue);
-    connect(parent, &Waypoint::isFeetsChanged, this, [this]() { setIsFeets(!m_isFeets); });
-    connect(this, &WaypointActions::isFeetsChanged, this, &WaypointActions::updateActionsValue);
-    // feets end
-
     connect(this, &Fact::valueChanged, this, &WaypointActions::actionsValueChanged);
     updateActionsValue();
 
@@ -90,25 +79,9 @@ void WaypointActions::updateActionsValue()
     st.clear();*/
     for (int i = 0; i < this->size(); ++i) {
         Fact *f = this->child(i);
-        // if (f->isZero())
-        //     continue;
-        // st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
-
-        if (!m_isFeets) {
-            if (f->isZero())
-                continue;
-            st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
-        } else {
-            if (!f->opts().contains("ft")) {
-                if (f->isZero())
-                    continue;
-                st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
-            } else {
-                if (f->opts().value("ft").toInt() == 0)
-                    continue;
-                st.append(QString("%1=%2").arg(f->name()).arg(f->opts().value("ft").toInt()));
-            }
-        }
+        if (f->isZero())
+            continue;
+        st.append(QString("%1=%2").arg(f->name()).arg(f->valueText()));
     }
     blockActionsValueChanged = true;
     this->setValue(st.join(','));
@@ -149,17 +122,4 @@ QJsonValue WaypointActions::toJson()
     if (jso.isEmpty())
         return {};
     return jso;
-}
-
-bool WaypointActions::isFeets() const
-{
-    return m_isFeets;
-}
-
-void WaypointActions::setIsFeets(bool v)
-{
-    if (m_isFeets == v)
-        return;
-    m_isFeets = v;
-    emit isFeetsChanged();
 }
