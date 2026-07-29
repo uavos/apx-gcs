@@ -97,7 +97,6 @@ MissionObject {
     
     // Line
     readonly property var linePointCoordinate: fact?fact.p2.coordinate:QtPositioning.coordinate()
-    property bool isFeets: fact?fact.isFeets:false
     Loader {
         active: geoItem.isLine
         onLoaded: map.addMapItemGroup(item)
@@ -110,11 +109,10 @@ MissionObject {
                     path: [ geoItem.coordinate, geoItem.linePointCoordinate ]
                 }
                 MissionObject { // line handle
-                    readonly property real lineDistance: geoItem.coordinate.distanceTo(geoItem.linePointCoordinate)
                     implicitZ: geoItem.implicitZ-1
                     color: "white"
                     textColor: "black"
-                    title: !isFeets?apx.distanceToString(lineDistance):apx.distanceToStringFt(lineDistance * m2ftCoef)
+                    title: apx.distanceToString(geoItem.coordinate.distanceTo(geoItem.linePointCoordinate))
                     opacity: (geoItem.hover || geoItem.selected || selected)?(ui.effects?0.8:1):0
                     visible: opacity>0
                     implicitCoordinate: linePointCoordinate
@@ -235,6 +233,4 @@ MissionObject {
             }
         }
     }
-
-
 }
