@@ -66,25 +66,6 @@ Runway::Runway(MissionGroup *parent)
     f_dN->setValue(100);
     f_dE->setValue(300);
 
-    // Add feets option
-    f_approach->setOpt("editor", "EditorIntWithFeet.qml");
-    f_hmsl->setOpt("editor", "EditorIntWithFeet.qml");
-    f_dN->setOpt("editor", "EditorIntWithFeet.qml");
-    f_dE->setOpt("editor", "EditorIntWithFeet.qml");
-
-    auto ft = std::round(f_approach->value().toInt() * M2FT_COEF);
-    f_approach->setOpt("ft", ft);
-    ft = std::round(f_dN->value().toInt() * M2FT_COEF);
-    f_dN->setOpt("ft", ft);
-    ft = std::round(f_dE->value().toInt() * M2FT_COEF);
-    f_dE->setOpt("ft", ft);
-    ft = std::round(f_hmsl->value().toInt() * M2FT_COEF);
-    f_hmsl->setOpt("ft", ft);
-
-    connect(f_approach, &Fact::optsChanged, this, &Runway::updateTitle);
-    connect(f_hmsl, &Fact::optsChanged, this, &Runway::updateTitle);
-    connect(this, &MissionItem::isFeetsChanged, this, &Runway::updateTitle);
-
     //title
     connect(f_type, &Fact::valueChanged, this, &Runway::updateTitle);
     connect(f_approach, &Fact::valueChanged, this, &Runway::updateTitle);
@@ -148,19 +129,9 @@ void Runway::updateTitle()
     QStringList st;
     st.append(QString::number(num() + 1));
     st.append(value().toString());
-    if (m_isFeets)
-        st.append(AppRoot::distanceToStringFt(f_approach->opts().value("ft", 0).toInt()));
-    else
-        st.append(AppRoot::distanceToString(f_approach->value().toInt()));
-
-    if (m_isFeets) {
-        auto feets = f_hmsl->opts().value("ft", 0).toInt();
-        if (feets != 0)
-            st.append(QString("MSL%1").arg(feets));
-    } else {
-        if (!f_hmsl->isZero())
-            st.append("MSL" + f_hmsl->valueText());
-    }
+    st.append(AppRoot::distanceToString(f_approach->value().toInt()));
+    if (!f_hmsl->isZero())
+        st.append("MSL" + f_hmsl->valueText());
     setTitle(st.join(' '));
 }
 
@@ -240,9 +211,6 @@ void Runway::setAppPoint(const QGeoCoordinate &v)
     else if (dist > 100)
         dist = (dist / 10) * 10;
     f_approach->setValue(dist);
-    // For feets
-    auto ft = static_cast<int>(dist * M2FT_COEF);
-    f_approach->setOpt("ft", ft);
 }
 double Runway::heading() const
 {
