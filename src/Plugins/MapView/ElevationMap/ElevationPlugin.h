@@ -33,5 +33,5 @@ class ElevationPlugin : public PluginInterface
 public:
     int flags() override { return Feature | Map; }
     QObject *createControl() override { return new ElevationMap(); }
-    QStringList depends() override { return QStringList() << "Location"; }
+    QStringList depends() override { return QStringList() << "Location" << "MissionPlanner"; }
 };
