@@ -68,8 +68,6 @@ Item {
 
     function getElevation()
     {
-        if(fact.parentFact.isFeets)
-            return m2ft(item.elevation) + "ft"
         return Math.round(item.elevation) + "m"     
     }
 }
