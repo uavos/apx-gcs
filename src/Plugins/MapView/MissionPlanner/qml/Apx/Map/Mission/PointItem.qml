@@ -59,18 +59,13 @@ MissionObject {
 
     contentsTop: [
         Loader {
-            // Feets
-            property var opts: fact?fact.hmsl.opts:0
-            property int feets: !isNaN(parseInt(opts.ft))?opts.ft:0
-            property bool isFeets: fact?fact.isFeets:false
-
             active: (f_hmsl!==0 || feets !==0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
             // asynchronous: true
             sourceComponent: Component {
                 MapText {
                     textColor: "white"
                     color: Style.cGreen
-                    text: !isFeets ? f_hmsl+"m" : feets + "ft"
+                    text: f_hmsl+"m"
                 }
             }
         }
@@ -98,23 +93,6 @@ MissionObject {
     property bool radiusPointSelected: radiusPoint && radiusPoint.selected
 
     Loader {
-        // Feets
-        property var opts: fact?fact.radius.opts:0
-        property bool isFeets: fact?fact.isFeets:false
-        property int radius: pointItem.f_radius
-        property var poiTitle: getTitle()
-
-        onIsFeetsChanged: poiTitle=getTitle()
-        onOptsChanged: poiTitle=getTitle()
-        onRadiusChanged: poiTitle=getTitle()
-
-        function getTitle() {
-            if(isFeets)
-                return opts.ft>0?(apx.distanceToStringFt(opts.ft)):"H----"
-            else
-                return f_radius>0?(apx.distanceToString(f_radius)):"H----"
-        }
-
         //handle
         // asynchronous: true
         onLoaded: {
@@ -126,7 +104,7 @@ MissionObject {
                 implicitZ: pointItem.implicitZ-1
                 color: "white"
                 textColor: "black"
-                title: poiTitle
+                title: f_radius>0?(apx.distanceToString(f_radius)):"H----"
                 opacity: (pointItem.hover || pointItem.selected || selected)?(ui.effects?(f_radius>0?0.8:0.5):1):0
                 visible: opacity>0
                 implicitCoordinate: radiusPointCoordinate
