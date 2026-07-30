@@ -59,30 +59,15 @@ ElevationMap::ElevationMap(Fact *parent)
                       Text | PersistentValue,
                       "import");
     f_path->setDefaultValue(path);
-    f_util = new Fact(this,
-                         "util",
-                         tr("Use util"),
-                         tr("Use the special util"), 
-                         Enum | PersistentValue,
-                         "tools");
-    f_util->setEnumStrings({"none", "gdallocationinfo"});
-
-#ifdef Q_OS_LINUX
-    f_util->setDefaultValue("none");
-#else
-    f_util->setDefaultValue("gdallocationinfo");
-#endif
 
     connect(this, &Fact::pathChanged, this, &ElevationMap::getPluginEnableControl);
     connect(Fleet::instance(), &Fleet::currentChanged, this, &ElevationMap::updateMission);
     connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
-    connect(f_util, &Fact::valueChanged, this, &ElevationMap::updateDBUtility);
     createDir(path);
     updateMission();
     createElevationDatabase();
-    updateDBUtility();
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
 
@@ -108,11 +93,6 @@ void ElevationMap::createElevationDatabase()
     connect(m_elevationDB.data(), &OfflineElevationDB::coordinateReceived, this, &ElevationMap::setCoordinate);
     connect(m_elevationDB.data(), &OfflineElevationDB::elevationReceived, this, &ElevationMap::setElevation);
     connect(m_elevationDB.data(), &OfflineElevationDB::terrainProfileReceived, this, &ElevationMap::setGeoPath);
-}
-
-void ElevationMap::updateDBUtility()
-{
-    m_elevationDB->setUtil(static_cast<AbstractElevationDB::Util>(f_util->value().toInt()));
 }
 
 void ElevationMap::onOpenTriggered()

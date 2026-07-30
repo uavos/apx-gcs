@@ -55,7 +55,6 @@ public:
 
     Fact *f_use;
     Fact *f_path;
-    Fact *f_util;
     Fact *f_control{nullptr};
     Fact *f_refStatus{nullptr};
     Fact *f_refHmsl{nullptr};
@@ -111,7 +110,6 @@ private slots:
     void getPluginEnableControl();
     void changeExternalsVisibility();
     void setStartPointElevation();
-    void updateDBUtility();
     void correctUnsafePaths();
     void insertMissionWaypoints();
     void completeCorrection();
