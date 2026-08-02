@@ -22,8 +22,13 @@ private:
     Fact *f_show_compass;
     Fact *f_compass_radius;
 
+    Fact *f_bias;
+    Fact *f_bias_yaw;
+    Fact *f_bias_pitch;
+
     QTimer _ats_timer;
 
 private slots:
     void onAtsTimer();
+    void onBiasChanged();
 };

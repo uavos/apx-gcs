@@ -301,13 +301,34 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
     }
     case mandala::cmd::nav::ats::uid: {
         QVariantList v = value.value<QVariantList>();
-        if (v.size() != 3)
+        if (v.size() < 1)
             break;
-        sendBundleT<mandala::bundle::pos_llh_s>(uid,
-                                                {mandala::deg_to_a32(v.at(0).toDouble()),
-                                                 mandala::deg_to_a32(v.at(1).toDouble()),
-                                                 v.at(2).toFloat()});
-        return;
+        uint8_t type = v.at(0).toUInt();
+        switch (type) {
+        case mandala::bundle::ats_pos: {
+            if (v.size() != 4)
+                break;
+            mandala::bundle::ats_pos_s ats{};
+            ats.type = type;
+            ats.pos.lat = mandala::deg_to_a32(v.at(1).toDouble());
+            ats.pos.lon = mandala::deg_to_a32(v.at(2).toDouble());
+            ats.pos.hmsl = v.at(3).toFloat();
+            sendBundleT<mandala::bundle::ats_pos_s>(uid, ats);
+            return;
+        }
+        case mandala::bundle::ats_bias: {
+            if (v.size() != 4)
+                break;
+            mandala::bundle::ats_bias_s ats{};
+            ats.type = type;
+            ats.roll = v.at(1).toFloat();
+            ats.pitch = v.at(2).toFloat();
+            ats.yaw = v.at(3).toFloat();
+            sendBundleT<mandala::bundle::ats_bias_s>(uid, ats);
+            return;
+        }
+        }
+        break;
     }
     case mandala::cmd::nav::swarm::uid: {
         QByteArray ba = value.toByteArray();

@@ -55,6 +55,38 @@ Ats::Ats(Fact *parent)
     f_compass_radius->setUnits("km");
     f_compass_radius->setDefaultValue(5);
 
+    f_bias = new Fact(this,
+                      "bias",
+                      tr("Bias"),
+                      tr("Antenna bias adjustment"),
+                      Fact::Group,
+                      "tune-vertical");
+
+    f_bias_yaw = new Fact(f_bias,
+                          "yaw",
+                          tr("Azimuth"),
+                          tr("Azimuth bias offset"),
+                          Fact::Float | Fact::PersistentValue,
+                          "compass-outline");
+    f_bias_yaw->setMin(-180);
+    f_bias_yaw->setMax(180);
+    f_bias_yaw->setUnits("deg");
+    f_bias_yaw->setDefaultValue(0);
+
+    f_bias_pitch = new Fact(f_bias,
+                            "pitch",
+                            tr("Elevation"),
+                            tr("Elevation bias offset"),
+                            Fact::Float | Fact::PersistentValue,
+                            "angle-acute");
+    f_bias_pitch->setMin(-90);
+    f_bias_pitch->setMax(90);
+    f_bias_pitch->setUnits("deg");
+    f_bias_pitch->setDefaultValue(0);
+
+    connect(f_bias_yaw, &Fact::valueChanged, this, &Ats::onBiasChanged);
+    connect(f_bias_pitch, &Fact::valueChanged, this, &Ats::onBiasChanged);
+
     _ats_timer.setInterval(100);
     connect(&_ats_timer, &QTimer::timeout, this, &Ats::onAtsTimer);
     _ats_timer.start();
@@ -88,6 +120,7 @@ void Ats::onAtsTimer()
     // Send track command to all GCS units
     QGeoCoordinate uav = current->coordinate();
     QVariantList value;
+    value << mandala::bundle::ats_pos;
     value << uav.latitude();
     value << uav.longitude();
     value << uav.altitude();
@@ -103,5 +136,26 @@ void Ats::onAtsTimer()
             continue;
         pdata->sendValue(mandala::cmd::nav::ats::uid, value);
         pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_track);
+    }
+}
+
+void Ats::onBiasChanged()
+{
+    QVariantList bias;
+    bias << mandala::bundle::ats_bias;
+    bias << 0.0f; // roll
+    bias << qDegreesToRadians(f_bias_pitch->value().toFloat());
+    bias << qDegreesToRadians(f_bias_yaw->value().toFloat());
+
+    for (auto fact : Fleet::instance()->facts()) {
+        auto unit = qobject_cast<Unit *>(fact);
+        if (!unit || !unit->isGroundControl())
+            continue;
+        if (!unit->protocol())
+            continue;
+        PData *pdata = unit->protocol()->data();
+        if (!pdata)
+            continue;
+        pdata->sendValue(mandala::cmd::nav::ats::uid, bias);
     }
 }
