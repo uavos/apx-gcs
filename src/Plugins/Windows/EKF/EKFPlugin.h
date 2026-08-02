@@ -26,13 +26,13 @@
 #include <QQuickWidget>
 #include <QtCore>
 
-class EKFPlugin : public PluginInterface
+class EkfPlugin : public PluginInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
     Q_INTERFACES(PluginInterface)
 public:
-    int flags() override { return Widget; }
+    int flags() override { return Widget | Launcher; }
     QString title() override { return tr("EKF Status"); }
     QString descr() override { return tr("EKF status monitor"); }
     QString icon() override { return "list-status"; }
@@ -42,7 +42,7 @@ public:
         auto *engine = App::instance()->engine();
         auto *w = new QQuickWidget(engine, nullptr);
         w->setResizeMode(QQuickWidget::SizeRootObjectToView);
-        w->setSource(QUrl("qrc:///EKF/EKFView.qml"));
+        w->setSource(QUrl("qrc:///Ekf/EkfView.qml"));
         w->setMinimumSize(700, 850);
         w->setAttribute(Qt::WA_DeleteOnClose);
         return w;

@@ -10,4 +10,4 @@ add_subdirectory("MandalaTree")
 add_subdirectory("TreeFacts")
 add_subdirectory("TreeJS")
 
-add_subdirectory("EKF")
+add_subdirectory("Ekf")

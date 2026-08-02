@@ -10,7 +10,10 @@ Rectangle {
     readonly property real sf: application.scale
 
     // Mode: false = std (CENTER only), true = ext (LEFT, CENTER, RIGHT)
-    property bool extMode: application.prefs.loadValue("extMode", "EKFPlugin", false)
+    property bool extMode: {
+        var v = application.prefs.loadValue("extMode", "EKFPlugin", false)
+        return v === true || v === "true"
+    }
     onExtModeChanged: application.prefs.saveValue("extMode", extMode, "EKFPlugin")
 
     // HOLD state
