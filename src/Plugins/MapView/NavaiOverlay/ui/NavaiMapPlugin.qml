@@ -15,6 +15,7 @@ AppPlugin {
 
             property var baseMap: ui.map
             property var attachedMap: null
+            property var historicalTrajectoryItems: []
             property var navai: apx.tools.navai
             property int mapRevision: 0
 
@@ -31,13 +32,46 @@ AppPlugin {
                 if (attachedMap === baseMap)
                     return
 
-                if (attachedMap)
+                if (attachedMap) {
                     attachedMap.removeMapItem(matchedTrajectoryLine)
+                    clearHistoricalTrajectories()
+                }
 
                 attachedMap = baseMap
 
-                if (attachedMap)
+                if (attachedMap) {
                     attachedMap.addMapItem(matchedTrajectoryLine)
+                    rebuildHistoricalTrajectories()
+                }
+            }
+
+            function clearHistoricalTrajectories()
+            {
+                for (var i = 0; i < historicalTrajectoryItems.length; ++i) {
+                    if (attachedMap)
+                        attachedMap.removeMapItem(historicalTrajectoryItems[i])
+                    historicalTrajectoryItems[i].destroy()
+                }
+                historicalTrajectoryItems = []
+            }
+
+            function rebuildHistoricalTrajectories()
+            {
+                clearHistoricalTrajectories()
+                if (!attachedMap || !navaiAvailable)
+                    return
+
+                var paths = navai.historicalTrajectories
+                var items = []
+                for (var i = 0; i < paths.length; ++i) {
+                    var item = historicalTrajectoryComponent.createObject(
+                        navaiLayer,
+                        { "path": paths[i] }
+                    )
+                    attachedMap.addMapItem(item)
+                    items.push(item)
+                }
+                historicalTrajectoryItems = items
             }
 
             onBaseMapChanged: Qt.callLater(attachTrajectory)
@@ -48,8 +82,18 @@ AppPlugin {
             }
 
             Component.onDestruction: {
+                clearHistoricalTrajectories()
                 if (attachedMap)
                     attachedMap.removeMapItem(matchedTrajectoryLine)
+            }
+
+            Connections {
+                target: navaiLayer.navai
+                ignoreUnknownSignals: true
+
+                function onHistoricalTrajectoriesChanged() {
+                    navaiLayer.rebuildHistoricalTrajectories()
+                }
             }
 
             Connections {
@@ -95,6 +139,16 @@ AppPlugin {
                 path: navaiLayer.navaiAvailable
                     ? navaiLayer.navai.matchedTrajectoryCoordinates
                     : []
+            }
+
+            Component {
+                id: historicalTrajectoryComponent
+
+                MapPolyline {
+                    z: 99998
+                    line.width: 3
+                    line.color: "#66ff7a00"
+                }
             }
 
             Repeater {
@@ -200,9 +254,9 @@ AppPlugin {
                     Rectangle {
                         id: centerDot
 
-                        width: 8
-                        height: 8
-                        radius: 4
+                        width: 16
+                        height: 16
+                        radius: 8
 
                         anchors.centerIn: parent
 

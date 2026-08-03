@@ -83,6 +83,7 @@ class NavaiOverlay : public Fact
     Q_PROPERTY(bool udpReady READ udpReady NOTIFY udpReadyChanged)
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
     Q_PROPERTY(QVariantList matchedTrajectoryCoordinates READ matchedTrajectoryCoordinates NOTIFY matchedTrajectoryChanged)
+    Q_PROPERTY(QVariantList historicalTrajectories READ historicalTrajectories NOTIFY historicalTrajectoriesChanged)
 
 public:
     explicit NavaiOverlay(Fact *parent = nullptr);
@@ -118,10 +119,16 @@ public:
         return _matchedTrajectoryCoordinates;
     }
 
+    QVariantList historicalTrajectories() const
+    {
+        return _historicalTrajectories;
+    }
+
 signals:
     void activeChanged();
     void udpReadyChanged();
     void matchedTrajectoryChanged();
+    void historicalTrajectoriesChanged();
 
 private slots:
     void readUdpDatagrams();
@@ -192,6 +199,7 @@ private:
     QVector<TimedPosition> _positionBuffer;
 
     QVariantList _matchedTrajectoryCoordinates;
+    QVariantList _historicalTrajectories;
     QGeoCoordinate _matchedPoint;
     QGeoCoordinate _sourceAnchor;
     QGeoCoordinate _lastTrajectoryPoint;
