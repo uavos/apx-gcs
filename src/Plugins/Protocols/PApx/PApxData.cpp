@@ -317,14 +317,24 @@ void PApxData::sendBundle(mandala::uid_t uid, QVariant value)
             return;
         }
         case mandala::bundle::ats_bias: {
-            if (v.size() != 4)
+            if (v.size() != 3)
                 break;
             mandala::bundle::ats_bias_s ats{};
             ats.type = type;
-            ats.roll = v.at(1).toFloat();
+            ats.yaw = v.at(1).toFloat();
             ats.pitch = v.at(2).toFloat();
-            ats.yaw = v.at(3).toFloat();
             sendBundleT<mandala::bundle::ats_bias_s>(uid, ats);
+            return;
+        }
+        case mandala::bundle::ats_scan: {
+            if (v.size() != 4)
+                break;
+            mandala::bundle::ats_scan_s ats{};
+            ats.type = type;
+            ats.yaw = v.at(1).toFloat();
+            ats.pitch = v.at(2).toFloat();
+            ats.time = static_cast<uint8_t>(v.at(3).toUInt());
+            sendBundleT<mandala::bundle::ats_scan_s>(uid, ats);
             return;
         }
         }
