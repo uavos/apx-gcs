@@ -35,6 +35,9 @@ public:
     Fact *f_speed;
     Fact *f_poi;
     Fact *f_script;
+    Fact *f_shot;
+    Fact *f_dshot;
+    Fact *f_tshot;
 
     QJsonValue toJson() override;
 
