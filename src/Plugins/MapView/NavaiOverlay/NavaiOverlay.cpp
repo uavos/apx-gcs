@@ -222,17 +222,8 @@ void NavaiResultModel::addResult(
     double percent,
     const QString &label)
 {
-    for (int i = 0; i < _items.size(); ++i) {
-        _items[i].targetOpacity = 0.0;
-    }
-
-    if (!_items.isEmpty()) {
-        emit dataChanged(
-            index(0, 0),
-            index(_items.size() - 1, 0),
-            {ItemOpacityRole}
-        );
-    }
+    for (Result &oldItem : _items)
+        oldItem.targetOpacity = 0.35;
 
     Result item;
     item.lat = lat;
@@ -579,7 +570,19 @@ void NavaiOverlay::startMatchedTrajectory(
     const QGeoCoordinate &navaiPoint,
     qint64 timestampMs)
 {
-    clearTrajectory();
+    if (_matchedTrajectoryCoordinates.size() > 1) {
+        _historicalTrajectories.push_back(
+            _matchedTrajectoryCoordinates
+        );
+        emit historicalTrajectoriesChanged();
+    }
+
+    _trajectoryActive = false;
+    _matchedTrajectoryCoordinates.clear();
+    _matchedPoint = {};
+    _sourceAnchor = {};
+    _lastTrajectoryPoint = {};
+    emit matchedTrajectoryChanged();
 
     if (!navaiPoint.isValid() || _positionBuffer.isEmpty())
         return;
@@ -628,10 +631,12 @@ void NavaiOverlay::clearTrajectory()
 {
     _trajectoryActive = false;
     _matchedTrajectoryCoordinates.clear();
+    _historicalTrajectories.clear();
     _matchedPoint = {};
     _sourceAnchor = {};
     _lastTrajectoryPoint = {};
     emit matchedTrajectoryChanged();
+    emit historicalTrajectoriesChanged();
 }
 
 void NavaiOverlay::writeCameraFacts(
@@ -869,9 +874,15 @@ void NavaiOverlay::handleDatagram(
             return;
         }
 
-        processGpsPosition(coordinate,
-                           okGpsTimestamp ? static_cast<qint64>(gpsTimestamp)
-                                          : QDateTime::currentMSecsSinceEpoch());
+        if (_unit) {
+            _unit->setCoordinate(coordinate);
+        } else {
+            processGpsPosition(
+                coordinate,
+                okGpsTimestamp ? static_cast<qint64>(gpsTimestamp)
+                               : QDateTime::currentMSecsSinceEpoch()
+            );
+        }
         return;
     }
 
@@ -943,7 +954,11 @@ void NavaiOverlay::handleDatagram(
     );
 
     bool okTimestamp = false;
-    double timestamp = jsonNumber(obj, {"timestamp_ms", "timestamp", "ts"}, &okTimestamp);
+    double timestamp = jsonNumber(
+        obj,
+        {"timestamp_ms", "timestamp", "ts", "time", "image_time", "frame_received_unix"},
+        &okTimestamp
+    );
     if (okTimestamp && timestamp > 0.0 && timestamp < 100000000000.0)
         timestamp *= 1000.0; // Unix seconds -> milliseconds.
     startMatchedTrajectory(QGeoCoordinate(lat, lon),
