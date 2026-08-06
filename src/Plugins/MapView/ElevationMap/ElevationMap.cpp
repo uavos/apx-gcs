@@ -73,6 +73,8 @@ ElevationMap::ElevationMap(Fact *parent)
 
 void ElevationMap::setCoordinateWithElevation(const QGeoCoordinate &coordinate)
 {
+    if (!f_use->value().toBool())
+        return;
     m_elevationDB->requestCoordinate(coordinate.latitude(), coordinate.longitude());
 }
 
@@ -83,6 +85,8 @@ void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &coordinate)
 
 void ElevationMap::setTerrainProfile(const QGeoPath &path)
 {
+    if (!f_use->value().toBool())
+        return;
     m_elevationDB->requestTerrainProfile(path);
 }
 
