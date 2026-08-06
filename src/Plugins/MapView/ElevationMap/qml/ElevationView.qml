@@ -108,7 +108,7 @@ Window {
         radius: 2
         border.width: radius
         border.color: "#ffffff"
-        visible: mission.collision
+        visible: mission.collision && use
         anchors {
             top: parent.top
             left: parent.left
