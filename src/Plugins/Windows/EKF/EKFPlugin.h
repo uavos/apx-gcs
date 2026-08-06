@@ -21,8 +21,11 @@
  */
 #pragma once
 
+#include "EkfBitModel.h"
+
 #include <App/App.h>
 #include <App/PluginInterface.h>
+#include <QQmlContext>
 #include <QQuickWidget>
 #include <QtCore>
 
@@ -42,7 +45,19 @@ public:
         auto *engine = App::instance()->engine();
         auto *w = new QQuickWidget(engine, nullptr);
         w->setResizeMode(QQuickWidget::SizeRootObjectToView);
-        w->setSource(QUrl("qrc:///Ekf/EkfView.qml"));
+
+        // Expose bit-field models to QML
+        auto *ctx = w->rootContext();
+        ctx->setContextProperty("filterControlStatusLoModel",
+                                EkfBitModel::createFilterControlStatusLo(w));
+        ctx->setContextProperty("filterControlStatusHiModel",
+                                EkfBitModel::createFilterControlStatusHi(w));
+        ctx->setContextProperty("faultStatusModel",
+                                EkfBitModel::createFaultStatus(w));
+        ctx->setContextProperty("eventStatusModel",
+                                EkfBitModel::createEventStatus(w));
+
+        w->setSource(QUrl("qrc:///Ekf/EKFView.qml"));
         w->setMinimumSize(700, 850);
         w->setAttribute(Qt::WA_DeleteOnClose);
         return w;

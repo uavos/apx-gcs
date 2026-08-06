@@ -301,38 +301,16 @@ Rectangle {
                         Layout.alignment: Qt.AlignTop
                         spacing: 3 * root.sf
 
-                        BitRow { label: "0  tilt_align";             valueL: root.bitLL(0); valueC: root.bitL(0); valueR: root.bitRL(0) }
-                        BitRow { label: "1  yaw_align";              valueL: root.bitLL(1); valueC: root.bitL(1); valueR: root.bitRL(1) }
-                        BitRow { label: "2  gnss_pos";               valueL: root.bitLL(2); valueC: root.bitL(2); valueR: root.bitRL(2) }
-                        BitRow { label: "3  opt_flow";               valueL: root.bitLL(3); valueC: root.bitL(3); valueR: root.bitRL(3) }
-                        BitRow { label: "4  mag_hdg";                valueL: root.bitLL(4); valueC: root.bitL(4); valueR: root.bitRL(4) }
-                        BitRow { label: "5  mag_3D";                 valueL: root.bitLL(5); valueC: root.bitL(5); valueR: root.bitRL(5) }
-                        BitRow { label: "6  mag_dec";                valueL: root.bitLL(6); valueC: root.bitL(6); valueR: root.bitRL(6) }
-                        BitRow { label: "7  in_air";                 valueL: root.bitLL(7); valueC: root.bitL(7); valueR: root.bitRL(7) }
-                        BitRow { label: "8  wind";                   valueL: root.bitLL(8); valueC: root.bitL(8); valueR: root.bitRL(8) }
-                        BitRow { label: "9  baro_hgt";               valueL: root.bitLL(9); valueC: root.bitL(9); valueR: root.bitRL(9) }
-                        BitRow { label: "10 rng_hgt";                valueL: root.bitLL(10); valueC: root.bitL(10); valueR: root.bitRL(10) }
-                        BitRow { label: "11 gps_hgt";                valueL: root.bitLL(11); valueC: root.bitL(11); valueR: root.bitRL(11) }
-                        BitRow { label: "12 ev_pos";                 valueL: root.bitLL(12); valueC: root.bitL(12); valueR: root.bitRL(12) }
-                        BitRow { label: "13 ev_yaw";                 valueL: root.bitLL(13); valueC: root.bitL(13); valueR: root.bitRL(13) }
-                        BitRow { label: "14 ev_hgt";                 valueL: root.bitLL(14); valueC: root.bitL(14); valueR: root.bitRL(14) }
-                        BitRow { label: "15 fuse_beta";              valueL: root.bitLL(15); valueC: root.bitL(15); valueR: root.bitRL(15) }
-                        BitRow { label: "16 mag_field_disturbed";    valueL: root.bitLL(16); valueC: root.bitL(16); valueR: root.bitRL(16); onColor: "#cc2222" }
-                        BitRow { label: "17 fixed_wing";             valueL: root.bitLL(17); valueC: root.bitL(17); valueR: root.bitRL(17) }
-                        BitRow { label: "18 mag_fault";              valueL: root.bitLL(18); valueC: root.bitL(18); valueR: root.bitRL(18); onColor: "#cc2222" }
-                        BitRow { label: "19 fuse_aspd";              valueL: root.bitLL(19); valueC: root.bitL(19); valueR: root.bitRL(19) }
-                        BitRow { label: "20 gnd_effect";             valueL: root.bitLL(20); valueC: root.bitL(20); valueR: root.bitRL(20); onColor: "#ffe600" }
-                        BitRow { label: "21 rng_stuck";              valueL: root.bitLL(21); valueC: root.bitL(21); valueR: root.bitRL(21); onColor: "#cc2222" }
-                        BitRow { label: "22 gnss_yaw";               valueL: root.bitLL(22); valueC: root.bitL(22); valueR: root.bitRL(22) }
-                        BitRow { label: "23 mag_aligned_in_flight";  valueL: root.bitLL(23); valueC: root.bitL(23); valueR: root.bitRL(23) }
-                        BitRow { label: "24 ev_vel";                 valueL: root.bitLL(24); valueC: root.bitL(24); valueR: root.bitRL(24) }
-                        BitRow { label: "25 synthetic_mag_z";        valueL: root.bitLL(25); valueC: root.bitL(25); valueR: root.bitRL(25) }
-                        BitRow { label: "26 vehicle_at_rest";        valueL: root.bitLL(26); valueC: root.bitL(26); valueR: root.bitRL(26) }
-                        BitRow { label: "27 gnss_yaw_fault";         valueL: root.bitLL(27); valueC: root.bitL(27); valueR: root.bitRL(27); onColor: "#cc2222" }
-                        BitRow { label: "28 rng_fault";              valueL: root.bitLL(28); valueC: root.bitL(28); valueR: root.bitRL(28); onColor: "#cc2222" }
-                        BitRow { label: "29 inertial_dead_reckoning"; valueL: root.bitLL(29); valueC: root.bitL(29); valueR: root.bitRL(29); onColor: "#cc2222" }
-                        BitRow { label: "30 wind_dead_reckoning";    valueL: root.bitLL(30); valueC: root.bitL(30); valueR: root.bitRL(30); onColor: "#ffe600" }
-                        BitRow { label: "31 rng_kin_consistent";     valueL: root.bitLL(31); valueC: root.bitL(31); valueR: root.bitRL(31) }
+                        Repeater {
+                            model: filterControlStatusLoModel
+                            delegate: BitRow {
+                                label: model.label
+                                onColor: model.onColor.length > 0 ? model.onColor : "#4ade80"
+                                valueL: root.bitLL(model.bit)
+                                valueC: root.bitL(model.bit)
+                                valueR: root.bitRL(model.bit)
+                            }
+                        }
                     }
 
                     Column {
@@ -340,23 +318,16 @@ Rectangle {
                         Layout.alignment: Qt.AlignTop
                         spacing: 3 * root.sf
 
-                        BitRow { label: "32 fake_pos";               valueL: root.bitLH(32); valueC: root.bitH(32); valueR: root.bitRH(32); onColor: "#ffe600" }
-                        BitRow { label: "33 fake_hgt";               valueL: root.bitLH(33); valueC: root.bitH(33); valueR: root.bitRH(33); onColor: "#ffe600" }
-                        BitRow { label: "34 gravity_vector";         valueL: root.bitLH(34); valueC: root.bitH(34); valueR: root.bitRH(34) }
-                        BitRow { label: "35 mag";                    valueL: root.bitLH(35); valueC: root.bitH(35); valueR: root.bitRH(35) }
-                        BitRow { label: "36 ev_yaw_fault";           valueL: root.bitLH(36); valueC: root.bitH(36); valueR: root.bitRH(36); onColor: "#cc2222" }
-                        BitRow { label: "37 mag_heading_consistent"; valueL: root.bitLH(37); valueC: root.bitH(37); valueR: root.bitRH(37) }
-                        BitRow { label: "38 aux_gpos";               valueL: root.bitLH(38); valueC: root.bitH(38); valueR: root.bitRH(38) }
-                        BitRow { label: "39 rng_terrain";            valueL: root.bitLH(39); valueC: root.bitH(39); valueR: root.bitRH(39) }
-                        BitRow { label: "40 opt_flow_terrain";       valueL: root.bitLH(40); valueC: root.bitH(40); valueR: root.bitRH(40) }
-                        BitRow { label: "41 valid_fake_pos";         valueL: root.bitLH(41); valueC: root.bitH(41); valueR: root.bitRH(41) }
-                        BitRow { label: "42 constant_pos";           valueL: root.bitLH(42); valueC: root.bitH(42); valueR: root.bitRH(42) }
-                        BitRow { label: "43 baro_fault";             valueL: root.bitLH(43); valueC: root.bitH(43); valueR: root.bitRH(43); onColor: "#cc2222" }
-                        BitRow { label: "44 gnss_vel";               valueL: root.bitLH(44); valueC: root.bitH(44); valueR: root.bitRH(44) }
-                        BitRow { label: "45 gnss_fault";             valueL: root.bitLH(45); valueC: root.bitH(45); valueR: root.bitRH(45); onColor: "#cc2222" }
-                        BitRow { label: "46 yaw_manual";             valueL: root.bitLH(46); valueC: root.bitH(46); valueR: root.bitRH(46) }
-                        BitRow { label: "47 gnss_hgt_fault";         valueL: root.bitLH(47); valueC: root.bitH(47); valueR: root.bitRH(47); onColor: "#cc2222" }
-                        BitRow { label: "48 in_transition_to_fw";    valueL: root.bitLH(48); valueC: root.bitH(48); valueR: root.bitRH(48) }
+                        Repeater {
+                            model: filterControlStatusHiModel
+                            delegate: BitRow {
+                                label: model.label
+                                onColor: model.onColor.length > 0 ? model.onColor : "#4ade80"
+                                valueL: root.bitLH(model.bit)
+                                valueC: root.bitH(model.bit)
+                                valueR: root.bitRH(model.bit)
+                            }
+                        }
                     }
                 }
             }
@@ -378,18 +349,16 @@ Rectangle {
                         width: parent.width
                         spacing: 3 * root.sf
 
-                        BitRow { label: "0  bad_mag_x";        valueL: root.bitLF(0); valueC: root.bitF(0); valueR: root.bitRF(0);  onColor: "#cc2222" }
-                        BitRow { label: "1  bad_mag_y";        valueL: root.bitLF(1); valueC: root.bitF(1); valueR: root.bitRF(1);  onColor: "#cc2222" }
-                        BitRow { label: "2  bad_mag_z";        valueL: root.bitLF(2); valueC: root.bitF(2); valueR: root.bitRF(2);  onColor: "#cc2222" }
-                        BitRow { label: "3  bad_hdg";          valueL: root.bitLF(3); valueC: root.bitF(3); valueR: root.bitRF(3);  onColor: "#cc2222" }
-                        BitRow { label: "4  bad_mag_decl";     valueL: root.bitLF(4); valueC: root.bitF(4); valueR: root.bitRF(4);  onColor: "#cc2222" }
-                        BitRow { label: "5  bad_airspeed";     valueL: root.bitLF(5); valueC: root.bitF(5); valueR: root.bitRF(5);  onColor: "#cc2222" }
-                        BitRow { label: "6  bad_sideslip";     valueL: root.bitLF(6); valueC: root.bitF(6); valueR: root.bitRF(6);  onColor: "#cc2222" }
-                        BitRow { label: "7  bad_optflow_X";    valueL: root.bitLF(7); valueC: root.bitF(7); valueR: root.bitRF(7);  onColor: "#cc2222" }
-                        BitRow { label: "8  bad_optflow_Y";    valueL: root.bitLF(8); valueC: root.bitF(8); valueR: root.bitRF(8);  onColor: "#cc2222" }
-                        BitRow { label: "9  (unused)";         valueL: root.bitLF(9); valueC: root.bitF(9); valueR: root.bitRF(9);  onColor: "#555" }
-                        BitRow { label: "10 bad_acc_vertical"; valueL: root.bitLF(10); valueC: root.bitF(10); valueR: root.bitRF(10); onColor: "#cc2222" }
-                        BitRow { label: "11 bad_acc_clipping"; valueL: root.bitLF(11); valueC: root.bitF(11); valueR: root.bitRF(11); onColor: "#cc2222" }
+                        Repeater {
+                            model: faultStatusModel
+                            delegate: BitRow {
+                                label: model.label
+                                onColor: model.onColor.length > 0 ? model.onColor : "#4ade80"
+                                valueL: root.bitLF(model.bit)
+                                valueC: root.bitF(model.bit)
+                                valueR: root.bitRF(model.bit)
+                            }
+                        }
                     }
                 }
 
@@ -403,25 +372,16 @@ Rectangle {
                         width: parent.width
                         spacing: 3 * root.sf
 
-                        BitRow { label: "0  gps_checks_passed";          valueL: root.bitLE(0); valueC: root.bitE(0); valueR: root.bitRE(0) }
-                        BitRow { label: "1  reset_vel_to_gps";           valueL: root.bitLE(1); valueC: root.bitE(1); valueR: root.bitRE(1);  onColor: "#ffe600" }
-                        BitRow { label: "2  reset_vel_to_flow";          valueL: root.bitLE(2); valueC: root.bitE(2); valueR: root.bitRE(2);  onColor: "#ffe600" }
-                        BitRow { label: "3  reset_vel_to_vision";        valueL: root.bitLE(3); valueC: root.bitE(3); valueR: root.bitRE(3);  onColor: "#ffe600" }
-                        BitRow { label: "4  reset_vel_to_zero";          valueL: root.bitLE(4); valueC: root.bitE(4); valueR: root.bitRE(4);  onColor: "#ffe600" }
-                        BitRow { label: "5  reset_pos_to_last_known";    valueL: root.bitLE(5); valueC: root.bitE(5); valueR: root.bitRE(5);  onColor: "#ffe600" }
-                        BitRow { label: "6  reset_pos_to_gps";           valueL: root.bitLE(6); valueC: root.bitE(6); valueR: root.bitRE(6);  onColor: "#ffe600" }
-                        BitRow { label: "7  reset_pos_to_vision";        valueL: root.bitLE(7); valueC: root.bitE(7); valueR: root.bitRE(7);  onColor: "#ffe600" }
-                        BitRow { label: "8  starting_gps_fusion";        valueL: root.bitLE(8); valueC: root.bitE(8); valueR: root.bitRE(8) }
-                        BitRow { label: "9  starting_vision_pos_fusion"; valueL: root.bitLE(9); valueC: root.bitE(9); valueR: root.bitRE(9) }
-                        BitRow { label: "10 starting_vision_vel_fusion"; valueL: root.bitLE(10); valueC: root.bitE(10); valueR: root.bitRE(10) }
-                        BitRow { label: "11 starting_vision_yaw_fusion"; valueL: root.bitLE(11); valueC: root.bitE(11); valueR: root.bitRE(11) }
-                        BitRow { label: "12 yaw_aligned_to_imu_gps";    valueL: root.bitLE(12); valueC: root.bitE(12); valueR: root.bitRE(12) }
-                        BitRow { label: "13 reset_hgt_to_baro";         valueL: root.bitLE(13); valueC: root.bitE(13); valueR: root.bitRE(13); onColor: "#ffe600" }
-                        BitRow { label: "14 reset_hgt_to_gps";          valueL: root.bitLE(14); valueC: root.bitE(14); valueR: root.bitRE(14); onColor: "#ffe600" }
-                        BitRow { label: "15 reset_hgt_to_rng";          valueL: root.bitLE(15); valueC: root.bitE(15); valueR: root.bitRE(15); onColor: "#ffe600" }
-                        BitRow { label: "16 reset_hgt_to_ev";           valueL: root.bitLE(16); valueC: root.bitE(16); valueR: root.bitRE(16); onColor: "#ffe600" }
-                        BitRow { label: "17 reset_pos_to_ext_obs";      valueL: root.bitLE(17); valueC: root.bitE(17); valueR: root.bitRE(17); onColor: "#ffe600" }
-                        BitRow { label: "18 reset_wind_to_ext_obs";     valueL: root.bitLE(18); valueC: root.bitE(18); valueR: root.bitRE(18); onColor: "#ffe600" }
+                        Repeater {
+                            model: eventStatusModel
+                            delegate: BitRow {
+                                label: model.label
+                                onColor: model.onColor.length > 0 ? model.onColor : "#4ade80"
+                                valueL: root.bitLE(model.bit)
+                                valueC: root.bitE(model.bit)
+                                valueR: root.bitRE(model.bit)
+                            }
+                        }
                     }
                 }
 
