@@ -93,7 +93,6 @@ private slots:
     void updateDescr();
     void updateAMSL();
     void updateAltDescr();
-    void sendTerrainProfileRequest();
     static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
 
     // New functionality
@@ -110,6 +109,7 @@ private slots:
 public slots:
     void initElevationMap();
     void updateAgl();
+    void sendTerrainProfileRequest();
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();
 
@@ -140,7 +140,8 @@ public:
 
     bool collision() const;
     void setCollision(bool v);
-
+        
+    bool terrainProfileNeedUpdate(); 
     int unsafeAgl() const;
 
 protected:

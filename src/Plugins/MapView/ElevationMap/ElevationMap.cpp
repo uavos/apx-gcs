@@ -49,7 +49,7 @@ ElevationMap::ElevationMap(Fact *parent)
 {
     auto path = AppDirs::db().absolutePath() + "/Elevation";
 
-    f_use = new Fact(this, "use", tr("Use elevation map"), "", Fact::Bool, "check");
+    f_use = new Fact(this, "use", tr("Use elevation map"), "", Bool | PersistentValue, "check");
     f_use->setValue(true);
 
     f_path = new Fact(this,
@@ -267,12 +267,16 @@ void ElevationMap::setWaypointsValues(bool b)
         if (!b)
             continue;
         wp->initElevationMap();
-        setTerrainProfile(wp->geoPath());
+        //setTerrainProfile(wp->geoPath());
         connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation, Qt::UniqueConnection);
         connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
         connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile, Qt::UniqueConnection);
         connect(this, &ElevationMap::geoPathChanged, wp, &Waypoint::buildTerrainProfile, Qt::UniqueConnection);
         connect(wp, &Waypoint::responseCorrectPath, this, &ElevationMap::getCorrectPathResponse, Qt::UniqueConnection);
+        // Check wp terrain profile has changes
+        if(wp->terrainProfileNeedUpdate()) {
+            wp->sendTerrainProfileRequest();
+        }
         // For start point height update
         if (m->f_rw->size() > 0) {
             auto rw0 = static_cast<Runway *>(m->f_rw->child(0));

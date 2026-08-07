@@ -515,7 +515,7 @@ void Waypoint::setAglEnabled()
 
 void Waypoint::sendTerrainProfileRequest()
 {
-    auto geoPath= getPointPath();
+    auto geoPath = getPointPath();
     emit requestTerrainProfile(geoPath);
 }
 
@@ -933,4 +933,41 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
     }
 
     promise.addResult(newPoints);
+}
+
+bool Waypoint::terrainProfileNeedUpdate() {
+    if(m_geoPathTimer.isActive())
+        return false;
+
+    if(m_geoPath.isEmpty())
+        return false;
+       
+    if(m_terrainProfilePath.isEmpty())
+        return true;
+
+    auto p1 = m_geoPath.coordinateAt(0);
+    auto p2 = m_terrainProfilePath.coordinateAt(0);
+    if( num() == 0)
+        p2 = group->mission->startPoint();
+    p1.setAltitude(0);
+    p2.setAltitude(0);
+    if (p1 != p2)
+       return true;
+
+    p1 = m_geoPath.coordinateAt(m_geoPath.size() - 1);
+    p2 = m_terrainProfilePath.coordinateAt(m_terrainProfilePath.size() - 1);
+    p1.setAltitude(0);
+    p2.setAltitude(0);
+    if (p1 != p2)
+       return true;
+
+    if(m_terrainProfile.isEmpty())
+        return true;
+
+    double distance = (m_terrainProfile.last().x());
+    double length = m_terrainProfilePath.length(0, m_terrainProfilePath.size()-1);
+    if (!qFuzzyCompare(distance, length))
+        return true;
+
+    return false;
 }
