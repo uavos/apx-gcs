@@ -25,9 +25,8 @@
 
 #include <App/AppRoot.h>
 #include <QGeoCircle>
-
-// Mission analyze
 #include <QPointF>
+
 #include <float.h>
 
 MissionItem::MissionItem(MissionGroup *parent,
@@ -356,7 +355,6 @@ void MissionItem::extractElevation(const QGeoCoordinate &coordinate)
     setElevation(coordinate.altitude());
 }
 
-// ===== Mission analyze =====
 void MissionItem::startTimer()
 {
     if (!m_timer.isActive())

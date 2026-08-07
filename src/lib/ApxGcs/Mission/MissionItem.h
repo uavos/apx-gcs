@@ -28,15 +28,13 @@
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QGeoPath>
+#include <QPointF>
 #include <QGeoRectangle>
 #include <QtCore>
 #include <QTimer>
 
 #include <XbusMission.h>
 #include <cmath>
-
-// ==== Mission Analize ======
-#include <QPointF>
 
 class MissionItem : public Fact
 {
@@ -55,7 +53,6 @@ class MissionItem : public Fact
 
     Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectedChanged)
 
-    // ===== Mission analyze =======
     Q_PROPERTY(QList<QPointF> terrainProfile READ terrainProfile NOTIFY terrainProfileChanged)
 
 public:
@@ -66,7 +63,7 @@ public:
 
     MissionGroup *group;
 
-    static constexpr int TIMEOUT = 500;         // elevation update timeout
+    static constexpr int TIMEOUT = 500; // elevation update timeout
     Fact *f_order;
     MissionPoint *f_pos;
 
@@ -142,7 +139,6 @@ public:
     bool selected() const;
     void setSelected(bool v);
 
-    // ===== Mission analyze ======
     QList<QPointF> terrainProfile() const;
     void setTerrainProfile(const QList<QPointF> &v);
     void clearTerrainProfile();
@@ -177,7 +173,6 @@ signals:
 
     void selectedChanged();
 
-    // ===== Mission analyze ======
     void requestElevation(QGeoCoordinate v);
     void terrainProfileChanged();
 };

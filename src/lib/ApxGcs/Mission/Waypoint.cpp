@@ -61,7 +61,7 @@ Waypoint::Waypoint(MissionGroup *parent)
     // Actions
     f_actions = new WaypointActions(this);
 
-    // Correct rout for elevationmap plugin
+    // Correct rout for elevationmap
     f_correct = new MissionField(this,
                                  "correct",
                                  tr("Path correction"),
@@ -676,7 +676,6 @@ void Waypoint::updateMinMaxHeight()
 void Waypoint::updateTerrainInfo()
 {
     auto result = m_watcher.result();
-    // Rebuild GeoPath
     m_terrainProfilePath = result.terrainProfilePath;
     m_terrainProfileMin = result.minHeight;
     m_terrainProfileMax = result.maxHeight;
@@ -697,7 +696,6 @@ void Waypoint::updateTotalDistanceWithRw()
     }    
 }
 
-// Waypoint path correction
 void Waypoint::correctPath(bool reply)
 {
     if (m_reply != reply)

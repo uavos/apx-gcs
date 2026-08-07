@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "ElevationMap.h"
 #include <App/App.h>
 #include <App/AppSettings.h>
@@ -267,7 +266,6 @@ void ElevationMap::setWaypointsValues(bool b)
         if (!b)
             continue;
         wp->initElevationMap();
-        //setTerrainProfile(wp->geoPath());
         connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation, Qt::UniqueConnection);
         connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
         connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile, Qt::UniqueConnection);

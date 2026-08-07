@@ -28,16 +28,13 @@
 
 #include <QQmlComponent>
 #include <QGeoCoordinate>
+#include <QGeoPath>
+#include <QPointF>
 #include <QtCore>
 #include <QMap>
 #include <QSet>
 
 #include <Mission/MissionItem.h>
-
-// ===== Analyze elevation route =====
-#include <QGeoPath>
-#include <QPointF>
-// ===================================
 
 class Unit;
 class UnitMission;

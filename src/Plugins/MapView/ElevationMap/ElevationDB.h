@@ -58,7 +58,7 @@ public:
     void requestElevation(double lat, double lon) override;
     void requestCoordinate(double lat, double lon) override;
     void requestTerrainProfile(const QGeoPath &path) override;
-    double getElevationASTER(double lat, double lon); // Return NaN if the elevation is undefined
+    double getElevationASTER(double lat, double lon); // return NaN if the elevation is undefined
 
 private:
     static constexpr int TERRAIN_STEP = 30; // terrain profile step in meters

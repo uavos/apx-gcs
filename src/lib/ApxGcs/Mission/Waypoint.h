@@ -65,7 +65,6 @@ public:
     Fact *f_atrack;
     Fact *f_xtrack;
 
-    // New functionality
     Fact *f_correct;
 
     WaypointActions *f_actions;
@@ -94,8 +93,6 @@ private slots:
     void updateAMSL();
     void updateAltDescr();
     static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
-
-    // New functionality
     static void getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
                                       const QGeoPath &path,
                                       int hFirst,
@@ -113,7 +110,6 @@ public slots:
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();
 
-    // New functionality
     void correctPath(bool reply = false);
     void updateTotalDistanceWithRw();
 
@@ -145,7 +141,7 @@ public:
     int unsafeAgl() const;
 
 protected:
-    static const int UNSAFE_AGL = 100; // Suggested by the CEO
+    static const int UNSAFE_AGL = 100;
     QFutureWatcher<TerrainInfo> m_watcher;
     ChosenFact m_chosen{ALT};
     double m_minHeight{0};

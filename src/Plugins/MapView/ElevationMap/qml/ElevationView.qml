@@ -157,8 +157,6 @@ Window {
         height: elevationView.height
         width: elevationView.width * chartScale
         visible: elevationView.chartOn
-        // layer.enabled: dragHandler.active || wheelHandler.active
-        // layer.smooth: true
 
         ChartView {
             id: chartView
@@ -188,7 +186,7 @@ Window {
                 labelsFont.pointSize: axisXLabel.font.pointSize
                 labelsColor: axisXLabel.color
                 gridVisible: false
-                tickCount: (Math.pow(2, Math.floor(Math.log2(chartScale)))) * 10 + 1    // adds a label when zooming in 2x
+                tickCount: (Math.pow(2, Math.floor(Math.log2(chartScale)))) * 10 + 1    // adds label when zooming in 2x
                 labelFormat: "%.0f"
             }
             ValueAxis {
@@ -337,7 +335,6 @@ Window {
         acceptedButtons: Qt.LeftButton
     }
 
-    // Item scaling is a heavy operation
     Timer {
         id: scaleTimer
         interval: 80

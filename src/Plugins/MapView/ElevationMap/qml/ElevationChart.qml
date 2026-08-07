@@ -92,8 +92,6 @@ Repeater {
             function updateLineSeriesData() {
                 if(!terrainProfile)
                     return;
-                //if(terrainProfile.lenght == 0)
-                //    return; 
                 if(distance >0 && !terrainProfile.length)
                     return;
                 if(epLineSeries.count > 0)

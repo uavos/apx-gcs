@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "ElevationDB.h"
 #include <App/App.h>
 #include <App/AppLog.h>
@@ -30,7 +29,6 @@
 #include <QMutexLocker>
 
 #include <cmath>
-#include <vector>
 
 QMutex OfflineElevationDB::m_mutex;
 QCache<QString, QImage> OfflineElevationDB::m_imageCache;
@@ -169,7 +167,6 @@ void OfflineElevationDB::setImage(const QString &file)
     }
 }
 
-// ===== Add route analyze ======
 void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path) {
     QFuture<QGeoPath> future;
     future = QtConcurrent::run(requestTerrainProfileASTER, path, m_dbPath);
