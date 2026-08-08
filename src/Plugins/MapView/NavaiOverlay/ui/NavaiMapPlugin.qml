@@ -169,18 +169,17 @@ AppPlugin {
                     property bool validCoordinate:
                         isFinite(latitude) &&
                         isFinite(longitude) &&
-                        isFinite(radiusMeters) &&
                         latitude >= -90 &&
                         latitude <= 90 &&
                         longitude >= -180 &&
                         longitude <= 180 &&
-                        radiusMeters > 0
+                        radiusMeters >= 0
 
                     property var centerCoord: validCoordinate
                         ? QtPositioning.coordinate(latitude, longitude)
                         : QtPositioning.coordinate(0, 0)
 
-                    property var edgeCoord: validCoordinate
+                    property var edgeCoord: validCoordinate && radiusMeters > 0
                         ? centerCoord.atDistanceAndAzimuth(radiusMeters, 90)
                         : QtPositioning.coordinate(0, 0)
 
@@ -218,10 +217,12 @@ AppPlugin {
                         return p
                     }
 
-                    property real rawPixelRadius: Math.sqrt(
-                        Math.pow(edgePoint.x - centerPoint.x, 2) +
-                        Math.pow(edgePoint.y - centerPoint.y, 2)
-                    )
+                    property real rawPixelRadius: radiusMeters > 0
+                        ? Math.sqrt(
+                            Math.pow(edgePoint.x - centerPoint.x, 2) +
+                            Math.pow(edgePoint.y - centerPoint.y, 2)
+                        )
+                        : 0
 
                     property real pixelRadius: Math.max(
                         rawPixelRadius,

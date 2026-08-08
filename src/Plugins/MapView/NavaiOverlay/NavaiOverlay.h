@@ -135,6 +135,7 @@ private slots:
     void updateEnabled();
 
     void bindUnit(Unit *unit);
+    void scheduleGpsPositionRecord();
     void recordGpsPosition();
 
 private:
@@ -194,6 +195,7 @@ private:
     QHash<QString, Fact *> _mandalaFacts;
 
     Unit *_unit = nullptr;
+    bool _gpsPositionRecordPending = false;
 
     static constexpr int PositionBufferSize = 6000;
     QVector<TimedPosition> _positionBuffer;
@@ -211,5 +213,6 @@ private:
 
     bool _active = false;
     bool _udpReady = false;
-    quint16 _udpPort = 9300;
+
+    quint16 _udpPort = 5005;
 };

@@ -447,7 +447,7 @@ void NavaiOverlay::bindUnit(Unit *unit)
         unit,
         &Unit::coordinateChanged,
         this,
-        &NavaiOverlay::recordGpsPosition
+        &NavaiOverlay::scheduleGpsPositionRecord
     );
 
     recordGpsPosition();
@@ -500,6 +500,19 @@ void NavaiOverlay::bindUnit(Unit *unit)
             .arg(f_camLon ? "OK" : "FAIL")
             .arg(lonKey)
     );
+}
+
+void NavaiOverlay::scheduleGpsPositionRecord()
+{
+    if (_gpsPositionRecordPending)
+        return;
+
+    _gpsPositionRecordPending = true;
+
+    QTimer::singleShot(0, this, [this]() {
+        _gpsPositionRecordPending = false;
+        recordGpsPosition();
+    });
 }
 
 void NavaiOverlay::recordGpsPosition()
@@ -854,36 +867,35 @@ void NavaiOverlay::handleDatagram(
         return;
     }
 
-    const QJsonObject obj =
-        doc.object();
+    const QJsonObject packet = doc.object();
+    QJsonObject obj = packet;
 
-    if (obj.value("type").toString().compare("gps", Qt::CaseInsensitive) == 0) {
-        bool okGpsLat = false;
-        bool okGpsLon = false;
-        bool okGpsTimestamp = false;
-        const double gpsLat = jsonNumber(obj, {"lat", "latitude"}, &okGpsLat);
-        const double gpsLon = jsonNumber(obj, {"lon", "longitude"}, &okGpsLon);
-        double gpsTimestamp = jsonNumber(obj, {"timestamp_ms", "timestamp", "ts"},
-                                         &okGpsTimestamp);
-        if (okGpsTimestamp && gpsTimestamp > 0.0 && gpsTimestamp < 100000000000.0)
-            gpsTimestamp *= 1000.0;
+    const bool isRecognitionEnvelope =
+        packet.contains("recognized") ||
+        packet.contains("raster_overlay") ||
+        packet.contains("checked");
 
-        const QGeoCoordinate coordinate(gpsLat, gpsLon);
-        if (!okGpsLat || !okGpsLon || !coordinate.isValid()) {
-            postToGcsConsole("Invalid Navai GPS test payload");
+    if (isRecognitionEnvelope) {
+        if (!packet.value("recognized").toBool() ||
+            !packet.value("raster_overlay").isObject()) {
             return;
         }
 
-        if (_unit) {
-            _unit->setCoordinate(coordinate);
-        } else {
-            processGpsPosition(
-                coordinate,
-                okGpsTimestamp ? static_cast<qint64>(gpsTimestamp)
-                               : QDateTime::currentMSecsSinceEpoch()
+        obj = packet.value("raster_overlay").toObject();
+
+        const QJsonObject match =
+            packet.value("result").toObject();
+
+        if (!obj.contains("percent") &&
+            match.contains("inlier_percent")) {
+            obj.insert(
+                "percent",
+                match.value("inlier_percent")
             );
         }
-        return;
+
+        if (!obj.contains("label"))
+            obj.insert("label", "Navai");
     }
 
     bool okLat = false;
@@ -912,12 +924,17 @@ void NavaiOverlay::handleDatagram(
             &okPercent
         );
 
-    const double radiusMeters =
+    double radiusMeters =
         jsonNumber(
             obj,
             {"radius_m", "spread_m", "radiusMeters", "spreadMeters", "radius"},
             &okRadius
         );
+
+    // NAVAI no longer estimates a result radius. A zero radius represents a
+    // point fix in the model and is rendered as a fixed-size marker by QML.
+    if (!okRadius)
+        radiusMeters = 0.0;
 
     if (okPercent &&
         percent > 0.0 &&
@@ -934,7 +951,6 @@ void NavaiOverlay::handleDatagram(
 
     if (!okLat ||
         !okLon ||
-        !okRadius ||
         !std::isfinite(lat) ||
         !std::isfinite(lon) ||
         !std::isfinite(radiusMeters) ||
@@ -942,7 +958,7 @@ void NavaiOverlay::handleDatagram(
         lat > 90.0 ||
         lon < -180.0 ||
         lon > 180.0 ||
-        radiusMeters <= 0.0) {
+        radiusMeters < 0.0) {
 
         postToGcsConsole("Invalid Navai result payload");
         return;
@@ -954,11 +970,18 @@ void NavaiOverlay::handleDatagram(
     );
 
     bool okTimestamp = false;
-    double timestamp = jsonNumber(
-        obj,
-        {"timestamp_ms", "timestamp", "ts", "time", "image_time", "frame_received_unix"},
-        &okTimestamp
-    );
+    double timestamp = 0.0;
+    if (isRecognitionEnvelope) {
+        timestamp = jsonNumber(packet, {"timestamp_ns"}, &okTimestamp);
+        if (okTimestamp)
+            timestamp /= 1000000.0; // Unix nanoseconds -> milliseconds.
+    } else {
+        timestamp = jsonNumber(
+            obj,
+            {"timestamp_ms", "timestamp", "ts", "time", "image_time", "frame_received_unix"},
+            &okTimestamp
+        );
+    }
     if (okTimestamp && timestamp > 0.0 && timestamp < 100000000000.0)
         timestamp *= 1000.0; // Unix seconds -> milliseconds.
     startMatchedTrajectory(QGeoCoordinate(lat, lon),
@@ -980,11 +1003,13 @@ void NavaiOverlay::handleDatagram(
             : QString("%1 - %2%").arg(payloadLabel, percentText);
 
     const QString consoleText =
-        QString("%1, lat=%2 lon=%3 spread=%4 m")
+        QString("%1, lat=%2 lon=%3%4")
             .arg(label)
             .arg(lat, 0, 'f', 7)
             .arg(lon, 0, 'f', 7)
-            .arg(radiusMeters, 0, 'f', 1);
+            .arg(radiusMeters > 0.0
+                     ? QString(" spread=%1 m").arg(radiusMeters, 0, 'f', 1)
+                     : QString());
 
     postToGcsConsole(consoleText);
 
