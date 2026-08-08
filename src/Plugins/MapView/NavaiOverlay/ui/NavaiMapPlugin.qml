@@ -18,6 +18,8 @@ AppPlugin {
             property var historicalTrajectoryItems: []
             property var navai: apx.tools.navai
             property int mapRevision: 0
+            property real trajectoryLineWidth: 4
+            property real trajectoryEndpointDiameter: 8
 
             property bool navaiAvailable: navai !== null && navai !== undefined
             property bool navaiActive: navaiAvailable && navai.active
@@ -34,6 +36,7 @@ AppPlugin {
 
                 if (attachedMap) {
                     attachedMap.removeMapItem(matchedTrajectoryLine)
+                    attachedMap.removeMapItem(matchedTrajectoryEndpoint)
                     clearHistoricalTrajectories()
                 }
 
@@ -41,6 +44,7 @@ AppPlugin {
 
                 if (attachedMap) {
                     attachedMap.addMapItem(matchedTrajectoryLine)
+                    attachedMap.addMapItem(matchedTrajectoryEndpoint)
                     rebuildHistoricalTrajectories()
                 }
             }
@@ -70,6 +74,15 @@ AppPlugin {
                     )
                     attachedMap.addMapItem(item)
                     items.push(item)
+
+                    if (paths[i].length > 0) {
+                        var endpoint = historicalTrajectoryEndpointComponent.createObject(
+                            navaiLayer,
+                            { "coordinate": paths[i][paths[i].length - 1] }
+                        )
+                        attachedMap.addMapItem(endpoint)
+                        items.push(endpoint)
+                    }
                 }
                 historicalTrajectoryItems = items
             }
@@ -85,6 +98,8 @@ AppPlugin {
                 clearHistoricalTrajectories()
                 if (attachedMap)
                     attachedMap.removeMapItem(matchedTrajectoryLine)
+                if (attachedMap)
+                    attachedMap.removeMapItem(matchedTrajectoryEndpoint)
             }
 
             Connections {
@@ -133,7 +148,7 @@ AppPlugin {
                          navaiLayer.navai.matchedTrajectoryCoordinates.length > 1
 
                 z: 99999
-                line.width: 6
+                line.width: navaiLayer.trajectoryLineWidth
                 line.color: "#ff7a00"
 
                 path: navaiLayer.navaiAvailable
@@ -141,13 +156,57 @@ AppPlugin {
                     : []
             }
 
+            MapQuickItem {
+                id: matchedTrajectoryEndpoint
+
+                visible: navaiLayer.navaiAvailable &&
+                         navaiLayer.navaiActive &&
+                         navaiLayer.navai.matchedTrajectoryCoordinates.length > 0
+
+                z: 100000
+                anchorPoint.x: endpointDot.width / 2
+                anchorPoint.y: endpointDot.height / 2
+
+                coordinate: visible
+                    ? navaiLayer.navai.matchedTrajectoryCoordinates[
+                        navaiLayer.navai.matchedTrajectoryCoordinates.length - 1
+                      ]
+                    : QtPositioning.coordinate(0, 0)
+
+                sourceItem: Rectangle {
+                    id: endpointDot
+                    width: navaiLayer.trajectoryEndpointDiameter
+                    height: width
+                    radius: width / 2
+                    color: "#ff7a00"
+                }
+            }
+
             Component {
                 id: historicalTrajectoryComponent
 
                 MapPolyline {
                     z: 99998
-                    line.width: 3
+                    line.width: navaiLayer.trajectoryLineWidth
                     line.color: "#66ff7a00"
+                }
+            }
+
+            Component {
+                id: historicalTrajectoryEndpointComponent
+
+                MapQuickItem {
+                    z: 99999
+                    anchorPoint.x: historicalEndpointDot.width / 2
+                    anchorPoint.y: historicalEndpointDot.height / 2
+
+                    sourceItem: Rectangle {
+                        id: historicalEndpointDot
+                        width: navaiLayer.trajectoryEndpointDiameter
+                        height: width
+                        radius: width / 2
+                        color: "#66ff7a00"
+                    }
                 }
             }
 

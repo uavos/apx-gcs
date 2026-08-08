@@ -621,7 +621,7 @@ void NavaiOverlay::startMatchedTrajectory(
 
     _matchedPoint = navaiPoint;
     _sourceAnchor = _positionBuffer.at(matchedIndex).coordinate;
-    _trajectoryActive = true;
+    _trajectoryActive = false;
 
     for (int i = matchedIndex; i < _positionBuffer.size(); ++i) {
         const QGeoCoordinate aligned =
@@ -635,6 +635,20 @@ void NavaiOverlay::startMatchedTrajectory(
         );
 
         _lastTrajectoryPoint = aligned;
+    }
+
+    // The NAVAI result consumes only telemetry older than its source frame.
+    // Keep the boundary sample and everything newer for subsequent results.
+    if (timestampMs > 0) {
+        int obsoleteCount = 0;
+
+        while (obsoleteCount < _positionBuffer.size() &&
+               _positionBuffer.at(obsoleteCount).timestampMs < timestampMs) {
+            ++obsoleteCount;
+        }
+
+        if (obsoleteCount > 0)
+            _positionBuffer.remove(0, obsoleteCount);
     }
 
     emit matchedTrajectoryChanged();
