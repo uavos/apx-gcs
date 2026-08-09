@@ -651,6 +651,9 @@ void NavaiOverlay::startMatchedTrajectory(
             _positionBuffer.remove(0, obsoleteCount);
     }
 
+    if (_unit && _lastTrajectoryPoint.isValid())
+        _unit->sendPositionFix(_lastTrajectoryPoint);
+
     emit matchedTrajectoryChanged();
 }
 
