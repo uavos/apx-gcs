@@ -83,10 +83,16 @@ Repeater {
                     axisX: epAxisX
                     axisY: epAxisY
                     color: epItem.collision ? "#40ff0000" : "#4000ff00"
-                    borderColor: epItem.collision ? "#ff0000" : "#00ff00"
+                    borderColor: "transparent"
                     upperSeries: LineSeries {
                         id: epLineSeries
                     }
+                }
+                LineSeries {
+                    id: epTopBorder
+                    axisX: epAxisX
+                    axisY: epAxisY
+                    color: epItem.collision ? "#ff0000" : "#00ff00" 
                 }
             }
             function updateLineSeriesData() {
@@ -94,17 +100,22 @@ Repeater {
                     return;
                 if(distance >0 && !terrainProfile.length)
                     return;
-                if(epLineSeries.count > 0)
+                if(epLineSeries.count > 0) {
+                    epTopBorder.removePoints(0, epTopBorder.count)
                     epLineSeries.removePoints(0, epLineSeries.count)
+                }
                 var groupDistance = mission.wp.distance
                 if(groupDistance == 0 && totalDistance == 0) // for single point
                    return;
                 var partWidth = distance * maxWidth / Math.max(groupDistance, totalDistance)
                 var step = partWidth != 0 ? Math.round(2*terrainProfile.length / partWidth) : 1
                 step = step > 0 ? step : 1
-                for (var i = 0; i < terrainProfile.length; ++i) 
-                    if((i%step) == 0 || i == terrainProfile.length-1)
+                for (var i = 0; i < terrainProfile.length; ++i) { 
+                    if((i%step) == 0 || i == terrainProfile.length-1) {
                         epLineSeries.append(terrainProfile[i].x, terrainProfile[i].y)
+                        epTopBorder.append(terrainProfile[i].x, terrainProfile[i].y)
+                    }
+                }
                 elevationProfile.visible = true     
             }
         }
