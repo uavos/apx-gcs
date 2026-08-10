@@ -97,8 +97,10 @@ Repeater {
                 if(epLineSeries.count > 0)
                     epLineSeries.removePoints(0, epLineSeries.count)
                 var groupDistance = mission.wp.distance
+                if(groupDistance == 0 && totalDistance == 0) // for single point
+                   return;
                 var partWidth = distance * maxWidth / Math.max(groupDistance, totalDistance)
-                var step = Math.round(2*terrainProfile.length / partWidth)
+                var step = partWidth != 0 ? Math.round(2*terrainProfile.length / partWidth) : 1
                 step = step > 0 ? step : 1
                 for (var i = 0; i < terrainProfile.length; ++i) 
                     if((i%step) == 0 || i == terrainProfile.length-1)
