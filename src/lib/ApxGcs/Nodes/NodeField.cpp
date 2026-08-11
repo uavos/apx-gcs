@@ -172,7 +172,9 @@ QJsonValue NodeField::toJson()
         jsv = valueText();
     }
 
-    return json::fix_number(jsv);
+    const bool is_text = _type == "text" || _type == "string" || _type == "script";
+
+    return is_text ? jsv : json::fix_number(jsv);
 }
 void NodeField::fromJson(const QJsonValue &jsv)
 {
