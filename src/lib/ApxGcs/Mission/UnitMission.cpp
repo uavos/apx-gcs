@@ -503,8 +503,6 @@ void UnitMission::setSelectedItem(Fact *v)
     emit selectedItemChanged();
 }
 
-// ===== Mission Analyze =====
-
 double UnitMission::startElevation() const
 {
     return m_startElevation;
@@ -577,7 +575,7 @@ void UnitMission::checkCollision()
 
 void UnitMission::updateMinHeight()
 {
-    if (empty())
+    if (missionSize() <= 0)
         return;
     // if (f_waypoints->size() <= 0)
     //     return;
@@ -596,7 +594,7 @@ void UnitMission::updateMinHeight()
 
 void UnitMission::updateMaxHeight()
 {
-    if(empty())
+    if (missionSize() <= 0)
         return;
     // if (f_waypoints->size() <= 0)
     //     return;
