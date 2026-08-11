@@ -117,6 +117,7 @@ void Waypoint::initElevationMap()
     auto mission = group->mission;
     auto order = f_order->value().toInt();
     connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
+    connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::updateMinMaxHeight, Qt::UniqueConnection);
     if (order == 1) {
         connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::checkCollision, Qt::UniqueConnection);
     }
