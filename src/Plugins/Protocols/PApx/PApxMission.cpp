@@ -370,7 +370,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                 m.insert("script", QString::fromUtf8(QByteArray(s, strlen(s))));
                 break;
             }
-            case xbus::mission::act_s::TRG_SHOT: {
+                /*case xbus::mission::act_s::TRG_SHOT: {
                 xbus::mission::act_shot_s e;
                 if (stream.read(&e, sizeof(e)) != sizeof(e)) {
                     qWarning() << "error reading act_shot" << i << hdr.items.act.cnt;
@@ -401,7 +401,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                 }
                 m.insert("tshot", QVariant::fromValue((uint) e.time));
                 break;
-            }
+            }*/
             }
             act.append(m);
         }
@@ -718,7 +718,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             if (scr.size() > max - 1)
                 scr.resize(max - 1);
             stream.write_string(scr.toUtf8().constData());
-        } else if (key == "shot") {
+        } /*else if (key == "shot") {
             xbus::mission::act_shot_s e{};
             e.type = xbus::mission::act_s::TRG_SHOT;
             auto s = m.value(key).toString();
@@ -741,7 +741,8 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             e.type = xbus::mission::act_s::TRG_TSHOT;
             e.time = m.value(key).toUInt();
             stream.write(&e, sizeof(e));
-        } else {
+        } */
+        else {
             qWarning() << "Unknown action" << key;
             continue;
         }

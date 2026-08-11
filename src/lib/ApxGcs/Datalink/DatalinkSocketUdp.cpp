@@ -74,8 +74,7 @@ DatalinkSocketUdp::DatalinkSocketUdp(Fact *parent, QUrl url)
 //example: 172.29.0.1:5000?bind=224.168.1.20:5000
 void DatalinkSocketUdp::setRemoteUrl(QUrl url)
 {
-    // qDebug() << url << url.isValid() << url.toString();
-    setUrl(url.toString());
+    DatalinkSocket::setRemoteUrl(url);
 
     QUrlQuery q(url);
     if (q.hasQueryItem("bind")) {
@@ -98,6 +97,8 @@ void DatalinkSocketUdp::open()
 {
     if (_udp->isOpen())
         _udp->abort();
+
+    setRemoteUrl(url()); // parse url and set bind address and port
 
     bool res = _udp->bind(QHostAddress::AnyIPv4,
                           _bindPort,
@@ -144,7 +145,8 @@ QByteArray DatalinkSocketUdp::read()
     auto data = _read_datagram.data();
     _read_datagram = {};
 
-    // qDebug() << data.toHex();
+    // qDebug() << _read_datagram.senderAddress().toString() << _read_datagram.senderPort()
+    //          << data.toHex();
 
     return data;
 }

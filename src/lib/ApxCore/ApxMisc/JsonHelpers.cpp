@@ -149,6 +149,8 @@ static QJsonValueRef _fix_number(QJsonValueRef value,
             value = t.msecsSinceStartOfDay();
     } else if (QStringList({"true", "false", "yes", "no"}).contains(s.toLower())) {
         value = (s == "true" || s == "yes");
+    } else if (s.startsWith("0") && s.length() > 1) {
+        // "0001" is a string, but "0x01" is a hex number
     } else {
         auto d = s.toLongLong(&ok);
         if (ok)
