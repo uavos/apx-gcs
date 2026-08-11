@@ -38,6 +38,8 @@ public:
     Fact *f_altset;
     Fact *f_altsetApply;
 
+    Fact *f_reverse;
+
     Fact *f_copy;
 
     UnitMission *mission;
@@ -45,8 +47,10 @@ public:
 private slots:
     void altadjustTriggered();
     void altsetTriggered();
+    void reverseTriggered();
 
     void updateMaxAltitude();
+    void updateReverseEnabled();
 
     void copyUnitSelected(Unit *unit);
 };
