@@ -297,6 +297,11 @@ void ElevationMap::setWaypointsValues(bool b)
         tempMap[str] = alt;
     }
 
+    // For the first load from a file 
+    // when there is no elevation data at all
+    m->updateMinHeight();
+    m->updateMaxHeight();
+
     m_waypoints = tempMap;
 }
 
