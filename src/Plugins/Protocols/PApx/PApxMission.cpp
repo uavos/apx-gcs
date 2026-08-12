@@ -159,7 +159,7 @@ static uint _pack_act(QVariantList *actions_list, const QVariantMap &wp)
     _pack_act_wp(&m, wp, "speed");
     _pack_act_wp(&m, wp, "poi");
     _pack_act_wp(&m, wp, "script");
-    _pack_act_wp(&m, wp, "cam", {"shot", "dshot", "tshot"});
+    _pack_act_wp(&m, wp, "cam", {"cam", "cam_dist", "cam_time"});
 
     if (m.isEmpty())
         return 0;
@@ -378,7 +378,7 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                 case xbus::mission::act_cam_s::OFF:
                     break;
                 case xbus::mission::act_cam_s::SINGLE:
-                    m.insert("shot", "single");
+                    m.insert("cam", "single");
                     break;
                 case xbus::mission::act_cam_s::DIST: {
                     xbus::mission::act_cam_s::cam_dist_s d;
@@ -386,8 +386,8 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                         qWarning() << "error reading act_cam dist" << i << hdr.items.act.cnt;
                         return {};
                     }
-                    m.insert("shot", "dist");
-                    m.insert("dshot", QVariant::fromValue((uint) d.dist));
+                    m.insert("cam", "dist");
+                    m.insert("cam_dist", QVariant::fromValue((uint) d.dist));
                     break;
                 }
                 case xbus::mission::act_cam_s::TIME: {
@@ -396,8 +396,8 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                         qWarning() << "error reading act_cam time" << i << hdr.items.act.cnt;
                         return {};
                     }
-                    m.insert("shot", "time");
-                    m.insert("tshot", QVariant::fromValue((uint) t.time));
+                    m.insert("cam", "time");
+                    m.insert("cam_time", QVariant::fromValue((uint) t.time));
                     break;
                 }
                 default:
@@ -725,7 +725,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         } else if (key == "cam") {
             xbus::mission::act_cam_s e{};
             e.type = xbus::mission::act_s::TRG_CAM;
-            const auto s = m.value("shot").toString();
+            const auto s = m.value("cam").toString();
             if (s == "single")
                 e.mode = xbus::mission::act_cam_s::SINGLE;
             else if (s == "dist")
@@ -738,11 +738,11 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             // optional fields
             if (e.mode == xbus::mission::act_cam_s::DIST) {
                 xbus::mission::act_cam_s::cam_dist_s d{};
-                d.dist = m.value("dshot").toUInt();
+                d.dist = m.value("cam_dist").toUInt();
                 stream.write(&d, sizeof(d));
             } else if (e.mode == xbus::mission::act_cam_s::TIME) {
                 xbus::mission::act_cam_s::cam_time_s t{};
-                t.time = m.value("tshot").toUInt();
+                t.time = m.value("cam_time").toUInt();
                 stream.write(&t, sizeof(t));
             }
         } else {
