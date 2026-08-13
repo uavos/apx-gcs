@@ -134,27 +134,47 @@ static QJsonValueRef _fix_number(QJsonValueRef value,
         }
     }
 
-    if (!value.isString())
-        return value;
+    while (value.isString()) {
+        auto s = value.toString().toLower();
+        bool ok = false;
 
-    auto s = value.toString();
-    bool ok = false;
-    if (s.contains('.')) {
-        auto d = s.toDouble(&ok);
-        if (ok)
-            value = d;
-    } else if (s.contains(':')) {
-        auto t = QTime::fromString(s, "hh:mm:ss");
-        if (t.isValid())
-            value = t.msecsSinceStartOfDay();
-    } else if (QStringList({"true", "false", "yes", "no"}).contains(s.toLower())) {
-        value = (s == "true" || s == "yes");
-    } else if (s.startsWith("0") && s.length() > 1) {
-        // "0001" is a string, but "0x01" is a hex number
-    } else {
+        // special cases for strings
+
+        if (s.contains(':')) {
+            auto t = QTime::fromString(s, "hh:mm:ss");
+            if (t.isValid())
+                value = (qint64) t.msecsSinceStartOfDay();
+            break;
+        }
+
+        if (QStringList({"true", "false", "yes", "no"}).contains(s)) {
+            value = (bool) (s == "true" || s == "yes");
+            break;
+        }
+
+        if (s.contains('.')) {
+            auto d = s.toDouble(&ok);
+            if (ok)
+                value = d;
+            break;
+        }
+
+        // check if s contains any non-numeric character or +/- signs
+        if (s.contains(QRegularExpression("[^0-9\\-\\+]")))
+            break;
+
+        // "0001" or "+01" or "-001" is a string
+        if (s.length() > 1 && s.startsWith('0'))
+            break;
+        if (s.length() > 2 && (s.startsWith("-0") || s.startsWith("+0")))
+            break;
+
+        // check if s is a valid integer
         auto d = s.toLongLong(&ok);
         if (ok)
             value = d;
+
+        break;
     }
     return value;
 }
