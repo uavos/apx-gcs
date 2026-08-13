@@ -6,6 +6,7 @@
 #include <QGeoCoordinate>
 #include <QHash>
 #include <QHostAddress>
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QTimer>
 #include <QUdpSocket>
@@ -89,7 +90,6 @@ class NavaiOverlay : public Fact
     Q_PROPERTY(bool udpReady READ udpReady NOTIFY udpReadyChanged)
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
     Q_PROPERTY(QVariantList matchedTrajectoryCoordinates READ matchedTrajectoryCoordinates NOTIFY matchedTrajectoryChanged)
-    Q_PROPERTY(QVariantList historicalTrajectories READ historicalTrajectories NOTIFY historicalTrajectoriesChanged)
 
 public:
     explicit NavaiOverlay(Fact *parent = nullptr);
@@ -125,24 +125,16 @@ public:
         return _matchedTrajectoryCoordinates;
     }
 
-    QVariantList historicalTrajectories() const
-    {
-        return _historicalTrajectories;
-    }
-
 signals:
     void activeChanged();
     void udpReadyChanged();
     void matchedTrajectoryChanged();
-    void historicalTrajectoriesChanged();
 
 private slots:
     void readUdpDatagrams();
     void updateEnabled();
 
     void bindUnit(Unit *unit);
-    void scheduleGpsPositionRecord();
-    void recordGpsPosition();
 
 private:
     QString uiDir() const;
@@ -171,25 +163,7 @@ private:
 
     void postToGcsConsole(const QString &text);
 
-    struct TimedPosition
-    {
-        QGeoCoordinate coordinate;
-        qint64 timestampMs = 0;
-    };
-
-    void processGpsPosition(
-        const QGeoCoordinate &coordinate,
-        qint64 timestampMs
-    );
-
-    void startMatchedTrajectory(
-        const QGeoCoordinate &navaiPoint,
-        qint64 timestampMs
-    );
-
-    QGeoCoordinate alignPosition(
-        const QGeoCoordinate &coordinate
-    ) const;
+    void applyTrajectory(const QJsonArray &trajectory);
 
     void clearTrajectory();
 
@@ -201,17 +175,8 @@ private:
     QHash<QString, Fact *> _mandalaFacts;
 
     Unit *_unit = nullptr;
-    bool _gpsPositionRecordPending = false;
-
-    static constexpr int PositionBufferSize = 6000;
-    QVector<TimedPosition> _positionBuffer;
 
     QVariantList _matchedTrajectoryCoordinates;
-    QVariantList _historicalTrajectories;
-    QGeoCoordinate _matchedPoint;
-    QGeoCoordinate _sourceAnchor;
-    QGeoCoordinate _lastTrajectoryPoint;
-    bool _trajectoryActive = false;
 
     NavaiResultModel _resultsModel;
 

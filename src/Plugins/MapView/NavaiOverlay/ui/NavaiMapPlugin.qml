@@ -15,7 +15,6 @@ AppPlugin {
 
             property var baseMap: ui.map
             property var attachedMap: null
-            property var historicalTrajectoryItems: []
             property var navai: apx.tools.navai
             property int mapRevision: 0
             property real trajectoryLineWidth: 4
@@ -37,7 +36,6 @@ AppPlugin {
                 if (attachedMap) {
                     attachedMap.removeMapItem(matchedTrajectoryLine)
                     attachedMap.removeMapItem(matchedTrajectoryEndpoint)
-                    clearHistoricalTrajectories()
                 }
 
                 attachedMap = baseMap
@@ -45,46 +43,7 @@ AppPlugin {
                 if (attachedMap) {
                     attachedMap.addMapItem(matchedTrajectoryLine)
                     attachedMap.addMapItem(matchedTrajectoryEndpoint)
-                    rebuildHistoricalTrajectories()
                 }
-            }
-
-            function clearHistoricalTrajectories()
-            {
-                for (var i = 0; i < historicalTrajectoryItems.length; ++i) {
-                    if (attachedMap)
-                        attachedMap.removeMapItem(historicalTrajectoryItems[i])
-                    historicalTrajectoryItems[i].destroy()
-                }
-                historicalTrajectoryItems = []
-            }
-
-            function rebuildHistoricalTrajectories()
-            {
-                clearHistoricalTrajectories()
-                if (!attachedMap || !navaiAvailable)
-                    return
-
-                var paths = navai.historicalTrajectories
-                var items = []
-                for (var i = 0; i < paths.length; ++i) {
-                    var item = historicalTrajectoryComponent.createObject(
-                        navaiLayer,
-                        { "path": paths[i] }
-                    )
-                    attachedMap.addMapItem(item)
-                    items.push(item)
-
-                    if (paths[i].length > 0) {
-                        var endpoint = historicalTrajectoryEndpointComponent.createObject(
-                            navaiLayer,
-                            { "coordinate": paths[i][paths[i].length - 1] }
-                        )
-                        attachedMap.addMapItem(endpoint)
-                        items.push(endpoint)
-                    }
-                }
-                historicalTrajectoryItems = items
             }
 
             onBaseMapChanged: Qt.callLater(attachTrajectory)
@@ -95,20 +54,10 @@ AppPlugin {
             }
 
             Component.onDestruction: {
-                clearHistoricalTrajectories()
                 if (attachedMap)
                     attachedMap.removeMapItem(matchedTrajectoryLine)
                 if (attachedMap)
                     attachedMap.removeMapItem(matchedTrajectoryEndpoint)
-            }
-
-            Connections {
-                target: navaiLayer.navai
-                ignoreUnknownSignals: true
-
-                function onHistoricalTrajectoriesChanged() {
-                    navaiLayer.rebuildHistoricalTrajectories()
-                }
             }
 
             Connections {
@@ -179,34 +128,6 @@ AppPlugin {
                     height: width
                     radius: width / 2
                     color: "#ff7a00"
-                }
-            }
-
-            Component {
-                id: historicalTrajectoryComponent
-
-                MapPolyline {
-                    z: 99998
-                    line.width: navaiLayer.trajectoryLineWidth
-                    line.color: "#66ff7a00"
-                }
-            }
-
-            Component {
-                id: historicalTrajectoryEndpointComponent
-
-                MapQuickItem {
-                    z: 99999
-                    anchorPoint.x: historicalEndpointDot.width / 2
-                    anchorPoint.y: historicalEndpointDot.height / 2
-
-                    sourceItem: Rectangle {
-                        id: historicalEndpointDot
-                        width: navaiLayer.trajectoryEndpointDiameter
-                        height: width
-                        radius: width / 2
-                        color: "#66ff7a00"
-                    }
                 }
             }
 

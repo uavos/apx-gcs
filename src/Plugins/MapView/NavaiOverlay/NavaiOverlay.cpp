@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QJsonValue>
@@ -443,7 +444,6 @@ void NavaiOverlay::bindUnit(Unit *unit)
         disconnect(_unit, nullptr, this, nullptr);
 
     _unit = unit;
-    _positionBuffer.clear();
     clearTrajectory();
 
     _mandalaFacts.clear();
@@ -454,15 +454,6 @@ void NavaiOverlay::bindUnit(Unit *unit)
         postToGcsConsole("Unit bind failed: no current unit");
         return;
     }
-
-    connect(
-        unit,
-        &Unit::coordinateChanged,
-        this,
-        &NavaiOverlay::scheduleGpsPositionRecord
-    );
-
-    recordGpsPosition();
 
     if (!unit->f_mandala) {
         postToGcsConsole("Mandala bind failed: no current unit mandala");
@@ -514,171 +505,37 @@ void NavaiOverlay::bindUnit(Unit *unit)
     );
 }
 
-void NavaiOverlay::scheduleGpsPositionRecord()
+void NavaiOverlay::applyTrajectory(const QJsonArray &trajectory)
 {
-    if (_gpsPositionRecordPending)
-        return;
-
-    _gpsPositionRecordPending = true;
-
-    QTimer::singleShot(0, this, [this]() {
-        _gpsPositionRecordPending = false;
-        recordGpsPosition();
-    });
-}
-
-void NavaiOverlay::recordGpsPosition()
-{
-    if (!_active || !_unit)
-        return;
-
-    processGpsPosition(
-        _unit->coordinate(),
-        QDateTime::currentMSecsSinceEpoch()
-    );
-}
-
-void NavaiOverlay::processGpsPosition(
-    const QGeoCoordinate &coordinate,
-    qint64 timestampMs)
-{
-    if (!coordinate.isValid() || timestampMs <= 0)
-        return;
-
-    if (!_positionBuffer.isEmpty() &&
-        timestampMs < _positionBuffer.back().timestampMs) {
-        _positionBuffer.clear();
-        clearTrajectory();
-    }
-
-    if (_positionBuffer.size() >= PositionBufferSize)
-        _positionBuffer.remove(0);
-
-    _positionBuffer.push_back({coordinate, timestampMs});
-
-    if (!_trajectoryActive)
-        return;
-
-    const QGeoCoordinate aligned = alignPosition(coordinate);
-    if (!aligned.isValid())
-        return;
-
-    if (_lastTrajectoryPoint.isValid() &&
-        _lastTrajectoryPoint.distanceTo(aligned) < 0.5) {
-        return;
-    }
-
-    _matchedTrajectoryCoordinates.push_back(
-        QVariant::fromValue(aligned)
-    );
-
-    _lastTrajectoryPoint = aligned;
-    emit matchedTrajectoryChanged();
-}
-
-QGeoCoordinate NavaiOverlay::alignPosition(
-    const QGeoCoordinate &coordinate) const
-{
-    if (!_matchedPoint.isValid() ||
-        !_sourceAnchor.isValid() ||
-        !coordinate.isValid()) {
-        return {};
-    }
-
-    return _matchedPoint.atDistanceAndAzimuth(
-        _sourceAnchor.distanceTo(coordinate),
-        _sourceAnchor.azimuthTo(coordinate)
-    );
-}
-
-void NavaiOverlay::startMatchedTrajectory(
-    const QGeoCoordinate &navaiPoint,
-    qint64 timestampMs)
-{
-    if (_matchedTrajectoryCoordinates.size() > 1) {
-        _historicalTrajectories.push_back(
-            _matchedTrajectoryCoordinates
-        );
-        emit historicalTrajectoriesChanged();
-    }
-
-    _trajectoryActive = false;
     _matchedTrajectoryCoordinates.clear();
-    _matchedPoint = {};
-    _sourceAnchor = {};
-    _lastTrajectoryPoint = {};
-    emit matchedTrajectoryChanged();
-
-    if (!navaiPoint.isValid() || _positionBuffer.isEmpty())
-        return;
-
-    int matchedIndex = _positionBuffer.size() - 1;
-
-    if (timestampMs > 0) {
-        qint64 bestDelta =
-            qAbs(_positionBuffer.first().timestampMs - timestampMs);
-
-        matchedIndex = 0;
-
-        for (int i = 1; i < _positionBuffer.size(); ++i) {
-            const qint64 delta =
-                qAbs(_positionBuffer.at(i).timestampMs - timestampMs);
-
-            if (delta < bestDelta) {
-                bestDelta = delta;
-                matchedIndex = i;
-            }
-        }
-    }
-
-    _matchedPoint = navaiPoint;
-    _sourceAnchor = _positionBuffer.at(matchedIndex).coordinate;
-    _trajectoryActive = false;
-
-    for (int i = matchedIndex; i < _positionBuffer.size(); ++i) {
-        const QGeoCoordinate aligned =
-            alignPosition(_positionBuffer.at(i).coordinate);
-
-        if (!aligned.isValid())
+    for (const QJsonValue &value : trajectory) {
+        if (!value.isObject())
             continue;
-
+        const QJsonObject point = value.toObject();
+        bool okLat = false;
+        bool okLon = false;
+        const double lat = jsonNumber(point, {"lat", "latitude"}, &okLat);
+        const double lon = jsonNumber(point, {"lon", "longitude"}, &okLon);
+        const QGeoCoordinate coordinate(lat, lon);
+        if (!okLat || !okLon || !coordinate.isValid())
+            continue;
         _matchedTrajectoryCoordinates.push_back(
-            QVariant::fromValue(aligned)
+            QVariant::fromValue(coordinate)
         );
-
-        _lastTrajectoryPoint = aligned;
     }
 
-    // The NAVAI result consumes only telemetry older than its source frame.
-    // Keep the boundary sample and everything newer for subsequent results.
-    if (timestampMs > 0) {
-        int obsoleteCount = 0;
-
-        while (obsoleteCount < _positionBuffer.size() &&
-               _positionBuffer.at(obsoleteCount).timestampMs < timestampMs) {
-            ++obsoleteCount;
-        }
-
-        if (obsoleteCount > 0)
-            _positionBuffer.remove(0, obsoleteCount);
-    }
-
-    if (_unit && _lastTrajectoryPoint.isValid())
-        _unit->sendPositionFix(_lastTrajectoryPoint);
+    if (_unit && !_matchedTrajectoryCoordinates.isEmpty())
+        _unit->sendPositionFix(
+            _matchedTrajectoryCoordinates.back().value<QGeoCoordinate>()
+        );
 
     emit matchedTrajectoryChanged();
 }
 
 void NavaiOverlay::clearTrajectory()
 {
-    _trajectoryActive = false;
     _matchedTrajectoryCoordinates.clear();
-    _historicalTrajectories.clear();
-    _matchedPoint = {};
-    _sourceAnchor = {};
-    _lastTrajectoryPoint = {};
     emit matchedTrajectoryChanged();
-    emit historicalTrajectoriesChanged();
 }
 
 void NavaiOverlay::writeCameraFacts(
@@ -712,7 +569,6 @@ void NavaiOverlay::updateEnabled()
 
     if (_active) {
         setupUdp();
-        recordGpsPosition();
 
         postToGcsConsole(
             QString("Navai overlay enabled, UDP port %1")
@@ -791,7 +647,6 @@ void NavaiOverlay::stopUdp()
         emit udpReadyChanged();
 
     _resultsModel.clear();
-    _positionBuffer.clear();
     clearTrajectory();
 }
 
@@ -1021,23 +876,7 @@ void NavaiOverlay::handleDatagram(
         lon
     );
 
-    bool okTimestamp = false;
-    double timestamp = 0.0;
-    if (isRecognitionEnvelope) {
-        timestamp = jsonNumber(packet, {"timestamp_ns"}, &okTimestamp);
-        if (okTimestamp)
-            timestamp /= 1000000.0; // Unix nanoseconds -> milliseconds.
-    } else {
-        timestamp = jsonNumber(
-            obj,
-            {"timestamp_ms", "timestamp", "ts", "time", "image_time", "frame_received_unix"},
-            &okTimestamp
-        );
-    }
-    if (okTimestamp && timestamp > 0.0 && timestamp < 100000000000.0)
-        timestamp *= 1000.0; // Unix seconds -> milliseconds.
-    startMatchedTrajectory(QGeoCoordinate(lat, lon),
-                           okTimestamp ? static_cast<qint64>(timestamp) : 0);
+    applyTrajectory(packet.value("trajectory").toArray());
 
     const QString payloadLabel =
         obj.value("label").toString().trimmed();
