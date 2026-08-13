@@ -220,6 +220,8 @@ AppPlugin {
 
                     required property real latitude
                     required property real longitude
+                    required property real tileLatitude
+                    required property real tileLongitude
                     required property real radiusMeters
                     required property real percent
                     required property string label
@@ -231,15 +233,28 @@ AppPlugin {
                         latitude >= -90 &&
                         latitude <= 90 &&
                         longitude >= -180 &&
-                        longitude <= 180 &&
-                        radiusMeters >= 0
+                        longitude <= 180
+
+                    property bool validTileArea:
+                        isFinite(tileLatitude) &&
+                        isFinite(tileLongitude) &&
+                        tileLatitude >= -90 &&
+                        tileLatitude <= 90 &&
+                        tileLongitude >= -180 &&
+                        tileLongitude <= 180 &&
+                        isFinite(radiusMeters) &&
+                        radiusMeters > 0
 
                     property var centerCoord: validCoordinate
                         ? QtPositioning.coordinate(latitude, longitude)
                         : QtPositioning.coordinate(0, 0)
 
-                    property var edgeCoord: validCoordinate && radiusMeters > 0
-                        ? centerCoord.atDistanceAndAzimuth(radiusMeters, 90)
+                    property var tileCenterCoord: validTileArea
+                        ? QtPositioning.coordinate(tileLatitude, tileLongitude)
+                        : QtPositioning.coordinate(0, 0)
+
+                    property var edgeCoord: validTileArea
+                        ? tileCenterCoord.atDistanceAndAzimuth(radiusMeters, 90)
                         : QtPositioning.coordinate(0, 0)
 
                     property var centerPoint: {
@@ -262,7 +277,7 @@ AppPlugin {
                     property var edgePoint: {
                         navaiLayer.mapRevision
 
-                        if (!validCoordinate || !navaiLayer.baseMap)
+                        if (!validTileArea || !navaiLayer.baseMap)
                             return Qt.point(0, 0)
 
                         var p = navaiLayer.baseMap.fromCoordinate(
@@ -276,23 +291,33 @@ AppPlugin {
                         return p
                     }
 
+                    property var tileCenterPoint: {
+                        navaiLayer.mapRevision
+
+                        if (!validTileArea || !navaiLayer.baseMap)
+                            return Qt.point(0, 0)
+
+                        var p = navaiLayer.baseMap.fromCoordinate(
+                            tileCenterCoord,
+                            false
+                        )
+
+                        return p ? p : Qt.point(0, 0)
+                    }
+
                     property real rawPixelRadius: radiusMeters > 0
                         ? Math.sqrt(
-                            Math.pow(edgePoint.x - centerPoint.x, 2) +
-                            Math.pow(edgePoint.y - centerPoint.y, 2)
+                            Math.pow(edgePoint.x - tileCenterPoint.x, 2) +
+                            Math.pow(edgePoint.y - tileCenterPoint.y, 2)
                         )
                         : 0
 
-                    property real pixelRadius: Math.max(
-                        rawPixelRadius,
-                        18
-                    )
+                    property real pixelRadius: rawPixelRadius
 
-                    x: centerPoint.x - pixelRadius
-                    y: centerPoint.y - pixelRadius
-
-                    width: pixelRadius * 2
-                    height: pixelRadius * 2
+                    x: 0
+                    y: 0
+                    width: navaiLayer.width
+                    height: navaiLayer.height
 
                     opacity: itemOpacity
                     visible: validCoordinate && itemOpacity > 0.01
@@ -302,7 +327,12 @@ AppPlugin {
                     Rectangle {
                         id: circle
 
-                        anchors.fill: parent
+                        visible: resultItem.validTileArea &&
+                                 resultItem.pixelRadius > 0
+                        x: resultItem.tileCenterPoint.x - width / 2
+                        y: resultItem.tileCenterPoint.y - height / 2
+                        width: resultItem.pixelRadius * 2
+                        height: width
                         radius: width / 2
 
                         color: Qt.rgba(0.0, 0.25, 1.0, 0.25)
@@ -318,16 +348,20 @@ AppPlugin {
                         height: 16
                         radius: 8
 
-                        anchors.centerIn: parent
+                        x: resultItem.centerPoint.x - width / 2
+                        y: resultItem.centerPoint.y - height / 2
 
                         color: Qt.rgba(0.0, 0.65, 1.0, 1.0)
+                        border.color: "white"
+                        border.width: 2
+                        z: 2
                     }
 
                     Rectangle {
                         id: labelBox
 
-                        x: resultItem.pixelRadius - width / 2
-                        y: -height - 8
+                        x: resultItem.centerPoint.x - width / 2
+                        y: resultItem.centerPoint.y - height - 12
 
                         width: labelText.implicitWidth + 14
                         height: labelText.implicitHeight + 8
@@ -338,6 +372,7 @@ AppPlugin {
 
                         border.color: Qt.rgba(0.0, 0.55, 1.0, 1.0)
                         border.width: 1
+                        z: 3
 
                         Text {
                             id: labelText

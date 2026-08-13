@@ -186,6 +186,12 @@ QVariant NavaiResultModel::data(
     case LongitudeRole:
         return item.lon;
 
+    case TileLatitudeRole:
+        return item.tileLat;
+
+    case TileLongitudeRole:
+        return item.tileLon;
+
     case RadiusMetersRole:
         return item.radiusMeters;
 
@@ -208,6 +214,8 @@ QHash<int, QByteArray> NavaiResultModel::roleNames() const
     return {
         {LatitudeRole, "latitude"},
         {LongitudeRole, "longitude"},
+        {TileLatitudeRole, "tileLatitude"},
+        {TileLongitudeRole, "tileLongitude"},
         {RadiusMetersRole, "radiusMeters"},
         {PercentRole, "percent"},
         {LabelRole, "label"},
@@ -218,6 +226,8 @@ QHash<int, QByteArray> NavaiResultModel::roleNames() const
 void NavaiResultModel::addResult(
     double lat,
     double lon,
+    double tileLat,
+    double tileLon,
     double radiusMeters,
     double percent,
     const QString &label)
@@ -228,6 +238,8 @@ void NavaiResultModel::addResult(
     Result item;
     item.lat = lat;
     item.lon = lon;
+    item.tileLat = tileLat;
+    item.tileLon = tileLon;
     item.radiusMeters = radiusMeters;
     item.percent = percent;
     item.opacity = 0.0;
@@ -919,6 +931,8 @@ void NavaiOverlay::handleDatagram(
     bool okLon = false;
     bool okPercent = false;
     bool okRadius = false;
+    bool okTileLat = false;
+    bool okTileLon = false;
 
     const double lat =
         jsonNumber(
@@ -944,13 +958,27 @@ void NavaiOverlay::handleDatagram(
     double radiusMeters =
         jsonNumber(
             obj,
-            {"radius_m", "spread_m", "radiusMeters", "spreadMeters", "radius"},
+            {"tile_radius_m", "radius_m", "spread_m", "radiusMeters", "spreadMeters", "radius"},
             &okRadius
         );
 
-    // NAVAI no longer estimates a result radius. A zero radius represents a
-    // point fix in the model and is rendered as a fixed-size marker by QML.
-    if (!okRadius)
+    const double tileLat =
+        jsonNumber(
+            obj,
+            {"tile_center_latitude", "tile_latitude", "tileLat"},
+            &okTileLat
+        );
+
+    const double tileLon =
+        jsonNumber(
+            obj,
+            {"tile_center_longitude", "tile_longitude", "tileLon"},
+            &okTileLon
+        );
+
+    // A tile uncertainty area is optional. Legacy NAVAI packets therefore
+    // remain point-only results instead of receiving a synthetic circle.
+    if (!okRadius || !okTileLat || !okTileLon)
         radiusMeters = 0.0;
 
     if (okPercent &&
@@ -970,6 +998,13 @@ void NavaiOverlay::handleDatagram(
         !okLon ||
         !std::isfinite(lat) ||
         !std::isfinite(lon) ||
+        (radiusMeters > 0.0 &&
+         (!std::isfinite(tileLat) ||
+          !std::isfinite(tileLon) ||
+          tileLat < -90.0 ||
+          tileLat > 90.0 ||
+          tileLon < -180.0 ||
+          tileLon > 180.0)) ||
         !std::isfinite(radiusMeters) ||
         lat < -90.0 ||
         lat > 90.0 ||
@@ -1033,6 +1068,8 @@ void NavaiOverlay::handleDatagram(
     _resultsModel.addResult(
         lat,
         lon,
+        tileLat,
+        tileLon,
         radiusMeters,
         percent,
         label
