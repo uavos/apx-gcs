@@ -38,6 +38,9 @@
     <key>NSCameraUsageDescription</key>
 	<string>Video Streaming plugin</string>
 
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Datalink connection to BLE nodes</string>
+
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSHighResolutionCapable</key>

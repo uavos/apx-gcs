@@ -101,7 +101,7 @@ Fact *UnitWarnings::createItem(const QString &msg, MsgType kind)
         break;
     }
     emit show(fact->title(), kind);
-    showList.insert(showNum, fact);
+    showList.insert(showNum > showList.size() ? showList.size() : showNum, fact);
     showMap.insert(fact, 0);
     showNum = showList.indexOf(fact);
     showTimer.stop();

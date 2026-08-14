@@ -89,7 +89,8 @@ ARG VERSION_QT=6.7.1
 RUN pip install aqtinstall &&\
     aqt install-qt linux$(cat /arch_qt) desktop ${VERSION_QT} -m \
     qtshadertools qt5compat qtcharts qtmultimedia \
-    qtspeech qtlocation qtpositioning qtserialport &&\
+    qtspeech qtlocation qtpositioning qtserialport \
+    qtconnectivity &&\
     rsync -av /${VERSION_QT}/*/ /usr/local/ && rm -Rf /${VERSION_QT}
 
 # build patches

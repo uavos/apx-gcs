@@ -36,6 +36,17 @@ if(APPLE)
     configure_file(${APX_RESOURCES_DIR}/macos/Info.plist.in Info.plist)
     cmake_policy(SET CMP0177 NEW)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Info.plist DESTINATION ${APX_INSTALL_BIN_DIR}/..)
+
+    # Darwin permission plugins are static and normally linked by qt_add_executable
+    # finalization, which is not used here - link the BLE one explicitly
+    target_link_libraries(${target} PRIVATE Qt6::QDarwinBluetoothPermissionPlugin
+                                            Qt6::QDarwinBluetoothPermissionPlugin_init)
+
+    # embed Info.plist into the bare executable - permission usage descriptions
+    # must be readable when running from the build tree without an app bundle
+    target_link_options(${target}
+                        PRIVATE "LINKER:-sectcreate,__TEXT,__info_plist,${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
+    set_target_properties(${target} PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
     apx_install_res(${APX_RESOURCES_DIR} icons/*.icns)
 
     apx_metadata(app.icon ${MACOSX_BUNDLE_ICON_FILE})
