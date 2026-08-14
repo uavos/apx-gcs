@@ -75,6 +75,16 @@ MissionTools::MissionTools(UnitMission *mission, Flags flags)
     f_altsetApply->setEnabled(false);
     connect(f_altsetApply, &Fact::triggered, this, &MissionTools::altsetTriggered);
 
+    f_reverse = new Fact(this,
+                         "reverse",
+                         tr("Reverse"),
+                         tr("Reverse waypoints order"),
+                         Action | ShowDisabled);
+    f_reverse->setIcon("swap-vertical");
+    connect(f_reverse, &Fact::triggered, this, &MissionTools::reverseTriggered);
+    connect(mission->f_wp, &Fact::sizeChanged, this, &MissionTools::updateReverseEnabled);
+    updateReverseEnabled();
+
     auto fvs = new UnitSelect(this, "copy", tr("Copy"), tr("Copy to unit"));
     f_copy = fvs;
     f_copy->setIcon("content-copy");
@@ -98,6 +108,22 @@ void MissionTools::altsetTriggered()
         Fact *f = static_cast<Waypoint *>(mission->f_wp->child(i))->f_altitude;
         f->setValue(v);
     }
+}
+
+void MissionTools::reverseTriggered()
+{
+    const int sz = mission->f_wp->size();
+    if (sz < 2)
+        return;
+    // move the last item to the front, repeatedly
+    for (int i = 0; i < sz - 1; ++i) {
+        mission->f_wp->child(sz - 1)->move(i, true);
+    }
+}
+
+void MissionTools::updateReverseEnabled()
+{
+    f_reverse->setEnabled(mission->f_wp->size() > 1);
 }
 
 void MissionTools::updateMaxAltitude()
