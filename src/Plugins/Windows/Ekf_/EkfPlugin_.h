@@ -52,12 +52,10 @@ public:
                                 EkfBitModel::createFilterControlStatusLo(w));
         ctx->setContextProperty("filterControlStatusHiModel",
                                 EkfBitModel::createFilterControlStatusHi(w));
-        ctx->setContextProperty("faultStatusModel",
-                                EkfBitModel::createFaultStatus(w));
-        ctx->setContextProperty("eventStatusModel",
-                                EkfBitModel::createEventStatus(w));
+        ctx->setContextProperty("faultStatusModel", EkfBitModel::createFaultStatus(w));
+        ctx->setContextProperty("eventStatusModel", EkfBitModel::createEventStatus(w));
 
-        w->setSource(QUrl("qrc:///Ekf/EKFView.qml"));
+        w->setSource(QUrl(QStringLiteral("qrc:/" PLUGIN_NAME "/EkfView.qml")));
         w->setMinimumSize(700, 850);
         w->setAttribute(Qt::WA_DeleteOnClose);
         return w;

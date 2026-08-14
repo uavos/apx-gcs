@@ -145,7 +145,7 @@ Rectangle {
             }
             Text {
                 text: label
-                color: (valueL || valueC || valueR) ? "#ffffff" : "#667788"
+                color: (root.extMode ? (valueL || valueC || valueR) : valueC) ? "#ffffff" : "#667788"                
                 font.pixelSize: 13 * root.sf
                 anchors.verticalCenter: parent.verticalCenter
                 leftPadding: 4 * root.sf
