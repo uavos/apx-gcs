@@ -55,7 +55,7 @@ public:
         ctx->setContextProperty("faultStatusModel", EkfBitModel::createFaultStatus(w));
         ctx->setContextProperty("eventStatusModel", EkfBitModel::createEventStatus(w));
 
-        w->setSource(QUrl(QStringLiteral("qrc:/" PLUGIN_NAME "/EkfView.qml")));
+        w->setSource(QUrl("qrc:///Ekf/EkfView.qml"));
         w->setMinimumSize(700, 850);
         w->setAttribute(Qt::WA_DeleteOnClose);
         return w;
