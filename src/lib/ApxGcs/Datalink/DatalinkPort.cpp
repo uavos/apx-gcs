@@ -21,6 +21,7 @@
  */
 #include "DatalinkPort.h"
 #include "Datalink.h"
+#include "DatalinkBle.h"
 #include "DatalinkPorts.h"
 #include "DatalinkRemote.h"
 #include "DatalinkSerial.h"
@@ -65,6 +66,12 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
             this,
             &DatalinkPort::syncUrlEnum,
             Qt::QueuedConnection);
+    connect(DatalinkBleScanner::instance(), &DatalinkBleScanner::namesChanged, this, [this]() {
+        if (f_type->value().toInt() == BLE)
+            syncUrlEnum();
+    });
+    // refresh available devices when port settings are opened
+    connect(this, &Fact::triggered, this, &DatalinkPort::syncUrlEnum);
     syncUrlEnum();
 
     f_baud = new Fact(this, "baud", tr("Baud rate"), tr("Serial port speed"), Text);
@@ -182,6 +189,12 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
                 qobject_cast<DatalinkSocketUdp *>(f_connection)->setRemoteUrl(getUrl());
             });
             break;
+        case BLE:
+            f_connection = new DatalinkBle(this, f_url->text());
+            connect(f_url, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkBle *>(f_connection)->setDevName(f_url->text());
+            });
+            break;
         }
 
         if (f_connection) {
@@ -229,6 +242,17 @@ QUrl DatalinkPort::getUrl() const
         q.addQueryItem("codec", f_codec->text());
         QUrl url;
         url.setScheme("serial");
+        url.setHost("");
+        url.setQuery(q);
+        return url;
+    }
+
+    if (type == BLE) {
+        // device name in query to preserve letter case
+        QUrlQuery q;
+        q.addQueryItem("name", f_url->text());
+        QUrl url;
+        url.setScheme("ble");
         url.setHost("");
         url.setQuery(q);
         return url;
@@ -287,6 +311,7 @@ void DatalinkPort::defaultUrl()
 {
     switch (f_type->value().toInt()) {
     case SERIAL:
+    case BLE:
         f_url->setValue("auto");
         break;
     default:
@@ -342,6 +367,13 @@ void DatalinkPort::fromJson(const QJsonValue &jsv)
         }
         if (q.hasQueryItem("codec")) {
             jso["codec"] = q.queryItemValue("codec").toUpper();
+        }
+    } else if (scheme == "BLE") {
+        QUrlQuery q(url);
+        if (q.hasQueryItem("name")) {
+            jso["url"] = q.queryItemValue("name");
+        } else {
+            jso["url"] = url.authority();
         }
     }
     const auto jso_routing = jso["routing"];
@@ -451,6 +483,13 @@ void DatalinkPort::syncUrlEnum()
                 continue;
             st.append(spi.portName());
         }
+    } break;
+    case BLE: {
+        // 'auto' connects to the first APX-* device, or select/type the exact name
+        st << "auto";
+        st.append(DatalinkBleScanner::instance()->names());
+        if (App::loaded())
+            DatalinkBleScanner::instance()->scan();
     } break;
     default: {
         const Fact *fg = static_cast<const Fact *>(sender());

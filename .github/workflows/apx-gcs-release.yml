@@ -79,7 +79,7 @@ jobs:
           aqt install-qt mac desktop $VERSION_QT -m \
             qtshadertools qt5compat qtcharts qtmultimedia \
             qtspeech qtlocation qtpositioning qtserialport \
-            qttasktree qtimageformats
+            qtconnectivity qttasktree qtimageformats
           echo "/tmp/$VERSION_QT/macos/bin" >> $GITHUB_PATH
 
       - name: Install SDL
