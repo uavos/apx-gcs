@@ -83,7 +83,7 @@ RUN pip install aqtinstall &&\
 # LINUXDEPLOY
 # Qt plugin continuous is segfaulting
 RUN apt install -y --no-install-recommends \
-    libwebpdemux2 libfuse2 libfbclient2 libtiff5-dev \
+    libwebpdemux2 libfuse2 libfbclient2 \
     && rm -Rf /var/cache/apt/*
 
 RUN curl -L https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy && \
@@ -111,6 +111,6 @@ RUN cd /usr/local/plugins/sqldrivers && \
     cp -af libqsqlite.so libqsqlpsql.so && \
     cp -af libqsqlite.so libqsqloci.so
 
-# twek libtiff version
-RUN cd /usr/lib/x86_64-linux-gnu && \
+# Tweak libtiff version for both x86_64 and arm64
+RUN cd /usr/lib/*-linux-gnu && \
     ln -s libtiff.so.6 libtiff.so.5
