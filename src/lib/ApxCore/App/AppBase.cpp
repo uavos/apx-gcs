@@ -300,14 +300,16 @@ bool AppBase::install()
             sx->sync();
             delete sx;
             QFile f(fiDest.absoluteFilePath());
-            f.open(QIODevice::Text | QIODevice::ReadOnly);
-            QString data = f.readAll();
-            f.close();
-            data.replace("%20", " ");
-            f.open(QFile::WriteOnly | QFile::Truncate);
-            QTextStream out(&f);
-            out << data;
-            f.close();
+            if (f.open(QIODevice::Text | QIODevice::ReadOnly)) {
+                QString data = f.readAll();
+                f.close();
+                data.replace("%20", " ");
+                if (f.open(QFile::WriteOnly | QFile::Truncate)) {
+                    QTextStream out(&f);
+                    out << data;
+                    f.close();
+                }
+            }
         }
         AppDirs::copyPath(AppDirs::res().absoluteFilePath("../icons"),
                           QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)

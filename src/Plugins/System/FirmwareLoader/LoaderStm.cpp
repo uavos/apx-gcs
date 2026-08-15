@@ -84,7 +84,7 @@ void LoaderStm::next()
         retry = 0;
         stage++;
         //fallthru
-        [[clang::fallthrough]];
+        __attribute__((fallthrough));
     case 1:
         if (dev->open(QIODevice::ReadWrite)) {
             apxMsg() << tr("Using port").append(':') << dev->portName();
@@ -191,7 +191,7 @@ void LoaderStm::next()
         writeCnt = 0;
         stage++;
         //fallthru
-        [[clang::fallthrough]];
+        __attribute__((fallthrough));
     case 51:
         write(0x31, rx_ack);
         stage++;
@@ -323,7 +323,7 @@ void LoaderStm::readData()
         rxData.remove(0, 1);
         rx_stage = rx_info_data;
     } //fallthru
-        [[clang::fallthrough]];
+        __attribute__((fallthrough));
     case rx_info_data: {
         if (rxData.size() < 2)
             return;
