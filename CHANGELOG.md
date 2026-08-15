@@ -1,3 +1,48 @@
+# [APX Ground Control v11.2.27](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.27) (08/14/26)
+
+> Branch: `main`\
+> Date: `08/14/26 21:17:54`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/185a3fbd5c20176dac11095733ecd2112f7706f3...c8bdda42638af0713e52e5e32ab543a72f41cea1)
+
+## New Features
+* Extended Signals plugin
+* EKF status monitor
+* add waypoint actions (shot, dshot, tshot))
+* reverse waypoints order
+* inherit xtrack from previous waypoint
+* BLE Datalink Port connection
+* Mission Reverse WP order tool
+* plugin to display EKF status
+
+## Bug Fixes
+* fact shadow value
+* extMode save
+* console warnings overflow segfault
+* node conf text fields format conversions
+* datalink udp sockets config
+* allow zero node field text
+* json numbers conversion for '000' strings
+* COBS overhead estimation
+
+## Performance Enhancements
+* update qt to 6.11.1 for macos CI
+* improve serial port datalink options
+* Ubuntu 26.04 LTS upgrade
+
+## Comments
+
+**feat: add waypoint actions**
+
+Merge pull request [`115`](https://github.com/uavos/apx-gcs/issues/115) from uavos/mission
+
+**feat: Mission Reverse WP order tool**
+
+Merge pull request [`117`](https://github.com/uavos/apx-gcs/issues/117) from uavos:mission-edit-tools
+
+**feat: plugin to display EKF status**
+
+Merge pull request [`118`](https://github.com/uavos/apx-gcs/issues/118) from uavos/ekf-plugin
+
 # [APX Ground Control v11.2.26](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.26) (05/30/26)
 
 > Branch: `main`\
