@@ -83,7 +83,7 @@ RUN pip install aqtinstall &&\
 # LINUXDEPLOY
 # Qt plugin continuous is segfaulting
 RUN apt install -y --no-install-recommends \
-    libwebpdemux2 libfuse2 libfbclient2 \
+    libwebpdemux2 libfuse2 libfbclient2 libtiff5-dev \
     && rm -Rf /var/cache/apt/*
 
 RUN curl -L https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy && \
