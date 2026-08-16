@@ -27,7 +27,8 @@ public:
         RadiusMetersRole,
         PercentRole,
         LabelRole,
-        ItemOpacityRole
+        ItemOpacityRole,
+        TrajectoryCoordinatesRole
     };
 
     explicit NavaiResultModel(QObject *parent = nullptr);
@@ -48,7 +49,8 @@ public:
         double tileLon,
         double radiusMeters,
         double percent,
-        const QString &label
+        const QString &label,
+        const QVariantList &trajectoryCoordinates
     );
 
     Q_INVOKABLE void clear();
@@ -68,6 +70,7 @@ private:
         double opacity = 0.0;
         double targetOpacity = 1.0;
         QString label;
+        QVariantList trajectoryCoordinates;
     };
 
     void startFadeTimer();
@@ -89,7 +92,6 @@ class NavaiOverlay : public Fact
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
     Q_PROPERTY(bool udpReady READ udpReady NOTIFY udpReadyChanged)
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
-    Q_PROPERTY(QVariantList matchedTrajectoryCoordinates READ matchedTrajectoryCoordinates NOTIFY matchedTrajectoryChanged)
 
 public:
     explicit NavaiOverlay(Fact *parent = nullptr);
@@ -120,15 +122,9 @@ public:
         return _udpPort;
     }
 
-    QVariantList matchedTrajectoryCoordinates() const
-    {
-        return _matchedTrajectoryCoordinates;
-    }
-
 signals:
     void activeChanged();
     void udpReadyChanged();
-    void matchedTrajectoryChanged();
 
 private slots:
     void readUdpDatagrams();
@@ -163,9 +159,7 @@ private:
 
     void postToGcsConsole(const QString &text);
 
-    void applyTrajectory(const QJsonArray &trajectory);
-
-    void clearTrajectory();
+    QVariantList parseTrajectory(const QJsonArray &trajectory) const;
 
     Fact *f_enabled = nullptr;
 
@@ -175,8 +169,6 @@ private:
     QHash<QString, Fact *> _mandalaFacts;
 
     Unit *_unit = nullptr;
-
-    QVariantList _matchedTrajectoryCoordinates;
 
     NavaiResultModel _resultsModel;
 

@@ -14,7 +14,6 @@ AppPlugin {
             objectName: "NavaiResultsOverlay"
 
             property var baseMap: ui.map
-            property var attachedMap: null
             property var navai: apx.tools.navai
             property int mapRevision: 0
             property real trajectoryLineWidth: 4
@@ -28,36 +27,8 @@ AppPlugin {
             visible: navaiAvailable && navaiActive
             z: 100000
 
-            function attachTrajectory()
-            {
-                if (attachedMap === baseMap)
-                    return
-
-                if (attachedMap) {
-                    attachedMap.removeMapItem(matchedTrajectoryLine)
-                    attachedMap.removeMapItem(matchedTrajectoryEndpoint)
-                }
-
-                attachedMap = baseMap
-
-                if (attachedMap) {
-                    attachedMap.addMapItem(matchedTrajectoryLine)
-                    attachedMap.addMapItem(matchedTrajectoryEndpoint)
-                }
-            }
-
-            onBaseMapChanged: Qt.callLater(attachTrajectory)
-
             Component.onCompleted: {
                 console.log("NavaiMapPlugin loaded", navaiLayer.navai)
-                Qt.callLater(attachTrajectory)
-            }
-
-            Component.onDestruction: {
-                if (attachedMap)
-                    attachedMap.removeMapItem(matchedTrajectoryLine)
-                if (attachedMap)
-                    attachedMap.removeMapItem(matchedTrajectoryEndpoint)
             }
 
             Connections {
@@ -89,48 +60,6 @@ AppPlugin {
                 }
             }
 
-            MapPolyline {
-                id: matchedTrajectoryLine
-
-                visible: navaiLayer.navaiAvailable &&
-                         navaiLayer.navaiActive &&
-                         navaiLayer.navai.matchedTrajectoryCoordinates.length > 1
-
-                z: 99999
-                line.width: navaiLayer.trajectoryLineWidth
-                line.color: "#ff7a00"
-
-                path: navaiLayer.navaiAvailable
-                    ? navaiLayer.navai.matchedTrajectoryCoordinates
-                    : []
-            }
-
-            MapQuickItem {
-                id: matchedTrajectoryEndpoint
-
-                visible: navaiLayer.navaiAvailable &&
-                         navaiLayer.navaiActive &&
-                         navaiLayer.navai.matchedTrajectoryCoordinates.length > 0
-
-                z: 100000
-                anchorPoint.x: endpointDot.width / 2
-                anchorPoint.y: endpointDot.height / 2
-
-                coordinate: visible
-                    ? navaiLayer.navai.matchedTrajectoryCoordinates[
-                        navaiLayer.navai.matchedTrajectoryCoordinates.length - 1
-                      ]
-                    : QtPositioning.coordinate(0, 0)
-
-                sourceItem: Rectangle {
-                    id: endpointDot
-                    width: navaiLayer.trajectoryEndpointDiameter
-                    height: width
-                    radius: width / 2
-                    color: "#ff7a00"
-                }
-            }
-
             Repeater {
                 model: navaiLayer.navaiActive && navaiLayer.navaiUdpReady
                     ? navaiLayer.navai.resultsModel
@@ -147,6 +76,78 @@ AppPlugin {
                     required property real percent
                     required property string label
                     required property real itemOpacity
+                    required property var trajectoryCoordinates
+
+                    property var trajectoryMap: null
+
+                    function attachTrajectory()
+                    {
+                        if (trajectoryMap === navaiLayer.baseMap)
+                            return
+
+                        if (trajectoryMap) {
+                            trajectoryMap.removeMapItem(trajectoryLine)
+                            trajectoryMap.removeMapItem(trajectoryEndpoint)
+                        }
+
+                        trajectoryMap = navaiLayer.baseMap
+
+                        if (trajectoryMap) {
+                            trajectoryMap.addMapItem(trajectoryLine)
+                            trajectoryMap.addMapItem(trajectoryEndpoint)
+                        }
+                    }
+
+                    Component.onCompleted: Qt.callLater(attachTrajectory)
+                    Component.onDestruction: {
+                        if (trajectoryMap) {
+                            trajectoryMap.removeMapItem(trajectoryLine)
+                            trajectoryMap.removeMapItem(trajectoryEndpoint)
+                        }
+                    }
+
+                    Connections {
+                        target: navaiLayer
+
+                        function onBaseMapChanged() {
+                            Qt.callLater(resultItem.attachTrajectory)
+                        }
+                    }
+
+                    MapPolyline {
+                        id: trajectoryLine
+
+                        visible: resultItem.trajectoryCoordinates.length > 1
+                        opacity: resultItem.itemOpacity
+                        z: 99999
+                        line.width: navaiLayer.trajectoryLineWidth
+                        line.color: "#ff7a00"
+                        path: resultItem.trajectoryCoordinates
+                    }
+
+                    MapQuickItem {
+                        id: trajectoryEndpoint
+
+                        visible: resultItem.trajectoryCoordinates.length > 0
+                        opacity: resultItem.itemOpacity
+                        z: 100000
+                        anchorPoint.x: endpointDot.width / 2
+                        anchorPoint.y: endpointDot.height / 2
+
+                        coordinate: visible
+                            ? resultItem.trajectoryCoordinates[
+                                resultItem.trajectoryCoordinates.length - 1
+                              ]
+                            : QtPositioning.coordinate(0, 0)
+
+                        sourceItem: Rectangle {
+                            id: endpointDot
+                            width: navaiLayer.trajectoryEndpointDiameter
+                            height: width
+                            radius: width / 2
+                            color: "#ff7a00"
+                        }
+                    }
 
                     property bool validCoordinate:
                         isFinite(latitude) &&
@@ -324,7 +325,6 @@ AppPlugin {
         plugin.item.parent = ui.map
         plugin.item.anchors.fill = ui.map
         plugin.item.z = 100000
-        Qt.callLater(plugin.item.attachTrajectory)
     }
 
     Connections {

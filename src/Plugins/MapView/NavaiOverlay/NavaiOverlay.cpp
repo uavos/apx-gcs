@@ -205,6 +205,9 @@ QVariant NavaiResultModel::data(
     case ItemOpacityRole:
         return item.opacity;
 
+    case TrajectoryCoordinatesRole:
+        return item.trajectoryCoordinates;
+
     default:
         return {};
     }
@@ -220,7 +223,8 @@ QHash<int, QByteArray> NavaiResultModel::roleNames() const
         {RadiusMetersRole, "radiusMeters"},
         {PercentRole, "percent"},
         {LabelRole, "label"},
-        {ItemOpacityRole, "itemOpacity"}
+        {ItemOpacityRole, "itemOpacity"},
+        {TrajectoryCoordinatesRole, "trajectoryCoordinates"}
     };
 }
 
@@ -231,7 +235,8 @@ void NavaiResultModel::addResult(
     double tileLon,
     double radiusMeters,
     double percent,
-    const QString &label)
+    const QString &label,
+    const QVariantList &trajectoryCoordinates)
 {
     for (Result &oldItem : _items)
         oldItem.targetOpacity = 0.35;
@@ -246,6 +251,7 @@ void NavaiResultModel::addResult(
     item.opacity = 0.0;
     item.targetOpacity = 1.0;
     item.label = label;
+    item.trajectoryCoordinates = trajectoryCoordinates;
 
     const int row =
         _items.size();
@@ -444,8 +450,6 @@ void NavaiOverlay::bindUnit(Unit *unit)
         disconnect(_unit, nullptr, this, nullptr);
 
     _unit = unit;
-    clearTrajectory();
-
     _mandalaFacts.clear();
     f_camLat = nullptr;
     f_camLon = nullptr;
@@ -505,9 +509,10 @@ void NavaiOverlay::bindUnit(Unit *unit)
     );
 }
 
-void NavaiOverlay::applyTrajectory(const QJsonArray &trajectory)
+QVariantList NavaiOverlay::parseTrajectory(const QJsonArray &trajectory) const
 {
-    _matchedTrajectoryCoordinates.clear();
+    QVariantList coordinates;
+
     for (const QJsonValue &value : trajectory) {
         if (!value.isObject())
             continue;
@@ -519,23 +524,12 @@ void NavaiOverlay::applyTrajectory(const QJsonArray &trajectory)
         const QGeoCoordinate coordinate(lat, lon);
         if (!okLat || !okLon || !coordinate.isValid())
             continue;
-        _matchedTrajectoryCoordinates.push_back(
+        coordinates.push_back(
             QVariant::fromValue(coordinate)
         );
     }
 
-    if (_unit && !_matchedTrajectoryCoordinates.isEmpty())
-        _unit->sendPositionFix(
-            _matchedTrajectoryCoordinates.back().value<QGeoCoordinate>()
-        );
-
-    emit matchedTrajectoryChanged();
-}
-
-void NavaiOverlay::clearTrajectory()
-{
-    _matchedTrajectoryCoordinates.clear();
-    emit matchedTrajectoryChanged();
+    return coordinates;
 }
 
 void NavaiOverlay::writeCameraFacts(
@@ -647,7 +641,6 @@ void NavaiOverlay::stopUdp()
         emit udpReadyChanged();
 
     _resultsModel.clear();
-    clearTrajectory();
 }
 
 void NavaiOverlay::readUdpDatagrams()
@@ -876,7 +869,14 @@ void NavaiOverlay::handleDatagram(
         lon
     );
 
-    applyTrajectory(packet.value("trajectory").toArray());
+    const QVariantList trajectoryCoordinates =
+        parseTrajectory(packet.value("trajectory").toArray());
+
+    if (_unit && !trajectoryCoordinates.isEmpty()) {
+        _unit->sendPositionFix(
+            trajectoryCoordinates.back().value<QGeoCoordinate>()
+        );
+    }
 
     const QString payloadLabel =
         obj.value("label").toString().trimmed();
@@ -911,7 +911,8 @@ void NavaiOverlay::handleDatagram(
         tileLon,
         radiusMeters,
         percent,
-        label
+        label,
+        trajectoryCoordinates
     );
 }
 
