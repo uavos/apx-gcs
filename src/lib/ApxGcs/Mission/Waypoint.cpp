@@ -71,10 +71,12 @@ Waypoint::Waypoint(MissionGroup *parent)
 
     // Default values
     Waypoint *f0 = static_cast<Waypoint *>(prevItem());
-    if (f0)
+    if (f0) {
         f_altitude->setValue(f0->f_altitude->value());
-    else
+        f_xtrack->setValue(f0->f_xtrack->value());
+    } else {
         f_altitude->setValue(200);
+    }
 
     // Elevation map and agl
     connect(f_altitude, &Fact::valueChanged, this, [this]() { if (this->chosen() == ALT) processAgl();});

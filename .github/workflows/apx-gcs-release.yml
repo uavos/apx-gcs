@@ -50,9 +50,9 @@ jobs:
     name: Build MacOS
     runs-on: macos-latest
     env:
-      VERSION_QT: 6.10.0
+      VERSION_QT: 6.11.1
       VERSION_SDL: 2.30.8
-      VERSION_GST: 1.26.0
+      VERSION_GST: 1.28.6
 
       # we replace system python with brew python
       PYTHONPATH: /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages
@@ -78,7 +78,8 @@ jobs:
         run: |
           aqt install-qt mac desktop $VERSION_QT -m \
             qtshadertools qt5compat qtcharts qtmultimedia \
-            qtspeech qtlocation qtpositioning qtserialport
+            qtspeech qtlocation qtpositioning qtserialport \
+            qtconnectivity qttasktree qtimageformats
           echo "/tmp/$VERSION_QT/macos/bin" >> $GITHUB_PATH
 
       - name: Install SDL

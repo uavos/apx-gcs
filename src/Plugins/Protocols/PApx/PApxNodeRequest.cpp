@@ -296,6 +296,8 @@ bool PApxNodeRequestUpdate::request(PApxRequest &req)
         value = _node->textToOption(value, _fid >> 8);
     else if (type == xbus::node::conf::bind)
         value = _node->stringToMandala(value.toString());
+    else if (type == xbus::node::conf::string || type == xbus::node::conf::text)
+        value = value.toVariant().toString();
     _node->write_param(req, type, value);
     trace()->block(value.toString());
 

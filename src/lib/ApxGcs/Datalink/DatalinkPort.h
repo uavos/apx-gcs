@@ -38,7 +38,7 @@ public:
                           Datalink *datalink,
                           const DatalinkPort *port = nullptr);
 
-    enum PortType { SERIAL, HTTP, UDP };
+    enum PortType { SERIAL, HTTP, UDP, TCP, BLE };
     Q_ENUM(PortType)
 
     Fact *f_enable;

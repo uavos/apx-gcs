@@ -12,4 +12,5 @@ apx_lib(
     Positioning
     Concurrent
     Charts
+    Bluetooth
 )

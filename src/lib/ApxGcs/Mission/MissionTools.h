@@ -41,6 +41,8 @@ public:
     Fact *f_aglsetApply;
     Fact *f_pathsCorrect; 
 
+    Fact *f_reverse;
+
     Fact *f_copy;
 
     UnitMission *mission;
@@ -48,8 +50,10 @@ public:
 private slots:
     void altadjustTriggered();
     void altsetTriggered();
+    void reverseTriggered();
 
     void updateMaxAltitude();
+    void updateReverseEnabled();
 
     void copyUnitSelected(Unit *unit);
 };
