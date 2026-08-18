@@ -26,6 +26,7 @@
 #include "DatalinkRemote.h"
 #include "DatalinkSerial.h"
 #include "DatalinkSocketHttp.h"
+#include "DatalinkSocketTcp.h"
 #include "DatalinkSocketUdp.h"
 
 #include <App/App.h>
@@ -189,6 +190,12 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
                 qobject_cast<DatalinkSocketUdp *>(f_connection)->setRemoteUrl(getUrl());
             });
             break;
+        case TCP:
+            f_connection = new DatalinkSocketTcp(this, getUrl());
+            connect(f_url, &Fact::valueChanged, f_connection, [this]() {
+                qobject_cast<DatalinkSocketTcp *>(f_connection)->setRemoteUrl(getUrl());
+            });
+            break;
         case BLE:
             f_connection = new DatalinkBle(this, f_url->text());
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
@@ -270,7 +277,7 @@ QUrl DatalinkPort::getUrl() const
         case UDP:
             url.setPort(UDP_PORT_GCS_TLM);
             break;
-        default:
+        default: // HTTP, TCP
             url.setPort(TCP_PORT_SERVER);
             break;
         }
@@ -352,6 +359,8 @@ void DatalinkPort::fromJson(const QJsonValue &jsv)
         jso["type"] = scheme;
         jso["url"] = url.toString().mid(scheme.length() + 3);
     } else if (jso["type"].toString().toUpper() == "TCP") {
+        // legacy configs without url scheme: 'TCP' meant the HTTP datalink server
+        // (plain tcp:// stream ports are always saved with the scheme)
         jso["type"] = "HTTP";
     }
 
