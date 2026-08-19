@@ -112,13 +112,18 @@ void MissionTools::altsetTriggered()
 
 void MissionTools::reverseTriggered()
 {
-    const int sz = mission->f_wp->size();
-    if (sz < 2)
+    auto group = mission->f_wp;
+    if (group->size() < 2)
         return;
-    // move the last item to the front, repeatedly
-    for (int i = 0; i < sz - 1; ++i) {
-        mission->f_wp->child(sz - 1)->move(i, true);
+    // rebuild the group from reversed json array
+    // to avoid per-item move overhead on large missions
+    const auto jsa = group->toJson().toArray();
+    QJsonArray rev;
+    for (auto i = jsa.size() - 1; i >= 0; --i) {
+        rev.append(jsa.at(i));
     }
+    group->fromJson(rev);
+    group->setModified(true);
 }
 
 void MissionTools::updateReverseEnabled()
