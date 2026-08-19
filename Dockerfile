@@ -10,7 +10,7 @@ ENV LC_ALL C.UTF-8
 # basic APT packages
 RUN apt update && \
     apt install -y --no-install-recommends \
-    ca-certificates bc \
+    ca-certificates \
     build-essential rsync curl git make ninja-build pkg-config python3-pip \
     fuse \
     bc \
@@ -95,7 +95,7 @@ RUN curl -L https://github.com/linuxdeploy/linuxdeploy/releases/download/continu
     mv bin/patchelf /usr/local/bin/ && rm -rf *
 
 # APPIMAGETOOL
-RUN curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(cat /arch).AppImage --output /usr/local/bin/appimagetool && \
+RUN curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$(cat /arch).AppImage --output /usr/local/bin/appimagetool && \
     chmod +x /usr/local/bin/appimagetool
 
 
