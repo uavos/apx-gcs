@@ -43,6 +43,8 @@ public:
 
     Fact *f_reverse;
 
+    Fact *f_reverse;
+
     Fact *f_copy;
 
     UnitMission *mission;
