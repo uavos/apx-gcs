@@ -134,6 +134,7 @@ void ElevationMap::updateMission()
     connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(mission(), &UnitMission::missionSizeChanged, mission(), &UnitMission::checkCollision);
     connect(mission(), &UnitMission::startPointChanged, this, &ElevationMap::setStartPointElevation);
+    connect(missionTools()->f_reverse, &Fact::triggered, this, &ElevationMap::changeExternalsVisibility);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
     connect(missionTools()->f_pathsCorrect, &Fact::triggered, this, [this]() {
         QTimer::singleShot(100, this, &ElevationMap::correctUnsafePaths);
@@ -180,6 +181,7 @@ void ElevationMap::setMissionAgl()
 
 void ElevationMap::changeExternalsVisibility()
 {
+    apxMsgW() << "";
     bool useValue{false};
     bool controlValue{false};
     if(f_control && !f_control->busy()) 
