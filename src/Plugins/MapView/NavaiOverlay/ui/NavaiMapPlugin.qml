@@ -18,6 +18,9 @@ AppPlugin {
             property int mapRevision: 0
             property real trajectoryLineWidth: 4
             property real trajectoryEndpointDiameter: 8
+            // 250 m cells are readable from roughly 5 km map scale, but are
+            // completely hidden when zooming out farther.
+            property real tileGridMinZoom: 8
 
             property bool navaiAvailable: navai !== null && navai !== undefined
             property bool navaiActive: navaiAvailable && navai.active
@@ -60,6 +63,88 @@ AppPlugin {
                 }
             }
 
+            Plugin {
+                id: overlayPlugin
+                name: "osm"
+                PluginParameter { name: "osm.mapping.providersrepository.disabled"; value: true }
+                PluginParameter {
+                    name: "osm.mapping.custom.host"
+                    value: navaiLayer.navai
+                        ? navaiLayer.navai.overlayTileUrlTemplate
+                        : "http://127.0.0.1:9293/navai-grid-v2/tile/%z/%x/%y.png"
+                }
+            }
+
+            Map {
+                id: overlayMap
+                anchors.fill: parent
+                plugin: overlayPlugin
+                enabled: false
+                color: "transparent"
+                opacity: 1.0
+                visible: navaiLayer.navaiActive && navaiLayer.navaiUdpReady &&
+                         navaiLayer.navai.overlayTileServerReady &&
+                         navaiLayer.baseMap &&
+                         navaiLayer.baseMap.zoomLevel >= navaiLayer.tileGridMinZoom
+                center: navaiLayer.baseMap ? navaiLayer.baseMap.center : QtPositioning.coordinate(0, 0)
+                zoomLevel: navaiLayer.baseMap ? navaiLayer.baseMap.zoomLevel : 16
+                bearing: navaiLayer.baseMap ? navaiLayer.baseMap.bearing : 0
+                tilt: navaiLayer.baseMap ? navaiLayer.baseMap.tilt : 0
+                copyrightsVisible: false
+
+                Component.onCompleted: selectCustomMapType()
+                function selectCustomMapType() {
+                    for (var i = 0; i < supportedMapTypes.length; ++i) {
+                        if (supportedMapTypes[i].name.toLowerCase().indexOf("custom") >= 0) {
+                            activeMapType = supportedMapTypes[i]
+                            return
+                        }
+                    }
+                }
+            }
+
+            Repeater {
+                model: navaiLayer.navaiActive && navaiLayer.navaiUdpReady &&
+                       navaiLayer.baseMap &&
+                       navaiLayer.baseMap.zoomLevel >= navaiLayer.tileGridMinZoom
+                    ? navaiLayer.navai.heatmapTiles
+                    : []
+
+                delegate: Item {
+                    id: heatItem
+                    required property var modelData
+                    property var attachedMap: null
+
+                    function attach() {
+                        if (attachedMap === navaiLayer.baseMap)
+                            return
+                        if (attachedMap)
+                            attachedMap.removeMapItem(heatPolygon)
+                        attachedMap = navaiLayer.baseMap
+                        if (attachedMap)
+                            attachedMap.addMapItem(heatPolygon)
+                    }
+
+                    Component.onCompleted: Qt.callLater(attach)
+                    Component.onDestruction: {
+                        if (attachedMap)
+                            attachedMap.removeMapItem(heatPolygon)
+                    }
+
+                    MapPolygon {
+                        id: heatPolygon
+                        path: heatItem.modelData.polygon
+                        color: Qt.rgba(
+                            Qt.color(heatItem.modelData.color).r,
+                            Qt.color(heatItem.modelData.color).g,
+                            Qt.color(heatItem.modelData.color).b,
+                            0.30
+                        )
+                        border.width: 0
+                        z: 99901 + heatItem.modelData.score
+                    }
+                }
+            }
             Repeater {
                 model: navaiLayer.navaiActive && navaiLayer.navaiUdpReady
                     ? navaiLayer.navai.resultsModel

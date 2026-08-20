@@ -1,5 +1,6 @@
 apx_plugin(QT
     Core
+    Gui
     Network
     Qml
     Quick
@@ -11,6 +12,8 @@ target_sources(${MODULE} PRIVATE
     NavaiOverlayPlugin.h
     NavaiOverlay.cpp
     NavaiOverlay.h
+    NavaiTileServer.cpp
+    NavaiTileServer.h
 )
 
 set_target_properties(${MODULE} PROPERTIES

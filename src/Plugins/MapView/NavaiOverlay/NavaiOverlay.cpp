@@ -5,6 +5,7 @@
 #include <Fleet/Unit.h>
 
 #include <QCoreApplication>
+#include <QColor>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
@@ -138,6 +139,13 @@ Fact *factByAnyId(
 }
 
 } // namespace
+
+QVariant NavaiTileModel::data(const QModelIndex&i,int r)const { if(!i.isValid()||i.row()<0||i.row()>=_items.size())return{};auto&t=_items[i.row()];return r==PolygonRole?t.value("polygon"):r==ColorRole?t.value("color","transparent"):t.value("id"); }
+QHash<int,QByteArray> NavaiTileModel::roleNames()const{return{{IdRole,"tileId"},{PolygonRole,"polygon"},{ColorRole,"tileColor"}};}
+void NavaiTileModel::replace(const QVector<QVariantMap>&v){beginResetModel();_items=v;endResetModel();}
+void NavaiTileModel::merge(const QVector<QVariantMap>&v){QHash<QString,QVariantMap> merged;for(const auto&t:_items)merged.insert(t.value("id").toString(),t);for(const auto&t:v)merged.insert(t.value("id").toString(),t);replace(merged.values().toVector());}
+void NavaiTileModel::score(const QHash<QString,QVariantMap>&s){for(auto&t:_items){auto x=s.value(t.value("id").toString());t["color"]=x.value("color","transparent");t["score"]=x.value("score",-1.0);}if(!_items.isEmpty())emit dataChanged(index(0,0),index(_items.size()-1,0),{ColorRole});}
+QVariantList NavaiTileModel::heatmapTiles() const { QVariantList result; for(const auto &tile:_items) if(tile.value("score",-1.0).toDouble()>=0.0) result << tile; return result; }
 
 // ======================= MODEL =======================
 
@@ -367,6 +375,9 @@ NavaiOverlay::NavaiOverlay(Fact *parent)
            Group,
            "crosshairs-gps")
 {
+    _tileServer.setModel(&_tileGridModel);
+    _tileServer.start();
+    emit overlayTileServerChanged();
     f_enabled =
         new Fact(
             this,
@@ -745,6 +756,8 @@ void NavaiOverlay::handleDatagram(
     }
 
     const QJsonObject packet = doc.object();
+    if(packet.value("type").toString()=="tile_grid"){handleTileGrid(packet);return;}
+    if(packet.value("type").toString()=="dino_ranking"){handleDinoRanking(packet);return;}
     QJsonObject obj = packet;
 
     const bool isRecognitionEnvelope =
@@ -915,6 +928,9 @@ void NavaiOverlay::handleDatagram(
         trajectoryCoordinates
     );
 }
+
+void NavaiOverlay::handleTileGrid(const QJsonObject&o){int n=o.value("chunk_count").toInt(),i=o.value("chunk_index").toInt(-1);QString r=QString::number(o.value("revision").toInt());QString mode=o.value("mode").toString("replace");if(mode!="append")mode="replace";if(n<1||i<0||i>=n)return;if(r!=_gridRevision||mode!=_gridMode){_gridRevision=r;_gridMode=mode;_gridChunks.clear();_gridChunkCount=n;}if(n!=_gridChunkCount)return;_gridChunks[i]=o;if(_gridChunks.size()!=n)return;QVector<QVariantMap> out;for(int k=0;k<n;k++)for(auto v:_gridChunks[k]["tiles"].toArray()){auto t=v.toObject();double la=t["latitude"].toDouble(),lo=t["longitude"].toDouble(),s=t["size_m"].toDouble(),dy=s/111320.,dx=dy/qMax(.1,std::cos(la*M_PI/180.));QVariantList p;for(auto q:{QPointF(-1,-1),QPointF(1,-1),QPointF(1,1),QPointF(-1,1)})p<<QVariant::fromValue(QGeoCoordinate(la+q.y()*dy/2,lo+q.x()*dx/2));QVariantMap x;x["id"]=t["id"].toString();x["polygon"]=p;out<<x;}if(mode=="append")_tileGridModel.merge(out);else _tileGridModel.replace(out);_tileServer.invalidate();postToGcsConsole(QString("Tile grid %1: revision=%2, tiles=%3").arg(mode=="append"?"merged":"applied").arg(r).arg(out.size()));}
+void NavaiOverlay::handleDinoRanking(const QJsonObject&o){static qint64 frame=0;qint64 f=o["frame_id"].toVariant().toLongLong();if(f&&f<frame)return;frame=f;auto a=o["tiles"].toArray();double hi=0,lo=1;for(auto v:a){auto x=v.toObject();double s=x["score"].toDouble();hi=qMax(hi,s);lo=qMin(lo,s);}QHash<QString,QVariantMap> m;for(auto v:a){auto x=v.toObject();double z=hi>lo?(x["score"].toDouble()-lo)/(hi-lo):1;QColor c=QColor::fromHsvF(z*.33,.85,.95);QVariantMap s;s["color"]=c.name();s["score"]=x["score"].toDouble();m[x["id"].toString()]=s;}_tileGridModel.score(m);emit heatmapChanged();postToGcsConsole(QString("DINO ranking applied: frame=%1, tiles=%2").arg(f).arg(a.size()));}
 
 void NavaiOverlay::postToGcsConsole(const QString &text)
 {

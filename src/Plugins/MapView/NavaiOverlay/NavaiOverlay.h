@@ -12,7 +12,10 @@
 #include <QUdpSocket>
 #include <QtCore>
 
+#include "NavaiTileServer.h"
+
 class Unit;
+class NavaiTileModel : public QAbstractListModel { Q_OBJECT public: enum Roles { IdRole=Qt::UserRole+1, PolygonRole, ColorRole }; NavaiTileModel(QObject*p=nullptr):QAbstractListModel(p){} int rowCount(const QModelIndex&p={})const override{return p.isValid()?0:_items.size();} QVariant data(const QModelIndex&i,int r)const override; QHash<int,QByteArray> roleNames()const override; void replace(const QVector<QVariantMap>&); void merge(const QVector<QVariantMap>&); void score(const QHash<QString,QVariantMap>&); QVariantList heatmapTiles() const; const QVector<QVariantMap> &tiles() const { return _items; } private: QVector<QVariantMap> _items; };
 
 class NavaiResultModel : public QAbstractListModel
 {
@@ -88,10 +91,14 @@ class NavaiOverlay : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QAbstractListModel *resultsModel READ resultsModel CONSTANT)
+    Q_PROPERTY(QAbstractListModel *tileGridModel READ tileGridModel CONSTANT)
+    Q_PROPERTY(QVariantList heatmapTiles READ heatmapTiles NOTIFY heatmapChanged)
     Q_PROPERTY(Fact *enableFact READ enableFact CONSTANT)
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
     Q_PROPERTY(bool udpReady READ udpReady NOTIFY udpReadyChanged)
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
+    Q_PROPERTY(QString overlayTileUrlTemplate READ overlayTileUrlTemplate NOTIFY overlayTileServerChanged)
+    Q_PROPERTY(bool overlayTileServerReady READ overlayTileServerReady NOTIFY overlayTileServerChanged)
 
 public:
     explicit NavaiOverlay(Fact *parent = nullptr);
@@ -101,6 +108,8 @@ public:
     {
         return &_resultsModel;
     }
+    QAbstractListModel *tileGridModel() { return &_tileGridModel; }
+    QVariantList heatmapTiles() const { return _tileGridModel.heatmapTiles(); }
 
     Fact *enableFact() const
     {
@@ -121,10 +130,14 @@ public:
     {
         return _udpPort;
     }
+    QString overlayTileUrlTemplate() const { return _tileServer.urlTemplate(); }
+    bool overlayTileServerReady() const { return _tileServer.isListening(); }
 
 signals:
     void activeChanged();
     void udpReadyChanged();
+    void heatmapChanged();
+    void overlayTileServerChanged();
 
 private slots:
     void readUdpDatagrams();
@@ -145,6 +158,8 @@ private:
         const QHostAddress &sender,
         quint16 senderPort
     );
+    void handleTileGrid(const QJsonObject &);
+    void handleDinoRanking(const QJsonObject &);
 
     double jsonNumber(
         const QJsonObject &obj,
@@ -171,6 +186,12 @@ private:
     Unit *_unit = nullptr;
 
     NavaiResultModel _resultsModel;
+    NavaiTileModel _tileGridModel;
+    NavaiTileServer _tileServer;
+    QHash<int,QJsonObject> _gridChunks;
+    int _gridChunkCount=0;
+    QString _gridRevision;
+    QString _gridMode;
 
     QUdpSocket *_udpSocket = nullptr;
 
