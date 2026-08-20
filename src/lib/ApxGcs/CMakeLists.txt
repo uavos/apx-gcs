@@ -10,7 +10,7 @@ apx_lib(
     Widgets
     SerialPort
     Positioning
+    Bluetooth
     Concurrent
     Charts
-    Bluetooth
 )
