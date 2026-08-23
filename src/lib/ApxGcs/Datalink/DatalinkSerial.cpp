@@ -147,9 +147,12 @@ void DatalinkSerial::openNext()
                 scanIdx = 0;
             for (int i = 0; i < list.size(); i++) {
                 const QSerialPortInfo &lspi = list.at(scanIdx);
-                if (lspi.portName().contains("usb", Qt::CaseInsensitive)
-                    && lspi.portName().contains("cu.", Qt::CaseInsensitive)
-                    && isNotLocked(lspi.systemLocation())) {
+                const QString name = lspi.portName();
+                // candidates: macOS cu.usb*, Linux USB (ttyACM*/ttyUSB*)
+                const bool candidate = name.contains(QStringLiteral("cu.usb"), Qt::CaseInsensitive)
+                                       || name.startsWith(QStringLiteral("ttyACM"))
+                                       || name.startsWith(QStringLiteral("ttyUSB"));
+                if (candidate && isNotLocked(lspi.systemLocation())) {
                     path = lspi.systemLocation();
                     break;
                 }
@@ -165,11 +168,19 @@ void DatalinkSerial::openNext()
         //try to open valid spi port
         //qDebug("Trying to open %s", path.toUtf8().data());
         if (!openPort(path, m_baud)) {
-            apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(path);
+            // warn once per port, don't spam on every retry
+            if (_failedPath != path) {
+                _failedPath = path;
+                apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(path);
+            }
+            // in [auto] mode move on to the next candidate on the next attempt
+            if (m_devName.isEmpty() || m_devName == "auto")
+                scanIdx++;
             break;
         }
 
         // port opened successfully
+        _failedPath.clear();
         _portPath = path;
         openPorts.append(path);
         setUrl(QString("serial://?port=%1&baud=%2").arg(path).arg(m_baud));
