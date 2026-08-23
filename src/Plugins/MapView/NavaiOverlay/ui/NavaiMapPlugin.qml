@@ -16,8 +16,11 @@ AppPlugin {
             property var baseMap: ui.map
             property var navai: apx.tools.navai
             property int mapRevision: 0
-            property real trajectoryLineWidth: 4
+            property real trajectoryLineWidth: 2
             property real trajectoryEndpointDiameter: 8
+            // Labels and uncertainty circles only become useful when the
+            // operator is close enough to inspect an individual result.
+            property real resultDetailsMinZoom: 16
             // 250 m cells are readable from roughly 5 km map scale, but are
             // completely hidden when zooming out farther.
             property real tileGridMinZoom: 8
@@ -25,6 +28,8 @@ AppPlugin {
             property bool navaiAvailable: navai !== null && navai !== undefined
             property bool navaiActive: navaiAvailable && navai.active
             property bool navaiUdpReady: navaiAvailable && navai.udpReady
+            property bool navaiHasHeatmap: navaiAvailable &&
+                navai.heatmapTiles.length > 0
 
             anchors.fill: parent
             visible: navaiAvailable && navaiActive
@@ -83,6 +88,7 @@ AppPlugin {
                 color: "transparent"
                 opacity: 1.0
                 visible: navaiLayer.navaiActive && navaiLayer.navaiUdpReady &&
+                         navaiLayer.navaiHasHeatmap &&
                          navaiLayer.navai.overlayTileServerReady &&
                          navaiLayer.baseMap &&
                          navaiLayer.baseMap.zoomLevel >= navaiLayer.tileGridMinZoom
@@ -162,8 +168,13 @@ AppPlugin {
                     required property string label
                     required property real itemOpacity
                     required property var trajectoryCoordinates
+                    required property bool latest
 
                     property var trajectoryMap: null
+                    property bool detailsVisible: latest ||
+                        (navaiLayer.baseMap &&
+                         navaiLayer.baseMap.zoomLevel >=
+                             navaiLayer.resultDetailsMinZoom)
 
                     function attachTrajectory()
                     {
@@ -334,7 +345,8 @@ AppPlugin {
                     Rectangle {
                         id: circle
 
-                        visible: resultItem.validTileArea &&
+                        visible: resultItem.detailsVisible &&
+                                 resultItem.validTileArea &&
                                  resultItem.pixelRadius > 0
                         x: resultItem.tileCenterPoint.x - width / 2
                         y: resultItem.tileCenterPoint.y - height / 2
@@ -351,21 +363,27 @@ AppPlugin {
                     Rectangle {
                         id: centerDot
 
-                        width: 16
-                        height: 16
-                        radius: 8
+                        width: resultItem.detailsVisible ? 16 : 8
+                        height: width
+                        radius: width / 2
 
                         x: resultItem.centerPoint.x - width / 2
                         y: resultItem.centerPoint.y - height / 2
 
-                        color: Qt.rgba(0.0, 0.65, 1.0, 1.0)
-                        border.color: "white"
-                        border.width: 2
+                        color: resultItem.detailsVisible
+                            ? Qt.rgba(0.0, 0.65, 1.0, 1.0)
+                            : Qt.rgba(0.0, 0.40, 0.85, 0.75)
+                        border.color: resultItem.detailsVisible
+                            ? "white"
+                            : "#168cff"
+                        border.width: resultItem.detailsVisible ? 2 : 1
                         z: 2
                     }
 
                     Rectangle {
                         id: labelBox
+
+                        visible: resultItem.detailsVisible
 
                         x: resultItem.centerPoint.x - width / 2
                         y: resultItem.centerPoint.y - height - 12

@@ -216,6 +216,9 @@ QVariant NavaiResultModel::data(
     case TrajectoryCoordinatesRole:
         return item.trajectoryCoordinates;
 
+    case LatestRole:
+        return row == _items.size() - 1;
+
     default:
         return {};
     }
@@ -232,7 +235,8 @@ QHash<int, QByteArray> NavaiResultModel::roleNames() const
         {PercentRole, "percent"},
         {LabelRole, "label"},
         {ItemOpacityRole, "itemOpacity"},
-        {TrajectoryCoordinatesRole, "trajectoryCoordinates"}
+        {TrajectoryCoordinatesRole, "trajectoryCoordinates"},
+        {LatestRole, "latest"}
     };
 }
 
@@ -267,6 +271,14 @@ void NavaiResultModel::addResult(
     beginInsertRows(QModelIndex(), row, row);
     _items.push_back(item);
     endInsertRows();
+
+    if (row > 0) {
+        emit dataChanged(
+            index(row - 1, 0),
+            index(row - 1, 0),
+            {LatestRole}
+        );
+    }
 
     startFadeTimer();
 }
@@ -388,7 +400,12 @@ NavaiOverlay::NavaiOverlay(Fact *parent)
             "link"
         );
 
-    f_enabled->setDefaultValue(false);
+    // The overlay is a passive local UDP receiver and is expected to work as
+    // soon as the plugin is loaded.  A fresh GCS profile otherwise leaves the
+    // receiver disabled, so simulators successfully send packets to port 5005
+    // while nothing is listening there.
+    f_enabled->setDefaultValue(true);
+    f_enabled->setValue(true);
 
     connect(
         f_enabled,

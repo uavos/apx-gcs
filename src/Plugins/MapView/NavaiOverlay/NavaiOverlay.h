@@ -31,7 +31,8 @@ public:
         PercentRole,
         LabelRole,
         ItemOpacityRole,
-        TrajectoryCoordinatesRole
+        TrajectoryCoordinatesRole,
+        LatestRole
     };
 
     explicit NavaiResultModel(QObject *parent = nullptr);
