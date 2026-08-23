@@ -132,7 +132,7 @@ bool FactData::updateValue(const QVariant &v)
     } break;
     case Text: {
         QString s;
-        if (m_units.isEmpty()) {
+        if (!m_units.isEmpty()) {
             int enumIndex = enumValue(v);
             s = enumIndex < 0 ? v.toString() : enumText(enumIndex);
         } else {

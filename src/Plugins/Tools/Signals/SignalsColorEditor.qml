@@ -19,38 +19,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+import QtQuick
+import QtQuick.Controls.Material
 
-#include "DatalinkConnection.h"
+Rectangle {
+    id: editor
 
-class Datalink;
-class DatalinkSerialRemoteTcp;
-class DatalinkSerialRemoteUdpMcast;
+    readonly property string colorAuto: qsTr("Auto")
+    readonly property string colorText: fact && fact.value !== undefined ? fact.value.trim() : colorAuto 
+    readonly property bool auto: colorText === colorAuto                          
 
-class DatalinkSerialRemotes : public Fact
-{
-    Q_OBJECT
+    implicitHeight: factButton.height * 0.6
+    implicitWidth: factButton.height * 1.8
+    radius: height / 12
+    border.width: 2
+    border.color: Material.hintTextColor
+    color: !auto ? colorText.toUpperCase() : "transparent"
 
-public:
-    explicit DatalinkSerialRemotes(Datalink *datalink);
-
-    Fact *f_add = nullptr;
-    Fact *f_host = nullptr;
-    Fact *f_port = nullptr;
-    Fact *f_type = nullptr;
-    Fact *f_connect = nullptr;
-    Fact *f_list = nullptr;
-
-private:
-    Datalink *m_datalink = nullptr;
-
-    void updateStatus();
-    void load();
-    void save();
-    DatalinkConnection *createConnection(const QString &host, int port, const QString &type);
-
-private slots:
-    void onConnectTriggered();
-    void onConnectionActiveChanged();
-    void onConnectionRemoveTriggered();
-};
+   Text {
+        anchors.centerIn: parent
+        text: qsTr("A")
+        font: apx.font_narrow(Math.max(10, parent.height * 0.55))
+        color: Material.hintTextColor
+        visible: auto
+    }
+}

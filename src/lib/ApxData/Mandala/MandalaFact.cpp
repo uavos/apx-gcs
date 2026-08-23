@@ -140,12 +140,12 @@ bool MandalaFact::setValue(const QVariant &v)
 
     //always send uplink
     bool rv = Fact::setValue(v);
-    if (rv) {
-        shadow_value = value();
-        // qDebug() << "setValue:" << mpath() << value();
-    }
 
+    shadow_value = value();
+
+    // qDebug() << "setValue:" << mpath() << value();
     // qDebug() << name() << text() << rv;
+
     if (sendTimer.isActive())
         return rv;
     if (sendTime.elapsed() >= sendTimer.interval())

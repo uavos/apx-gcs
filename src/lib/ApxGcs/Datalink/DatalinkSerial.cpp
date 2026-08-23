@@ -122,11 +122,22 @@ void DatalinkSerial::openNext()
 
     setStatus(tr("Searching"));
 
+    // qDebug() << m_devName << m_baud << url();
+
     while (1) {
-        QSerialPortInfo spi;
+        _portPath = {};
+        QString path;
         if ((!m_devName.isEmpty()) && m_devName != "auto") {
             //the port name is m_devName
-            spi = QSerialPortInfo(m_devName);
+            auto spi = QSerialPortInfo(m_devName);
+            if (!spi.isNull()) {
+                path = spi.systemLocation();
+                qDebug() << "Serial port path:" << path;
+            } else if (QFile::exists(m_devName)) {
+                qDebug() << "Serial port path:" << m_devName;
+                path = m_devName;
+            }
+
         } else {
             //[auto] - scan for any next available port
             QList<QSerialPortInfo> list = QSerialPortInfo::availablePorts();
@@ -136,9 +147,13 @@ void DatalinkSerial::openNext()
                 scanIdx = 0;
             for (int i = 0; i < list.size(); i++) {
                 const QSerialPortInfo &lspi = list.at(scanIdx);
-                if (lspi.portName().contains("usb", Qt::CaseInsensitive)
-                    && lspi.portName().contains("cu.", Qt::CaseInsensitive) && isAvailable(lspi)) {
-                    spi = lspi;
+                const QString name = lspi.portName();
+                // candidates: macOS cu.usb*, Linux USB (ttyACM*/ttyUSB*)
+                const bool candidate = name.contains(QStringLiteral("cu.usb"), Qt::CaseInsensitive)
+                                       || name.startsWith(QStringLiteral("ttyACM"))
+                                       || name.startsWith(QStringLiteral("ttyUSB"));
+                if (candidate && isNotLocked(lspi.systemLocation())) {
+                    path = lspi.systemLocation();
                     break;
                 }
                 scanIdx++;
@@ -146,20 +161,30 @@ void DatalinkSerial::openNext()
                     scanIdx = 0;
             }
         }
-        if (!isAvailable(spi))
-            break;
-        //try to open valid spi port
-        //qDebug("Trying to open %s (%s)",spi.portName().toUtf8().data(),spi.systemLocation().toUtf8().data());
-        if (!openPort(spi, m_baud)) {
-            apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(spi.portName());
+        if (!isNotLocked(path)) {
+            // qDebug() << "Port not available" << spi.portName() << spi.systemLocation();
             break;
         }
-        info = spi;
-        openPorts.append(info.portName());
-        if (m_devName != info.portName())
-            setUrl(QString("%1:%2").arg(m_devName).arg(info.portName()));
+        //try to open valid spi port
+        //qDebug("Trying to open %s", path.toUtf8().data());
+        if (!openPort(path, m_baud)) {
+            // warn once per port, don't spam on every retry
+            if (_failedPath != path) {
+                _failedPath = path;
+                apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(path);
+            }
+            // in [auto] mode move on to the next candidate on the next attempt
+            if (m_devName.isEmpty() || m_devName == "auto")
+                scanIdx++;
+            break;
+        }
+
+        // port opened successfully
+        _failedPath.clear();
+        _portPath = path;
+        openPorts.append(path);
+        setUrl(QString("serial://?port=%1&baud=%2").arg(path).arg(m_baud));
         setStatus(tr("Connected"));
-        apxMsg() << tr("Serial port connected: %1 %2bps").arg(info.portName()).arg(m_baud);
         opened();
         return;
     }
@@ -167,11 +192,11 @@ void DatalinkSerial::openNext()
     openTimer.start();
 }
 
-bool DatalinkSerial::openPort(const QSerialPortInfo &spi, uint baud)
+bool DatalinkSerial::openPort(const QString &path, uint baud)
 {
     setStatus(tr("Connecting"));
 
-    dev->setPort(spi);
+    dev->setPortName(path);
     dev->setBaudRate(9600);
     if (!dev->open(QIODevice::ReadWrite))
         return false;
@@ -183,15 +208,17 @@ bool DatalinkSerial::openPort(const QSerialPortInfo &spi, uint baud)
     }
     lock = new QLockFile(
         QDir::tempPath() + "/"
-        + QString(QCryptographicHash::hash(QByteArray(spi.systemLocation().toUtf8()),
-                                           QCryptographicHash::Sha1)
-                      .toHex())
+        + QString(
+            QCryptographicHash::hash(QByteArray(path.toUtf8()), QCryptographicHash::Sha1).toHex())
         + ".lock");
     if (!lock->tryLock()) {
         closePort();
-        apxMsgW() << "Unable to lock" << spi.systemLocation();
+        apxMsgW() << "Unable to lock" << path;
         return false;
     }
+
+    apxMsg() << tr("Serial port connected: %1 %2bps").arg(dev->portName()).arg(m_baud);
+
     return true;
 }
 void DatalinkSerial::closePort()
@@ -203,25 +230,25 @@ void DatalinkSerial::closePort()
     }
     if (dev->isOpen())
         dev->close();
-    openPorts.removeAll(info.portName());
+    openPorts.removeAll(_portPath);
     closed();
     setStatus("");
-    setUrl(m_devName);
+    // setUrl(m_devName);
     //if(openTimer && openTimer->isActive())openTimer->stop();
 }
 
-bool DatalinkSerial::isAvailable(const QSerialPortInfo &spi)
+bool DatalinkSerial::isNotLocked(const QString &path) const
 {
-    if (spi.isNull())
+    if (!QFile::exists(path))
         return false;
-    if (openPorts.contains(spi.portName()))
+    if (openPorts.contains(path))
         return false;
 
-    QLockFile tlock(QDir::tempPath() + "/"
-                    + QString(QCryptographicHash::hash(QByteArray(spi.systemLocation().toUtf8()),
-                                                       QCryptographicHash::Sha1)
-                                  .toHex())
-                    + ".lock");
+    QLockFile tlock(
+        QDir::tempPath() + "/"
+        + QString(
+            QCryptographicHash::hash(QByteArray(path.toUtf8()), QCryptographicHash::Sha1).toHex())
+        + ".lock");
     if (!tlock.tryLock(10))
         return false;
     tlock.unlock();
@@ -235,8 +262,9 @@ void DatalinkSerial::serialPortError(QSerialPort::SerialPortError error)
 
     dev->clearError();
     if (dev->isOpen()) {
+        auto name = dev->portName();
         closePort();
-        apxMsgW() << tr("Serial port disconnected").append(":") << info.portName();
+        apxMsgW() << tr("Serial port disconnected").append(":") << name;
     }
     openTimer.start();
 }
@@ -250,7 +278,7 @@ void DatalinkSerial::close()
 {
     //qDebug()<<active();
     if (dev->isOpen()) {
-        apxMsg() << tr("Serial port closed").append(":") << info.portName();
+        apxMsg() << tr("Serial port closed").append(":") << dev->portName();
     }
     closePort();
 }

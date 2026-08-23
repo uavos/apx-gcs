@@ -9,3 +9,5 @@ add_subdirectory("ServoConfig")
 add_subdirectory("MandalaTree")
 add_subdirectory("TreeFacts")
 add_subdirectory("TreeJS")
+
+add_subdirectory("Ekf")

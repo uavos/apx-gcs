@@ -52,16 +52,17 @@ private:
     QTimer rxTimer;
 
     QSerialPort *dev;
-    QSerialPortInfo info;
+    QString _portPath;
 
     QLockFile *lock{};
     static QStringList openPorts;
-    bool isAvailable(const QSerialPortInfo &spi);
-    bool openPort(const QSerialPortInfo &spi, uint baud);
+    bool isNotLocked(const QString &path) const;
+    bool openPort(const QString &path, uint baud);
     void closePort();
 
     QTimer openTimer;
     int scanIdx;
+    QString _failedPath;
 
     quint8 _rxbuf_raw[xbus::size_packet_max * 2];
 

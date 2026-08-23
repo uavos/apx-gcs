@@ -21,43 +21,28 @@
  */
 #pragma once
 
-#include "DatalinkConnection.h"
-#include <serial/CobsDecoder.h>
-#include <serial/CobsEncoder.h>
-#include <QTcpSocket>
+#include "DatalinkSocket.h"
 
-class DatalinkSerialRemoteTcp : public DatalinkConnection
+// plain TCP client stream (no HTTP handshake), COBS framed
+class DatalinkSocketTcp : public DatalinkSocket
 {
     Q_OBJECT
-
 public:
-    explicit DatalinkSerialRemoteTcp(Fact *parent, QString host, int port);
+    // constructor to create client socket and connect to remote url
+    explicit DatalinkSocketTcp(Fact *parent, QUrl url);
 
-    Fact *f_state = nullptr;
-    Fact *f_remove = nullptr;
+private:
+    QTcpSocket *_tcp;
 
-    QString getHost() const;
-    int getPort() const;
+    // retry connect
+    int retry{};
+    QTimer reconnectTimer;
+
+    void reconnect();
 
 protected:
     //DatalinkConnection overrided
     void open() override;
-    void close() override;
     QByteArray read() override;
     void write(const QByteArray &packet) override;
-
-private:
-    QString m_host;
-    int m_port;
-    QTcpSocket m_socket;
-    QTimer m_noDataTimer;
-    CobsDecoder<> m_dec;
-    CobsEncoder<> m_enc;
-
-private slots:
-    void onErrorOccured(QAbstractSocket::SocketError socketError);
-    void onStateChanged(QAbstractSocket::SocketState socketState);
-    void onActivatedChanged();
-    void onNoDataTimerTimeout();
-    void onRemoveTriggered();
 };

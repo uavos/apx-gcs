@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:26.04
 LABEL description="Linux development environment for APX Ground Control"
 LABEL maintainer="sa@uavos.com"
 
@@ -8,14 +8,14 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
 # basic APT packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates bc \
+RUN apt update && \
+    apt install -y --no-install-recommends \
+    ca-certificates \
     build-essential rsync curl git make ninja-build pkg-config python3-pip \
     fuse \
     bc \
     && \
-    rm -Rf /var/cache/apt
+    rm -Rf /var/cache/apt/*
 
 # architecture detect
 RUN arch="$(dpkg --print-architecture)" && \
@@ -31,30 +31,15 @@ RUN arch="$(dpkg --print-architecture)" && \
     echo "${arch_qt}" > /arch_qt
 
 # CMAKE
-ARG CMAKE_VERSION=3.29.3
+ARG CMAKE_VERSION=4.3.4
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-$(cat /arch).sh --output /tmp/install-cmake.sh && \
     sh /tmp/install-cmake.sh --skip-license --prefix=/usr/local &&\
     cmake --version
 
-# LINUXDEPLOY
-# Qt plugin continuous is segfaulting
-RUN curl -L https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy && \
-    chmod +x /usr/local/bin/linuxdeploy && \
-    curl -L https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/1-alpha-20240109-1/linuxdeploy-plugin-qt-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy-plugin-qt && \
-    chmod +x /usr/local/bin/linuxdeploy-plugin-qt && \
-    curl -L https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-$(cat /arch).tar.gz --output /tmp/patchelf.tar.gz && \
-    cd /tmp && tar -xf patchelf.tar.gz && \
-    mv bin/patchelf /usr/local/bin/ && rm -rf *
-
-# APPIMAGETOOL
-RUN curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(cat /arch).AppImage --output /usr/local/bin/appimagetool && \
-    chmod +x /usr/local/bin/appimagetool
-
-
 # libs: apt
-RUN apt-get install -y --no-install-recommends \
+RUN apt install -y --no-install-recommends \
     libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
-    libodbc1 libpq5 \
+    libodbc2 libpq5 \
     libcups2 \
     libz-dev libsdl2-dev zsync \
     \
@@ -69,28 +54,50 @@ RUN apt-get install -y --no-install-recommends \
     libegl1-mesa-dev libgles2-mesa-dev libxkbcommon-x11-dev libspeechd-dev libffi-dev \
     libicu-dev libxcb-cursor-dev libmariadb3 \
     file \
-    && rm -Rf /var/cache/apt
+    && rm -Rf /var/cache/apt/*
 
 # libs: to include in release package
 ENV LIBS_DIST_DIR=/dist
 RUN mkdir -p $LIBS_DIST_DIR
-RUN cd $LIBS_DIST_DIR && apt-get download libsdl2-2.0-0 libsndio7.0
+RUN cd $LIBS_DIST_DIR && apt download libsdl2-2.0-0 libsndio7.0
 
 
 # python tools
-RUN pip3 install networkx simplejson jinja2 pyyaml
+RUN python3 -m pip config set global.break-system-packages true
+RUN pip install networkx simplejson jinja2 pyyaml
 
 # Qt packages
 RUN apt install -y --no-install-recommends \
-    python3-dev && rm -Rf /var/cache/apt
+    python3-dev && rm -Rf /var/cache/apt/*
 
-# Qt 6.8 does not work with Ubuntu 22.04
-ARG VERSION_QT=6.7.1
+# Qt 6.8+ does not work with Ubuntu 22.04
+ARG VERSION_QT=6.11.1
 RUN pip install aqtinstall &&\
     aqt install-qt linux$(cat /arch_qt) desktop ${VERSION_QT} -m \
     qtshadertools qt5compat qtcharts qtmultimedia \
-    qtspeech qtlocation qtpositioning qtserialport &&\
+    qtspeech qtlocation qtpositioning qtserialport \
+    qtconnectivity qttasktree qtimageformats &&\
     rsync -av /${VERSION_QT}/*/ /usr/local/ && rm -Rf /${VERSION_QT}
+
+
+# LINUXDEPLOY
+# Qt plugin continuous is segfaulting
+RUN apt install -y --no-install-recommends \
+    libwebpdemux2 libfuse2 libfbclient2 \
+    && rm -Rf /var/cache/apt/*
+
+RUN curl -L https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy && \
+    chmod +x /usr/local/bin/linuxdeploy && \
+    curl -L https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-$(cat /arch).AppImage --output /usr/local/bin/linuxdeploy-plugin-qt && \
+    chmod +x /usr/local/bin/linuxdeploy-plugin-qt && \
+    curl -L https://github.com/NixOS/patchelf/releases/download/0.19.1/patchelf-0.19.1-$(cat /arch).tar.gz --output /tmp/patchelf.tar.gz && \
+    cd /tmp && tar -xf patchelf.tar.gz && \
+    mv bin/patchelf /usr/local/bin/ && rm -rf *
+
+# APPIMAGETOOL
+RUN curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$(cat /arch).AppImage --output /usr/local/bin/appimagetool && \
+    chmod +x /usr/local/bin/appimagetool
+
 
 # build patches
 ENV LD_LIBRARY_PATH=/usr/local/lib
@@ -101,4 +108,9 @@ RUN cd /usr/local/plugins/sqldrivers && \
     cp -af libqsqlite.so libqsqlmimer.so && \
     cp -af libqsqlite.so libqsqlmysql.so && \
     cp -af libqsqlite.so libqsqlodbc.so && \
-    cp -af libqsqlite.so libqsqlpsql.so
+    cp -af libqsqlite.so libqsqlpsql.so && \
+    cp -af libqsqlite.so libqsqloci.so
+
+# Tweak libtiff version for both x86_64 and arm64
+RUN cd /usr/lib/*-linux-gnu && \
+    ln -s libtiff.so.6 libtiff.so.5
