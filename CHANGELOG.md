@@ -1,3 +1,19 @@
+# [APX Ground Control v11.2.28](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.28) (08/24/26)
+
+> Branch: `main`\
+> Date: `08/24/26 09:01:15`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/0319fff9ddf4d7b57d2a97f976dbc40c73954976...7c141298258a3b4385df028b01fff7dc68e20e45)
+
+## New Features
+* TCP datalink port feature
+
+## Bug Fixes
+* create appimage
+* reverse missions
+* auto mode connect serial port (linux) and hide ttyS* ports
+* out of range crash on conf field update
+* joystick config duplication on save
+
 # [APX Ground Control v11.2.27](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.27) (08/14/26)
 
 > Branch: `main`\
