@@ -1,4 +1,4 @@
-apx_plugin(QT Concurrent)
+apx_plugin(QT Concurrent Widgets)
 
 apx_install_res(${APX_RESOURCES_DIR} templates/joystick.json)
 

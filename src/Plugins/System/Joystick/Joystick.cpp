@@ -51,6 +51,13 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
                       Action | Apply,
                       "content-save");
 
+    f_remove = new Fact(this,
+                        "remove",
+                        tr("Remove"),
+                        tr("Remove configuration"),
+                        Action | Remove,
+                        "delete");
+
     if (device_index < 0) {
         return;
     }
@@ -192,7 +199,7 @@ void Joystick::loadConfig(const QJsonObject &config)
 {
     //clear
     for (int i = 0; i < f_axes->size(); ++i)
-        f_axes->child(i)->setValue(QVariant());
+        static_cast<JoystickAxis *>(f_axes->child(i))->loadConfig(QJsonObject());
     for (int i = 0; i < f_buttons->size(); ++i)
         f_buttons->child(i)->setValue(QVariant());
     for (int i = 0; i < f_hats->size(); ++i)
