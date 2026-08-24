@@ -57,7 +57,7 @@ public:
     Q_INVOKABLE static double latFromString(QString s);
     Q_INVOKABLE static double lonFromString(QString s);
     Q_INVOKABLE static QString distanceToString(uint v, bool units = true);
-
+    
     Q_INVOKABLE static QString timeToString(quint64 v, bool seconds = false); // value in [sec]
     Q_INVOKABLE static QString timeString(bool seconds = false);              // current time
     Q_INVOKABLE static QString dateToString(quint64 v);                       // seconds since epoch

@@ -59,7 +59,7 @@ MissionObject {
 
     contentsTop: [
         Loader {
-            active: f_hmsl!==0 && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
+            active: (f_hmsl!==0 || feets !==0) && ((!dragging)?((hover||selected)?1:(showDetails?(ui.effects?0.6:1):0)):0)
             // asynchronous: true
             sourceComponent: Component {
                 MapText {

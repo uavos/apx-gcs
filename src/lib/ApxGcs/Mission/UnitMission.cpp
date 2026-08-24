@@ -45,9 +45,13 @@ UnitMission::UnitMission(Unit *parent)
     : Fact(parent, "mission", "Mission", tr("Unit mission"), Group | ModifiedGroup, "ship-wheel")
     , unit(parent)
     , blockSizeUpdate(false)
+    , m_startElevation(0)
     , m_startHeading(0)
     , m_startLength(0)
+    , m_minHeight(0)
+    , m_maxHeight(200)
     , m_missionSize(0)
+    , m_collision{false}
     , m_empty(true)
     , m_synced(false)
     , m_saved(false)
@@ -129,6 +133,10 @@ UnitMission::UnitMission(Unit *parent)
     connect(this, &UnitMission::startPointChanged, this, &UnitMission::updateStartPath);
     connect(this, &UnitMission::startHeadingChanged, this, &UnitMission::updateStartPath);
     connect(this, &UnitMission::startLengthChanged, this, &UnitMission::updateStartPath);
+    // elevation map
+    connect(this, &UnitMission::startElevationChanged, this, &UnitMission::updateMinHeight);
+    connect(this, &UnitMission::startElevationChanged, this, &UnitMission::updateMaxHeight);
+    connect(this, &UnitMission::emptyChanged, this, &UnitMission::setDefaultMinMaxHeight);
 
     //sync and saved status behavior
     connect(this, &Fact::modifiedChanged, this, [this]() {
@@ -493,4 +501,119 @@ void UnitMission::setSelectedItem(Fact *v)
         return;
     m_selectedItem = v;
     emit selectedItemChanged();
+}
+
+double UnitMission::startElevation() const
+{
+    return m_startElevation;
+}
+
+void UnitMission::setStartElevation(const double v)
+{
+    if(m_startElevation == v)
+        return;
+    m_startElevation = v;
+    emit startElevationChanged();
+}
+
+double UnitMission::minHeight() const
+{
+    return m_minHeight;
+}
+void UnitMission::setMinHeight(const double v)
+{
+    if (m_minHeight == v)
+        return;
+    m_minHeight = v;
+    emit minHeightChanged();
+}
+
+double UnitMission::maxHeight() const
+{
+    return m_maxHeight;
+}
+void UnitMission::setMaxHeight(const double v)
+{
+    if(m_maxHeight == v)
+        return;
+    m_maxHeight = v;
+    emit maxHeightChanged(); 
+}
+
+bool UnitMission::collision() const
+{
+    return m_collision;
+}
+void UnitMission::setCollision(const bool v)
+{
+    if(m_collision == v)
+        return;
+    m_collision = v;
+    emit collisionChanged();
+}
+
+void UnitMission::checkCollision()
+{
+    if(missionSize() <= 0) {
+        setCollision(false);
+        return;
+    }
+    if (f_wp->size() <= 0) {
+        setCollision(false);
+        return;
+    }
+    bool collision{false};
+    for (int i = 0; i < f_wp->size(); ++i) {
+        collision = static_cast<Waypoint *>(f_wp->child(i))->collision();
+        if (collision) {
+            setCollision(true);
+            return;
+        }
+    }
+    setCollision(false);
+}
+
+void UnitMission::updateMinHeight()
+{
+    if (missionSize() <= 0)
+        return;
+    // if (f_waypoints->size() <= 0)
+    //     return;
+    double min{0};
+    double wpMin{0};
+    for (int i = 0; i < f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(f_wp->child(i));
+        if(!wp)
+            continue;
+        wpMin = wp->minHeight();
+        min = qMin(min, wpMin);
+    }
+    min = qMin(min, m_startElevation);
+    setMinHeight(min);
+}
+
+void UnitMission::updateMaxHeight()
+{
+    if (missionSize() <= 0)
+        return;
+    // if (f_waypoints->size() <= 0)
+    //     return;
+    double max{0};
+    double wpMax{0};
+    for (int i = 0; i < f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(f_wp->child(i));
+        if (!wp)
+            continue;
+        wpMax = wp->maxHeight();
+        max = qMax(max, wpMax);
+    }
+    max = qMax(max, m_startElevation);
+    setMaxHeight(max);
+}
+
+void UnitMission::setDefaultMinMaxHeight() {
+    if (!empty())
+        return;
+    setMinHeight(0);
+    setMaxHeight(200);
 }

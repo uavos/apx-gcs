@@ -49,6 +49,7 @@ private slots:
     void updateMissionStartPoint();
 
 public slots:
+    void initElevationMap();
 
     //---------------------------------------
     // PROPERTIES
@@ -62,6 +63,7 @@ public:
     double heading() const;
 
 protected:
+    
 signals:
     void endPointChanged();
     void appPointChanged();

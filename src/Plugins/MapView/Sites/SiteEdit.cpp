@@ -32,12 +32,12 @@ SiteEdit::SiteEdit(Fact *parent,
     , blockUpdateItemData(false)
 {
     f_title = new Fact(this, "sname", tr("Site name"), tr("Label for geographic area"), Text);
-    f_latitude = new Fact(this, "latitude", tr("Latitude"), tr("Global postition latitude"), Float);
+    f_latitude = new Fact(this, "latitude", tr("Latitude"), tr("Global position latitude"), Float);
     f_latitude->setUnits("lat");
     f_longitude = new Fact(this,
                            "longitude",
                            tr("Longitude"),
-                           tr("Global postition longitude"),
+                           tr("Global position longitude"),
                            Float);
     f_longitude->setUnits("lon");
 

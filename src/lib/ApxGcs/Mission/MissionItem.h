@@ -28,10 +28,13 @@
 #include <Fact/Fact.h>
 #include <QGeoCoordinate>
 #include <QGeoPath>
+#include <QPointF>
 #include <QGeoRectangle>
 #include <QtCore>
+#include <QTimer>
 
 #include <XbusMission.h>
+#include <cmath>
 
 class MissionItem : public Fact
 {
@@ -41,6 +44,7 @@ class MissionItem : public Fact
 
     Q_PROPERTY(QGeoPath geoPath READ geoPath NOTIFY geoPathChanged)
     Q_PROPERTY(double bearing READ bearing NOTIFY bearingChanged)
+    Q_PROPERTY(double elevation READ elevation NOTIFY elevationChanged)
     Q_PROPERTY(uint time READ time NOTIFY timeChanged)
     Q_PROPERTY(uint distance READ distance NOTIFY distanceChanged)
 
@@ -48,6 +52,8 @@ class MissionItem : public Fact
     Q_PROPERTY(uint totalTime READ totalTime NOTIFY totalTimeChanged)
 
     Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectedChanged)
+
+    Q_PROPERTY(QList<QPointF> terrainProfile READ terrainProfile NOTIFY terrainProfileChanged)
 
 public:
     explicit MissionItem(MissionGroup *parent,
@@ -57,9 +63,11 @@ public:
 
     MissionGroup *group;
 
+    static constexpr int TIMEOUT = 500; // elevation update timeout
     Fact *f_order;
     MissionPoint *f_pos;
 
+    Fact *f_elevationmap{nullptr};
     Fact *f_remove;
 
     Q_INVOKABLE virtual QGeoRectangle boundingGeoRectangle() const;
@@ -68,6 +76,7 @@ public:
     void fromJson(const QJsonValue &jsv) override;
 
 public slots:
+    void extractElevation(const QGeoCoordinate &coordinate);
     void updatePath();
     void resetPath();
 
@@ -80,6 +89,8 @@ protected:
     MissionItem *nextItem() const;
 
     auto unit() const { return group->mission->unit; }
+    void sendElevationRequest();
+    void startTimer();
 
     bool blockUpdates{};
     bool blockUpdateCoordinate{};
@@ -107,6 +118,9 @@ public:
     QGeoPath geoPath() const;
     void setGeoPath(const QGeoPath &v);
 
+    double elevation() const; // terrain elevation in current wp
+    void setElevation(double elevation);
+
     double bearing() const;
     void setBearing(const double &v);
 
@@ -125,9 +139,18 @@ public:
     bool selected() const;
     void setSelected(bool v);
 
+    QList<QPointF> terrainProfile() const;
+    void setTerrainProfile(const QList<QPointF> &v);
+    void clearTerrainProfile();
+
 protected:
+    QTimer m_timer;
+    QTimer m_geoPathTimer;
     QGeoCoordinate m_coordinate;
+    QList<QPointF> m_terrainProfile;
+    QGeoPath m_terrainProfilePath;
     QGeoPath m_geoPath;
+    double m_elevation{NAN};
     double m_bearing{};
     uint m_time{};
     uint m_distance{};
@@ -138,8 +161,9 @@ protected:
     bool m_selected{};
 
 signals:
-    void coordinateChanged();
+    void coordinateChanged(QGeoCoordinate v);
     void geoPathChanged();
+    void elevationChanged();
     void bearingChanged();
     void timeChanged();
     void distanceChanged();
@@ -148,4 +172,7 @@ signals:
     void totalTimeChanged();
 
     void selectedChanged();
+
+    void requestElevation(QGeoCoordinate v);
+    void terrainProfileChanged();
 };
