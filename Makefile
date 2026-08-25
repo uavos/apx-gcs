@@ -22,7 +22,8 @@ package:
 
 release-package: configure package
 
-
+doc:
+	$(CMAKE) --build $(BUILD_DIR) --target doc
 
 # update materialdesignicons
 # https://github.com/Templarian/MaterialDesign-Webfont
@@ -41,7 +42,7 @@ update-icons:
 
 
 
-.PHONY: update-icons build package configure
+.PHONY: update-icons build package configure doc
 
 
 include Docker.mk
