@@ -144,9 +144,10 @@ AppPlugin {
                             Qt.color(heatItem.modelData.color).r,
                             Qt.color(heatItem.modelData.color).g,
                             Qt.color(heatItem.modelData.color).b,
-                            0.30
+                            0.02
                         )
-                        border.width: 0
+                        border.width: 1
+                        border.color: heatItem.modelData.color
                         z: 99901 + heatItem.modelData.score
                     }
                 }

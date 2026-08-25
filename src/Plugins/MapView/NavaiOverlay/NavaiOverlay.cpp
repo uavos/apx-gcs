@@ -19,6 +19,7 @@
 #include <QStandardPaths>
 
 #include <cmath>
+#include <limits>
 
 namespace {
 
@@ -947,7 +948,50 @@ void NavaiOverlay::handleDatagram(
 }
 
 void NavaiOverlay::handleTileGrid(const QJsonObject&o){int n=o.value("chunk_count").toInt(),i=o.value("chunk_index").toInt(-1);QString r=QString::number(o.value("revision").toInt());QString mode=o.value("mode").toString("replace");if(mode!="append")mode="replace";if(n<1||i<0||i>=n)return;if(r!=_gridRevision||mode!=_gridMode){_gridRevision=r;_gridMode=mode;_gridChunks.clear();_gridChunkCount=n;}if(n!=_gridChunkCount)return;_gridChunks[i]=o;if(_gridChunks.size()!=n)return;QVector<QVariantMap> out;for(int k=0;k<n;k++)for(auto v:_gridChunks[k]["tiles"].toArray()){auto t=v.toObject();double la=t["latitude"].toDouble(),lo=t["longitude"].toDouble(),s=t["size_m"].toDouble(),dy=s/111320.,dx=dy/qMax(.1,std::cos(la*M_PI/180.));QVariantList p;for(auto q:{QPointF(-1,-1),QPointF(1,-1),QPointF(1,1),QPointF(-1,1)})p<<QVariant::fromValue(QGeoCoordinate(la+q.y()*dy/2,lo+q.x()*dx/2));QVariantMap x;x["id"]=t["id"].toString();x["polygon"]=p;out<<x;}if(mode=="append")_tileGridModel.merge(out);else _tileGridModel.replace(out);_tileServer.invalidate();postToGcsConsole(QString("Tile grid %1: revision=%2, tiles=%3").arg(mode=="append"?"merged":"applied").arg(r).arg(out.size()));}
-void NavaiOverlay::handleDinoRanking(const QJsonObject&o){static qint64 frame=0;qint64 f=o["frame_id"].toVariant().toLongLong();if(f&&f<frame)return;frame=f;auto a=o["tiles"].toArray();double hi=0,lo=1;for(auto v:a){auto x=v.toObject();double s=x["score"].toDouble();hi=qMax(hi,s);lo=qMin(lo,s);}QHash<QString,QVariantMap> m;for(auto v:a){auto x=v.toObject();double z=hi>lo?(x["score"].toDouble()-lo)/(hi-lo):1;QColor c=QColor::fromHsvF(z*.33,.85,.95);QVariantMap s;s["color"]=c.name();s["score"]=x["score"].toDouble();m[x["id"].toString()]=s;}_tileGridModel.score(m);emit heatmapChanged();postToGcsConsole(QString("DINO ranking applied: frame=%1, tiles=%2").arg(f).arg(a.size()));}
+void NavaiOverlay::handleDinoRanking(const QJsonObject &o)
+{
+    static qint64 frame = 0;
+    const qint64 f = o["frame_id"].toVariant().toLongLong();
+    if (f && f < frame)
+        return;
+    frame = f;
+
+    const QJsonArray tiles = o["tiles"].toArray();
+    QHash<QString, QVariantMap> scores;
+    QString topId;
+    double topScore = -std::numeric_limits<double>::infinity();
+
+    for (const QJsonValue &value : tiles) {
+        const QJsonObject tile = value.toObject();
+        const double score = tile["score"].toDouble();
+        const double normalizedScore = qBound(0.0, score, 1.0);
+        const QColor color = QColor::fromHsvF(normalizedScore * .33, .85, .95);
+        const QString id = tile["id"].toString();
+
+        QVariantMap item;
+        item["color"] = color.name();
+        item["score"] = score;
+        scores[id] = item;
+
+        if (score > topScore) {
+            topScore = score;
+            topId = id;
+        }
+    }
+
+    _tileGridModel.score(scores);
+    emit heatmapChanged();
+
+    postToGcsConsole(
+        tiles.isEmpty()
+            ? QString("DINO ranking applied: frame=%1, tiles=0").arg(f)
+            : QString("DINO ranking applied: frame=%1, tiles=%2, top=%3 - %4 of 1")
+                  .arg(f)
+                  .arg(tiles.size())
+                  .arg(topId)
+                  .arg(topScore, 0, 'f', 3)
+    );
+}
 
 void NavaiOverlay::postToGcsConsole(const QString &text)
 {
