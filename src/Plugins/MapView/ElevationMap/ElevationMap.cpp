@@ -24,10 +24,10 @@
 #include <App/AppSettings.h>
 #include <Fleet/Fleet.h>
 #include <Mission/MissionTools.h>
+#include <Mission/Poi.h>
+#include <Mission/Runway.h>
 #include <Mission/UnitMission.h>
 #include <Mission/Waypoint.h>
-#include <Mission/Runway.h>
-#include <Mission/Poi.h>
 
 #include <QFileDialog>
 #include <QMap>
@@ -93,9 +93,18 @@ void ElevationMap::createElevationDatabase()
 {
     auto path = f_path->value().toString();
     m_elevationDB = QSharedPointer<OfflineElevationDB>::create(path);
-    connect(m_elevationDB.data(), &OfflineElevationDB::coordinateReceived, this, &ElevationMap::setCoordinate);
-    connect(m_elevationDB.data(), &OfflineElevationDB::elevationReceived, this, &ElevationMap::setElevation);
-    connect(m_elevationDB.data(), &OfflineElevationDB::terrainProfileReceived, this, &ElevationMap::setGeoPath);
+    connect(m_elevationDB.data(),
+            &OfflineElevationDB::coordinateReceived,
+            this,
+            &ElevationMap::setCoordinate);
+    connect(m_elevationDB.data(),
+            &OfflineElevationDB::elevationReceived,
+            this,
+            &ElevationMap::setElevation);
+    connect(m_elevationDB.data(),
+            &OfflineElevationDB::terrainProfileReceived,
+            this,
+            &ElevationMap::setGeoPath);
 }
 
 void ElevationMap::onOpenTriggered()
@@ -104,7 +113,7 @@ void ElevationMap::onOpenTriggered()
                                                      tr("Open Directory"),
                                                      QDir::homePath(),
                                                      QFileDialog::ShowDirsOnly
-                                                     | QFileDialog::DontResolveSymlinks);
+                                                         | QFileDialog::DontResolveSymlinks);
     if (!path.isEmpty())
         f_path->setValue(path);
 }
@@ -119,7 +128,7 @@ UnitMission *ElevationMap::mission() const
     return unit()->f_mission;
 }
 
-MissionTools *ElevationMap::missionTools() const 
+MissionTools *ElevationMap::missionTools() const
 {
     return mission()->f_tools;
 }
@@ -131,10 +140,16 @@ Fact *ElevationMap::aglset() const
 
 void ElevationMap::updateMission()
 {
-    connect(mission(), &UnitMission::missionSizeChanged, this, &ElevationMap::changeExternalsVisibility);
+    connect(mission(),
+            &UnitMission::missionSizeChanged,
+            this,
+            &ElevationMap::changeExternalsVisibility);
     connect(mission(), &UnitMission::missionSizeChanged, mission(), &UnitMission::checkCollision);
     connect(mission(), &UnitMission::startPointChanged, this, &ElevationMap::setStartPointElevation);
-    connect(missionTools()->f_reverse, &Fact::triggered, this, &ElevationMap::changeExternalsVisibility);
+    connect(missionTools()->f_reverse,
+            &Fact::triggered,
+            this,
+            &ElevationMap::changeExternalsVisibility);
     connect(missionTools()->f_aglsetApply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
     connect(missionTools()->f_pathsCorrect, &Fact::triggered, this, [this]() {
         QTimer::singleShot(100, this, &ElevationMap::correctUnsafePaths);
@@ -143,7 +158,8 @@ void ElevationMap::updateMission()
     updateRefPoint();
 }
 
-void ElevationMap::updateRefPoint() {
+void ElevationMap::updateRefPoint()
+{
     f_refHmsl = unit()->f_mandala->fact(mandala::est::nav::ref::hmsl::uid);
     f_refStatus = unit()->f_mandala->fact(mandala::est::nav::ref::status::uid);
     if (f_refHmsl)
@@ -152,11 +168,10 @@ void ElevationMap::updateRefPoint() {
         connect(f_refStatus, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation);
 }
 
-
 void ElevationMap::getPluginEnableControl()
 {
     f_control = AppSettings::instance()->findChild("application.plugins.elevationmap");
-    if(f_control)
+    if (f_control)
         connect(f_control, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
 }
 
@@ -165,7 +180,7 @@ void ElevationMap::setMissionAgl()
     auto m = mission();
     for (int i = 0; i < m->f_wp->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
-        if(!wp)
+        if (!wp)
             continue;
 
         auto elevation = wp->elevation();
@@ -181,10 +196,9 @@ void ElevationMap::setMissionAgl()
 
 void ElevationMap::changeExternalsVisibility()
 {
-    apxMsgW() << "";
     bool useValue{false};
     bool controlValue{false};
-    if(f_control && !f_control->busy()) 
+    if (f_control && !f_control->busy())
         controlValue = f_control->value().toBool();
     if (f_use)
         useValue = f_use->value().toBool();
@@ -206,8 +220,8 @@ void ElevationMap::setMissionValues(bool b)
 
     // Signal missionSizeChanged is sent before mission is cleared
     auto m = mission();
-    if(!m->missionSize() > 0) {
-        clearMissionPoints(); 
+    if (!m->missionSize() > 0) {
+        clearMissionPoints();
         return;
     }
 
@@ -234,8 +248,9 @@ QGeoCoordinate ElevationMap::coordinate() const
     return m_coordinate;
 }
 
-void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate) {
-    if(m_coordinate == coordinate)
+void ElevationMap::setCoordinate(const QGeoCoordinate &coordinate)
+{
+    if (m_coordinate == coordinate)
         return;
     m_coordinate = coordinate;
     emit coordinateChanged(m_coordinate);
@@ -259,7 +274,7 @@ void ElevationMap::setWaypointsValues(bool b)
 {
     auto m = mission();
     QMap<QString, int> tempMap;
-    int batchSize = 0; // 
+    int batchSize = 0; //
 
     for (int i = 0; i < m->f_wp->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
@@ -268,13 +283,33 @@ void ElevationMap::setWaypointsValues(bool b)
         if (!b)
             continue;
         wp->initElevationMap();
-        connect(this, &ElevationMap::coordinateChanged, wp, &Waypoint::extractElevation, Qt::UniqueConnection);
-        connect(wp, &Waypoint::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
-        connect(wp, &Waypoint::requestTerrainProfile, this, &ElevationMap::setTerrainProfile, Qt::UniqueConnection);
-        connect(this, &ElevationMap::geoPathChanged, wp, &Waypoint::buildTerrainProfile, Qt::UniqueConnection);
-        connect(wp, &Waypoint::responseCorrectPath, this, &ElevationMap::getCorrectPathResponse, Qt::UniqueConnection);
+        connect(this,
+                &ElevationMap::coordinateChanged,
+                wp,
+                &Waypoint::extractElevation,
+                Qt::UniqueConnection);
+        connect(wp,
+                &Waypoint::requestElevation,
+                this,
+                &ElevationMap::setCoordinateWithElevation,
+                Qt::UniqueConnection);
+        connect(wp,
+                &Waypoint::requestTerrainProfile,
+                this,
+                &ElevationMap::setTerrainProfile,
+                Qt::UniqueConnection);
+        connect(this,
+                &ElevationMap::geoPathChanged,
+                wp,
+                &Waypoint::buildTerrainProfile,
+                Qt::UniqueConnection);
+        connect(wp,
+                &Waypoint::responseCorrectPath,
+                this,
+                &ElevationMap::getCorrectPathResponse,
+                Qt::UniqueConnection);
         // Check wp terrain profile has changes
-        if(wp->terrainProfileNeedUpdate()) {
+        if (wp->terrainProfileNeedUpdate()) {
             wp->sendTerrainProfileRequest();
         }
         // For start point height update
@@ -288,9 +323,10 @@ void ElevationMap::setWaypointsValues(bool b)
         auto str = wp->coordinate().toString();
         auto alt = wp->f_altitude->value().toInt();
         if (!m_waypoints.contains(str) || m_waypoints[str] != alt) {
-            QMetaObject::invokeMethod(this, [=]() { setCoordinateWithElevation(wp->coordinate()); }, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(
+                this, [=]() { setCoordinateWithElevation(wp->coordinate()); }, Qt::QueuedConnection);
             batchSize++;
-            if(batchSize > 30) {
+            if (batchSize > 30) {
                 batchSize = 0;
                 sleep(0);
             }
@@ -299,7 +335,7 @@ void ElevationMap::setWaypointsValues(bool b)
         tempMap[str] = alt;
     }
 
-    // For the first load from a file 
+    // For the first load from a file
     // when there is no elevation data at all
     m->updateMinHeight();
     m->updateMaxHeight();
@@ -307,7 +343,8 @@ void ElevationMap::setWaypointsValues(bool b)
     m_waypoints = tempMap;
 }
 
-void ElevationMap::setRunwaysValues(bool b) {
+void ElevationMap::setRunwaysValues(bool b)
+{
     auto m = mission();
     QSet<QString> tempSet;
     for (int i = 0; i < m->f_rw->size(); ++i) {
@@ -315,18 +352,30 @@ void ElevationMap::setRunwaysValues(bool b) {
             continue;
         auto runway = static_cast<Runway *>(m->f_rw->child(i));
         runway->initElevationMap();
-        connect(this, &ElevationMap::coordinateChanged, runway, &Runway::extractElevation, Qt::UniqueConnection);
-        connect(runway, &Runway::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
+        connect(this,
+                &ElevationMap::coordinateChanged,
+                runway,
+                &Runway::extractElevation,
+                Qt::UniqueConnection);
+        connect(runway,
+                &Runway::requestElevation,
+                this,
+                &ElevationMap::setCoordinateWithElevation,
+                Qt::UniqueConnection);
         auto str = runway->coordinate().toString();
         if (!m_runways.contains(str)) {
-            QMetaObject::invokeMethod(this, [=]() {setCoordinateWithElevation(runway->coordinate());}, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(
+                this,
+                [=]() { setCoordinateWithElevation(runway->coordinate()); },
+                Qt::QueuedConnection);
         }
         tempSet.insert(str);
     }
     m_runways = tempSet;
 }
 
-void ElevationMap::setPoisValues(bool b) {
+void ElevationMap::setPoisValues(bool b)
+{
     auto m = mission();
     QSet<QString> tempSet;
     for (int i = 0; i < m->f_pi->size(); ++i) {
@@ -334,11 +383,22 @@ void ElevationMap::setPoisValues(bool b) {
             continue;
         auto poi = static_cast<Poi *>(m->f_pi->child(i));
         poi->initElevationMap();
-        connect(this, &ElevationMap::coordinateChanged, poi, &Poi::extractElevation, Qt::UniqueConnection);
-        connect(poi, &Poi::requestElevation, this, &ElevationMap::setCoordinateWithElevation, Qt::UniqueConnection);
+        connect(this,
+                &ElevationMap::coordinateChanged,
+                poi,
+                &Poi::extractElevation,
+                Qt::UniqueConnection);
+        connect(poi,
+                &Poi::requestElevation,
+                this,
+                &ElevationMap::setCoordinateWithElevation,
+                Qt::UniqueConnection);
         auto str = poi->coordinate().toString();
         if (!m_pois.contains(str)) {
-            QMetaObject::invokeMethod(this, [=]() {setCoordinateWithElevation(poi->coordinate());}, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(
+                this,
+                [=]() { setCoordinateWithElevation(poi->coordinate()); },
+                Qt::QueuedConnection);
         }
         tempSet.insert(str);
     }
@@ -366,12 +426,20 @@ void ElevationMap::setStartPointElevation()
                 runway = rw;
             }
         }
-        if(!runway) {
+        if (!runway) {
             m->setStartElevation(hHmsl);
             return;
         }
-        connect(runway, &MissionItem::elevationChanged, this, &ElevationMap::setStartPointElevation, Qt::UniqueConnection);
-        connect(runway->f_hmsl, &Fact::valueChanged, this, &ElevationMap::setStartPointElevation, Qt::UniqueConnection);
+        connect(runway,
+                &MissionItem::elevationChanged,
+                this,
+                &ElevationMap::setStartPointElevation,
+                Qt::UniqueConnection);
+        connect(runway->f_hmsl,
+                &Fact::valueChanged,
+                this,
+                &ElevationMap::setStartPointElevation,
+                Qt::UniqueConnection);
         auto rwHmsl = runway->f_hmsl->value().toInt();
         hHmsl = rwHmsl;
         // If hmsl default
@@ -411,10 +479,10 @@ void ElevationMap::correctUnsafePaths()
 {
     if (m_isCorrect)
         return;
-    
+
     auto m = mission();
     auto wpsSize = m->f_wp->size();
-    if(wpsSize <= 0)
+    if (wpsSize <= 0)
         return;
 
     apxMsg() << tr("Mission correction started");
@@ -423,7 +491,7 @@ void ElevationMap::correctUnsafePaths()
     m_correction.clear();
     QFuture<void> future = QtConcurrent::run([=]() {
         auto num = QThread::idealThreadCount();
-        auto maxThreads = num > 2 ? num-2 : 1;
+        auto maxThreads = num > 2 ? num - 2 : 1;
         for (int i = 0; i < wpsSize; i++) {
             // Check avaliable threads count
             if (threads >= maxThreads) {
@@ -440,7 +508,8 @@ void ElevationMap::correctUnsafePaths()
     });
 }
 
-void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index) {
+void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index)
+{
     if (threads > 0)
         threads--;
 
@@ -458,7 +527,7 @@ void ElevationMap::insertMissionWaypoints()
     for (auto k : m_correction.keys()) {
         if (!m_correction.value(k).empty())
             break;
-        else if(k != m_correction.lastKey())
+        else if (k != m_correction.lastKey())
             continue;
         apxMsg() << tr("Nothing to correct. Mission correction completed");
         m_isCorrect = false;
@@ -472,21 +541,21 @@ void ElevationMap::insertMissionWaypoints()
     QList<QGeoCoordinate> newWps;
     for (int i = 0; i < m->f_wp->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
-        
+
         // Add first waypoint
         if (i == 0) {
             jsa.append(wp->toJson());
             continue;
         }
 
-        if(!m_correction.contains(i)) {
+        if (!m_correction.contains(i)) {
             jsa.append(wp->toJson());
             continue;
         }
-        
-        // Append new waypoints 
+
+        // Append new waypoints
         newWps = m_correction[i];
-        auto prevWp = static_cast<Waypoint *>(m->f_wp->child(i-1));
+        auto prevWp = static_cast<Waypoint *>(m->f_wp->child(i - 1));
         auto prevCoordinate = prevWp->coordinate();
         for (int j = 0; j < newWps.size(); ++j) {
             if (j == 0) {
@@ -517,7 +586,7 @@ void ElevationMap::insertMissionWaypoints()
     }
 
     auto startElevation = m->startElevation();
-    m->setStartElevation(0); // eliminate re-calculation when creating waypoints. 
+    m->setStartElevation(0); // eliminate re-calculation when creating waypoints.
     m->f_wp->fromJson(jsa);
     auto lastWp = static_cast<Waypoint *>(m->f_wp->facts().last());
     m->setStartElevation(startElevation);
@@ -529,17 +598,17 @@ void ElevationMap::insertMissionWaypoints()
     m_isCorrect = false;
 }
 
-void ElevationMap::completeCorrection() 
+void ElevationMap::completeCorrection()
 {
     if (!m_isCorrect)
         return;
 
     Waypoint *lastWp = static_cast<Waypoint *>(mission()->f_wp->facts().last());
-    if(!lastWp)
+    if (!lastWp)
         return;
 
     // Terrain profile not empty and waypoint have elevation
-    // (elevation map for waypoint exists)    
+    // (elevation map for waypoint exists)
     auto tp = lastWp->terrainProfile();
     auto elv = lastWp->elevation();
     if (tp.empty() && !std::isnan(elv))
@@ -550,7 +619,7 @@ void ElevationMap::completeCorrection()
     QTimer::singleShot(1000, this, &ElevationMap::checkCorrectionResult);
 }
 
-void ElevationMap::checkCorrectionResult() 
+void ElevationMap::checkCorrectionResult()
 {
     auto m = mission();
     QString wpWarnings;
@@ -569,7 +638,8 @@ void ElevationMap::checkCorrectionResult()
                      .arg(wpWarnings);
 }
 
-void ElevationMap::createDir(const QString &path) {
+void ElevationMap::createDir(const QString &path)
+{
     QDir dir(path);
     if (dir.exists())
         return;
@@ -577,7 +647,8 @@ void ElevationMap::createDir(const QString &path) {
         apxMsgW() << tr("Failed to create default elevation dir");
 }
 
-void ElevationMap::sleep(uint ms) {
+void ElevationMap::sleep(uint ms)
+{
     QEventLoop loop;
     QTimer::singleShot(ms, &loop, &QEventLoop::quit);
     loop.exec();
