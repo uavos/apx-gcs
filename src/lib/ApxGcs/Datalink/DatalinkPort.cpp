@@ -488,9 +488,13 @@ void DatalinkPort::syncUrlEnum()
     case SERIAL: {
         st << "auto";
         for (const auto spi : QSerialPortInfo::availablePorts()) {
-            if (st.contains(spi.portName()))
+            const QString name = spi.portName();
+            // hide ttyS* ports
+            if (name.startsWith(QStringLiteral("ttyS")))
                 continue;
-            st.append(spi.portName());
+            if (st.contains(name))
+                continue;
+            st.append(name);
         }
     } break;
     case BLE: {

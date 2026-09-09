@@ -139,9 +139,9 @@ void PApxNode::process_incoming_data(const xbus::pid_s &pid, PStreamReader &stre
             _ext_upd_request = false;
             // emit event to update field UI
             const auto name = find_field_name(fid);
-            const auto type = _field_types.at(fidx);
             if (name.isEmpty() || name == _script_field)
                 return;
+            const auto type = _field_types.at(fidx);
             auto value = read_param(stream, type);
             if (value.isNull())
                 return;
@@ -675,6 +675,10 @@ void PApxNode::parseConfData(PApxNode *node,
         while (stream.available() > 0) {
             // stream padding with offset
             size_t d_pos = stream.pos() - pos_s;
+            if (fidx >= offsets.size()) {
+                qWarning() << title() << "conf offsets out of range" << fidx << offsets.size();
+                break;
+            }
             size_t offset = offsets.at(fidx);
             size_t d_offset = offset - offset_s;
             offset_s = offset;
