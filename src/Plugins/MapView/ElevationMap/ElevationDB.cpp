@@ -126,7 +126,7 @@ void OfflineElevationDB::requestElevationASTER(double latitude, double longitude
     setImage(filePath);
     future = QtConcurrent::run(getElevationTiffASTER, m_image, filePath, latitude, longitude);
     QFutureWatcher<double> *watcher = new QFutureWatcher<double>(this);
-    connect(watcher, &QFutureWatcher<QGeoCoordinate>::finished, this, [watcher, this]() {
+    connect(watcher, &QFutureWatcher<double>::finished, this, [watcher, this]() {
         auto result = watcher->result();
         emit elevationReceived(result);
         watcher->deleteLater();
