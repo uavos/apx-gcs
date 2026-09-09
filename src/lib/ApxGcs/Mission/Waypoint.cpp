@@ -749,7 +749,7 @@ void Waypoint::correctPath(bool reply)
         prevWp->f_altitude->setValue(prevAlt);
     }
 
-    auto prevAmsl = f_amsl->value().toBool();
+    auto prevAmsl = prevWp->f_amsl->value().toBool();
     if (!prevAmsl)
         prevAlt += startHmsl;
 
