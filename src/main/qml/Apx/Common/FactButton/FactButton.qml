@@ -269,7 +269,7 @@ ActionButton {
                     active: !extrainfo ? false : true
                     anchors.fill: parent
                     source: active?getExtrainfoSource():""
-                    onLoaded: _extrainfo.mrg = item.implicitWidth + _extrainfo.mrg*ui.scale
+                    onLoaded: _extrainfo.mrg = item.implicitWidth + 20*ui.scale
                 }
             }
         }
