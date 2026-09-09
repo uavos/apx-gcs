@@ -26,6 +26,7 @@
 #include "UnitMission.h"
 #include "Waypoint.h"
 
+#include <App/App.h>
 #include <Fleet/Fleet.h>
 #include <Fleet/UnitSelect.h>
 
@@ -74,6 +75,32 @@ MissionTools::MissionTools(UnitMission *mission, Flags flags)
                              Action | Apply | CloseOnTrigger | ShowDisabled);
     f_altsetApply->setEnabled(false);
     connect(f_altsetApply, &Fact::triggered, this, &MissionTools::altsetTriggered);
+
+    f = new Fact(this, "aglset", tr("AGL set"), tr("Set all waypoints height AGL"), Group);
+    f->setIcon("arrow-expand-vertical");
+    f->setVisible(false);
+    connect(f, &Fact::triggered, this, &MissionTools::updateMaxAltitude);
+    f_aglset = new Fact(f, "agl", tr("AGL value"), "", Int);
+    f_aglset->setUnits("m");
+    f_aglset->setIcon(f->icon());
+    f_aglset->setMin(0);
+    connect(f_aglset, &Fact::valueChanged, this, [this]() {
+        f_aglsetApply->setEnabled(f_aglset->value().toInt() != 0);
+    });
+    f_aglsetApply = new Fact(f,
+                             "apply",
+                             tr("Apply"),
+                             "",
+                             Action | Apply | CloseOnTrigger | ShowDisabled);
+    f_aglsetApply->setEnabled(false);
+
+    f_pathsCorrect = new Fact(this,
+                              "pathscorrect",
+                              tr("All paths correction"),
+                              tr("Correct mission paths with unsafe agl"),
+                              CloseOnTrigger,
+                              "puzzle-edit-outline");
+    f_pathsCorrect->setVisible(false);
 
     f_reverse = new Fact(this,
                          "reverse",
@@ -153,3 +180,4 @@ void MissionTools::copyUnitSelected(Unit *unit)
     unit->f_mission->fromJson(mission->toJson());
     Fleet::instance()->selectUnit(unit);
 }
+

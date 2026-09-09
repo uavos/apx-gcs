@@ -223,7 +223,7 @@ MissionObject {
                 ]
             }
         }
-    }
+     }
 
 
     //paths

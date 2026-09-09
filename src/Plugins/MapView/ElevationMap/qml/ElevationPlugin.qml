@@ -19,43 +19,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+import QtQuick
 
-#include "MissionItem.h"
-#include <QtCore>
+import Apx.Common
+import Apx.Application
 
-class Poi : public MissionItem
-{
-    Q_OBJECT
-    Q_PROPERTY(
-        QGeoCoordinate radiusPoint READ radiusPoint WRITE setRadiusPoint NOTIFY radiusPointChanged)
+AppPlugin {
+    id: plugin
 
-public:
-    explicit Poi(MissionGroup *parent);
+    sourceComponent: ElevationView { }
 
-    Fact *f_hmsl;
-    Fact *f_radius;
-    Fact *f_orbs;
-    Fact *f_time;
-
-protected:
-    QGeoRectangle boundingGeoRectangle() const;
-
-private slots:
-    void updateTitle();
-    void updateDescr();
-
-public slots:
-    void initElevationMap();
-
-    //---------------------------------------
-    // PROPERTIES
-public:
-    QGeoCoordinate radiusPoint() const;
-    void setRadiusPoint(const QGeoCoordinate &v);
-
-protected:
-    
-signals:
-    void radiusPointChanged();
-};
+    uiComponent: "main"
+    onConfigure: {
+        ui.main.add(plugin, GroundControl.Layout.Main)
+    }
+}

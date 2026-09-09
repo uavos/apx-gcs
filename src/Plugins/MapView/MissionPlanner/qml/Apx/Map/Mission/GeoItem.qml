@@ -233,6 +233,4 @@ MissionObject {
             }
         }
     }
-
-
 }

@@ -232,8 +232,8 @@ void Geo::updateTitle()
     auto bottom = f_bottom->value().toInt();
     if (bottom != 0 && top != 0) {
         st.append(QString("%1-%2")
-                      .arg(AppRoot::distanceToString(bottom))
-                      .arg(AppRoot::distanceToString(top)));
+                    .arg(AppRoot::distanceToString(bottom))
+                    .arg(AppRoot::distanceToString(top)));
     } else if (bottom != 0) {
         st.append(QString("%1+").arg(AppRoot::distanceToString(bottom)));
     } else if (top != 0) {
@@ -292,6 +292,7 @@ void Geo::addPoint(QGeoCoordinate c, int n)
     connect(pt, &MissionPoint::coordinateChanged, this, &Geo::updatePolygon);
     updatePolygon();
 }
+
 void Geo::removePoint(int n)
 {
     if (f_shape->value().toInt() != xbus::mission::geo_s::POLYGON)
@@ -314,6 +315,7 @@ QGeoCoordinate Geo::radiusPoint() const
 {
     return f_pos->coordinate().atDistanceAndAzimuth(std::abs(f_radius->value().toInt()), 90.0);
 }
+
 void Geo::setRadiusPoint(const QGeoCoordinate &v)
 {
     auto p = f_pos->coordinate();

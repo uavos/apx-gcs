@@ -185,4 +185,52 @@ RowLayout {
         }
     }
 
+    Item {
+        id: elevationItem
+        property var plugin: apx.settings.application.plugins.elevationmap
+        property bool pluginEnable: plugin?plugin.value:false
+        property int size: apx.tools?apx.tools.size:0
+        property var elevation: visible ? apx.tools.elevationmap.elevation : NaN
+        property var color: isNaN(elevation) ? "#f00" : "#fff"
+        
+        visible: false
+        Layout.alignment: Qt.AlignVCenter
+        implicitHeight: control.size
+        implicitWidth: Math.max(elevationIcon.width+elevationText.implicitWidth, height*4)
+        onPluginEnableChanged: if(!plugin.busy && pluginEnable){timer.restart()}
+        
+        MaterialIcon {
+            id: elevationIcon
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            name: "elevation-rise"
+            color: elevationItem.color
+            size: height
+        }
+        Text {
+            id: elevationText
+            anchors.left: elevationIcon.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            verticalAlignment: Text.AlignVCenter
+            font: apx.font_narrow(Style.fontSize)
+            color: elevationItem.color
+            text: isNaN(elevationItem.elevation) ? "NO" : Math.round(elevationItem.elevation) + "m"
+        }
+        ToolTipArea {
+            text: qsTr("Point elevation above sea level")
+            cursorShape: Qt.PointingHandCursor
+        }
+        Timer {
+            id: timer
+            interval: 100
+            repeat: !(apx.tools && apx.tools.elevationmap)
+            onTriggered: {
+                if(apx.tools && apx.tools.elevationmap)
+                    elevationItem.visible = Qt.binding(function() {return elevationItem.pluginEnable && apx.tools.elevationmap.use.value})
+            }
+        }
+    }
+
 }

@@ -46,6 +46,7 @@ public:
     virtual MissionItem *createObject() { return nullptr; }
 
     MissionItem *addObject(const QGeoCoordinate &);
+    MissionItem *insertObject(const QGeoCoordinate &p, uint index);
 
     Fact *f_clear;
 
@@ -74,6 +75,7 @@ public slots:
     void updateDistance();
 
     void add(const QGeoCoordinate &p);
+    void insert(const QGeoCoordinate &p, uint index);
 
     //---------------------------------------
     // PROPERTIES

@@ -37,6 +37,9 @@ public:
     Fact *f_altadjustApply;
     Fact *f_altset;
     Fact *f_altsetApply;
+    Fact *f_aglset;
+    Fact *f_aglsetApply;
+    Fact *f_pathsCorrect; 
 
     Fact *f_reverse;
 
