@@ -131,7 +131,7 @@ AppPlugin {
                             attachedMap.addMapItem(heatPolygon)
                     }
 
-                    Component.onCompleted: Qt.callLater(attach)
+                    Component.onCompleted: attach()
                     Component.onDestruction: {
                         if (attachedMap)
                             attachedMap.removeMapItem(heatPolygon)
@@ -144,7 +144,7 @@ AppPlugin {
                             Qt.color(heatItem.modelData.color).r,
                             Qt.color(heatItem.modelData.color).g,
                             Qt.color(heatItem.modelData.color).b,
-                            0.02
+                            0.10
                         )
                         border.width: 1
                         border.color: heatItem.modelData.color
@@ -195,7 +195,7 @@ AppPlugin {
                         }
                     }
 
-                    Component.onCompleted: Qt.callLater(attachTrajectory)
+                    Component.onCompleted: attachTrajectory()
                     Component.onDestruction: {
                         if (trajectoryMap) {
                             trajectoryMap.removeMapItem(trajectoryLine)
