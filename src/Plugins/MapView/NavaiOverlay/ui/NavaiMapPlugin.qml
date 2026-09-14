@@ -18,8 +18,8 @@ AppPlugin {
             property int mapRevision: 0
             property real trajectoryLineWidth: 2
             property real trajectoryEndpointDiameter: 8
-            // Labels and uncertainty circles only become useful when the
-            // operator is close enough to inspect an individual result.
+            // Labels only become useful when the operator is close enough to
+            // inspect an individual result.
             property real resultDetailsMinZoom: 16
             // 250 m cells are readable from roughly 5 km map scale, but are
             // completely hidden when zooming out farther.
@@ -162,9 +162,6 @@ AppPlugin {
 
                     required property real latitude
                     required property real longitude
-                    required property real tileLatitude
-                    required property real tileLongitude
-                    required property real radiusMeters
                     required property real percent
                     required property string label
                     required property real itemOpacity
@@ -254,26 +251,8 @@ AppPlugin {
                         longitude >= -180 &&
                         longitude <= 180
 
-                    property bool validTileArea:
-                        isFinite(tileLatitude) &&
-                        isFinite(tileLongitude) &&
-                        tileLatitude >= -90 &&
-                        tileLatitude <= 90 &&
-                        tileLongitude >= -180 &&
-                        tileLongitude <= 180 &&
-                        isFinite(radiusMeters) &&
-                        radiusMeters > 0
-
                     property var centerCoord: validCoordinate
                         ? QtPositioning.coordinate(latitude, longitude)
-                        : QtPositioning.coordinate(0, 0)
-
-                    property var tileCenterCoord: validTileArea
-                        ? QtPositioning.coordinate(tileLatitude, tileLongitude)
-                        : QtPositioning.coordinate(0, 0)
-
-                    property var edgeCoord: validTileArea
-                        ? tileCenterCoord.atDistanceAndAzimuth(radiusMeters, 90)
                         : QtPositioning.coordinate(0, 0)
 
                     property var centerPoint: {
@@ -293,46 +272,6 @@ AppPlugin {
                         return p
                     }
 
-                    property var edgePoint: {
-                        navaiLayer.mapRevision
-
-                        if (!validTileArea || !navaiLayer.baseMap)
-                            return Qt.point(0, 0)
-
-                        var p = navaiLayer.baseMap.fromCoordinate(
-                            edgeCoord,
-                            false
-                        )
-
-                        if (!p)
-                            return Qt.point(0, 0)
-
-                        return p
-                    }
-
-                    property var tileCenterPoint: {
-                        navaiLayer.mapRevision
-
-                        if (!validTileArea || !navaiLayer.baseMap)
-                            return Qt.point(0, 0)
-
-                        var p = navaiLayer.baseMap.fromCoordinate(
-                            tileCenterCoord,
-                            false
-                        )
-
-                        return p ? p : Qt.point(0, 0)
-                    }
-
-                    property real rawPixelRadius: radiusMeters > 0
-                        ? Math.sqrt(
-                            Math.pow(edgePoint.x - tileCenterPoint.x, 2) +
-                            Math.pow(edgePoint.y - tileCenterPoint.y, 2)
-                        )
-                        : 0
-
-                    property real pixelRadius: rawPixelRadius
-
                     x: 0
                     y: 0
                     width: navaiLayer.width
@@ -342,24 +281,6 @@ AppPlugin {
                     visible: validCoordinate && itemOpacity > 0.01
 
                     z: 100000
-
-                    Rectangle {
-                        id: circle
-
-                        visible: resultItem.detailsVisible &&
-                                 resultItem.validTileArea &&
-                                 resultItem.pixelRadius > 0
-                        x: resultItem.tileCenterPoint.x - width / 2
-                        y: resultItem.tileCenterPoint.y - height / 2
-                        width: resultItem.pixelRadius * 2
-                        height: width
-                        radius: width / 2
-
-                        color: Qt.rgba(0.0, 0.25, 1.0, 0.25)
-
-                        border.color: Qt.rgba(0.0, 0.55, 1.0, 1.0)
-                        border.width: 4
-                    }
 
                     Rectangle {
                         id: centerDot

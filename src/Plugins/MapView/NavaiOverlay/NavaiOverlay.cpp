@@ -196,15 +196,6 @@ QVariant NavaiResultModel::data(
     case LongitudeRole:
         return item.lon;
 
-    case TileLatitudeRole:
-        return item.tileLat;
-
-    case TileLongitudeRole:
-        return item.tileLon;
-
-    case RadiusMetersRole:
-        return item.radiusMeters;
-
     case PercentRole:
         return item.percent;
 
@@ -230,9 +221,6 @@ QHash<int, QByteArray> NavaiResultModel::roleNames() const
     return {
         {LatitudeRole, "latitude"},
         {LongitudeRole, "longitude"},
-        {TileLatitudeRole, "tileLatitude"},
-        {TileLongitudeRole, "tileLongitude"},
-        {RadiusMetersRole, "radiusMeters"},
         {PercentRole, "percent"},
         {LabelRole, "label"},
         {ItemOpacityRole, "itemOpacity"},
@@ -244,9 +232,6 @@ QHash<int, QByteArray> NavaiResultModel::roleNames() const
 void NavaiResultModel::addResult(
     double lat,
     double lon,
-    double tileLat,
-    double tileLon,
-    double radiusMeters,
     double percent,
     const QString &label,
     const QVariantList &trajectoryCoordinates)
@@ -257,9 +242,6 @@ void NavaiResultModel::addResult(
     Result item;
     item.lat = lat;
     item.lon = lon;
-    item.tileLat = tileLat;
-    item.tileLon = tileLon;
-    item.radiusMeters = radiusMeters;
     item.percent = percent;
     item.opacity = 0.0;
     item.targetOpacity = 1.0;
@@ -809,9 +791,6 @@ void NavaiOverlay::handleDatagram(
     bool okLat = false;
     bool okLon = false;
     bool okPercent = false;
-    bool okRadius = false;
-    bool okTileLat = false;
-    bool okTileLon = false;
 
     const double lat =
         jsonNumber(
@@ -834,32 +813,6 @@ void NavaiOverlay::handleDatagram(
             &okPercent
         );
 
-    double radiusMeters =
-        jsonNumber(
-            obj,
-            {"tile_radius_m", "radius_m", "spread_m", "radiusMeters", "spreadMeters", "radius"},
-            &okRadius
-        );
-
-    const double tileLat =
-        jsonNumber(
-            obj,
-            {"tile_center_latitude", "tile_latitude", "tileLat"},
-            &okTileLat
-        );
-
-    const double tileLon =
-        jsonNumber(
-            obj,
-            {"tile_center_longitude", "tile_longitude", "tileLon"},
-            &okTileLon
-        );
-
-    // A tile uncertainty area is optional. Legacy NAVAI packets therefore
-    // remain point-only results instead of receiving a synthetic circle.
-    if (!okRadius || !okTileLat || !okTileLon)
-        radiusMeters = 0.0;
-
     if (okPercent &&
         percent > 0.0 &&
         percent <= 1.0) {
@@ -877,19 +830,10 @@ void NavaiOverlay::handleDatagram(
         !okLon ||
         !std::isfinite(lat) ||
         !std::isfinite(lon) ||
-        (radiusMeters > 0.0 &&
-         (!std::isfinite(tileLat) ||
-          !std::isfinite(tileLon) ||
-          tileLat < -90.0 ||
-          tileLat > 90.0 ||
-          tileLon < -180.0 ||
-          tileLon > 180.0)) ||
-        !std::isfinite(radiusMeters) ||
         lat < -90.0 ||
         lat > 90.0 ||
         lon < -180.0 ||
-        lon > 180.0 ||
-        radiusMeters < 0.0) {
+        lon > 180.0) {
 
         postToGcsConsole("Invalid Navai result payload");
         return;
@@ -919,22 +863,16 @@ void NavaiOverlay::handleDatagram(
             : QString("%1 - %2%").arg(payloadLabel, percentText);
 
     const QString consoleText =
-        QString("%1, lat=%2 lon=%3%4")
+        QString("%1, lat=%2 lon=%3")
             .arg(label)
             .arg(lat, 0, 'f', 7)
-            .arg(lon, 0, 'f', 7)
-            .arg(radiusMeters > 0.0
-                     ? QString(" spread=%1 m").arg(radiusMeters, 0, 'f', 1)
-                     : QString());
+            .arg(lon, 0, 'f', 7);
 
     postToGcsConsole(consoleText);
 
     _resultsModel.addResult(
         lat,
         lon,
-        tileLat,
-        tileLon,
-        radiusMeters,
         percent,
         label,
         trajectoryCoordinates

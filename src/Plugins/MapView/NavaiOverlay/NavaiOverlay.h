@@ -25,9 +25,6 @@ public:
     enum Roles {
         LatitudeRole = Qt::UserRole + 1,
         LongitudeRole,
-        TileLatitudeRole,
-        TileLongitudeRole,
-        RadiusMetersRole,
         PercentRole,
         LabelRole,
         ItemOpacityRole,
@@ -49,9 +46,6 @@ public:
     void addResult(
         double lat,
         double lon,
-        double tileLat,
-        double tileLon,
-        double radiusMeters,
         double percent,
         const QString &label,
         const QVariantList &trajectoryCoordinates
@@ -67,9 +61,6 @@ private:
     {
         double lat = 0.0;
         double lon = 0.0;
-        double tileLat = 0.0;
-        double tileLon = 0.0;
-        double radiusMeters = 0.0;
         double percent = 0.0;
         double opacity = 0.0;
         double targetOpacity = 1.0;
