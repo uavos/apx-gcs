@@ -903,12 +903,6 @@ void NavaiOverlay::handleDatagram(
     const QVariantList trajectoryCoordinates =
         parseTrajectory(packet.value("trajectory").toArray());
 
-    if (_unit && !trajectoryCoordinates.isEmpty()) {
-        _unit->sendPositionFix(
-            trajectoryCoordinates.back().value<QGeoCoordinate>()
-        );
-    }
-
     const QString payloadLabel =
         obj.value("label").toString().trimmed();
 
