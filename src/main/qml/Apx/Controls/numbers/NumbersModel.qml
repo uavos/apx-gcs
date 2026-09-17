@@ -82,6 +82,7 @@ ObjectModel {
             var s="import QtQuick; NumbersItem {"
             s+="light: "+light+";"
             s+="fixedWidth: "+model.fixedWidth+";"
+            if(n.adv)s+="active: "+n.adv+";"
             if(n.warn)s+="warning: "+n.warn+";"
             if(n.alarm)s+="error: "+n.alarm+";"
 
@@ -99,10 +100,10 @@ ObjectModel {
             }else if(!f){
                 s+="value: v;"
             }
-            if(n.act || n.warn || n.alarm){
+            if(n.act || n.adv || n.warn || n.alarm){
                 s+="enabled: true;"
             }
-            if(n.act || n.warm || n.alarm){
+            if(n.act || n.adv || n.warn || n.alarm){
                 s+="onTriggered: {"+n.act+"}"
                 s+="HoverHandler {acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad; cursorShape: Qt.PointingHandCursor}"
             }

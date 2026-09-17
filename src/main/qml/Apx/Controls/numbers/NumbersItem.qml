@@ -31,11 +31,20 @@ ValueButton {
 
     alerts: true
     normalColor: light?"#555":normalColor
+    activeColor: Qt.darker(Material.color(Material.LightBlue),1.5)
 
 
 
     property string title: fact?fact.name:""
     text: title
+
+    // reserve space for minus sign, so the width doesn't jump when value sign changes
+    readonly property real signWidth: /^\d/.test(value)?_signMetrics.advanceWidth:0
+    property TextMetrics _signMetrics: TextMetrics {
+        font: apx.font_narrow(control.valueSize)
+        text: "-"
+    }
+    defaultWidth: Math.min(maximumWidth, Math.max(height, Math.max(minimumWidth, implicitContentWidth + signWidth + leftPadding+rightPadding)))
 
     //ensure width only grows
     Component.onCompleted: {

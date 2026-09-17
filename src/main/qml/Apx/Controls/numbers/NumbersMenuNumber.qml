@@ -127,6 +127,13 @@ Fact {
         onValueChanged: updateDescr()
     }
     Fact {
+        name: "adv"
+        title: qsTr("Advisory")
+        descr: qsTr("Blue when true, no alerts")
+        flags: Fact.Text
+        onValueChanged: updateDescr()
+    }
+    Fact {
         name: "warn"
         title: qsTr("Warning")
         descr: qsTr("Expression for warning")
