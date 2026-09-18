@@ -66,6 +66,20 @@ ColumnLayout {
         spacing: 0
         snapMode: ListView.SnapToItem
 
+        move: Transition {
+            NumberAnimation {
+                properties: "x,y"
+                duration: 120
+            }
+        }
+
+        moveDisplaced: Transition {
+            NumberAnimation {
+                properties: "x,y"
+                duration: 120
+            }
+        }
+
         //restore pos
         onVisibleChanged: {
             if(listView && visible){
@@ -78,7 +92,8 @@ ColumnLayout {
         onCountChanged: updateHeight()
         onHeaderItemChanged: updateHeight()
 
-        delegate: Loader{
+        delegate: Loader {
+            id: delegateItem
             // asynchronous: true
             active: modelData?modelData.visible:false
             visible: active
@@ -92,6 +107,34 @@ ColumnLayout {
                     onTriggered: {
                         listView.currentIndex=index
                         menuPage.factButtonTriggered(modelData)
+                    }
+                }
+            }
+
+            DragHandler {
+                id: dragHandler
+                enabled: modelData
+                        && modelData.parentFact
+                        && (modelData.parentFact.options & Fact.DragChildren)
+                target: null
+                xAxis.enabled: false
+                yAxis.enabled: true
+                onActiveChanged: {
+                    if(active)
+                        return
+                    var p=delegateItem.mapToItem(
+                                listView.contentItem,
+                                centroid.position.x,
+                                centroid.position.y)
+                    var i=listView.indexAt(p.x,p.y)
+                    if(i<0 || i===index)
+                        return
+                    var dst=listView.model.get(i)
+                    if(dst
+                            && dst!==modelData
+                            && dst.parentFact===modelData.parentFact){
+                        modelData.move(dst.num, true)
+                        listView.forceLayout()
                     }
                 }
             }
