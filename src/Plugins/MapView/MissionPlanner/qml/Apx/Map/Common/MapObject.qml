@@ -31,6 +31,7 @@ MapQuickItem {  //to be used inside MapComponent only
     property bool interactive: visibleOnMap
     property bool draggable: true
     property bool shadow: true
+    property bool alarmed: false
 
     property int implicitZ: 0
 
@@ -132,10 +133,23 @@ MapQuickItem {  //to be used inside MapComponent only
             map.flickToCoordinate(coordinate)
         }
     }
+
+    // object elevation view when dragging and hovered support
+    function updateMapInfoElevation() {
+        if(apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value)
+            apx.tools.elevationmap.setElevationByCoordinate(mapObject.coordinate)
+    }
+    
+    onHoverChanged: if(hover && !dragging) timer.start() // updateMapInfoElevation()
     onDraggingChanged: {
         if(!dragging){
             movingFinished()
             if(implicitCoordinate) coordinate=Qt.binding(function(){return implicitCoordinate})
+            timer.repeat = false;
+        } else {
+            if(!selected) select()
+            timer.repeat = true;
+            timer.start()
         }
     }
 
@@ -151,6 +165,24 @@ MapQuickItem {  //to be used inside MapComponent only
     Item {
         width: textItem.width
         height: textItem.height
+        Loader {
+            anchors.centerIn: textItem
+            active: alarmed
+            // asynchronous: true
+            sourceComponent: Component {
+                Rectangle {
+                    id: alarm
+                    width: textItem.width*textItem.scale+10
+                    height: textItem.height*textItem.scale+10
+                    antialiasing: true
+                    border.width: 2
+                    opacity: 0.8
+                    border.color: "#FF0000"
+                    radius: shadow?height/10:0
+                    color: "#FF0000"
+                }
+            }
+        }
         Loader {
             anchors.centerIn: textItem
             active: selected
@@ -244,4 +276,10 @@ MapQuickItem {  //to be used inside MapComponent only
         }
     }
 
+    // object elevation view when dragging support
+    Timer {
+        id: timer
+        interval: 750
+        onTriggered: updateMapInfoElevation()
+    }
 }

@@ -30,8 +30,8 @@ import APX.Mission as APX
 
 MissionObject {
     id: waypointItem
-    color: visibleOnMap?Style.cWaypoint:"yellow"
-    textColor: "black"
+    color: visibleOnMap?(alarmed?"#ffdead":Style.cWaypoint):"yellow"
+    textColor: alarmed?"#ff0000":"black"
     fact: modelData
     implicitZ: 50
 
@@ -61,6 +61,40 @@ MissionObject {
 
 
     property bool showDetails: interacting || active || f_distance===0 || (map.metersToPixelsFactor*f_distance)>150
+
+    // Unsafe AGL alarm
+    property var elevationmap: apx.tools.elevationmap
+    property var plugin: apx.settings.application.plugins.elevationmap
+    property var use: elevationmap ? apx.tools.elevationmap.use.value : false
+    property var pluginOn: plugin ? apx.settings.application.plugins.elevationmap.value : false
+    property var alarmOn: use && pluginOn
+    property var coordinate: fact?fact.coordinate:0
+    property var aglFact: fact?fact.child("agl"):null
+    property var agl: aglFact?aglFact.value:0
+    property var elevation: fact?fact.elevation:NaN
+    property var collision: (fact && alarmOn)?fact.collision:false
+    property var unsafeAgl: fact?fact.unsafeAgl:100 // default unsafe agl = 100 m
+
+    onAglChanged: timer.restart()
+    onAlarmOnChanged: timer.restart()
+    onCollisionChanged: timer.restart()
+     
+    function alarm() 
+    {   
+        if(!fact)
+            return false
+        if(!alarmOn)
+            return false
+        if(isNaN(elevation))
+            return false
+        return (agl < unsafeAgl || collision)
+    }
+
+    Timer {
+        id: timer
+        interval: 50 // should be 500-1000 for online mode
+        onTriggered: alarmed = alarm() 
+    }
 
     //property bool pathVisibleOnMap: true
     //property Item pathItem
@@ -166,7 +200,7 @@ MissionObject {
                 opacity: ui.effects?0.6:1
                 //smooth: ui.antialiasing
                 line.width: waypointItem.pathWidth
-                line.color: waypointItem.pathColor
+                line.color: !waypointItem.collision?waypointItem.pathColor : "red"
                 function updatePath()
                 {
                     if(waypointItem.path){
@@ -181,6 +215,4 @@ MissionObject {
             }
         }
     }
-
-
 }
