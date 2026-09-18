@@ -53,6 +53,7 @@ private:
     QAction *aFullScreen;
     QAction *aSplit;
     QAction *aShowEvents;
+    QAction *aShowStats;
 
     QAction *aReplay;
 
@@ -103,6 +104,7 @@ private slots:
 
     void aSplit_triggered(void);
     void aShowEvents_triggered(void);
+    void aShowStats_triggered(void);
 
     void avCLR_triggered(void);
     void avSTD_triggered(void);

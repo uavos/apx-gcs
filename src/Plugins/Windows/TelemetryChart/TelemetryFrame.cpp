@@ -126,6 +126,18 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
                                      this,
                                      &TelemetryFrame::aShowEvents_triggered);
     aShowEvents->setCheckable(true);
+    aShowStats = toolBar->addAction(MaterialIcon("sigma"),
+                                    tr("Show statistics"),
+                                    this,
+                                    &TelemetryFrame::aShowStats_triggered);
+    aShowStats->setCheckable(true);
+    // Alt is Option key on macOS
+    auto alt = QKeySequence(Qt::ALT).toString(QKeySequence::NativeText);
+    alt.remove('+');
+    aShowStats->setToolTip(tr("Show min, max, avg, std of visible curves in selected or visible range.\n"
+                              "%1+drag on the chart to select a range, %1+click to clear it.")
+                               .arg(alt));
+    connect(plot, &TelemetryPlot::statsVisibleChanged, aShowStats, &QAction::setChecked);
     toolBar->addSeparator();
 
     toolBar->addAction(new QActionFact(reader->f_reload));
@@ -417,6 +429,13 @@ void TelemetryFrame::aShowEvents_triggered(void)
     plot->setEventsVisible(aShowEvents->isChecked());
     if (pcopy)
         pcopy->setEventsVisible(aShowEvents->isChecked());
+}
+
+void TelemetryFrame::aShowStats_triggered(void)
+{
+    plot->setStatsVisible(aShowStats->isChecked());
+    if (pcopy)
+        pcopy->setStatsVisible(aShowStats->isChecked());
 }
 
 void TelemetryFrame::avCLR_triggered(void)

@@ -23,10 +23,17 @@
 #include <QJSEngine>
 #include <QtGui>
 
+static QString timeText(double t)
+{
+    return QTime(0, 0).addMSecs(qRound(std::max(t, 0.0) * 1000.0)).toString("hh:mm:ss.zzz");
+}
+
 TelemetryPlot::TelemetryPlot(QWidget *parent)
     : QwtPlot(parent)
     , m_progress(0)
     , m_eventsVisible(false)
+    , m_statsVisible(false)
+    , m_rangeStart(0)
 {
     setAutoFillBackground(true);
     setAutoReplot(false);
@@ -88,6 +95,16 @@ TelemetryPlot::TelemetryPlot(QWidget *parent)
     timeCursor->setRenderThreadCount(0);
     timeCursor->attach(this);
 
+    // statistics of the selected time range
+    pickerRange = new QwtPlotPicker(canvas());
+    pickerRange->setStateMachine(new QwtPickerDragPointMachine());
+    pickerRange->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton, Qt::AltModifier);
+    connect(pickerRange, SIGNAL(appended(QPointF)), this, SLOT(rangeStarted(QPointF)));
+    connect(pickerRange, SIGNAL(moved(QPointF)), this, SLOT(rangeMoved(QPointF)));
+
+    statsOverlay = new StatsOverlay(this);
+    statsOverlay->setVisible(false);
+
     cursorReplotTimer.setSingleShot(true);
     cursorReplotTimer.setInterval(500);
     connect(&cursorReplotTimer, &QTimer::timeout, this, &TelemetryPlot::replot);
@@ -106,7 +123,9 @@ TelemetryPlot::~TelemetryPlot()
     delete magX;
     delete magY;
     delete picker;
+    delete pickerRange;
     delete timeCursor;
+    delete statsOverlay;
 }
 
 QwtPlotCurve *TelemetryPlot::addCurve(const QString &name,
@@ -167,6 +186,7 @@ void TelemetryPlot::addEvent(double time, const QString &text, QColor color)
 
 void TelemetryPlot::resetData()
 {
+    m_range = QwtInterval();
     qDeleteAll(events);
     events.clear();
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
@@ -513,6 +533,9 @@ void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)
 
     setEventsVisible(plot->eventsVisible());
 
+    m_range = plot->m_range;
+    setStatsVisible(plot->statsVisible());
+
     replot();
 }
 
@@ -529,6 +552,312 @@ void TelemetryPlot::setEventsVisible(bool v)
         events.at(i)->setVisible(v);
     }
     replot();
+}
+
+bool TelemetryPlot::statsVisible() const
+{
+    return m_statsVisible;
+}
+void TelemetryPlot::setStatsVisible(bool v)
+{
+    if (m_statsVisible == v)
+        return;
+    m_statsVisible = v;
+    statsOverlay->setVisible(v);
+    if (v)
+        updateStats();
+    emit statsVisibleChanged(v);
+}
+
+void TelemetryPlot::rangeStarted(const QPointF &pos)
+{
+    // click drops previous selection immediately
+    m_rangeStart = pos.x();
+    if (!m_range.isValid())
+        return;
+    m_range = QwtInterval();
+    if (m_statsVisible)
+        updateStats();
+}
+
+void TelemetryPlot::rangeMoved(const QPointF &pos)
+{
+    // stats follow the mouse while dragging, a few pixels are still a click
+    const QwtScaleMap map = canvasMap(QwtPlot::xBottom);
+    QwtInterval range;
+    if (std::abs(map.transform(pos.x()) - map.transform(m_rangeStart)) >= 3)
+        range = QwtInterval(m_rangeStart, pos.x()).normalized();
+
+    if (range == m_range)
+        return;
+    m_range = range;
+
+    if (m_range.isValid() && !m_statsVisible)
+        setStatsVisible(true);
+    else if (m_statsVisible)
+        updateStats();
+}
+
+void TelemetryPlot::replot()
+{
+    QwtPlot::replot();
+    // stats follow zoom and data changes
+    if (m_statsVisible)
+        updateStats();
+}
+
+struct CurveStats
+{
+    double min;
+    double max;
+    double avg;
+    double std;
+};
+
+// Telemetry values are recorded on change and hold until the next sample,
+// so avg and std are weighted by time to not overrate frequently updated parts.
+static bool curveStats(const QVector<QPointF> &pts, const QwtInterval &range, CurveStats &st)
+{
+    const double t0 = range.minValue();
+    const double t1 = range.maxValue();
+
+    // last sample at or before t0 holds the value at the range start
+    auto it = std::upper_bound(pts.cbegin(), pts.cend(), t0, [](double t, const QPointF &p) {
+        return t < p.x();
+    });
+    if (it == pts.cbegin())
+        return false;
+    --it;
+
+    double vmin = std::numeric_limits<double>::infinity();
+    double vmax = -vmin;
+
+    // time weighted sums of deviations from the first value to keep precision
+    double wsum = 0, s1 = 0, s2 = 0, ref = 0;
+    const auto add = [&](double v, double dt) {
+        if (!(dt > 0) || !std::isfinite(v))
+            return;
+        if (wsum == 0)
+            ref = v;
+        vmin = std::min(vmin, v);
+        vmax = std::max(vmax, v);
+        const double d = v - ref;
+        wsum += dt;
+        s1 += d * dt;
+        s2 += d * d * dt;
+    };
+
+    double t = t0;
+    double v = it->y();
+    for (++it; it != pts.cend() && it->x() <= t1; ++it) {
+        add(v, it->x() - t);
+        t = std::max(t, it->x());
+        v = it->y();
+    }
+    add(v, t1 - t);
+
+    if (!(wsum > 0))
+        return false;
+
+    const double mean = s1 / wsum;
+    st = {vmin, vmax, ref + mean, std::sqrt(std::max(s2 / wsum - mean * mean, 0.0))};
+    return true;
+}
+
+// decimals to display the spread of values
+static int statsPrecision(double min, double max)
+{
+    double span = max - min;
+    if (!(span > 0)) {
+        if (min == std::trunc(min))
+            return 0;
+        span = std::abs(min);
+    }
+    if (!std::isfinite(span))
+        return 0;
+    return std::clamp(4 - static_cast<int>(std::floor(std::log10(span))), 0, 6);
+}
+
+void TelemetryPlot::updateStats()
+{
+    // selected or visible time range
+    const QwtInterval range = m_range.isValid() ? m_range
+                                                : axisInterval(QwtPlot::xBottom).normalized();
+
+    QList<StatsOverlay::Row> rows;
+    QwtInterval dataRange;
+    int width = 0;
+    const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
+    for (int i = 0; i < items.size(); ++i) {
+        QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(items.at(i));
+        if (!curve->isVisible())
+            continue;
+        const auto series = dynamic_cast<const QwtPointSeriesData *>(curve->data());
+        const QVector<QPointF> pts = series ? series->samples() : QVector<QPointF>();
+
+        // format by all values of the curve, so decimals and width don't change with range
+        double ymin = std::numeric_limits<double>::infinity();
+        double ymax = -ymin;
+        for (const auto &p : pts) {
+            ymin = std::min(ymin, p.y()); // NaN skipped
+            ymax = std::max(ymax, p.y());
+        }
+        const int prec = ymin <= ymax ? statsPrecision(ymin, ymax) : 0;
+        const double zero = 0.5 * std::pow(10.0, -prec);
+        const auto text = [prec, zero](double v) {
+            return QString::number(std::abs(v) < zero ? 0.0 : v, 'f', prec); // avoid "-0.00"
+        };
+
+        // keep the row when no values in range to not resize the table
+        StatsOverlay::Row row{curve->title().text(), curve->pen().color(), {"-", "-", "-", "-"}};
+        CurveStats st;
+        const QwtInterval r = pts.isEmpty()
+                                  ? QwtInterval()
+                                  : range & QwtInterval(pts.first().x(), pts.last().x());
+        if (r.isValid() && curveStats(pts, r, st)) {
+            dataRange |= r;
+            row.values = QStringList{text(st.min), text(st.max), text(st.avg), text(st.std)};
+        }
+        QStringList widest = row.values;
+        if (ymin <= ymax)
+            widest << text(ymin) << text(ymax);
+        for (const auto &s : widest)
+            width = std::max(width, static_cast<int>(s.size()));
+        rows.append(row);
+    }
+    for (auto &row : rows) {
+        for (auto &s : row.values)
+            s = s.rightJustified(width);
+    }
+
+    QString title;
+    if (!rows.isEmpty()) {
+        const QwtInterval t = dataRange.isValid() ? dataRange : range;
+        title = QString("%1 - %2 (%3)").arg(timeText(t.minValue()),
+                                            timeText(t.maxValue()),
+                                            timeText(t.width()));
+    }
+    statsOverlay->setStats(m_range, title, rows);
+}
+
+static const int statsPadding = 6;
+static const int statsSpacing = 16;
+
+// width by chars count to not depend on digits in proportional fonts
+static int statsTextWidth(const QFontMetrics &fm, const QString &s)
+{
+    int charWidth = 0;
+    for (const QChar c : QStringLiteral("0123456789-.:() "))
+        charWidth = std::max(charWidth, fm.horizontalAdvance(c));
+    return std::max(fm.horizontalAdvance(s), static_cast<int>(s.size()) * charWidth);
+}
+
+StatsOverlay::StatsOverlay(TelemetryPlot *plot)
+    : QwtWidgetOverlay(plot->canvas())
+    , m_plot(plot)
+    , m_header({tr("min"), tr("max"), tr("avg"), tr("std")})
+{
+    setMaskMode(QwtWidgetOverlay::NoMask);
+    setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+}
+
+void StatsOverlay::setStats(const QwtInterval &selection,
+                            const QString &title,
+                            const QList<Row> &rows)
+{
+    m_selection = selection;
+    m_title = title;
+    m_rows = rows;
+
+    const QFontMetrics fm(font());
+    QFont bold(font());
+    bold.setBold(true);
+
+    m_nameWidth = 0;
+    m_valueWidth = 0;
+    for (const auto &s : m_header)
+        m_valueWidth = std::max(m_valueWidth, fm.horizontalAdvance(s));
+    for (const auto &row : m_rows) {
+        m_nameWidth = std::max(m_nameWidth, fm.horizontalAdvance(row.name));
+        for (const auto &s : row.values)
+            m_valueWidth = std::max(m_valueWidth, statsTextWidth(fm, s));
+    }
+    const int w = std::max(m_nameWidth + static_cast<int>(m_header.size()) * (statsSpacing + m_valueWidth),
+                           statsTextWidth(QFontMetrics(bold), m_title));
+    const int h = static_cast<int>(m_rows.size() + 2) * fm.height();
+    m_tableSize = QSize(w + 2 * statsPadding, h + 2 * statsPadding);
+
+    update();
+}
+
+QRect StatsOverlay::tableRect() const
+{
+    if (m_rows.isEmpty())
+        return QRect();
+    // top right corner of canvas
+    const QRect cr = parentWidget()->contentsRect();
+    return QRect(QPoint(cr.right() - 5 - m_tableSize.width(), cr.top() + 5), m_tableSize);
+}
+
+void StatsOverlay::drawOverlay(QPainter *painter) const
+{
+    const QRect cr = parentWidget()->contentsRect();
+
+    // selected range
+    if (m_selection.isValid()) {
+        const QwtScaleMap map = m_plot->canvasMap(QwtPlot::xBottom);
+        const double x0 = map.transform(m_selection.minValue());
+        const double x1 = map.transform(m_selection.maxValue());
+        const QRectF band = QRectF(QPointF(x0, cr.top()), QPointF(x1, cr.bottom())).normalized();
+        const QColor color(0, 150, 255);
+        painter->fillRect(band, QColor(color.red(), color.green(), color.blue(), 40));
+        painter->setPen(QPen(color, 0, Qt::DashLine));
+        painter->drawLine(band.topLeft(), band.bottomLeft());
+        painter->drawLine(band.topRight(), band.bottomRight());
+    }
+
+    const QRect box = tableRect();
+    if (box.isEmpty())
+        return;
+
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setPen(QColor(100, 100, 100));
+    painter->setBrush(QColor(0, 0, 0, 180));
+    painter->drawRoundedRect(QRectF(box).adjusted(0.5, 0.5, -0.5, -0.5), 4, 4);
+    painter->restore();
+
+    const int lh = QFontMetrics(font()).height();
+    const int left = box.left() + statsPadding;
+    int y = box.top() + statsPadding;
+
+    QFont bold(font());
+    bold.setBold(true);
+    painter->setFont(bold);
+    painter->setPen(Qt::white);
+    painter->drawText(QRect(left, y, box.width() - 2 * statsPadding, lh),
+                      Qt::AlignLeft | Qt::AlignVCenter,
+                      m_title);
+    painter->setFont(font());
+
+    const auto drawRow = [&](const QString &name,
+                             const QColor &nameColor,
+                             const QStringList &values,
+                             const QColor &color) {
+        y += lh;
+        painter->setPen(nameColor);
+        painter->drawText(QRect(left, y, m_nameWidth, lh), Qt::AlignLeft | Qt::AlignVCenter, name);
+        painter->setPen(color);
+        int x = left + m_nameWidth;
+        for (const auto &s : values) {
+            x += statsSpacing;
+            painter->drawText(QRect(x, y, m_valueWidth, lh), Qt::AlignRight | Qt::AlignVCenter, s);
+            x += m_valueWidth;
+        }
+    };
+    drawRow(QString(), Qt::white, m_header, QColor(160, 160, 160));
+    for (const auto &row : m_rows)
+        drawRow(row.name, row.color, row.values, Qt::white);
 }
 
 void TelemetryPlot::mouseReleaseEvent(QMouseEvent *event)
