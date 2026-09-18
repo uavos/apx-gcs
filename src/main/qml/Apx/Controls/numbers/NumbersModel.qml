@@ -70,6 +70,24 @@ ObjectModel {
     }
 
     property var objList: [ ]
+    function setupEventObject(obj)
+    {
+        function update()
+        {
+            var index=0
+            while(index<model.count && model.get(index)!==obj)
+                ++index
+            if(obj.warning || obj.error){
+                if(index===model.count)
+                    model.append(obj)
+            }else if(index<model.count){
+                model.remove(index)
+            }
+        }
+        obj.warningChanged.connect(update)
+        obj.errorChanged.connect(update)
+        update()
+    }
 
     function updateNumbers(list)
     {
@@ -121,12 +139,16 @@ ObjectModel {
 
             obj.height=Qt.binding(function(){return itemHeight})
             for(var p in n){
+                if(p==="visible")continue
                 if(typeof(obj[p])=='undefined')continue
                 if(n[p]==="")continue
                 obj[p]=n[p]
             }
-            model.append(obj)
             objList.push(obj)
+            if(n.visible === false)
+                setupEventObject(obj)
+            else
+                model.append(obj)
         }
     }
 
