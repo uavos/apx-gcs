@@ -159,9 +159,19 @@ Fact {
         mChart.opts = opt;
     }
 
+    property var functionCache: ({})
+
+    function safe_evaluate(expression) {
+        if (!functionCache[expression]) {
+            functionCache[expression] = new Function('return ' + expression)
+        }
+        return functionCache[expression]();
+    }
+
     function updateValue() {
         try {
-            var v = new Function('return ' + expr)();
+            // var v = new Function('return ' + expr)();
+            var v = safe_evaluate(expr);
             if (v === undefined)
                 throw new Error(qsTr("expression is undefined"));
             // For first init
