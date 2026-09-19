@@ -104,6 +104,22 @@ private:
     double m_rangeStart; // time where selection dragging started
     void updateStats();
 
+    // data of the shown stats, to skip refresh when nothing changed (e.g. cursor moved)
+    struct StatsSource
+    {
+        const QwtPointSeriesData *series;
+        size_t size;
+        double min; // all values of the curve, for formatting
+        double max;
+
+        bool operator==(const StatsSource &other) const // same data
+        {
+            return series == other.series && size == other.size;
+        }
+    };
+    QwtInterval m_statsRange;
+    QList<StatsSource> m_statsSources;
+
 private slots:
     void pointSelected(const QPointF &pos);
     void rangeStarted(const QPointF &pos);

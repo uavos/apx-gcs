@@ -569,6 +569,9 @@ void TelemetryPlot::setStatsVisible(bool v)
         return;
     m_statsVisible = v;
     statsOverlay->setVisible(v);
+    // data could change while hidden
+    m_statsRange = QwtInterval();
+    m_statsSources.clear();
     if (v)
         updateStats();
     emit statsVisibleChanged(v);
@@ -690,24 +693,50 @@ void TelemetryPlot::updateStats()
     const QwtInterval range = m_range.isValid() ? m_range
                                                 : axisInterval(QwtPlot::xBottom).normalized();
 
-    QList<StatsOverlay::Row> rows;
-    QwtInterval dataRange;
-    int width = 0;
+    // visible curves data
+    QList<QwtPlotCurve *> curves;
+    QList<StatsSource> sources;
     const QwtPlotItemList &items = itemList(QwtPlotItem::Rtti_PlotCurve);
     for (int i = 0; i < items.size(); ++i) {
         QwtPlotCurve *curve = static_cast<QwtPlotCurve *>(items.at(i));
         if (!curve->isVisible())
             continue;
         const auto series = dynamic_cast<const QwtPointSeriesData *>(curve->data());
-        const QVector<QPointF> pts = series ? series->samples() : QVector<QPointF>();
-
-        // format by all values of the curve, so decimals and width don't change with range
-        double ymin = std::numeric_limits<double>::infinity();
-        double ymax = -ymin;
-        for (const auto &p : pts) {
-            ymin = std::min(ymin, p.y()); // NaN skipped
-            ymax = std::max(ymax, p.y());
+        StatsSource src{series, series ? series->size() : 0, 0, 0};
+        const auto it = std::find(m_statsSources.cbegin(), m_statsSources.cend(), src);
+        if (it != m_statsSources.cend()) {
+            src = *it;
+        } else {
+            // format by all values of the curve, so decimals and width don't change with range
+            src.min = std::numeric_limits<double>::infinity();
+            src.max = -src.min;
+            if (series) {
+                for (const auto &p : series->samples()) {
+                    src.min = std::min(src.min, p.y()); // NaN skipped
+                    src.max = std::max(src.max, p.y());
+                }
+            }
         }
+        curves.append(curve);
+        sources.append(src);
+    }
+
+    // nothing changed, e.g. time cursor moved
+    if (range == m_statsRange && m_range == statsOverlay->selection() && sources == m_statsSources)
+        return;
+    m_statsRange = range;
+    m_statsSources = sources;
+
+    QList<StatsOverlay::Row> rows;
+    QwtInterval dataRange;
+    int width = 0;
+    for (int i = 0; i < curves.size(); ++i) {
+        const QwtPlotCurve *curve = curves.at(i);
+        const StatsSource &src = sources.at(i);
+        const QVector<QPointF> pts = src.series ? src.series->samples() : QVector<QPointF>();
+        const double ymin = src.min;
+        const double ymax = src.max;
+
         const int prec = ymin <= ymax ? statsPrecision(ymin, ymax) : 0;
         const double zero = 0.5 * std::pow(10.0, -prec);
         const auto text = [prec, zero](double v) {
