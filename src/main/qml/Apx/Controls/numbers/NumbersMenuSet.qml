@@ -28,6 +28,7 @@ Fact {
     flags: (Fact.Group | Fact.FlatModel)
 
     property var values //from config
+    property string sourceFile
 
     signal selected(var num)
 

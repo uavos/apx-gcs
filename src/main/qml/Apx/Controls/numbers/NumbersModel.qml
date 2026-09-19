@@ -48,19 +48,45 @@ ObjectModel {
 
     function loadSettings()
     {
-        var f=application.prefs.loadFile("numbers.json")
-        var json=f?JSON.parse(f):{}
         var list=defaults
-        while(json){
-            var set
-            if(json.sets && json.active)
-                set=json.sets[json.active[settingsName]]
-            if(!set) break
-            var values=set["values"]
-            if(!values) break
-            if(!(values instanceof Array))break;
-            list=values
-            break;
+        var activeFile=application.prefs.loadValue(settingsName, "numbers/active", "")
+        var fileNames=application.prefs.files("numbers-*.json")
+        var sets=[]
+        for(var i=0;i<fileNames.length;++i){
+            var fileName=fileNames[i]
+            var f=application.prefs.loadFile(fileName)
+            try {
+                var set=f?JSON.parse(f):{}
+                if(!(set.values && (set.values instanceof Array)))
+                    continue
+                set.fileName=fileName
+                sets.push(set)
+            } catch(e) {
+                console.warn("Can't parse "+fileName+": "+e)
+            }
+        }
+        if(sets.length>0){
+            var selectedSet=sets[0]
+            for(i=0;i<sets.length;++i){
+                if(sets[i].fileName===activeFile){
+                    selectedSet=sets[i]
+                    break
+                }
+            }
+            list=selectedSet.values
+        }else if(fileNames.length===0){
+            // Backward compatibility until the old configuration is saved.
+            var legacyFile=application.prefs.loadFile("numbers.json")
+            try {
+                var json=legacyFile?JSON.parse(legacyFile):{}
+                if(json.sets && json.active){
+                    var legacySet=json.sets[json.active[settingsName]]
+                    if(legacySet && legacySet.values && (legacySet.values instanceof Array))
+                        list=legacySet.values
+                }
+            } catch(e) {
+                console.warn("Can't parse numbers.json: "+e)
+            }
         }
         updateNumbers(list)
     }
