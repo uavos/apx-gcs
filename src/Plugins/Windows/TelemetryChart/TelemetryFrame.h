@@ -104,7 +104,7 @@ private slots:
 
     void aSplit_triggered(void);
     void aShowEvents_triggered(void);
-    void aShowStats_triggered(void);
+    void setStatsVisible(bool v);
 
     void avCLR_triggered(void);
     void avSTD_triggered(void);

@@ -129,15 +129,16 @@ TelemetryFrame::TelemetryFrame(QWidget *parent)
     aShowStats = toolBar->addAction(MaterialIcon("sigma"),
                                     tr("Show statistics"),
                                     this,
-                                    &TelemetryFrame::aShowStats_triggered);
+                                    &TelemetryFrame::setStatsVisible);
     aShowStats->setCheckable(true);
     // Alt is Option key on macOS
     auto alt = QKeySequence(Qt::ALT).toString(QKeySequence::NativeText);
     alt.remove('+');
-    aShowStats->setToolTip(tr("Show min, max, avg, std of visible curves in selected or visible range.\n"
-                              "%1+drag on the chart to select a range, %1+click to clear it.")
-                               .arg(alt));
-    connect(plot, &TelemetryPlot::statsVisibleChanged, aShowStats, &QAction::setChecked);
+    aShowStats->setToolTip(
+        tr("Show min, max, avg, std of visible curves in selected or visible range.\n"
+           "%1+drag on the chart to select a range, %1+click to clear it.")
+            .arg(alt));
+    connect(plot, &TelemetryPlot::statsVisibleChanged, this, &TelemetryFrame::setStatsVisible);
     toolBar->addSeparator();
 
     toolBar->addAction(new QActionFact(reader->f_reload));
@@ -420,6 +421,7 @@ void TelemetryFrame::aSplit_triggered(void)
     }
     pcopy = new TelemetryPlot();
     pcopy->copyFromPlot(plot);
+    connect(pcopy, &TelemetryPlot::statsVisibleChanged, this, &TelemetryFrame::setStatsVisible);
     vlayout->addWidget(pcopy);
     //connect(pcopy,&TelemetryPlot::progressChanged,this,&TelemetryFrame::setProgress);
 }
@@ -431,11 +433,12 @@ void TelemetryFrame::aShowEvents_triggered(void)
         pcopy->setEventsVisible(aShowEvents->isChecked());
 }
 
-void TelemetryFrame::aShowStats_triggered(void)
+void TelemetryFrame::setStatsVisible(bool v)
 {
-    plot->setStatsVisible(aShowStats->isChecked());
+    aShowStats->setChecked(v);
+    plot->setStatsVisible(v);
     if (pcopy)
-        pcopy->setStatsVisible(aShowStats->isChecked());
+        pcopy->setStatsVisible(v);
 }
 
 void TelemetryFrame::avCLR_triggered(void)

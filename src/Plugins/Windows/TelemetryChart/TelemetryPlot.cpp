@@ -571,17 +571,22 @@ void TelemetryPlot::setStatsVisible(bool v)
 
 void TelemetryPlot::rangeStarted(const QPointF &pos)
 {
+    if (!m_statsVisible)
+        return;
+
     // click drops previous selection immediately
     m_rangeStart = pos.x();
     if (!m_range.isValid())
         return;
     m_range = QwtInterval();
-    if (m_statsVisible)
-        updateStats();
+    updateStats();
 }
 
 void TelemetryPlot::rangeMoved(const QPointF &pos)
 {
+    if (!m_statsVisible)
+        return;
+
     // stats follow the mouse while dragging, a few pixels are still a click
     const QwtScaleMap map = canvasMap(QwtPlot::xBottom);
     QwtInterval range;
@@ -591,11 +596,7 @@ void TelemetryPlot::rangeMoved(const QPointF &pos)
     if (range == m_range)
         return;
     m_range = range;
-
-    if (m_range.isValid() && !m_statsVisible)
-        setStatsVisible(true);
-    else if (m_statsVisible)
-        updateStats();
+    updateStats();
 }
 
 void TelemetryPlot::replot()
@@ -711,9 +712,8 @@ void TelemetryPlot::updateStats()
         // keep the row when no values in range to not resize the table
         StatsOverlay::Row row{curve->title().text(), curve->pen().color(), {"-", "-", "-", "-"}};
         CurveStats st;
-        const QwtInterval r = pts.isEmpty()
-                                  ? QwtInterval()
-                                  : range & QwtInterval(pts.first().x(), pts.last().x());
+        const QwtInterval r = pts.isEmpty() ? QwtInterval()
+                                            : range & QwtInterval(pts.first().x(), pts.last().x());
         if (r.isValid() && curveStats(pts, r, st)) {
             dataRange |= r;
             row.values = QStringList{text(st.min), text(st.max), text(st.avg), text(st.std)};
@@ -733,9 +733,8 @@ void TelemetryPlot::updateStats()
     QString title;
     if (!rows.isEmpty()) {
         const QwtInterval t = dataRange.isValid() ? dataRange : range;
-        title = QString("%1 - %2 (%3)").arg(timeText(t.minValue()),
-                                            timeText(t.maxValue()),
-                                            timeText(t.width()));
+        title = QString("%1 - %2 (%3)")
+                    .arg(timeText(t.minValue()), timeText(t.maxValue()), timeText(t.width()));
     }
     statsOverlay->setStats(m_range, title, rows);
 }
@@ -782,7 +781,8 @@ void StatsOverlay::setStats(const QwtInterval &selection,
         for (const auto &s : row.values)
             m_valueWidth = std::max(m_valueWidth, statsTextWidth(fm, s));
     }
-    const int w = std::max(m_nameWidth + static_cast<int>(m_header.size()) * (statsSpacing + m_valueWidth),
+    const int w = std::max(m_nameWidth
+                               + static_cast<int>(m_header.size()) * (statsSpacing + m_valueWidth),
                            statsTextWidth(QFontMetrics(bold), m_title));
     const int h = static_cast<int>(m_rows.size() + 2) * fm.height();
     m_tableSize = QSize(w + 2 * statsPadding, h + 2 * statsPadding);
