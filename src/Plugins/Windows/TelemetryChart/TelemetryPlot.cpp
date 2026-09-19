@@ -23,9 +23,14 @@
 #include <QJSEngine>
 #include <QtGui>
 
-static QString timeText(double t)
+static QString timeText(double t, bool msec = true)
 {
-    return QTime(0, 0).addMSecs(qRound(std::max(t, 0.0) * 1000.0)).toString("hh:mm:ss.zzz");
+    const qint64 ms = qRound64(std::max(t, 0.0) * 1000.0);
+    const qint64 days = ms / (24 * 60 * 60 * 1000);
+    const QString time = QTime::fromMSecsSinceStartOfDay(
+                             static_cast<int>(ms % (24 * 60 * 60 * 1000)))
+                             .toString(msec ? "hh:mm:ss.zzz" : "hh:mm:ss");
+    return days ? QString("%1d%2").arg(days).arg(time) : time;
 }
 
 TelemetryPlot::TelemetryPlot(QWidget *parent)
@@ -874,7 +879,7 @@ QwtText PlotPicker::trackerText(const QPoint &pos) const
     QString s = "<html><NOBR><table>";
     s += "<tr><td colspan=2 align=left style='font-family: monospace; font-weight: "
          "bold;'><PRE><font size=+4>";
-    s += QTime(0, 0).addSecs(t).toString("hh:mm:ss"); //+QString::number(t)+" sec)";
+    s += timeText(t, false); //+QString::number(t)+" sec)";
     s += "</font></PRE></td></tr>";
     const QwtPlotItemList &items = plot()->itemList(QwtPlotItem::Rtti_PlotCurve);
     for (int i = 0; i < items.size(); ++i) {
