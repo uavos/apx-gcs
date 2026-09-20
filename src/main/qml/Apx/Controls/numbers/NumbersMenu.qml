@@ -154,8 +154,6 @@ Fact {
             if(savedFiles.indexOf(loadedFiles[i])<0)
                 application.prefs.removeFile(loadedFiles[i])
         }
-        if(savedFiles.length>0)
-            application.prefs.removeFile("numbers.json")
         application.prefs.saveValue(settingsName, activeFile, "numbers/active")
         accepted()
         close()
