@@ -42,6 +42,11 @@ Fact {
     property var expr: ""
     property var exprWarn: ""
     property var scr: ""
+    
+    // Cache for evaluate function, holds the current expression only
+    property var functionCache: ({})
+    // Same for the warning expression, separate cache so the two do not evict each other
+    property var warnFunctionCache: ({})
 
     signal addTriggered
 
@@ -159,9 +164,22 @@ Fact {
         mChart.opts = opt;
     }
 
+    function safeEvaluate(expression) {
+        var key = "$" + expression;
+        var entry = functionCache[key];
+        if (!entry) {
+            functionCache = ({});
+            entry = functionCache[key] = {}; // stored before compiling, a throw leaves the entry in place
+            entry.fn = new Function('return ' + expression); // bad expression throws into updateValue()
+        }
+        if (!entry.fn) // compiled once and failed, do not compile it again
+            throw new Error(qsTr("invalid expression"));
+        return entry.fn();
+    }
+
     function updateValue() {
         try {
-            var v = new Function('return ' + expr)();
+            var v = safeEvaluate(expr);
             if (v === undefined)
                 throw new Error(qsTr("expression is undefined"));
             // For first init
@@ -176,6 +194,19 @@ Fact {
             chartWarning(e.message);
         }
     }
+    
+    function safeEvaluateWarn(expression) {
+        var key = "$" + expression;
+        var entry = warnFunctionCache[key];
+        if (!entry) {
+            warnFunctionCache = ({});
+            entry = warnFunctionCache[key] = {};
+            entry.fn = new Function('value', 'return ' + expression);
+        }
+        if (!entry.fn)
+            throw new Error(qsTr("invalid expression"));
+        return entry.fn(value);
+    }
 
     function updateWarning () {
         if (!exprWarn || String(exprWarn).trim() === "") {
@@ -183,7 +214,7 @@ Fact {
             return;
         }
         try {
-            warning = !!eval(exprWarn)
+            warning = !!safeEvaluateWarn(exprWarn)
         } catch (error) {
             chartWarning(error.message)
             warning = false;
