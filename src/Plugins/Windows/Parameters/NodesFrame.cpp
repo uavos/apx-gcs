@@ -24,8 +24,124 @@
 #include <App/AppDirs.h>
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
+#include <Nodes/NodeField.h>
+#include <Nodes/NodeItem.h>
 #include <Nodes/Nodes.h>
+#include <TreeModel/FactDelegate.h>
 #include <QAction>
+
+namespace {
+using ValuesProvider = std::function<QStringList(Fact *)>;
+
+class UnitValuesDelegate : public FactDelegate
+{
+public:
+    UnitValuesDelegate(ValuesProvider provider, QObject *parent)
+        : FactDelegate(parent)
+        , _provider(std::move(provider))
+    {}
+
+    void paint(QPainter *painter,
+               const QStyleOptionViewItem &option,
+               const QModelIndex &index) const override
+    {
+        FactDelegate::paint(painter, option, index);
+        if (index.column() != Fact::FACT_MODEL_COLUMN_VALUE || values(index).isEmpty())
+            return;
+
+        const QRect r = indicatorRect(option);
+        painter->save();
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(option.palette.color(QPalette::Mid));
+        painter->drawPolygon(QPolygon{QPoint(r.left(), r.top()),
+                                      QPoint(r.left(), r.bottom()),
+                                      QPoint(r.right(), r.center().y())});
+        painter->restore();
+    }
+
+    bool editorEvent(QEvent *event,
+                     QAbstractItemModel *model,
+                     const QStyleOptionViewItem &option,
+                     const QModelIndex &index) override
+    {
+        if (event->type() != QEvent::MouseButtonRelease
+            || index.column() != Fact::FACT_MODEL_COLUMN_VALUE)
+            return FactDelegate::editorEvent(event, model, option, index);
+
+        auto mouseEvent = static_cast<QMouseEvent *>(event);
+        const auto list = values(index);
+        if (list.isEmpty()
+            || !indicatorRect(option).adjusted(-5, -4, 5, 4).contains(mouseEvent->pos()))
+            return FactDelegate::editorEvent(event, model, option, index);
+
+        QMenu menu(qobject_cast<QWidget *>(parent()));
+        for (const auto &text : list)
+            menu.addAction(text);
+        auto view = qobject_cast<QAbstractItemView *>(parent());
+        auto anchor = view ? view->viewport() : option.widget;
+        menu.exec(anchor->mapToGlobal(indicatorRect(option).bottomRight() + QPoint(0, 3)));
+        return true;
+    }
+
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
+    {
+        auto size = FactDelegate::sizeHint(option, index);
+        if (index.column() == Fact::FACT_MODEL_COLUMN_VALUE && !values(index).isEmpty())
+            size.rwidth() += 14;
+        return size;
+    }
+
+private:
+    QStringList values(const QModelIndex &index) const
+    {
+        auto fact = index.data(Fact::ModelDataRole).value<Fact *>();
+        return fact ? _provider(fact) : QStringList{};
+    }
+
+    static QRect indicatorRect(const QStyleOptionViewItem &option)
+    {
+        return QRect(option.rect.right() - 9, option.rect.center().y() - 3, 6, 9);
+    }
+
+    ValuesProvider _provider;
+};
+
+QJsonValue configValue(const QJsonObject &config,
+                       const NodeItem *currentNode,
+                       const NodeField *currentField)
+{
+    QJsonObject matchedNode;
+    for (const auto &item : config.value("nodes").toArray()) {
+        const auto node = item.toObject();
+        const auto info = node.value("info").toObject();
+        if (info.value("uid").toString() == currentNode->uid()) {
+            matchedNode = node;
+            break;
+        }
+        if (matchedNode.isEmpty() && info.value("name").toString() == currentNode->title())
+            matchedNode = node;
+    }
+    if (matchedNode.isEmpty())
+        return QJsonValue::Undefined;
+
+    auto field = currentField;
+    int arrayIndex = -1;
+    if (auto parent = qobject_cast<NodeField *>(field->parentFact()); parent && parent->size() > 0) {
+        arrayIndex = field->array();
+        field = parent;
+    }
+
+    const auto values = matchedNode.value("values").toObject();
+    if (!values.contains(field->fpath()))
+        return QJsonValue::Undefined;
+
+    const auto value = values.value(field->fpath());
+    if (arrayIndex < 0)
+        return value;
+    const auto array = value.toArray();
+    return arrayIndex < array.size() ? array.at(arrayIndex) : QJsonValue::Undefined;
+}
+}
 
 NodesFrame::NodesFrame(QWidget *parent)
     : QWidget(parent)
@@ -45,6 +161,40 @@ NodesFrame::NodesFrame(QWidget *parent)
     vlayout->addWidget(lbUavName);
 
     treeWidget = new FactTreeWidget(nullptr, true, false, this);
+    auto oldDelegate = treeWidget->tree->itemDelegate();
+    treeWidget->tree->setItemDelegate(new UnitValuesDelegate(
+        [this](Fact *fact) {
+            QStringList values;
+            auto field = qobject_cast<NodeField *>(fact);
+            if (!_unit || !field || fact->size() > 0 || !fact->modified())
+                return values;
+
+            auto parent = fact->parentFact();
+            while (parent && !qobject_cast<NodeItem *>(parent))
+                parent = parent->parentFact();
+            auto node = qobject_cast<NodeItem *>(parent);
+            if (!node)
+                return values;
+
+            const auto appendValue = [&](const QJsonObject &config, const QString &title) {
+                const auto rawValue = configValue(config, node, field);
+                if (rawValue.isUndefined())
+                    return;
+                const auto text = field->toText(rawValue.toVariant());
+                const auto display = field->units().isEmpty()
+                                         ? text
+                                         : QString("%1 %2").arg(text, field->units());
+                values.append(QString("%1 — %2").arg(title, display));
+            };
+
+            appendValue(_unit->initialConfiguration(), _unit->title() + " (original)");
+            for (const auto &config : _unit->loadedConfigurations()) {
+                appendValue(config, config.value("title").toString());
+            }
+            return values;
+        },
+        treeWidget->tree));
+    oldDelegate->deleteLater();
     vlayout->addWidget(treeWidget);
     connect(treeWidget->tree,
             &FactTreeView::customContextMenuRequested,
@@ -70,6 +220,7 @@ void NodesFrame::unitSelected(Unit *unit)
     lbUavName->setText(unit->title());
 
     connect(unit->f_nodes, &Nodes::modifiedChanged, this, &NodesFrame::updateActions);
+    connect(unit, &Unit::configurationLoaded, treeWidget->tree->viewport(), qOverload<>(&QWidget::update));
 
     for (auto a : toolBar->actions()) {
         toolBar->removeAction(a);
