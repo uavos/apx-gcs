@@ -85,9 +85,6 @@ public:
 
     Q_INVOKABLE QGeoRectangle geoPathRect() const;
 
-    const auto &initialConfiguration() const { return m_initialConfiguration; }
-    const auto &loadedConfigurations() const { return m_loadedConfigurations; }
-
     enum FlightState { FS_UNKNOWN = 0, FS_TAKEOFF, FS_LANDED };
     Q_ENUM(FlightState)
 
@@ -149,8 +146,6 @@ private:
 
     qint64 _lastSeenTime{};
     QJsonObject _importedUnitInfo; // stored for offline units (REPLAY)
-    QJsonObject m_initialConfiguration;
-    QList<QJsonObject> m_loadedConfigurations;
 
     QTimer updateInfoTimer;
 
@@ -191,7 +186,6 @@ public slots:
 
 signals:
     void selected();
-    void configurationLoaded();
 
     void requestScript(QString func, QVariant arg = {});
     void geoPathAppend(QGeoCoordinate p);

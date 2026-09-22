@@ -243,9 +243,6 @@ void Unit::fromJson(const QJsonValue &jsv)
     // json::save("unit-fromJson-" + title(), jsv);
 
     const auto jso = jsv.toObject();
-    if (m_initialConfiguration.isEmpty())
-        m_initialConfiguration = toJson().toObject();
-    m_loadedConfigurations.append(jso);
 
     if (!_protocol)
         _importedUnitInfo = jso.value("unit").toObject();
@@ -256,7 +253,6 @@ void Unit::fromJson(const QJsonValue &jsv)
     } else {
         f_nodes->fromJson(nodes);
     }
-    emit configurationLoaded();
 }
 
 void Unit::updateInfo()
