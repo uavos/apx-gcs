@@ -127,9 +127,9 @@ ObjectModel {
             var s="import QtQuick; NumbersItem {"
             s+="light: "+light+";"
             s+="fixedWidth: "+model.fixedWidth+";"
-            if(n.adv)s+="active: "+n.adv+";"
-            if(n.warn)s+="warning: "+n.warn+";"
-            if(n.alarm)s+="error: "+n.alarm+";"
+            if(n.adv)s+="active: (function(value){return ("+n.adv+")})(v);"
+            if(n.warn)s+="warning: (function(value){return ("+n.warn+")})(v);"
+            if(n.alarm)s+="error: (function(value){return ("+n.alarm+")})(v);"
 
             var f=null
             if(!(n.bind.match(/[\(\+!*]/) || n.bind.includes(".value")))
