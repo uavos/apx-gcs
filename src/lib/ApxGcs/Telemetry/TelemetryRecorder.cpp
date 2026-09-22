@@ -48,7 +48,9 @@ TelemetryRecorder::TelemetryRecorder(Unit *unit, Fact *parent)
         // guess best field storage format
         auto uid = f->uid();
         auto dspec = TelemetryFileWriter::dspec_for_uid(uid);
-        _fields_map[uid] = {f->mpath(), {f->title(), f->units()}, dspec};
+        // enum options are the field's units, comma separated
+        auto units = f->enumStrings().isEmpty() ? f->units() : f->enumStrings().join(',');
+        _fields_map[uid] = {f->mpath(), {f->title(), units}, dspec};
     }
 
     // record doenlink/uplink
