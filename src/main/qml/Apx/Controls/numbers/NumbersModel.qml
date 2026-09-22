@@ -120,6 +120,7 @@ ObjectModel {
         clearObjList()
         model.clear()
         model.minimumWidth=itemHeight*3
+        var eventObjects=[]
         for(var i in list){
             var n=list[i]
             //console.log(n.bind)
@@ -172,10 +173,12 @@ ObjectModel {
             }
             objList.push(obj)
             if(n.visible === false)
-                setupEventObject(obj)
+                eventObjects.push(obj)
             else
                 model.append(obj)
         }
+        for(i in eventObjects)
+            setupEventObject(eventObjects[i])
     }
 
     function clearObjList()
