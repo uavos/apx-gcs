@@ -46,7 +46,7 @@ Repeater {
             property var totalY: chartItem.y + y
             
             visible: totalDistance > 0 || created
-            x: chartView.plotArea.x + distance/scaleX
+            x: elevationView.xOf(distance) // follows the zoomed/panned axis range
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
 
             Component.onCompleted: timer.start()

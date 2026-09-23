@@ -74,8 +74,6 @@ public:
     void setElevation(double v);
     void getCorrectPathResponse(QList<QGeoCoordinate> v, int index);
 
-    void sleep(uint ms);
-
 protected:
     QGeoPath m_geoPath;
     QGeoCoordinate m_coordinate;
@@ -107,6 +105,7 @@ private slots:
     void getPluginEnableControl();
     void changeExternalsVisibility();
     void setStartPointElevation();
+    void startPathsCorrection();
     void correctUnsafePaths();
     void insertMissionWaypoints();
     void completeCorrection();

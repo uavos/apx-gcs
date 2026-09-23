@@ -45,11 +45,44 @@ Window {
     property var chartOn: use && pluginOn
     property var name: qsTr("Terrain elevation")
     property var disabled: qsTr("(disabled)")
-    property var scaleStep: 0.2
-    property var minScale: 1
-    property var maxScale: 10
-    property var chartScale: minScale
-    property var newScale: minScale 
+    property real zoomFactor: 1.5   // per button click
+    property real minScale: 1
+    property real maxScale: 100
+    property real chartScale: minScale
+
+    // Zoom and pan are done through the X axis range, the chart item itself
+    // always stays the size of the window (one texture, no per-zoom reallocation)
+    readonly property real fullSpan: Math.max(chartView.distance, 1000)
+    property real viewSpan: fullSpan
+    property real viewStart: 0
+    readonly property real pixelsPerMeter: Math.max(chartView.plotArea.width, 1) / viewSpan
+
+    function xOf(distance) {
+        return chartView.plotArea.x + (distance - viewStart) * pixelsPerMeter
+    }
+    function clampStart(s) {
+        return Math.min(Math.max(s, 0), Math.max(fullSpan - viewSpan, 0))
+    }
+    // zoom by factor keeping the distance under anchorPx (window x) in place;
+    // without anchor the center of the plot is kept
+    function zoomAt(factor, anchorPx) {
+        var s = Math.min(Math.max(chartScale * factor, minScale), maxScale)
+        if(s === chartScale)
+            return
+        var plotX = chartView.plotArea.x
+        if(anchorPx === undefined || anchorPx < plotX || anchorPx > plotX + chartView.plotArea.width)
+            anchorPx = plotX + chartView.plotArea.width / 2
+        var anchorDistance = viewStart + (anchorPx - plotX) / pixelsPerMeter
+        var span = fullSpan / s
+        var ppm = Math.max(chartView.plotArea.width, 1) / span
+        chartScale = s
+        viewSpan = span
+        viewStart = clampStart(anchorDistance - (anchorPx - plotX) / ppm)
+    }
+    onFullSpanChanged: {
+        viewSpan = fullSpan / chartScale
+        viewStart = clampStart(viewStart)
+    }
 
     flags: Qt.WindowStaysOnTopHint
     width: Screen.desktopAvailableWidth - 50
@@ -135,7 +168,9 @@ Window {
             anchors.leftMargin: alarm.margin/2
         }
         SequentialAnimation {
-            running: true
+            // an infinite animation on a hidden item still forces the window
+            // to be re-rendered every frame - run it only while the alarm is shown
+            running: alarm.visible
             loops: Animation.Infinite
             PropertyAnimation {
                 target: alarm
@@ -155,7 +190,7 @@ Window {
     Item {
         id: chartItem
         height: elevationView.height
-        width: elevationView.width * chartScale
+        width: elevationView.width
         visible: elevationView.chartOn
 
         ChartView {
@@ -179,14 +214,14 @@ Window {
 
             ValueAxis {
                 id: axisX
-                min: 0
-                max: Math.max(chartView.distance, 1000)
+                min: elevationView.viewStart
+                max: elevationView.viewStart + elevationView.viewSpan
                 lineVisible: true
                 labelsFont.family: axisXLabel.font.family
                 labelsFont.pointSize: axisXLabel.font.pointSize
                 labelsColor: axisXLabel.color
                 gridVisible: false
-                tickCount: (Math.pow(2, Math.floor(Math.log2(chartScale)))) * 10 + 1    // adds label when zooming in 2x
+                tickCount: 11 // the visible range shrinks with zoom, the chart width does not
                 labelFormat: "%.0f"
             }
             ValueAxis {
@@ -225,8 +260,8 @@ Window {
             property var startElevation: mission.startElevation
             property var hStartPoint: !isNaN(startElevation)?(startElevation/scaleY):0
 
-            visible: mission.startPoint.isValid
-            x: chartView.plotArea.x
+            visible: mission.startPoint.isValid && x >= chartView.plotArea.x
+            x: elevationView.xOf(0)
             y: chartView.plotArea.y + chartHeight
             z: 1
 
@@ -308,50 +343,44 @@ Window {
             visible: true
             iconName: "magnify-plus"
             size: zoomLayout.btnSize
-            onTriggered: setNewScale(scaleStep)
+            onTriggered: zoomAt(zoomFactor)
         }
         IconButton {
             visible: true
             iconName: "magnify-minus"
             size: zoomLayout.btnSize
-            onTriggered: setNewScale(-scaleStep)
+            onTriggered: zoomAt(1 / zoomFactor)
         }
     }
 
     WheelHandler {
         id: wheelHandler
-        property var scaleFactor: 1
-        target: chartItem
+        target: null
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: function (event) {
-            var val = scaleStep * event.angleDelta.y / 240
-            setNewScale(val);
+            // one mouse notch (120) = x1.25, trackpad gives small smooth steps;
+            // zoom around the mouse position
+            zoomAt(Math.pow(1.25, event.angleDelta.y / 120), event.x)
         }
     }
 
     DragHandler {
         id: dragHandler
-        target: chartItem
+        target: null
         acceptedButtons: Qt.LeftButton
-    }
-
-    Timer {
-        id: scaleTimer
-        interval: 80
-        onTriggered: chartScale = newScale
-    }
-
-    function setNewScale(val) {
-        val += newScale ;
-        newScale =  Math.min(Math.max(val, minScale), maxScale)
-        scaleTimer.restart();
+        property real startView: 0
+        onActiveChanged: if(active) startView = elevationView.viewStart
+        onActiveTranslationChanged: {
+            if(!active)
+                return
+            elevationView.viewStart = elevationView.clampStart(startView - activeTranslation.x / elevationView.pixelsPerMeter)
+        }
     }
 
     function resetChartScale() {
-        chartItem.x = 0;
-        chartItem.y = 0;
-        newScale = 1
         chartScale = 1
+        viewSpan = fullSpan
+        viewStart = 0
     }
 }
 

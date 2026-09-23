@@ -21,14 +21,12 @@
  */
 #pragma once
 
-#include <QFutureWatcher>
 #include <QGeoCoordinate>
 #include <QGeoPath>
-#include <QImage>
 #include <QString>
 #include <QtCore>
-#include <QCache>
-#include <QMutex>
+
+class ElevationWorker;
 
 class AbstractElevationDB : public QObject
 {
@@ -55,28 +53,16 @@ class OfflineElevationDB : public AbstractElevationDB
 
 public:
     OfflineElevationDB(const QString &path);
+    ~OfflineElevationDB() override;
     void requestElevation(double lat, double lon) override;
     void requestCoordinate(double lat, double lon) override;
     void requestTerrainProfile(const QGeoPath &path) override;
-    double getElevationASTER(double lat, double lon); // return NaN if the elevation is undefined
+
+    static constexpr int TERRAIN_STEP = 30; // terrain profile step in meters
+    static QString createASTERFileName(double lat, double lon);
+    static QGeoPath prepareRoute(const QGeoPath &path);
 
 private:
-    static constexpr int TERRAIN_STEP = 30; // terrain profile step in meters
-    static constexpr int CACHE_SIZE = 10;   // image cache size
-    static QCache<QString, QImage> m_imageCache;
-    static QMutex m_mutex;
-    QImage m_image;
-    QString m_dbPath;
-    QString m_fileName;
-    QStringList m_paths;
-
-    void setImage(const QString &file);
-    void requestElevationASTER(double lat, double lon);
-    void requestCoordinateASTER(double lat, double lon);
-    static QString createASTERFileName(double lat, double lon);
-    static QGeoCoordinate requestCoordinateTiffASTER(const QImage &image, const QString &file, double lat, double lon);
-    static double getElevationTiffASTER(const QImage &image, const QString &file, double lat, double lon);
-    static QImage getImageFromCache(const QString &fileName);
-    static QGeoPath prepareRoute(const QGeoPath &path);
-    static void requestTerrainProfileASTER(QPromise<QGeoPath> &promise, const QGeoPath &path, const QString &db);
+    // all tile reading and elevation lookups run in this thread
+    ElevationWorker *m_worker;
 };
