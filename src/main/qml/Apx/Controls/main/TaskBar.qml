@@ -130,104 +130,110 @@ RowLayout {
     }
     ClockLabel {
         Layout.fillHeight: true
+        Layout.rightMargin: height*0.3
     }
-    Item {
-        id: systemBattery
-
-        readonly property int level: apx.batteryLevel
-
+    Loader {
         Layout.fillHeight: true
-        Layout.preferredWidth: height * 0.95
-        Layout.rightMargin: height * 0.25
-        visible: apx.settings.graphics.systemBattery.value && apx.batteryAvailable
+        active: apx.settings.graphics.systemBattery.value && apx.batteryAvailable
+        visible: status === Loader.Ready
+        sourceComponent: Component {
+            Item {
+                id: systemBattery
 
-        Rectangle {
-            id: batteryBody
+                readonly property int level: apx.batteryLevel
 
-            width: parent.width * 0.86
-            height: parent.height * 0.90
+                implicitWidth: height * 0.95
+                implicitHeight: parent.height
 
-            anchors.centerIn: parent
+                Rectangle {
+                    id: batteryBody
 
-            radius: Math.max(2, width * 0.08)
+                    width: parent.width * 0.86
+                    height: parent.height * 0.90
 
-            color: "transparent"
-            border.width: Math.max(1, ui.scale)
-            border.color: "#d8d8d8"
+                    anchors.centerIn: parent
 
-            Column {
-                anchors.fill: parent
-                anchors.margins: Math.max(2, batteryBody.border.width * 2)
-                spacing: Math.max(1, ui.scale * 0.5)
+                    radius: Math.max(2, width * 0.08)
 
-                Repeater {
-                    model: 10
+                    color: "transparent"
+                    border.width: Math.max(1, ui.scale)
+                    border.color: "#d8d8d8"
 
-                    Rectangle {
-                        required property int index
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: Math.max(2, batteryBody.border.width * 2)
+                        spacing: Math.max(1, ui.scale * 0.5)
 
-                        width: parent.width
-                        height: (parent.height - parent.spacing * 9) / 10
+                        Repeater {
+                            model: 10
 
-                        radius: Math.max(1, ui.scale)
+                            Rectangle {
+                                required property int index
 
-                        color: systemBattery.level >= (10 - index) * 10
-                               ? "#4caf50"
-                               : "#28402a"
+                                width: parent.width
+                                height: (parent.height - parent.spacing * 9) / 10
+
+                                radius: Math.max(1, ui.scale)
+
+                                color: systemBattery.level >= (10 - index) * 10
+                                       ? "#4caf50"
+                                       : "#28402a"
+                            }
+                        }
+                    }
+
+                    Text {
+                        visible: apx.batteryCharging
+
+                        anchors.fill: parent
+
+                        text: "\u26A1"
+
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+
+                        color: "white"
+                        opacity: 0.55
+
+                        font.pixelSize: parent.height * 0.86
+                        fontSizeMode: Text.Fit
+
+                        style: Text.Outline
+                        styleColor: "#90000000"
+
+                        z: 10
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+
+                        text: systemBattery.level
+
+                        color: "white"
+
+                        font: apx.font_narrow(
+                                  Math.max(12, batteryBody.width * 0.58),
+                                  true)
+
+                        style: Text.Outline
+                        styleColor: "#c0000000"
+
+                        z: 20
                     }
                 }
+
+                Rectangle {
+                    width: batteryBody.width * 0.42
+                    height: Math.max(2, parent.height * 0.065)
+
+                    anchors.horizontalCenter: batteryBody.horizontalCenter
+                    anchors.bottom: batteryBody.top
+
+                    color: batteryBody.border.color
+
+                    radius: Math.max(1, ui.scale)
+                }
             }
-
-            Text {
-                visible: apx.batteryCharging
-
-                anchors.fill: parent
-
-                text: "\u26A1"
-
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-
-                color: "white"
-                opacity: 0.55
-
-                font.pixelSize: parent.height * 0.86
-                fontSizeMode: Text.Fit
-
-                style: Text.Outline
-                styleColor: "#90000000"
-
-                z: 10
-            }
-
-            Text {
-                anchors.centerIn: parent
-
-                text: systemBattery.level
-
-                color: "white"
-
-                font: apx.font_narrow(
-                          Math.max(12, batteryBody.width * 0.58),
-                          true)
-
-                style: Text.Outline
-                styleColor: "#c0000000"
-
-                z: 20
-            }
-        }
-
-        Rectangle {
-            width: batteryBody.width * 0.42
-            height: Math.max(2, parent.height * 0.065)
-
-            anchors.horizontalCenter: batteryBody.horizontalCenter
-            anchors.bottom: batteryBody.top
-
-            color: batteryBody.border.color
-
-            radius: Math.max(1, ui.scale)
         }
     }
     Loader {

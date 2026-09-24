@@ -35,8 +35,13 @@ AppRoot::AppRoot(QObject *parent)
 
     m_batteryTimer.setInterval(30000);
     connect(&m_batteryTimer, &QTimer::timeout, this, &AppRoot::updateBatteryLevel);
+    connect(f_settings->f_systemBattery,
+            &Fact::valueChanged,
+            this,
+            &AppRoot::updateBatteryMonitoring);
     updateBatteryLevel();
-    m_batteryTimer.start();
+    if (f_settings->f_systemBattery->value().toBool())
+        m_batteryTimer.start();
 
     createTools();
 }
@@ -93,6 +98,18 @@ void AppRoot::updateBatteryLevel()
         m_batteryCharging = charging;
         emit batteryChargingChanged();
     }
+}
+
+void AppRoot::updateBatteryMonitoring()
+{
+    // Poll the system battery only while its indicator is enabled.
+    if (!f_settings->f_systemBattery->value().toBool()) {
+        m_batteryTimer.stop();
+        return;
+    }
+
+    updateBatteryLevel();
+    m_batteryTimer.start();
 }
 
 void AppRoot::sound(const QString &v)

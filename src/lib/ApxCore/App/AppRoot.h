@@ -99,6 +99,7 @@ public:
 
 private:
     void updateBatteryLevel();
+    void updateBatteryMonitoring();
 
     static AppRoot *_instance;
     QList<QPointer<Fact>> progressList;
