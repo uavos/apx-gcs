@@ -22,6 +22,13 @@
 #include "UnitWarnings.h"
 #include "Unit.h"
 #include <App/App.h>
+#include <App/AppPrefs.h>
+
+static constexpr const char *kw_prefs_name = "keywords";
+static constexpr const char *kw_prefs_group = "warnings";
+static constexpr int bubble_max_lines = 50;
+
+QList<UnitWarnings *> UnitWarnings::_instances;
 
 UnitWarnings::UnitWarnings(Unit *parent)
     : Fact(parent,
@@ -43,9 +50,94 @@ UnitWarnings::UnitWarnings(Unit *parent)
 
     connect(this, &Fact::sizeChanged, this, [=]() { f_clear->setEnabled(size() > 0); });
 
+    // preferences (same approach as MapPrefs in MissionPlanner)
+    f_prefs = new Fact(this,
+                       "prefs",
+                       tr("Preferences"),
+                       tr("Warnings panel settings"),
+                       Action | IconOnly,
+                       "wrench");
+    f_keywords = new Fact(f_prefs,
+                          "keywords",
+                          tr("Bubble keywords"),
+                          tr("Comma separated keywords to show message in bubble"),
+                          Text,
+                          "message-alert");
+    // keywords are shared between all units - persistent value with global settings group
+    f_keywords->setValue(AppPrefs::instance()->loadValue(kw_prefs_name, kw_prefs_group, ""));
+    connect(f_keywords, &Fact::valueChanged, this, &UnitWarnings::keywordsChanged);
+    _instances.append(this);
+
     showTimer.setSingleShot(true);
     showTimer.setInterval(5000);
     connect(&showTimer, &QTimer::timeout, this, &UnitWarnings::showTimerTimeout);
+}
+
+UnitWarnings::~UnitWarnings()
+{
+    _instances.removeAll(this);
+}
+
+void UnitWarnings::keywordsChanged()
+{
+    const auto v = f_keywords->value().toString();
+    if (v.trimmed().isEmpty())
+        AppPrefs::instance()->removeValue(kw_prefs_name, kw_prefs_group);
+    else
+        AppPrefs::instance()->saveValue(kw_prefs_name, v, kw_prefs_group);
+
+    // sync other units (setValue is filtered by value, no recursion)
+    for (auto i : _instances) {
+        if (i != this)
+            i->f_keywords->setValue(v);
+    }
+}
+
+QStringList UnitWarnings::keywords() const
+{
+    QStringList list;
+    for (auto s : f_keywords->value().toString().split(',')) {
+        s = s.trimmed();
+        if (!s.isEmpty())
+            list.append(s);
+    }
+    return list;
+}
+
+bool UnitWarnings::matchKeywords(const QString &msg) const
+{
+    for (const auto &kw : keywords()) {
+        if (msg.contains(kw, Qt::CaseInsensitive))
+            return true;
+    }
+    return false;
+}
+
+void UnitWarnings::appendBubble(const QString &msg)
+{
+    // don't spam bubble with the same repeated message
+    if (!m_bubbleItems.isEmpty() && m_bubbleItems.last() == msg)
+        return;
+    m_bubbleItems.append(msg);
+    while (m_bubbleItems.size() > bubble_max_lines)
+        m_bubbleItems.removeFirst();
+    emit bubbleItemsChanged();
+}
+
+void UnitWarnings::removeBubbleItem(int index)
+{
+    if (index < 0 || index >= m_bubbleItems.size())
+        return;
+    m_bubbleItems.removeAt(index);
+    emit bubbleItemsChanged();
+}
+
+void UnitWarnings::clearBubble()
+{
+    if (m_bubbleItems.isEmpty())
+        return;
+    m_bubbleItems.clear();
+    emit bubbleItemsChanged();
 }
 
 void UnitWarnings::warning(const QString &msg)
@@ -101,6 +193,10 @@ Fact *UnitWarnings::createItem(const QString &msg, MsgType kind)
         break;
     }
     emit show(fact->title(), kind);
+    if (matchKeywords(msg)) {
+        appendBubble(msg);
+        emit bubble(msg, kind);
+    }
     showList.insert(showNum > showList.size() ? showList.size() : showNum, fact);
     showMap.insert(fact, 0);
     showNum = showList.indexOf(fact);

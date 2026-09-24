@@ -30,17 +30,35 @@ class UnitWarnings : public Fact
     Q_OBJECT
     Q_ENUMS(MsgType)
 
+    // accumulated messages of the bubble shown below the warnings panel
+    Q_PROPERTY(QStringList bubbleItems READ bubbleItems NOTIFY bubbleItemsChanged)
+
 public:
     explicit UnitWarnings(Unit *parent);
+    ~UnitWarnings() override;
 
     enum MsgType { INFO = 0, WARNING, ERROR };
     Q_ENUM(MsgType)
 
     Fact *f_clear;
+    Fact *f_prefs;
+    Fact *f_keywords; // comma separated keywords to show a message in the bubble
+
+    QStringList bubbleItems() const { return m_bubbleItems; }
+
+    QStringList keywords() const;
+    bool matchKeywords(const QString &msg) const;
 
 private:
     QTimer showTimer;
     Fact *createItem(const QString &msg, MsgType kind);
+
+    QStringList m_bubbleItems;
+    void appendBubble(const QString &msg);
+
+    // keywords are global for all units, stored in QSettings
+    static QList<UnitWarnings *> _instances;
+    void keywordsChanged();
 
     QHash<Fact *, int> showMap;
     FactList showList;
@@ -50,7 +68,11 @@ private slots:
 public slots:
     void warning(const QString &msg);
     void error(const QString &msg);
+    void clearBubble();
+    void removeBubbleItem(int index);
 signals:
     void show(QString msg, MsgType msgType);
     void showMore(QString msg, MsgType msgType);
+    void bubble(QString msg, MsgType msgType);
+    void bubbleItemsChanged();
 };

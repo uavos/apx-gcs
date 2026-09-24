@@ -21,6 +21,8 @@
  */
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
 import Apx.Common
 //import Apx.Menu 1.0
@@ -29,12 +31,13 @@ import APX.Fleet
 FactButton {
     id: control
 
-    showText: enabled
+    showText: fact.size > 0
     showValue: false
     showNext: false
     showEditor: false
 
-    enabled: fact.size
+    // always clickable to reach preferences (keywords) even when list is empty
+    enabled: true
 
     fact: apx.fleet.current.warnings
     readonly property int showTimeout: 5000
@@ -43,6 +46,72 @@ FactButton {
     Connections {
         target: fact
         function onShow(msg, msgType){ message(msg, msgType) }
+    }
+
+    // bubble with messages matching keywords (fact.prefs.keywords)
+    readonly property var bubbleItems: (fact && fact.bubbleItems) ? fact.bubbleItems : []
+
+    Popup {
+        id: bubble
+        parent: control
+        x: 0
+        y: control.height + Style.spacing
+        margins: Style.spacing
+        padding: Style.spacing
+        modal: false
+        dim: false
+        focus: false
+        closePolicy: Popup.NoAutoClose
+        visible: control.bubbleItems.length > 0
+        width: Math.min(implicitWidth, Style.buttonSize * 16)
+
+        background: Rectangle {
+            color: "#e0222222"
+            border.color: Material.color(Material.Orange)
+            border.width: 1
+            radius: Style.spacing
+        }
+        contentItem: ColumnLayout {
+            spacing: 0
+            // header with clear all button
+            RowLayout {
+                Layout.fillWidth: true
+                visible: control.bubbleItems.length > 1
+                spacing: Style.spacing
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Messages") + ": " + control.bubbleItems.length
+                    color: Material.secondaryTextColor
+                    font: apx.font_narrow(Style.fontSize * 0.8)
+                }
+                IconButton {
+                    iconName: "notification-clear-all"
+                    toolTip: qsTr("Hide all")
+                    onTriggered: if(control.fact) control.fact.clearBubble()
+                }
+            }
+            Repeater {
+                model: control.bubbleItems
+                delegate: RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Style.spacing
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        text: modelData
+                        wrapMode: Text.Wrap
+                        color: Material.primaryTextColor
+                        font: apx.font_narrow(Style.fontSize)
+                    }
+                    IconButton {
+                        Layout.alignment: Qt.AlignTop
+                        iconName: "close"
+                        toolTip: qsTr("Hide")
+                        onTriggered: if(control.fact) control.fact.removeBubbleItem(index)
+                    }
+                }
+            }
+        }
     }
 
     state: "NORMAL"
