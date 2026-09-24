@@ -105,6 +105,15 @@ void TerrainProfileItem::setXOffset(double v)
     markGeometryDirty();
 }
 
+void TerrainProfileItem::setSegmentLength(double v)
+{
+    if (qFuzzyCompare(m_segmentLength, v))
+        return;
+    m_segmentLength = v;
+    emit segmentLengthChanged();
+    markGeometryDirty();
+}
+
 void TerrainProfileItem::setViewStart(double v)
 {
     if (qFuzzyCompare(m_viewStart, v))
@@ -170,6 +179,31 @@ void TerrainProfileItem::setLineWidth(double v)
     markGeometryDirty();
 }
 
+double TerrainProfileItem::elevationAt(double missionDistance) const
+{
+    if (m_profile.size() < 2)
+        return NAN;
+    const double profileLength = m_profile.last().x();
+    const double stretch = (m_segmentLength > 0 && profileLength > 0)
+                               ? m_segmentLength / profileLength
+                               : 1.0;
+    const double d = (missionDistance - m_xOffset) / stretch;
+    if (d < m_profile.first().x() || d > profileLength)
+        return NAN;
+    auto it = std::lower_bound(m_profile.cbegin(),
+                               m_profile.cend(),
+                               d,
+                               [](const QPointF &p, double v) { return p.x() < v; });
+    if (it == m_profile.cbegin())
+        return it->y();
+    const QPointF &b = *it;
+    const QPointF &a = *(it - 1);
+    const double span = b.x() - a.x();
+    if (span <= 0)
+        return b.y();
+    return a.y() + (b.y() - a.y()) * (d - a.x()) / span;
+}
+
 void TerrainProfileItem::markGeometryDirty()
 {
     m_geometryDirty = true;
@@ -192,9 +226,23 @@ QSGNode *TerrainProfileItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
         m_materialDirty = true;
     }
 
+    // a stale profile stretched to a new segment length is provisional: draw it dimmed
+    const double profileLength = m_profile.size() >= 2 ? m_profile.last().x() : 0;
+    const bool stale = m_segmentLength > 0 && profileLength > 0
+                       && std::abs(m_segmentLength - profileLength) > 0.01 * profileLength + 1.0;
+    if (stale != m_stale) {
+        m_stale = stale;
+        m_materialDirty = true;
+    }
     if (m_materialDirty) {
-        static_cast<QSGFlatColorMaterial *>(node->fill()->material())->setColor(m_fillColor);
-        static_cast<QSGFlatColorMaterial *>(node->line()->material())->setColor(m_lineColor);
+        QColor fill = m_fillColor;
+        QColor line = m_lineColor;
+        if (m_stale) {
+            fill.setAlphaF(fill.alphaF() * 0.4);
+            line.setAlphaF(line.alphaF() * 0.4);
+        }
+        static_cast<QSGFlatColorMaterial *>(node->fill()->material())->setColor(fill);
+        static_cast<QSGFlatColorMaterial *>(node->line()->material())->setColor(line);
         node->fill()->markDirty(QSGNode::DirtyMaterial);
         node->line()->markDirty(QSGNode::DirtyMaterial);
         m_materialDirty = false;
@@ -220,12 +268,16 @@ QSGNode *TerrainProfileItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
 
     const double sx = w / m_viewSpan;
     const double sy = h / hRange;
-    auto px = [&](double d) { return (d + m_xOffset - m_viewStart) * sx; };
+    // stretch a stale profile to the current segment length
+    const double stretch = (m_segmentLength > 0 && profileLength > 0)
+                               ? m_segmentLength / profileLength
+                               : 1.0;
+    auto px = [&](double d) { return (d * stretch + m_xOffset - m_viewStart) * sx; };
     auto py = [&](double e) { return h - (e - m_minHeight) * sy; };
 
     // visible part of the profile (distances are monotonic), one extra point at each side
-    const double dFrom = m_viewStart - m_xOffset;
-    const double dTo = m_viewStart + m_viewSpan - m_xOffset;
+    const double dFrom = (m_viewStart - m_xOffset) / stretch;
+    const double dTo = (m_viewStart + m_viewSpan - m_xOffset) / stretch;
     auto lower = std::lower_bound(m_profile.cbegin(),
                                   m_profile.cend(),
                                   dFrom,
@@ -249,18 +301,26 @@ QSGNode *TerrainProfileItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
         return node;
     }
 
-    // about one point per pixel is enough
-    const double visiblePx = (m_profile[last - 1].x() - m_profile[first].x()) * sx;
-    qsizetype step = visiblePx > 0 ? qsizetype(std::floor(visibleCount / visiblePx)) : 1;
-    if (step < 1)
-        step = 1;
-
+    // Downsample to one point per pixel column keeping the HIGHEST elevation of the
+    // column: a peak between two samples must never disappear from the chart.
     QList<QPointF> pts;
-    pts.reserve(visibleCount / step + 2);
-    for (qsizetype i = first; i < last; i += step)
-        pts.append(QPointF(px(m_profile[i].x()), py(m_profile[i].y())));
-    if ((last - 1 - first) % step != 0)
-        pts.append(QPointF(px(m_profile[last - 1].x()), py(m_profile[last - 1].y())));
+    pts.reserve(static_cast<qsizetype>(std::ceil(w)) + 2);
+    double bucketX = std::floor(px(m_profile[first].x()));
+    QPointF best(px(m_profile[first].x()), py(m_profile[first].y()));
+    for (qsizetype i = first + 1; i < last; ++i) {
+        const double x = px(m_profile[i].x());
+        const double y = py(m_profile[i].y());
+        const double bx = std::floor(x);
+        if (bx != bucketX) {
+            pts.append(best);
+            bucketX = bx;
+            best = QPointF(x, y);
+            continue;
+        }
+        if (y < best.y()) // screen y grows downwards: smaller y is higher terrain
+            best = QPointF(x, y);
+    }
+    pts.append(best);
 
     const int n = static_cast<int>(pts.size());
     fillGeometry->allocate(n * 2);

@@ -43,6 +43,8 @@ class TerrainProfileItem : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(QObject *missionItem READ missionItem WRITE setMissionItem NOTIFY missionItemChanged)
     Q_PROPERTY(double xOffset READ xOffset WRITE setXOffset NOTIFY xOffsetChanged)
+    Q_PROPERTY(
+        double segmentLength READ segmentLength WRITE setSegmentLength NOTIFY segmentLengthChanged)
     Q_PROPERTY(double viewStart READ viewStart WRITE setViewStart NOTIFY viewStartChanged)
     Q_PROPERTY(double viewSpan READ viewSpan WRITE setViewSpan NOTIFY viewSpanChanged)
     Q_PROPERTY(double minHeight READ minHeight WRITE setMinHeight NOTIFY minHeightChanged)
@@ -60,6 +62,10 @@ public:
 
     double xOffset() const { return m_xOffset; }
     void setXOffset(double v);
+    // current segment length [m]; while a fresh profile is being computed the
+    // previous one is stretched to this length so the chart follows the waypoint
+    double segmentLength() const { return m_segmentLength; }
+    void setSegmentLength(double v);
     double viewStart() const { return m_viewStart; }
     void setViewStart(double v);
     double viewSpan() const { return m_viewSpan; }
@@ -76,9 +82,14 @@ public:
     void setLineWidth(double v);
     int pointCount() const { return static_cast<int>(m_profile.size()); }
 
+    // Terrain elevation [m] at the mission distance (interpolated between samples).
+    // Returns NaN when the distance is outside this segment.
+    Q_INVOKABLE double elevationAt(double missionDistance) const;
+
 signals:
     void missionItemChanged();
     void xOffsetChanged();
+    void segmentLengthChanged();
     void viewStartChanged();
     void viewSpanChanged();
     void minHeightChanged();
@@ -101,6 +112,7 @@ private:
     QPointer<MissionItem> m_item;
     QList<QPointF> m_profile; // (distance from segment start [m], elevation [m])
     double m_xOffset{0};
+    double m_segmentLength{0};
     double m_viewStart{0};
     double m_viewSpan{1000};
     double m_minHeight{0};
@@ -110,5 +122,6 @@ private:
     double m_lineWidth{1.5};
 
     bool m_geometryDirty{true};
+    bool m_stale{false}; // drawn stretched while a fresh profile is computed
     bool m_materialDirty{true};
 };

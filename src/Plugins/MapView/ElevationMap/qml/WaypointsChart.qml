@@ -9,6 +9,8 @@ import QtQml.Models
 import APX.Fleet as APX
 import APX.Mission
 
+// Waypoint markers of the chart. The flight altitude line is drawn by
+// ElevationView.missionLineShape from the same distances/heights.
 Repeater {
     id: repeater
     model: mission.wp.mapModel
@@ -21,10 +23,8 @@ Repeater {
         // Waypoints
         Item { 
             id: wpItem
-            property bool created: false
             property bool amsl: modelData.child("amsl") ? modelData.child("amsl").value : false
             property var startHmsl: Math.round(mission.startElevation)
-            property var startPoint: mission.startPoint
             property var altitude: modelData.child("altitude") ? modelData.child("altitude").value : 0
             property var agl: modelData.child("agl") ? modelData.child("agl").value : 0
             property var elevation: modelData.elevation
@@ -32,29 +32,21 @@ Repeater {
             property bool collision: modelData.collision
             property bool alarmOn: !isNaN(elevation) ? (agl < unsafeAgl || collision) : false
             property var hAMSL: amsl ? altitude : altitude + startHmsl
-            property var totalDistance: modelData ? modelData.totalDistance : -1
-            property var distance: modelData ? modelData.totalDistanceWithRw : -1
-            property var coordinate: modelData.coordinate
+            property var segmentLength: modelData ? modelData.distance : 0
+            // position along the mission incl. runway part (synchronous, see ElevationView.segmentStarts)
+            property var distance: modelData ? elevationView.segmentStart(index, modelData.totalDistanceWithRw - segmentLength) + segmentLength : -1
             property var num: modelData.num
-            property var chartWidth: chartView.plotArea.width
             property var chartHeight: chartView.plotArea.height
-            property var scaleX: axisX.max/chartWidth
             property var scaleY: axisY.max/chartHeight
-            property var oldDistance: -1
-            property var oldHAMSL: -1
             property var totalX: chartItem.x + x
             property var totalY: chartItem.y + y
             
-            visible: totalDistance > 0 || created
+            visible: distance >= 0
             x: elevationView.xOf(distance) // follows the zoomed/panned axis range
             y: chartView.plotArea.y + chartHeight - hAMSL/scaleY
 
-            Component.onCompleted: timer.start()
-            Component.onDestruction: removeData()
-            onVisibleChanged: if(visible) timer.start()
-            onDistanceChanged: updateData()
-            onHAMSLChanged: updateData()
-            onCoordinateChanged: updateData() 
+            onSegmentLengthChanged: elevationView.scheduleSegmentStarts()
+            onHAMSLChanged: elevationView.scheduleSegmentStarts()
 
             Rectangle {
                 id: verticalLine
@@ -87,57 +79,34 @@ Repeater {
                 }
                 MouseArea {
                     id: ma
+                    property bool moved: false
+                    property var altitudeFact: modelData.child("altitude")
                     anchors.fill: parent
                     hoverEnabled: true
-                    onClicked: modelData.trigger()
-                }
-            }
-            Timer {
-                id: timer
-                interval: 100
-                onTriggered: wpItem.appendData()
-            }
-
-            function appendData() {
-                if(!visible) {
-                    if(num != 0)
-                        return
-                    if(!startPoint.isValid) {
-                        created = true
-                        return
+                    cursorShape: Qt.SizeVerCursor
+                    // vertical drag changes the waypoint altitude (fact only, no upload)
+                    onPressed: (mouse) => {
+                        moved = false
+                        elevationView.waypointDragging = true
                     }
-                    return
-                }
-                for(var i = 0; i < lineSeries.count; i++) {
-                    var point = lineSeries.at(i)
-                    if(point.x > distance) {
-                        lineSeries.insert(i, distance, hAMSL)
-                        setOldValues()
-                        created = true
-                        return
+                    onPositionChanged: (mouse) => {
+                        if(!pressed || !altitudeFact)
+                            return
+                        moved = true
+                        var p = mapToItem(chartItem, mouse.x, mouse.y)
+                        var hAMSL = (chartView.plotArea.y + wpItem.chartHeight - p.y) * wpItem.scaleY
+                        var alt = wpItem.amsl ? hAMSL : hAMSL - wpItem.startHmsl
+                        altitudeFact.value = Math.max(0, Math.round(alt))
                     }
+                    onReleased: {
+                        elevationView.waypointDragging = false
+                        if(!moved)
+                            modelData.trigger()
+                    }
+                    onCanceled: elevationView.waypointDragging = false
                 }
-                lineSeries.append(distance, hAMSL)
-                setOldValues()
-                created = true
             }
 
-            function updateData() {
-                if(!created)
-                    return
-                lineSeries.replace(oldDistance, oldHAMSL, distance, hAMSL)
-                setOldValues()
-            }
-
-            function removeData() {
-                lineSeries.remove(oldDistance, oldHAMSL)
-            }
-
-            function setOldValues() {
-                oldDistance = distance
-                oldHAMSL = hAMSL 
-            }
-            
             function getInViewArea(totalX, totalY, width, height) {
                 return (totalY <= elevationView.height && totalY + height >= 0) && (totalX <= elevationView.width && totalX + width >= 0)
             }
