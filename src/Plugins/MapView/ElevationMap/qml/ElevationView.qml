@@ -24,6 +24,7 @@ import QtCharts
 import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
+import QtQuick.Shapes
 import QtQml
 
 import QtQml.Models
@@ -49,10 +50,69 @@ Window {
     property real minScale: 1
     property real maxScale: 100
     property real chartScale: minScale
+    property bool waypointDragging: false // a marker is being dragged in the chart
 
     // Zoom and pan are done through the X axis range, the chart item itself
     // always stays the size of the window (one texture, no per-zoom reallocation)
-    readonly property real fullSpan: Math.max(chartView.distance, 1000)
+    readonly property real fullSpan: Math.max(missionLength, 1000)
+
+    // Segment start distances computed synchronously from waypoint path lengths.
+    // MissionGroup updates totalDistance with a 1 s timer, so while a waypoint is
+    // being dragged its own distance is already new but totalDistance is stale;
+    // deriving offsets here keeps profile segments and markers consistent.
+    property var segmentStarts: []
+    property real missionLength: 0
+    property real pendingLength: 0
+    // flight altitude line: [distance m, height AMSL m] per point, start point first
+    property var missionLine: []
+    function updateSegmentStarts() {
+        var p1 = mission.coordinate
+        var p2 = mission.startPoint
+        var startHmsl = Math.round(mission.startElevation)
+        var acc = (p1.isValid && p2.isValid) ? p1.distanceTo(p2) : 0
+        var starts = []
+        var line = []
+        if(p2.isValid && !isNaN(mission.startElevation))
+            line.push([0, mission.startElevation])
+        var group = mission.wp
+        for(var i = 0; i < group.size; ++i) {
+            starts.push(acc)
+            var wp = group.child(i)
+            if(!wp)
+                continue
+            acc += wp.distance
+            var altFact = wp.child("altitude")
+            var amslFact = wp.child("amsl")
+            var alt = altFact ? Number(altFact.value) : 0
+            line.push([acc, (amslFact && amslFact.value) ? alt : alt + startHmsl])
+        }
+        segmentStarts = starts
+        missionLine = line
+        pendingLength = acc
+        if(missionLength == 0 || !lengthTimer.running)
+            lengthTimer.restart()
+    }
+    // the axis range (a QtCharts relayout) is updated at most a few times per second
+    Timer {
+        id: lengthTimer
+        interval: 250
+        onTriggered: missionLength = pendingLength
+    }
+    function scheduleSegmentStarts() { Qt.callLater(updateSegmentStarts) }
+    function segmentStart(index, fallback) {
+        var v = segmentStarts[index]
+        return v === undefined ? fallback : v
+    }
+    Connections {
+        target: mission.wp
+        function onSizeChanged() { scheduleSegmentStarts() }
+    }
+    Connections {
+        target: mission
+        function onStartPointChanged() { scheduleSegmentStarts() }
+        function onCoordinateChanged() { scheduleSegmentStarts() }
+    }
+    Component.onCompleted: updateSegmentStarts()
     property real viewSpan: fullSpan
     property real viewStart: 0
     readonly property real pixelsPerMeter: Math.max(chartView.plotArea.width, 1) / viewSpan
@@ -236,6 +296,8 @@ Window {
                 tickCount: 5
                 labelFormat: "%.0f"
             }
+            // empty series keeps the axes attached; the flight altitude line itself is
+            // drawn by missionLineShape (scene graph), QtCharts only repaints on axis changes
             LineSeries {
                 id: lineSeries
                 axisX: axisX
@@ -282,29 +344,38 @@ Window {
                 }
             }
 
-            Component.onCompleted: initStartPoint()
-            onVisibleChanged: initStartPoint()
-            onCoordinateChanged: updateStartPoint()
-            onStartElevationChanged: updateStartPoint()
+            onStartElevationChanged: elevationView.scheduleSegmentStarts()
+        }
 
-            function initStartPoint()
-            {
-                if(isNaN(startElevation))
-                    return
-                if(visible)
-                    lineSeries.insert(-1, 0, startElevation)
-                else
-                    if(lineSeries.count > 0) 
-                        lineSeries.remove(0)
-            }
-            function updateStartPoint()
-            {
-                if(!visible)
-                    return
-                if(isNaN(startElevation))
-                    return
-                var point = lineSeries.at(0)
-                lineSeries.replace(point.x, point.y, point.x, startElevation)
+        // Flight altitude line (start point + waypoints), GPU rendered
+        Shape {
+            id: missionLineShape
+            x: chartView.plotArea.x
+            y: chartView.plotArea.y
+            width: chartView.plotArea.width
+            height: chartView.plotArea.height
+            clip: true
+            z: 0.5
+            preferredRendererType: Shape.CurveRenderer
+            ShapePath {
+                strokeColor: "#209fdf"
+                strokeWidth: 2
+                fillColor: "transparent"
+                joinStyle: ShapePath.RoundJoin
+                PathPolyline {
+                    path: {
+                        var pts = []
+                        var line = elevationView.missionLine
+                        var ppm = elevationView.pixelsPerMeter
+                        var yRange = Math.max(axisY.max - axisY.min, 1)
+                        var h = chartView.plotArea.height
+                        for(var i = 0; i < line.length; ++i) {
+                            pts.push(Qt.point((line[i][0] - elevationView.viewStart) * ppm,
+                                              h - (line[i][1] - axisY.min) / yRange * h))
+                        }
+                        return pts
+                    }
+                }
             }
         }
         Loader {
@@ -322,6 +393,100 @@ Window {
             asynchronous: true
             sourceComponent: Component { ElevationChart { } }
         }
+
+        // terrain elevation under the mouse (HoverHandler never blocks other items)
+        Item {
+            id: hoverArea
+            x: chartView.plotArea.x
+            y: chartView.plotArea.y
+            width: chartView.plotArea.width
+            height: chartView.plotArea.height
+            HoverHandler {
+                id: hoverHandler
+                onPointChanged: if(hovered && !elevationView.waypointDragging) hoverCursor.update(point.position.x)
+                onHoveredChanged: if(!hovered) hoverCursor.hide()
+            }
+        }
+        Item {
+            id: hoverCursor
+            property real distance: 0
+            property real elevation: NaN
+            visible: false
+            z: 2
+
+            function update(px) {
+                var d = elevationView.viewStart + px / elevationView.pixelsPerMeter
+                var e = elevationView.terrainElevationAt(d)
+                if(isNaN(e)) {
+                    hide()
+                    return
+                }
+                distance = d
+                elevation = e
+                x = hoverArea.x + px
+                visible = true
+            }
+            function hide() { visible = false }
+
+            // terrain point in window coordinates
+            property real terrainY: chartView.plotArea.y + chartView.plotArea.height
+                                    - (elevation - axisY.min) / Math.max(axisY.max - axisY.min, 1)
+                                      * chartView.plotArea.height
+            Rectangle {
+                width: 1
+                y: chartView.plotArea.y
+                height: Math.max(hoverCursor.terrainY - y, 0)
+                color: "#a0ffffff"
+            }
+            Rectangle {
+                id: hoverDot
+                width: 9
+                height: width
+                radius: width / 2
+                x: -width / 2 + 0.5
+                y: hoverCursor.terrainY - height / 2
+                color: "#ffffff"
+                border.color: "#00c000"
+                border.width: 2
+            }
+            Rectangle {
+                id: hoverLabel
+                property real anchorX: hoverCursor.x
+                // keep the label inside the window
+                x: Math.min(4, elevationView.width - anchorX - width - 4)
+                y: chartView.plotArea.y + 4
+                width: hoverText.implicitWidth + 12
+                height: hoverText.implicitHeight + 8
+                radius: 3
+                color: "#d0202020"
+                border.color: "#80ffffff"
+                border.width: 1
+                Text {
+                    id: hoverText
+                    anchors.centerIn: parent
+                    color: "#ffffff"
+                    font.pixelSize: Style.fontSize*0.8
+                    text: qsTr("Terrain %1 m").arg(Math.round(hoverCursor.elevation))
+                          + "\n" + qsTr("Distance %1 km").arg((hoverCursor.distance / 1000).toFixed(2))
+                }
+            }
+        }
+    }
+
+    // terrain elevation at the mission distance, NaN when no profile covers it
+    function terrainElevationAt(distance) {
+        var repeater = epLoader.item
+        if(!repeater)
+            return NaN
+        for(var i = 0; i < repeater.count; ++i) {
+            var item = repeater.itemAt(i)
+            if(!item || !item.visible)
+                continue
+            var e = item.elevationAt(distance)
+            if(!isNaN(e))
+                return e
+        }
+        return NaN
     }
     
     ColumnLayout {
@@ -368,6 +533,7 @@ Window {
         id: dragHandler
         target: null
         acceptedButtons: Qt.LeftButton
+        enabled: !elevationView.waypointDragging
         property real startView: 0
         onActiveChanged: if(active) startView = elevationView.viewStart
         onActiveTranslationChanged: {

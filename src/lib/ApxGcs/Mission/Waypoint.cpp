@@ -544,12 +544,13 @@ void Waypoint::buildTerrainProfile(const QGeoPath &path)
     if (m_watcher.isRunning())
         m_watcher.cancel();
 
-    clearTerrainProfile();
-
+    // no elevation data for this path
     if (geoPath == path) {
+        clearTerrainProfile();
         setCollision(false);
         return;
     }
+    // the previous profile stays visible until the new one is ready
 
     QFuture<TerrainInfo> future;
     future = QtConcurrent::run(createTerrainInfo, path);

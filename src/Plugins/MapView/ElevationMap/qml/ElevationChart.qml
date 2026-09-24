@@ -25,8 +25,11 @@ Repeater {
         property real dist: fact ? fact.distance : -1
         property real totalDistance: fact ? fact.totalDistanceWithRw : -1
         property real distance: num == 0 ? totalDistance : dist
-        property real offset: totalDistance - distance // segment start along the mission, m
+        // segment start along the mission, m (synchronous, see ElevationView.segmentStarts)
+        property real offset: elevationView.segmentStart(index, totalDistance - distance)
         property bool collision: fact ? fact.collision : false
+
+        onDistChanged: elevationView.scheduleSegmentStarts()
         property bool hasProfile: pointCount > 1 && distance > 0 && totalDistance >= 0
 
         // plot area of the shared chart
@@ -38,6 +41,7 @@ Repeater {
 
         missionItem: fact
         xOffset: offset
+        segmentLength: distance
         viewStart: elevationView.viewStart
         viewSpan: elevationView.viewSpan
         minHeight: axisY.min
