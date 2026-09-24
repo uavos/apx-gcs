@@ -19,34 +19,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
+
+#include "SunPosition.h"
+#include <App/PluginInterface.h>
 #include <QtCore>
-#include <cstdio>
 
-int main(int argc, char *argv[])
+class SunPositionPlugin : public PluginInterface
 {
-    QCoreApplication app(argc, argv);
-
-    QCommandLineParser parser;
-    parser.setApplicationDescription("Ground Control Software by UAVOS (C) Aliaksei Stratsilatau "
-                                     "<sa@uavos.com>. Plugin test utility.");
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addPositionalArgument("plugins", "Plugin[s] to load and test.");
-    parser.process(*qApp);
-
-    const QStringList args = parser.positionalArguments();
-
-    // qDebug() << args;
-
-    for (auto fname : args) {
-        QLibrary lib(fname);
-        // qDebug() << "TEST:" << fname;
-        if (!lib.load()) {
-            // report to stderr and exit with error code (no abort/coredump)
-            fprintf(stderr, "%s\n", qPrintable(lib.errorString()));
-            return 1;
-        }
-    }
-
-    return 0;
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
+public:
+    int flags() override { return Feature | Map; }
+    QObject *createControl() override { return new SunPosition(); }
+    QStringList depends() override { return QStringList() << "MissionPlanner"; }
+};
