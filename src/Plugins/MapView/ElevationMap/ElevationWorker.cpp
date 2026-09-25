@@ -361,7 +361,9 @@ void ElevationWorker::processAreaMax(const Job &job)
 // the corridor is reported separately for display.
 void ElevationWorker::processProfile(const Job &job)
 {
-    QGeoPath route = OfflineElevationDB::prepareRoute(job.path);
+    // points along the path every map pixel, like the samples across the corridor
+    QGeoPath route = OfflineElevationDB::prepareRoute(job.path,
+                                                      sampleStep(job.path.coordinateAt(0)));
     const double halfWidth = m_corridor;
     const qsizetype n = route.size();
     QList<double> mins;

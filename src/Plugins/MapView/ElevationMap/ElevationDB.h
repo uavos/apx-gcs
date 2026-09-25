@@ -67,9 +67,10 @@ public:
     void requestAreaMax(double lat, double lon, double radius) override;
     void setCorridor(double meters) override;
 
-    static constexpr int TERRAIN_STEP = 30; // terrain profile step in meters
+    static constexpr int TERRAIN_STEP = 30; // default terrain profile step in meters
     static QString createASTERFileName(double lat, double lon);
-    static QGeoPath prepareRoute(const QGeoPath &path);
+    // path with intermediate points every `step` meters (the map resolution)
+    static QGeoPath prepareRoute(const QGeoPath &path, double step = TERRAIN_STEP);
 
 private:
     // all tile reading and elevation lookups run in this thread

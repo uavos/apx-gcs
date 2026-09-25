@@ -105,23 +105,25 @@ void OfflineElevationDB::setCorridor(double meters)
     m_worker->setCorridor(meters);
 }
 
-QGeoPath OfflineElevationDB::prepareRoute(const QGeoPath &path)
+QGeoPath OfflineElevationDB::prepareRoute(const QGeoPath &path, double step)
 {
     QGeoPath route;
     auto points = path.path();
     if (points.isEmpty())
         return route;
+    if (step <= 0)
+        step = TERRAIN_STEP;
     // Add path points
     for (int i = 0; i < points.size() - 1; ++i) {
         route.addCoordinate(points[i]);
         auto plotLenght = points[i].distanceTo(points[i + 1]);
-        if (plotLenght > TERRAIN_STEP) {
-            double lenght{TERRAIN_STEP};
+        if (plotLenght > step) {
+            double lenght{step};
             auto azimuth = points[i].azimuthTo(points[i + 1]);
             while (lenght < plotLenght) {
                 auto point = points[i].atDistanceAndAzimuth(lenght, azimuth);
                 route.addCoordinate(point);
-                lenght += TERRAIN_STEP;
+                lenght += step;
             }
         }
     }
