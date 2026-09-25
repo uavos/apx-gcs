@@ -31,6 +31,9 @@
 class AppRoot : public Fact
 {
     Q_OBJECT
+    Q_PROPERTY(int batteryLevel READ batteryLevel NOTIFY batteryLevelChanged)
+    Q_PROPERTY(bool batteryAvailable READ batteryAvailable NOTIFY batteryLevelChanged)
+    Q_PROPERTY(bool batteryCharging READ batteryCharging NOTIFY batteryChargingChanged)
 public:
     explicit AppRoot(QObject *parent = nullptr);
     static AppRoot *instance() { return _instance; }
@@ -48,6 +51,10 @@ public:
 
     //global progress
     void updateProgress(Fact *fact);
+
+    int batteryLevel() const { return m_batteryLevel; }
+    bool batteryAvailable() const { return m_batteryLevel >= 0; }
+    bool batteryCharging() const { return m_batteryCharging; }
 
     //----------------------------------
     // static helpers and data converters
@@ -91,9 +98,17 @@ public:
     Q_INVOKABLE static void sound(const QString &v);
 
 private:
+    void updateBatteryLevel();
+    void updateBatteryMonitoring();
+
     static AppRoot *_instance;
     QList<QPointer<Fact>> progressList;
+    QTimer m_batteryTimer;
+    int m_batteryLevel{-1};
+    bool m_batteryCharging{false};
 
 signals:
     void factTriggered(Fact *fact, QVariantMap opts);
+    void batteryLevelChanged();
+    void batteryChargingChanged();
 };
