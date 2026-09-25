@@ -26,7 +26,7 @@
 
 static constexpr const char *kw_prefs_name = "keywords";
 static constexpr const char *kw_prefs_group = "warnings";
-static constexpr int bubble_max_lines = 50;
+static constexpr int bubble_max_items = 3;
 
 QList<UnitWarnings *> UnitWarnings::_instances;
 
@@ -113,30 +113,21 @@ bool UnitWarnings::matchKeywords(const QString &msg) const
     return false;
 }
 
-void UnitWarnings::appendBubble(const QString &msg)
+QStringList UnitWarnings::bubbleItems() const
 {
-    // don't spam bubble with the same repeated message
-    if (!m_bubbleItems.isEmpty() && m_bubbleItems.last() == msg)
-        return;
-    m_bubbleItems.append(msg);
-    while (m_bubbleItems.size() > bubble_max_lines)
-        m_bubbleItems.removeFirst();
-    emit bubbleItemsChanged();
+    QStringList list;
+    for (auto f : m_bubbleItems)
+        list.append(f->title());
+    return list;
 }
 
-void UnitWarnings::removeBubbleItem(int index)
+void UnitWarnings::addBubbleItem(Fact *fact)
 {
-    if (index < 0 || index >= m_bubbleItems.size())
-        return;
-    m_bubbleItems.removeAt(index);
-    emit bubbleItemsChanged();
-}
-
-void UnitWarnings::clearBubble()
-{
-    if (m_bubbleItems.isEmpty())
-        return;
-    m_bubbleItems.clear();
+    // newest on top, limited number of items
+    m_bubbleItems.removeAll(fact);
+    m_bubbleItems.prepend(fact);
+    while (m_bubbleItems.size() > bubble_max_items)
+        m_bubbleItems.removeLast();
     emit bubbleItemsChanged();
 }
 
@@ -181,6 +172,8 @@ Fact *UnitWarnings::createItem(const QString &msg, MsgType kind)
         connect(fact, &Fact::destroyed, this, [=]() {
             showMap.remove(fact);
             showList.removeAll(fact);
+            if (m_bubbleItems.removeAll(fact) > 0)
+                emit bubbleItemsChanged();
         });
     } else {
         fact->setValue(fact->value().toUInt() + 1);
@@ -193,10 +186,8 @@ Fact *UnitWarnings::createItem(const QString &msg, MsgType kind)
         break;
     }
     emit show(fact->title(), kind);
-    if (matchKeywords(msg)) {
-        appendBubble(msg);
-        emit bubble(msg, kind);
-    }
+    if (matchKeywords(msg))
+        addBubbleItem(fact);
     showList.insert(showNum > showList.size() ? showList.size() : showNum, fact);
     showMap.insert(fact, 0);
     showNum = showList.indexOf(fact);

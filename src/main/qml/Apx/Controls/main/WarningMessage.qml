@@ -48,7 +48,7 @@ FactButton {
         function onShow(msg, msgType){ message(msg, msgType) }
     }
 
-    // bubble with messages matching keywords (fact.prefs.keywords)
+    // bubble with warnings items matching keywords (fact.prefs.keywords)
     readonly property var bubbleItems: (fact && fact.bubbleItems) ? fact.bubbleItems : []
 
     Popup {
@@ -73,42 +73,14 @@ FactButton {
         }
         contentItem: ColumnLayout {
             spacing: 0
-            // header with clear all button
-            RowLayout {
-                Layout.fillWidth: true
-                visible: control.bubbleItems.length > 1
-                spacing: Style.spacing
-                Text {
-                    Layout.fillWidth: true
-                    text: qsTr("Messages") + ": " + control.bubbleItems.length
-                    color: Material.secondaryTextColor
-                    font: apx.font_narrow(Style.fontSize * 0.8)
-                }
-                IconButton {
-                    iconName: "notification-clear-all"
-                    toolTip: qsTr("Hide all")
-                    onTriggered: if(control.fact) control.fact.clearBubble()
-                }
-            }
             Repeater {
                 model: control.bubbleItems
-                delegate: RowLayout {
+                delegate: Text {
                     Layout.fillWidth: true
-                    spacing: Style.spacing
-                    Text {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        text: modelData
-                        wrapMode: Text.Wrap
-                        color: Material.primaryTextColor
-                        font: apx.font_narrow(Style.fontSize)
-                    }
-                    IconButton {
-                        Layout.alignment: Qt.AlignTop
-                        iconName: "close"
-                        toolTip: qsTr("Hide")
-                        onTriggered: if(control.fact) control.fact.removeBubbleItem(index)
-                    }
+                    text: modelData
+                    wrapMode: Text.Wrap
+                    color: Material.primaryTextColor
+                    font: apx.font_narrow(Style.fontSize)
                 }
             }
         }
