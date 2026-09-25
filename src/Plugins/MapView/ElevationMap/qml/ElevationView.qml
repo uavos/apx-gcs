@@ -22,7 +22,6 @@
 import QtQuick
 import QtCharts
 import QtQuick.Controls
-import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Shapes
 import QtQml
@@ -33,9 +32,17 @@ import Apx.Common
 
 import APX.Fleet as APX
 import APX.Mission
+import Apx.Elevation 1.0
 
-Window {
+// Terrain elevation chart, embedded into the main layout (see ElevationPlugin.qml)
+Rectangle {
     id: elevationView
+
+    implicitWidth: Style.buttonSize*32
+    implicitHeight: Style.buttonSize*9
+    border.width: 0
+    color: "#000"
+
     property APX.Unit unit: apx.fleet.current
     readonly property Mission mission: unit.mission
     readonly property bool empty: mission.empty
@@ -43,14 +50,14 @@ Window {
     property var use: elevationmap ? elevationmap.use.value : false 
     property var elevationPlugin: apx.settings.application.plugins.elevationmap
     property var pluginOn: elevationPlugin ? elevationPlugin.value : false
-    property var chartOn: use && pluginOn
+    property var chartOn: elevationmap ? elevationmap.active : false
     property var name: qsTr("Terrain elevation")
     property var disabled: qsTr("(disabled)")
     property real zoomFactor: 1.5   // per button click
     property real minScale: 1
     property real maxScale: 100
     property real chartScale: minScale
-    property bool waypointDragging: false // a marker is being dragged in the chart
+    readonly property bool waypointDragging: markers.dragging // a marker is being dragged in the chart
 
     // Zoom and pan are done through the X axis range, the chart item itself
     // always stays the size of the window (one texture, no per-zoom reallocation)
@@ -89,6 +96,7 @@ Window {
         segmentStarts = starts
         missionLine = line
         pendingLength = acc
+        markers.refresh()
         if(missionLength == 0 || !lengthTimer.running)
             lengthTimer.restart()
     }
@@ -144,31 +152,12 @@ Window {
         viewStart = clampStart(viewStart)
     }
 
-    flags: Qt.WindowStaysOnTopHint
-    width: Screen.desktopAvailableWidth - 50
-    height: 200
-    maximumHeight: Screen.desktopAvailableHeight / 3
-    maximumWidth: Screen.desktopAvailableWidth
-    minimumHeight: 200
-    minimumWidth: 600
-    title: chartOn ? name : name + " " + disabled
-    color: "#cc000000"
-    visible: true
-    x: 25
-    y: Screen.desktopAvailableHeight - height - 50
-
-    onClosing: plugin.active=false
-    onVisibleChanged: timer.restart()
     onEmptyChanged: if(empty) resetChartScale()
-    onVisibilityChanged: {
-        if (visibility === Window.Maximized)
-            height = maximumHeight
-    }
 
-    Timer {
-        id: timer
-        interval: 500
-        onTriggered: epLoader.active=elevationView.visible
+    Label {
+        anchors.centerIn: parent
+        text: name + " " + disabled
+        visible: !elevationView.chartOn
     }
 
     Label {
@@ -201,12 +190,11 @@ Window {
         radius: 2
         border.width: radius
         border.color: "#ffffff"
-        visible: mission.collision && use
+        visible: mission.collision && elevationView.chartOn
         anchors {
             top: parent.top
-            left: parent.left
+            horizontalCenter: parent.horizontalCenter
             topMargin: margin
-            leftMargin: margin
         }
         MaterialIcon {
             id: icon
@@ -378,17 +366,24 @@ Window {
                 }
             }
         }
-        Loader {
-            id: wpLoader
+        // Waypoint markers (numbers, vertical lines, altitude drag), GPU rendered
+        WaypointMarkersItem {
+            id: markers
+            x: chartView.plotArea.x
+            y: chartView.plotArea.y
+            width: chartView.plotArea.width
+            height: chartView.plotArea.height
             z: 1
-            active: true
-            anchors.fill: parent
-            asynchronous: true
-            sourceComponent: Component { WaypointsChart { } }
+            group: mission.wp
+            viewStart: elevationView.viewStart
+            viewSpan: elevationView.viewSpan
+            minHeight: axisY.min
+            maxHeight: axisY.max
+            onChanged: elevationView.scheduleSegmentStarts()
         }
         Loader {
             id: epLoader
-            active: false
+            active: elevationView.visible && elevationView.chartOn
             anchors.fill: parent
             asynchronous: true
             sourceComponent: Component { ElevationChart { } }
@@ -403,8 +398,23 @@ Window {
             height: chartView.plotArea.height
             HoverHandler {
                 id: hoverHandler
-                onPointChanged: if(hovered && !elevationView.waypointDragging) hoverCursor.update(point.position.x)
-                onHoveredChanged: if(!hovered) hoverCursor.hide()
+                cursorShape: markers.hovered ? Qt.SizeVerCursor : Qt.ArrowCursor
+                onPointChanged: {
+                    if(!hovered)
+                        return
+                    if(!elevationView.waypointDragging)
+                        markers.hoverAt(point.position.x, point.position.y)
+                    if(markers.hovered || elevationView.waypointDragging)
+                        hoverCursor.hide()
+                    else
+                        hoverCursor.update(point.position.x)
+                }
+                onHoveredChanged: {
+                    if(hovered)
+                        return
+                    hoverCursor.hide()
+                    markers.hoverLeave()
+                }
             }
         }
         Item {
@@ -466,8 +476,8 @@ Window {
                     anchors.centerIn: parent
                     color: "#ffffff"
                     font.pixelSize: Style.fontSize*0.8
-                    text: qsTr("Terrain %1 m").arg(Math.round(hoverCursor.elevation))
-                          + "\n" + qsTr("Distance %1 km").arg((hoverCursor.distance / 1000).toFixed(2))
+                    text: qsTr("Terrain %1").arg(apx.distanceToString(Math.max(0, Math.round(hoverCursor.elevation))))
+                          + "\n" + qsTr("Distance %1").arg(apx.distanceToString(Math.max(0, Math.round(hoverCursor.distance))))
                 }
             }
         }
@@ -489,33 +499,43 @@ Window {
         return NaN
     }
     
-    ColumnLayout {
-        id: zoomLayout
+    // legend of the chart lines (top right, zoom is done with the wheel, double click resets it)
+    Row {
+        id: legend
         anchors.top: parent.top
         anchors.right: parent.right
-        anchors.margins: 2
+        anchors.margins: Style.spacing*2
+        spacing: Style.spacing*3
+        visible: elevationView.chartOn
         z: 5
+        readonly property real fs: Style.fontSize*0.7
+        Row {
+            spacing: 4
+            Rectangle { width: 16; height: 8; anchors.verticalCenter: parent.verticalCenter
+                        color: "#4000ff00"; border.color: "#00ff00"; border.width: 1 }
+            Text { text: qsTr("Terrain, corridor max"); color: "#ccc"; font.pixelSize: legend.fs }
+        }
+        Row {
+            spacing: 4
+            Rectangle { width: 16; height: 2; anchors.verticalCenter: parent.verticalCenter; color: "#ffb000" }
+            Text { text: qsTr("Terrain, corridor min"); color: "#ccc"; font.pixelSize: legend.fs }
+        }
+        Row {
+            spacing: 4
+            Rectangle { width: 16; height: 2; anchors.verticalCenter: parent.verticalCenter; color: "#209fdf" }
+            Text { text: qsTr("Flight altitude"); color: "#ccc"; font.pixelSize: legend.fs }
+        }
+        Row {
+            spacing: 4
+            Rectangle { width: 16; height: 8; anchors.verticalCenter: parent.verticalCenter
+                        color: "#40ff0000"; border.color: "#ff0000"; border.width: 1 }
+            Text { text: qsTr("Collision"); color: "#ccc"; font.pixelSize: legend.fs }
+        }
+    }
 
-        property real btnSize: 28
-
-        IconButton {
-            visible: true
-            iconName: "fullscreen"
-            size: zoomLayout.btnSize
-            onTriggered: resetChartScale()
-        }
-        IconButton {
-            visible: true
-            iconName: "magnify-plus"
-            size: zoomLayout.btnSize
-            onTriggered: zoomAt(zoomFactor)
-        }
-        IconButton {
-            visible: true
-            iconName: "magnify-minus"
-            size: zoomLayout.btnSize
-            onTriggered: zoomAt(1 / zoomFactor)
-        }
+    TapHandler {
+        acceptedButtons: Qt.LeftButton
+        onDoubleTapped: resetChartScale()
     }
 
     WheelHandler {

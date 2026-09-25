@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQml
 
 import QtQml.Models
@@ -30,7 +29,6 @@ Repeater {
         property bool collision: fact ? fact.collision : false
 
         onDistChanged: elevationView.scheduleSegmentStarts()
-        property bool hasProfile: pointCount > 1 && distance > 0 && totalDistance >= 0
 
         // plot area of the shared chart
         x: chartView.plotArea.x
@@ -40,6 +38,7 @@ Repeater {
         clip: true
 
         missionItem: fact
+        elevationMap: elevationmap
         xOffset: offset
         segmentLength: distance
         viewStart: elevationView.viewStart
@@ -49,43 +48,6 @@ Repeater {
         fillColor: collision ? "#40ff0000" : "#4000ff00"
         lineColor: collision ? "#ff0000" : "#00ff00"
         lineWidth: 1.5
-        visible: hasProfile
-
-        // Busy/placeholder bar while the profile is not available.
-        // Lives in the plot layer (not a child of the clipped profile item).
-        Item {
-            id: loading
-            parent: epItem.parent
-            property real xStart: elevationView.xOf(epItem.offset)
-            property real xEnd: elevationView.xOf(epItem.offset + epItem.distance)
-            property bool inViewArea: xEnd >= chartView.plotArea.x
-                                      && xStart <= chartView.plotArea.x + chartView.plotArea.width
-
-            height: 3
-            width: Math.max(xEnd - xStart, 1)
-            x: xStart
-            y: chartView.plotArea.y + chartView.plotArea.height
-            visible: !epItem.hasProfile && epItem.distance > 0 && inViewArea
-
-            onVisibleChanged: if(!busyTimer.running) busyTimer.restart()
-
-            Timer {
-                id: busyTimer
-                interval: 10000
-                running: loading.visible
-            }
-            BusyIndicator {
-                id: busy
-                anchors.centerIn: parent
-                running: busyTimer.running && loading.visible
-                height: 32
-                width:  32
-            }
-            Rectangle {
-                anchors.fill: parent
-                visible: !busyTimer.running
-                color: Material.accent
-            }
-        }
+        visible: distance > 0 && totalDistance >= 0
     }
 }
