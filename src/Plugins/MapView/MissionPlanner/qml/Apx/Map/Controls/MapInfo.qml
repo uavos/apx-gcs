@@ -228,6 +228,7 @@ RowLayout {
         ToolTipArea {
             text: qsTr("Point elevation above sea level")
             cursorShape: Qt.PointingHandCursor
+            onClicked: apx.tools.elevationmap.trigger() // plugin settings
         }
         Timer {
             id: timer

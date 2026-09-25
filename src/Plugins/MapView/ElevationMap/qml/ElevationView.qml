@@ -154,9 +154,14 @@ Rectangle {
 
     onEmptyChanged: if(empty) resetChartScale()
 
+    // fonts and colors follow the Signals plugin charts
+    readonly property font axisFont: apx.font_narrow(Style.fontSize * 0.65)
+    readonly property font labelFont: apx.font_narrow(Style.fontSize * 0.8)
+
     Label {
         anchors.centerIn: parent
         text: name + " " + disabled
+        font: labelFont
         visible: !elevationView.chartOn
     }
 
@@ -165,6 +170,8 @@ Rectangle {
         anchors.top: parent.bottom
         width: parent.height
         text: qsTr("Height AMSL, %1").arg("m")
+        font: labelFont
+        color: "white"
         horizontalAlignment: Text.AlignHCenter
         transformOrigin: Item.TopLeft
         rotation: -90
@@ -176,6 +183,8 @@ Rectangle {
         anchors.bottom: parent.bottom
         width: parent.width
         text: qsTr("Distance, %1").arg("m")
+        font: labelFont
+        color: "white"
         horizontalAlignment: Text.AlignHCenter
         visible: elevationView.chartOn
     }
@@ -193,8 +202,9 @@ Rectangle {
         visible: mission.collision && elevationView.chartOn
         anchors {
             top: parent.top
-            horizontalCenter: parent.horizontalCenter
+            left: parent.left
             topMargin: margin
+            leftMargin: Style.buttonSize + margin // the plugin frame puts its maximize button here
         }
         MaterialIcon {
             id: icon
@@ -209,29 +219,10 @@ Rectangle {
             id: txt
             text: qsTr("Alarm")
             color: "#ffffff"
-            font.bold: true
-            font.pixelSize: Style.fontSize*0.8
+            font: elevationView.labelFont
             anchors.left: icon.right
             anchors.verticalCenter: parent.verticalCenter
             anchors.leftMargin: alarm.margin/2
-        }
-        SequentialAnimation {
-            // an infinite animation on a hidden item still forces the window
-            // to be re-rendered every frame - run it only while the alarm is shown
-            running: alarm.visible
-            loops: Animation.Infinite
-            PropertyAnimation {
-                target: alarm
-                property: "opacity"
-                    to: 0.5
-                duration: 1500
-            }
-            PropertyAnimation {
-                target: alarm
-                property: "opacity"
-                to: 1
-                duration: 1500
-            }
         }
     }
 
@@ -265,9 +256,8 @@ Rectangle {
                 min: elevationView.viewStart
                 max: elevationView.viewStart + elevationView.viewSpan
                 lineVisible: true
-                labelsFont.family: axisXLabel.font.family
-                labelsFont.pointSize: axisXLabel.font.pointSize
-                labelsColor: axisXLabel.color
+                labelsFont: elevationView.axisFont
+                labelsColor: "white"
                 gridVisible: false
                 tickCount: 11 // the visible range shrinks with zoom, the chart width does not
                 labelFormat: "%.0f"
@@ -277,10 +267,9 @@ Rectangle {
                 min: chartView.minHeight
                 max: Math.ceil(mission.maxHeight/10)*10
                 lineVisible: true
-                labelsFont.family: axisYLabel.font.family
-                labelsFont.pointSize: axisYLabel.font.pointSize
-                labelsColor: axisYLabel.color
-                gridLineColor: "#40ffffff"
+                labelsFont: elevationView.axisFont
+                labelsColor: "white"
+                gridLineColor: "#555"
                 tickCount: 5
                 labelFormat: "%.0f"
             }
@@ -475,7 +464,7 @@ Rectangle {
                     id: hoverText
                     anchors.centerIn: parent
                     color: "#ffffff"
-                    font.pixelSize: Style.fontSize*0.8
+                    font: elevationView.labelFont
                     text: qsTr("Terrain %1").arg(apx.distanceToString(Math.max(0, Math.round(hoverCursor.elevation))))
                           + "\n" + qsTr("Distance %1").arg(apx.distanceToString(Math.max(0, Math.round(hoverCursor.distance))))
                 }
@@ -508,28 +497,28 @@ Rectangle {
         spacing: Style.spacing*3
         visible: elevationView.chartOn
         z: 5
-        readonly property real fs: Style.fontSize*0.7
+        readonly property font fnt: elevationView.axisFont
         Row {
             spacing: 4
             Rectangle { width: 16; height: 8; anchors.verticalCenter: parent.verticalCenter
                         color: "#4000ff00"; border.color: "#00ff00"; border.width: 1 }
-            Text { text: qsTr("Terrain, corridor max"); color: "#ccc"; font.pixelSize: legend.fs }
+            Text { text: qsTr("Terrain, corridor max"); color: "white"; font: legend.fnt }
         }
         Row {
             spacing: 4
             Rectangle { width: 16; height: 2; anchors.verticalCenter: parent.verticalCenter; color: "#ffb000" }
-            Text { text: qsTr("Terrain, corridor min"); color: "#ccc"; font.pixelSize: legend.fs }
+            Text { text: qsTr("Terrain, corridor min"); color: "white"; font: legend.fnt }
         }
         Row {
             spacing: 4
             Rectangle { width: 16; height: 2; anchors.verticalCenter: parent.verticalCenter; color: "#209fdf" }
-            Text { text: qsTr("Flight altitude"); color: "#ccc"; font.pixelSize: legend.fs }
+            Text { text: qsTr("Flight altitude"); color: "white"; font: legend.fnt }
         }
         Row {
             spacing: 4
             Rectangle { width: 16; height: 8; anchors.verticalCenter: parent.verticalCenter
                         color: "#40ff0000"; border.color: "#ff0000"; border.width: 1 }
-            Text { text: qsTr("Collision"); color: "#ccc"; font.pixelSize: legend.fs }
+            Text { text: qsTr("Collision"); color: "white"; font: legend.fnt }
         }
     }
 

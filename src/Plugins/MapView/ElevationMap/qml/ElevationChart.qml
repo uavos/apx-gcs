@@ -23,9 +23,12 @@ Repeater {
         property int num: fact ? fact.num : -1
         property real dist: fact ? fact.distance : -1
         property real totalDistance: fact ? fact.totalDistanceWithRw : -1
-        property real distance: num == 0 ? totalDistance : dist
-        // segment start along the mission, m (synchronous, see ElevationView.segmentStarts)
-        property real offset: elevationView.segmentStart(index, totalDistance - distance)
+        // segment start along the mission, m (synchronous, see ElevationView.segmentStarts);
+        // the first segment is requested from the runway point, so it starts at 0 and
+        // includes the runway part
+        property real segmentStart: elevationView.segmentStart(index, totalDistance - dist)
+        property real offset: num == 0 ? 0 : segmentStart
+        property real distance: num == 0 ? segmentStart + dist : dist
         property bool collision: fact ? fact.collision : false
 
         onDistChanged: elevationView.scheduleSegmentStarts()
