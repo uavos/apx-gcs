@@ -64,6 +64,17 @@ QString AppPrefs::loadFile(const QString &name, const QString &defaultValue)
     return s;
 }
 
+QStringList AppPrefs::files(const QString &nameFilter) const
+{
+    return AppDirs::prefs().entryList({nameFilter}, QDir::Files, QDir::Name);
+}
+
+bool AppPrefs::removeFile(const QString &name)
+{
+    QFile file(AppDirs::prefs().absoluteFilePath(name));
+    return !file.exists() || file.remove();
+}
+
 void AppPrefs::saveValue(const QString &name, const QVariant &v, const QString &path)
 {
     if (loadValue(name, path) == v)

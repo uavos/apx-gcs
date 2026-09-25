@@ -28,6 +28,7 @@ Fact {
     property var defaults
     property string settingsName
     property bool destroyOnClose: true
+    property var loadedFiles: []
 
     name: settingsName
     flags: (Fact.Group | Fact.DragChildren)
@@ -65,35 +66,66 @@ Fact {
     function loadSettings()
     {
         var sets=[]
-        var f=application.prefs.loadFile("numbers.json")
-        var json=f?JSON.parse(f):{}
         var set={}
         var currentSetIdx=-1
-        if(json && json.sets){
-            for(var i in json.sets){
-                set=json.sets[i]
-                if(!(set.values && (set.values instanceof Array))) continue
-                sets.push(set)
+        var activeFile=application.prefs.loadValue(settingsName, "numbers/active", "")
+        var fileNames=application.prefs.files("numbers-*.json")
+        loadedFiles=[]
+        for(var i=0;i<fileNames.length;++i){
+            var fileName=fileNames[i]
+            var f=application.prefs.loadFile(fileName)
+            if(!f) continue
+            try {
+                set=JSON.parse(f)
+            } catch(e) {
+                console.warn("Can't parse "+fileName+": "+e)
+                continue
             }
-            //set index
-            var setIdx=json.active[settingsName]
-            if(setIdx>=0 && setIdx<sets.length)
-                currentSetIdx=setIdx
-            else if(sets.length>0)
-                currentSetIdx=0
+            if(!(set.values && (set.values instanceof Array))) continue
+            set.sourceFile=fileName
+            sets.push(set)
+            loadedFiles.push(fileName)
+            if(fileName===activeFile)
+                currentSetIdx=sets.length-1
+        }
+
+        // Import the old combined format. It will be split on the next save.
+        if(sets.length===0){
+            var legacyFile=application.prefs.loadFile("numbers.json")
+            var legacy={}
+            try {
+                legacy=legacyFile?JSON.parse(legacyFile):{}
+            } catch(e) {
+                console.warn("Can't parse numbers.json: "+e)
+            }
+            if(legacy && legacy.sets){
+                for(i in legacy.sets){
+                    set=legacy.sets[i]
+                    if(!(set.values && (set.values instanceof Array))) continue
+                    sets.push(set)
+                }
+                if(legacy.active){
+                    var setIdx=legacy.active[settingsName]
+                    if(setIdx>=0 && setIdx<sets.length)
+                        currentSetIdx=setIdx
+                }
+            }
         }
         //defaults
-        if(sets.length<=0 || !json.active){
+        if(sets.length<=0){
             set={}
             set.title=settingsName
             set.values=defaults
             sets.push(set)
             currentSetIdx=sets.length-1
         }
+        else if(currentSetIdx<0)
+            currentSetIdx=0
 
         //create facts
         for(i in sets){
-            var c=createFact(setsFact, "NumbersMenuSet.qml", sets[i])
+            var opts=sets[i]
+            var c=createFact(setsFact, "NumbersMenuSet.qml", opts)
             c.selected.connect(select)
             c.selected.connect(saveSettings)
         }
@@ -102,22 +134,49 @@ Fact {
 
     function saveSettings()
     {
-        var fjson=application.prefs.loadFile("numbers.json")
-        var json=fjson?JSON.parse(fjson):{}
-        if(!json.active)json.active={}
-        json.active[settingsName]=0
-        json.sets=[]
+        var usedNames={}
+        var savedFiles=[]
+        var activeFile=""
         for(var i=0;i<size;++i){
             var setFact=child(i)
             var set=setFact.save()
             if(!set)continue
-            json.sets.push(set)
+            var title=uniqueTitle(set.title, usedNames)
+            set.title=title
+            setFact.title=title
+            var fileName="numbers-"+fileSafeName(title)+".json"
+            application.prefs.saveFile(fileName,JSON.stringify(set,' ',2))
+            savedFiles.push(fileName)
             if(setFact.active)
-                json.active[settingsName]=i
+                activeFile=fileName
         }
-        application.prefs.saveFile("numbers.json",JSON.stringify(json,' ',2))
+        for(i=0;i<loadedFiles.length;++i){
+            if(savedFiles.indexOf(loadedFiles[i])<0)
+                application.prefs.removeFile(loadedFiles[i])
+        }
+        application.prefs.saveValue(settingsName, activeFile, "numbers/active")
         accepted()
         close()
+    }
+
+    function fileSafeName(title)
+    {
+        var name=title.trim().replace(/[\\\/:*?"<>|]/g, "-")
+        name=name.replace(/^\.+|\.+$/g, "")
+        return name || "set"
+    }
+
+    function uniqueTitle(title, usedNames)
+    {
+        var base=title.trim() || "set"
+        var name=base
+        var copy=0
+        while(usedNames[fileSafeName(name).toLowerCase()]){
+            name=base+"-copy"+(copy>0?"("+copy+")":"")
+            ++copy
+        }
+        usedNames[fileSafeName(name).toLowerCase()]=true
+        return name
     }
 
     function createFact(parent, url, opts)
