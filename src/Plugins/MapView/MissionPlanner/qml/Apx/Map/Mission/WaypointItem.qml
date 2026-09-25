@@ -67,7 +67,7 @@ MissionObject {
     property var plugin: apx.settings.application.plugins.elevationmap
     property var use: elevationmap ? apx.tools.elevationmap.use.value : false
     property var pluginOn: plugin ? apx.settings.application.plugins.elevationmap.value : false
-    property var alarmOn: use && pluginOn
+    property var alarmOn: elevationmap ? elevationmap.active : false // passive without elevation data
     property var coordinate: fact?fact.coordinate:0
     property var aglFact: fact?fact.child("agl"):null
     property var agl: aglFact?aglFact.value:0

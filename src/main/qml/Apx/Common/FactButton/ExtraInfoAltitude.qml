@@ -48,7 +48,7 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     implicitHeight: parent.height
     implicitWidth: Math.max(icon.width+text.implicitWidth, height*4)
-    visible: !fact.parentFact.amsl.value && use && pluginOn
+    visible: !fact.parentFact.amsl.value && elevationmap && elevationmap.active
         
     MaterialIcon {
         id: icon

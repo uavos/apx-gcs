@@ -191,12 +191,19 @@ RowLayout {
         property bool pluginEnable: plugin?plugin.value:false
         property int size: apx.tools?apx.tools.size:0
         property var elevation: visible ? apx.tools.elevationmap.elevation : NaN
-        property var color: isNaN(elevation) ? "#f00" : "#fff"
+        // no data under the cursor: dimmed icon, empty text, width is kept
+        property var color: isNaN(elevation) ? "#808080" : "#fff"
         
         visible: false
         Layout.alignment: Qt.AlignVCenter
         implicitHeight: control.size
-        implicitWidth: Math.max(elevationIcon.width+elevationText.implicitWidth, height*4)
+        implicitWidth: Math.max(elevationIcon.width+elevationMetrics.width, height*4)
+
+        TextMetrics {
+            id: elevationMetrics
+            font: elevationText.font
+            text: "8888m"
+        }
         onPluginEnableChanged: if(!plugin.busy && pluginEnable){timer.restart()}
         
         MaterialIcon {
@@ -216,7 +223,7 @@ RowLayout {
             verticalAlignment: Text.AlignVCenter
             font: apx.font_narrow(Style.fontSize)
             color: elevationItem.color
-            text: isNaN(elevationItem.elevation) ? "NO" : Math.round(elevationItem.elevation) + "m"
+            text: isNaN(elevationItem.elevation) ? "" : Math.round(elevationItem.elevation) + "m"
         }
         ToolTipArea {
             text: qsTr("Point elevation above sea level")
@@ -228,7 +235,7 @@ RowLayout {
             repeat: !(apx.tools && apx.tools.elevationmap)
             onTriggered: {
                 if(apx.tools && apx.tools.elevationmap)
-                    elevationItem.visible = Qt.binding(function() {return elevationItem.pluginEnable && apx.tools.elevationmap.use.value})
+                    elevationItem.visible = Qt.binding(function() {return elevationItem.pluginEnable && apx.tools.elevationmap.use.value && apx.tools.elevationmap.available})
             }
         }
     }
