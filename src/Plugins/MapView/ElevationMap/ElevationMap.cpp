@@ -95,21 +95,24 @@ ElevationMap::ElevationMap(Fact *parent)
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
 
+// without elevation files no request reaches the worker (its thread is never started)
 void ElevationMap::setCoordinateWithElevation(const QGeoCoordinate &coordinate)
 {
-    if (!f_use->value().toBool())
+    if (!f_use->value().toBool() || !m_available)
         return;
     m_elevationDB->requestCoordinate(coordinate.latitude(), coordinate.longitude());
 }
 
 void ElevationMap::setElevationByCoordinate(const QGeoCoordinate &coordinate)
 {
+    if (!m_available)
+        return;
     m_elevationDB->requestElevation(coordinate.latitude(), coordinate.longitude());
 }
 
 void ElevationMap::setTerrainProfile(const QGeoPath &path)
 {
-    if (!f_use->value().toBool())
+    if (!f_use->value().toBool() || !m_available)
         return;
     m_elevationDB->requestTerrainProfile(path);
 }
