@@ -37,6 +37,8 @@ public:
     //called from qml to store json configs
     Q_INVOKABLE void saveFile(const QString &name, const QString &v);
     Q_INVOKABLE QString loadFile(const QString &name, const QString &defaultValue = QString());
+    Q_INVOKABLE QStringList files(const QString &nameFilter) const;
+    Q_INVOKABLE bool removeFile(const QString &name);
 
     // called by facts to store persistent data
     // supports QVariantList, path can be '<grp1>/<grp2>/<etc>'

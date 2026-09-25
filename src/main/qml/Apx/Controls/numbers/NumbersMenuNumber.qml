@@ -46,6 +46,8 @@ Fact {
         for(var i=0;i<size;++i){
             var f=child(i)
             var v=data[settingName(f)]
+            if(f === mVisible && v === undefined)
+                continue
             f.value=v
         }
     }
@@ -55,6 +57,10 @@ Fact {
         data={}
         for(var i=0;i<size;++i){
             var f=child(i)
+            if(f === mVisible){
+                data[settingName(f)]=!!f.value
+                continue
+            }
             var s=f.text.trim()
             if(s === "") continue
             data[settingName(f)]=s
@@ -145,6 +151,15 @@ Fact {
         title: qsTr("Alarm")
         descr: "value>1.8 || (value>0 && value<1)"
         flags: Fact.Text
+        onValueChanged: updateDescr()
+    }
+    Fact {
+        id: mVisible
+        name: "visible"
+        title: qsTr("Visible")
+        descr: qsTr("Always visible")
+        flags: Fact.Bool
+        value: true
         onValueChanged: updateDescr()
     }
     Fact {
