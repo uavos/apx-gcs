@@ -155,7 +155,7 @@ Fact {
     }
     Fact {
         id: mVisible
-        name: "visible"
+        name: "visible_num"
         title: qsTr("Visible")
         descr: qsTr("Always visible")
         flags: Fact.Bool
