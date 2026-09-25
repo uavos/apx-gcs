@@ -84,6 +84,8 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
     connect(f_corridor, &Fact::valueChanged, this, &ElevationMap::onCorridorChanged);
     connect(f_showAgl, &Fact::valueChanged, this, &ElevationMap::updateUnitAgl);
+    m_aglTimer.setInterval(AGL_PERIOD);
+    connect(&m_aglTimer, &QTimer::timeout, this, &ElevationMap::updateUnitAgl);
     m_coverageTimer.setSingleShot(true);
     m_coverageTimer.setInterval(0);
     connect(&m_coverageTimer, &QTimer::timeout, this, &ElevationMap::updateCoverage);
@@ -157,7 +159,6 @@ void ElevationMap::onCorridorChanged()
         if (wp && m_active)
             wp->sendTerrainProfileRequest();
     }
-    m_aglPosition = QGeoCoordinate();
     updateUnitAgl();
 }
 
@@ -193,29 +194,21 @@ QList<QPointF> ElevationMap::centerProfile(const QGeoPath &path) const
 }
 
 // ==== Unit AGL (real time)
+// The terrain around the unit is requested from the worker thread every
+// AGL_PERIOD while the option is on; the AGL itself follows the unit altitude
 void ElevationMap::updateUnitAgl()
 {
     if (!f_showAgl->value().toBool() || !f_showAgl->enabled() || !unit()) {
-        m_aglPosition = QGeoCoordinate();
+        m_aglTimer.stop();
         setUnitTerrain(qQNaN());
         return;
     }
+    if (!m_aglTimer.isActive())
+        m_aglTimer.start();
     const auto pos = unit()->coordinate();
     if (!pos.isValid())
         return;
-    // the worker is asked again only after moving a corridor or after 10 s,
-    // and never more often than once per second
-    const double corridor = f_corridor->value().toDouble();
-    if (m_aglPosition.isValid()) {
-        const qint64 elapsed = m_aglTimer.elapsed();
-        if (elapsed < 1000)
-            return;
-        if (pos.distanceTo(m_aglPosition) < corridor && elapsed < 10000)
-            return;
-    }
-    m_aglPosition = pos;
-    m_aglTimer.restart();
-    m_elevationDB->requestAreaMax(pos.latitude(), pos.longitude(), corridor);
+    m_elevationDB->requestAreaMax(pos.latitude(), pos.longitude(), f_corridor->value().toDouble());
 }
 
 void ElevationMap::setUnitTerrain(double elevation)
@@ -382,14 +375,8 @@ void ElevationMap::updateMission()
             &ElevationMap::startPathsCorrection,
             Qt::UniqueConnection);
     // real-time AGL of the current unit
-    connect(unit(),
-            &Unit::coordinateChanged,
-            this,
-            &ElevationMap::updateUnitAgl,
-            Qt::UniqueConnection);
     if (auto f = unit()->f_mandala->fact(mandala::est::nav::pos::hmsl::uid))
         connect(f, &Fact::valueChanged, this, &ElevationMap::recalcUnitAgl, Qt::UniqueConnection);
-    m_aglPosition = QGeoCoordinate();
     setUnitTerrain(qQNaN());
     changeExternalsVisibility();
     updateRefPoint();

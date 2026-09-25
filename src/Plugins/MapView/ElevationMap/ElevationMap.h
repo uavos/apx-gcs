@@ -26,13 +26,13 @@
 
 #include <memory>
 
-#include <QQmlComponent>
 #include <QGeoCoordinate>
 #include <QGeoPath>
-#include <QPointF>
-#include <QtCore>
 #include <QMap>
+#include <QPointF>
+#include <QQmlComponent>
 #include <QSet>
+#include <QtCore>
 
 #include <Mission/MissionItem.h>
 
@@ -62,8 +62,9 @@ public:
 
     Fact *f_use;
     Fact *f_path;
-    Fact *f_corridor; // profile corridor half-width, m
-    Fact *f_showAgl;  // real-time AGL of the current unit
+    Fact *f_corridor;                        // profile corridor half-width, m
+    static constexpr int AGL_PERIOD = 10000; // unit terrain request period, ms
+    Fact *f_showAgl;                         // real-time AGL of the current unit
     Fact *f_control{nullptr};
     Fact *f_refStatus{nullptr};
     Fact *f_refHmsl{nullptr};
@@ -117,8 +118,7 @@ private:
 
     double m_unitTerrain{qQNaN()};
     double m_unitAgl{qQNaN()};
-    QGeoCoordinate m_aglPosition; // where the terrain was last computed
-    QElapsedTimer m_aglTimer;
+    QTimer m_aglTimer; // periodic terrain request for the unit AGL
 
     bool hasTile(const QGeoCoordinate &c) const;
 
