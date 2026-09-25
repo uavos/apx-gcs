@@ -148,5 +148,18 @@ Item {
                 }
             }
         }
+        // height above terrain from the elevation map plugin (current unit, optional)
+        Text {
+            id: aglText
+            readonly property var elevationmap: apx.tools ? apx.tools.elevationmap : null
+            readonly property real agl: (elevationmap && unit === apx.fleet.current) ? elevationmap.unitAgl : NaN
+            Layout.minimumWidth: control.fontSizeInfo
+            horizontalAlignment: Text.AlignLeft
+            font: apx.font_narrow(control.fontSizeInfo)
+            lineHeight: 0.75
+            text: "AGL" + Math.round(agl)
+            color: colorFG
+            visible: showInfo && !bLOCAL && !isNaN(agl)
+        }
     }
 }
