@@ -38,6 +38,9 @@ ListView {
 
     delegate: IconButton {
         property var plugin: plugins[model.idx]
+        // a plugin disables itself when it has nothing to show, its button is hidden
+        visible: plugin.enabled
+        width: plugin.enabled ? implicitWidth : -control.spacing // hidden buttons take no space
         text: plugin.title
         toolTip: plugin.descr
         iconName: plugin.icon
