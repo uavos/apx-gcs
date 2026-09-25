@@ -46,12 +46,24 @@ class ElevationMap : public Fact
     Q_PROPERTY(QGeoPath geoPath READ geoPath WRITE setGeoPath NOTIFY geoPathChanged)
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate WRITE setCoordinate NOTIFY coordinateChanged)
     Q_PROPERTY(double elevation READ elevation WRITE setElevation NOTIFY elevationChanged)
+    // elevation files found in the configured directory
+    Q_PROPERTY(bool available READ available NOTIFY availableChanged)
+    // the elevation files cover the mission area (at least one item is on a file)
+    Q_PROPERTY(bool covered READ covered NOTIFY coveredChanged)
+    // plugin enabled, in use, files available and covering the mission:
+    // when false the plugin is fully passive (no fields, icons or alarms)
+    Q_PROPERTY(bool active READ active NOTIFY activeChanged)
+    // current unit: highest terrain within the corridor radius and height above it (NaN when unknown)
+    Q_PROPERTY(double unitTerrain READ unitTerrain NOTIFY unitAglChanged)
+    Q_PROPERTY(double unitAgl READ unitAgl NOTIFY unitAglChanged)
 
 public:
     explicit ElevationMap(Fact *parent = nullptr);
 
     Fact *f_use;
     Fact *f_path;
+    Fact *f_corridor; // profile corridor half-width, m
+    Fact *f_showAgl;  // real-time AGL of the current unit
     Fact *f_control{nullptr};
     Fact *f_refStatus{nullptr};
     Fact *f_refHmsl{nullptr};
@@ -70,6 +82,13 @@ public:
 
     QGeoCoordinate coordinate() const;
     void setCoordinate(const QGeoCoordinate &coordinate);
+    bool available() const { return m_available; }
+    bool covered() const { return m_covered; }
+    bool active() const { return m_active; }
+    double unitTerrain() const { return m_unitTerrain; }
+    double unitAgl() const { return m_unitAgl; }
+    // lowest terrain across the corridor (distance, elevation) for a profile path, empty if unknown
+    QList<QPointF> centerProfile(const QGeoPath &path) const;
     double elevation() const;
     void setElevation(double v);
     void getCorrectPathResponse(QList<QGeoCoordinate> v, int index);
@@ -86,6 +105,22 @@ private:
     QSet<QString> m_runways;
     QSet<QString> m_pois;
     bool m_isCorrect{false};
+
+    QSet<QString> m_tileNames; // elevation files in the configured directory
+    bool m_available{false};
+    bool m_covered{true};
+    bool m_active{false};
+    QTimer m_coverageTimer;
+
+    QHash<QString, QList<QPointF>> m_centerProfiles; // key: path endpoints
+    static QString profileKey(const QGeoPath &path);
+
+    double m_unitTerrain{qQNaN()};
+    double m_unitAgl{qQNaN()};
+    QGeoCoordinate m_aglPosition; // where the terrain was last computed
+    QElapsedTimer m_aglTimer;
+
+    bool hasTile(const QGeoCoordinate &c) const;
 
     void createDir(const QString &path);
     void createElevationDatabase();
@@ -104,6 +139,15 @@ private slots:
     void setMissionAgl();
     void getPluginEnableControl();
     void changeExternalsVisibility();
+    void scanTiles();
+    void scheduleCoverage();
+    void updateCoverage();
+    void updateActive();
+    void onCorridorChanged();
+    void onTerrainProfileCenter(QGeoPath path, QList<double> centerElevations);
+    void updateUnitAgl();
+    void setUnitTerrain(double elevation);
+    void recalcUnitAgl();
     void setStartPointElevation();
     void startPathsCorrection();
     void correctUnsafePaths();
@@ -115,4 +159,8 @@ signals:
     void coordinateChanged(QGeoCoordinate coordinate);
     void geoPathChanged(QGeoPath geoPath);
     void elevationChanged();
+    void availableChanged();
+    void coveredChanged();
+    void activeChanged();
+    void unitAglChanged();
 };

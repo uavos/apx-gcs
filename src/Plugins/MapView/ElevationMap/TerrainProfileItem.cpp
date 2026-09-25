@@ -21,7 +21,11 @@
  */
 #include "TerrainProfileItem.h"
 
+#include "ElevationMap.h"
+
+#include <Mission/MissionGroup.h>
 #include <Mission/MissionItem.h>
+#include <Mission/UnitMission.h>
 
 #include <QSGFlatColorMaterial>
 #include <QSGGeometry>
@@ -32,7 +36,8 @@
 
 namespace {
 
-// root node: child 0 = fill (triangle strip), child 1 = border band (triangle strip)
+// root node: child 0 = fill (triangle strip), child 1 = border band (triangle strip),
+// child 2 = lowest terrain across the corridor (thin band)
 class ProfileNode : public QSGNode
 {
 public:
@@ -52,9 +57,10 @@ public:
     }
     QSGGeometryNode *fill() { return nodes[0]; }
     QSGGeometryNode *line() { return nodes[1]; }
+    QSGGeometryNode *centerLine() { return nodes[2]; }
 
 private:
-    QSGGeometryNode *nodes[2]{nullptr, nullptr};
+    QSGGeometryNode *nodes[3]{nullptr, nullptr, nullptr};
 };
 
 } // namespace
@@ -87,10 +93,36 @@ void TerrainProfileItem::setMissionItem(QObject *v)
     reloadProfile();
 }
 
+QObject *TerrainProfileItem::elevationMap() const
+{
+    return m_elevationMap;
+}
+
+void TerrainProfileItem::setElevationMap(QObject *v)
+{
+    if (m_elevationMap == v)
+        return;
+    m_elevationMap = v;
+    emit elevationMapChanged();
+    reloadProfile();
+}
+
 void TerrainProfileItem::reloadProfile()
 {
     const auto count = m_profile.size();
     m_profile = m_item ? m_item->terrainProfile() : QList<QPointF>();
+    m_profileCenter.clear();
+    auto em = qobject_cast<ElevationMap *>(m_elevationMap.data());
+    if (em && m_item && m_profile.size() >= 2) {
+        // the profile was requested for the item path, the first item starts at the runway
+        auto path = m_item->geoPath();
+        auto mission = m_item->group ? m_item->group->mission : nullptr;
+        if (m_item->num() == 0 && mission && mission->coordinate().isValid())
+            path.insertCoordinate(0, mission->coordinate());
+        auto min = em->centerProfile(path);
+        if (min.size() == m_profile.size())
+            m_profileCenter = min;
+    }
     if (count != m_profile.size())
         emit pointCountChanged();
     markGeometryDirty();
@@ -226,6 +258,10 @@ QSGNode *TerrainProfileItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
         m_materialDirty = true;
     }
 
+    if ((m_profile.size() < 2) != m_placeholder) {
+        m_placeholder = m_profile.size() < 2;
+        m_materialDirty = true;
+    }
     // a stale profile stretched to a new segment length is provisional: draw it dimmed
     const double profileLength = m_profile.size() >= 2 ? m_profile.last().x() : 0;
     const bool stale = m_segmentLength > 0 && profileLength > 0
@@ -241,8 +277,16 @@ QSGNode *TerrainProfileItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
             fill.setAlphaF(fill.alphaF() * 0.4);
             line.setAlphaF(line.alphaF() * 0.4);
         }
+        if (m_placeholder)
+            line = QColor(255, 255, 255, 96);
         static_cast<QSGFlatColorMaterial *>(node->fill()->material())->setColor(fill);
         static_cast<QSGFlatColorMaterial *>(node->line()->material())->setColor(line);
+        QColor centerColor(255,
+                           176,
+                           0,
+                           m_stale ? 90 : 220); // amber, distinct from terrain and flight path
+        static_cast<QSGFlatColorMaterial *>(node->centerLine()->material())->setColor(centerColor);
+        node->centerLine()->markDirty(QSGNode::DirtyMaterial);
         node->fill()->markDirty(QSGNode::DirtyMaterial);
         node->line()->markDirty(QSGNode::DirtyMaterial);
         m_materialDirty = false;
@@ -258,11 +302,32 @@ QSGNode *TerrainProfileItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
     const double w = width();
     const double h = height();
     const double hRange = m_maxHeight - m_minHeight;
-    if (m_profile.size() < 2 || w <= 0 || h <= 0 || m_viewSpan <= 0 || hRange <= 0) {
+    const bool noProfile = m_profile.size() < 2;
+    if (noProfile && w > 0 && h > 0 && m_viewSpan > 0 && m_segmentLength > 0) {
+        // no profile (not computed yet or no elevation data): thin bar at the bottom
         fillGeometry->allocate(0);
-        lineGeometry->allocate(0);
+        const double sx = w / m_viewSpan;
+        const float x0 = float((m_xOffset - m_viewStart) * sx);
+        const float x1 = float((m_xOffset + m_segmentLength - m_viewStart) * sx);
+        lineGeometry->allocate(4);
+        auto *lv = lineGeometry->vertexDataAsPoint2D();
+        lv[0].set(x0, float(h - 2));
+        lv[1].set(x0, float(h));
+        lv[2].set(x1, float(h - 2));
+        lv[3].set(x1, float(h));
+        node->centerLine()->geometry()->allocate(0);
         node->fill()->markDirty(QSGNode::DirtyGeometry);
         node->line()->markDirty(QSGNode::DirtyGeometry);
+        node->centerLine()->markDirty(QSGNode::DirtyGeometry);
+        return node;
+    }
+    if (noProfile || w <= 0 || h <= 0 || m_viewSpan <= 0 || hRange <= 0) {
+        fillGeometry->allocate(0);
+        lineGeometry->allocate(0);
+        node->centerLine()->geometry()->allocate(0);
+        node->fill()->markDirty(QSGNode::DirtyGeometry);
+        node->line()->markDirty(QSGNode::DirtyGeometry);
+        node->centerLine()->markDirty(QSGNode::DirtyGeometry);
         return node;
     }
 
@@ -296,31 +361,47 @@ QSGNode *TerrainProfileItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
     if (visibleCount < 2) {
         fillGeometry->allocate(0);
         lineGeometry->allocate(0);
+        node->centerLine()->geometry()->allocate(0);
         node->fill()->markDirty(QSGNode::DirtyGeometry);
         node->line()->markDirty(QSGNode::DirtyGeometry);
+        node->centerLine()->markDirty(QSGNode::DirtyGeometry);
         return node;
     }
 
     // Downsample to one point per pixel column keeping the HIGHEST elevation of the
     // column: a peak between two samples must never disappear from the chart.
+    // Both segment ends are always emitted and a segment narrower than a pixel is
+    // widened to one pixel, so neighbouring segments never leave a gap.
     QList<QPointF> pts;
-    pts.reserve(static_cast<qsizetype>(std::ceil(w)) + 2);
-    double bucketX = std::floor(px(m_profile[first].x()));
-    QPointF best(px(m_profile[first].x()), py(m_profile[first].y()));
-    for (qsizetype i = first + 1; i < last; ++i) {
+    pts.reserve(static_cast<qsizetype>(std::ceil(w)) + 3);
+    const QPointF firstPt(px(m_profile[first].x()), py(m_profile[first].y()));
+    QPointF lastPt(px(m_profile[last - 1].x()), py(m_profile[last - 1].y()));
+    pts.append(firstPt);
+    bool hasBest = false;
+    double bucketX = std::floor(firstPt.x());
+    QPointF best;
+    for (qsizetype i = first + 1; i < last - 1; ++i) {
         const double x = px(m_profile[i].x());
         const double y = py(m_profile[i].y());
         const double bx = std::floor(x);
         if (bx != bucketX) {
-            pts.append(best);
+            if (hasBest)
+                pts.append(best);
             bucketX = bx;
             best = QPointF(x, y);
+            hasBest = true;
             continue;
         }
-        if (y < best.y()) // screen y grows downwards: smaller y is higher terrain
+        if (!hasBest || y < best.y()) { // screen y grows downwards: smaller y is higher terrain
             best = QPointF(x, y);
+            hasBest = true;
+        }
     }
-    pts.append(best);
+    if (hasBest)
+        pts.append(best);
+    if (lastPt.x() < firstPt.x() + 1.0)
+        lastPt.setX(firstPt.x() + 1.0);
+    pts.append(lastPt);
 
     const int n = static_cast<int>(pts.size());
     fillGeometry->allocate(n * 2);
@@ -339,5 +420,40 @@ QSGNode *TerrainProfileItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
     }
     node->fill()->markDirty(QSGNode::DirtyGeometry);
     node->line()->markDirty(QSGNode::DirtyGeometry);
+
+    // lowest terrain across the corridor: thin band, one point per column (lowest)
+    QSGGeometry *centerGeometry = node->centerLine()->geometry();
+    if (m_profileCenter.size() == m_profile.size()) {
+        QList<QPointF> mpts;
+        mpts.reserve(pts.size() + 2);
+        double mBucket = std::floor(px(m_profileCenter[first].x()));
+        QPointF low(px(m_profileCenter[first].x()), py(m_profileCenter[first].y()));
+        for (qsizetype i = first + 1; i < last; ++i) {
+            const double x = px(m_profileCenter[i].x());
+            const double y = py(m_profileCenter[i].y());
+            const double bx = std::floor(x);
+            if (bx != mBucket) {
+                mpts.append(low);
+                mBucket = bx;
+                low = QPointF(x, y);
+                continue;
+            }
+            if (y > low.y())
+                low = QPointF(x, y);
+        }
+        mpts.append(low);
+        const int mn = static_cast<int>(mpts.size());
+        centerGeometry->allocate(mn * 2);
+        auto *mv = centerGeometry->vertexDataAsPoint2D();
+        for (int i = 0; i < mn; ++i) {
+            const float x = static_cast<float>(mpts[i].x());
+            const float y = static_cast<float>(mpts[i].y());
+            mv[i * 2].set(x, y - 0.75f);
+            mv[i * 2 + 1].set(x, y + 0.75f);
+        }
+    } else {
+        centerGeometry->allocate(0);
+    }
+    node->centerLine()->markDirty(QSGNode::DirtyGeometry);
     return node;
 }

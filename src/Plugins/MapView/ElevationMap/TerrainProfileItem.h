@@ -42,6 +42,8 @@ class TerrainProfileItem : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(QObject *missionItem READ missionItem WRITE setMissionItem NOTIFY missionItemChanged)
+    Q_PROPERTY(
+        QObject *elevationMap READ elevationMap WRITE setElevationMap NOTIFY elevationMapChanged)
     Q_PROPERTY(double xOffset READ xOffset WRITE setXOffset NOTIFY xOffsetChanged)
     Q_PROPERTY(
         double segmentLength READ segmentLength WRITE setSegmentLength NOTIFY segmentLengthChanged)
@@ -59,6 +61,9 @@ public:
 
     QObject *missionItem() const;
     void setMissionItem(QObject *v);
+    // plugin instance: provides the lowest terrain across the corridor (thin line)
+    QObject *elevationMap() const;
+    void setElevationMap(QObject *v);
 
     double xOffset() const { return m_xOffset; }
     void setXOffset(double v);
@@ -88,6 +93,7 @@ public:
 
 signals:
     void missionItemChanged();
+    void elevationMapChanged();
     void xOffsetChanged();
     void segmentLengthChanged();
     void viewStartChanged();
@@ -110,7 +116,10 @@ private:
     void markGeometryDirty();
 
     QPointer<MissionItem> m_item;
-    QList<QPointF> m_profile; // (distance from segment start [m], elevation [m])
+    QList<QPointF>
+        m_profile; // (distance from segment start [m], highest elevation across the corridor [m])
+    QList<QPointF> m_profileCenter; // same distances, lowest elevation across the corridor (may be empty)
+    QPointer<QObject> m_elevationMap;
     double m_xOffset{0};
     double m_segmentLength{0};
     double m_viewStart{0};
@@ -122,6 +131,7 @@ private:
     double m_lineWidth{1.5};
 
     bool m_geometryDirty{true};
-    bool m_stale{false}; // drawn stretched while a fresh profile is computed
+    bool m_stale{false};       // drawn stretched while a fresh profile is computed
+    bool m_placeholder{false}; // no profile: a thin bar marks the segment
     bool m_materialDirty{true};
 };

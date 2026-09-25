@@ -22,6 +22,7 @@
 #include "ElevationTile.h"
 
 #include <QtEndian>
+#include <QtMath>
 
 #include <cmath>
 #include <cstring>
@@ -258,6 +259,16 @@ bool ElevationTile::parse()
             return false;
     }
     return true;
+}
+
+double ElevationTile::resolution(double lat) const
+{
+    if (m_width < 2 || m_height < 2)
+        return 30.0;
+    constexpr double METERS_PER_DEGREE = 111320.0;
+    const double latStep = METERS_PER_DEGREE / (m_height - 1);
+    const double lonStep = METERS_PER_DEGREE / (m_width - 1) * std::cos(qDegreesToRadians(lat));
+    return qMax(1.0, qMin(latStep, lonStep));
 }
 
 double ElevationTile::elevationAt(double lat, double lon)

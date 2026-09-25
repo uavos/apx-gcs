@@ -21,9 +21,11 @@
  */
 #include "ElevationMap.h"
 #include "TerrainProfileItem.h"
+#include "WaypointMarkersItem.h"
 #include <App/App.h>
 #include <App/AppSettings.h>
 #include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
 #include <Mission/MissionTools.h>
 #include <Mission/Poi.h>
 #include <Mission/Runway.h>
@@ -56,15 +58,40 @@ ElevationMap::ElevationMap(Fact *parent)
                       "import");
     f_path->setDefaultValue(path);
 
+    f_corridor = new Fact(this,
+                          "corridor",
+                          tr("Corridor"),
+                          tr("Half-width of the terrain profile corridor"),
+                          Int | PersistentValue,
+                          "arrow-expand-horizontal");
+    f_corridor->setUnits("m");
+    f_corridor->setMin(0);
+    f_corridor->setMax(5000);
+    f_corridor->setDefaultValue(100);
+
+    f_showAgl = new Fact(this,
+                         "agl",
+                         tr("Unit AGL"),
+                         tr("Show the height above terrain near the aircraft"),
+                         Bool | PersistentValue,
+                         "airplane");
+    f_showAgl->setDefaultValue(false);
+
     connect(this, &Fact::pathChanged, this, &ElevationMap::getPluginEnableControl);
     connect(Fleet::instance(), &Fleet::currentChanged, this, &ElevationMap::updateMission);
     connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
+    connect(f_corridor, &Fact::valueChanged, this, &ElevationMap::onCorridorChanged);
+    connect(f_showAgl, &Fact::valueChanged, this, &ElevationMap::updateUnitAgl);
+    m_coverageTimer.setSingleShot(true);
+    m_coverageTimer.setInterval(0);
+    connect(&m_coverageTimer, &QTimer::timeout, this, &ElevationMap::updateCoverage);
     createDir(path);
     updateMission();
     createElevationDatabase();
     qmlRegisterType<TerrainProfileItem>("Apx.Elevation", 1, 0, "TerrainProfileItem");
+    qmlRegisterType<WaypointMarkersItem>("Apx.Elevation", 1, 0, "WaypointMarkersItem");
     qml = loadQml("qrc:/ElevationPlugin.qml");
 }
 
@@ -90,6 +117,7 @@ void ElevationMap::setTerrainProfile(const QGeoPath &path)
 void ElevationMap::createElevationDatabase()
 {
     auto path = f_path->value().toString();
+    scanTiles();
     m_elevationDB = QSharedPointer<OfflineElevationDB>::create(path);
     connect(m_elevationDB.data(),
             &OfflineElevationDB::coordinateReceived,
@@ -103,6 +131,187 @@ void ElevationMap::createElevationDatabase()
             &OfflineElevationDB::terrainProfileReceived,
             this,
             &ElevationMap::setGeoPath);
+    connect(m_elevationDB.data(),
+            &OfflineElevationDB::terrainProfileCenterReceived,
+            this,
+            &ElevationMap::onTerrainProfileCenter);
+    connect(m_elevationDB.data(),
+            &OfflineElevationDB::areaMaxReceived,
+            this,
+            &ElevationMap::setUnitTerrain);
+    m_elevationDB->setCorridor(f_corridor->value().toDouble());
+    m_centerProfiles.clear();
+    changeExternalsVisibility();
+}
+
+void ElevationMap::onCorridorChanged()
+{
+    m_elevationDB->setCorridor(f_corridor->value().toDouble());
+    // profiles depend on the corridor: recompute them all
+    auto m = mission();
+    for (int i = 0; i < m->f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
+        if (wp && m_active)
+            wp->sendTerrainProfileRequest();
+    }
+    m_aglPosition = QGeoCoordinate();
+    updateUnitAgl();
+}
+
+QString ElevationMap::profileKey(const QGeoPath &path)
+{
+    if (path.size() <= 0)
+        return QString();
+    auto a = path.coordinateAt(0);
+    auto b = path.coordinateAt(path.size() - 1);
+    a.setAltitude(0);
+    b.setAltitude(0);
+    return a.toString(QGeoCoordinate::Degrees) + "|" + b.toString(QGeoCoordinate::Degrees);
+}
+
+void ElevationMap::onTerrainProfileCenter(QGeoPath path, QList<double> centerElevations)
+{
+    if (path.size() != centerElevations.size() || path.size() <= 0)
+        return;
+    QList<QPointF> profile;
+    profile.reserve(path.size());
+    double distance = 0;
+    for (qsizetype i = 0; i < path.size(); ++i) {
+        profile.append(QPointF(distance, centerElevations[i]));
+        if (i + 1 < path.size())
+            distance += path.coordinateAt(i).distanceTo(path.coordinateAt(i + 1));
+    }
+    m_centerProfiles.insert(profileKey(path), profile);
+}
+
+QList<QPointF> ElevationMap::centerProfile(const QGeoPath &path) const
+{
+    return m_centerProfiles.value(profileKey(path));
+}
+
+// ==== Unit AGL (real time)
+void ElevationMap::updateUnitAgl()
+{
+    if (!f_showAgl->value().toBool() || !f_showAgl->enabled() || !unit()) {
+        m_aglPosition = QGeoCoordinate();
+        setUnitTerrain(qQNaN());
+        return;
+    }
+    const auto pos = unit()->coordinate();
+    if (!pos.isValid())
+        return;
+    // the worker is asked again only after moving a corridor or after 10 s,
+    // and never more often than once per second
+    const double corridor = f_corridor->value().toDouble();
+    if (m_aglPosition.isValid()) {
+        const qint64 elapsed = m_aglTimer.elapsed();
+        if (elapsed < 1000)
+            return;
+        if (pos.distanceTo(m_aglPosition) < corridor && elapsed < 10000)
+            return;
+    }
+    m_aglPosition = pos;
+    m_aglTimer.restart();
+    m_elevationDB->requestAreaMax(pos.latitude(), pos.longitude(), corridor);
+}
+
+void ElevationMap::setUnitTerrain(double elevation)
+{
+    m_unitTerrain = elevation;
+    recalcUnitAgl();
+}
+
+void ElevationMap::recalcUnitAgl()
+{
+    double agl = qQNaN();
+    if (!std::isnan(m_unitTerrain) && unit()) {
+        auto f = unit()->f_mandala->fact(mandala::est::nav::pos::hmsl::uid);
+        if (f)
+            agl = f->value().toDouble() - m_unitTerrain;
+    }
+    if (std::isnan(agl) && std::isnan(m_unitAgl) && std::isnan(m_unitTerrain))
+        return;
+    m_unitAgl = agl;
+    emit unitAglChanged();
+}
+
+void ElevationMap::scanTiles()
+{
+    m_tileNames.clear();
+    QDir dir(f_path->value().toString());
+    for (const auto &name : dir.entryList({"ASTGTMV003_*_dem.tif"}, QDir::Files))
+        m_tileNames.insert(name);
+    const bool available = !m_tileNames.isEmpty();
+    if (m_available == available)
+        return;
+    m_available = available;
+    emit availableChanged();
+}
+
+bool ElevationMap::hasTile(const QGeoCoordinate &c) const
+{
+    if (!c.isValid())
+        return true;
+    return m_tileNames.contains(
+        OfflineElevationDB::createASTERFileName(c.latitude(), c.longitude()));
+}
+
+void ElevationMap::scheduleCoverage()
+{
+    m_coverageTimer.start();
+}
+
+// Checks that the elevation files cover the mission area (at least one item
+// lies on an existing file; items outside simply get no elevation) and
+// re-evaluates the plugin state. Items are watched for position changes so
+// moving the mission outside the map (or back) updates the state as well.
+void ElevationMap::updateCoverage()
+{
+    auto m = mission();
+    int items = 0;
+    int coveredItems = 0;
+    for (Fact *group : {static_cast<Fact *>(m->f_wp),
+                        static_cast<Fact *>(m->f_rw),
+                        static_cast<Fact *>(m->f_pi)}) {
+        for (int i = 0; i < group->size(); ++i) {
+            auto item = static_cast<MissionItem *>(group->child(i));
+            if (!item)
+                continue;
+            connect(item,
+                    &MissionItem::coordinateChanged,
+                    this,
+                    &ElevationMap::scheduleCoverage,
+                    Qt::UniqueConnection);
+            items++;
+            if (hasTile(item->coordinate()))
+                coveredItems++;
+        }
+    }
+    const bool covered = items == 0 || coveredItems > 0;
+    if (m_covered != covered) {
+        m_covered = covered;
+        emit coveredChanged();
+    }
+    updateActive();
+}
+
+void ElevationMap::updateActive()
+{
+    bool useValue{false};
+    bool controlValue{false};
+    if (f_control && !f_control->busy())
+        controlValue = f_control->value().toBool();
+    if (f_use)
+        useValue = f_use->value().toBool();
+    const bool active = controlValue && useValue && m_available && m_covered;
+    if (m_active != active) {
+        m_active = active;
+        emit activeChanged();
+    }
+    setMissionValues(m_active);
+    // unit AGL makes sense only with elevation files in use
+    f_showAgl->setEnabled(controlValue && useValue && m_available);
+    updateUnitAgl();
 }
 
 void ElevationMap::onOpenTriggered()
@@ -169,6 +378,16 @@ void ElevationMap::updateMission()
             this,
             &ElevationMap::startPathsCorrection,
             Qt::UniqueConnection);
+    // real-time AGL of the current unit
+    connect(unit(),
+            &Unit::coordinateChanged,
+            this,
+            &ElevationMap::updateUnitAgl,
+            Qt::UniqueConnection);
+    if (auto f = unit()->f_mandala->fact(mandala::est::nav::pos::hmsl::uid))
+        connect(f, &Fact::valueChanged, this, &ElevationMap::recalcUnitAgl, Qt::UniqueConnection);
+    m_aglPosition = QGeoCoordinate();
+    setUnitTerrain(qQNaN());
     changeExternalsVisibility();
     updateRefPoint();
 }
@@ -216,16 +435,7 @@ void ElevationMap::setMissionAgl()
 
 void ElevationMap::changeExternalsVisibility()
 {
-    bool useValue{false};
-    bool controlValue{false};
-    if (f_control && !f_control->busy())
-        controlValue = f_control->value().toBool();
-    if (f_use)
-        useValue = f_use->value().toBool();
-    if (controlValue && useValue)
-        setMissionValues(true);
-    else
-        setMissionValues(false);
+    updateCoverage();
 }
 
 void ElevationMap::setMissionValues(bool b)

@@ -136,6 +136,32 @@ void ElevationWorker::requestTerrainProfile(const QGeoPath &path)
     wake();
 }
 
+void ElevationWorker::requestAreaMax(double lat, double lon, double radius)
+{
+    Job job;
+    job.type = Job::AreaMax;
+    job.lat = lat;
+    job.lon = lon;
+    job.radius = radius;
+    {
+        QMutexLocker lock(&m_mutex);
+        // only the latest position is interesting
+        for (auto it = m_points.begin(); it != m_points.end();) {
+            if (it->type == Job::AreaMax)
+                it = m_points.erase(it);
+            else
+                ++it;
+        }
+        m_points.push_back(job);
+    }
+    wake();
+}
+
+void ElevationWorker::setCorridor(double meters)
+{
+    m_corridor = qMax(0, qRound(meters));
+}
+
 bool ElevationWorker::takeJob(Job &job)
 {
     QMutexLocker lock(&m_mutex);
@@ -167,9 +193,12 @@ void ElevationWorker::run()
     while (takeJob(job)) {
         if (job.type == Job::Profile)
             processProfile(job);
+        else if (job.type == Job::AreaMax)
+            processAreaMax(job);
         else
             processPoint(job);
     }
+    m_lastTile = nullptr;
     m_tiles.clear();
     m_tilesLru.clear();
     m_missing.clear();
@@ -177,6 +206,13 @@ void ElevationWorker::run()
 
 ElevationTile *ElevationWorker::tile(double lat, double lon)
 {
+    const int tlat = int(std::floor(lat));
+    const int tlon = int(std::floor(lon));
+    if (m_lastTile && tlat == m_lastTileLat && tlon == m_lastTileLon)
+        return m_lastTile;
+    m_lastTileLat = tlat;
+    m_lastTileLon = tlon;
+    m_lastTile = nullptr;
     const auto name = OfflineElevationDB::createASTERFileName(lat, lon);
     auto it = m_tiles.find(name);
     if (it != m_tiles.end()) {
@@ -184,7 +220,8 @@ ElevationTile *ElevationWorker::tile(double lat, double lon)
             m_tilesLru.removeOne(name);
             m_tilesLru.append(name);
         }
-        return it->get();
+        m_lastTile = it->get();
+        return m_lastTile;
     }
     if (m_missing.contains(name))
         return nullptr;
@@ -206,6 +243,7 @@ ElevationTile *ElevationWorker::tile(double lat, double lon)
     auto *ptr = t.get();
     m_tiles.insert(name, std::shared_ptr<ElevationTile>(std::move(t)));
     m_tilesLru.append(name);
+    m_lastTile = ptr;
     return ptr;
 }
 
@@ -230,23 +268,133 @@ void ElevationWorker::processPoint(const Job &job)
         emit coordinateReady(QGeoCoordinate(job.lat, job.lon, elevation));
 }
 
+double ElevationWorker::sampleStep(const QGeoCoordinate &p)
+{
+    auto *t = tile(p.latitude(), p.longitude());
+    return t ? t->resolution(p.latitude()) : DEFAULT_SAMPLE_STEP;
+}
+
+// Terrain across the corridor: samples every map pixel (at least three points) on the
+// line perpendicular to the path. Samples without data (map border) are skipped.
+// max = highest sample, center = terrain right under the path.
+bool ElevationWorker::corridorRange(
+    const QGeoCoordinate &p, double azimuth, double halfWidth, double &max, double &center)
+{
+    center = elevationAt(p.latitude(), p.longitude());
+    if (std::isnan(center))
+        return false;
+    max = center;
+    if (halfWidth <= 0)
+        return true;
+    const double step = qMin(halfWidth, sampleStep(p));
+    for (double off = step; off <= halfWidth + 0.01; off += step) {
+        for (double side : {-90.0, 90.0}) {
+            const auto q = p.atDistanceAndAzimuth(off, azimuth + side);
+            const double e = elevationAt(q.latitude(), q.longitude());
+            if (std::isnan(e))
+                continue;
+            max = qMax(max, e);
+        }
+    }
+    return true;
+}
+
+// Terrain inside a circle (waypoint turns): grid with the map resolution within the radius
+bool ElevationWorker::circleRange(const QGeoCoordinate &p,
+                                  double radius,
+                                  double &max,
+                                  double &center)
+{
+    center = elevationAt(p.latitude(), p.longitude());
+    if (std::isnan(center))
+        return false;
+    max = center;
+    if (radius <= 0)
+        return true;
+    const double step = qMin(radius, sampleStep(p));
+    for (double dx = -radius; dx <= radius + 0.01; dx += step) {
+        for (double dy = -radius; dy <= radius + 0.01; dy += step) {
+            const double d = std::hypot(dx, dy);
+            if (d <= 0 || d > radius)
+                continue;
+            const double az = qRadiansToDegrees(std::atan2(dx, dy));
+            const auto q = p.atDistanceAndAzimuth(d, az);
+            const double e = elevationAt(q.latitude(), q.longitude());
+            if (std::isnan(e))
+                continue;
+            max = qMax(max, e);
+        }
+    }
+    return true;
+}
+
+// Unit AGL: unlike the profile the point itself may be outside the map,
+// any sample with data inside the circle is enough
+double ElevationWorker::areaMax(const QGeoCoordinate &p, double radius)
+{
+    double max = elevationAt(p.latitude(), p.longitude());
+    if (radius > 0) {
+        const double step = qMin(radius, sampleStep(p));
+        for (double dx = -radius; dx <= radius + 0.01; dx += step) {
+            for (double dy = -radius; dy <= radius + 0.01; dy += step) {
+                const double d = std::hypot(dx, dy);
+                if (d <= 0 || d > radius)
+                    continue;
+                const double az = qRadiansToDegrees(std::atan2(dx, dy));
+                const auto q = p.atDistanceAndAzimuth(d, az);
+                const double e = elevationAt(q.latitude(), q.longitude());
+                if (std::isnan(e))
+                    continue;
+                max = std::isnan(max) ? e : qMax(max, e);
+            }
+        }
+    }
+    return max;
+}
+
+void ElevationWorker::processAreaMax(const Job &job)
+{
+    emit areaMaxReady(areaMax(QGeoCoordinate(job.lat, job.lon), job.radius));
+}
+
+// Profile altitude = highest terrain across the corridor (a circle of twice the
+// corridor at the segment end, where the aircraft turns); the terrain right under
+// the path is reported separately for display.
 void ElevationWorker::processProfile(const Job &job)
 {
     QGeoPath route = OfflineElevationDB::prepareRoute(job.path);
-    for (qsizetype i = 0; i < route.size(); ++i) {
+    const double halfWidth = m_corridor;
+    const qsizetype n = route.size();
+    QList<double> centers;
+    centers.reserve(n);
+    for (qsizetype i = 0; i < n; ++i) {
         if (m_cancelCurrent)
             return;
         auto point = route.coordinateAt(i);
-        const double elevation = elevationAt(point.latitude(), point.longitude());
-        if (std::isnan(elevation)) {
+        double max, center;
+        bool ok;
+        if (i == 0) {
+            // segment start: the previous waypoint (its turn circle belongs to the
+            // previous segment) or the runway where the aircraft is on the ground
+            ok = corridorRange(point, 0, 0, max, center);
+        } else if (i == n - 1) {
+            // segment end: the waypoint, the aircraft turns here
+            ok = circleRange(point, 2 * halfWidth, max, center);
+        } else {
+            const double az = point.azimuthTo(route.coordinateAt(i + 1));
+            ok = corridorRange(point, az, halfWidth, max, center);
+        }
+        if (!ok) {
             // no data for this segment: report the path as is
             emit terrainProfileReady(job.path);
             return;
         }
-        point.setAltitude(elevation);
+        point.setAltitude(max);
         route.replaceCoordinate(i, point);
+        centers.append(center);
     }
     if (m_cancelCurrent)
         return;
+    emit terrainProfileCenterReady(route, centers);
     emit terrainProfileReady(route);
 }

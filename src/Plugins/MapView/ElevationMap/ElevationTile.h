@@ -71,6 +71,10 @@ public:
     // Raw sample at pixel; returns false when the sample can't be read.
     bool sample(int x, int y, int16_t &value);
 
+    // Ground size of one pixel at the latitude [m]: the smaller of the
+    // north-south and east-west spacing (a 1 degree tile is assumed).
+    double resolution(double lat) const;
+
 private:
     ElevationTile() = default;
     bool parse();

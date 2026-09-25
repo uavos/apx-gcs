@@ -37,6 +37,10 @@ public:
     virtual void requestElevation(double lat, double lon) = 0;
     virtual void requestCoordinate(double lat, double lon) = 0;
     virtual void requestTerrainProfile(const QGeoPath &path) = 0;
+    // highest terrain within radius [m] around the point (unit AGL)
+    virtual void requestAreaMax(double lat, double lon, double radius) = 0;
+    // corridor half-width [m] used by the terrain profile
+    virtual void setCorridor(double meters) = 0;
 
 protected:
     virtual void receiveCoordinate(const QGeoCoordinate &coordinate);
@@ -45,6 +49,9 @@ signals:
     void coordinateReceived(QGeoCoordinate coordinate);
     void elevationReceived(double elevation);
     void terrainProfileReceived(QGeoPath path);
+    // lowest terrain across the corridor for every point of the profile path
+    void terrainProfileCenterReceived(QGeoPath path, QList<double> centerElevations);
+    void areaMaxReceived(double elevation);
 };
 
 class OfflineElevationDB : public AbstractElevationDB
@@ -57,6 +64,8 @@ public:
     void requestElevation(double lat, double lon) override;
     void requestCoordinate(double lat, double lon) override;
     void requestTerrainProfile(const QGeoPath &path) override;
+    void requestAreaMax(double lat, double lon, double radius) override;
+    void setCorridor(double meters) override;
 
     static constexpr int TERRAIN_STEP = 30; // terrain profile step in meters
     static QString createASTERFileName(double lat, double lon);

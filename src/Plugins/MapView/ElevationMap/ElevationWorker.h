@@ -51,7 +51,8 @@ class ElevationWorker : public QThread
     Q_OBJECT
 
 public:
-    static constexpr int MAX_TILES = 4; // open tiles kept (LRU)
+    static constexpr int MAX_TILES = 4;               // open tiles kept (LRU)
+    static constexpr double DEFAULT_SAMPLE_STEP = 30; // used when the tile is unknown, m
 
     explicit ElevationWorker(const QString &dbPath, QObject *parent = nullptr);
     ~ElevationWorker() override;
@@ -59,12 +60,16 @@ public:
     void requestElevation(double lat, double lon);
     void requestCoordinate(double lat, double lon);
     void requestTerrainProfile(const QGeoPath &path);
+    void requestAreaMax(double lat, double lon, double radius);
+    void setCorridor(double meters);
     void stop();
 
 signals:
     void elevationReady(double elevation);
     void coordinateReady(QGeoCoordinate coordinate);
     void terrainProfileReady(QGeoPath path);
+    void terrainProfileCenterReady(QGeoPath path, QList<double> centerElevations);
+    void areaMaxReady(double elevation);
 
 protected:
     void run() override;
@@ -72,10 +77,11 @@ protected:
 private:
     struct Job
     {
-        enum Type { Elevation, Coordinate, Profile };
+        enum Type { Elevation, Coordinate, AreaMax, Profile };
         Type type;
         double lat{0};
         double lon{0};
+        double radius{0};
         QGeoPath path;
         QGeoCoordinate first; // profile endpoints (altitude stripped) used to coalesce
         QGeoCoordinate last;
@@ -88,8 +94,18 @@ private:
     bool takeJob(Job &job);
     void processPoint(const Job &job);
     void processProfile(const Job &job);
+    void processAreaMax(const Job &job);
     ElevationTile *tile(double lat, double lon);
     double elevationAt(double lat, double lon);
+    // sampling step across the corridor: the map resolution at the point, m
+    double sampleStep(const QGeoCoordinate &p);
+    // highest terrain across the corridor and the terrain under the point itself;
+    // false when there is no data at the point
+    bool corridorRange(
+        const QGeoCoordinate &p, double azimuth, double halfWidth, double &max, double &center);
+    bool circleRange(const QGeoCoordinate &p, double radius, double &max, double &center);
+    // highest terrain inside the circle over the samples that have data, NaN when none
+    double areaMax(const QGeoCoordinate &p, double radius);
 
     QString m_dbPath;
 
@@ -101,6 +117,12 @@ private:
     Job m_current;
     std::atomic<bool> m_cancelCurrent{false};
     std::atomic<bool> m_quit{false};
+    std::atomic<int> m_corridor{100}; // m
+
+    // last used tile (most lookups of a profile hit the same tile)
+    ElevationTile *m_lastTile{nullptr};
+    int m_lastTileLat{1000};
+    int m_lastTileLon{1000};
 
     // worker thread only
     QHash<QString, std::shared_ptr<ElevationTile>> m_tiles;
