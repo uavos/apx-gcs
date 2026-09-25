@@ -68,7 +68,7 @@ signals:
     void elevationReady(double elevation);
     void coordinateReady(QGeoCoordinate coordinate);
     void terrainProfileReady(QGeoPath path);
-    void terrainProfileCenterReady(QGeoPath path, QList<double> centerElevations);
+    void terrainProfileMinReady(QGeoPath path, QList<double> minElevations);
     void areaMaxReady(double elevation);
 
 protected:
@@ -99,11 +99,11 @@ private:
     double elevationAt(double lat, double lon);
     // sampling step across the corridor: the map resolution at the point, m
     double sampleStep(const QGeoCoordinate &p);
-    // highest terrain across the corridor and the terrain under the point itself;
-    // false when there is no data at the point
+    // highest and lowest terrain across the corridor at a profile point;
+    // false when there is no data at the point itself
     bool corridorRange(
-        const QGeoCoordinate &p, double azimuth, double halfWidth, double &max, double &center);
-    bool circleRange(const QGeoCoordinate &p, double radius, double &max, double &center);
+        const QGeoCoordinate &p, double azimuth, double halfWidth, double &max, double &min);
+    bool circleRange(const QGeoCoordinate &p, double radius, double &max, double &min);
     // highest terrain inside the circle over the samples that have data, NaN when none
     double areaMax(const QGeoCoordinate &p, double radius);
 

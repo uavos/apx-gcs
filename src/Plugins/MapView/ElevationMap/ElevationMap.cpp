@@ -137,15 +137,15 @@ void ElevationMap::createElevationDatabase()
             this,
             &ElevationMap::setGeoPath);
     connect(m_elevationDB.data(),
-            &OfflineElevationDB::terrainProfileCenterReceived,
+            &OfflineElevationDB::terrainProfileMinReceived,
             this,
-            &ElevationMap::onTerrainProfileCenter);
+            &ElevationMap::onTerrainProfileMin);
     connect(m_elevationDB.data(),
             &OfflineElevationDB::areaMaxReceived,
             this,
             &ElevationMap::setUnitTerrain);
     m_elevationDB->setCorridor(f_corridor->value().toDouble());
-    m_centerProfiles.clear();
+    m_minProfiles.clear();
     changeExternalsVisibility();
 }
 
@@ -173,24 +173,24 @@ QString ElevationMap::profileKey(const QGeoPath &path)
     return a.toString(QGeoCoordinate::Degrees) + "|" + b.toString(QGeoCoordinate::Degrees);
 }
 
-void ElevationMap::onTerrainProfileCenter(QGeoPath path, QList<double> centerElevations)
+void ElevationMap::onTerrainProfileMin(QGeoPath path, QList<double> minElevations)
 {
-    if (path.size() != centerElevations.size() || path.size() <= 0)
+    if (path.size() != minElevations.size() || path.size() <= 0)
         return;
     QList<QPointF> profile;
     profile.reserve(path.size());
     double distance = 0;
     for (qsizetype i = 0; i < path.size(); ++i) {
-        profile.append(QPointF(distance, centerElevations[i]));
+        profile.append(QPointF(distance, minElevations[i]));
         if (i + 1 < path.size())
             distance += path.coordinateAt(i).distanceTo(path.coordinateAt(i + 1));
     }
-    m_centerProfiles.insert(profileKey(path), profile);
+    m_minProfiles.insert(profileKey(path), profile);
 }
 
-QList<QPointF> ElevationMap::centerProfile(const QGeoPath &path) const
+QList<QPointF> ElevationMap::minProfile(const QGeoPath &path) const
 {
-    return m_centerProfiles.value(profileKey(path));
+    return m_minProfiles.value(profileKey(path));
 }
 
 // ==== Unit AGL (real time)

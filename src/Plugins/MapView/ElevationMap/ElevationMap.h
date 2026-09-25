@@ -89,7 +89,7 @@ public:
     double unitTerrain() const { return m_unitTerrain; }
     double unitAgl() const { return m_unitAgl; }
     // lowest terrain across the corridor (distance, elevation) for a profile path, empty if unknown
-    QList<QPointF> centerProfile(const QGeoPath &path) const;
+    QList<QPointF> minProfile(const QGeoPath &path) const;
     double elevation() const;
     void setElevation(double v);
     void getCorrectPathResponse(QList<QGeoCoordinate> v, int index);
@@ -113,7 +113,7 @@ private:
     bool m_active{false};
     QTimer m_coverageTimer;
 
-    QHash<QString, QList<QPointF>> m_centerProfiles; // key: path endpoints
+    QHash<QString, QList<QPointF>> m_minProfiles; // key: path endpoints
     static QString profileKey(const QGeoPath &path);
 
     double m_unitTerrain{qQNaN()};
@@ -144,7 +144,7 @@ private slots:
     void updateCoverage();
     void updateActive();
     void onCorridorChanged();
-    void onTerrainProfileCenter(QGeoPath path, QList<double> centerElevations);
+    void onTerrainProfileMin(QGeoPath path, QList<double> minElevations);
     void updateUnitAgl();
     void setUnitTerrain(double elevation);
     void recalcUnitAgl();

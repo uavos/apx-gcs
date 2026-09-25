@@ -276,14 +276,14 @@ double ElevationWorker::sampleStep(const QGeoCoordinate &p)
 
 // Terrain across the corridor: samples every map pixel (at least three points) on the
 // line perpendicular to the path. Samples without data (map border) are skipped.
-// max = highest sample, center = terrain right under the path.
+// max/min = highest and lowest sample (the spread shows the terrain roughness).
 bool ElevationWorker::corridorRange(
-    const QGeoCoordinate &p, double azimuth, double halfWidth, double &max, double &center)
+    const QGeoCoordinate &p, double azimuth, double halfWidth, double &max, double &min)
 {
-    center = elevationAt(p.latitude(), p.longitude());
+    const double center = elevationAt(p.latitude(), p.longitude());
     if (std::isnan(center))
         return false;
-    max = center;
+    max = min = center;
     if (halfWidth <= 0)
         return true;
     const double step = qMin(halfWidth, sampleStep(p));
@@ -294,21 +294,19 @@ bool ElevationWorker::corridorRange(
             if (std::isnan(e))
                 continue;
             max = qMax(max, e);
+            min = qMin(min, e);
         }
     }
     return true;
 }
 
 // Terrain inside a circle (waypoint turns): grid with the map resolution within the radius
-bool ElevationWorker::circleRange(const QGeoCoordinate &p,
-                                  double radius,
-                                  double &max,
-                                  double &center)
+bool ElevationWorker::circleRange(const QGeoCoordinate &p, double radius, double &max, double &min)
 {
-    center = elevationAt(p.latitude(), p.longitude());
+    const double center = elevationAt(p.latitude(), p.longitude());
     if (std::isnan(center))
         return false;
-    max = center;
+    max = min = center;
     if (radius <= 0)
         return true;
     const double step = qMin(radius, sampleStep(p));
@@ -323,6 +321,7 @@ bool ElevationWorker::circleRange(const QGeoCoordinate &p,
             if (std::isnan(e))
                 continue;
             max = qMax(max, e);
+            min = qMin(min, e);
         }
     }
     return true;
@@ -358,31 +357,31 @@ void ElevationWorker::processAreaMax(const Job &job)
 }
 
 // Profile altitude = highest terrain across the corridor (a circle of twice the
-// corridor at the segment end, where the aircraft turns); the terrain right under
-// the path is reported separately for display.
+// corridor at the segment end, where the aircraft turns); the lowest terrain across
+// the corridor is reported separately for display.
 void ElevationWorker::processProfile(const Job &job)
 {
     QGeoPath route = OfflineElevationDB::prepareRoute(job.path);
     const double halfWidth = m_corridor;
     const qsizetype n = route.size();
-    QList<double> centers;
-    centers.reserve(n);
+    QList<double> mins;
+    mins.reserve(n);
     for (qsizetype i = 0; i < n; ++i) {
         if (m_cancelCurrent)
             return;
         auto point = route.coordinateAt(i);
-        double max, center;
+        double max, min;
         bool ok;
         if (i == 0) {
             // segment start: the previous waypoint (its turn circle belongs to the
             // previous segment) or the runway where the aircraft is on the ground
-            ok = corridorRange(point, 0, 0, max, center);
+            ok = corridorRange(point, 0, 0, max, min);
         } else if (i == n - 1) {
             // segment end: the waypoint, the aircraft turns here
-            ok = circleRange(point, 2 * halfWidth, max, center);
+            ok = circleRange(point, 2 * halfWidth, max, min);
         } else {
             const double az = point.azimuthTo(route.coordinateAt(i + 1));
-            ok = corridorRange(point, az, halfWidth, max, center);
+            ok = corridorRange(point, az, halfWidth, max, min);
         }
         if (!ok) {
             // no data for this segment: report the path as is
@@ -391,10 +390,10 @@ void ElevationWorker::processProfile(const Job &job)
         }
         point.setAltitude(max);
         route.replaceCoordinate(i, point);
-        centers.append(center);
+        mins.append(min);
     }
     if (m_cancelCurrent)
         return;
-    emit terrainProfileCenterReady(route, centers);
+    emit terrainProfileMinReady(route, mins);
     emit terrainProfileReady(route);
 }

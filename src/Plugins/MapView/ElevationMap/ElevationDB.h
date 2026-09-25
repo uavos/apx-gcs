@@ -49,8 +49,8 @@ signals:
     void coordinateReceived(QGeoCoordinate coordinate);
     void elevationReceived(double elevation);
     void terrainProfileReceived(QGeoPath path);
-    // lowest terrain across the corridor for every point of the profile path
-    void terrainProfileCenterReceived(QGeoPath path, QList<double> centerElevations);
+    // lowest terrain across the corridor for every point of the profile (the path altitude is the corridor max)
+    void terrainProfileMinReceived(QGeoPath path, QList<double> minElevations);
     void areaMaxReceived(double elevation);
 };
 

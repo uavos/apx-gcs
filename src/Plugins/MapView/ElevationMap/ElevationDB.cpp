@@ -28,13 +28,13 @@
 
 void AbstractElevationDB::receiveCoordinate(const QGeoCoordinate &coordinate)
 {
-    if(!coordinate.isValid()) {
+    if (!coordinate.isValid()) {
         QGeoCoordinate checking(coordinate.latitude(), coordinate.longitude());
-        if(!checking.isValid()) {
+        if (!checking.isValid()) {
             apxMsgW() << tr("Invalid coordinate %1, %2, %3")
-                                 .arg(coordinate.latitude())
-                                 .arg(coordinate.longitude())
-                                 .arg(coordinate.altitude());
+                             .arg(coordinate.latitude())
+                             .arg(coordinate.longitude())
+                             .arg(coordinate.altitude());
             return;
         }
     }
@@ -44,10 +44,22 @@ void AbstractElevationDB::receiveCoordinate(const QGeoCoordinate &coordinate)
 OfflineElevationDB::OfflineElevationDB(const QString &path)
     : m_worker(new ElevationWorker(path, this))
 {
-    connect(m_worker, &ElevationWorker::elevationReady, this, &OfflineElevationDB::elevationReceived);
-    connect(m_worker, &ElevationWorker::coordinateReady, this, &OfflineElevationDB::receiveCoordinate);
-    connect(m_worker, &ElevationWorker::terrainProfileReady, this, &OfflineElevationDB::terrainProfileReceived);
-    connect(m_worker, &ElevationWorker::terrainProfileCenterReady, this, &OfflineElevationDB::terrainProfileCenterReceived);
+    connect(m_worker,
+            &ElevationWorker::elevationReady,
+            this,
+            &OfflineElevationDB::elevationReceived);
+    connect(m_worker,
+            &ElevationWorker::coordinateReady,
+            this,
+            &OfflineElevationDB::receiveCoordinate);
+    connect(m_worker,
+            &ElevationWorker::terrainProfileReady,
+            this,
+            &OfflineElevationDB::terrainProfileReceived);
+    connect(m_worker,
+            &ElevationWorker::terrainProfileMinReady,
+            this,
+            &OfflineElevationDB::terrainProfileMinReceived);
     connect(m_worker, &ElevationWorker::areaMaxReady, this, &OfflineElevationDB::areaMaxReceived);
 }
 
@@ -73,11 +85,13 @@ void OfflineElevationDB::requestElevation(double latitude, double longitude)
     m_worker->requestElevation(latitude, longitude);
 }
 
-void OfflineElevationDB::requestCoordinate(double latitude, double longitude) {
+void OfflineElevationDB::requestCoordinate(double latitude, double longitude)
+{
     m_worker->requestCoordinate(latitude, longitude);
 }
 
-void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path) {
+void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path)
+{
     m_worker->requestTerrainProfile(path);
 }
 

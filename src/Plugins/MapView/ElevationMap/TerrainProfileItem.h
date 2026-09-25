@@ -118,7 +118,7 @@ private:
     QPointer<MissionItem> m_item;
     QList<QPointF>
         m_profile; // (distance from segment start [m], highest elevation across the corridor [m])
-    QList<QPointF> m_profileCenter; // same distances, lowest elevation across the corridor (may be empty)
+    QList<QPointF> m_profileMin; // same distances, lowest elevation across the corridor (may be empty)
     QPointer<QObject> m_elevationMap;
     double m_xOffset{0};
     double m_segmentLength{0};
