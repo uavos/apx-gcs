@@ -137,101 +137,134 @@ RowLayout {
         active: apx.settings.graphics.systemBattery.value && apx.batteryAvailable
         visible: status === Loader.Ready
         sourceComponent: Component {
-            Item {
+            // macOS-like horizontal battery with percentage on the right
+            Row {
                 id: systemBattery
 
                 readonly property int level: apx.batteryLevel
+                readonly property bool charging: apx.batteryCharging
+                readonly property bool low: level <= 20 && !charging
 
-                implicitWidth: height * 0.95
-                implicitHeight: parent.height
+                readonly property color frameColor: "#b0ffffff"
+                readonly property color fillColor: low ? "#f44336" : "#ffffff"
 
-                Rectangle {
-                    id: batteryBody
+                height: parent.height
+                spacing: Math.max(2, height * 0.12)
 
-                    width: parent.width * 0.86
-                    height: parent.height * 0.90
+                Item {
+                    id: batteryIcon
 
-                    anchors.centerIn: parent
+                    height: parent.height
+                    width: height * 1.1
 
-                    radius: Math.max(2, width * 0.08)
+                    Rectangle {
+                        id: batteryBody
 
-                    color: "transparent"
-                    border.width: Math.max(1, ui.scale)
-                    border.color: "#d8d8d8"
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
 
-                    Column {
-                        anchors.fill: parent
-                        anchors.margins: Math.max(2, batteryBody.border.width * 2)
-                        spacing: Math.max(1, ui.scale * 0.5)
+                        width: parent.width - batteryTip.width - batteryTip.anchors.leftMargin
+                        height: parent.height * 0.5
 
-                        Repeater {
-                            model: 10
+                        radius: height * 0.22
 
-                            Rectangle {
-                                required property int index
+                        color: "transparent"
+                        border.width: Math.max(1, ui.scale)
+                        border.color: systemBattery.frameColor
 
-                                width: parent.width
-                                height: (parent.height - parent.spacing * 9) / 10
+                        Rectangle {
+                            id: batteryFill
 
-                                radius: Math.max(1, ui.scale)
+                            readonly property real gap: Math.max(1.5, batteryBody.border.width * 1.5)
 
-                                color: systemBattery.level >= (10 - index) * 10
-                                       ? "#4caf50"
-                                       : "#28402a"
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.margins: gap
+
+                            width: (batteryBody.width - gap * 2) * Math.max(0, Math.min(100, systemBattery.level)) / 100
+
+                            radius: Math.max(1, batteryBody.radius - gap)
+
+                            color: systemBattery.fillColor
+
+                            Behavior on width { NumberAnimation { duration: 300 } }
+                        }
+
+                        // charging bolt (white, same shape as the emoji bolt)
+                        Canvas {
+                            id: batteryBolt
+
+                            visible: systemBattery.charging
+
+                            anchors.centerIn: parent
+
+                            width: parent.height * 1.05
+                            height: parent.height * 1.55
+
+                            onWidthChanged: requestPaint()
+                            onHeightChanged: requestPaint()
+                            onVisibleChanged: if (visible) requestPaint()
+
+                            onPaint: {
+                                var ctx = getContext("2d")
+                                ctx.reset()
+                                var w = width, h = height
+                                ctx.beginPath()
+                                ctx.moveTo(w * 0.62, 0)
+                                ctx.lineTo(w * 0.08, h * 0.58)
+                                ctx.lineTo(w * 0.46, h * 0.58)
+                                ctx.lineTo(w * 0.38, h)
+                                ctx.lineTo(w * 0.92, h * 0.40)
+                                ctx.lineTo(w * 0.54, h * 0.40)
+                                ctx.closePath()
+                                ctx.lineJoin = "round"
+                                ctx.lineWidth = Math.max(1, ui.scale)
+                                ctx.strokeStyle = "#c0000000"
+                                ctx.fillStyle = "#ffffff"
+                                ctx.fill()
+                                ctx.stroke()
                             }
                         }
                     }
 
-                    Text {
-                        visible: apx.batteryCharging
+                    // terminal tip
+                    Rectangle {
+                        id: batteryTip
 
-                        anchors.fill: parent
+                        anchors.left: batteryBody.right
+                        anchors.leftMargin: Math.max(1, ui.scale * 0.5)
+                        anchors.verticalCenter: batteryBody.verticalCenter
 
-                        text: "\u26A1"
+                        width: Math.max(2, batteryBody.height * 0.16)
+                        height: batteryBody.height * 0.4
 
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
+                        radius: width * 0.5
 
-                        color: "white"
-                        opacity: 0.55
-
-                        font.pixelSize: parent.height * 0.86
-                        fontSizeMode: Text.Fit
-
-                        style: Text.Outline
-                        styleColor: "#90000000"
-
-                        z: 10
-                    }
-
-                    Text {
-                        anchors.centerIn: parent
-
-                        text: systemBattery.level
-
-                        color: "white"
-
-                        font: apx.font_narrow(
-                                  Math.max(12, batteryBody.width * 0.58),
-                                  true)
-
-                        style: Text.Outline
-                        styleColor: "#c0000000"
-
-                        z: 20
+                        color: systemBattery.frameColor
                     }
                 }
 
-                Rectangle {
-                    width: batteryBody.width * 0.42
-                    height: Math.max(2, parent.height * 0.065)
+                Text {
+                    id: batteryText
 
-                    anchors.horizontalCenter: batteryBody.horizontalCenter
-                    anchors.bottom: batteryBody.top
+                    height: parent.height
+                    // reserve width for "100%" so the taskbar doesn't jump on level change
+                    width: Math.max(implicitWidth, _batteryMetrics.advanceWidth)
 
-                    color: batteryBody.border.color
+                    text: systemBattery.level + "%"
 
-                    radius: Math.max(1, ui.scale)
+                    verticalAlignment: Text.AlignVCenter
+
+                    color: systemBattery.low ? systemBattery.fillColor : "#fff"
+
+                    font: apx.font_narrow(parent.height * 0.8)
+
+                    TextMetrics {
+                        id: _batteryMetrics
+                        font: batteryText.font
+                        text: "100%"
+                    }
                 }
             }
         }
