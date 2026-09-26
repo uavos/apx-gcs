@@ -35,8 +35,8 @@ class Waypoint;
  *
  * The item covers the chart plot area and maps mission distance / height AMSL
  * to pixels itself, so zooming and panning only update transforms. Markers that
- * would overlap when zoomed out are skipped. A marker can be dragged vertically
- * to change the waypoint altitude, a click triggers the waypoint.
+ * would overlap when zoomed out are skipped. A click on a marker triggers the
+ * waypoint (the map centers on it and its menu opens).
  */
 class WaypointMarkersItem : public QQuickItem
 {
@@ -46,7 +46,8 @@ class WaypointMarkersItem : public QQuickItem
     Q_PROPERTY(double viewSpan READ viewSpan WRITE setViewSpan NOTIFY viewSpanChanged)
     Q_PROPERTY(double minHeight READ minHeight WRITE setMinHeight NOTIFY minHeightChanged)
     Q_PROPERTY(double maxHeight READ maxHeight WRITE setMaxHeight NOTIFY maxHeightChanged)
-    Q_PROPERTY(bool dragging READ dragging NOTIFY draggingChanged)
+    // extra space above the plot [px] so markers at the top altitude stay inside the item
+    Q_PROPERTY(double topPadding READ topPadding WRITE setTopPadding NOTIFY topPaddingChanged)
     Q_PROPERTY(bool hovered READ hovered NOTIFY hoveredChanged)
 
 public:
@@ -63,7 +64,8 @@ public:
     void setMinHeight(double v);
     double maxHeight() const { return m_maxHeight; }
     void setMaxHeight(double v);
-    bool dragging() const { return m_drag >= 0; }
+    double topPadding() const { return m_topPadding; }
+    void setTopPadding(double v);
     bool hovered() const { return m_hover >= 0; }
 
     // re-reads waypoint data (positions, heights, alarm state)
@@ -79,7 +81,7 @@ signals:
     void viewSpanChanged();
     void minHeightChanged();
     void maxHeightChanged();
-    void draggingChanged();
+    void topPaddingChanged();
     void hoveredChanged();
     // a watched waypoint property changed, the owner should recompute its data and call refresh()
     void changed();
@@ -108,7 +110,6 @@ private:
 
     void layoutMarkers();
     int hitTest(const QPointF &pos) const;
-    void setDrag(int index);
     void setHover(int index);
 
     QPointer<Fact> m_group;
@@ -116,14 +117,14 @@ private:
     double m_viewSpan{1000};
     double m_minHeight{0};
     double m_maxHeight{200};
+    double m_topPadding{0};
 
     QFont m_font;
     QVector<Marker> m_markers;
     QVector<double> m_textWidths;
     double m_textHeight{12};
     int m_hover{-1};
-    int m_drag{-1};
-    bool m_moved{false};
+    int m_pressed{-1}; // marker under the mouse press, a click triggers the waypoint
 
     bool m_markersDirty{true}; // markers list or text changed: nodes are rebuilt
     bool m_layoutDirty{true};  // positions changed: transforms and boxes are updated

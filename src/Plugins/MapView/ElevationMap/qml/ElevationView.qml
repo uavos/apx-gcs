@@ -23,6 +23,7 @@ import QtQuick
 import QtCharts
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import QtQuick.Shapes
 import QtQml
 
@@ -38,8 +39,10 @@ import Apx.Elevation 1.0
 Rectangle {
     id: elevationView
 
-    implicitWidth: Style.buttonSize*32
-    implicitHeight: Style.buttonSize*9
+    // half of the main window width, height like the Signals panel
+    // (chart 110*ui.scale + set row + buttons row)
+    implicitWidth: Window.width > 0 ? Window.width * 0.5 : Style.buttonSize*16
+    implicitHeight: 134 * ui.scale + Style.fontSize + Style.spacing * 3
     border.width: 0
     color: "#000"
 
@@ -57,7 +60,6 @@ Rectangle {
     property real minScale: 1
     property real maxScale: 100
     property real chartScale: minScale
-    readonly property bool waypointDragging: markers.dragging // a marker is being dragged in the chart
 
     // Zoom and pan are done through the X axis range, the chart item itself
     // always stays the size of the window (one texture, no per-zoom reallocation)
@@ -358,10 +360,12 @@ Rectangle {
         // Waypoint markers (numbers, vertical lines, altitude drag), GPU rendered
         WaypointMarkersItem {
             id: markers
+            // same area as hoverArea: the plot plus space above it for the top markers
             x: chartView.plotArea.x
-            y: chartView.plotArea.y
+            y: chartView.plotArea.y - hoverArea.topExtent
             width: chartView.plotArea.width
-            height: chartView.plotArea.height
+            height: chartView.plotArea.height + hoverArea.topExtent
+            topPadding: hoverArea.topExtent
             z: 1
             group: mission.wp
             viewStart: elevationView.viewStart
@@ -381,19 +385,20 @@ Rectangle {
         // terrain elevation under the mouse (HoverHandler never blocks other items)
         Item {
             id: hoverArea
+            // extends above the plot: a marker at the top altitude sticks out of it
+            readonly property real topExtent: 24
             x: chartView.plotArea.x
-            y: chartView.plotArea.y
+            y: chartView.plotArea.y - topExtent
             width: chartView.plotArea.width
-            height: chartView.plotArea.height
+            height: chartView.plotArea.height + topExtent
             HoverHandler {
                 id: hoverHandler
-                cursorShape: markers.hovered ? Qt.SizeVerCursor : Qt.ArrowCursor
+                cursorShape: markers.hovered ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onPointChanged: {
                     if(!hovered)
                         return
-                    if(!elevationView.waypointDragging)
-                        markers.hoverAt(point.position.x, point.position.y)
-                    if(markers.hovered || elevationView.waypointDragging)
+                    markers.hoverAt(point.position.x, point.position.y) // same origin as hoverArea
+                    if(markers.hovered || point.position.y < hoverArea.topExtent)
                         hoverCursor.hide()
                     else
                         hoverCursor.update(point.position.x)
@@ -500,25 +505,37 @@ Rectangle {
         readonly property font fnt: elevationView.axisFont
         Row {
             spacing: 4
+            anchors.verticalCenter: parent.verticalCenter
             Rectangle { width: 16; height: 8; anchors.verticalCenter: parent.verticalCenter
                         color: "#4000ff00"; border.color: "#00ff00"; border.width: 1 }
             Text { text: qsTr("Terrain, corridor max"); color: "white"; font: legend.fnt }
         }
         Row {
             spacing: 4
+            anchors.verticalCenter: parent.verticalCenter
             Rectangle { width: 16; height: 2; anchors.verticalCenter: parent.verticalCenter; color: "#ffb000" }
             Text { text: qsTr("Terrain, corridor min"); color: "white"; font: legend.fnt }
         }
         Row {
             spacing: 4
+            anchors.verticalCenter: parent.verticalCenter
             Rectangle { width: 16; height: 2; anchors.verticalCenter: parent.verticalCenter; color: "#209fdf" }
             Text { text: qsTr("Flight altitude"); color: "white"; font: legend.fnt }
         }
         Row {
             spacing: 4
+            anchors.verticalCenter: parent.verticalCenter
             Rectangle { width: 16; height: 8; anchors.verticalCenter: parent.verticalCenter
                         color: "#40ff0000"; border.color: "#ff0000"; border.width: 1 }
             Text { text: qsTr("Collision"); color: "white"; font: legend.fnt }
+        }
+        // plugin menu (use, path, corridor, unit AGL)
+        IconButton {
+            anchors.verticalCenter: parent.verticalCenter
+            size: legend.fnt.pixelSize * 1.6
+            iconName: "menu"
+            toolTip: qsTr("Elevation map settings")
+            onTriggered: if(elevationmap) elevationmap.trigger()
         }
     }
 
@@ -542,7 +559,6 @@ Rectangle {
         id: dragHandler
         target: null
         acceptedButtons: Qt.LeftButton
-        enabled: !elevationView.waypointDragging
         property real startView: 0
         onActiveChanged: if(active) startView = elevationView.viewStart
         onActiveTranslationChanged: {

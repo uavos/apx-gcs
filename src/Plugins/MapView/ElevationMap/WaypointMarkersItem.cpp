@@ -158,6 +158,15 @@ void WaypointMarkersItem::setMaxHeight(double v)
     layoutMarkers();
 }
 
+void WaypointMarkersItem::setTopPadding(double v)
+{
+    if (qFuzzyCompare(m_topPadding, v))
+        return;
+    m_topPadding = v;
+    emit topPaddingChanged();
+    layoutMarkers();
+}
+
 void WaypointMarkersItem::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChange(newGeometry, oldGeometry);
@@ -222,8 +231,8 @@ void WaypointMarkersItem::refresh()
     }
     if (m_hover >= m_markers.size())
         setHover(-1);
-    if (m_drag >= m_markers.size())
-        setDrag(-1);
+    if (m_pressed >= m_markers.size())
+        m_pressed = -1;
     m_markersDirty = true;
     layoutMarkers();
 }
@@ -232,7 +241,7 @@ void WaypointMarkersItem::refresh()
 void WaypointMarkersItem::layoutMarkers()
 {
     const double w = width();
-    const double h = height();
+    const double h = height() - m_topPadding; // plot height, the plot bottom is the item bottom
     const double hRange = m_maxHeight - m_minHeight;
     const bool valid = w > 0 && h > 0 && m_viewSpan > 0 && hRange > 0;
     const double sx = valid ? w / m_viewSpan : 0;
@@ -241,11 +250,11 @@ void WaypointMarkersItem::layoutMarkers()
     for (int i = 0; i < m_markers.size(); ++i) {
         Marker &m = m_markers[i];
         m.px = (m.distance - m_viewStart) * sx;
-        m.py = h - (m.height - m_minHeight) * sy;
+        m.py = height() - (m.height - m_minHeight) * sy;
         const double left = m.px - m.boxWidth / 2;
         const bool inView = valid && m.px + m.boxWidth / 2 >= 0 && left <= w;
         const bool fits = left >= lastRight + MIN_GAP;
-        m.shown = inView && (fits || i == m_hover || i == m_drag);
+        m.shown = inView && (fits || i == m_hover || i == m_pressed);
         if (m.shown)
             lastRight = m.px + m.boxWidth / 2;
     }
@@ -320,7 +329,7 @@ QSGNode *WaypointMarkersItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
     node->shapes->markDirty(QSGNode::DirtyGeometry);
 
     // hovered/dragged marker on top
-    const int top = m_drag >= 0 ? m_drag : m_hover;
+    const int top = m_pressed >= 0 ? m_pressed : m_hover;
     if (top >= 0 && top < node->texts.size()) {
         auto *opacity = node->texts[top];
         node->removeChildNode(opacity);
@@ -329,24 +338,29 @@ QSGNode *WaypointMarkersItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
     return node;
 }
 
+// The number box with a margin around it, plus the vertical line under it:
+// small boxes are hard to hit exactly, the line gives a tall target.
 int WaypointMarkersItem::hitTest(const QPointF &pos) const
 {
+    constexpr double BOX_MARGIN = 6;
+    constexpr double LINE_HALF_WIDTH = 5;
+    // boxes first: they are on top of the lines
     for (int i = m_markers.size() - 1; i >= 0; --i) {
         const Marker &m = m_markers[i];
         if (!m.shown)
             continue;
-        if (std::abs(pos.x() - m.px) <= m.boxWidth / 2 && std::abs(pos.y() - m.py) <= BOX_HEIGHT / 2)
+        if (std::abs(pos.x() - m.px) <= m.boxWidth / 2 + BOX_MARGIN
+            && std::abs(pos.y() - m.py) <= BOX_HEIGHT / 2 + BOX_MARGIN)
+            return i;
+    }
+    for (int i = m_markers.size() - 1; i >= 0; --i) {
+        const Marker &m = m_markers[i];
+        if (!m.shown)
+            continue;
+        if (std::abs(pos.x() - m.px) <= LINE_HALF_WIDTH && pos.y() >= m.py && pos.y() <= height())
             return i;
     }
     return -1;
-}
-
-void WaypointMarkersItem::setDrag(int index)
-{
-    const bool was = m_drag >= 0;
-    m_drag = index;
-    if (was != (m_drag >= 0))
-        emit draggingChanged();
 }
 
 void WaypointMarkersItem::setHover(int index)
@@ -377,39 +391,24 @@ void WaypointMarkersItem::mousePressEvent(QMouseEvent *event)
         event->ignore(); // let the chart pan
         return;
     }
-    m_moved = false;
-    setDrag(idx);
-    setKeepMouseGrab(true);
+    m_pressed = idx;
     event->accept();
 }
 
-// vertical drag changes the waypoint altitude (fact only, no upload)
 void WaypointMarkersItem::mouseMoveEvent(QMouseEvent *event)
 {
-    if (m_drag < 0 || m_drag >= m_markers.size())
-        return;
-    auto wp = m_markers[m_drag].wp;
-    const double h = height();
-    const double hRange = m_maxHeight - m_minHeight;
-    if (!wp || h <= 0 || hRange <= 0)
-        return;
-    m_moved = true;
-    const double hAMSL = m_maxHeight - event->position().y() / h * hRange;
-    auto group = qobject_cast<MissionGroup *>(m_group.data());
-    const double startHmsl = group && group->mission ? std::round(group->mission->startElevation())
-                                                     : 0;
-    const double alt = wp->f_amsl->value().toBool() ? hAMSL : hAMSL - startHmsl;
-    wp->f_altitude->setValue(qMax(0, qRound(alt)));
+    event->accept();
 }
 
+// a click on a marker: the map centers on the waypoint and its menu opens
 void WaypointMarkersItem::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (m_drag < 0)
+    if (m_pressed < 0)
         return;
-    auto wp = m_drag < m_markers.size() ? m_markers[m_drag].wp : nullptr;
-    setDrag(-1);
-    setKeepMouseGrab(false);
+    auto wp = m_pressed < m_markers.size() ? m_markers[m_pressed].wp : nullptr;
+    const bool onMarker = hitTest(event->position()) == m_pressed;
+    m_pressed = -1;
     event->accept();
-    if (!m_moved && wp)
+    if (onMarker && wp)
         wp->trigger();
 }
