@@ -23,6 +23,7 @@
 
 #include <App/App.h>
 #include <QCoreApplication>
+#include <QQuickGraphicsConfiguration>
 #include <QScreen>
 #include <QWidget>
 
@@ -35,6 +36,11 @@ AppQuickView::AppQuickView(const QString &name, const QString &title, QWindow *p
     setFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
     setColor(Qt::black);
+
+    QQuickGraphicsConfiguration gc = graphicsConfiguration();
+    gc.setDepthBufferFor2D(false);
+    setGraphicsConfiguration(gc);
+
     setVisibility(QWindow::AutomaticVisibility);
 
     setResizeMode(QQuickView::SizeRootObjectToView);

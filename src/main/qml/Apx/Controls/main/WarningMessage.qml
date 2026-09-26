@@ -21,6 +21,8 @@
  */
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
 import Apx.Common
 //import Apx.Menu 1.0
@@ -29,12 +31,13 @@ import APX.Fleet
 FactButton {
     id: control
 
-    showText: enabled
+    showText: fact.size > 0
     showValue: false
     showNext: false
     showEditor: false
 
-    enabled: fact.size
+    // always clickable to reach preferences (keywords) even when list is empty
+    enabled: true
 
     fact: apx.fleet.current.warnings
     readonly property int showTimeout: 5000
@@ -43,6 +46,45 @@ FactButton {
     Connections {
         target: fact
         function onShow(msg, msgType){ message(msg, msgType) }
+    }
+
+    // bubble with warnings items matching keywords (fact.prefs.keywords)
+    readonly property var bubbleItems: (fact && fact.bubbleItems) ? fact.bubbleItems : []
+
+    Popup {
+        id: bubble
+        parent: control
+        // right edge aligned with the button, so the bubble doesn't jump when text appears
+        x: control.width - width
+        y: control.height + Style.spacing
+        margins: Style.spacing
+        padding: Style.spacing
+        modal: false
+        dim: false
+        focus: false
+        closePolicy: Popup.NoAutoClose
+        visible: control.bubbleItems.length > 0
+        width: Math.min(implicitWidth, Style.buttonSize * 32)
+
+        background: Rectangle {
+            color: "#e0222222"
+            border.color: Material.color(Material.Orange)
+            border.width: 1
+            radius: Style.spacing
+        }
+        contentItem: ColumnLayout {
+            spacing: 0
+            Repeater {
+                model: control.bubbleItems
+                delegate: Text {
+                    Layout.fillWidth: true
+                    text: modelData
+                    wrapMode: Text.Wrap
+                    color: Material.primaryTextColor
+                    font: apx.font_narrow(Style.fontSize * 2)
+                }
+            }
+        }
     }
 
     state: "NORMAL"
