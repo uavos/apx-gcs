@@ -64,7 +64,7 @@ FactButton {
         focus: false
         closePolicy: Popup.NoAutoClose
         visible: control.bubbleItems.length > 0
-        width: Math.min(implicitWidth, Style.buttonSize * 16)
+        width: Math.min(implicitWidth, Style.buttonSize * 32)
 
         background: Rectangle {
             color: "#e0222222"
@@ -81,7 +81,7 @@ FactButton {
                     text: modelData
                     wrapMode: Text.Wrap
                     color: Material.primaryTextColor
-                    font: apx.font_narrow(Style.fontSize)
+                    font: apx.font_narrow(Style.fontSize * 2)
                 }
             }
         }
