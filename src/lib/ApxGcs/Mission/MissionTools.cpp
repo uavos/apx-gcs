@@ -171,6 +171,8 @@ void MissionTools::updateMaxAltitude()
     }
     if (alt > 0)
         f_altset->setValue(alt);
+
+    f_altsetApply->setEnabled(false);
 }
 
 void MissionTools::copyUnitSelected(Unit *unit)

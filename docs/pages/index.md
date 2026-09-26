@@ -17,7 +17,15 @@ The purpose of this application is to manage command & control, mission planing,
 - C++ defined JS Tree at the [backend](https://github.com/uavos/apx-gcs/tree/main/src/lib/ApxCore/Fact);
 - Application defined by [plugins](plugins);
 - Protocols [abstraction](protocols);
+- [Extensible architecture](architecture);
 
 ## Source code
 
 The GCS source code and binary packages are published here: [apx-gcs](https://github.com/uavos/apx-gcs).
+
+## Documentation
+
+- [System Architecture](architecture)
+- [Plugin System](plugins)
+- [Contributing Guidelines](contributing)
+- [Build Instructions](install)

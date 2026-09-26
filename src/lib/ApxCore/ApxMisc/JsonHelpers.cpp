@@ -263,9 +263,7 @@ QJsonArray json::diff(const QJsonArray &prev, const QJsonArray &next)
         auto v = _diff(i < prev.size() ? prev.at(i) : QJsonValue(), value);
         diff.append(v);
     }
-    // remove null values from tail
-    while (!diff.isEmpty() && diff.last().isNull())
-        diff.removeLast();
+    // keep diff.size() == next.size() always, so merge can use it as the true new length
     return diff;
 }
 
@@ -318,18 +316,15 @@ QJsonObject json::merge(QJsonObject orig, const QJsonObject &patch)
 
 QJsonArray json::merge(QJsonArray orig, const QJsonArray &patch)
 {
-    // add missing array elements
-    while (patch.size() > orig.size())
-        orig.append(patch.at(orig.size()));
-
+    // result always matches patch length (grows or truncates orig accordingly)
     QJsonArray result;
-    int idx = 0;
-    for (auto value : orig) {
+    for (int i = 0; i < patch.size(); ++i) {
+        auto value = i < orig.size() ? orig.at(i) : QJsonValue();
         auto t = value.type();
-        auto v = _merge(value, patch.at(idx++));
+        auto v = _merge(value, patch.at(i));
         if (v.isNull() || v.isUndefined())
             v = QJsonValue(t); // keep original type
-        result.append(v);      // always keep original array length
+        result.append(v);
     }
 
     return result;

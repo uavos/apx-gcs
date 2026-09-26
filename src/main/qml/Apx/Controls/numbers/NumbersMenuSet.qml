@@ -28,6 +28,7 @@ Fact {
     flags: (Fact.Group | Fact.FlatModel)
 
     property var values //from config
+    property string sourceFile
 
     signal selected(var num)
 
@@ -114,8 +115,7 @@ Fact {
     }
     Fact {
         flags: (Fact.Action | Fact.Apply)
-        title: qsTr("Select and save")
-        visible: !setFact.active
+        title: setFact.active ? qsTr("Save") : qsTr("Select and save")
         icon: "check-circle"
         onTriggered: {
             setFact.menuBack()

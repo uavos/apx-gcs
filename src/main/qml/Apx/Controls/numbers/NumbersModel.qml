@@ -48,19 +48,45 @@ ObjectModel {
 
     function loadSettings()
     {
-        var f=application.prefs.loadFile("numbers.json")
-        var json=f?JSON.parse(f):{}
         var list=defaults
-        while(json){
-            var set
-            if(json.sets && json.active)
-                set=json.sets[json.active[settingsName]]
-            if(!set) break
-            var values=set["values"]
-            if(!values) break
-            if(!(values instanceof Array))break;
-            list=values
-            break;
+        var activeFile=application.prefs.loadValue(settingsName, "numbers/active", "")
+        var fileNames=application.prefs.files("numbers-*.json")
+        var sets=[]
+        for(var i=0;i<fileNames.length;++i){
+            var fileName=fileNames[i]
+            var f=application.prefs.loadFile(fileName)
+            try {
+                var set=f?JSON.parse(f):{}
+                if(!(set.values && (set.values instanceof Array)))
+                    continue
+                set.fileName=fileName
+                sets.push(set)
+            } catch(e) {
+                console.warn("Can't parse "+fileName+": "+e)
+            }
+        }
+        if(sets.length>0){
+            var selectedSet=sets[0]
+            for(i=0;i<sets.length;++i){
+                if(sets[i].fileName===activeFile){
+                    selectedSet=sets[i]
+                    break
+                }
+            }
+            list=selectedSet.values
+        }else if(fileNames.length===0){
+            // Backward compatibility until the old configuration is saved.
+            var legacyFile=application.prefs.loadFile("numbers.json")
+            try {
+                var json=legacyFile?JSON.parse(legacyFile):{}
+                if(json.sets && json.active){
+                    var legacySet=json.sets[json.active[settingsName]]
+                    if(legacySet && legacySet.values && (legacySet.values instanceof Array))
+                        list=legacySet.values
+                }
+            } catch(e) {
+                console.warn("Can't parse numbers.json: "+e)
+            }
         }
         updateNumbers(list)
     }
@@ -70,20 +96,40 @@ ObjectModel {
     }
 
     property var objList: [ ]
+    function setupEventObject(obj)
+    {
+        function update()
+        {
+            var index=0
+            while(index<model.count && model.get(index)!==obj)
+                ++index
+            if(obj.warning || obj.error){
+                if(index===model.count)
+                    model.append(obj)
+            }else if(index<model.count){
+                model.remove(index)
+            }
+        }
+        obj.warningChanged.connect(update)
+        obj.errorChanged.connect(update)
+        update()
+    }
 
     function updateNumbers(list)
     {
         clearObjList()
         model.clear()
         model.minimumWidth=itemHeight*3
+        var eventObjects=[]
         for(var i in list){
             var n=list[i]
             //console.log(n.bind)
             var s="import QtQuick; NumbersItem {"
             s+="light: "+light+";"
             s+="fixedWidth: "+model.fixedWidth+";"
-            if(n.warn)s+="warning: "+n.warn+";"
-            if(n.alarm)s+="error: "+n.alarm+";"
+            if(n.adv)s+="active: (function(value){return ("+n.adv+")})(v);"
+            if(n.warn)s+="warning: (function(value){return ("+n.warn+")})(v);"
+            if(n.alarm)s+="error: (function(value){return ("+n.alarm+")})(v);"
 
             var f=null
             if(!(n.bind.match(/[\(\+!*]/) || n.bind.includes(".value")))
@@ -99,10 +145,10 @@ ObjectModel {
             }else if(!f){
                 s+="value: v;"
             }
-            if(n.act || n.warn || n.alarm){
+            if(n.act || n.adv || n.warn || n.alarm){
                 s+="enabled: true;"
             }
-            if(n.act || n.warm || n.alarm){
+            if(n.act || n.adv || n.warn || n.alarm){
                 s+="onTriggered: {"+n.act+"}"
                 s+="HoverHandler {acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad; cursorShape: Qt.PointingHandCursor}"
             }
@@ -120,13 +166,19 @@ ObjectModel {
 
             obj.height=Qt.binding(function(){return itemHeight})
             for(var p in n){
+                if(p==="visible")continue
                 if(typeof(obj[p])=='undefined')continue
                 if(n[p]==="")continue
                 obj[p]=n[p]
             }
-            model.append(obj)
             objList.push(obj)
+            if(n.visible === false)
+                eventObjects.push(obj)
+            else
+                model.append(obj)
         }
+        for(i in eventObjects)
+            setupEventObject(eventObjects[i])
     }
 
     function clearObjList()

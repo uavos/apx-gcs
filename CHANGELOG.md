@@ -1,3 +1,17 @@
+# [APX Ground Control v11.2.29](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.29) (09/19/26)
+
+> Branch: `main`\
+> Date: `09/19/26 20:10:30`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/063669d44e0837c5939a04dd84f51902b0d3724b...71d6bf26b5c5f46569556225257989b50aeb5627)
+
+## New Features
+* advisory state for numbers items
+
+## Bug Fixes
+* enable button after altitude change
+* telemetry recorder save enum text as units
+* function and warning cache
+
 # [APX Ground Control v11.2.28](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.28) (08/24/26)
 
 > Branch: `main`\

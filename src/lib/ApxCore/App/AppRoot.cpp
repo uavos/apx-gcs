@@ -33,7 +33,83 @@ AppRoot::AppRoot(QObject *parent)
 
     f_settings = new AppSettings(this);
 
+    m_batteryTimer.setInterval(30000);
+    connect(&m_batteryTimer, &QTimer::timeout, this, &AppRoot::updateBatteryLevel);
+    connect(f_settings->f_systemBattery,
+            &Fact::valueChanged,
+            this,
+            &AppRoot::updateBatteryMonitoring);
+    updateBatteryLevel();
+    if (f_settings->f_systemBattery->value().toBool())
+        m_batteryTimer.start();
+
     createTools();
+}
+
+void AppRoot::updateBatteryLevel()
+{
+    int level = -1;
+    bool charging = false;
+#ifdef Q_OS_MACOS
+    QProcess process;
+    process.start(QStringLiteral("/usr/bin/pmset"), {QStringLiteral("-g"), QStringLiteral("batt")});
+    if (process.waitForFinished(2000)) {
+        const QString output = QString::fromUtf8(process.readAllStandardOutput());
+        const auto match = QRegularExpression(QStringLiteral("(\\d{1,3})%")).match(output);
+        if (match.hasMatch()) {
+            level = qBound(0, match.captured(1).toInt(), 100);
+            charging = output.contains(QRegularExpression(QStringLiteral(";\\s*charging;"),
+                                                          QRegularExpression::CaseInsensitiveOption));
+        }
+    }
+#elif defined(Q_OS_LINUX)
+    const QDir powerSupplyDir(QStringLiteral("/sys/class/power_supply"));
+    const auto entries = powerSupplyDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const auto &entry : entries) {
+        QFile typeFile(entry.filePath() + QStringLiteral("/type"));
+        if (!typeFile.open(QIODevice::ReadOnly)
+            || typeFile.readAll().trimmed() != QByteArrayLiteral("Battery"))
+            continue;
+
+        QFile capacityFile(entry.filePath() + QStringLiteral("/capacity"));
+        if (!capacityFile.open(QIODevice::ReadOnly))
+            continue;
+
+        bool ok = false;
+        const int value = capacityFile.readAll().trimmed().toInt(&ok);
+        if (!ok)
+            continue;
+
+        level = qBound(0, value, 100);
+        QFile statusFile(entry.filePath() + QStringLiteral("/status"));
+        if (statusFile.open(QIODevice::ReadOnly))
+            charging = statusFile.readAll().trimmed().compare(QByteArrayLiteral("Charging"),
+                                                              Qt::CaseInsensitive)
+                       == 0;
+        break;
+    }
+#endif
+    f_settings->f_systemBattery->setVisible(level >= 0);
+    if (m_batteryLevel != level) {
+        m_batteryLevel = level;
+        emit batteryLevelChanged();
+    }
+    if (m_batteryCharging != charging) {
+        m_batteryCharging = charging;
+        emit batteryChargingChanged();
+    }
+}
+
+void AppRoot::updateBatteryMonitoring()
+{
+    // Poll the system battery only while its indicator is enabled.
+    if (!f_settings->f_systemBattery->value().toBool()) {
+        m_batteryTimer.stop();
+        return;
+    }
+
+    updateBatteryLevel();
+    m_batteryTimer.start();
 }
 
 void AppRoot::sound(const QString &v)
