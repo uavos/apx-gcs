@@ -49,7 +49,7 @@ Button {
 
     // geometry
 
-    Material.roundedScale: Material.ExtraSmallScale
+    Material.roundedScale: height/32
 
     padding: height/32
     spacing: height/20
