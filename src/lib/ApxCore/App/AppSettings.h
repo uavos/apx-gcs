@@ -37,6 +37,7 @@ public:
     Fact *f_interface;
     Fact *f_graphics;
     Fact *f_application;
+    Fact *f_systemBattery;
 
 private:
     static AppSettings *_instance;
