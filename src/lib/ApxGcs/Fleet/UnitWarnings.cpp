@@ -47,6 +47,7 @@ UnitWarnings::UnitWarnings(Unit *parent)
                        "notification-clear-all");
     f_clear->setEnabled(false);
     connect(f_clear, &Fact::triggered, this, &Fact::deleteChildren);
+    connect(f_clear, &Fact::triggered, this, &UnitWarnings::clearBubble);
 
     connect(this, &Fact::sizeChanged, this, [=]() { f_clear->setEnabled(size() > 0); });
 
@@ -116,18 +117,32 @@ bool UnitWarnings::matchKeywords(const QString &msg) const
 QStringList UnitWarnings::bubbleItems() const
 {
     QStringList list;
-    for (auto f : m_bubbleItems)
-        list.append(f->title());
+    for (const auto &i : m_bubbleItems)
+        list.append(i.text);
     return list;
 }
 
-void UnitWarnings::addBubbleItem(Fact *fact)
+void UnitWarnings::addBubbleItem(const QString &text, Fact *fact)
 {
     // newest on top, limited number of items
-    m_bubbleItems.removeAll(fact);
-    m_bubbleItems.prepend(fact);
+    for (int i = 0; i < m_bubbleItems.size(); ++i) {
+        const auto &b = m_bubbleItems.at(i);
+        if ((fact && b.fact == fact) || (!fact && !b.fact && b.text == text)) {
+            m_bubbleItems.removeAt(i);
+            break;
+        }
+    }
+    m_bubbleItems.prepend({fact, text});
     while (m_bubbleItems.size() > bubble_max_items)
         m_bubbleItems.removeLast();
+    emit bubbleItemsChanged();
+}
+
+void UnitWarnings::clearBubble()
+{
+    if (m_bubbleItems.isEmpty())
+        return;
+    m_bubbleItems.clear();
     emit bubbleItemsChanged();
 }
 
@@ -140,6 +155,12 @@ void UnitWarnings::error(const QString &msg)
 {
     createItem(msg, ERROR);
     App::sound("error");
+}
+void UnitWarnings::info(const QString &msg)
+{
+    // info messages are not listed, only shown in bubble when matched by keywords
+    if (matchKeywords(msg))
+        addBubbleItem(msg);
 }
 
 Fact *UnitWarnings::createItem(const QString &msg, MsgType kind)
@@ -172,7 +193,14 @@ Fact *UnitWarnings::createItem(const QString &msg, MsgType kind)
         connect(fact, &Fact::destroyed, this, [=]() {
             showMap.remove(fact);
             showList.removeAll(fact);
-            if (m_bubbleItems.removeAll(fact) > 0)
+            bool changed = false;
+            for (int i = m_bubbleItems.size() - 1; i >= 0; --i) {
+                if (m_bubbleItems.at(i).fact != fact)
+                    continue;
+                m_bubbleItems.removeAt(i);
+                changed = true;
+            }
+            if (changed)
                 emit bubbleItemsChanged();
         });
     } else {
@@ -187,7 +215,7 @@ Fact *UnitWarnings::createItem(const QString &msg, MsgType kind)
     }
     emit show(fact->title(), kind);
     if (matchKeywords(msg))
-        addBubbleItem(fact);
+        addBubbleItem(fact->title(), fact);
     showList.insert(showNum > showList.size() ? showList.size() : showNum, fact);
     showMap.insert(fact, 0);
     showNum = showList.indexOf(fact);

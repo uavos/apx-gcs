@@ -53,9 +53,16 @@ private:
     QTimer showTimer;
     Fact *createItem(const QString &msg, MsgType kind);
 
-    // references to warnings items, removed together with them
-    FactList m_bubbleItems;
-    void addBubbleItem(Fact *fact);
+    // bubble entries: warnings list items (removed together with them)
+    // or plain info messages (removed by Clear)
+    struct BubbleItem
+    {
+        QPointer<Fact> fact;
+        QString text;
+    };
+    QList<BubbleItem> m_bubbleItems;
+    void addBubbleItem(const QString &text, Fact *fact = nullptr);
+    void clearBubble();
 
     // keywords are global for all units, stored in QSettings
     static QList<UnitWarnings *> _instances;
@@ -69,6 +76,7 @@ private slots:
 public slots:
     void warning(const QString &msg);
     void error(const QString &msg);
+    void info(const QString &msg);
 signals:
     void show(QString msg, MsgType msgType);
     void showMore(QString msg, MsgType msgType);
