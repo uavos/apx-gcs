@@ -21,41 +21,17 @@
  */
 #pragma once
 
-#include "MissionItem.h"
+#include "ElevationMap.h"
+#include <App/PluginInterface.h>
 #include <QtCore>
 
-class Poi : public MissionItem
+class ElevationPlugin : public PluginInterface
 {
     Q_OBJECT
-    Q_PROPERTY(
-        QGeoCoordinate radiusPoint READ radiusPoint WRITE setRadiusPoint NOTIFY radiusPointChanged)
-
+    Q_PLUGIN_METADATA(IID "com.uavos.gcs.PluginInterface/1.0")
+    Q_INTERFACES(PluginInterface)
 public:
-    explicit Poi(MissionGroup *parent);
-
-    Fact *f_hmsl;
-    Fact *f_radius;
-    Fact *f_orbs;
-    Fact *f_time;
-
-protected:
-    QGeoRectangle boundingGeoRectangle() const;
-
-private slots:
-    void updateTitle();
-    void updateDescr();
-
-public slots:
-    void initElevationMap();
-
-    //---------------------------------------
-    // PROPERTIES
-public:
-    QGeoCoordinate radiusPoint() const;
-    void setRadiusPoint(const QGeoCoordinate &v);
-
-protected:
-    
-signals:
-    void radiusPointChanged();
+    int flags() override { return Feature | Map; }
+    QObject *createControl() override { return new ElevationMap(); }
+    QStringList depends() override { return QStringList() << "Location" << "MissionPlanner"; }
 };

@@ -25,6 +25,9 @@
 
 #include <App/AppRoot.h>
 #include <QGeoCircle>
+#include <QPointF>
+
+#include <float.h>
 
 MissionItem::MissionItem(MissionGroup *parent,
                          const QString &name,
@@ -83,6 +86,7 @@ MissionItem::MissionItem(MissionGroup *parent,
 
     connect(this, &MissionItem::totalTimeChanged, this, &MissionItem::updateStatus);
     connect(this, &MissionItem::totalDistanceChanged, this, &MissionItem::updateStatus);
+    
     updateStatus();
 }
 
@@ -108,6 +112,7 @@ QJsonValue MissionItem::toJson()
     jso["lon"] = f_pos->coordinate().longitude();
     return jso;
 }
+
 void MissionItem::fromJson(const QJsonValue &jsv)
 {
     auto jso = jsv.toObject();
@@ -242,7 +247,7 @@ void MissionItem::setCoordinate(const QGeoCoordinate &v)
     if (m_coordinate == v)
         return;
     m_coordinate = v;
-    emit coordinateChanged();
+    emit coordinateChanged(v);
     blockUpdateCoordinate = true;
     f_pos->setCoordinate(v);
     blockUpdateCoordinate = false;
@@ -258,6 +263,18 @@ void MissionItem::setGeoPath(const QGeoPath &v)
     m_geoPath = v;
     emit geoPathChanged();
 }
+double MissionItem::elevation() const
+{
+    return m_elevation;
+}
+void MissionItem::setElevation(double v)
+{
+    if (m_elevation == v)
+        return;
+    m_elevation = v;
+    emit elevationChanged();
+}
+
 double MissionItem::bearing() const
 {
     return m_bearing;
@@ -327,4 +344,42 @@ void MissionItem::setSelected(bool v)
         group->mission->setSelectedItem(this);
     else if (group->mission->selectedItem() == this)
         group->mission->setSelectedItem(nullptr);
+}
+
+void MissionItem::extractElevation(const QGeoCoordinate &coordinate)
+{
+    auto latDiff = std::abs(m_coordinate.latitude() - coordinate.latitude());
+    auto lonDiff = std::abs(m_coordinate.longitude() - coordinate.longitude());
+    if (latDiff > DBL_EPSILON || lonDiff > DBL_EPSILON)
+        return;    
+    setElevation(coordinate.altitude());
+}
+
+void MissionItem::startTimer()
+{
+    if (!m_timer.isActive())
+        m_timer.start();
+}
+
+void MissionItem::sendElevationRequest()
+{
+    emit requestElevation(m_coordinate);
+}
+
+QList<QPointF> MissionItem::terrainProfile() const
+{
+    return m_terrainProfile;
+}
+
+void MissionItem::setTerrainProfile(const QList<QPointF> &v) {
+    if(m_terrainProfile == v)
+        return;
+    m_terrainProfile = v;
+    emit terrainProfileChanged();
+}
+
+void MissionItem::clearTerrainProfile()
+{
+    m_terrainProfile.clear();
+    emit terrainProfileChanged();
 }

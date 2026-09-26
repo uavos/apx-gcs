@@ -292,6 +292,13 @@ Map {
                 lastX = mouse.x
                 lastY = mouse.y
             }
+            
+            if(apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value) {
+                if(timer.running)
+                    return
+                timer.pos = Qt.point(mouse.x, mouse.y)
+                timer.start()
+            }
         }
 
         onClicked: (mouse) => {
@@ -325,6 +332,13 @@ Map {
                     && Math.abs(pressY - mouse.y ) < jitterThreshold) {
                 control.menuRequested()
             }
+        }
+
+        Timer {
+            id: timer
+            property point pos: Qt.point(0, 0)
+            interval: 500 // Different interval for varios services will be implemented.
+            onTriggered: apx.tools.elevationmap.setElevationByCoordinate(toCoordinate(pos));
         }
     }
 }
