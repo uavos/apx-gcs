@@ -54,7 +54,8 @@ FactButton {
     Popup {
         id: bubble
         parent: control
-        x: 0
+        // right edge aligned with the button, so the bubble doesn't jump when text appears
+        x: control.width - width
         y: control.height + Style.spacing
         margins: Style.spacing
         padding: Style.spacing
