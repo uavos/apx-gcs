@@ -391,6 +391,10 @@ Rectangle {
             y: chartView.plotArea.y - topExtent
             width: chartView.plotArea.width
             height: chartView.plotArea.height + topExtent
+            TapHandler {
+                acceptedButtons: Qt.RightButton
+                onTapped: resetChartScale()
+            }
             HoverHandler {
                 id: hoverHandler
                 cursorShape: markers.hovered ? Qt.PointingHandCursor : Qt.ArrowCursor
@@ -539,10 +543,6 @@ Rectangle {
         }
     }
 
-    TapHandler {
-        acceptedButtons: Qt.LeftButton
-        onDoubleTapped: resetChartScale()
-    }
 
     WheelHandler {
         id: wheelHandler
