@@ -12,5 +12,4 @@ apx_lib(
     Positioning
     Bluetooth
     Concurrent
-    Charts
 )

@@ -293,7 +293,8 @@ Map {
                 lastY = mouse.y
             }
             
-            if(apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value) {
+            var elevationPlugin = apx.settings.application.plugins.elevationmap
+            if(elevationPlugin && elevationPlugin.value && apx.tools.elevationmap.use.value) {
                 if(timer.running)
                     return
                 timer.pos = Qt.point(mouse.x, mouse.y)

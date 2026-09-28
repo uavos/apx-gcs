@@ -136,7 +136,8 @@ MapQuickItem {  //to be used inside MapComponent only
 
     // object elevation view when dragging and hovered support
     function updateMapInfoElevation() {
-        if(apx.settings.application.plugins.elevationmap.value && apx.tools.elevationmap.use.value && apx.tools.elevationmap.available)
+        var elevationPlugin = apx.settings.application.plugins.elevationmap
+        if(elevationPlugin && elevationPlugin.value && apx.tools.elevationmap.use.value && apx.tools.elevationmap.available)
             apx.tools.elevationmap.setElevationByCoordinate(mapObject.coordinate)
     }
     
