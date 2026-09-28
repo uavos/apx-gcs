@@ -127,9 +127,13 @@ ObjectModel {
             var s="import QtQuick; NumbersItem {"
             s+="light: "+light+";"
             s+="fixedWidth: "+model.fixedWidth+";"
-            if(n.adv)s+="active: (function(value){return ("+n.adv+")})(v);"
-            if(n.warn)s+="warning: (function(value){return ("+n.warn+")})(v);"
-            if(n.alarm)s+="error: (function(value){return ("+n.alarm+")})(v);"
+
+            // moving average: conditions and displayed value use the averaged value
+            var avg=(n.avg===true || n.avg==="true") && Number(n.avgt)>0
+            var cv=avg?"avgValue":"v"
+            if(n.adv)s+="active: (function(value){return ("+n.adv+")})("+cv+");"
+            if(n.warn)s+="warning: (function(value){return ("+n.warn+")})("+cv+");"
+            if(n.alarm)s+="error: (function(value){return ("+n.alarm+")})("+cv+");"
 
             var f=null
             if(!(n.bind.match(/[\(\+!*]/) || n.bind.includes(".value")))
@@ -140,8 +144,17 @@ ObjectModel {
             }else{
                 s+="property var v: "+n.bind+";"
             }
+            if(avg){
+                s+="avgEnabled: true;"
+                s+="avgWindow: "+Number(n.avgt)+";"
+                s+="onVChanged: avgPush(v);"
+                s+="Component.onCompleted: avgPush(v);"
+            }
             if(n.prec){
-                s+="value: v.toFixed("+n.prec+")"+";"
+                if(avg) s+="value: avgValue===undefined?\"\":avgValue.toFixed("+n.prec+");"
+                else s+="value: v.toFixed("+n.prec+")"+";"
+            }else if(avg){
+                s+="value: avgValue===undefined?\"\":avgValue.toFixed(fact&&fact.precision>=0?fact.precision:2);"
             }else if(!f){
                 s+="value: v;"
             }
