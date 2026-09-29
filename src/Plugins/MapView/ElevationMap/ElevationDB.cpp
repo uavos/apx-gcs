@@ -70,13 +70,14 @@ OfflineElevationDB::~OfflineElevationDB()
 
 QString OfflineElevationDB::createASTERFileName(double lat, double lon)
 {
-    int la = fabs(static_cast<int>(lat));
-    int lo = fabs(static_cast<int>(lon));
+    // tiles are named by their south-west corner: -45.0 lies in S45, -45.5 in S46
+    const int la = lat < 0 ? int(std::ceil(std::abs(lat))) : int(std::floor(lat));
+    const int lo = lon < 0 ? int(std::ceil(std::abs(lon))) : int(std::floor(lon));
     auto fileName = QString("ASTGTMV003_%1%2%3%4_dem.tif")
                         .arg((lat >= 0) ? 'N' : 'S')
-                        .arg((lat >= 0 ? la : ++la), 2, 10, QChar('0'))
+                        .arg(la, 2, 10, QChar('0'))
                         .arg((lon >= 0) ? 'E' : 'W')
-                        .arg((lon >= 0 ? lo : ++lo), 3, 10, QChar('0'));
+                        .arg(lo, 3, 10, QChar('0'));
     return fileName;
 }
 

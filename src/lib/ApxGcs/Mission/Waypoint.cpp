@@ -880,8 +880,8 @@ void Waypoint::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
 
     QList<QGeoCoordinate> newPoints;
     
-    // Check points less lineFirstIndex
-    auto alt4Correct = path.coordinateAt(linesFirstIndex).altitude();
+    // Check points less lineFirstIndex (no straight section: nothing to correct here)
+    double alt4Correct = linesFirstIndex >= 0 ? path.coordinateAt(linesFirstIndex).altitude() : 0;
     for (int i = 1; i < indexes.size() - 1; i++) {
         if (linesFirstIndex <= 0)
             break;

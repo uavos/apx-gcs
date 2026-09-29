@@ -257,19 +257,19 @@ ActionButton {
             // extrainfo
             Item {
                 id: _extrainfo
-                property var mrg: 20
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.right: _data.left
-                anchors.rightMargin: mrg
+                anchors.rightMargin: _extrainfoLoader.item ? 20*ui.scale : 0
+                width: _extrainfoLoader.item ? _extrainfoLoader.item.implicitWidth : 0
 
                 Loader {
+                    id: _extrainfoLoader
                     property var opts: fact? fact.opts : null
                     property var extrainfo: opts ? fact.opts.extrainfo : false
                     active: !extrainfo ? false : true
                     anchors.fill: parent
                     source: active?getExtrainfoSource():""
-                    onLoaded: _extrainfo.mrg = item.implicitWidth + 20*ui.scale
                 }
             }
         }
