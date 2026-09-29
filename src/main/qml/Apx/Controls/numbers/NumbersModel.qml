@@ -66,14 +66,13 @@ ObjectModel {
             }
         }
         if(sets.length>0){
-            var selectedSet=sets[0]
+            // no active set for this panel: keep defaults
             for(i=0;i<sets.length;++i){
                 if(sets[i].fileName===activeFile){
-                    selectedSet=sets[i]
+                    list=sets[i].values
                     break
                 }
             }
-            list=selectedSet.values
         }else if(fileNames.length===0){
             // Backward compatibility until the old configuration is saved.
             var legacyFile=application.prefs.loadFile("numbers.json")

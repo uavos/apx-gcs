@@ -29,6 +29,9 @@ Fact {
     property string settingsName
     property bool destroyOnClose: true
     property var loadedFiles: []
+    // active set indexes of all panels from the old combined numbers.json
+    property var legacyActive: ({})
+    property var legacyTitles: []
 
     name: settingsName
     flags: (Fact.Group | Fact.DragChildren)
@@ -71,6 +74,8 @@ Fact {
         var activeFile=application.prefs.loadValue(settingsName, "numbers/active", "")
         var fileNames=application.prefs.files("numbers-*.json")
         loadedFiles=[]
+        legacyActive={}
+        legacyTitles=[]
         for(var i=0;i<fileNames.length;++i){
             var fileName=fileNames[i]
             var f=application.prefs.loadFile(fileName)
@@ -103,8 +108,10 @@ Fact {
                     set=legacy.sets[i]
                     if(!(set.values && (set.values instanceof Array))) continue
                     sets.push(set)
+                    legacyTitles.push(set.title)
                 }
                 if(legacy.active){
+                    legacyActive=legacy.active
                     var setIdx=legacy.active[settingsName]
                     if(setIdx>=0 && setIdx<sets.length)
                         currentSetIdx=setIdx
@@ -119,8 +126,7 @@ Fact {
             sets.push(set)
             currentSetIdx=sets.length-1
         }
-        else if(currentSetIdx<0)
-            currentSetIdx=0
+        // no active set for this panel: nothing is selected, defaults are shown
 
         //create facts
         for(i in sets){
@@ -137,16 +143,20 @@ Fact {
         var usedNames={}
         var savedFiles=[]
         var activeFile=""
+        var fileByTitle={}
         for(var i=0;i<size;++i){
             var setFact=child(i)
             var set=setFact.save()
             if(!set)continue
+            var origTitle=set.title
             var title=uniqueTitle(set.title, usedNames)
             set.title=title
             setFact.title=title
             var fileName="numbers-"+fileSafeName(title)+".json"
             application.prefs.saveFile(fileName,JSON.stringify(set,' ',2))
             savedFiles.push(fileName)
+            if(!(origTitle in fileByTitle))
+                fileByTitle[origTitle]=fileName
             if(setFact.active)
                 activeFile=fileName
         }
@@ -155,6 +165,15 @@ Fact {
                 application.prefs.removeFile(loadedFiles[i])
         }
         application.prefs.saveValue(settingsName, activeFile, "numbers/active")
+        // migrate active sets of the other panels from the old combined format
+        for(var panel in legacyActive){
+            if(panel===settingsName) continue
+            if(application.prefs.loadValue(panel, "numbers/active", "")!=="") continue
+            var legacyFile=fileByTitle[legacyTitles[legacyActive[panel]]]
+            if(legacyFile)
+                application.prefs.saveValue(panel, legacyFile, "numbers/active")
+        }
+        legacyActive={}
         accepted()
         close()
     }
