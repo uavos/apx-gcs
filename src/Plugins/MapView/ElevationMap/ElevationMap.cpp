@@ -95,6 +95,7 @@ ElevationMap::ElevationMap(Fact *parent)
     qmlRegisterType<TerrainProfileItem>("Apx.Elevation", 1, 0, "TerrainProfileItem");
     qmlRegisterType<WaypointMarkersItem>("Apx.Elevation", 1, 0, "WaypointMarkersItem");
     qml = loadQml("qrc:/ElevationPlugin.qml");
+    loadQml("qrc:/ElevationMapLayer.qml"); // map layer: elevation under the cursor
 }
 
 // without elevation files no request reaches the worker (its thread is never started)
