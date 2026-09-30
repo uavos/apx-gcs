@@ -35,10 +35,6 @@ Item {
     readonly property APX.Unit unit: apx.fleet.current
     readonly property Mission mission: unit.mission
 
-    property var elevationmap: apx.tools.elevationmap
-    property var plugin: apx.settings.application.plugins.elevationmap
-    property var use: elevationmap ? apx.tools.elevationmap.use.value : false
-    property var pluginOn: plugin ? apx.settings.application.plugins.elevationmap.value : false
     property var homeHmsl: mission.startElevation ? mission.startElevation : 0
     property var color: "#dcdcdc"
     property var chosenFact: fact.parentFact.chosen
@@ -48,7 +44,7 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     implicitHeight: parent.height
     implicitWidth: Math.max(icon.width+text.implicitWidth, height*4)
-    visible: !fact.parentFact.amsl.value && elevationmap && elevationmap.active
+    visible: !fact.parentFact.amsl.value
         
     MaterialIcon {
         id: icon
@@ -72,6 +68,7 @@ Item {
     onChosenChanged: _editor.enabled = chosen
 
     Component.onCompleted: _editor.enabled = chosen
+    Component.onDestruction: _editor.enabled = true // widget removed: plain altitude editor
 
     function getHomeHmsl()
     {

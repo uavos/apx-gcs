@@ -29,11 +29,6 @@ Item {
     id: item
     property var elevation: fact?fact.parentFact.elevation:NaN
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32" 
-    property var elevationmap: apx.tools.elevationmap
-    property var plugin: apx.settings.application.plugins.elevationmap
-    property var use: elevationmap ? apx.tools.elevationmap.use.value : false
-    property var pluginOn: plugin ? apx.settings.application.plugins.elevationmap.value : false
-    visible: elevationmap ? elevationmap.active : false
 
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter

@@ -42,13 +42,11 @@ Waypoint::Waypoint(MissionGroup *parent)
                                   Int);
     _altUnits = "m";
 
-    f_altitude->setOpt("extrainfo", "ExtraInfoAltitude.qml");
 
     f_agl = new MissionField(this, "agl", tr("AGL"), tr("Height above ground level"), Int);
     f_agl->setUnits("m");
     f_agl->setVisible(false);
     f_agl->setDefaultValue(0);
-    f_agl->setOpt("extrainfo", "ExtraInfoAgl.qml");
 
     f_atrack = new MissionField(this,
                                 "atrack",

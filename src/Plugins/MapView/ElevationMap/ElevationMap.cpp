@@ -500,6 +500,9 @@ void ElevationMap::setWaypointsValues(bool b)
         auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
         wp->f_agl->setVisible(b);
         wp->f_correct->setVisible(b);
+        // extra-info widgets of the plugin next to the altitude editors
+        wp->f_altitude->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoAltitude.qml") : QVariant());
+        wp->f_agl->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoAgl.qml") : QVariant());
         if (!b)
             continue;
         wp->initElevationMap();
@@ -563,9 +566,11 @@ void ElevationMap::setRunwaysValues(bool b)
     auto m = mission();
     QSet<QString> tempSet;
     for (int i = 0; i < m->f_rw->size(); ++i) {
+        auto runway = static_cast<Runway *>(m->f_rw->child(i));
+        runway->f_hmsl->setOpt("extrainfo",
+                               b ? QVariant("qrc:/ExtraInfoElevation.qml") : QVariant());
         if (!b)
             continue;
-        auto runway = static_cast<Runway *>(m->f_rw->child(i));
         runway->initElevationMap();
         connect(this,
                 &ElevationMap::coordinateChanged,
@@ -594,9 +599,10 @@ void ElevationMap::setPoisValues(bool b)
     auto m = mission();
     QSet<QString> tempSet;
     for (int i = 0; i < m->f_pi->size(); ++i) {
+        auto poi = static_cast<Poi *>(m->f_pi->child(i));
+        poi->f_hmsl->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoElevation.qml") : QVariant());
         if (!b)
             continue;
-        auto poi = static_cast<Poi *>(m->f_pi->child(i));
         poi->initElevationMap();
         connect(this,
                 &ElevationMap::coordinateChanged,
