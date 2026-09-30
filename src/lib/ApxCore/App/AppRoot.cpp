@@ -278,7 +278,6 @@ QString AppRoot::distanceToString(uint v, bool units)
         s.append(su);
     return s;
 }
-
 QString AppRoot::timeToString(quint64 v, bool seconds)
 {
     //if(v==0)return "--:--";
