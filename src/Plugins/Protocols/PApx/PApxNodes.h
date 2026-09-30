@@ -36,6 +36,9 @@ public:
 
     bool process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream, bool is_remote_uplink);
 
+    // data from another GCS instance
+    void process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream);
+
     auto nodes() const { return _nodes.values(); }
     auto local() const { return _local; }
 
@@ -55,8 +58,18 @@ private:
     PApxNodeRequest *_request{};
     uint _retry{};
 
+    // nodes data exchange between GCS instances
+    QElapsedTimer _gcs_req_time;
+    uint32_t _gcs_rx_hash{};
+    uint32_t _gcs_rx_size{};
+    QByteArray _gcs_rx_data;
+
 protected:
     void requestSearch() override;
+
+    void requestGcsNodes() override;
+    void sendGcsNodes(QJsonArray nodes) override;
+    void loadGcsNode(QJsonObject node) override;
 
 private slots:
     // reauests sequencer

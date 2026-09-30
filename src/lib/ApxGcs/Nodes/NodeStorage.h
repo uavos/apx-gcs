@@ -41,6 +41,9 @@ private:
     quint64 _dictID{};
     quint64 _confID{};
 
+    uint _dictSaving{};
+    bool _confSavePending{};
+
     QStringList get_names(Fact *f, QStringList path = QStringList());
 
 private slots:

@@ -376,6 +376,9 @@ void PApxNode::requestIdent()
 
 void PApxNode::requestDict()
 {
+    if (_gcs_loading)
+        return;
+
     if (!file("dict"))
         return;
 
@@ -385,6 +388,7 @@ void PApxNode::requestDict()
         return;
     }
 
+    _dict_cache_req = true;
     auto req = new db::nodes::NodeLoadDict(uid(), _dict_cache_hash);
     connect(req,
             &db::nodes::NodeLoadDict::dictLoaded,
@@ -402,8 +406,10 @@ void PApxNode::requestDict()
         &db::nodes::NodeLoadDict::finished,
         this,
         [this](db::nodes::NodeLoadDict::Status status) {
-            if (status)
+            if (status && _dict_cache_req) {
+                _dict_cache_req = false;
                 requestDictDownload();
+            }
         },
         Qt::QueuedConnection);
 
@@ -417,17 +423,30 @@ void PApxNode::requestDictDownload()
 
 void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
 {
+    if (!_dict_cache_req) // not needed anymore
+        return;
+
     auto hash = dict.value("cache").toString();
     if (_dict_cache_hash != hash) {
         qWarning() << title() << "wrong hash" << _dict_cache_hash << hash;
         return;
     }
+    _dict_cache_req = false;
+
     if (dict.isEmpty()) {
         qWarning() << title() << "no dict data";
         requestDictDownload();
         return;
     }
 
+    loadDictFields(dict);
+
+    qDebug() << title() << "dict from cache" << dictID << _field_names.size();
+
+    emit dictReceived(dict);
+}
+void PApxNode::loadDictFields(const QJsonObject &dict)
+{
     _field_types.clear();
     _field_names.clear();
     _field_arrays.clear();
@@ -455,17 +474,93 @@ void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
         _field_arrays.append(field.value("array").toVariant().toUInt());
         _field_units.append(field.value("units").toString());
     }
+}
+void PApxNode::loadGcsData(QJsonObject node)
+{
+    // node data received from another GCS instance
+    // is used instead of downloading from hardware
 
-    qDebug() << title() << "dict from cache" << dictID << _field_names.size();
+    auto info = node.value("info").toObject();
+    const auto dict = node.value("dict").toObject();
+    auto values = node.value("values").toObject();
 
+    const auto hash = info.value("hash").toString();
+    if (hash.isEmpty() || hash != dict.value("cache").toString()
+        || info.value("uid").toString() != uid()) {
+        qWarning() << title() << "gcs data error" << hash;
+        return;
+    }
+
+    if (upgrading())
+        return;
+
+    // update from ident
+    info.remove("host");
+
+    QStringList fnames;
+    for (const auto &i : info.value("files").toArray())
+        fnames.append(i.toString());
+    fnames.sort();
+
+    setTitle(info.value("name").toString());
+    if (fnames != _files_map.keys())
+        updateFiles(fnames);
+
+    // stop downloads from hardware
+    static const QStringList conf_files{"dict", "conf", "script"};
+    const auto requests = _requests;
+    for (auto i : requests) {
+        if (i->uid() == mandala::cmd::env::nmt::file::uid && conf_files.contains(i->cid()))
+            delete_request(i);
+    }
+    for (const auto &i : conf_files) {
+        auto f = file(i);
+        if (f)
+            f->reset();
+    }
+
+    QStringList descr;
+    descr.append(info.value("hardware").toString());
+    descr.append(info.value("version").toString());
+    setDescr(descr.join(' '));
+
+    // update from dict
+    _dict_cache_hash = hash;
+    _dict_cache_req = false;
+    loadDictFields(dict);
+
+    _ext_upd_values = {};
+    _ext_upd_request = false;
+
+    auto script_idx = _field_types.indexOf(xbus::node::conf::script);
+    if (script_idx >= 0)
+        _script_field = _field_names.at(script_idx);
+
+    // zero values are not present in json
+    for (const auto &name : _field_names) {
+        if (!values.contains(name))
+            values.insert(name, QJsonValue());
+    }
+
+    qDebug() << title() << "data from gcs" << _field_names.size();
+
+    // requests to hardware initiated by the following signals are blocked
+    _gcs_loading = true;
+    emit identReceived(info);
     emit dictReceived(dict);
+    emit confReceived(values);
+    _gcs_loading = false;
 }
 void PApxNode::dictCacheMissing(QString hash)
 {
+    if (!_dict_cache_req) // not needed anymore
+        return;
+
     if (_dict_cache_hash != hash) {
         qWarning() << title() << "wrong hash" << _dict_cache_hash << hash;
         return;
     }
+    _dict_cache_req = false;
     requestDictDownload();
 }
 void PApxNode::parseDictData(PApxNode *node,
@@ -624,6 +719,9 @@ void PApxNode::parseDictData(PApxNode *node,
 
 void PApxNode::requestConf()
 {
+    if (_gcs_loading)
+        return;
+
     // save request for sequential script requests
     _req_conf = new PApxNodeRequestFileRead(this, "conf");
     connect(_req_conf, &PApxNodeRequest::finished, this, [this]() { _req_conf = {}; });

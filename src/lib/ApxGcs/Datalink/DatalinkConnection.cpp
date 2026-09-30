@@ -110,6 +110,10 @@ void DatalinkConnection::sendPacket(QByteArray packet, quint16 network)
     if (!(m_txNetwork & network))
         return;
 
+    // data exchange between GCS instances must never load the hardware links
+    if (!isGcsLink() && isGcsPacket(packet))
+        return;
+
     if (!_encoder) {
         qDebug() << "TX no encoder";
         return;
@@ -243,6 +247,27 @@ bool DatalinkConnection::isControlPacket(const QByteArray &packet) const
         return false;
 
     return true;
+}
+
+bool DatalinkConnection::isGcsPacket(const QByteArray &packet) const
+{
+    PStreamReader stream(packet);
+
+    if (stream.available() < xbus::pid_s::psize())
+        return false;
+
+    xbus::pid_s pid;
+    pid.read(&stream);
+
+    if (mandala::cmd::env::unit::uplink::match(pid.uid)) {
+        // unit wrapped format
+        if (stream.available() < sizeof(xbus::unit::squawk_t) + xbus::pid_s::psize())
+            return false;
+        stream.read<xbus::unit::squawk_t>();
+        pid.read(&stream);
+    }
+
+    return mandala::cmd::env::aux::gcs::match(pid.uid);
 }
 
 void DatalinkConnection::open()

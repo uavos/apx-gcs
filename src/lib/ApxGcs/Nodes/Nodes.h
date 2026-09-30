@@ -83,6 +83,9 @@ private slots:
     void node_available(PNode *node);
     void node_response(PNode *node);
 
+    void gcsNodesRequested();
+    void gcsNodesReceived(QJsonArray nodes);
+
     void syncDone();
 
 signals:
