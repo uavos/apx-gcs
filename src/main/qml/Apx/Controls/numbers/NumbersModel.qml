@@ -66,14 +66,13 @@ ObjectModel {
             }
         }
         if(sets.length>0){
-            var selectedSet=sets[0]
+            // no active set for this panel: keep defaults
             for(i=0;i<sets.length;++i){
                 if(sets[i].fileName===activeFile){
-                    selectedSet=sets[i]
+                    list=sets[i].values
                     break
                 }
             }
-            list=selectedSet.values
         }else if(fileNames.length===0){
             // Backward compatibility until the old configuration is saved.
             var legacyFile=application.prefs.loadFile("numbers.json")
@@ -127,9 +126,13 @@ ObjectModel {
             var s="import QtQuick; NumbersItem {"
             s+="light: "+light+";"
             s+="fixedWidth: "+model.fixedWidth+";"
-            if(n.adv)s+="active: (function(value){return ("+n.adv+")})(v);"
-            if(n.warn)s+="warning: (function(value){return ("+n.warn+")})(v);"
-            if(n.alarm)s+="error: (function(value){return ("+n.alarm+")})(v);"
+
+            // moving average: conditions and displayed value use the averaged value
+            var avg=(n.avg===true || n.avg==="true") && Number(n.avgt)>0
+            var cv=avg?"avgValue":"v"
+            if(n.adv)s+="active: (function(value){return ("+n.adv+")})("+cv+");"
+            if(n.warn)s+="warning: (function(value){return ("+n.warn+")})("+cv+");"
+            if(n.alarm)s+="error: (function(value){return ("+n.alarm+")})("+cv+");"
 
             var f=null
             if(!(n.bind.match(/[\(\+!*]/) || n.bind.includes(".value")))
@@ -140,8 +143,17 @@ ObjectModel {
             }else{
                 s+="property var v: "+n.bind+";"
             }
+            if(avg){
+                s+="avgEnabled: true;"
+                s+="avgWindow: "+Number(n.avgt)+";"
+                s+="onVChanged: avgPush(v);"
+                s+="Component.onCompleted: avgPush(v);"
+            }
             if(n.prec){
-                s+="value: v.toFixed("+n.prec+")"+";"
+                if(avg) s+="value: avgValue===undefined?\"\":avgValue.toFixed("+n.prec+");"
+                else s+="value: v.toFixed("+n.prec+")"+";"
+            }else if(avg){
+                s+="value: avgValue===undefined?\"\":avgValue.toFixed(fact&&fact.precision>=0?fact.precision:2);"
             }else if(!f){
                 s+="value: v;"
             }
