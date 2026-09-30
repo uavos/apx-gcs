@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MissionShare.h"
+#include "MissionItem.h"
 #include "UnitMission.h"
 
 #include <App/AppDirs.h>
@@ -63,7 +64,24 @@ bool MissionShare::importRequest(QStringList fileNames)
     if (jso.isEmpty())
         return false;
 
-    _mission->fromJson(jso);
+    // file with geofences only is appended to current mission objects
+    MissionGroup *geo = _mission->f_geo;
+    bool append = false;
+    for (auto g : _mission->groups) {
+        if (g == geo)
+            continue;
+        if (jso.contains(g->name())) {
+            append = false;
+            break;
+        }
+        append |= g->size() > 0;
+    }
+    if (append && jso.contains(geo->name())) {
+        for (const auto &i : jso.value(geo->name()).toArray())
+            geo->createObject()->fromJson(i);
+    } else {
+        _mission->fromJson(jso);
+    }
 
     _imported(fileName, _mission->f_title->text());
     return true;
