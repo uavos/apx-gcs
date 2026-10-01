@@ -74,8 +74,20 @@ bool MissionShare::importRequest(QStringList fileNames)
         }
     }
     if (append && jso.contains(geo->name())) {
-        for (const auto &i : jso.value(geo->name()).toArray())
-            geo->createObject()->fromJson(i);
+        for (const auto &i : jso.value(geo->name()).toArray()) {
+            // skip geofences already present at the same position
+            const auto jsi = i.toObject();
+            QGeoCoordinate c(jsi.value("lat").toDouble(), jsi.value("lon").toDouble());
+            bool exists = false;
+            for (auto f : geo->facts()) {
+                if (static_cast<MissionItem *>(f)->coordinate().distanceTo(c) < 1.0) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists)
+                geo->createObject()->fromJson(i);
+        }
     } else {
         _mission->fromJson(jso);
     }
