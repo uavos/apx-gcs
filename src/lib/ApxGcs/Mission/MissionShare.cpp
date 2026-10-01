@@ -64,17 +64,14 @@ bool MissionShare::importRequest(QStringList fileNames)
     if (jso.isEmpty())
         return false;
 
-    // file with geofences only is appended to current mission objects
+    // file with geofences only is appended to non-empty current mission
     MissionGroup *geo = _mission->f_geo;
-    bool append = false;
+    bool append = !_mission->empty();
     for (auto g : _mission->groups) {
-        if (g == geo)
-            continue;
-        if (jso.contains(g->name())) {
+        if (g != geo && jso.contains(g->name())) {
             append = false;
             break;
         }
-        append |= g->size() > 0;
     }
     if (append && jso.contains(geo->name())) {
         for (const auto &i : jso.value(geo->name()).toArray())
