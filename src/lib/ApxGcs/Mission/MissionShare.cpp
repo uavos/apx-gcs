@@ -31,8 +31,8 @@ MissionShare::MissionShare(UnitMission *mission, Fact *parent, Flags flags)
     : Share(parent, "mission", tr("Mission"), AppDirs::missions(), flags)
     , _mission(mission)
 {
-    _exportFormats << "geo";
-    _importFormats << "geo";
+    _exportFormats << "geofence";
+    _importFormats << "geofence";
 
     connect(mission, &UnitMission::emptyChanged, this, &MissionShare::updateActions);
     updateActions();
@@ -55,7 +55,7 @@ QString MissionShare::getDefaultTitle()
 bool MissionShare::exportRequest(QString format, QString fileName)
 {
     auto jso = _mission->toJson().toObject();
-    if (format == "geo") {
+    if (format == "geofence") {
         // geofences only
         const auto name = _mission->f_geo->name();
         if (!jso.contains(name))
