@@ -100,20 +100,7 @@ Runway::Runway(MissionGroup *parent)
         }
     });
 
-    initElevationMap();
-
     App::jsync(this);
-}
-
-void Runway::initElevationMap()
-{
-    f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
-    if (!f_elevationmap)
-        return;
-    m_timer.setInterval(TIMEOUT); 
-    m_timer.setSingleShot(true);
-    connect(this, &MissionItem::coordinateChanged, this, &Runway::startTimer, Qt::UniqueConnection);
-    connect(&m_timer, &QTimer::timeout, this, &Runway::sendElevationRequest, Qt::UniqueConnection);
 }
 
 void Runway::updateTitle()

@@ -58,7 +58,6 @@ public:
     Fact *f_atrack;
     Fact *f_xtrack;
 
-    Fact *f_correct;
 
     WaypointActions *f_actions;
 

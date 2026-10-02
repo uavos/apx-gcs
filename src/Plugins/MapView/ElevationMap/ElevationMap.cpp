@@ -339,7 +339,50 @@ MissionTools *ElevationMap::missionTools() const
 
 Fact *ElevationMap::aglset() const
 {
-    return missionTools()->f_aglset;
+    auto group = missionTools()->child("aglset");
+    return group ? group->child("agl") : nullptr;
+}
+
+// Mission tools of the plugin ("AGL set", "All paths correction") are added to
+// the mission tools menu by the plugin itself, once per mission.
+void ElevationMap::createMissionTools()
+{
+    auto tools = missionTools();
+    if (tools->child("aglset"))
+        return;
+
+    auto group = new Fact(tools, "aglset", tr("AGL set"), tr("Set all waypoints height AGL"), Group);
+    group->setIcon("arrow-expand-vertical");
+    group->setVisible(false);
+    auto value = new Fact(group, "agl", tr("AGL value"), "", Int);
+    value->setUnits("m");
+    value->setIcon(group->icon());
+    value->setMin(0);
+    auto apply = new Fact(group,
+                          "apply",
+                          tr("Apply"),
+                          "",
+                          Action | Apply | CloseOnTrigger | ShowDisabled);
+    apply->setEnabled(false);
+    connect(value, &Fact::valueChanged, apply, [value, apply]() {
+        apply->setEnabled(value->value().toInt() != 0);
+    });
+    connect(apply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
+
+    auto correct = new Fact(tools,
+                            "pathscorrect",
+                            tr("All paths correction"),
+                            tr("Correct mission paths with unsafe agl"),
+                            CloseOnTrigger,
+                            "puzzle-edit-outline");
+    correct->setVisible(false);
+    connect(correct, &Fact::triggered, this, &ElevationMap::startPathsCorrection);
+
+    // keep them right after the altitude tools, before "Reverse"
+    const int index = tools->f_reverse->num();
+    group->move(index);
+    correct->move(index + 1);
+    App::jsync(tools);
 }
 
 void ElevationMap::updateMission()
@@ -365,16 +408,7 @@ void ElevationMap::updateMission()
             this,
             &ElevationMap::changeExternalsVisibility,
             Qt::UniqueConnection);
-    connect(missionTools()->f_aglsetApply,
-            &Fact::triggered,
-            this,
-            &ElevationMap::setMissionAgl,
-            Qt::UniqueConnection);
-    connect(missionTools()->f_pathsCorrect,
-            &Fact::triggered,
-            this,
-            &ElevationMap::startPathsCorrection,
-            Qt::UniqueConnection);
+    createMissionTools();
     // real-time AGL of the current unit
     if (auto f = unit()->f_mandala->fact(mandala::est::nav::pos::hmsl::uid))
         connect(f, &Fact::valueChanged, this, &ElevationMap::recalcUnitAgl, Qt::UniqueConnection);
@@ -417,7 +451,10 @@ void ElevationMap::setMissionAgl()
         if (qIsNaN(elevation))
             continue;
 
-        int v = aglset()->value().toInt();
+        auto agl = aglset();
+        if (!agl)
+            return;
+        int v = agl->value().toInt();
         v += static_cast<int>(elevation);
         wp->f_amsl->setValue(true);
         wp->f_altitude->setValue(v);
@@ -435,7 +472,7 @@ void ElevationMap::setMissionValues(bool b)
     if (aglset)
         aglset->setVisible(b);
 
-    auto pathsCorrect = missionTools()->f_pathsCorrect;
+    auto pathsCorrect = missionTools()->child("pathscorrect");
     if (pathsCorrect)
         pathsCorrect->setVisible(b);
 
@@ -499,7 +536,18 @@ void ElevationMap::setWaypointsValues(bool b)
     for (int i = 0; i < m->f_wp->size(); ++i) {
         auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
         wp->f_agl->setVisible(b);
-        wp->f_correct->setVisible(b);
+        // "Path correction" row of the waypoint menu belongs to the plugin
+        auto correct = wp->child("correct");
+        if (b && !correct) {
+            correct = new Fact(wp,
+                               "correct",
+                               tr("Path correction"),
+                               tr("Correct unsafe path's points"),
+                               CloseOnTrigger);
+            connect(correct, &Fact::triggered, wp, [wp]() { wp->correctPath(); });
+        }
+        if (correct)
+            correct->setVisible(b);
         // extra-info widgets of the plugin next to the altitude editors
         wp->f_altitude->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoAltitude.qml") : QVariant());
         wp->f_agl->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoAgl.qml") : QVariant());

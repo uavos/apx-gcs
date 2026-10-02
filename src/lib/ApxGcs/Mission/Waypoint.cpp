@@ -59,14 +59,6 @@ Waypoint::Waypoint(MissionGroup *parent)
     // Actions
     f_actions = new WaypointActions(this);
 
-    // Correct rout for elevationmap
-    f_correct = new MissionField(this,
-                                 "correct",
-                                 tr("Path correction"),
-                                 tr("Correct unsafe path's points"),
-                                 CloseOnTrigger);
-    f_correct->setVisible(false);
-
     // Default values
     Waypoint *f0 = static_cast<Waypoint *>(prevItem());
     if (f0) {
@@ -75,11 +67,6 @@ Waypoint::Waypoint(MissionGroup *parent)
     } else {
         f_altitude->setValue(200);
     }
-
-    // Elevation map and agl
-    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::processAgl);
-    connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude);
-    initElevationMap();
 
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateTitle);
@@ -101,17 +88,20 @@ Waypoint::Waypoint(MissionGroup *parent)
     connect(f_actions, &Fact::valueChanged, this, &Waypoint::updateDescr);
     updateDescr();
 
-    connect(f_correct, &Fact::triggered, this, [this]() { correctPath(); });
-
     App::jsync(this);
 }
 
+// Called by the ElevationMap plugin for every waypoint while it is active.
+// Nothing here runs without the plugin: the waypoint then behaves as in a
+// build without elevation support (AGL stays hidden and is never computed).
 void Waypoint::initElevationMap()
 {
-    f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
-    if (!f_elevationmap)
-        return;
-        
+    MissionItem::initElevationMap();
+
+    // altitude and AGL are two views of one value: an edit of either updates the other
+    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::processAgl, Qt::UniqueConnection);
+    connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude, Qt::UniqueConnection);
+
     auto mission = group->mission;
     auto order = f_order->value().toInt();
     connect(mission, &UnitMission::startElevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
@@ -128,11 +118,6 @@ void Waypoint::initElevationMap()
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::updateAgl, Qt::UniqueConnection);
     connect(this, &MissionItem::elevationChanged, this, &Waypoint::setAglEnabled, Qt::UniqueConnection);
     connect(this, &MissionItem::totalDistanceChanged, this, &Waypoint::updateTotalDistanceWithRw, Qt::UniqueConnection);
-
-    m_timer.setSingleShot(true);
-    m_timer.setInterval(TIMEOUT);
-    connect(this, &MissionItem::coordinateChanged, this, &Waypoint::startTimer, Qt::UniqueConnection);
-    connect(&m_timer, &QTimer::timeout, this, &Waypoint::sendElevationRequest, Qt::UniqueConnection);
 
     m_geoPathTimer.setSingleShot(true);
     m_geoPathTimer.setInterval(TIMEOUT);
@@ -164,6 +149,7 @@ void Waypoint::initElevationMap()
             &QFutureWatcher<QList<QGeoCoordinate>>::cancel,
             Qt::UniqueConnection);
     
+    updateTotalDistanceWithRw();
     updateMinMaxHeight();
     updateAgl();
 }

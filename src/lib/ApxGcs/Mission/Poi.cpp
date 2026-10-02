@@ -51,9 +51,6 @@ Poi::Poi(MissionGroup *parent)
     f_time->setMin(0);
     f_time->setMax(0xFFFF / 60);
 
-    connect(f_radius, &Fact::optsChanged, this, &Poi::updateTitle);
-    connect(f_hmsl, &Fact::optsChanged, this, &Poi::updateDescr);
-
     //conversions
     connect(this, &MissionItem::coordinateChanged, this, &Poi::radiusPointChanged);
     connect(f_radius, &Fact::valueChanged, this, &Poi::radiusPointChanged);
@@ -67,20 +64,7 @@ Poi::Poi(MissionGroup *parent)
     connect(f_time, &Fact::valueChanged, this, &Poi::updateDescr);
     updateDescr();
 
-    initElevationMap();
-
     App::jsync(this);
-}
-
-void Poi::initElevationMap()
-{
-    f_elevationmap = AppSettings::instance()->findChild("application.plugins.elevationmap");
-    if (!f_elevationmap)
-        return;
-    m_timer.setInterval(TIMEOUT);
-    m_timer.setSingleShot(true);
-    connect(this, &MissionItem::coordinateChanged, this, &Poi::startTimer, Qt::UniqueConnection);
-    connect(&m_timer, &QTimer::timeout, this, &Poi::sendElevationRequest, Qt::UniqueConnection);
 }
 
 void Poi::updateTitle()
@@ -88,7 +72,6 @@ void Poi::updateTitle()
     QStringList st;
     st.append(QString::number(num() + 1));
     int r = f_radius->value().toInt();
-
     if (std::abs(r) > 0) {
         st.append(AppRoot::distanceToString(std::abs(r)));
         if (r < 0)

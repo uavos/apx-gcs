@@ -67,7 +67,6 @@ public:
     Fact *f_order;
     MissionPoint *f_pos;
 
-    Fact *f_elevationmap{nullptr};
     Fact *f_remove;
 
     Q_INVOKABLE virtual QGeoRectangle boundingGeoRectangle() const;
@@ -76,6 +75,10 @@ public:
     void fromJson(const QJsonValue &jsv) override;
 
 public slots:
+    // Elevation map support is switched on per item by the ElevationMap plugin.
+    // The library never calls it: without the plugin an item has no elevation
+    // related connections or timers running.
+    void initElevationMap();
     void extractElevation(const QGeoCoordinate &coordinate);
     void updatePath();
     void resetPath();

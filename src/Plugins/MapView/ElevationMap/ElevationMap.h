@@ -123,6 +123,7 @@ private:
     bool hasTile(const QGeoCoordinate &c) const;
 
     void createDir(const QString &path);
+    void createMissionTools();
     void createElevationDatabase();
     void setMissionValues(bool b);
     void setWaypointsValues(bool b);

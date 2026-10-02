@@ -355,6 +355,15 @@ void MissionItem::extractElevation(const QGeoCoordinate &coordinate)
     setElevation(coordinate.altitude());
 }
 
+void MissionItem::initElevationMap()
+{
+    // request the terrain elevation shortly after the item was moved
+    m_timer.setSingleShot(true);
+    m_timer.setInterval(TIMEOUT);
+    connect(this, &MissionItem::coordinateChanged, this, &MissionItem::startTimer, Qt::UniqueConnection);
+    connect(&m_timer, &QTimer::timeout, this, &MissionItem::sendElevationRequest, Qt::UniqueConnection);
+}
+
 void MissionItem::startTimer()
 {
     if (!m_timer.isActive())
