@@ -181,9 +181,8 @@ void WaypointMarkersItem::refresh()
     auto group = qobject_cast<MissionGroup *>(m_group.data());
     if (group && group->mission) {
         auto mission = group->mission;
-        const auto p1 = mission->coordinate();
-        const auto p2 = mission->startPoint();
-        double acc = (p1.isValid() && p2.isValid()) ? p1.distanceTo(p2) : 0;
+        // distances are counted from the first waypoint, the takeoff leg is not shown
+        double acc = 0;
         const double startHmsl = std::round(mission->startElevation());
         const QFontMetricsF fm(m_font);
         for (int i = 0; i < group->size(); ++i) {
@@ -213,7 +212,8 @@ void WaypointMarkersItem::refresh()
                     &WaypointMarkersItem::changed,
                     Qt::UniqueConnection);
 
-            acc += wp->distance();
+            if (i > 0)
+                acc += wp->distance();
             const double alt = wp->f_altitude->value().toDouble();
             const bool amsl = wp->f_amsl->value().toBool();
             Marker m;

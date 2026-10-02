@@ -23,9 +23,7 @@
 
 #include "ElevationMap.h"
 
-#include <Mission/MissionGroup.h>
 #include <Mission/MissionItem.h>
-#include <Mission/UnitMission.h>
 
 #include <QSGFlatColorMaterial>
 #include <QSGGeometry>
@@ -114,12 +112,7 @@ void TerrainProfileItem::reloadProfile()
     m_profileMin.clear();
     auto em = qobject_cast<ElevationMap *>(m_elevationMap.data());
     if (em && m_item && m_profile.size() >= 2) {
-        // the profile was requested for the item path, the first item starts at the runway
-        auto path = m_item->geoPath();
-        auto mission = m_item->group ? m_item->group->mission : nullptr;
-        if (m_item->num() == 0 && mission && mission->coordinate().isValid())
-            path.insertCoordinate(0, mission->coordinate());
-        auto min = em->minProfile(path);
+        auto min = em->minProfile(m_item->geoPath());
         if (min.size() == m_profile.size())
             m_profileMin = min;
     }

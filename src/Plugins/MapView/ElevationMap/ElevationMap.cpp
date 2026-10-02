@@ -117,9 +117,16 @@ void ElevationMap::setTerrainProfile(const QGeoPath &path)
 {
     if (!f_use->value().toBool() || !m_available)
         return;
-    // requested by a waypoint: only the first one starts on the ground (runway)
+    // The leg from the runway to the first waypoint is a takeoff: its terrain is not
+    // analysed. A profile left from another place in the mission is dropped the same
+    // way as when there is no elevation data for the path.
     auto wp = qobject_cast<Waypoint *>(sender());
-    m_elevationDB->requestTerrainProfile(path, !wp || wp->num() == 0);
+    if (wp && wp->num() == 0) {
+        if (!wp->terrainProfile().isEmpty())
+            setGeoPath(path);
+        return;
+    }
+    m_elevationDB->requestTerrainProfile(path);
 }
 
 void ElevationMap::createElevationDatabase()
@@ -542,8 +549,11 @@ void ElevationMap::setWaypointsValues(bool b)
         auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
         wp->f_agl->setVisible(b);
         // "Path correction" row of the waypoint menu belongs to the plugin
+        // (not for the first waypoint: its leg, the takeoff, is not analysed)
+        const bool first = wp->num() == 0;
+        connect(wp, &Fact::numChanged, this, &ElevationMap::scheduleCoverage, Qt::UniqueConnection);
         auto correct = wp->child("correct");
-        if (b && !correct) {
+        if (b && !first && !correct) {
             correct = new Fact(wp,
                                "correct",
                                tr("Path correction"),
@@ -552,7 +562,7 @@ void ElevationMap::setWaypointsValues(bool b)
             connect(correct, &Fact::triggered, wp, [wp]() { wp->correctPath(); });
         }
         if (correct)
-            correct->setVisible(b);
+            correct->setVisible(b && !first);
         // extra-info widgets of the plugin next to the altitude editors
         wp->f_altitude->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoAltitude.qml") : QVariant());
         wp->f_agl->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoAgl.qml") : QVariant());

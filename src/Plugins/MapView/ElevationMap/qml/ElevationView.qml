@@ -72,24 +72,22 @@ Rectangle {
     property var segmentStarts: []
     property real missionLength: 0
     property real pendingLength: 0
-    // flight altitude line: [distance m, height AMSL m] per point, start point first
+    // The chart starts at the first waypoint (distance 0), the takeoff leg is not shown.
+    // flight altitude line: [distance m, height AMSL m] per waypoint
     property var missionLine: []
     function updateSegmentStarts() {
-        var p1 = mission.coordinate
-        var p2 = mission.startPoint
         var startHmsl = Math.round(mission.startElevation)
-        var acc = (p1.isValid && p2.isValid) ? p1.distanceTo(p2) : 0
+        var acc = 0
         var starts = []
         var line = []
-        if(p2.isValid && !isNaN(mission.startElevation))
-            line.push([0, mission.startElevation])
         var group = mission.wp
         for(var i = 0; i < group.size; ++i) {
             starts.push(acc)
             var wp = group.child(i)
             if(!wp)
                 continue
-            acc += wp.distance
+            if(i > 0)
+                acc += wp.distance
             var altFact = wp.child("altitude")
             var amslFact = wp.child("amsl")
             var alt = altFact ? Number(altFact.value) : 0
@@ -119,8 +117,7 @@ Rectangle {
     }
     Connections {
         target: mission
-        function onStartPointChanged() { scheduleSegmentStarts() }
-        function onCoordinateChanged() { scheduleSegmentStarts() }
+        function onStartElevationChanged() { scheduleSegmentStarts() }
     }
     Component.onCompleted: updateSegmentStarts()
     property real viewSpan: fullSpan
@@ -237,11 +234,8 @@ Rectangle {
         ChartView {
             id: chartView
             property int margin: 5
-            property var startPoint: mission.startPoint
-            property var dist: mission.wp.distance
             property var minHeight: mission.minHeight
             property var maxHeight: mission.maxHeight
-            property var distance:  dist
             anchors.fill: parent
             margins.top: alarm.height
             margins.right: margin
@@ -250,8 +244,6 @@ Rectangle {
             backgroundColor: "transparent"
             legend.visible: false
             antialiasing: true
-
-            onDistChanged: updateDistance()
 
             ValueAxis {
                 id: axisX
@@ -282,51 +274,9 @@ Rectangle {
                 axisX: axisX
                 axisY: axisY
             }
-            function updateDistance()
-            {
-                var p1 = mission.coordinate
-                var p2 = mission.startPoint
-                var rwLength = p1.isValid && p2.isValid ? p1.distanceTo(p2) : 0
-                distance = dist + rwLength;
-            }
         }
 
-        // Start point
-        Item {
-            id: startPoint
-            property var coordinate: mission.startPoint
-            property var elevationmap: apx.tools.elevationmap
-            property var chartHeight: chartView.plotArea.height
-            property var scaleY: axisY.max/chartHeight
-            property var startElevation: mission.startElevation
-            property var hStartPoint: !isNaN(startElevation)?(startElevation/scaleY):0
-
-            visible: mission.startPoint.isValid && x >= chartView.plotArea.x
-            x: elevationView.xOf(0)
-            y: chartView.plotArea.y + chartHeight
-            z: 1
-
-            Rectangle {
-                id: takeOffPoint
-                height: 16
-                width: height
-                x: -width/2
-                y: -height/2 - startPoint.hStartPoint
-                radius: height/8
-                color: "#3779c5"
-                Text {
-                    anchors.centerIn: parent
-                    text: qsTr("R")
-                    font.pixelSize: 12
-                    font.bold: true
-                    color: "#ffffff"
-                }
-            }
-
-            onStartElevationChanged: elevationView.scheduleSegmentStarts()
-        }
-
-        // Flight altitude line (start point + waypoints), GPU rendered
+        // Flight altitude line, GPU rendered
         Shape {
             id: missionLineShape
             x: chartView.plotArea.x

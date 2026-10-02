@@ -115,12 +115,11 @@ void ElevationWorker::requestCoordinate(double lat, double lon)
     wake();
 }
 
-void ElevationWorker::requestTerrainProfile(const QGeoPath &path, bool fromGround)
+void ElevationWorker::requestTerrainProfile(const QGeoPath &path)
 {
     if (path.size() <= 0)
         return;
     Job job = makeProfileJob(path);
-    job.fromGround = fromGround;
     {
         QMutexLocker lock(&m_mutex);
         // a newer path between the same endpoints supersedes the queued one
@@ -375,11 +374,7 @@ void ElevationWorker::processProfile(const Job &job)
         auto point = route.coordinateAt(i);
         double max, min;
         bool ok;
-        if (i == 0 && (job.fromGround || n < 2)) {
-            // mission start: the aircraft is on the ground, the terrain around the
-            // runway is not an obstacle here
-            ok = corridorRange(point, 0, 0, max, min);
-        } else if (i == n - 1) {
+        if (i == n - 1) {
             // segment end: the waypoint, the aircraft turns here
             ok = circleRange(point, 2 * halfWidth, max, min);
         } else {
