@@ -47,20 +47,38 @@ AppPlugin {
         // height above terrain next to the current unit (plugin option "Unit AGL")
         MapItemGroup {
             id: mapItems
+            z: 200 // same layer as the units
             MapQuickItem {
                 id: aglItem
-                readonly property var elevationmap: apx.tools.elevationmap
-                readonly property real agl: elevationmap ? elevationmap.unitAgl : NaN
+                readonly property real agl: plugin.fact ? plugin.fact.unitAgl : NaN
                 readonly property var unit: apx.fleet.current
                 // to the left of the unit icon: its own label is on the right or below
                 readonly property real iconHalf: 24 * ui.scale
                                                  * ((ui.map && ui.map.itemsScaleFactor) ? ui.map.itemsScaleFactor : 1)
 
                 visible: !isNaN(agl) && unit && unit.coordinate.isValid
-                coordinate: unit ? unit.coordinate : QtPositioning.coordinate()
-                Behavior on coordinate {
-                    enabled: ui.smooth
-                    CoordinateAnimation { duration: 500; easing.type: Easing.Linear }
+
+                // moves exactly as the unit icon does (UnitItem): smooth, jumps on a far move
+                readonly property var coord: unit ? QtPositioning.coordinate(unit.coordinate.latitude, unit.coordinate.longitude)
+                                                  : QtPositioning.coordinate()
+                onCoordChanged: {
+                    if(!ui.map || !coordinate.isValid || ui.map.isFarMove(coordinate, coord, 2)) {
+                        anim.stop()
+                        coordinate = coord
+                        return
+                    }
+                    if(!anim.running) anim.from = coordinate
+                    anim.to = coord
+                    anim.start()
+                }
+                Component.onCompleted: coordinate = coord
+                CoordinateAnimation {
+                    id: anim
+                    duration: ui.smooth ? 500 : 0
+                    direction: CoordinateAnimation.Shortest
+                    easing.type: Easing.Linear
+                    target: aglItem
+                    property: "coordinate"
                 }
                 anchorPoint.x: aglText.width + iconHalf + Style.spacing
                 anchorPoint.y: aglText.height / 2
@@ -89,7 +107,7 @@ AppPlugin {
             property point pos: Qt.point(0, 0)
             interval: 500
             onTriggered: {
-                var elevationmap = apx.tools.elevationmap
+                var elevationmap = plugin.fact
                 if(!ui.map || !elevationmap || !elevationmap.available || !elevationmap.use.value)
                     return
                 elevationmap.setElevationByCoordinate(ui.map.toCoordinate(pos))

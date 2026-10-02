@@ -17,21 +17,23 @@ Repeater {
         id: epItem
 
         required property var modelData
-        required property var index
 
         property var fact: modelData
         property int num: fact ? fact.num : -1
         property real dist: fact ? fact.distance : -1
         property real totalDistance: fact ? fact.totalDistanceWithRw : -1
-        // segment start along the mission, m (synchronous, see ElevationView.segmentStarts);
-        // the first segment is requested from the runway point, so it starts at 0 and
+        // segment start along the mission, m (synchronous, see ElevationView.segmentStarts).
+        // Looked up by the waypoint number, not by the model row: the map model keeps
+        // the creation order when a waypoint is inserted or reordered.
+        // The first segment is requested from the runway point, so it starts at 0 and
         // includes the runway part
-        property real segmentStart: elevationView.segmentStart(index, totalDistance - dist)
+        property real segmentStart: elevationView.segmentStart(num, totalDistance - dist)
         property real offset: num == 0 ? 0 : segmentStart
         property real distance: num == 0 ? segmentStart + dist : dist
         property bool collision: fact ? fact.collision : false
 
         onDistChanged: elevationView.scheduleSegmentStarts()
+        onNumChanged: elevationView.scheduleSegmentStarts()
 
         // plot area of the shared chart
         x: chartView.plotArea.x
