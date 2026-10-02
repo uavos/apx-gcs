@@ -376,7 +376,10 @@ void ElevationMap::createMissionTools()
                             CloseOnTrigger,
                             "puzzle-edit-outline");
     correct->setVisible(false);
-    connect(correct, &Fact::triggered, this, &ElevationMap::startPathsCorrection);
+    connect(correct, &Fact::triggered, this, [this]() {
+        m_correctionPass = 0;
+        startPathsCorrection();
+    });
 
     // keep them right after the altitude tools, before "Reverse"
     const int index = tools->f_reverse->num();
@@ -890,6 +893,10 @@ void ElevationMap::checkCorrectionResult()
     }
     if (wpWarnings.isEmpty())
         return;
+    if (++m_correctionPass < CORRECTION_PASSES) {
+        startPathsCorrection();
+        return;
+    }
     apxMsgW() << tr("The path of points %1 has been changed or could not be corrected. "
                     "Check  these points and try again")
                      .arg(wpWarnings);

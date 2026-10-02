@@ -705,6 +705,19 @@ void Waypoint::correctPath(bool reply)
     }
 
     auto startHmsl = getStartHMSL();
+
+    // The terrain profile ends with the highest terrain around the point (not only
+    // right under it), checkCollision() requires the safe AGL above that as well
+    if (!m_terrainProfile.empty()) {
+        const int altAmsl = f_amsl->value().toBool() ? alt : alt + static_cast<int>(startHmsl);
+        const int lack = static_cast<int>(std::ceil(m_terrainProfile.last().y())) + UNSAFE_AGL
+                         - altAmsl;
+        if (lack > 0) {
+            alt += lack;
+            f_altitude->setValue(alt);
+        }
+    }
+
     Waypoint *prevWp = static_cast<Waypoint *>(prevItem());
     if (!prevWp) {
         if (!m_reply) {

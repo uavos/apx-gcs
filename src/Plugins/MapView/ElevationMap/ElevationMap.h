@@ -106,6 +106,8 @@ private:
     QSet<QString> m_runways;
     QSet<QString> m_pois;
     bool m_isCorrect{false};
+    static constexpr int CORRECTION_PASSES = 3; // "All paths correction" repeats itself up to this
+    int m_correctionPass{0};
 
     QSet<QString> m_tileNames; // elevation files in the configured directory
     bool m_available{false};
