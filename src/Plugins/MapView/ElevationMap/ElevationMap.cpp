@@ -117,7 +117,9 @@ void ElevationMap::setTerrainProfile(const QGeoPath &path)
 {
     if (!f_use->value().toBool() || !m_available)
         return;
-    m_elevationDB->requestTerrainProfile(path);
+    // requested by a waypoint: only the first one starts on the ground (runway)
+    auto wp = qobject_cast<Waypoint *>(sender());
+    m_elevationDB->requestTerrainProfile(path, !wp || wp->num() == 0);
 }
 
 void ElevationMap::createElevationDatabase()

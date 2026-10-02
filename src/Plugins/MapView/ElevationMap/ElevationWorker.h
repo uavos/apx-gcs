@@ -59,7 +59,7 @@ public:
 
     void requestElevation(double lat, double lon);
     void requestCoordinate(double lat, double lon);
-    void requestTerrainProfile(const QGeoPath &path);
+    void requestTerrainProfile(const QGeoPath &path, bool fromGround);
     void requestAreaMax(double lat, double lon, double radius);
     void setCorridor(double meters);
     void stop();
@@ -83,7 +83,8 @@ private:
         double lon{0};
         double radius{0};
         QGeoPath path;
-        QGeoCoordinate first; // profile endpoints (altitude stripped) used to coalesce
+        bool fromGround{true}; // profile: the path starts on the ground, not at a waypoint
+        QGeoCoordinate first;  // profile endpoints (altitude stripped) used to coalesce
         QGeoCoordinate last;
     };
 

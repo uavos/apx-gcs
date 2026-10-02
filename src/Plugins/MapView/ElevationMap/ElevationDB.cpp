@@ -91,9 +91,9 @@ void OfflineElevationDB::requestCoordinate(double latitude, double longitude)
     m_worker->requestCoordinate(latitude, longitude);
 }
 
-void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path)
+void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path, bool fromGround)
 {
-    m_worker->requestTerrainProfile(path);
+    m_worker->requestTerrainProfile(path, fromGround);
 }
 
 void OfflineElevationDB::requestAreaMax(double lat, double lon, double radius)

@@ -36,7 +36,8 @@ public:
     AbstractElevationDB() = default;
     virtual void requestElevation(double lat, double lon) = 0;
     virtual void requestCoordinate(double lat, double lon) = 0;
-    virtual void requestTerrainProfile(const QGeoPath &path) = 0;
+    // fromGround: the path starts on the ground (runway), not at a waypoint
+    virtual void requestTerrainProfile(const QGeoPath &path, bool fromGround) = 0;
     // highest terrain within radius [m] around the point (unit AGL)
     virtual void requestAreaMax(double lat, double lon, double radius) = 0;
     // corridor half-width [m] used by the terrain profile
@@ -63,7 +64,7 @@ public:
     ~OfflineElevationDB() override;
     void requestElevation(double lat, double lon) override;
     void requestCoordinate(double lat, double lon) override;
-    void requestTerrainProfile(const QGeoPath &path) override;
+    void requestTerrainProfile(const QGeoPath &path, bool fromGround) override;
     void requestAreaMax(double lat, double lon, double radius) override;
     void setCorridor(double meters) override;
 

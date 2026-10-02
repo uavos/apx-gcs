@@ -115,11 +115,12 @@ void ElevationWorker::requestCoordinate(double lat, double lon)
     wake();
 }
 
-void ElevationWorker::requestTerrainProfile(const QGeoPath &path)
+void ElevationWorker::requestTerrainProfile(const QGeoPath &path, bool fromGround)
 {
     if (path.size() <= 0)
         return;
     Job job = makeProfileJob(path);
+    job.fromGround = fromGround;
     {
         QMutexLocker lock(&m_mutex);
         // a newer path between the same endpoints supersedes the queued one
@@ -374,14 +375,16 @@ void ElevationWorker::processProfile(const Job &job)
         auto point = route.coordinateAt(i);
         double max, min;
         bool ok;
-        if (i == 0) {
-            // segment start: the previous waypoint (its turn circle belongs to the
-            // previous segment) or the runway where the aircraft is on the ground
+        if (i == 0 && (job.fromGround || n < 2)) {
+            // mission start: the aircraft is on the ground, the terrain around the
+            // runway is not an obstacle here
             ok = corridorRange(point, 0, 0, max, min);
         } else if (i == n - 1) {
             // segment end: the waypoint, the aircraft turns here
             ok = circleRange(point, 2 * halfWidth, max, min);
         } else {
+            // along the path, the segment start included: it is the previous waypoint,
+            // already covered by the turn circle that ends the previous segment
             const double az = point.azimuthTo(route.coordinateAt(i + 1));
             ok = corridorRange(point, az, halfWidth, max, min);
         }
