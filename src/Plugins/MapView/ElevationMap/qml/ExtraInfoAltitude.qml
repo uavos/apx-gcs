@@ -37,8 +37,6 @@ Item {
 
     property var homeHmsl: mission.startElevation ? mission.startElevation : 0
     property var color: "#dcdcdc"
-    property var chosenFact: fact.parentFact.chosen
-    property bool chosen: chosenFact == Waypoint.ALT
     
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter
@@ -64,11 +62,6 @@ Item {
         color: item.color
         text: getHomeHmsl()
     }
-
-    onChosenChanged: _editor.enabled = chosen
-
-    Component.onCompleted: _editor.enabled = chosen
-    Component.onDestruction: _editor.enabled = true // widget removed: plain altitude editor
 
     function getHomeHmsl()
     {

@@ -33,8 +33,6 @@ Item {
     property var unsafeAgl: fact.parentFact.unsafeAgl
     property var elevation: fact.parentFact.elevation
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
-    property var chosenFact: fact.parentFact.chosen
-    property bool chosen: chosenFact == Waypoint.AGL
 
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter
@@ -61,10 +59,6 @@ Item {
     }
 
     onValueChanged: factButton.color = value < unsafeAgl ? Material.color(Material.Red) : action_color()
-    onVisibleChanged: fact.parentFact.chosen = Waypoint.ALT
-    onChosenChanged: _editor.enabled = chosen
-
-    Component.onCompleted: _editor.enabled = chosen
 
     function getElevation()
     {

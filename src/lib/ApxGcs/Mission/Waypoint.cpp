@@ -77,10 +77,8 @@ Waypoint::Waypoint(MissionGroup *parent)
     }
 
     // Elevation map and agl
-    connect(f_altitude, &Fact::valueChanged, this, [this]() { if (this->chosen() == ALT) processAgl();});
-    connect(f_altitude, &Fact::triggered, this, [this]() { this->setChosen(ALT); });
+    connect(f_altitude, &Fact::valueChanged, this, &Waypoint::processAgl);
     connect(f_agl, &Fact::valueChanged, this, &Waypoint::calcAltitude);
-    connect(f_agl, &Fact::triggered, this, [this]() { this->setChosen(AGL); });
     initElevationMap();
 
     connect(this, &MissionItem::itemDataLoaded, this, &Waypoint::updateAMSL);
@@ -206,7 +204,9 @@ void Waypoint::fromJson(const QJsonValue &jsv)
     }
     if (!jso_actions.isEmpty())
         jso.insert("actions", jso_actions);
+    m_loading = true;
     MissionItem::fromJson(jso);
+    m_loading = false;
 }
 
 void Waypoint::updateTitle()
@@ -366,18 +366,6 @@ QGeoPath Waypoint::getPath()
     return p;
 }
 
-Waypoint::ChosenFact Waypoint::chosen() const
-{
-    return m_chosen;
-}
-void Waypoint::setChosen(ChosenFact v)
-{
-    if (m_chosen == v)
-        return;
-    m_chosen = v;
-    emit chosenChanged();
-}
-
 double Waypoint::minHeight() const
 {
     return m_minHeight;
@@ -464,11 +452,14 @@ void Waypoint::updateAltDescr()
 
 void Waypoint::calcAltitude()
 {
-    if (std::isnan(m_elevation))
+    if (m_aglComputing || m_loading)
         return;
-    if (m_chosen != AGL)
+    if (std::isnan(m_elevation)) {
+        // no terrain data: AGL is undefined
+        setComputedAgl(0);
         return;
-   
+    }
+
     auto heightAmsl = m_elevation + f_agl->value().toDouble();
     auto startHmsl = getStartHMSL();
     if (f_amsl->value().toBool())
@@ -488,7 +479,7 @@ void Waypoint::recalcAltitude()
 void Waypoint::processAgl()
 {
     if (std::isnan(m_elevation)) {
-        f_agl->setValue(0);
+        setComputedAgl(0);
         return;
     }
 
@@ -501,7 +492,14 @@ void Waypoint::calcAgl()
     auto startHmsl = getStartHMSL();
     if (!f_amsl->value().toBool())
         diff += startHmsl;
-    f_agl->setValue(diff);
+    setComputedAgl(diff);
+}
+
+void Waypoint::setComputedAgl(int v)
+{
+    m_aglComputing = true;
+    f_agl->setValue(v);
+    m_aglComputing = false;
 }
 
 void Waypoint::updateAgl()

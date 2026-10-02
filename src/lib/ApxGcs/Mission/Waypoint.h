@@ -35,7 +35,6 @@ class Waypoint : public MissionItem
     Q_PROPERTY(bool reachable READ reachable WRITE setReachable NOTIFY reachableChanged)
     Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
     Q_PROPERTY(bool collision READ collision WRITE setCollision NOTIFY collisionChanged)
-    Q_PROPERTY(ChosenFact chosen READ chosen WRITE setChosen NOTIFY chosenChanged)
     Q_PROPERTY(uint totalDistanceWithRw READ totalDistanceWithRw NOTIFY totalDistanceWithRwChanged)
     Q_PROPERTY(int unsafeAgl READ unsafeAgl CONSTANT)
 
@@ -47,12 +46,6 @@ public:
         double minHeight;
         double maxHeight;
     };
-
-    enum ChosenFact {
-        ALT = 0,
-        AGL,
-    };
-    Q_ENUM(ChosenFact)
 
     explicit Waypoint(MissionGroup *parent);
 
@@ -79,12 +72,15 @@ protected:
     void recalcAltitude();
     void processAgl();
     void calcAgl();
+    void setComputedAgl(int v);
 
 private:
     QString _altUnits;
     double m_terrainProfileMin{0};
     double m_terrainProfileMax{200};
     bool m_reply{false};
+    bool m_aglComputing{false}; // AGL is being written by the model, not edited
+    bool m_loading{false};      // fields are being loaded from json
 
 private slots:
     double getStartHMSL();
@@ -116,8 +112,6 @@ public slots:
     //---------------------------------------
     // PROPERTIES
 public:
-    ChosenFact chosen() const;
-    void setChosen(ChosenFact v);
 
     double minHeight() const;
     void setMinHeight(const double v);
@@ -143,7 +137,6 @@ public:
 protected:
     static const int UNSAFE_AGL = 100;
     QFutureWatcher<TerrainInfo> m_watcher;
-    ChosenFact m_chosen{ALT};
     double m_minHeight{0};
     double m_maxHeight{200};
     uint m_totalDistanceWithRw{0};
@@ -162,5 +155,4 @@ signals:
     void reachableChanged();
     void collisionChanged();
     void warningChanged();
-    void chosenChanged();
 };
