@@ -11,4 +11,5 @@ apx_lib(
     SerialPort
     Positioning
     Bluetooth
+    Concurrent
 )
