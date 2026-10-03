@@ -123,10 +123,10 @@ bool Datalink::findActiveConnection(QHostAddress addr)
     return false;
 }
 
-bool Datalink::hardwareLink() const
+bool Datalink::gcsServerLink() const
 {
     for (auto c : connections) {
-        if (c && c->active() && !c->isGcsLink())
+        if (c && c->active() && c->isGcsServerLink())
             return true;
     }
     return false;

@@ -67,8 +67,8 @@ public:
     QList<QPointer<DatalinkConnection>> connections;
     bool findActiveConnection(QHostAddress addr);
 
-    // true when hardware is connected directly, not through another GCS instance
-    bool hardwareLink() const;
+    // true when connected as a client to another GCS instance
+    bool gcsServerLink() const;
 
 public:
     bool valid() const;

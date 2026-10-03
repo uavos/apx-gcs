@@ -72,14 +72,16 @@ public:
     bool blockService() const;
     void setBlockService(const bool &v);
 
-    // true when the peer is another GCS instance
-    virtual bool isGcsLink() const { return false; }
+    // true when connected as a client to another GCS instance
+    virtual bool isGcsServerLink() const { return false; }
 
 protected:
     // helpers
     bool isControlPacket(const QByteArray &packet) const;
     bool isGcsPacket(const QByteArray &packet) const;
 
+    // true when the peer is another GCS instance
+    virtual bool isGcsLink() const { return false; }
     virtual void resetDataStream();
 
     // interface with codec implementation

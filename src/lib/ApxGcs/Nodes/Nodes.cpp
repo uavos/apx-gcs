@@ -107,9 +107,9 @@ Nodes::Nodes(Unit *unit)
     });
 
     if (unit->isIdentified()) {
-        // nodes are downloaded from hardware by the directly connected GCS only,
+        // nodes are downloaded from hardware by the GCS with no server GCS only,
         // others are waiting for the data from GCS
-        _gcsWait = !AppGcs::instance()->f_datalink->hardwareLink();
+        _gcsWait = AppGcs::instance()->f_datalink->gcsServerLink();
         if (_gcsWait)
             _protocol->requestGcsNodes();
         else
