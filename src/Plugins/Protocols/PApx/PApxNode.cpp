@@ -371,12 +371,15 @@ QString PApxNode::hashToText(xbus::node::hash_t hash)
 
 void PApxNode::requestIdent()
 {
+    if (_nodes->gcsWait())
+        return;
+
     new PApxNodeRequestIdent(this);
 }
 
 void PApxNode::requestDict()
 {
-    if (_gcs_loading)
+    if (_nodes->gcsWait())
         return;
 
     if (!file("dict"))
@@ -388,7 +391,6 @@ void PApxNode::requestDict()
         return;
     }
 
-    _dict_cache_req = true;
     auto req = new db::nodes::NodeLoadDict(uid(), _dict_cache_hash);
     connect(req,
             &db::nodes::NodeLoadDict::dictLoaded,
@@ -406,10 +408,8 @@ void PApxNode::requestDict()
         &db::nodes::NodeLoadDict::finished,
         this,
         [this](db::nodes::NodeLoadDict::Status status) {
-            if (status && _dict_cache_req) {
-                _dict_cache_req = false;
+            if (status)
                 requestDictDownload();
-            }
         },
         Qt::QueuedConnection);
 
@@ -423,16 +423,11 @@ void PApxNode::requestDictDownload()
 
 void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
 {
-    if (!_dict_cache_req) // not needed anymore
-        return;
-
     auto hash = dict.value("cache").toString();
     if (_dict_cache_hash != hash) {
         qWarning() << title() << "wrong hash" << _dict_cache_hash << hash;
         return;
     }
-    _dict_cache_req = false;
-
     if (dict.isEmpty()) {
         qWarning() << title() << "no dict data";
         requestDictDownload();
@@ -477,8 +472,8 @@ void PApxNode::loadDictFields(const QJsonObject &dict)
 }
 void PApxNode::loadGcsData(QJsonObject node)
 {
-    // node data received from another GCS instance
-    // is used instead of downloading from hardware
+    // node data received from another GCS instance while waiting for it,
+    // requests to hardware are blocked by PApxNodes::gcsWait()
 
     auto info = node.value("info").toObject();
     const auto dict = node.value("dict").toObject();
@@ -506,19 +501,6 @@ void PApxNode::loadGcsData(QJsonObject node)
     if (fnames != _files_map.keys())
         updateFiles(fnames);
 
-    // stop downloads from hardware
-    static const QStringList conf_files{"dict", "conf", "script"};
-    const auto requests = _requests;
-    for (auto i : requests) {
-        if (i->uid() == mandala::cmd::env::nmt::file::uid && conf_files.contains(i->cid()))
-            delete_request(i);
-    }
-    for (const auto &i : conf_files) {
-        auto f = file(i);
-        if (f)
-            f->reset();
-    }
-
     QStringList descr;
     descr.append(info.value("hardware").toString());
     descr.append(info.value("version").toString());
@@ -526,7 +508,6 @@ void PApxNode::loadGcsData(QJsonObject node)
 
     // update from dict
     _dict_cache_hash = hash;
-    _dict_cache_req = false;
     loadDictFields(dict);
 
     _ext_upd_values = {};
@@ -544,23 +525,16 @@ void PApxNode::loadGcsData(QJsonObject node)
 
     qDebug() << title() << "data from gcs" << _field_names.size();
 
-    // requests to hardware initiated by the following signals are blocked
-    _gcs_loading = true;
     emit identReceived(info);
     emit dictReceived(dict);
     emit confReceived(values);
-    _gcs_loading = false;
 }
 void PApxNode::dictCacheMissing(QString hash)
 {
-    if (!_dict_cache_req) // not needed anymore
-        return;
-
     if (_dict_cache_hash != hash) {
         qWarning() << title() << "wrong hash" << _dict_cache_hash << hash;
         return;
     }
-    _dict_cache_req = false;
     requestDictDownload();
 }
 void PApxNode::parseDictData(PApxNode *node,
@@ -719,7 +693,7 @@ void PApxNode::parseDictData(PApxNode *node,
 
 void PApxNode::requestConf()
 {
-    if (_gcs_loading)
+    if (_nodes->gcsWait())
         return;
 
     // save request for sequential script requests

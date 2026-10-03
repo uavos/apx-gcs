@@ -91,8 +91,6 @@ private:
     QStringList _field_units;
 
     bool _skip_cache{};
-    bool _dict_cache_req{};
-    bool _gcs_loading{};
 
     QJsonObject _rvalues;
     xbus::node::conf::script_t _script_hash{};

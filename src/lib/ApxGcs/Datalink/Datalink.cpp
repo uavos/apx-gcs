@@ -123,6 +123,15 @@ bool Datalink::findActiveConnection(QHostAddress addr)
     return false;
 }
 
+bool Datalink::hardwareLink() const
+{
+    for (auto c : connections) {
+        if (c && c->active() && !c->isGcsLink())
+            return true;
+    }
+    return false;
+}
+
 void Datalink::updateStatus()
 {
     int cnt = connections.size();

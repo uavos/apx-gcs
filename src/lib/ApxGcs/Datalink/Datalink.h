@@ -67,6 +67,9 @@ public:
     QList<QPointer<DatalinkConnection>> connections;
     bool findActiveConnection(QHostAddress addr);
 
+    // true when hardware is connected directly, not through another GCS instance
+    bool hardwareLink() const;
+
 public:
     bool valid() const;
     void setValid(const bool &v);

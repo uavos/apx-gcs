@@ -68,6 +68,10 @@ private:
 
     bool m_valid{};
 
+    // nodes data exchange between GCS instances
+    bool _gcsWait{};      // waiting for the data instead of downloading from hardware
+    bool _gcsRequested{}; // reply is pending
+
     DelayedEvent _updateActions{100, true};
 
 private slots:
@@ -84,7 +88,6 @@ private slots:
     void node_response(PNode *node);
 
     void gcsNodesRequested();
-    void gcsNodesReceived(QJsonArray nodes);
 
     void syncDone();
 

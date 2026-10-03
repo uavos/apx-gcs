@@ -42,6 +42,9 @@ public:
     auto nodes() const { return _nodes.values(); }
     auto local() const { return _local; }
 
+    // true while waiting for nodes data from another GCS instance
+    auto gcsWait() const { return _gcs_wait; }
+
     void cancel_requests(PApxNode *node);
 
     PApxNode *getNode(QString uid, bool createNew = true);
@@ -59,17 +62,17 @@ private:
     uint _retry{};
 
     // nodes data exchange between GCS instances
-    QElapsedTimer _gcs_req_time;
+    bool _gcs_wait{};
     uint32_t _gcs_rx_hash{};
     uint32_t _gcs_rx_size{};
     QByteArray _gcs_rx_data;
+    void loadGcsNode(QJsonObject node);
 
 protected:
     void requestSearch() override;
 
     void requestGcsNodes() override;
     void sendGcsNodes(QJsonArray nodes) override;
-    void loadGcsNode(QJsonObject node) override;
 
 private slots:
     // reauests sequencer

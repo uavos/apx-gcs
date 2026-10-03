@@ -35,7 +35,6 @@
 
 #define PAPX_GCS_PART_SIZE 400             // bytes of data in packet
 #define PAPX_GCS_SIZE_MAX (8 * 1024 * 1024) // bytes of compressed data
-#define PAPX_GCS_TIMEOUT_MS 10000          // time to wait for response start
 
 PApxNodes::PApxNodes(PApxUnit *parent)
     : PNodes(parent)
@@ -144,6 +143,8 @@ PApxNode *PApxNodes::getNode(QString uid, bool createNew)
 
 void PApxNodes::requestSearch()
 {
+    _gcs_wait = false; // download from hardware
+
     _req.request(mandala::cmd::env::nmt::search::uid);
     _req.send();
 }
@@ -152,13 +153,15 @@ void PApxNodes::requestSearch()
 // packet format: <cmd.env.aux.gcs> <uid> <data>
 //  request: <nmt.search>
 //  response: <nmt.search> <hash> <size> <offset> <part of compressed JSON>
+// The request is sent once, requests to hardware are blocked until the response.
+// GCS which is downloading from hardware responds when all nodes are downloaded.
 
 void PApxNodes::requestGcsNodes()
 {
     if (_local)
         return;
 
-    _gcs_req_time.start();
+    _gcs_wait = true;
 
     _req.request(mandala::cmd::env::aux::gcs::uid);
     _req << mandala::cmd::env::nmt::search::uid;
@@ -208,10 +211,12 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
     }
 
     if (pid.pri == xbus::pri_request) {
-        emit gcsNodesRequested();
+        // waiting GCS has nothing to respond, the request is passed further
+        if (!_gcs_wait)
+            emit gcsNodesRequested();
         return;
     }
-    if (pid.pri != xbus::pri_response)
+    if (pid.pri != xbus::pri_response || !_gcs_wait)
         return;
 
     if (stream.available() <= sizeof(uint32_t) * 3)
@@ -224,9 +229,7 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
     trace()->block(QString("%1/%2").arg(offset).arg(size));
 
     if (offset == 0) {
-        // start of data, accept requested only, the most recent sender wins
-        if (!_gcs_req_time.isValid() || _gcs_req_time.elapsed() > PAPX_GCS_TIMEOUT_MS)
-            return;
+        // start of data, the most recent sender wins
         if (size == 0 || size > PAPX_GCS_SIZE_MAX)
             return;
         _gcs_rx_hash = hash;
@@ -255,10 +258,15 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
         qWarning() << "gcs nodes json error";
         return;
     }
-    _gcs_req_time.invalidate();
 
     qDebug() << "nodes from gcs:" << nodes.size() << size << "bytes";
-    emit gcsNodesReceived(nodes);
+    for (const auto &i : nodes)
+        loadGcsNode(i.toObject());
+
+    apxMsg() << tr("Nodes received from GCS").append(':') << nodes.size();
+
+    // check nodes and download the missing ones from hardware
+    QTimer::singleShot(0, this, &PApxNodes::requestSearch);
 }
 
 void PApxNodes::loadGcsNode(QJsonObject node)
