@@ -24,6 +24,7 @@
 #include "NodeItem.h"
 
 #include <App/App.h>
+#include <App/AppGcs.h>
 #include <App/AppLog.h>
 #include <Fleet/Fleet.h>
 #include <Fleet/Unit.h>
@@ -85,6 +86,13 @@ Nodes::Nodes(Unit *unit)
         connect(_protocol, &PNodes::upgradingChanged, this, &Nodes::upgradingChanged);
         connect(_protocol, &PNodes::node_available, this, &Nodes::node_available);
         connect(_protocol, &PNodes::node_response, this, &Nodes::node_response);
+
+        // nodes data exchange between GCS instances
+        connect(_protocol,
+                &PNodes::gcsNodesRequested,
+                this,
+                &Nodes::gcsNodesRequested,
+                Qt::QueuedConnection);
     }
 
     updateActions();
@@ -93,10 +101,20 @@ Nodes::Nodes(Unit *unit)
         bindProperty(_protocol, "value", true);
     }
 
-    connect(this, &Fact::triggered, this, &Nodes::search);
+    connect(this, &Fact::triggered, this, [this]() {
+        if (!_gcsWait || valid())
+            search();
+    });
 
-    if (unit->isIdentified())
-        _protocol->requestSearch();
+    if (unit->isIdentified()) {
+        // nodes are downloaded from hardware by the GCS with no server GCS only,
+        // others are waiting for the data from GCS
+        _gcsWait = AppGcs::instance()->f_datalink->gcsServerLink();
+        if (_gcsWait)
+            _protocol->requestGcsNodes();
+        else
+            _protocol->requestSearch();
+    }
 }
 
 NodeItem *Nodes::node(const QString &uid) const
@@ -178,6 +196,9 @@ void Nodes::updateValid()
     if (!m_valid)
         return;
     qDebug() << "nodes valid" << unit->title();
+
+    if (_gcsRequested)
+        gcsNodesRequested();
 }
 
 void Nodes::search()
@@ -186,7 +207,31 @@ void Nodes::search()
         return;
     for (auto i : nodes())
         i->updateAlive(false);
+
+    _gcsWait = false; // download from hardware
     _protocol->requestSearch();
+}
+void Nodes::gcsNodesRequested()
+{
+    // reply to another GCS with the data known to be in sync with hardware
+    if (!_protocol || upgrading())
+        return;
+
+    // reply is postponed until all nodes are downloaded from hardware
+    _gcsRequested = !valid();
+    if (_gcsRequested)
+        return;
+
+    QJsonArray jsa;
+    for (auto i : nodes()) {
+        if (!i->protocol() || !i->valid() || i->modified() || !i->alive())
+            continue;
+        jsa.append(i->toJson());
+    }
+    if (jsa.isEmpty())
+        return;
+
+    _protocol->sendGcsNodes(jsa);
 }
 void Nodes::stop()
 {

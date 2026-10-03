@@ -35,6 +35,8 @@ public:
     // constructor to create client socket and connect to remote server url
     explicit DatalinkSocketHttp(Fact *parent, QUrl url);
 
+    bool isGcsServerLink() const override { return _connectionType == HTTP_CLIENT; }
+
 private:
     QTcpSocket *_tcp{};
 
@@ -70,6 +72,8 @@ protected:
     void reconnect();
 
     //DatalinkConnection overrided
+    bool isGcsLink() const override { return true; }
+
     virtual void open() override;
     void resetDataStream() override;
 

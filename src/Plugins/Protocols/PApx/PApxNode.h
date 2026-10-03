@@ -45,6 +45,9 @@ public:
     void extend_request(PApxNodeRequest *req, size_t time_ms);
     void request_deleted(PApxNodeRequest *req);
 
+    // use data received from another GCS instance instead of requests to hardware
+    void loadGcsData(QJsonObject node);
+
     void updateFiles(QStringList fnames);
     PApxNodeFile *file(QString name) const { return _files_map.value(name); }
 
@@ -99,6 +102,7 @@ private:
     bool _ext_upd_request{};
 
     void updateProgress();
+    void loadDictFields(const QJsonObject &dict);
 
 private slots:
     void infoCacheLoaded(QJsonObject info);

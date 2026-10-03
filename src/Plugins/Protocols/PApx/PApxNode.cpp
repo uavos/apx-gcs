@@ -371,11 +371,17 @@ QString PApxNode::hashToText(xbus::node::hash_t hash)
 
 void PApxNode::requestIdent()
 {
+    if (_nodes->gcsWait())
+        return;
+
     new PApxNodeRequestIdent(this);
 }
 
 void PApxNode::requestDict()
 {
+    if (_nodes->gcsWait())
+        return;
+
     if (!file("dict"))
         return;
 
@@ -428,6 +434,14 @@ void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
         return;
     }
 
+    loadDictFields(dict);
+
+    qDebug() << title() << "dict from cache" << dictID << _field_names.size();
+
+    emit dictReceived(dict);
+}
+void PApxNode::loadDictFields(const QJsonObject &dict)
+{
     _field_types.clear();
     _field_names.clear();
     _field_arrays.clear();
@@ -455,10 +469,65 @@ void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
         _field_arrays.append(field.value("array").toVariant().toUInt());
         _field_units.append(field.value("units").toString());
     }
+}
+void PApxNode::loadGcsData(QJsonObject node)
+{
+    // node data received from another GCS instance while waiting for it,
+    // requests to hardware are blocked by PApxNodes::gcsWait()
 
-    qDebug() << title() << "dict from cache" << dictID << _field_names.size();
+    auto info = node.value("info").toObject();
+    const auto dict = node.value("dict").toObject();
+    auto values = node.value("values").toObject();
 
+    const auto hash = info.value("hash").toString();
+    if (hash.isEmpty() || hash != dict.value("cache").toString()
+        || info.value("uid").toString() != uid()) {
+        qWarning() << title() << "gcs data error" << hash;
+        return;
+    }
+
+    if (upgrading())
+        return;
+
+    // update from ident
+    info.remove("host");
+
+    QStringList fnames;
+    for (const auto &i : info.value("files").toArray())
+        fnames.append(i.toString());
+    fnames.sort();
+
+    setTitle(info.value("name").toString());
+    if (fnames != _files_map.keys())
+        updateFiles(fnames);
+
+    QStringList descr;
+    descr.append(info.value("hardware").toString());
+    descr.append(info.value("version").toString());
+    setDescr(descr.join(' '));
+
+    // update from dict
+    _dict_cache_hash = hash;
+    loadDictFields(dict);
+
+    _ext_upd_values = {};
+    _ext_upd_request = false;
+
+    auto script_idx = _field_types.indexOf(xbus::node::conf::script);
+    if (script_idx >= 0)
+        _script_field = _field_names.at(script_idx);
+
+    // zero values are not present in json
+    for (const auto &name : _field_names) {
+        if (!values.contains(name))
+            values.insert(name, QJsonValue());
+    }
+
+    qDebug() << title() << "data from gcs" << _field_names.size();
+
+    emit identReceived(info);
     emit dictReceived(dict);
+    emit confReceived(values);
 }
 void PApxNode::dictCacheMissing(QString hash)
 {
@@ -624,6 +693,9 @@ void PApxNode::parseDictData(PApxNode *node,
 
 void PApxNode::requestConf()
 {
+    if (_nodes->gcsWait())
+        return;
+
     // save request for sequential script requests
     _req_conf = new PApxNodeRequestFileRead(this, "conf");
     connect(_req_conf, &PApxNodeRequest::finished, this, [this]() { _req_conf = {}; });

@@ -67,6 +67,9 @@ public:
     QList<QPointer<DatalinkConnection>> connections;
     bool findActiveConnection(QHostAddress addr);
 
+    // true when connected as a client to another GCS instance
+    bool gcsServerLink() const;
+
 public:
     bool valid() const;
     void setValid(const bool &v);

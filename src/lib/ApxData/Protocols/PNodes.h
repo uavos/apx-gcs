@@ -46,9 +46,16 @@ private slots:
 public slots:
     virtual void requestSearch() { _nimp(__FUNCTION__); }
 
+    // nodes data exchange between GCS instances, bypassing the hardware
+    virtual void requestGcsNodes() { _nimp(__FUNCTION__); }
+    virtual void sendGcsNodes(QJsonArray nodes) { _nimp(__FUNCTION__); }
+
 signals:
     void node_available(PNode *node);
     void node_response(PNode *node);
+
+    // another GCS instance asks for nodes data
+    void gcsNodesRequested();
 
     //properties
     void upgradingChanged();

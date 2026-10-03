@@ -75,12 +75,34 @@ void NodeStorage::saveNodeDict()
         this,
         [this](quint64 dictID) { _dictID = dictID; },
         Qt::QueuedConnection);
+
+    // conf saving must wait for dictID
+    _dictSaving++;
+    connect(
+        req,
+        &db::nodes::NodeSaveDict::finished,
+        this,
+        [this]() {
+            if (--_dictSaving || !_confSavePending)
+                return;
+            _confSavePending = false;
+            if (_node && _node->valid())
+                saveNodeConf();
+        },
+        Qt::QueuedConnection);
     req->exec();
 }
 
 void NodeStorage::saveNodeConf()
 {
     _confID = 0; // invalidate for unit config
+
+    if (_dictSaving) {
+        // dict is not in db yet
+        _confSavePending = true;
+        return;
+    }
+
     auto cache_hash = _node->dict().value("cache").toString();
     if (cache_hash.isEmpty()) {
         qWarning() << "no dict cache hash";

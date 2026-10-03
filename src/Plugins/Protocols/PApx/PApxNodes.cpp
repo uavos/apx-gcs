@@ -29,7 +29,12 @@
 
 #include <App/AppLog.h>
 
+#include <crc.h>
+
 #define PAPX_REQ_DELAY_MS 0
+
+#define PAPX_GCS_PART_SIZE 400             // bytes of data in packet
+#define PAPX_GCS_SIZE_MAX (8 * 1024 * 1024) // bytes of compressed data
 
 PApxNodes::PApxNodes(PApxUnit *parent)
     : PNodes(parent)
@@ -138,8 +143,147 @@ PApxNode *PApxNodes::getNode(QString uid, bool createNew)
 
 void PApxNodes::requestSearch()
 {
+    _gcs_wait = false; // download from hardware
+
     _req.request(mandala::cmd::env::nmt::search::uid);
     _req.send();
+}
+
+// Nodes data exchange between GCS instances
+// packet format: <cmd.env.aux.gcs> <uid> <data>
+//  request: <nmt.search>
+//  response: <nmt.search> <hash> <size> <offset> <part of compressed JSON>
+// The request is sent once, requests to hardware are blocked until the response.
+// GCS which is downloading from hardware responds when all nodes are downloaded.
+
+void PApxNodes::requestGcsNodes()
+{
+    if (_local)
+        return;
+
+    _gcs_wait = true;
+
+    _req.request(mandala::cmd::env::aux::gcs::uid);
+    _req << mandala::cmd::env::nmt::search::uid;
+    findParent<PApx>()->trace_uid(mandala::cmd::env::nmt::search::uid);
+    _req.send();
+}
+
+void PApxNodes::sendGcsNodes(QJsonArray nodes)
+{
+    if (_local || nodes.isEmpty())
+        return;
+
+    const auto data = qCompress(QJsonDocument(nodes).toJson(QJsonDocument::Compact));
+    const uint32_t size = data.size();
+    const uint32_t hash = apx::crc32(data.data(), size);
+
+    qDebug() << "nodes to gcs:" << nodes.size() << size << "bytes";
+
+    for (uint32_t offset = 0; offset < size; offset += PAPX_GCS_PART_SIZE) {
+        _req.request(mandala::cmd::env::aux::gcs::uid, xbus::pri_response);
+        _req << mandala::cmd::env::nmt::search::uid;
+        findParent<PApx>()->trace_uid(mandala::cmd::env::nmt::search::uid);
+        _req << hash;
+        _req << size;
+        _req << offset;
+        trace()->block(QString("%1/%2").arg(offset).arg(size));
+        _req.append(data.mid(offset, PAPX_GCS_PART_SIZE));
+        _req.send();
+    }
+}
+
+void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
+{
+    if (_local)
+        return;
+
+    if (stream.available() < sizeof(mandala::uid_t))
+        return;
+
+    mandala::uid_t uid;
+    stream >> uid;
+    findParent<PApx>()->trace_uid(uid);
+
+    if (uid != mandala::cmd::env::nmt::search::uid) {
+        trace()->data(stream.payload());
+        return;
+    }
+
+    if (pid.pri == xbus::pri_request) {
+        // waiting GCS has nothing to respond, the request is passed further
+        if (!_gcs_wait)
+            emit gcsNodesRequested();
+        return;
+    }
+    if (pid.pri != xbus::pri_response || !_gcs_wait)
+        return;
+
+    if (stream.available() <= sizeof(uint32_t) * 3)
+        return;
+
+    uint32_t hash, size, offset;
+    stream >> hash;
+    stream >> size;
+    stream >> offset;
+    trace()->block(QString("%1/%2").arg(offset).arg(size));
+
+    if (offset == 0) {
+        // start of data, the most recent sender wins
+        if (size == 0 || size > PAPX_GCS_SIZE_MAX)
+            return;
+        _gcs_rx_hash = hash;
+        _gcs_rx_size = size;
+        _gcs_rx_data.clear();
+    }
+    if (!_gcs_rx_size || hash != _gcs_rx_hash || size != _gcs_rx_size
+        || offset != static_cast<uint32_t>(_gcs_rx_data.size()))
+        return; // parts of another sender or non-sequental
+
+    _gcs_rx_data.append(stream.payload());
+    if (static_cast<uint32_t>(_gcs_rx_data.size()) < size)
+        return;
+
+    // all data received
+    const auto data = _gcs_rx_data;
+    _gcs_rx_data.clear();
+    _gcs_rx_size = 0;
+
+    if (static_cast<uint32_t>(data.size()) != size || apx::crc32(data.data(), size) != hash) {
+        qWarning() << "gcs nodes data error";
+        return;
+    }
+    const auto nodes = QJsonDocument::fromJson(qUncompress(data)).array();
+    if (nodes.isEmpty()) {
+        qWarning() << "gcs nodes json error";
+        return;
+    }
+
+    qDebug() << "nodes from gcs:" << nodes.size() << size << "bytes";
+    for (const auto &i : nodes)
+        loadGcsNode(i.toObject());
+
+    apxMsg() << tr("Nodes received from GCS").append(':') << nodes.size();
+
+    // check nodes and download the missing ones from hardware
+    QTimer::singleShot(0, this, &PApxNodes::requestSearch);
+}
+
+void PApxNodes::loadGcsNode(QJsonObject node)
+{
+    if (_local || upgrading())
+        return;
+
+    const auto uid = node.value("info").toObject().value("uid").toString();
+    const auto guid = QByteArray::fromHex(uid.toUtf8());
+    if (guid.size() != sizeof(xbus::node::guid_t) || guid.toHex().toUpper() != uid.toUtf8()) {
+        qWarning() << "gcs node uid" << uid;
+        return;
+    }
+
+    auto f = getNode(uid);
+    if (f)
+        f->loadGcsData(node);
 }
 
 void PApxNodes::request_scheduled(PApxNodeRequest *req)
