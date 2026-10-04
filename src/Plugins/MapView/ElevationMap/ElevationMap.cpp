@@ -386,6 +386,8 @@ void ElevationMap::createMissionTools()
                             "puzzle-edit-outline");
     correct->setVisible(false);
     connect(correct, &Fact::triggered, this, [this]() {
+        // a correction interrupted by a mission change never completes: start over
+        m_isCorrect = false;
         m_correctionPass = 0;
         startPathsCorrection();
     });
