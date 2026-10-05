@@ -28,6 +28,7 @@
 #include <QQuickItem>
 
 class MissionItem;
+class WaypointTerrain;
 
 /**
  * Terrain profile of one mission item drawn directly with the Qt Quick scene graph.
@@ -55,11 +56,14 @@ class TerrainProfileItem : public QQuickItem
     Q_PROPERTY(QColor lineColor READ lineColor WRITE setLineColor NOTIFY lineColorChanged)
     Q_PROPERTY(double lineWidth READ lineWidth WRITE setLineWidth NOTIFY lineWidthChanged)
     Q_PROPERTY(int pointCount READ pointCount NOTIFY pointCountChanged)
+    // the path to the waypoint is too close to the terrain
+    Q_PROPERTY(bool collision READ collision NOTIFY collisionChanged)
 
 public:
     explicit TerrainProfileItem(QQuickItem *parent = nullptr);
 
     QObject *missionItem() const;
+    bool collision() const;
     void setMissionItem(QObject *v);
     // plugin instance: provides the lowest terrain across the corridor (thin line)
     QObject *elevationMap() const;
@@ -104,6 +108,7 @@ signals:
     void lineColorChanged();
     void lineWidthChanged();
     void pointCountChanged();
+    void collisionChanged();
 
 protected:
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data) override;
@@ -111,11 +116,13 @@ protected:
 
 private slots:
     void reloadProfile();
+    void updateTerrain();
 
 private:
     void markGeometryDirty();
 
     QPointer<MissionItem> m_item;
+    QPointer<WaypointTerrain> m_terrain;
     QList<QPointF>
         m_profile; // (distance from segment start [m], highest elevation across the corridor [m])
     QList<QPointF> m_profileMin; // same distances, lowest elevation across the corridor (may be empty)

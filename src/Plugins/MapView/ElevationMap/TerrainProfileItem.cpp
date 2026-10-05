@@ -22,6 +22,7 @@
 #include "TerrainProfileItem.h"
 
 #include "ElevationMap.h"
+#include "WaypointTerrain.h"
 
 #include <Mission/MissionItem.h>
 
@@ -79,16 +80,9 @@ void TerrainProfileItem::setMissionItem(QObject *v)
     auto item = qobject_cast<MissionItem *>(v);
     if (m_item == item)
         return;
-    if (m_item)
-        disconnect(m_item, nullptr, this, nullptr);
     m_item = item;
-    if (m_item)
-        connect(m_item,
-                &MissionItem::terrainProfileChanged,
-                this,
-                &TerrainProfileItem::reloadProfile);
     emit missionItemChanged();
-    reloadProfile();
+    updateTerrain();
 }
 
 QObject *TerrainProfileItem::elevationMap() const
@@ -100,15 +94,48 @@ void TerrainProfileItem::setElevationMap(QObject *v)
 {
     if (m_elevationMap == v)
         return;
+    if (m_elevationMap)
+        disconnect(m_elevationMap, nullptr, this, nullptr);
     m_elevationMap = v;
+    if (auto em = qobject_cast<ElevationMap *>(v))
+        connect(em, &ElevationMap::terrainsChanged, this, &TerrainProfileItem::updateTerrain);
     emit elevationMapChanged();
+    updateTerrain();
+}
+
+// The terrain data of the waypoint is kept by the plugin and may be attached
+// to the waypoint (or removed from it) after this item was created
+void TerrainProfileItem::updateTerrain()
+{
+    auto terrain = WaypointTerrain::of(m_item);
+    if (m_terrain != terrain) {
+        if (m_terrain)
+            disconnect(m_terrain, nullptr, this, nullptr);
+        m_terrain = terrain;
+        if (m_terrain) {
+            connect(m_terrain,
+                    &WaypointTerrain::terrainProfileChanged,
+                    this,
+                    &TerrainProfileItem::reloadProfile);
+            connect(m_terrain,
+                    &WaypointTerrain::collisionChanged,
+                    this,
+                    &TerrainProfileItem::collisionChanged);
+        }
+        emit collisionChanged();
+    }
     reloadProfile();
+}
+
+bool TerrainProfileItem::collision() const
+{
+    return m_terrain ? m_terrain->collision() : false;
 }
 
 void TerrainProfileItem::reloadProfile()
 {
     const auto count = m_profile.size();
-    m_profile = m_item ? m_item->terrainProfile() : QList<QPointF>();
+    m_profile = m_terrain ? m_terrain->terrainProfile() : QList<QPointF>();
     m_profileMin.clear();
     auto em = qobject_cast<ElevationMap *>(m_elevationMap.data());
     if (em && m_item && m_profile.size() >= 2) {

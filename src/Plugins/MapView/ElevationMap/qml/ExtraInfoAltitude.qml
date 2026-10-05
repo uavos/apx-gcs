@@ -35,7 +35,8 @@ Item {
     readonly property APX.Unit unit: apx.fleet.current
     readonly property Mission mission: unit.mission
 
-    property var homeHmsl: mission.startElevation ? mission.startElevation : 0
+    readonly property var missionTerrain: apx.tools.elevationmap.missionTerrain(mission)
+    property var homeHmsl: (missionTerrain && missionTerrain.startElevation) ? missionTerrain.startElevation : 0
     property var color: "#dcdcdc"
     
     anchors.fill: parent

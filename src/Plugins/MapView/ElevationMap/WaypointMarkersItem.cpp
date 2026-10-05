@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "WaypointMarkersItem.h"
+#include "WaypointTerrain.h"
 
 #include <Mission/MissionGroup.h>
 #include <Mission/UnitMission.h>
@@ -183,29 +184,41 @@ void WaypointMarkersItem::refresh()
         auto mission = group->mission;
         // distances are counted from the first waypoint, the takeoff leg is not shown
         double acc = 0;
-        const double startHmsl = std::round(mission->startElevation());
+        auto missionTerrain = MissionTerrain::of(mission);
+        connect(missionTerrain,
+                &MissionTerrain::startElevationChanged,
+                this,
+                &WaypointMarkersItem::changed,
+                Qt::UniqueConnection);
+        const double startHmsl = std::round(missionTerrain->startElevation());
         const QFontMetricsF fm(m_font);
         for (int i = 0; i < group->size(); ++i) {
             auto wp = qobject_cast<Waypoint *>(group->child(i));
             if (!wp)
                 continue;
+            // terrain data of the waypoint is kept by the plugin (absent while it is passive)
+            auto terrain = WaypointTerrain::of(wp);
             // watch what affects the marker; the owner recomputes and calls refresh()
-            for (auto f : {wp->f_altitude, wp->f_amsl, wp->f_agl})
-                connect(f,
-                        &Fact::valueChanged,
+            for (auto f : {wp->f_altitude, wp->f_amsl, terrain ? terrain->f_agl : nullptr}) {
+                if (f)
+                    connect(f,
+                            &Fact::valueChanged,
+                            this,
+                            &WaypointMarkersItem::changed,
+                            Qt::UniqueConnection);
+            }
+            if (terrain) {
+                connect(terrain,
+                        &WaypointTerrain::collisionChanged,
                         this,
                         &WaypointMarkersItem::changed,
                         Qt::UniqueConnection);
-            connect(wp,
-                    &Waypoint::collisionChanged,
-                    this,
-                    &WaypointMarkersItem::changed,
-                    Qt::UniqueConnection);
-            connect(wp,
-                    &MissionItem::elevationChanged,
-                    this,
-                    &WaypointMarkersItem::changed,
-                    Qt::UniqueConnection);
+                connect(terrain,
+                        &ItemTerrain::elevationChanged,
+                        this,
+                        &WaypointMarkersItem::changed,
+                        Qt::UniqueConnection);
+            }
             connect(wp,
                     &MissionItem::distanceChanged,
                     this,
@@ -221,8 +234,8 @@ void WaypointMarkersItem::refresh()
             m.num = wp->num();
             m.distance = acc;
             m.height = amsl ? alt : alt + startHmsl;
-            m.alarm = !std::isnan(wp->elevation())
-                      && (wp->f_agl->value().toInt() < wp->unsafeAgl() || wp->collision());
+            m.alarm = terrain && !std::isnan(terrain->elevation())
+                      && (terrain->agl() < terrain->unsafeAgl() || terrain->collision());
             const double tw = fm.horizontalAdvance(QString::number(m.num + 1));
             m.boxWidth = qMax(MIN_BOX_WIDTH, tw + 4);
             m_markers.append(m);

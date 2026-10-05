@@ -30,6 +30,7 @@
 #include <QGeoPath>
 #include <QMap>
 #include <QPointF>
+#include <QPointer>
 #include <QQmlComponent>
 #include <QSet>
 #include <QtCore>
@@ -39,6 +40,7 @@
 class Unit;
 class UnitMission;
 class MissionTools;
+class ItemTerrain;
 
 class ElevationMap : public Fact
 {
@@ -53,6 +55,8 @@ class ElevationMap : public Fact
     // plugin enabled, in use, files available and covering the mission:
     // when false the plugin is fully passive (no fields, icons or alarms)
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
+    // plugin enabled, in use and files available: elevation requests make sense
+    Q_PROPERTY(bool usable READ usable NOTIFY usableChanged)
     // current unit: highest terrain within the corridor radius and height above it (NaN when unknown)
     Q_PROPERTY(double unitTerrain READ unitTerrain NOTIFY unitAglChanged)
     Q_PROPERTY(double unitAgl READ unitAgl NOTIFY unitAglChanged)
@@ -75,6 +79,10 @@ public:
     Fact *aglset() const;
 
     Q_INVOKABLE void setElevationByCoordinate(const QGeoCoordinate &coordinate);
+    // terrain data of a mission item (ItemTerrain, WaypointTerrain) or of a mission
+    // (MissionTerrain): it is kept by the plugin, not by the mission
+    Q_INVOKABLE QObject *terrain(QObject *item) const;
+    Q_INVOKABLE QObject *missionTerrain(QObject *mission) const;
     void setCoordinateWithElevation(const QGeoCoordinate &coordinate);
     void setTerrainProfile(const QGeoPath &path);
 
@@ -86,6 +94,7 @@ public:
     bool available() const { return m_available; }
     bool covered() const { return m_covered; }
     bool active() const { return m_active; }
+    bool usable() const { return m_usable; }
     double unitTerrain() const { return m_unitTerrain; }
     double unitAgl() const { return m_unitAgl; }
     // lowest terrain across the corridor (distance, elevation) for a profile path, empty if unknown
@@ -102,9 +111,9 @@ protected:
 private:
     QSharedPointer<AbstractElevationDB> m_elevationDB;
     QMap<int, QList<QGeoCoordinate>> m_correction;
-    QMap<QString, int> m_waypoints;
-    QSet<QString> m_runways;
-    QSet<QString> m_pois;
+    QList<QPointer<ItemTerrain>> m_terrains; // attached to mission items
+    bool m_attached{false};                  // new terrain objects since the last notification
+    bool m_rebuilding{false};                // waypoints are being re-created by the correction
     bool m_isCorrect{false};
     static constexpr int CORRECTION_PASSES = 3; // "All paths correction" repeats itself up to this
     int m_correctionPass{0};
@@ -113,6 +122,7 @@ private:
     bool m_available{false};
     bool m_covered{true};
     bool m_active{false};
+    bool m_usable{false};
     QTimer m_coverageTimer;
 
     QHash<QString, QList<QPointF>> m_minProfiles; // key: path endpoints
@@ -128,10 +138,10 @@ private:
     void createMissionTools();
     void createElevationDatabase();
     void setMissionValues(bool b);
-    void setWaypointsValues(bool b);
-    void setRunwaysValues(bool b);
-    void setPoisValues(bool b);
-    void clearMissionPoints();
+    void attachWaypoints();
+    void attachItems(Fact *group);
+    void attachItem(ItemTerrain *t);
+    void detachTerrains();
     QObject *qml;
 
 private slots:
@@ -165,5 +175,7 @@ signals:
     void availableChanged();
     void coveredChanged();
     void activeChanged();
+    void usableChanged();
+    void terrainsChanged(); // terrain objects were attached to or removed from mission items
     void unitAglChanged();
 };

@@ -28,7 +28,6 @@ Repeater {
         property real segmentStart: elevationView.segmentStart(num, 0)
         property real offset: segmentStart
         property real distance: dist
-        property bool collision: fact ? fact.collision : false
 
         onDistChanged: elevationView.scheduleSegmentStarts()
         onNumChanged: elevationView.scheduleSegmentStarts()

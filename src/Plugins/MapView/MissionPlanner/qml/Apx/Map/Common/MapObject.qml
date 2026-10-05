@@ -31,7 +31,7 @@ MapQuickItem {  //to be used inside MapComponent only
     property bool interactive: visibleOnMap
     property bool draggable: true
     property bool shadow: true
-    property bool alarmed: false
+    property bool alarmed: false // highlighted with a red frame
 
     property int implicitZ: 0
 
@@ -133,24 +133,10 @@ MapQuickItem {  //to be used inside MapComponent only
             map.flickToCoordinate(coordinate)
         }
     }
-
-    // object elevation view when dragging and hovered support
-    function updateMapInfoElevation() {
-        var elevationPlugin = apx.settings.application.plugins.elevationmap
-        if(elevationPlugin && elevationPlugin.value && apx.tools.elevationmap.use.value && apx.tools.elevationmap.available)
-            apx.tools.elevationmap.setElevationByCoordinate(mapObject.coordinate)
-    }
-    
-    onHoverChanged: if(hover && !dragging) timer.start() // updateMapInfoElevation()
     onDraggingChanged: {
         if(!dragging){
             movingFinished()
             if(implicitCoordinate) coordinate=Qt.binding(function(){return implicitCoordinate})
-            timer.repeat = false;
-        } else {
-            if(!selected) select()
-            timer.repeat = true;
-            timer.start()
         }
     }
 
@@ -277,10 +263,4 @@ MapQuickItem {  //to be used inside MapComponent only
         }
     }
 
-    // object elevation view when dragging support
-    Timer {
-        id: timer
-        interval: 750
-        onTriggered: updateMapInfoElevation()
-    }
 }

@@ -30,8 +30,10 @@ Item {
     id: item
 
     property var value: fact.value
-    property var unsafeAgl: fact.parentFact.unsafeAgl
-    property var elevation: fact.parentFact.elevation
+    // terrain data of the waypoint is kept by the plugin
+    readonly property var terrain: apx.tools.elevationmap.terrain(fact.parentFact)
+    property var unsafeAgl: terrain ? terrain.unsafeAgl : 0
+    property var elevation: terrain ? terrain.elevation : NaN
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32"
 
     anchors.fill: parent

@@ -50,6 +50,8 @@ Rectangle {
     readonly property Mission mission: unit.mission
     readonly property bool empty: mission.empty
     property var elevationmap: apx.tools.elevationmap
+    // start elevation, height range and collision flag of the mission are kept by the plugin
+    readonly property var missionTerrain: elevationmap ? elevationmap.missionTerrain(mission) : null
     property var use: elevationmap ? elevationmap.use.value : false 
     property var elevationPlugin: apx.settings.application.plugins.elevationmap
     property var pluginOn: elevationPlugin ? elevationPlugin.value : false
@@ -76,7 +78,7 @@ Rectangle {
     // flight altitude line: [distance m, height AMSL m] per waypoint
     property var missionLine: []
     function updateSegmentStarts() {
-        var startHmsl = Math.round(mission.startElevation)
+        var startHmsl = missionTerrain ? Math.round(missionTerrain.startElevation) : 0
         var acc = 0
         var starts = []
         var line = []
@@ -116,8 +118,12 @@ Rectangle {
         function onSizeChanged() { scheduleSegmentStarts() }
     }
     Connections {
-        target: mission
+        target: missionTerrain
         function onStartElevationChanged() { scheduleSegmentStarts() }
+    }
+    Connections {
+        target: elevationmap
+        function onTerrainsChanged() { scheduleSegmentStarts() }
     }
     Component.onCompleted: updateSegmentStarts()
     property real viewSpan: fullSpan
@@ -198,7 +204,7 @@ Rectangle {
         radius: 2
         border.width: radius
         border.color: "#ffffff"
-        visible: mission.collision && elevationView.chartOn
+        visible: missionTerrain && missionTerrain.collision && elevationView.chartOn
         anchors {
             top: parent.top
             left: parent.left
@@ -234,8 +240,8 @@ Rectangle {
         ChartView {
             id: chartView
             property int margin: 5
-            property var minHeight: mission.minHeight
-            property var maxHeight: mission.maxHeight
+            property real minHeight: missionTerrain ? missionTerrain.minHeight : 0
+            property real maxHeight: missionTerrain ? missionTerrain.maxHeight : 200
             anchors.fill: parent
             margins.top: alarm.height
             margins.right: margin
@@ -259,7 +265,7 @@ Rectangle {
             ValueAxis {
                 id: axisY
                 min: chartView.minHeight
-                max: Math.ceil(mission.maxHeight/10)*10
+                max: Math.ceil(chartView.maxHeight/10)*10
                 lineVisible: true
                 labelsFont: elevationView.axisFont
                 labelsColor: "white"

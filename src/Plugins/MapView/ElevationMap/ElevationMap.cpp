@@ -20,14 +20,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ElevationMap.h"
+#include "MissionTerrain.h"
 #include "TerrainProfileItem.h"
 #include "WaypointMarkersItem.h"
+#include "WaypointTerrain.h"
 #include <App/App.h>
 #include <App/AppSettings.h>
 #include <Fleet/Fleet.h>
 #include <Fleet/Unit.h>
 #include <Mission/MissionTools.h>
-#include <Mission/Poi.h>
 #include <Mission/Runway.h>
 #include <Mission/UnitMission.h>
 #include <Mission/Waypoint.h>
@@ -96,6 +97,7 @@ ElevationMap::ElevationMap(Fact *parent)
     qmlRegisterType<WaypointMarkersItem>("Apx.Elevation", 1, 0, "WaypointMarkersItem");
     qml = loadQml("qrc:/ElevationPlugin.qml");
     loadQml("qrc:/ElevationMapLayer.qml"); // map layer: elevation under the cursor
+    loadQml("qrc:/ElevationMapInfo.qml");  // map info line: the elevation value
 }
 
 // without elevation files no request reaches the worker (its thread is never started)
@@ -117,16 +119,17 @@ void ElevationMap::setTerrainProfile(const QGeoPath &path)
 {
     if (!f_use->value().toBool() || !m_available)
         return;
-    // The leg from the runway to the first waypoint is a takeoff: its terrain is not
-    // analysed. A profile left from another place in the mission is dropped the same
-    // way as when there is no elevation data for the path.
-    auto wp = qobject_cast<Waypoint *>(sender());
-    if (wp && wp->num() == 0) {
-        if (!wp->terrainProfile().isEmpty())
-            setGeoPath(path);
-        return;
-    }
     m_elevationDB->requestTerrainProfile(path);
+}
+
+QObject *ElevationMap::terrain(QObject *item) const
+{
+    return ItemTerrain::of(qobject_cast<MissionItem *>(item));
+}
+
+QObject *ElevationMap::missionTerrain(QObject *mission) const
+{
+    return MissionTerrain::of(qobject_cast<UnitMission *>(mission));
 }
 
 void ElevationMap::createElevationDatabase()
@@ -165,9 +168,8 @@ void ElevationMap::onCorridorChanged()
     // profiles depend on the corridor: recompute them all
     auto m = mission();
     for (int i = 0; i < m->f_wp->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
-        if (wp && m_active)
-            wp->sendTerrainProfileRequest();
+        if (auto t = WaypointTerrain::of(static_cast<MissionItem *>(m->f_wp->child(i))))
+            t->sendTerrainProfileRequest();
     }
     updateUnitAgl();
 }
@@ -273,6 +275,8 @@ void ElevationMap::scheduleCoverage()
 // moving the mission outside the map (or back) updates the state as well.
 void ElevationMap::updateCoverage()
 {
+    if (m_rebuilding)
+        return;
     auto m = mission();
     int items = 0;
     int coveredItems = 0;
@@ -315,8 +319,13 @@ void ElevationMap::updateActive()
         emit activeChanged();
     }
     setMissionValues(m_active);
+    const bool usable = controlValue && useValue && m_available;
+    if (m_usable != usable) {
+        m_usable = usable;
+        emit usableChanged();
+    }
     // unit AGL makes sense only with elevation files in use
-    f_showAgl->setEnabled(controlValue && useValue && m_available);
+    f_showAgl->setEnabled(usable);
     updateUnitAgl();
 }
 
@@ -409,8 +418,8 @@ void ElevationMap::updateMission()
             Qt::UniqueConnection);
     connect(mission(),
             &UnitMission::missionSizeChanged,
-            mission(),
-            &UnitMission::checkCollision,
+            MissionTerrain::of(mission()),
+            &MissionTerrain::checkCollision,
             Qt::UniqueConnection);
     connect(mission(),
             &UnitMission::startPointChanged,
@@ -461,9 +470,10 @@ void ElevationMap::setMissionAgl()
         if (!wp)
             continue;
 
-        auto elevation = wp->elevation();
-        if (qIsNaN(elevation))
+        auto t = WaypointTerrain::of(wp);
+        if (!t || qIsNaN(t->elevation()))
             continue;
+        auto elevation = t->elevation();
 
         auto agl = aglset();
         if (!agl)
@@ -480,6 +490,9 @@ void ElevationMap::changeExternalsVisibility()
     updateCoverage();
 }
 
+// Active: every item of the current mission gets its terrain object (see
+// MissionTerrain.h), which adds the plugin rows and widgets to the item.
+// Passive: all of them are removed, the mission is left as the library made it.
 void ElevationMap::setMissionValues(bool b)
 {
     auto aglset = missionTools()->child("aglset");
@@ -490,16 +503,95 @@ void ElevationMap::setMissionValues(bool b)
     if (pathsCorrect)
         pathsCorrect->setVisible(b);
 
-    // Signal missionSizeChanged is sent before mission is cleared
-    auto m = mission();
-    if (m->missionSize() <= 0) {
-        clearMissionPoints();
+    if (!b) {
+        detachTerrains();
         return;
     }
+    auto m = mission();
+    attachItems(m->f_rw);
+    attachItems(m->f_pi);
+    attachWaypoints();
+    if (!m_attached)
+        return;
+    m_attached = false;
+    setStartPointElevation();
+    emit terrainsChanged();
+}
 
-    setWaypointsValues(b);
-    setRunwaysValues(b);
-    setPoisValues(b);
+void ElevationMap::detachTerrains()
+{
+    if (m_terrains.isEmpty())
+        return;
+    for (const auto &t : std::as_const(m_terrains)) {
+        if (!t)
+            continue;
+        t->detach();
+        delete t;
+    }
+    m_terrains.clear();
+    emit terrainsChanged();
+}
+
+// common wiring of a new terrain object
+void ElevationMap::attachItem(ItemTerrain *t)
+{
+    m_terrains.removeIf([](const QPointer<ItemTerrain> &p) { return p.isNull(); });
+    m_terrains.append(t);
+    m_attached = true;
+    connect(this, &ElevationMap::coordinateChanged, t, &ItemTerrain::extractElevation);
+    connect(t, &ItemTerrain::requestElevation, this, &ElevationMap::setCoordinateWithElevation);
+    // the map info line shows the terrain under the item while it is dragged
+    auto item = t->item();
+    connect(item, &MissionItem::coordinateChanged, t, [this, item]() {
+        setElevationByCoordinate(item->coordinate());
+    });
+    // requests are queued and coalesced by the elevation worker
+    setCoordinateWithElevation(item->coordinate());
+}
+
+// runways and points of interest: the terrain elevation next to their HMSL editor
+void ElevationMap::attachItems(Fact *group)
+{
+    for (int i = 0; i < group->size(); ++i) {
+        auto item = static_cast<MissionItem *>(group->child(i));
+        if (ItemTerrain::of(item))
+            continue;
+        auto t = new ItemTerrain(item);
+        if (auto hmsl = item->child("hmsl"))
+            t->setInfoField(hmsl);
+        attachItem(t);
+    }
+}
+
+void ElevationMap::attachWaypoints()
+{
+    auto m = mission();
+    for (int i = 0; i < m->f_wp->size(); ++i) {
+        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
+        auto t = WaypointTerrain::of(wp);
+        if (!t) {
+            t = new WaypointTerrain(wp);
+            attachItem(t);
+            connect(t,
+                    &WaypointTerrain::requestTerrainProfile,
+                    this,
+                    &ElevationMap::setTerrainProfile);
+            connect(this, &ElevationMap::geoPathChanged, t, &WaypointTerrain::buildTerrainProfile);
+            connect(t,
+                    &WaypointTerrain::responseCorrectPath,
+                    this,
+                    &ElevationMap::getCorrectPathResponse);
+        }
+        // Check wp terrain profile has changes
+        if (t->terrainProfileNeedUpdate())
+            t->sendTerrainProfileRequest();
+    }
+
+    // For the first load from a file
+    // when there is no elevation data at all
+    auto mt = MissionTerrain::of(m);
+    mt->updateMinHeight();
+    mt->updateMaxHeight();
 }
 
 void ElevationMap::setGeoPath(const QGeoPath &v)
@@ -542,162 +634,6 @@ void ElevationMap::setElevation(double v)
     emit elevationChanged();
 }
 
-void ElevationMap::setWaypointsValues(bool b)
-{
-    auto m = mission();
-    QMap<QString, int> tempMap;
-
-    for (int i = 0; i < m->f_wp->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
-        wp->f_agl->setVisible(b);
-        // "Path correction" row of the waypoint menu belongs to the plugin
-        // (not for the first waypoint: its leg, the takeoff, is not analysed)
-        const bool first = wp->num() == 0;
-        connect(wp, &Fact::numChanged, this, &ElevationMap::scheduleCoverage, Qt::UniqueConnection);
-        auto correct = wp->child("correct");
-        if (b && !first && !correct) {
-            correct = new Fact(wp,
-                               "correct",
-                               tr("Path correction"),
-                               tr("Correct unsafe path's points"),
-                               CloseOnTrigger);
-            connect(correct, &Fact::triggered, wp, [wp]() { wp->correctPath(); });
-        }
-        if (correct)
-            correct->setVisible(b && !first);
-        // extra-info widgets of the plugin next to the altitude editors
-        wp->f_altitude->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoAltitude.qml") : QVariant());
-        wp->f_agl->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoAgl.qml") : QVariant());
-        if (!b)
-            continue;
-        wp->initElevationMap();
-        connect(this,
-                &ElevationMap::coordinateChanged,
-                wp,
-                &Waypoint::extractElevation,
-                Qt::UniqueConnection);
-        connect(wp,
-                &Waypoint::requestElevation,
-                this,
-                &ElevationMap::setCoordinateWithElevation,
-                Qt::UniqueConnection);
-        connect(wp,
-                &Waypoint::requestTerrainProfile,
-                this,
-                &ElevationMap::setTerrainProfile,
-                Qt::UniqueConnection);
-        connect(this,
-                &ElevationMap::geoPathChanged,
-                wp,
-                &Waypoint::buildTerrainProfile,
-                Qt::UniqueConnection);
-        connect(wp,
-                &Waypoint::responseCorrectPath,
-                this,
-                &ElevationMap::getCorrectPathResponse,
-                Qt::UniqueConnection);
-        // Check wp terrain profile has changes
-        if (wp->terrainProfileNeedUpdate()) {
-            wp->sendTerrainProfileRequest();
-        }
-        // For start point height update
-        if (m->f_rw->size() > 0) {
-            auto rw0 = static_cast<Runway *>(m->f_rw->child(0));
-            auto rw0Hmsl = rw0->f_hmsl;
-            connect(rw0, &Runway::elevationChanged, wp, &Waypoint::updateAgl, Qt::UniqueConnection);
-            connect(rw0Hmsl, &Fact::valueChanged, wp, &Waypoint::updateAgl, Qt::UniqueConnection);
-            wp->updateAgl();
-        }
-        auto str = wp->coordinate().toString();
-        auto alt = wp->f_altitude->value().toInt();
-        if (!m_waypoints.contains(str) || m_waypoints[str] != alt) {
-            // requests are queued and coalesced by the elevation worker
-            setCoordinateWithElevation(wp->coordinate());
-        }
-
-        tempMap[str] = alt;
-    }
-
-    // For the first load from a file
-    // when there is no elevation data at all
-    m->updateMinHeight();
-    m->updateMaxHeight();
-
-    m_waypoints = tempMap;
-}
-
-void ElevationMap::setRunwaysValues(bool b)
-{
-    auto m = mission();
-    QSet<QString> tempSet;
-    for (int i = 0; i < m->f_rw->size(); ++i) {
-        auto runway = static_cast<Runway *>(m->f_rw->child(i));
-        runway->f_hmsl->setOpt("extrainfo",
-                               b ? QVariant("qrc:/ExtraInfoElevation.qml") : QVariant());
-        if (!b)
-            continue;
-        runway->initElevationMap();
-        connect(this,
-                &ElevationMap::coordinateChanged,
-                runway,
-                &Runway::extractElevation,
-                Qt::UniqueConnection);
-        connect(runway,
-                &Runway::requestElevation,
-                this,
-                &ElevationMap::setCoordinateWithElevation,
-                Qt::UniqueConnection);
-        auto str = runway->coordinate().toString();
-        if (!m_runways.contains(str)) {
-            QMetaObject::invokeMethod(
-                this,
-                [=]() { setCoordinateWithElevation(runway->coordinate()); },
-                Qt::QueuedConnection);
-        }
-        tempSet.insert(str);
-    }
-    m_runways = tempSet;
-}
-
-void ElevationMap::setPoisValues(bool b)
-{
-    auto m = mission();
-    QSet<QString> tempSet;
-    for (int i = 0; i < m->f_pi->size(); ++i) {
-        auto poi = static_cast<Poi *>(m->f_pi->child(i));
-        poi->f_hmsl->setOpt("extrainfo", b ? QVariant("qrc:/ExtraInfoElevation.qml") : QVariant());
-        if (!b)
-            continue;
-        poi->initElevationMap();
-        connect(this,
-                &ElevationMap::coordinateChanged,
-                poi,
-                &Poi::extractElevation,
-                Qt::UniqueConnection);
-        connect(poi,
-                &Poi::requestElevation,
-                this,
-                &ElevationMap::setCoordinateWithElevation,
-                Qt::UniqueConnection);
-        auto str = poi->coordinate().toString();
-        if (!m_pois.contains(str)) {
-            QMetaObject::invokeMethod(
-                this,
-                [=]() { setCoordinateWithElevation(poi->coordinate()); },
-                Qt::QueuedConnection);
-        }
-        tempSet.insert(str);
-    }
-    m_pois = tempSet;
-}
-
-void ElevationMap::clearMissionPoints()
-{
-    m_waypoints.clear();
-    m_runways.clear();
-    m_pois.clear();
-}
-
 // ==== Mission analize
 void ElevationMap::setStartPointElevation()
 {
@@ -713,14 +649,16 @@ void ElevationMap::setStartPointElevation()
             }
         }
         if (!runway) {
-            m->setStartElevation(hHmsl);
+            MissionTerrain::of(m)->setStartElevation(hHmsl);
             return;
         }
-        connect(runway,
-                &MissionItem::elevationChanged,
-                this,
-                &ElevationMap::setStartPointElevation,
-                Qt::UniqueConnection);
+        auto runwayTerrain = ItemTerrain::of(runway);
+        if (runwayTerrain)
+            connect(runwayTerrain,
+                    &ItemTerrain::elevationChanged,
+                    this,
+                    &ElevationMap::setStartPointElevation,
+                    Qt::UniqueConnection);
         connect(runway->f_hmsl,
                 &Fact::valueChanged,
                 this,
@@ -731,7 +669,7 @@ void ElevationMap::setStartPointElevation()
         // If hmsl default
         if (rwHmsl == 0) {
             // If runway has elevation
-            auto rwElevation = runway->elevation();
+            auto rwElevation = runwayTerrain ? runwayTerrain->elevation() : qQNaN();
             if (!std::isnan(rwElevation)) {
                 hHmsl = rwElevation;
             }
@@ -742,7 +680,7 @@ void ElevationMap::setStartPointElevation()
             }
         }
     }
-    m->setStartElevation(hHmsl);
+    MissionTerrain::of(m)->setStartElevation(hHmsl);
 }
 
 double ElevationMap::getRefPointHmsl()
@@ -775,13 +713,14 @@ void ElevationMap::correctUnsafePaths()
 
     m_isCorrect = true;
     m_correction.clear();
-    // Waypoint::correctPath touches Facts and must run in the GUI thread;
-    // the heavy part (route points calculation) is scheduled by the waypoint itself
+    // correctPath touches Facts and must run in the GUI thread;
+    // the heavy part (route points calculation) is scheduled by the waypoint terrain
     for (int i = 0; i < wpsSize; i++) {
-        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
-        if (!wp)
-            continue;
-        wp->correctPath(true);
+        auto t = WaypointTerrain::of(static_cast<MissionItem *>(m->f_wp->child(i)));
+        if (t)
+            t->correctPath(true);
+        else
+            getCorrectPathResponse(QList<QGeoCoordinate>(), i);
     }
 }
 
@@ -859,13 +798,20 @@ void ElevationMap::insertMissionWaypoints()
         jsa.append(wp->toJson());
     }
 
-    auto startElevation = m->startElevation();
-    m->setStartElevation(0); // eliminate re-calculation when creating waypoints.
+    // the waypoints are re-created: their terrain is attached when all of them are loaded
+    m_rebuilding = true;
     m->f_wp->fromJson(jsa);
-    auto lastWp = static_cast<Waypoint *>(m->f_wp->facts().last());
-    m->setStartElevation(startElevation);
-    if (lastWp) {
-        connect(lastWp, &Waypoint::terrainProfileChanged, this, &ElevationMap::completeCorrection);
+    m_rebuilding = false;
+    changeExternalsVisibility();
+
+    auto lastTerrain = m->f_wp->size() > 0
+                           ? WaypointTerrain::of(static_cast<MissionItem *>(m->f_wp->facts().last()))
+                           : nullptr;
+    if (lastTerrain) {
+        connect(lastTerrain,
+                &WaypointTerrain::terrainProfileChanged,
+                this,
+                &ElevationMap::completeCorrection);
         return;
     }
     apxMsg() << tr("Mission correction completed");
@@ -877,15 +823,16 @@ void ElevationMap::completeCorrection()
     if (!m_isCorrect)
         return;
 
-    Waypoint *lastWp = static_cast<Waypoint *>(mission()->f_wp->facts().last());
-    if (!lastWp)
+    auto wps = mission()->f_wp;
+    auto lastTerrain = wps->size() > 0
+                           ? WaypointTerrain::of(static_cast<MissionItem *>(wps->facts().last()))
+                           : nullptr;
+    if (!lastTerrain)
         return;
 
     // Terrain profile not empty and waypoint have elevation
     // (elevation map for waypoint exists)
-    auto tp = lastWp->terrainProfile();
-    auto elv = lastWp->elevation();
-    if (tp.empty() && !std::isnan(elv))
+    if (lastTerrain->terrainProfile().empty() && !std::isnan(lastTerrain->elevation()))
         return;
 
     apxMsg() << tr("Mission correction completed");
@@ -898,8 +845,8 @@ void ElevationMap::checkCorrectionResult()
     auto m = mission();
     QString wpWarnings;
     for (int i = 0; i < m->f_wp->size(); ++i) {
-        auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
-        if (!wp || !wp->collision())
+        auto t = WaypointTerrain::of(static_cast<MissionItem *>(m->f_wp->child(i)));
+        if (!t || !t->collision())
             continue;
         if (!wpWarnings.isEmpty())
             wpWarnings += ",";

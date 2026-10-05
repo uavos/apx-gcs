@@ -23,7 +23,6 @@
 
 #include "MissionItem.h"
 #include "WaypointActions.h"
-#include <QFutureWatcher>
 #include <QGeoCoordinate>
 #include <QGeoPath>
 #include <QtCore>
@@ -34,30 +33,15 @@ class Waypoint : public MissionItem
 
     Q_PROPERTY(bool reachable READ reachable WRITE setReachable NOTIFY reachableChanged)
     Q_PROPERTY(bool warning READ warning WRITE setWarning NOTIFY warningChanged)
-    Q_PROPERTY(bool collision READ collision WRITE setCollision NOTIFY collisionChanged)
-    Q_PROPERTY(uint totalDistanceWithRw READ totalDistanceWithRw NOTIFY totalDistanceWithRwChanged)
-    Q_PROPERTY(int unsafeAgl READ unsafeAgl CONSTANT)
 
 public:
-    struct TerrainInfo
-    {
-        QGeoPath terrainProfilePath;
-        QList<QPointF> terrainProfile;
-        double minHeight;
-        double maxHeight;
-    };
-
     explicit Waypoint(MissionGroup *parent);
-
-    static constexpr double ALT_EPS = 0.1;
 
     Fact *f_altitude;
     Fact *f_amsl;
-    Fact *f_agl;
 
     Fact *f_atrack;
     Fact *f_xtrack;
-
 
     WaypointActions *f_actions;
 
@@ -66,92 +50,29 @@ public:
 
 protected:
     QGeoPath getPath() override;
-    QGeoPath getPointPath();
-    void calcAltitude();
-    void recalcAltitude();
-    void processAgl();
-    void calcAgl();
-    void setComputedAgl(int v);
 
 private:
     QString _altUnits;
-    double m_terrainProfileMin{0};
-    double m_terrainProfileMax{200};
-    bool m_reply{false};
-    bool m_aglComputing{false}; // AGL is being written by the model, not edited
-    bool m_loading{false};      // fields are being loaded from json
 
 private slots:
-    double getStartHMSL();
     void updateTitle() override;
     void updateDescr();
     void updateAMSL();
-    void updateAltDescr();
-    static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
-    static void getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
-                                      const QGeoPath &path,
-                                      int hFirst,
-                                      int hLast);
-    void insertNewPoints();
-    
-    void updateMinMaxHeight();
-    void updateTerrainInfo();
-    void setAglEnabled();
-
-public slots:
-    void initElevationMap();
-    void updateAgl();
-    void sendTerrainProfileRequest();
-    void buildTerrainProfile(const QGeoPath &path);
-    void checkCollision();
-
-    void correctPath(bool reply = false);
-    void updateTotalDistanceWithRw();
 
     //---------------------------------------
     // PROPERTIES
 public:
-
-    double minHeight() const;
-    void setMinHeight(const double v);
-
-    double maxHeight() const;
-    void setMaxHeight(const double v);
-
-    uint totalDistanceWithRw() const;
-    void setTotalDistanceWithRw(uint v);
-
     bool reachable() const;
     void setReachable(bool v);
 
     bool warning() const;
     void setWarning(bool v);
 
-    bool collision() const;
-    void setCollision(bool v);
-        
-    bool terrainProfileNeedUpdate(); 
-    int unsafeAgl() const;
-
 protected:
-    static const int UNSAFE_AGL = 100;
-    QFutureWatcher<TerrainInfo> m_watcher;
-    double m_minHeight{0};
-    double m_maxHeight{200};
-    uint m_totalDistanceWithRw{0};
     bool m_reachable{};
     bool m_warning{};
-    bool m_collision{};
-
-    QFutureWatcher<QList<QGeoCoordinate>> m_pointsWatcher;
 
 signals:
-    void requestTerrainProfile(QGeoPath v);
-    void responseCorrectPath(QList<QGeoCoordinate> v, int index);
-    void totalDistanceWithRwChanged();
-    void minHeightChanged();
-    void maxHeightChanged();
     void reachableChanged();
-    void collisionChanged();
     void warningChanged();
 };

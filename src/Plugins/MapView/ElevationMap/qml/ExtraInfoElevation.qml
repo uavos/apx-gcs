@@ -27,7 +27,9 @@ import Apx.Common
 
 Item {
     id: item
-    property var elevation: fact?fact.parentFact.elevation:NaN
+    // terrain data of the mission item is kept by the plugin
+    readonly property var terrain: fact ? apx.tools.elevationmap.terrain(fact.parentFact) : null
+    property var elevation: terrain ? terrain.elevation : NaN
     property var color: isNaN(elevation) ? "#dc143c" : "#32cd32" 
 
     anchors.fill: parent
