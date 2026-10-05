@@ -27,6 +27,7 @@
 #include <Mandala/Mandala.h>
 #include <XbusNode.h>
 
+#include <App/AppGcs.h>
 #include <App/AppLog.h>
 
 #include <crc.h>
@@ -35,6 +36,7 @@
 
 #define PAPX_GCS_PART_SIZE 400             // bytes of data in packet
 #define PAPX_GCS_SIZE_MAX (8 * 1024 * 1024) // bytes of compressed data
+#define PAPX_GCS_REPLY_DELAY_MS 1000       // requests idle time to reply
 
 PApxNodes::PApxNodes(PApxUnit *parent)
     : PNodes(parent)
@@ -48,6 +50,9 @@ PApxNodes::PApxNodes(PApxUnit *parent)
     connect(&_reqNext, &QTimer::timeout, this, &PApxNodes::request_current);
 
     connect(root(), &PBase::cancelRequests, this, [this]() { cancel_requests(nullptr); });
+
+    _gcsReply.setSingleShot(true);
+    connect(&_gcsReply, &QTimer::timeout, this, &PApxNodes::sendGcsNodes);
 
     // inactive unit has delay for nodes downloading
     connect(parent, &Fact::activeChanged, this, &PApxNodes::updateActive);
@@ -141,9 +146,25 @@ PApxNode *PApxNodes::getNode(QString uid, bool createNew)
     return node;
 }
 
+void PApxNodes::requestSync()
+{
+    if (_gcs_wait)
+        return;
+
+    // nodes are downloaded from hardware by the GCS with no server GCS only,
+    // others request the data from GCS once and wait for the response
+    if (!_local && !_gcs_done && AppGcs::instance()->f_datalink->gcsServerLink()) {
+        requestGcsNodes();
+        return;
+    }
+    requestSearch();
+}
+
 void PApxNodes::requestSearch()
 {
-    _gcs_wait = false; // download from hardware
+    // download from hardware
+    _gcs_wait = false;
+    _gcs_done = true;
 
     _req.request(mandala::cmd::env::nmt::search::uid);
     _req.send();
@@ -154,7 +175,7 @@ void PApxNodes::requestSearch()
 //  request: <nmt.search>
 //  response: <nmt.search> <hash> <size> <offset> <part of compressed JSON>
 // The request is sent once, requests to hardware are blocked until the response.
-// GCS which is downloading from hardware responds when all nodes are downloaded.
+// GCS responds with the data stored by its nodes when downloading from hardware is finished.
 
 void PApxNodes::requestGcsNodes()
 {
@@ -162,6 +183,7 @@ void PApxNodes::requestGcsNodes()
         return;
 
     _gcs_wait = true;
+    _gcs_done = true;
 
     _req.request(mandala::cmd::env::aux::gcs::uid);
     _req << mandala::cmd::env::nmt::search::uid;
@@ -169,10 +191,25 @@ void PApxNodes::requestGcsNodes()
     _req.send();
 }
 
-void PApxNodes::sendGcsNodes(QJsonArray nodes)
+void PApxNodes::sendGcsNodes()
 {
-    if (_local || nodes.isEmpty())
+    if (!_gcs_requested || _gcs_wait || upgrading())
         return;
+
+    // reply is postponed until downloading from hardware is finished
+    if (_request || !_requests.isEmpty())
+        return;
+
+    QJsonArray nodes;
+    for (auto i : _nodes) {
+        const auto node = i->gcsData();
+        if (!node.isEmpty())
+            nodes.append(node);
+    }
+    if (nodes.isEmpty())
+        return;
+
+    _gcs_requested = false;
 
     const auto data = qCompress(QJsonDocument(nodes).toJson(QJsonDocument::Compact));
     const uint32_t size = data.size();
@@ -212,8 +249,11 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
 
     if (pid.pri == xbus::pri_request) {
         // waiting GCS has nothing to respond, the request is passed further
-        if (!_gcs_wait)
-            emit gcsNodesRequested();
+        if (_gcs_wait)
+            return;
+        _gcs_requested = true;
+        if (!_request && _requests.isEmpty() && !_gcsReply.isActive())
+            _gcsReply.start(0);
         return;
     }
     if (pid.pri != xbus::pri_response || !_gcs_wait)
@@ -299,6 +339,7 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
         return;
     }
     _requests.append(req);
+    _gcsReply.stop();
     if (_request)
         return;
     request_next();
@@ -313,6 +354,7 @@ void PApxNodes::request_finished(PApxNodeRequest *req)
 
     _reqTimeout.stop();
     if (_requests.isEmpty()) {
+        _gcsReply.start(PAPX_GCS_REPLY_DELAY_MS);
         return;
     }
     request_next();
@@ -402,6 +444,7 @@ void PApxNodes::cancel_requests(PApxNode *node)
         delete req;
     }
     if (_requests.isEmpty()) {
+        _gcsReply.start(PAPX_GCS_REPLY_DELAY_MS);
         return;
     }
 

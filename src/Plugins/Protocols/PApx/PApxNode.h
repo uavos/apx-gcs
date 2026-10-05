@@ -48,6 +48,9 @@ public:
     // use data received from another GCS instance instead of requests to hardware
     void loadGcsData(QJsonObject node);
 
+    // data to send to another GCS instance {info, dict, values}, empty if not downloaded
+    QJsonObject gcsData() const;
+
     void updateFiles(QStringList fnames);
     PApxNodeFile *file(QString name) const { return _files_map.value(name); }
 
@@ -96,6 +99,12 @@ private:
     xbus::node::conf::script_t _script_hash{};
     QString _script_field;
     QJsonValue _script_wdata;
+
+    // mirror of the node data, as received from hardware
+    QJsonObject _ident;
+    QJsonObject _dict;
+    QJsonObject _values;
+    void updateValues(const QJsonObject &values);
 
     // ext gcs values update
     QJsonObject _ext_upd_values;

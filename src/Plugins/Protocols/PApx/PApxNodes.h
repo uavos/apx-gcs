@@ -62,7 +62,10 @@ private:
     uint _retry{};
 
     // nodes data exchange between GCS instances
-    bool _gcs_wait{};
+    bool _gcs_wait{};      // waiting for the data instead of downloading from hardware
+    bool _gcs_done{};      // the data was requested once already
+    bool _gcs_requested{}; // reply to another GCS is pending
+    QTimer _gcsReply;
     uint32_t _gcs_rx_hash{};
     uint32_t _gcs_rx_size{};
     QByteArray _gcs_rx_data;
@@ -71,8 +74,7 @@ private:
 protected:
     void requestSearch() override;
 
-    void requestGcsNodes() override;
-    void sendGcsNodes(QJsonArray nodes) override;
+    void requestSync() override;
 
 private slots:
     // reauests sequencer
@@ -83,6 +85,9 @@ private slots:
     void request_timeout();
     void request_next();
     void request_current();
+
+    void requestGcsNodes();
+    void sendGcsNodes();
 
     void updateActive();
 };

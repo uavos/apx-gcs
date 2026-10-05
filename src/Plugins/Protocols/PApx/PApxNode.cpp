@@ -42,7 +42,22 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
     // store ident to parse dict
     connect(this, &PNode::identReceived, this, [this](QJsonObject ident) {
         _dict_cache_hash = ident.value("hash").toString();
+        if (_ident == ident)
+            return;
+        _ident = ident;
+        _dict = {};
+        _values = {};
     });
+
+    // store the node data
+    connect(this, &PNode::dictReceived, this, [this](QJsonObject dict) {
+        if (_dict.value("fields") != dict.value("fields"))
+            _values = {};
+        _dict = dict;
+        _dict.remove("cached");
+    });
+    connect(this, &PNode::confReceived, this, &PApxNode::updateValues);
+    connect(this, &PNode::paramsSaved, this, &PApxNode::updateValues);
 
     // get node info guess from cache
     auto req = new db::nodes::NodeLoadInfo(uid);
@@ -528,6 +543,48 @@ void PApxNode::loadGcsData(QJsonObject node)
     emit identReceived(info);
     emit dictReceived(dict);
     emit confReceived(values);
+}
+void PApxNode::updateValues(const QJsonObject &values)
+{
+    // values of the whole conf, updated fields or array elements
+    for (auto it = values.begin(); it != values.end(); ++it) {
+        const auto name = it.key();
+        if (_field_names.contains(name)) {
+            _values.insert(name, it.value());
+            continue;
+        }
+        xbus::node::conf::fid_t fid;
+        xbus::node::conf::type_e type;
+        if (!find_field(name, &fid, &type))
+            continue;
+        const auto fidx = fid >> 8;
+        const auto aidx = fid & 0xFF;
+        if (aidx >= _field_arrays.at(fidx))
+            continue;
+        const auto fname = _field_names.at(fidx);
+        auto jsa = _values.value(fname).toArray();
+        while (jsa.size() <= static_cast<int>(aidx))
+            jsa.append(QJsonValue());
+        jsa.replace(aidx, it.value());
+        _values.insert(fname, jsa);
+    }
+}
+QJsonObject PApxNode::gcsData() const
+{
+    if (upgrading() || _ident.isEmpty() || _dict.isEmpty() || _field_names.isEmpty())
+        return {};
+
+    // all values must be downloaded
+    for (const auto &name : _field_names) {
+        if (!_values.contains(name))
+            return {};
+    }
+
+    QJsonObject node;
+    node.insert("info", _ident);
+    node.insert("dict", _dict);
+    node.insert("values", _values);
+    return node;
 }
 void PApxNode::dictCacheMissing(QString hash)
 {
