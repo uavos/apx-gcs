@@ -30,6 +30,9 @@ MissionShare::MissionShare(UnitMission *mission, Fact *parent, Flags flags)
     : Share(parent, "mission", tr("Mission"), AppDirs::missions(), flags)
     , _mission(mission)
 {
+    _exportFormats << "geofence";
+    _importFormats << "geofence";
+
     connect(mission, &UnitMission::emptyChanged, this, &MissionShare::updateActions);
     updateActions();
 }
@@ -50,7 +53,15 @@ QString MissionShare::getDefaultTitle()
 }
 bool MissionShare::exportRequest(QString format, QString fileName)
 {
-    if (!saveData(_mission->toJsonDocument().toJson(), fileName))
+    auto jso = _mission->toJson().toObject();
+    if (format == "geofence") {
+        // geofences only
+        const auto name = _mission->f_geo->name();
+        if (!jso.contains(name))
+            return false;
+        jso = QJsonObject{{name, jso.value(name)}};
+    }
+    if (!saveData(QJsonDocument(jso).toJson(), fileName))
         return false;
     _exported(fileName);
     return true;
