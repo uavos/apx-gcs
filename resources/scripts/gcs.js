@@ -141,6 +141,37 @@ function inair(v) {
 }
 inair.info = "Set in-air status";
 
+function fixpos() {
+    // move INS position to the GPS position mark (yellow cross on the map)
+    // the mark is est.pos shifted back by INS position error est.ins.{dn,de}
+    if (cmd.ins.nogps != ins_nogps_yes)
+        throw new Error("fixpos: GPS is not blocked (cmd.ins.nogps)");
+    var dn = est.ins.dn;
+    var de = est.ins.de;
+    if (!isFinite(dn) || !isFinite(de))
+        throw new Error("fixpos: est.ins.dn/de is not finite");
+    var dist = Math.sqrt(dn * dn + de * de);
+    if (dist >= 50000)
+        throw new Error("fixpos: position error too large (" + dist.toFixed(0) + " m)");
+    if (sns.gps.fix < gps_fix_3D)
+        throw new Error("fixpos: GPS fix is less than 3D");
+
+    // same as PosErrorMark.qml: coordinate.atDistanceAndAzimuth(dist, atan2(-de,-dn))
+    var R = 6371007.2; // earth mean radius [m]
+    var lat1 = est.pos.lat * Math.PI / 180;
+    var lon1 = est.pos.lon * Math.PI / 180;
+    var azimuth = Math.atan2(-de, -dn);
+    var d = dist / R;
+    var lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(azimuth));
+    var lon2 = lon1 + Math.atan2(Math.sin(azimuth) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2));
+    lat2 = lat2 * 180 / Math.PI;
+    lon2 = bound(lon2 * 180 / Math.PI);
+
+    apx.fleet.current.sendPositionFix(apx.coordinate(lat2, lon2));
+    print("fixpos: " + lat2.toFixed(6) + "," + lon2.toFixed(6) + " (" + dist.toFixed(0) + " m)");
+}
+fixpos.info = "Fix INS position to the GPS position mark (yellow cross)";
+
 function sh(clist) {
     apx.fleet.current.nodes.shell(clist)
 }
