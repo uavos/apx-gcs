@@ -577,8 +577,14 @@ void NodeItem::identReceived(QJsonObject ident)
     if (!ident.contains("host"))
         ident["host"] = App::host();
 
-    if (_ident == ident && valid())
-        return;
+    if (_ident == ident) {
+        if (valid())
+            return;
+        // the same ident while downloading (f.ex. search from another GCS)
+        // must not restart the requests
+        if (_protocol && _protocol->progress() >= 0)
+            return;
+    }
 
     if (valid()) {
         qWarning() << "ident updated" << title() << _unit->title();
