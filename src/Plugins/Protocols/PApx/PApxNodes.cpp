@@ -94,8 +94,6 @@ bool PApxNodes::process_incoming_data(const xbus::pid_s &pid,
     if (stream.available() < sizeof(xbus::node::guid_t)) {
         if (pid.pri != xbus::pri_request)
             qDebug() << "missing guid" << stream.available();
-        else if (is_remote_uplink && pid.uid == mandala::cmd::env::nmt::search::uid)
-            gcsRequested(); // another GCS searches for nodes
         return true;
     }
 
@@ -165,8 +163,17 @@ void PApxNodes::requestSearch()
 //  <uid> is <nmt.search>
 //  <data> is <hash> <size> <offset> <part of compressed JSON [{info, dict, values}]>
 
-void PApxNodes::gcsRequested()
+void PApxNodes::process_remote_request(PStreamReader &stream)
 {
+    // request without payload from another GCS instance
+    xbus::pid_s pid;
+    pid.read(&stream);
+    findParent<PApx>()->trace_pid(pid);
+
+    if (pid.uid != mandala::cmd::env::nmt::search::uid || pid.pri != xbus::pri_request)
+        return;
+
+    // another GCS searches for nodes
     _gcs_requested = true;
     _gcsSend.start(0);
 }

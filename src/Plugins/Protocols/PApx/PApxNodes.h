@@ -39,6 +39,9 @@ public:
     // nodes data from another GCS instance
     void process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream);
 
+    // request without payload from another GCS instance
+    void process_remote_request(PStreamReader &stream);
+
     auto nodes() const { return _nodes.values(); }
     auto local() const { return _local; }
 
@@ -70,7 +73,6 @@ private:
     uint32_t _gcs_rx_size{};
     QByteArray _gcs_rx_data;
 
-    void gcsRequested();
     bool loadGcsNode(QJsonObject node);
 
 protected:
