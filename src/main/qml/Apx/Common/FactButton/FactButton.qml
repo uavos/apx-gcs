@@ -221,6 +221,7 @@ ActionButton {
 
             // value
             Item {
+                id: _data
                 anchors.right: _next.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
@@ -253,6 +254,24 @@ ActionButton {
                 }
             }
 
+            // extrainfo
+            Item {
+                id: _extrainfo
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: _data.left
+                anchors.rightMargin: _extrainfoLoader.item ? 20*ui.scale : 0
+                width: _extrainfoLoader.item ? _extrainfoLoader.item.implicitWidth : 0
+
+                Loader {
+                    id: _extrainfoLoader
+                    property var opts: fact? fact.opts : null
+                    property var extrainfo: opts ? fact.opts.extrainfo : false
+                    active: !extrainfo ? false : true
+                    anchors.fill: parent
+                    source: active?getExtrainfoSource():""
+                }
+            }
         }
     }
 
@@ -310,6 +329,17 @@ ActionButton {
         return "Editor"+qml+".qml"
     }
 
+    function getExtrainfoSource()
+    {
+        if(!fact)
+            return ""
+
+         if(fact.opts.extrainfo)
+            return fact.opts.extrainfo
+
+        return ""       
+    }
+
     function openDialog(name)
     {
         if(!fact)return
@@ -340,7 +370,4 @@ ActionButton {
             }
         }
     }
-
 }
-
-

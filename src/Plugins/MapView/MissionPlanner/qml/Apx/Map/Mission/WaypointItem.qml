@@ -30,8 +30,8 @@ import APX.Mission as APX
 
 MissionObject {
     id: waypointItem
-    color: visibleOnMap?Style.cWaypoint:"yellow"
-    textColor: "black"
+    color: visibleOnMap?(alarmed?"#ffdead":Style.cWaypoint):"yellow"
+    textColor: alarmed?"#ff0000":"black"
     fact: modelData
     implicitZ: 50
 
@@ -61,6 +61,11 @@ MissionObject {
 
 
     property bool showDetails: interacting || active || f_distance===0 || (map.metersToPixelsFactor*f_distance)>150
+
+    // Highlight set from outside through the options of the waypoint (e.g. by a plugin):
+    // "alarm" marks the point, "pathColor" overrides the colour of the path to it
+    alarmed: (fact && fact.opts.alarm) ? true : false
+    property var pathColorOverride: fact ? fact.opts.pathColor : undefined
 
     //property bool pathVisibleOnMap: true
     //property Item pathItem
@@ -166,7 +171,7 @@ MissionObject {
                 opacity: ui.effects?0.6:1
                 //smooth: ui.antialiasing
                 line.width: waypointItem.pathWidth
-                line.color: waypointItem.pathColor
+                line.color: waypointItem.pathColorOverride ? waypointItem.pathColorOverride : waypointItem.pathColor
                 function updatePath()
                 {
                     if(waypointItem.path){

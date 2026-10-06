@@ -49,6 +49,8 @@ Waypoint::Waypoint(MissionGroup *parent)
     //default values
     Waypoint *f0 = static_cast<Waypoint *>(prevItem());
     if (f0) {
+        // the altitude is copied, so its reference (AMSL or above takeoff) is copied too
+        f_amsl->setValue(f0->f_amsl->value());
         f_altitude->setValue(f0->f_altitude->value());
         f_xtrack->setValue(f0->f_xtrack->value());
     } else {
