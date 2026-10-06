@@ -72,9 +72,6 @@ public:
     bool blockService() const;
     void setBlockService(const bool &v);
 
-    // true when connected as a client to another GCS instance
-    virtual bool isGcsServerLink() const { return false; }
-
 protected:
     // helpers
     bool isControlPacket(const QByteArray &packet) const;

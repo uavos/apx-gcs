@@ -46,7 +46,7 @@ public:
     void request_deleted(PApxNodeRequest *req);
 
     // use data received from another GCS instance instead of requests to hardware
-    void loadGcsData(QJsonObject node);
+    bool loadGcsData(QJsonObject node);
 
     // data to send to another GCS instance {info, dict, values}, empty if not downloaded
     QJsonObject gcsData() const;
@@ -94,6 +94,7 @@ private:
     QStringList _field_units;
 
     bool _skip_cache{};
+    bool _dict_cache_req{};
 
     QJsonObject _rvalues;
     xbus::node::conf::script_t _script_hash{};

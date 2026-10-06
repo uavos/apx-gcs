@@ -27,7 +27,6 @@
 #include <Mandala/Mandala.h>
 #include <XbusNode.h>
 
-#include <App/AppGcs.h>
 #include <App/AppLog.h>
 
 #include <crc.h>
@@ -36,7 +35,7 @@
 
 #define PAPX_GCS_PART_SIZE 400             // bytes of data in packet
 #define PAPX_GCS_SIZE_MAX (8 * 1024 * 1024) // bytes of compressed data
-#define PAPX_GCS_REPLY_DELAY_MS 1000       // requests idle time to reply
+#define PAPX_GCS_IDLE_MS 1000              // requests idle time to send the downloaded data
 
 PApxNodes::PApxNodes(PApxUnit *parent)
     : PNodes(parent)
@@ -51,8 +50,8 @@ PApxNodes::PApxNodes(PApxUnit *parent)
 
     connect(root(), &PBase::cancelRequests, this, [this]() { cancel_requests(nullptr); });
 
-    _gcsReply.setSingleShot(true);
-    connect(&_gcsReply, &QTimer::timeout, this, &PApxNodes::sendGcsNodes);
+    _gcsSend.setSingleShot(true);
+    connect(&_gcsSend, &QTimer::timeout, this, &PApxNodes::sendGcsNodes);
 
     // inactive unit has delay for nodes downloading
     connect(parent, &Fact::activeChanged, this, &PApxNodes::updateActive);
@@ -95,6 +94,8 @@ bool PApxNodes::process_incoming_data(const xbus::pid_s &pid,
     if (stream.available() < sizeof(xbus::node::guid_t)) {
         if (pid.pri != xbus::pri_request)
             qDebug() << "missing guid" << stream.available();
+        else if (is_remote_uplink && pid.uid == mandala::cmd::env::nmt::search::uid)
+            gcsRequested(); // another GCS searches for nodes
         return true;
     }
 
@@ -141,64 +142,47 @@ PApxNode *PApxNodes::getNode(QString uid, bool createNew)
     connect(node, &PApxNode::request_scheduled, this, &PApxNodes::request_scheduled);
     connect(node, &PApxNode::request_finished, this, &PApxNodes::request_finished);
     connect(node, &PApxNode::request_extended, this, &PApxNodes::request_extended);
+    connect(node, &PNode::confReceived, this, [this]() {
+        if (!_gcs_loading)
+            _gcs_updated = true; // downloaded from hardware
+    });
 
     emit node_available(node);
     return node;
 }
 
-void PApxNodes::requestSync()
-{
-    if (_gcs_wait)
-        return;
-
-    // nodes are downloaded from hardware by the GCS with no server GCS only,
-    // others request the data from GCS once and wait for the response
-    if (!_local && !_gcs_done && AppGcs::instance()->f_datalink->gcsServerLink()) {
-        requestGcsNodes();
-        return;
-    }
-    requestSearch();
-}
-
 void PApxNodes::requestSearch()
 {
-    // download from hardware
-    _gcs_wait = false;
-    _gcs_done = true;
-
     _req.request(mandala::cmd::env::nmt::search::uid);
     _req.send();
 }
 
-// Nodes data exchange between GCS instances
+// Nodes data exchange between GCS instances.
+// GCS which has the nodes downloaded replies to the search request of another GCS
+// and also sends the data when its own downloading from hardware is finished.
+// The receiver uses the data for the nodes which are not downloaded yet.
 // packet format: <cmd.env.aux.gcs> <uid> <data>
-//  request: <nmt.search>
-//  response: <nmt.search> <hash> <size> <offset> <part of compressed JSON>
-// The request is sent once, requests to hardware are blocked until the response.
-// GCS responds with the data stored by its nodes when downloading from hardware is finished.
+//  <uid> is <nmt.search>
+//  <data> is <hash> <size> <offset> <part of compressed JSON [{info, dict, values}]>
 
-void PApxNodes::requestGcsNodes()
+void PApxNodes::gcsRequested()
 {
-    if (_local)
-        return;
-
-    _gcs_wait = true;
-    _gcs_done = true;
-
-    _req.request(mandala::cmd::env::aux::gcs::uid);
-    _req << mandala::cmd::env::nmt::search::uid;
-    findParent<PApx>()->trace_uid(mandala::cmd::env::nmt::search::uid);
-    _req.send();
+    _gcs_requested = true;
+    _gcsSend.start(0);
 }
 
 void PApxNodes::sendGcsNodes()
 {
-    if (!_gcs_requested || _gcs_wait || upgrading())
+    if (_local || upgrading())
         return;
 
-    // reply is postponed until downloading from hardware is finished
-    if (_request || !_requests.isEmpty())
+    const bool requested = _gcs_requested;
+    const bool updated = _gcs_updated && !_request && _requests.isEmpty();
+    if (!requested && !updated)
         return;
+    _gcs_requested = false;
+    if (updated)
+        _gcs_updated = false;
 
     QJsonArray nodes;
     for (auto i : _nodes) {
@@ -208,8 +192,6 @@ void PApxNodes::sendGcsNodes()
     }
     if (nodes.isEmpty())
         return;
-
-    _gcs_requested = false;
 
     const auto data = qCompress(QJsonDocument(nodes).toJson(QJsonDocument::Compact));
     const uint32_t size = data.size();
@@ -242,22 +224,10 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
     stream >> uid;
     findParent<PApx>()->trace_uid(uid);
 
-    if (uid != mandala::cmd::env::nmt::search::uid) {
+    if (uid != mandala::cmd::env::nmt::search::uid || pid.pri != xbus::pri_response) {
         trace()->data(stream.payload());
         return;
     }
-
-    if (pid.pri == xbus::pri_request) {
-        // waiting GCS has nothing to respond, the request is passed further
-        if (_gcs_wait)
-            return;
-        _gcs_requested = true;
-        if (!_request && _requests.isEmpty() && !_gcsReply.isActive())
-            _gcsReply.start(0);
-        return;
-    }
-    if (pid.pri != xbus::pri_response || !_gcs_wait)
-        return;
 
     if (stream.available() <= sizeof(uint32_t) * 3)
         return;
@@ -300,30 +270,44 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
     }
 
     qDebug() << "nodes from gcs:" << nodes.size() << size << "bytes";
-    for (const auto &i : nodes)
-        loadGcsNode(i.toObject());
 
-    apxMsg() << tr("Nodes received from GCS").append(':') << nodes.size();
+    // requests to hardware for the loaded nodes are not needed
+    _gcs_loading = true;
+    QStringList st;
+    for (const auto &i : nodes) {
+        const auto node = i.toObject();
+        if (loadGcsNode(node))
+            st.append(node.value("info").toObject().value("name").toString());
+    }
+    _gcs_loading = false;
 
-    // check nodes and download the missing ones from hardware
-    QTimer::singleShot(0, this, &PApxNodes::requestSearch);
+    if (st.isEmpty())
+        return;
+
+    apxMsg() << tr("Nodes received from GCS").append(':') << st.join(',');
 }
 
-void PApxNodes::loadGcsNode(QJsonObject node)
+bool PApxNodes::loadGcsNode(QJsonObject node)
 {
-    if (_local || upgrading())
-        return;
+    if (upgrading())
+        return false;
 
     const auto uid = node.value("info").toObject().value("uid").toString();
     const auto guid = QByteArray::fromHex(uid.toUtf8());
     if (guid.size() != sizeof(xbus::node::guid_t) || guid.toHex().toUpper() != uid.toUtf8()) {
         qWarning() << "gcs node uid" << uid;
-        return;
+        return false;
     }
 
     auto f = getNode(uid);
-    if (f)
-        f->loadGcsData(node);
+    if (!f)
+        return false;
+
+    // the node downloaded from hardware is not changed
+    if (!f->gcsData().isEmpty())
+        return false;
+
+    return f->loadGcsData(node);
 }
 
 void PApxNodes::request_scheduled(PApxNodeRequest *req)
@@ -339,7 +323,7 @@ void PApxNodes::request_scheduled(PApxNodeRequest *req)
         return;
     }
     _requests.append(req);
-    _gcsReply.stop();
+    _gcsSend.stop();
     if (_request)
         return;
     request_next();
@@ -354,7 +338,7 @@ void PApxNodes::request_finished(PApxNodeRequest *req)
 
     _reqTimeout.stop();
     if (_requests.isEmpty()) {
-        _gcsReply.start(PAPX_GCS_REPLY_DELAY_MS);
+        _gcsSend.start(PAPX_GCS_IDLE_MS);
         return;
     }
     request_next();
@@ -444,7 +428,7 @@ void PApxNodes::cancel_requests(PApxNode *node)
         delete req;
     }
     if (_requests.isEmpty()) {
-        _gcsReply.start(PAPX_GCS_REPLY_DELAY_MS);
+        _gcsSend.start(PAPX_GCS_IDLE_MS);
         return;
     }
 

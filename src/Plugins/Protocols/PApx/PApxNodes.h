@@ -36,14 +36,14 @@ public:
 
     bool process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream, bool is_remote_uplink);
 
-    // data from another GCS instance
+    // nodes data from another GCS instance
     void process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream);
 
     auto nodes() const { return _nodes.values(); }
     auto local() const { return _local; }
 
-    // true while waiting for nodes data from another GCS instance
-    auto gcsWait() const { return _gcs_wait; }
+    // true while nodes data from another GCS instance is loaded
+    auto gcsLoading() const { return _gcs_loading; }
 
     void cancel_requests(PApxNode *node);
 
@@ -62,19 +62,19 @@ private:
     uint _retry{};
 
     // nodes data exchange between GCS instances
-    bool _gcs_wait{};      // waiting for the data instead of downloading from hardware
-    bool _gcs_done{};      // the data was requested once already
-    bool _gcs_requested{}; // reply to another GCS is pending
-    QTimer _gcsReply;
+    bool _gcs_loading{};
+    bool _gcs_requested{}; // another GCS searches for nodes
+    bool _gcs_updated{};   // nodes downloaded from hardware since the last data sent
+    QTimer _gcsSend;
     uint32_t _gcs_rx_hash{};
     uint32_t _gcs_rx_size{};
     QByteArray _gcs_rx_data;
-    void loadGcsNode(QJsonObject node);
+
+    void gcsRequested();
+    bool loadGcsNode(QJsonObject node);
 
 protected:
     void requestSearch() override;
-
-    void requestSync() override;
 
 private slots:
     // reauests sequencer
@@ -86,7 +86,6 @@ private slots:
     void request_next();
     void request_current();
 
-    void requestGcsNodes();
     void sendGcsNodes();
 
     void updateActive();

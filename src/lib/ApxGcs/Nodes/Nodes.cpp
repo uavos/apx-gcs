@@ -93,15 +93,10 @@ Nodes::Nodes(Unit *unit)
         bindProperty(_protocol, "value", true);
     }
 
-    connect(this, &Fact::triggered, this, [this]() {
-        for (auto i : nodes())
-            i->updateAlive(false);
-        if (_protocol)
-            _protocol->requestSync();
-    });
+    connect(this, &Fact::triggered, this, &Nodes::search);
 
     if (unit->isIdentified())
-        _protocol->requestSync();
+        _protocol->requestSearch();
 }
 
 NodeItem *Nodes::node(const QString &uid) const

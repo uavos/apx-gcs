@@ -35,8 +35,6 @@ public:
     // constructor to create client socket and connect to remote server url
     explicit DatalinkSocketHttp(Fact *parent, QUrl url);
 
-    bool isGcsServerLink() const override { return _connectionType == HTTP_CLIENT; }
-
 private:
     QTcpSocket *_tcp{};
 

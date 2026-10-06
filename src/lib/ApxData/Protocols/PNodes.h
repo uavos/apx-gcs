@@ -44,11 +44,7 @@ private slots:
     void updateUpgrading();
 
 public slots:
-    // search for nodes on hardware
     virtual void requestSearch() { _nimp(__FUNCTION__); }
-
-    // get nodes by the means preferred by protocol
-    virtual void requestSync() { requestSearch(); }
 
 signals:
     void node_available(PNode *node);
