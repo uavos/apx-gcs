@@ -1,3 +1,35 @@
+# [APX Ground Control v11.2.30](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.30) (10/06/26)
+
+> Branch: `main`\
+> Date: `10/06/26 11:19:18`\
+> Diff: [uavos/apx-gcs](https://github.com/uavos/apx-gcs/compare/e8f0fbf55d25acade43656da72b8b1730b98b0df...f2bd5603560f115ba2adc1073fa8470fd55f014e)
+
+## New Features
+* show min, max, avg, and std for the selected plot range
+* moving average over time window in numbers
+* append geofences when importing a geofence-only Mission file
+* add .geofence file format to share geofences
+* fixpos command in consoel
+* Terrain Elevation plugin
+
+## Bug Fixes
+* stat visible
+* time text
+* address battery indicator review comments
+
+## Performance Enhancements
+* skip telemetry stats refresh on cursor moves
+
+## Comments
+
+**feat: moving average over time window in numbers**
+
+Numbers: moving average over time window
+
+**feat: fixpos command in consoel**
+
+Add fixpos command
+
 # [APX Ground Control v11.2.29](https://github.com/uavos/apx-gcs/releases/tag/release-11.2.29) (09/19/26)
 
 > Branch: `main`\
