@@ -93,24 +93,25 @@ AppPlugin {
             }
         }
 
-        HoverHandler {
-            id: hover
-            onPointChanged: {
-                if(!hovered || timer.running)
-                    return
-                timer.pos = point.position
-                timer.start()
+        // The cursor position is taken from the map itself. A HoverHandler on this
+        // layer would stop hover delivery to the map MouseArea underneath (Qt 6
+        // stops at the first hovered leaf item), which freezes map.mouseCoordinate
+        // and breaks the distance measurement and the cursor coordinates readout.
+        Connections {
+            target: ui.map
+            function onMouseCoordinateChanged() {
+                if(!timer.running)
+                    timer.start()
             }
         }
         Timer {
             id: timer
-            property point pos: Qt.point(0, 0)
             interval: 500
             onTriggered: {
                 var elevationmap = plugin.fact
                 if(!ui.map || !elevationmap || !elevationmap.available || !elevationmap.use.value)
                     return
-                elevationmap.setElevationByCoordinate(ui.map.toCoordinate(pos))
+                elevationmap.setElevationByCoordinate(ui.map.mouseCoordinate)
             }
         }
     }
