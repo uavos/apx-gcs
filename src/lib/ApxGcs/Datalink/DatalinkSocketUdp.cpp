@@ -131,6 +131,10 @@ void DatalinkSocketUdp::socketDisconnected()
 
 void DatalinkSocketUdp::readDatagram(QNetworkDatagram datagram)
 {
+    // socket on 0.0.0.0:<port> receives all joined groups - keep only ours
+    if (_bindAddress.isMulticast() && datagram.destinationAddress() != _bindAddress)
+        return;
+
     _read_datagram = datagram;
     readDataAvailable();
 }
