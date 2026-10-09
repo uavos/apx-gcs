@@ -157,6 +157,10 @@ void ElevationMap::createElevationDatabase()
             &OfflineElevationDB::areaMaxReceived,
             this,
             &ElevationMap::setUnitTerrain);
+    connect(m_elevationDB.data(),
+            &OfflineElevationDB::waypointsTerrainReceived,
+            this,
+            &ElevationMap::onWaypointsTerrain);
     m_elevationDB->setCorridor(f_corridor->value().toDouble());
     m_minProfiles.clear();
     changeExternalsVisibility();
@@ -581,6 +585,10 @@ void ElevationMap::attachWaypoints()
                     &WaypointTerrain::responseCorrectPath,
                     this,
                     &ElevationMap::getCorrectPathResponse);
+            connect(t,
+                    &WaypointTerrain::requestPointsTerrain,
+                    this,
+                    [this, t](QList<QGeoCoordinate> points) { requestPointsTerrain(t, points); });
         }
         // Check wp terrain profile has changes
         if (t->terrainProfileNeedUpdate())
@@ -747,6 +755,60 @@ void ElevationMap::insertMissionWaypoints()
         return;
     }
 
+    // The altitude of a new point comes from the terrain along the path. As a waypoint
+    // it must also clear the terrain around it (the turn circle that ends its profile),
+    // which is requested here, before the points are created.
+    QList<QGeoCoordinate> points;
+    for (const auto &list : std::as_const(m_correction))
+        points.append(list);
+    requestPointsTerrain(this, points);
+}
+
+void ElevationMap::requestPointsTerrain(QObject *requester, const QList<QGeoCoordinate> &points)
+{
+    m_pointsRequests.append(requester);
+    if (m_available && f_use->value().toBool()) {
+        m_elevationDB->requestWaypointsTerrain(points);
+        return;
+    }
+    // no data: the points keep their altitude
+    onWaypointsTerrain(QList<double>(points.size(), qQNaN()));
+}
+
+// replies come in the order of the requests (one worker queue)
+void ElevationMap::onWaypointsTerrain(QList<double> elevations)
+{
+    if (m_pointsRequests.isEmpty())
+        return;
+    auto requester = m_pointsRequests.takeFirst();
+    if (!requester)
+        return;
+    if (auto t = qobject_cast<WaypointTerrain *>(requester.data())) {
+        t->insertPoints(elevations);
+        return;
+    }
+    if (requester != this || !m_isCorrect)
+        return;
+
+    auto m = mission();
+    if (m_correction.size() != m->f_wp->size()) {
+        // the mission was changed meanwhile
+        m_isCorrect = false;
+        return;
+    }
+    QList<QGeoCoordinate> points;
+    for (const auto &list : std::as_const(m_correction))
+        points.append(list);
+    WaypointTerrain::liftPoints(points, elevations);
+    qsizetype k = 0;
+    for (auto &list : m_correction)
+        for (auto &point : list)
+            point = points.at(k++);
+    createCorrectedMission();
+}
+
+void ElevationMap::createCorrectedMission()
+{
     // Create new waypoints array
     auto m = mission();
     QJsonArray jsa;

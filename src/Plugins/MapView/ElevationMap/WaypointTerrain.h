@@ -60,6 +60,9 @@ public:
     Fact *f_correct; // "Path correction" row
 
     Waypoint *waypoint() const { return m_wp; }
+    static void liftPoints(QList<QGeoCoordinate> &points, const QList<double> &terrain);
+    // inserts the points that wait for the terrain around them (reply to requestPointsTerrain)
+    void insertPoints(QList<double> terrain);
     int agl() const;
 
     // terrain along the path to the waypoint: distance from the path start, elevation
@@ -107,6 +110,7 @@ private:
     bool m_collision{false};
 
     bool m_reply{false};
+    QList<QGeoCoordinate> m_newPoints; // waiting for the terrain around them
     QFutureWatcher<QList<QGeoCoordinate>> m_pointsWatcher;
 
     bool m_aglComputing{false}; // AGL is being written here, not edited by the user
@@ -146,4 +150,6 @@ signals:
 
     void requestTerrainProfile(QGeoPath v);
     void responseCorrectPath(QList<QGeoCoordinate> v, int index);
+    // terrain around the new points is needed before they are inserted (see insertPoints)
+    void requestPointsTerrain(QList<QGeoCoordinate> points);
 };

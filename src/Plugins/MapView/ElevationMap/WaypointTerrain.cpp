@@ -553,6 +553,38 @@ void WaypointTerrain::insertNewPoints()
         emit responseCorrectPath(result, m_wp->indexInParent());
         return;
     }
+    if (result.isEmpty())
+        return;
+
+    // The altitude of a new point comes from the terrain along the path. As a
+    // waypoint it must also clear the terrain around it (the turn circle that ends
+    // its profile), which the plugin asks for before the points are inserted.
+    m_newPoints = result;
+    emit requestPointsTerrain(result);
+}
+
+// Lifts a point above the terrain around it (NaN: no data, the point is left as is)
+void WaypointTerrain::liftPoints(QList<QGeoCoordinate> &points, const QList<double> &terrain)
+{
+    if (points.size() != terrain.size())
+        return;
+    for (qsizetype i = 0; i < points.size(); ++i) {
+        const double e = terrain.at(i);
+        if (std::isnan(e))
+            continue;
+        const double safe = std::ceil(e) + UNSAFE_AGL;
+        if (points[i].altitude() < safe)
+            points[i].setAltitude(safe);
+    }
+}
+
+void WaypointTerrain::insertPoints(QList<double> terrain)
+{
+    QList<QGeoCoordinate> result = m_newPoints;
+    m_newPoints.clear();
+    if (result.isEmpty())
+        return;
+    liftPoints(result, terrain);
 
     int wpIndex = m_wp->indexInParent();
     int order = wpIndex + 1;
