@@ -166,6 +166,8 @@ void Telemetry::recordLoaded()
     // load latest config
     f = f_reader->child("nodes");
     if (f && f->size() > 0) {
+        if (f->size() > 1 && f->child(0))
+            f->child(0)->trigger();
         f = f->child(f->size() - 1);
         if (f)
             f->trigger();
