@@ -16,9 +16,13 @@ public:
 
 private:
     Fact *f_ats_enabled;
+    Fact *f_ats_unit;
 
     QTimer _ats_timer;
 
+    Unit *trackedUnit() const;
+
 private slots:
+    void updateUnitsList();
     void onAtsTimer();
 };
