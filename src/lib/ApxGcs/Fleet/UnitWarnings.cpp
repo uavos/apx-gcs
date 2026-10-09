@@ -49,7 +49,9 @@ UnitWarnings::UnitWarnings(Unit *parent)
     connect(f_clear, &Fact::triggered, this, &Fact::deleteChildren);
     connect(f_clear, &Fact::triggered, this, &UnitWarnings::clearBubble);
 
-    connect(this, &Fact::sizeChanged, this, [=]() { f_clear->setEnabled(size() > 0); });
+    auto updateClear = [this]() { f_clear->setEnabled(size() > 0 || !m_bubbleItems.isEmpty()); };
+    connect(this, &Fact::sizeChanged, this, updateClear);
+    connect(this, &UnitWarnings::bubbleItemsChanged, this, updateClear);
 
     // preferences (same approach as MapPrefs in MissionPlanner)
     f_prefs = new Fact(this,
