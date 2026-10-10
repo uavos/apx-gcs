@@ -531,10 +531,6 @@ void ElevationMap::attachWaypoints()
                     &WaypointTerrain::responseCorrectPath,
                     this,
                     &ElevationMap::getCorrectPathResponse);
-            connect(t,
-                    &WaypointTerrain::requestPointsTerrain,
-                    this,
-                    [this, t](QList<QGeoCoordinate> points) { requestPointsTerrain(t, points); });
         }
         // Check wp terrain profile has changes
         if (t->terrainProfileNeedUpdate())
@@ -672,7 +668,7 @@ void ElevationMap::correctUnsafePaths()
     for (int i = 0; i < wpsSize; i++) {
         auto t = WaypointTerrain::of(static_cast<MissionItem *>(m->f_wp->child(i)));
         if (t)
-            t->correctPath(true);
+            t->correctPath();
         else
             getCorrectPathResponse(QList<QGeoCoordinate>(), i);
     }
@@ -707,12 +703,11 @@ void ElevationMap::insertMissionWaypoints()
     QList<QGeoCoordinate> points;
     for (const auto &list : std::as_const(m_correction))
         points.append(list);
-    requestPointsTerrain(this, points);
+    requestPointsTerrain(points);
 }
 
-void ElevationMap::requestPointsTerrain(QObject *requester, const QList<QGeoCoordinate> &points)
+void ElevationMap::requestPointsTerrain(const QList<QGeoCoordinate> &points)
 {
-    m_pointsRequests.append(requester);
     if (m_available && f_use->value().toBool()) {
         m_elevationDB->requestWaypointsTerrain(points);
         return;
@@ -721,19 +716,9 @@ void ElevationMap::requestPointsTerrain(QObject *requester, const QList<QGeoCoor
     onWaypointsTerrain(QList<double>(points.size(), qQNaN()));
 }
 
-// replies come in the order of the requests (one worker queue)
 void ElevationMap::onWaypointsTerrain(QList<double> elevations)
 {
-    if (m_pointsRequests.isEmpty())
-        return;
-    auto requester = m_pointsRequests.takeFirst();
-    if (!requester)
-        return;
-    if (auto t = qobject_cast<WaypointTerrain *>(requester.data())) {
-        t->insertPoints(elevations);
-        return;
-    }
-    if (requester != this || !m_isCorrect)
+    if (!m_isCorrect)
         return;
 
     auto m = mission();

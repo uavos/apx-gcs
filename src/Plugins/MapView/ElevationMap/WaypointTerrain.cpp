@@ -22,12 +22,10 @@
 #include "WaypointTerrain.h"
 
 #include <App/App.h>
-#include <App/AppLog.h>
 #include <Mission/MissionGroup.h>
 #include <Mission/UnitMission.h>
 #include <Mission/Waypoint.h>
 
-#include <QEventLoop>
 #include <QFuture>
 #include <QtConcurrent>
 
@@ -43,13 +41,6 @@ WaypointTerrain::WaypointTerrain(Waypoint *wp)
     f_agl->setOpt("editor", "EditorInt.qml");
     f_agl->setOpt("extrainfo", "qrc:/ExtraInfoAgl.qml");
     f_agl->move(wp->f_altitude->num() + 1);
-
-    f_correct = new Fact(wp,
-                         "correct",
-                         tr("Path correction"),
-                         tr("Correct unsafe path's points"),
-                         Fact::CloseOnTrigger);
-    connect(f_correct, &Fact::triggered, this, [this]() { correctPath(); });
 
     wp->f_altitude->setOpt("extrainfo", "qrc:/ExtraInfoAltitude.qml");
 
@@ -123,7 +114,6 @@ void WaypointTerrain::detach()
     if (m_pointsWatcher.isRunning())
         m_pointsWatcher.cancel();
     f_agl->deleteFact();
-    f_correct->deleteFact();
     m_wp->f_altitude->setOpt("extrainfo", QVariant());
     m_wp->setOpt("alarm", QVariant());
     m_wp->setOpt("pathColor", QVariant());
@@ -169,9 +159,7 @@ void WaypointTerrain::watchPrevious()
 
 void WaypointTerrain::updateFirst()
 {
-    const bool first = m_wp->num() == 0;
-    f_correct->setVisible(!first);
-    if (!first)
+    if (m_wp->num() != 0)
         return;
     // a profile left from another place in the mission
     m_terrainProfilePath = QGeoPath();
@@ -489,15 +477,12 @@ void WaypointTerrain::checkCollision()
 
 // ---- path correction
 
-void WaypointTerrain::correctPath(bool reply)
+void WaypointTerrain::correctPath()
 {
-    m_reply = reply;
-
     // Skip waypoint without collision or unreachable
     auto prevWp = prevWaypoint();
     if (!m_collision || !m_wp->reachable() || !prevWp || m_terrainProfile.isEmpty()) {
-        if (m_reply)
-            emit responseCorrectPath(QList<QGeoCoordinate>(), m_wp->indexInParent());
+        emit responseCorrectPath(QList<QGeoCoordinate>(), m_wp->indexInParent());
         return;
     }
 
@@ -526,15 +511,8 @@ void WaypointTerrain::correctPath(bool reply)
     if (!amsl)
         alt += hmsl;
 
-    // Correct previous point altitude
-    auto prevTerrain = WaypointTerrain::of(prevWp);
+    // the previous point is corrected by its own turn of the mission correction
     auto prevAlt = prevWp->f_altitude->value().toInt();
-    auto prevAgl = prevTerrain ? prevTerrain->agl() : UNSAFE_AGL;
-    if (prevAgl < UNSAFE_AGL && !m_reply) {
-        prevAlt += UNSAFE_AGL - prevAgl;
-        prevWp->f_altitude->setValue(prevAlt);
-    }
-
     if (!prevWp->f_amsl->value().toBool())
         prevAlt += hmsl;
 
@@ -547,20 +525,7 @@ void WaypointTerrain::insertNewPoints()
 {
     if (m_pointsWatcher.isCanceled() || m_pointsWatcher.future().resultCount() <= 0)
         return;
-    QList<QGeoCoordinate> result = m_pointsWatcher.result();
-    if (m_reply) {
-        m_reply = false;
-        emit responseCorrectPath(result, m_wp->indexInParent());
-        return;
-    }
-    if (result.isEmpty())
-        return;
-
-    // The altitude of a new point comes from the terrain along the path. As a
-    // waypoint it must also clear the terrain around it (the turn circle that ends
-    // its profile), which the plugin asks for before the points are inserted.
-    m_newPoints = result;
-    emit requestPointsTerrain(result);
+    emit responseCorrectPath(m_pointsWatcher.result(), m_wp->indexInParent());
 }
 
 // Lifts a point above the terrain around it (NaN: no data, the point is left as is)
@@ -576,56 +541,6 @@ void WaypointTerrain::liftPoints(QList<QGeoCoordinate> &points, const QList<doub
         if (points[i].altitude() < safe)
             points[i].setAltitude(safe);
     }
-}
-
-void WaypointTerrain::insertPoints(QList<double> terrain)
-{
-    QList<QGeoCoordinate> result = m_newPoints;
-    m_newPoints.clear();
-    if (result.isEmpty())
-        return;
-    liftPoints(result, terrain);
-
-    int wpIndex = m_wp->indexInParent();
-    int order = wpIndex + 1;
-    auto prevWp = prevWaypoint();
-    if (!prevWp)
-        return;
-
-    auto prevCoordinate = prevWp->coordinate();
-    for (int i = result.size() - 1; i >= 0; i--) {
-        auto point = result[i];
-        int wpHmsl = std::ceil(point.altitude());
-        if (i == 0) {
-            // Check if first point equal prev waypoint
-            auto latDiff = std::abs(result[i].latitude() - prevCoordinate.latitude());
-            auto lonDiff = std::abs(result[i].longitude() - prevCoordinate.longitude());
-            if (latDiff <= DBL_EPSILON && lonDiff <= DBL_EPSILON) {
-                auto prevAmsl = prevWp->f_amsl->value().toBool();
-                prevWp->f_amsl->setValue(true);
-                prevWp->f_altitude->setValue(wpHmsl);
-                prevWp->f_amsl->setValue(prevAmsl);
-                break;
-            }
-        }
-
-        // a new waypoint is added to the end of the mission, then moved into the path
-        auto wp = static_cast<Waypoint *>(m_wp->group->addObject(point));
-        wp->move(wpIndex);
-        wp->f_amsl->setValue(true);
-        wp->f_altitude->setValue(wpHmsl);
-        wp->f_atrack->setValue(m_wp->f_atrack->value());
-        wp->f_xtrack->setValue(m_wp->f_xtrack->value());
-
-        QEventLoop loop;
-        QTimer::singleShot(100, &loop, &QEventLoop::quit);
-        loop.exec();
-    }
-
-    apxMsg() << tr("Waypoint %1 path correction completed. New number %2."
-                   "\nWait until the path analysis is complete...")
-                    .arg(order)
-                    .arg(m_wp->indexInParent() + 1);
 }
 
 void WaypointTerrain::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,

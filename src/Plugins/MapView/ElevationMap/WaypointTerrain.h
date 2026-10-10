@@ -36,7 +36,7 @@ class Waypoint;
 // of the path that leads to it, the collision check and the path correction.
 //
 // Everything a user sees of it in the mission is added here and removed in
-// detach(): the "AGL" and "Path correction" rows of the waypoint menu, the
+// detach(): the "AGL" row of the waypoint menu, the
 // widgets next to the altitude editors and the map highlight (the "alarm" and
 // "pathColor" options of the waypoint, which the map reads).
 class WaypointTerrain : public ItemTerrain
@@ -57,12 +57,9 @@ public:
     // It has no data type on purpose: the mission stores and uploads typed fields
     // only, and AGL is derived from the elevation map, not a part of the mission.
     Fact *f_agl;
-    Fact *f_correct; // "Path correction" row
 
     Waypoint *waypoint() const { return m_wp; }
     static void liftPoints(QList<QGeoCoordinate> &points, const QList<double> &terrain);
-    // inserts the points that wait for the terrain around them (reply to requestPointsTerrain)
-    void insertPoints(QList<double> terrain);
     int agl() const;
 
     // terrain along the path to the waypoint: distance from the path start, elevation
@@ -82,8 +79,9 @@ public slots:
     // the plugin broadcasts every profile it gets: take the one for this waypoint
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();
-    // reply: report the new points with responseCorrectPath() instead of inserting them
-    void correctPath(bool reply = false);
+    // the waypoint's turn of the mission correction: lifts the waypoint and reports
+    // the points to insert before it with responseCorrectPath()
+    void correctPath();
     // the first waypoint ends the takeoff leg, which is not analysed
     void updateFirst();
 
@@ -109,8 +107,6 @@ private:
     double m_maxHeight{200};
     bool m_collision{false};
 
-    bool m_reply{false};
-    QList<QGeoCoordinate> m_newPoints; // waiting for the terrain around them
     QFutureWatcher<QList<QGeoCoordinate>> m_pointsWatcher;
 
     bool m_aglComputing{false}; // AGL is being written here, not edited by the user
@@ -150,6 +146,4 @@ signals:
 
     void requestTerrainProfile(QGeoPath v);
     void responseCorrectPath(QList<QGeoCoordinate> v, int index);
-    // terrain around the new points is needed before they are inserted (see insertPoints)
-    void requestPointsTerrain(QList<QGeoCoordinate> points);
 };

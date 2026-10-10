@@ -109,9 +109,6 @@ private:
     bool m_attached{false};                  // new terrain objects since the last notification
     bool m_rebuilding{false};                // waypoints are being re-created by the correction
     bool m_isCorrect{false};
-    // who waits for the terrain around new points, in the order of the requests
-    // (the plugin itself for the whole mission, a waypoint terrain for one leg)
-    QList<QPointer<QObject>> m_pointsRequests;
     static constexpr int CORRECTION_PASSES = 3; // "All paths correction" repeats itself up to this
     int m_correctionPass{0};
 
@@ -134,7 +131,7 @@ private:
     void attachItems(Fact *group);
     void attachItem(ItemTerrain *t);
     void detachTerrains();
-    void requestPointsTerrain(QObject *requester, const QList<QGeoCoordinate> &points);
+    void requestPointsTerrain(const QList<QGeoCoordinate> &points);
     QObject *qml;
 
 private slots:
