@@ -40,6 +40,7 @@ public:
 
     Fact *f_reverse;
     Fact *f_reverseApply;
+    Fact *f_reverseNote;
 
     Fact *f_copy;
 
