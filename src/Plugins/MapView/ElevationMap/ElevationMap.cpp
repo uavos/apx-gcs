@@ -87,9 +87,6 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(f_showAgl, &Fact::valueChanged, this, &ElevationMap::updateUnitAgl);
     m_aglTimer.setInterval(AGL_PERIOD);
     connect(&m_aglTimer, &QTimer::timeout, this, &ElevationMap::updateUnitAgl);
-    m_coverageTimer.setSingleShot(true);
-    m_coverageTimer.setInterval(0);
-    connect(&m_coverageTimer, &QTimer::timeout, this, &ElevationMap::updateCoverage);
     createDir(path);
     updateMission();
     createElevationDatabase();
@@ -260,76 +257,25 @@ void ElevationMap::scanTiles()
     emit availableChanged();
 }
 
-bool ElevationMap::hasTile(const QGeoCoordinate &c) const
-{
-    if (!c.isValid())
-        return true;
-    return m_tileNames.contains(
-        OfflineElevationDB::createASTERFileName(c.latitude(), c.longitude()));
-}
-
-void ElevationMap::scheduleCoverage()
-{
-    m_coverageTimer.start();
-}
-
-// Checks that the elevation files cover the mission area (at least one item
-// lies on an existing file; items outside simply get no elevation) and
-// re-evaluates the plugin state. Items are watched for position changes so
-// moving the mission outside the map (or back) updates the state as well.
-void ElevationMap::updateCoverage()
+// The plugin is active when enabled, switched on and the elevation files exist:
+// no automatic switching by the mission (items outside the files simply get no data)
+void ElevationMap::updateActive()
 {
     if (m_rebuilding)
         return;
-    auto m = mission();
-    int items = 0;
-    int coveredItems = 0;
-    for (Fact *group : {static_cast<Fact *>(m->f_wp),
-                        static_cast<Fact *>(m->f_rw),
-                        static_cast<Fact *>(m->f_pi)}) {
-        for (int i = 0; i < group->size(); ++i) {
-            auto item = static_cast<MissionItem *>(group->child(i));
-            if (!item)
-                continue;
-            connect(item,
-                    &MissionItem::coordinateChanged,
-                    this,
-                    &ElevationMap::scheduleCoverage,
-                    Qt::UniqueConnection);
-            items++;
-            if (hasTile(item->coordinate()))
-                coveredItems++;
-        }
-    }
-    const bool covered = items == 0 || coveredItems > 0;
-    if (m_covered != covered) {
-        m_covered = covered;
-        emit coveredChanged();
-    }
-    updateActive();
-}
-
-void ElevationMap::updateActive()
-{
     bool useValue{false};
     bool controlValue{false};
     if (f_control && !f_control->busy())
         controlValue = f_control->value().toBool();
     if (f_use)
         useValue = f_use->value().toBool();
-    const bool active = controlValue && useValue && m_available && m_covered;
+    const bool active = controlValue && useValue && m_available;
     if (m_active != active) {
         m_active = active;
         emit activeChanged();
     }
     setMissionValues(m_active);
-    const bool usable = controlValue && useValue && m_available;
-    if (m_usable != usable) {
-        m_usable = usable;
-        emit usableChanged();
-    }
-    // unit AGL makes sense only with elevation files in use
-    f_showAgl->setEnabled(usable);
+    f_showAgl->setEnabled(m_active);
     updateUnitAgl();
 }
 
@@ -491,7 +437,7 @@ void ElevationMap::setMissionAgl()
 
 void ElevationMap::changeExternalsVisibility()
 {
-    updateCoverage();
+    updateActive();
 }
 
 // Active: every item of the current mission gets its terrain object (see
