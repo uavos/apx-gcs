@@ -16,6 +16,32 @@ Ats::Ats(Fact *parent)
     f_ats_unit->setOpt("editor", "EditorOption.qml"); // non-editable list
     f_ats_unit->setValue(ats_unit_active);
 
+    f_overlay = new Fact(this,
+                         "overlay",
+                         tr("Overlay"),
+                         tr("Map overlay settings"),
+                         Fact::Group,
+                         "layers");
+
+    f_show_beam = new Fact(f_overlay,
+                           "show_beam",
+                           tr("Show beam"),
+                           tr("Show beam line on map"),
+                           Fact::Bool | Fact::PersistentValue,
+                           "ray-start");
+    f_show_beam->setDefaultValue(false);
+
+    f_beam_distance = new Fact(f_overlay,
+                               "beam_distance",
+                               tr("Beam distance"),
+                               tr("Beam cone length in km"),
+                               Fact::Int | Fact::PersistentValue,
+                               "arrow-expand-horizontal");
+    f_beam_distance->setMin(5);
+    f_beam_distance->setMax(300);
+    f_beam_distance->setUnits("km");
+    f_beam_distance->setDefaultValue(30);
+
     auto fleet = Fleet::instance();
     connect(fleet, &Fleet::unitRegistered, this, &Ats::updateUnitsList);
     connect(fleet, &Fact::itemRemoved, this, &Ats::updateUnitsList);
@@ -24,6 +50,8 @@ Ats::Ats(Fact *parent)
     _ats_timer.setInterval(100);
     connect(&_ats_timer, &QTimer::timeout, this, &Ats::onAtsTimer);
     _ats_timer.start();
+
+    loadQml("qrc:/" PLUGIN_NAME "/AtsPlugin.qml");
 }
 
 void Ats::updateUnitsList()
@@ -72,29 +100,41 @@ void Ats::onAtsTimer()
         return;
     }
 
-    PData *pdata{};
     if (unit->isGroundControl()) {
-        auto protocol = unit->protocol();
-        if (protocol) {
-            pdata = protocol->data();
-            if (pdata) {
-                pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_manual);
-            }
-        }
+        sendMode(mandala::ats_mode_manual);
         return;
     }
 
-    auto gcs = Fleet::instance()->gcs();
-    if (gcs && gcs->protocol()) {
-        pdata = gcs->protocol()->data();
-        if (pdata) {
-            QGeoCoordinate uav = unit->coordinate();
-            QVariantList value;
-            value << uav.latitude();
-            value << uav.longitude();
-            value << uav.altitude();
+    QGeoCoordinate uav = unit->coordinate();
+    QVariantList value;
+    value << uav.latitude();
+    value << uav.longitude();
+    value << uav.altitude();
+    sendValues(value);
+    sendMode(mandala::ats_mode_track);
+}
+
+// send to all GCS units in the fleet
+void Ats::sendValues(const QVariantList &value)
+{
+    for (auto i : Fleet::instance()->facts()) {
+        auto unit = qobject_cast<Unit *>(i);
+        if (!unit || !unit->isGroundControl() || !unit->protocol())
+            continue;
+        auto pdata = unit->protocol()->data();
+        if (pdata)
             pdata->sendValue(mandala::cmd::nav::ats::uid, value);
-            pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mandala::ats_mode_track);
-        }
+    }
+}
+
+void Ats::sendMode(uint8_t mode)
+{
+    for (auto i : Fleet::instance()->facts()) {
+        auto unit = qobject_cast<Unit *>(i);
+        if (!unit || !unit->isGroundControl() || !unit->protocol())
+            continue;
+        auto pdata = unit->protocol()->data();
+        if (pdata)
+            pdata->sendValue(mandala::cmd::nav::ats::mode::uid, mode);
     }
 }
