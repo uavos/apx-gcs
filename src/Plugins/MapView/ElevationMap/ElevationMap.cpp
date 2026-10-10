@@ -430,7 +430,7 @@ void ElevationMap::updateMission()
             this,
             &ElevationMap::setStartPointElevation,
             Qt::UniqueConnection);
-    connect(missionTools()->f_reverse,
+    connect(missionTools()->f_reverseApply,
             &Fact::triggered,
             this,
             &ElevationMap::changeExternalsVisibility,
