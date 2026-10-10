@@ -36,7 +36,7 @@ class Waypoint;
 // of the path that leads to it, the collision check and the path correction.
 //
 // Everything a user sees of it in the mission is added here and removed in
-// detach(): the "AGL" and "Path correction" rows of the waypoint menu, the
+// detach(): the "AGL" row of the waypoint menu, the
 // widgets next to the altitude editors and the map highlight (the "alarm" and
 // "pathColor" options of the waypoint, which the map reads).
 class WaypointTerrain : public ItemTerrain
@@ -52,14 +52,17 @@ public:
 
     static constexpr int UNSAFE_AGL = 100;
     static constexpr double ALT_EPS = 0.1;
+    // a new waypoint closer than this to its neighbours makes the turn impossible
+    // (the mission path uses a 100 m turn radius): the neighbour is lifted instead
+    static constexpr double MIN_SPACING = 500;
 
     // Height above ground, editable: altitude and AGL are two views of one value.
     // It has no data type on purpose: the mission stores and uploads typed fields
     // only, and AGL is derived from the elevation map, not a part of the mission.
     Fact *f_agl;
-    Fact *f_correct; // "Path correction" row
 
     Waypoint *waypoint() const { return m_wp; }
+    static void liftPoints(QList<QGeoCoordinate> &points, const QList<double> &terrain);
     int agl() const;
 
     // terrain along the path to the waypoint: distance from the path start, elevation
@@ -79,8 +82,10 @@ public slots:
     // the plugin broadcasts every profile it gets: take the one for this waypoint
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();
-    // reply: report the new points with responseCorrectPath() instead of inserting them
-    void correctPath(bool reply = false);
+    // the waypoint's turn of the mission correction: lifts the waypoint and reports
+    // the points to insert before it with responseCorrectPath();
+    // maxSlope: the steepest climb the aircraft can fly (rise over run), 0: unlimited
+    void correctPath(double maxSlope);
     // the first waypoint ends the takeoff leg, which is not analysed
     void updateFirst();
 
@@ -106,7 +111,6 @@ private:
     double m_maxHeight{200};
     bool m_collision{false};
 
-    bool m_reply{false};
     QFutureWatcher<QList<QGeoCoordinate>> m_pointsWatcher;
 
     bool m_aglComputing{false}; // AGL is being written here, not edited by the user
@@ -123,8 +127,13 @@ private:
     void setComputedAgl(int v);
 
     static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
+    // height the route must keep at every point of the path (terrain of the
+    // corridor plus the safe AGL) as the aircraft can fly it: no climb or descent
+    // steeper than maxSlope
+    static QList<double> requiredHeights(const QGeoPath &path, double maxSlope);
     static void getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
                                       const QGeoPath &path,
+                                      const QList<double> &need,
                                       int hFirst,
                                       int hLast);
 

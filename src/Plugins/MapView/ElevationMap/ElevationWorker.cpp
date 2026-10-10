@@ -157,6 +157,18 @@ void ElevationWorker::requestAreaMax(double lat, double lon, double radius)
     wake();
 }
 
+void ElevationWorker::requestWaypointsTerrain(const QList<QGeoCoordinate> &points)
+{
+    Job job;
+    job.type = Job::WaypointsTerrain;
+    job.points = points;
+    {
+        QMutexLocker lock(&m_mutex);
+        m_points.push_back(job);
+    }
+    wake();
+}
+
 void ElevationWorker::setCorridor(double meters)
 {
     m_corridor = qMax(0, qRound(meters));
@@ -195,6 +207,8 @@ void ElevationWorker::run()
             processProfile(job);
         else if (job.type == Job::AreaMax)
             processAreaMax(job);
+        else if (job.type == Job::WaypointsTerrain)
+            processWaypointsTerrain(job);
         else
             processPoint(job);
     }
@@ -354,6 +368,19 @@ double ElevationWorker::areaMax(const QGeoCoordinate &p, double radius)
 void ElevationWorker::processAreaMax(const Job &job)
 {
     emit areaMaxReady(areaMax(QGeoCoordinate(job.lat, job.lon), job.radius));
+}
+
+// The same circle that ends a profile segment (see processProfile) for points
+// that are not waypoints yet. Replies come in the order of the requests.
+void ElevationWorker::processWaypointsTerrain(const Job &job)
+{
+    QList<double> elevations;
+    elevations.reserve(job.points.size());
+    for (const auto &p : job.points) {
+        double max, min;
+        elevations.append(circleRange(p, 2.0 * m_corridor, max, min) ? max : qQNaN());
+    }
+    emit waypointsTerrainReady(elevations);
 }
 
 // Profile altitude = highest terrain across the corridor (a circle of twice the

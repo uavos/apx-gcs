@@ -61,6 +61,10 @@ OfflineElevationDB::OfflineElevationDB(const QString &path)
             this,
             &OfflineElevationDB::terrainProfileMinReceived);
     connect(m_worker, &ElevationWorker::areaMaxReady, this, &OfflineElevationDB::areaMaxReceived);
+    connect(m_worker,
+            &ElevationWorker::waypointsTerrainReady,
+            this,
+            &OfflineElevationDB::waypointsTerrainReceived);
 }
 
 OfflineElevationDB::~OfflineElevationDB()
@@ -99,6 +103,11 @@ void OfflineElevationDB::requestTerrainProfile(const QGeoPath &path)
 void OfflineElevationDB::requestAreaMax(double lat, double lon, double radius)
 {
     m_worker->requestAreaMax(lat, lon, radius);
+}
+
+void OfflineElevationDB::requestWaypointsTerrain(const QList<QGeoCoordinate> &points)
+{
+    m_worker->requestWaypointsTerrain(points);
 }
 
 void OfflineElevationDB::setCorridor(double meters)

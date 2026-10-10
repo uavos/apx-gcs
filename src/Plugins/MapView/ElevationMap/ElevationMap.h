@@ -50,13 +50,9 @@ class ElevationMap : public Fact
     Q_PROPERTY(double elevation READ elevation WRITE setElevation NOTIFY elevationChanged)
     // elevation files found in the configured directory
     Q_PROPERTY(bool available READ available NOTIFY availableChanged)
-    // the elevation files cover the mission area (at least one item is on a file)
-    Q_PROPERTY(bool covered READ covered NOTIFY coveredChanged)
-    // plugin enabled, in use, files available and covering the mission:
+    // plugin enabled, switched on and elevation files available:
     // when false the plugin is fully passive (no fields, icons or alarms)
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
-    // plugin enabled, in use and files available: elevation requests make sense
-    Q_PROPERTY(bool usable READ usable NOTIFY usableChanged)
     // current unit: highest terrain within the corridor radius and height above it (NaN when unknown)
     Q_PROPERTY(double unitTerrain READ unitTerrain NOTIFY unitAglChanged)
     Q_PROPERTY(double unitAgl READ unitAgl NOTIFY unitAglChanged)
@@ -92,9 +88,7 @@ public:
     QGeoCoordinate coordinate() const;
     void setCoordinate(const QGeoCoordinate &coordinate);
     bool available() const { return m_available; }
-    bool covered() const { return m_covered; }
     bool active() const { return m_active; }
-    bool usable() const { return m_usable; }
     double unitTerrain() const { return m_unitTerrain; }
     double unitAgl() const { return m_unitAgl; }
     // lowest terrain across the corridor (distance, elevation) for a profile path, empty if unknown
@@ -117,13 +111,11 @@ private:
     bool m_isCorrect{false};
     static constexpr int CORRECTION_PASSES = 3; // "All paths correction" repeats itself up to this
     int m_correctionPass{0};
+    double m_correctionSlope{0}; // climb rate / flight speed, 0: unlimited
 
     QSet<QString> m_tileNames; // elevation files in the configured directory
     bool m_available{false};
-    bool m_covered{true};
     bool m_active{false};
-    bool m_usable{false};
-    QTimer m_coverageTimer;
 
     QHash<QString, QList<QPointF>> m_minProfiles; // key: path endpoints
     static QString profileKey(const QGeoPath &path);
@@ -131,8 +123,6 @@ private:
     double m_unitTerrain{qQNaN()};
     double m_unitAgl{qQNaN()};
     QTimer m_aglTimer; // periodic terrain request for the unit AGL
-
-    bool hasTile(const QGeoCoordinate &c) const;
 
     void createDir(const QString &path);
     void createMissionTools();
@@ -142,6 +132,7 @@ private:
     void attachItems(Fact *group);
     void attachItem(ItemTerrain *t);
     void detachTerrains();
+    void requestPointsTerrain(const QList<QGeoCoordinate> &points);
     QObject *qml;
 
 private slots:
@@ -153,8 +144,6 @@ private slots:
     void getPluginEnableControl();
     void changeExternalsVisibility();
     void scanTiles();
-    void scheduleCoverage();
-    void updateCoverage();
     void updateActive();
     void onCorridorChanged();
     void onTerrainProfileMin(QGeoPath path, QList<double> minElevations);
@@ -165,6 +154,8 @@ private slots:
     void startPathsCorrection();
     void correctUnsafePaths();
     void insertMissionWaypoints();
+    void createCorrectedMission();
+    void onWaypointsTerrain(QList<double> elevations);
     void completeCorrection();
     void checkCorrectionResult();
 
@@ -173,9 +164,7 @@ signals:
     void geoPathChanged(QGeoPath geoPath);
     void elevationChanged();
     void availableChanged();
-    void coveredChanged();
     void activeChanged();
-    void usableChanged();
     void terrainsChanged(); // terrain objects were attached to or removed from mission items
     void unitAglChanged();
 };
