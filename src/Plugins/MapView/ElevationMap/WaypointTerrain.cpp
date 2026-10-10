@@ -55,6 +55,7 @@ WaypointTerrain::WaypointTerrain(Waypoint *wp)
 
     connect(wp->f_amsl, &Fact::valueChanged, this, &WaypointTerrain::recalcAltitude);
     connect(wp->f_amsl, &Fact::valueChanged, this, &WaypointTerrain::updateAgl);
+    connect(wp->f_amsl, &Fact::valueChanged, this, &WaypointTerrain::updateAglEnabled);
     connect(wp->f_altitude, &Fact::valueChanged, this, &WaypointTerrain::updateMinMaxHeight);
     connect(f_agl, &Fact::valueChanged, this, &WaypointTerrain::checkCollision);
     connect(wp, &MissionItem::itemDataLoaded, this, &WaypointTerrain::updateAgl);
@@ -171,9 +172,15 @@ void WaypointTerrain::updateFirst()
     updateMinMaxHeight();
 }
 
+// AGL is a height above the terrain, i.e. an absolute height: it can be entered
+// only in AMSL mode (a relative altitude would depend on the takeoff elevation,
+// which may change) and only when the terrain under the waypoint is known
 void WaypointTerrain::updateAglEnabled()
 {
-    f_agl->setEnabled(!std::isnan(m_elevation));
+    const bool amsl = m_wp->f_amsl->value().toBool();
+    f_agl->setEnabled(amsl && !std::isnan(m_elevation));
+    f_agl->setDescr(amsl ? tr("Height above ground level")
+                         : tr("Height above ground level (AMSL mode only)"));
 }
 
 // The map shows a waypoint with the "alarm" option highlighted and draws the
