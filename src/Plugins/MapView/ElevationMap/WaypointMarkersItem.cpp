@@ -259,17 +259,26 @@ void WaypointMarkersItem::layoutMarkers()
     const bool valid = w > 0 && h > 0 && m_viewSpan > 0 && hRange > 0;
     const double sx = valid ? w / m_viewSpan : 0;
     const double sy = valid ? h / hRange : 0;
+    // the first and the last waypoint are always shown, the others only where they fit
+    const int last = m_markers.size() - 1;
+    double lastLeft = 1e9; // left edge of the last marker, nothing may overlap it
+    if (last > 0 && valid) {
+        const Marker &m = m_markers[last];
+        lastLeft = (m.distance - m_viewStart) * sx - m.boxWidth / 2 - MIN_GAP;
+    }
     double lastRight = -1e9;
     for (int i = 0; i < m_markers.size(); ++i) {
         Marker &m = m_markers[i];
         m.px = (m.distance - m_viewStart) * sx;
         m.py = height() - (m.height - m_minHeight) * sy;
         const double left = m.px - m.boxWidth / 2;
-        const bool inView = valid && m.px + m.boxWidth / 2 >= 0 && left <= w;
-        const bool fits = left >= lastRight + MIN_GAP;
-        m.shown = inView && (fits || i == m_hover || i == m_pressed);
+        const double right = m.px + m.boxWidth / 2;
+        const bool inView = valid && right >= 0 && left <= w;
+        const bool pinned = i == 0 || i == last;
+        const bool fits = left >= lastRight + MIN_GAP && (pinned || right <= lastLeft);
+        m.shown = inView && (pinned || fits || i == m_hover || i == m_pressed);
         if (m.shown)
-            lastRight = m.px + m.boxWidth / 2;
+            lastRight = right;
     }
     m_layoutDirty = true;
     update();
