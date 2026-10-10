@@ -45,6 +45,12 @@ public:
     void extend_request(PApxNodeRequest *req, size_t time_ms);
     void request_deleted(PApxNodeRequest *req);
 
+    // use data received from another GCS instance instead of requests to hardware
+    bool loadGcsData(QJsonObject node);
+
+    // data to send to another GCS instance {info, dict, values}, empty if not downloaded
+    QJsonObject gcsData() const;
+
     void updateFiles(QStringList fnames);
     PApxNodeFile *file(QString name) const { return _files_map.value(name); }
 
@@ -88,17 +94,25 @@ private:
     QStringList _field_units;
 
     bool _skip_cache{};
+    bool _dict_cache_req{};
 
     QJsonObject _rvalues;
     xbus::node::conf::script_t _script_hash{};
     QString _script_field;
     QJsonValue _script_wdata;
 
+    // mirror of the node data, as received from hardware
+    QJsonObject _ident;
+    QJsonObject _dict;
+    QJsonObject _values;
+    void updateValues(const QJsonObject &values);
+
     // ext gcs values update
     QJsonObject _ext_upd_values;
     bool _ext_upd_request{};
 
     void updateProgress();
+    void loadDictFields(const QJsonObject &dict);
 
 private slots:
     void infoCacheLoaded(QJsonObject info);

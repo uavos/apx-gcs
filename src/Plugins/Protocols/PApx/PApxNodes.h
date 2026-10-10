@@ -36,8 +36,17 @@ public:
 
     bool process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream, bool is_remote_uplink);
 
+    // nodes data from another GCS instance
+    void process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream);
+
+    // request without payload from another GCS instance
+    void process_remote_request(PStreamReader &stream);
+
     auto nodes() const { return _nodes.values(); }
     auto local() const { return _local; }
+
+    // true while nodes data from another GCS instance is loaded
+    auto gcsLoading() const { return _gcs_loading; }
 
     void cancel_requests(PApxNode *node);
 
@@ -55,6 +64,17 @@ private:
     PApxNodeRequest *_request{};
     uint _retry{};
 
+    // nodes data exchange between GCS instances
+    bool _gcs_loading{};
+    bool _gcs_requested{}; // another GCS searches for nodes
+    bool _gcs_updated{};   // nodes downloaded from hardware since the last data sent
+    QTimer _gcsSend;
+    uint32_t _gcs_rx_hash{};
+    uint32_t _gcs_rx_size{};
+    QByteArray _gcs_rx_data;
+
+    bool loadGcsNode(QJsonObject node);
+
 protected:
     void requestSearch() override;
 
@@ -67,6 +87,8 @@ private slots:
     void request_timeout();
     void request_next();
     void request_current();
+
+    void sendGcsNodes();
 
     void updateActive();
 };
