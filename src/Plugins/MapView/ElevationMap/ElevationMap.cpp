@@ -48,8 +48,8 @@ ElevationMap::ElevationMap(Fact *parent)
 {
     auto path = AppDirs::db().absolutePath() + "/Elevation";
 
-    f_use = new Fact(this, "use", tr("Use elevation map"), "", Bool | PersistentValue, "check");
-    f_use->setValue(true);
+    f_use = new Fact(this, "use", tr("Use elevation map"), "", Bool, "check");
+    f_use->setValue(false);
 
     f_path = new Fact(this,
                       "open",
