@@ -52,6 +52,9 @@ public:
 
     static constexpr int UNSAFE_AGL = 100;
     static constexpr double ALT_EPS = 0.1;
+    // a new waypoint closer than this to its neighbours makes the turn impossible
+    // (the mission path uses a 100 m turn radius): the neighbour is lifted instead
+    static constexpr double MIN_SPACING = 500;
 
     // Height above ground, editable: altitude and AGL are two views of one value.
     // It has no data type on purpose: the mission stores and uploads typed fields
@@ -80,8 +83,9 @@ public slots:
     void buildTerrainProfile(const QGeoPath &path);
     void checkCollision();
     // the waypoint's turn of the mission correction: lifts the waypoint and reports
-    // the points to insert before it with responseCorrectPath()
-    void correctPath();
+    // the points to insert before it with responseCorrectPath();
+    // maxSlope: the steepest climb the aircraft can fly (rise over run), 0: unlimited
+    void correctPath(double maxSlope);
     // the first waypoint ends the takeoff leg, which is not analysed
     void updateFirst();
 
@@ -123,8 +127,13 @@ private:
     void setComputedAgl(int v);
 
     static void createTerrainInfo(QPromise<TerrainInfo> &promise, const QGeoPath &path);
+    // height the route must keep at every point of the path (terrain of the
+    // corridor plus the safe AGL) as the aircraft can fly it: no climb or descent
+    // steeper than maxSlope
+    static QList<double> requiredHeights(const QGeoPath &path, double maxSlope);
     static void getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
                                       const QGeoPath &path,
+                                      const QList<double> &need,
                                       int hFirst,
                                       int hLast);
 

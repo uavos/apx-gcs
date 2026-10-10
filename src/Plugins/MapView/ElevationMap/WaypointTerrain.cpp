@@ -27,6 +27,7 @@
 #include <Mission/Waypoint.h>
 
 #include <QFuture>
+#include <QHash>
 #include <QtConcurrent>
 
 #include <cfloat>
@@ -484,7 +485,7 @@ void WaypointTerrain::checkCollision()
 
 // ---- path correction
 
-void WaypointTerrain::correctPath()
+void WaypointTerrain::correctPath(double maxSlope)
 {
     // Skip waypoint without collision or unreachable
     auto prevWp = prevWaypoint();
@@ -503,12 +504,13 @@ void WaypointTerrain::correctPath()
     auto hmsl = startHmsl();
     const bool amsl = m_wp->f_amsl->value().toBool();
 
-    // The terrain profile ends with the highest terrain around the point (not only
-    // right under it), checkCollision() requires the safe AGL above that as well
+    // The profile ends with the highest terrain around the point (not only right
+    // under it) and the descent to the point may be limited: the waypoint must be
+    // at the required height of the end of its path
+    const auto need = requiredHeights(m_terrainProfilePath, maxSlope);
     {
         const int altAmsl = amsl ? alt : alt + static_cast<int>(hmsl);
-        const int lack = static_cast<int>(std::ceil(m_terrainProfile.last().y())) + UNSAFE_AGL
-                         - altAmsl;
+        const int lack = static_cast<int>(std::ceil(need.last())) - altAmsl;
         if (lack > 0) {
             alt += lack;
             m_wp->f_altitude->setValue(alt);
@@ -519,13 +521,36 @@ void WaypointTerrain::correctPath()
         alt += hmsl;
 
     // the previous point is corrected by its own turn of the mission correction
+    // (or lifted by this one when the climb right after it is too steep)
     auto prevAlt = prevWp->f_altitude->value().toInt();
     if (!prevWp->f_amsl->value().toBool())
         prevAlt += hmsl;
 
     QFuture<QList<QGeoCoordinate>> future;
-    future = QtConcurrent::run(getCorrectRoutePoints, m_terrainProfilePath, prevAlt, alt);
+    future = QtConcurrent::run(getCorrectRoutePoints, m_terrainProfilePath, need, prevAlt, alt);
     m_pointsWatcher.setFuture(future);
+}
+
+QList<double> WaypointTerrain::requiredHeights(const QGeoPath &path, double maxSlope)
+{
+    const qsizetype n = path.size();
+    QList<double> need;
+    need.reserve(n);
+    for (qsizetype i = 0; i < n; ++i)
+        need.append(path.coordinateAt(i).altitude() + UNSAFE_AGL);
+    if (maxSlope <= 0 || n < 2)
+        return need;
+    // descent limit: after a high point the route can only go down so fast
+    for (qsizetype i = 1; i < n; ++i) {
+        const double d = path.coordinateAt(i - 1).distanceTo(path.coordinateAt(i));
+        need[i] = std::max(need[i], need[i - 1] - maxSlope * d);
+    }
+    // climb limit: to reach a high point the route must already be high before it
+    for (qsizetype i = n - 2; i >= 0; --i) {
+        const double d = path.coordinateAt(i).distanceTo(path.coordinateAt(i + 1));
+        need[i] = std::max(need[i], need[i + 1] - maxSlope * d);
+    }
+    return need;
 }
 
 void WaypointTerrain::insertNewPoints()
@@ -552,57 +577,77 @@ void WaypointTerrain::liftPoints(QList<QGeoCoordinate> &points, const QList<doub
 
 void WaypointTerrain::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &promise,
                                             const QGeoPath &path,
+                                            const QList<double> &need,
                                             int hFirst,
                                             int hLast)
 {
-    int count{0};
     int pathSize = path.size();
-    bool hasCollision = true;
-    QList<int> indexes{0, pathSize - 1};
+    if (pathSize < 2 || need.size() != pathSize) {
+        promise.addResult(QList<QGeoCoordinate>());
+        return;
+    }
+    // Anchors of the route: the ends and, step by step, the points where a straight
+    // line between the neighbouring anchors goes below the required height.
+    // Each anchor has its height: the required one, or more when a violation too
+    // close to it (no room for a new waypoint) is covered by lifting the anchor.
+    const int last = pathSize - 1;
+    QList<int> indexes{0, last};
+    QHash<int, double> height;
+    // the previous waypoint itself may have to be higher: the climb right after it
+    height[0] = std::max<double>(hFirst, need.first());
+    height[last] = hLast;
 
-    // Start build terrain profile
+    int count{0};
+    bool hasCollision = true;
     while (hasCollision && count < pathSize) {
         hasCollision = false;
         QList<int> tmp;
         for (int i = 0; i < indexes.size() - 1; i++) {
-            // Get coordinates from path
             auto begin = indexes[i];
             auto end = indexes[i + 1];
-            auto first = path.coordinateAt(begin);
-            auto last = path.coordinateAt(end);
 
-            // Get points height and distance
-            double h1 = begin != 0 ? (first.altitude() + UNSAFE_AGL) : hFirst;
-            double h2 = end != (pathSize - 1) ? (last.altitude() + UNSAFE_AGL) : hLast;
-            auto dst = path.length(begin, end);
-            auto tan = static_cast<double>(h2 - h1) / dst;
+            // heights of the anchors and the slope between them
+            const double h1 = height[begin];
+            const double h2 = height[end];
+            const double dst = path.length(begin, end);
+            const double tan = (h2 - h1) / dst;
 
-            // Check intermediate points
+            // the worst point between them
             int unsafeIndex{-1};
             double unsafeHeightDiff{0};
+            double unsafeDst{0};
             for (int j = begin + 1; j < end; j++) {
-                auto coordinate = path.coordinateAt(j);
-                auto pointElevation = coordinate.altitude();
-                auto routeHeight = h1 + path.length(begin, j) * tan;
-                auto safeHeight = pointElevation + UNSAFE_AGL;
-
-                // Check safe AGL
-                double diff = std::abs(safeHeight - routeHeight);
-                if (routeHeight < safeHeight && ALT_EPS < diff) {
-                    hasCollision = true;
-                    if (unsafeHeightDiff < diff) {
-                        unsafeHeightDiff = diff;
-                        unsafeIndex = j;
-                    }
+                const double dj = path.length(begin, j);
+                const double routeHeight = h1 + dj * tan;
+                const double diff = need[j] - routeHeight;
+                if (diff > ALT_EPS && unsafeHeightDiff < diff) {
+                    unsafeHeightDiff = diff;
+                    unsafeIndex = j;
+                    unsafeDst = dj;
                 }
             }
-            if (unsafeIndex >= 0)
+            if (unsafeIndex < 0)
+                continue;
+            hasCollision = true;
+
+            // room for a waypoint: a new anchor
+            if (unsafeDst >= MIN_SPACING && dst - unsafeDst >= MIN_SPACING) {
                 tmp.append(unsafeIndex);
+                continue;
+            }
+            // too close to an anchor: lift the nearer one so the line clears the point
+            const bool nearBegin = unsafeDst < dst - unsafeDst;
+            const double share = nearBegin ? 1.0 - unsafeDst / dst : unsafeDst / dst;
+            const int k = nearBegin ? begin : end;
+            height[k] += unsafeHeightDiff / std::max(share, 0.01);
         }
+        for (auto idx : std::as_const(tmp))
+            height[idx] = need[idx];
         indexes.append(tmp);
         std::sort(indexes.begin(), indexes.end());
         count++;
     }
+    const double firstAlt = height[0];
 
     // Find the first point of a straight section of a path
     int linesFirstIndex{-1};
@@ -621,8 +666,9 @@ void WaypointTerrain::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &pro
 
     QList<QGeoCoordinate> newPoints;
 
-    // Check points less lineFirstIndex (no straight section: nothing to correct here)
-    double alt4Correct = linesFirstIndex >= 0 ? path.coordinateAt(linesFirstIndex).altitude() : 0;
+    // Anchors inside the turn after the previous waypoint can not become waypoints:
+    // the turn is flown at the required height of its highest point instead
+    double alt4Correct = linesFirstIndex >= 0 ? need[linesFirstIndex] : 0;
     for (int i = 1; i < indexes.size() - 1; i++) {
         if (linesFirstIndex <= 0)
             break;
@@ -632,19 +678,18 @@ void WaypointTerrain::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &pro
             continue;
 
         // First point for altitude correction append
-        // and max terrain elevation on the interval
+        // and max required height on the interval
         if (newPoints.size() == 0) {
             newPoints.append(path.coordinateAt(0));
-            for (int j = 0; j < linesFirstIndex; j++) {
-                auto alt = path.coordinateAt(j).altitude();
-                alt4Correct = std::max(alt4Correct, alt);
-            }
+            for (int j = 0; j < linesFirstIndex; j++)
+                alt4Correct = std::max(alt4Correct, need[j]);
         }
+        alt4Correct = std::max(alt4Correct, height[indexes[i]]);
 
         // Correct first point altitude if needed
         if (indexes[i] < linesFirstIndex && linesFirstIndex < indexes[i + 1]) {
-            auto alt1 = path.coordinateAt(indexes[i]).altitude();
-            auto alt2 = path.coordinateAt(indexes[i + 1]).altitude();
+            auto alt1 = height[indexes[i]];
+            auto alt2 = height[indexes[i + 1]];
             auto dst = path.length(indexes[i], indexes[i + 1]);
             auto indexDst = path.length(indexes[i], linesFirstIndex);
             auto altCorrection = alt1 + (alt2 - alt1) * indexDst / dst;
@@ -652,17 +697,19 @@ void WaypointTerrain::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &pro
         }
     }
 
+    // Altitudes are stored as whole metres: round them up, a point even a metre
+    // below its required height would keep the collision for ever
     // Add second point for correction
     if (newPoints.size() != 0) {
         auto point = path.coordinateAt(linesFirstIndex);
-        alt4Correct += UNSAFE_AGL;
-        point.setAltitude(alt4Correct);
+        point.setAltitude(std::ceil(alt4Correct));
         newPoints.append(point);
-        if (hFirst < alt4Correct) {
-            newPoints[0].setAltitude(alt4Correct);
-        } else {
-            newPoints[0].setAltitude(hFirst);
-        }
+        newPoints[0].setAltitude(std::ceil(std::max(firstAlt, alt4Correct)));
+    } else if (firstAlt > hFirst) {
+        // nothing in the turn, but the previous waypoint has to be lifted
+        auto point = path.coordinateAt(0);
+        point.setAltitude(std::ceil(firstAlt));
+        newPoints.append(point);
     }
 
     // Add new points
@@ -670,8 +717,14 @@ void WaypointTerrain::getCorrectRoutePoints(QPromise<QList<QGeoCoordinate>> &pro
         if (indexes[i] <= linesFirstIndex)
             continue;
         auto point = path.coordinateAt(indexes[i]);
-        auto newAlt = point.altitude() + UNSAFE_AGL;
-        point.setAltitude(newAlt);
+        point.setAltitude(std::ceil(height[indexes[i]]));
+        newPoints.append(point);
+    }
+
+    // the waypoint itself has to be lifted: the last point of the result
+    if (height[last] > hLast + ALT_EPS) {
+        auto point = path.coordinateAt(last);
+        point.setAltitude(std::ceil(height[last]));
         newPoints.append(point);
     }
 
