@@ -185,4 +185,11 @@ RowLayout {
         }
     }
 
+    // Other plugins add their items to the end of the line:
+    // ui.mapInfo.add(item)
+    function add(item)
+    {
+        item.parent = control
+    }
+    Component.onCompleted: application.registerUiComponent(control, "mapInfo")
 }
