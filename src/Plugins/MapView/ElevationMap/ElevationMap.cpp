@@ -84,6 +84,8 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(Fleet::instance(), &Fleet::currentChanged, this, &ElevationMap::updateMission);
     connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
+    connect(f_use, &Fact::valueChanged, this, &ElevationMap::checkFiles);
+    connect(f_path, &Fact::valueChanged, this, &ElevationMap::checkFiles);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
     connect(f_corridor, &Fact::valueChanged, this, &ElevationMap::onCorridorChanged);
     connect(f_showAgl, &Fact::valueChanged, this, &ElevationMap::updateUnitAgl);
@@ -257,6 +259,18 @@ void ElevationMap::scanTiles()
         return;
     m_available = available;
     emit availableChanged();
+}
+
+// switched on or the folder changed: tell the operator when there is nothing to load
+void ElevationMap::checkFiles()
+{
+    if (!f_use->value().toBool())
+        return;
+    if (m_available)
+        apxMsg() << tr("Elevation map: %1 files loaded from").arg(m_tileNames.size())
+                 << f_path->value().toString();
+    else
+        apxMsgW() << tr("Elevation map: no elevation files found in") << f_path->value().toString();
 }
 
 // The plugin is active when enabled, switched on and the elevation files exist:

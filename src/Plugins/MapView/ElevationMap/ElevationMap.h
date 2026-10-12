@@ -144,6 +144,7 @@ private slots:
     void getPluginEnableControl();
     void changeExternalsVisibility();
     void scanTiles();
+    void checkFiles();
     void updateActive();
     void onCorridorChanged();
     void onTerrainProfileMin(QGeoPath path, QList<double> minElevations);
