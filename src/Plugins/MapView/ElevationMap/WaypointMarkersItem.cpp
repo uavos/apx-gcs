@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "WaypointMarkersItem.h"
+#include "MissionTerrain.h"
 #include "WaypointTerrain.h"
 
 #include <Mission/MissionGroup.h>
@@ -104,6 +105,9 @@ WaypointMarkersItem::WaypointMarkersItem(QQuickItem *parent)
     m_font.setPixelSize(12);
     m_font.setBold(true);
     m_textHeight = QFontMetricsF(m_font).height();
+    m_holdTimer.setSingleShot(true);
+    m_holdTimer.setInterval(HOLD_MS);
+    connect(&m_holdTimer, &QTimer::timeout, this, &WaypointMarkersItem::startDrag);
 }
 
 WaypointMarkersItem::~WaypointMarkersItem() = default;
@@ -177,6 +181,7 @@ void WaypointMarkersItem::geometryChange(const QRectF &newGeometry, const QRectF
 
 void WaypointMarkersItem::refresh()
 {
+    const auto previous = m_markers;
     m_markers.clear();
     m_textWidths.clear();
     auto group = qobject_cast<MissionGroup *>(m_group.data());
@@ -246,7 +251,13 @@ void WaypointMarkersItem::refresh()
         setHover(-1);
     if (m_pressed >= m_markers.size())
         m_pressed = -1;
-    m_markersDirty = true;
+    // the text nodes are rebuilt only when the markers themselves changed, not
+    // their heights (a drag updates them many times per second)
+    bool same = previous.size() == m_markers.size();
+    for (int i = 0; same && i < m_markers.size(); ++i)
+        same = previous[i].wp == m_markers[i].wp && previous[i].num == m_markers[i].num;
+    if (!same)
+        m_markersDirty = true;
     layoutMarkers();
 }
 
@@ -333,8 +344,9 @@ QSGNode *WaypointMarkersItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
         opacity->setOpacity(m.shown ? 1.0 : 0.0);
         if (!m.shown)
             continue;
-        const float bw = float(m.boxWidth);
-        const float bh = float(BOX_HEIGHT);
+        const double scale = (m_dragging && i == m_pressed) ? DRAG_SCALE : 1.0;
+        const float bw = float(m.boxWidth * scale);
+        const float bh = float(BOX_HEIGHT * scale);
         const float x = float(m.px - bw / 2);
         const float y = float(m.py - bh / 2);
         addRect(v, float(m.px - 0.5), float(m.py), 1, float(qMax(0.0, h - m.py)), LINE);
@@ -344,7 +356,9 @@ QSGNode *WaypointMarkersItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeD
         auto *text = node->textNodes[i];
         text->setColor(m.alarm ? QColor(255, 0, 0) : QColor(0, 0, 0));
         QMatrix4x4 t;
-        t.translate(float(m.px - m_textWidths[i] / 2), float(m.py - m_textHeight / 2));
+        t.translate(float(m.px - m_textWidths[i] * scale / 2),
+                    float(m.py - m_textHeight * scale / 2));
+        t.scale(float(scale));
         text->setMatrix(t);
         text->markDirty(QSGNode::DirtyMatrix);
     }
@@ -414,12 +428,64 @@ void WaypointMarkersItem::mousePressEvent(QMouseEvent *event)
         return;
     }
     m_pressed = idx;
+    m_dragStartY = event->position().y();
+    m_holdTimer.start();
+    // the chart pans with its own drag handler: it must not take the mouse away
+    setKeepMouseGrab(true);
     event->accept();
+}
+
+// held long enough: the marker grows and follows the mouse
+void WaypointMarkersItem::startDrag()
+{
+    if (m_pressed < 0 || m_pressed >= m_markers.size() || !m_markers[m_pressed].wp)
+        return;
+    m_dragging = true;
+    m_dragOffset = m_markers[m_pressed].py - m_dragStartY;
+    setCursor(Qt::SizeVerCursor);
+    emit draggingChanged();
+    m_layoutDirty = true;
+    update();
+}
+
+void WaypointMarkersItem::finishDrag()
+{
+    m_holdTimer.stop();
+    if (!m_dragging)
+        return;
+    m_dragging = false;
+    unsetCursor();
+    emit draggingChanged();
+    m_layoutDirty = true;
+    update();
 }
 
 void WaypointMarkersItem::mouseMoveEvent(QMouseEvent *event)
 {
     event->accept();
+    if (!m_dragging) {
+        // moving before the hold is over is not a drag and not a click
+        if (std::abs(event->position().y() - m_dragStartY) > BOX_HEIGHT)
+            m_holdTimer.stop();
+        return;
+    }
+    auto wp = m_pressed < m_markers.size() ? m_markers[m_pressed].wp : nullptr;
+    const double hRange = m_maxHeight - m_minHeight;
+    const double plotHeight = height() - m_topPadding;
+    if (!wp || hRange <= 0 || plotHeight <= 0)
+        return;
+    // the marker centre follows the mouse (with the offset it was grabbed at),
+    // mapped through the current axis range: the chart may rescale meanwhile
+    const double py = event->position().y() + m_dragOffset;
+    double heightAmsl = m_minHeight + (height() - py) * hRange / plotHeight;
+    if (!wp->f_amsl->value().toBool()) {
+        auto group = qobject_cast<MissionGroup *>(m_group.data());
+        auto mt = group && group->mission ? MissionTerrain::of(group->mission) : nullptr;
+        heightAmsl -= mt ? std::round(mt->startElevation()) : 0;
+    }
+    const int altitude = int(std::round(heightAmsl));
+    if (altitude != wp->f_altitude->value().toInt())
+        wp->f_altitude->setValue(altitude);
 }
 
 // a click on a marker: the map centers on the waypoint and its menu opens
@@ -427,10 +493,15 @@ void WaypointMarkersItem::mouseReleaseEvent(QMouseEvent *event)
 {
     if (m_pressed < 0)
         return;
+    const bool click = m_holdTimer.isActive() && !m_dragging;
+    finishDrag();
+    setKeepMouseGrab(false);
     auto wp = m_pressed < m_markers.size() ? m_markers[m_pressed].wp : nullptr;
     const bool onMarker = hitTest(event->position()) == m_pressed;
     m_pressed = -1;
+    m_layoutDirty = true;
+    update();
     event->accept();
-    if (onMarker && wp)
+    if (click && onMarker && wp)
         wp->trigger();
 }
