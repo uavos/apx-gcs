@@ -259,7 +259,7 @@ AppPlugin {
                     Rectangle {
                         id: centerDot
 
-                        width: resultItem.detailsVisible ? 16 : 8
+                        width: resultItem.detailsVisible ? 10 : 6
                         height: width
                         radius: width / 2
 
@@ -284,14 +284,14 @@ AppPlugin {
                         x: resultItem.centerPoint.x - width / 2
                         y: resultItem.centerPoint.y - height - 12
 
-                        width: labelText.implicitWidth + 14
-                        height: labelText.implicitHeight + 8
+                        width: labelText.implicitWidth + 8
+                        height: labelText.implicitHeight + 4
 
-                        radius: 5
+                        radius: 3
 
-                        color: Qt.rgba(0.0, 0.08, 0.30, 0.90)
+                        color: Qt.rgba(0.0, 0.08, 0.30, 0.75)
 
-                        border.color: Qt.rgba(0.0, 0.55, 1.0, 1.0)
+                        border.color: Qt.rgba(0.0, 0.55, 1.0, 0.8)
                         border.width: 1
                         z: 3
 
@@ -303,8 +303,7 @@ AppPlugin {
                             text: resultItem.label
                             color: "white"
 
-                            font.pixelSize: 14
-                            font.bold: true
+                            font.pixelSize: 10
                         }
                     }
                 }

@@ -167,7 +167,7 @@ void NavaiHeatmap::paint(QPainter *painter)
         QColor fill = color;
         fill.setAlphaF(_fillOpacity);
         QColor border = color;
-        border.setAlphaF(qMin(1.0, _fillOpacity + 0.4));
+        border.setAlphaF(qMin(1.0, _fillOpacity + 0.25));
         painter->setPen(QPen(border, 1.0));
         painter->setBrush(fill);
         painter->drawRect(rect);

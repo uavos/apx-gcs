@@ -49,5 +49,5 @@ private:
     QGeoCoordinate _center;
     double _zoomLevel = 0.0;
     double _bearing = 0.0;
-    double _fillOpacity = 0.45;
+    double _fillOpacity = 0.22;
 };
