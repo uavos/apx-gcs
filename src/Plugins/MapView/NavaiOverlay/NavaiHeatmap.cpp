@@ -161,10 +161,14 @@ void NavaiHeatmap::paint(QPainter *painter)
             continue;
         }
 
+        // A solid fill at _fillOpacity and a stronger border keep the
+        // tile readable over satellite imagery.
         const QColor color = scoreColor(tile.score);
         QColor fill = color;
         fill.setAlphaF(_fillOpacity);
-        painter->setPen(QPen(color, 1.0));
+        QColor border = color;
+        border.setAlphaF(qMin(1.0, _fillOpacity + 0.4));
+        painter->setPen(QPen(border, 1.0));
         painter->setBrush(fill);
         painter->drawRect(rect);
     }
