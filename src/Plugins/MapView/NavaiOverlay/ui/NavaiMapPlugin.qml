@@ -18,6 +18,7 @@ AppPlugin {
             property int mapRevision: 0
             property real trajectoryLineWidth: 2
             property real trajectoryEndpointDiameter: 8
+            property real opticalLineWidth: 3
             // Labels only become useful when the operator is close enough to
             // inspect an individual result.
             property real resultDetailsMinZoom: 16
@@ -152,6 +153,45 @@ AppPlugin {
                     }
                 }
             }
+            // Optical flow track: where the camera says the aircraft went.
+            Repeater {
+                model: navaiLayer.navaiActive && navaiLayer.navaiUdpReady
+                    ? navaiLayer.navai.opticalTrack
+                    : []
+
+                delegate: Item {
+                    id: opticalItem
+                    required property var modelData
+                    property var attachedMap: null
+
+                    function attach() {
+                        if (attachedMap === navaiLayer.baseMap)
+                            return
+                        if (attachedMap)
+                            attachedMap.removeMapItem(opticalLine)
+                        attachedMap = navaiLayer.baseMap
+                        if (attachedMap)
+                            attachedMap.addMapItem(opticalLine)
+                    }
+
+                    Component.onCompleted: attach()
+                    Component.onDestruction: {
+                        if (attachedMap)
+                            attachedMap.removeMapItem(opticalLine)
+                    }
+
+                    MapPolyline {
+                        id: opticalLine
+                        visible: opticalItem.modelData.length > 1
+                        path: opticalItem.modelData
+                        line.width: navaiLayer.opticalLineWidth
+                        line.color: "#ffd600"
+                        opacity: 0.6
+                        z: 99990
+                    }
+                }
+            }
+
             Repeater {
                 model: navaiLayer.navaiActive && navaiLayer.navaiUdpReady
                     ? navaiLayer.navai.resultsModel

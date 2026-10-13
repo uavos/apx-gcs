@@ -652,6 +652,9 @@ void NavaiOverlay::stopUdp()
         emit udpReadyChanged();
 
     _resultsModel.clear();
+    _opticalSegments.clear();
+    _opticalPoints = 0;
+    emit opticalTrackChanged();
 }
 
 void NavaiOverlay::readUdpDatagrams()
@@ -758,6 +761,7 @@ void NavaiOverlay::handleDatagram(
     const QJsonObject packet = doc.object();
     if(packet.value("type").toString()=="tile_grid"){handleTileGrid(packet);return;}
     if(packet.value("type").toString()=="dino_ranking"){handleDinoRanking(packet);return;}
+    if(packet.value("type").toString()=="oflow"){handleOpticalFlow(packet);return;}
     QJsonObject obj = packet;
 
     const bool isRecognitionEnvelope =
@@ -923,6 +927,54 @@ void NavaiOverlay::handleDinoRanking(const QJsonObject &o)
                   .arg(topId)
                   .arg(topScore, 0, 'f', 3)
     );
+}
+
+void NavaiOverlay::handleOpticalFlow(const QJsonObject &packet)
+{
+    // "paused" means the flow is not running (low altitude), nothing to draw.
+    const QString status = packet.value("status").toString();
+    if (status.isEmpty() || status == "paused")
+        return;
+
+    bool okLat = false;
+    bool okLon = false;
+    const double lat = jsonNumber(packet, {"optical_latitude"}, &okLat);
+    const double lon = jsonNumber(packet, {"optical_longitude"}, &okLon);
+    const QGeoCoordinate coordinate(lat, lon);
+    if (!okLat || !okLon || !coordinate.isValid())
+        return;
+
+    // "first" is the first frame of a new flow chain: the line starts over.
+    if (status == "first" || _opticalSegments.isEmpty())
+        _opticalSegments.append(QList<QGeoCoordinate>());
+
+    _opticalSegments.last().append(coordinate);
+    _opticalPoints++;
+
+    // Forget the oldest points so a long flight does not grow the line forever.
+    while (_opticalPoints > kMaxOpticalPoints && !_opticalSegments.isEmpty()) {
+        QList<QGeoCoordinate> &oldest = _opticalSegments.first();
+        if (!oldest.isEmpty()) {
+            oldest.removeFirst();
+            _opticalPoints--;
+        }
+        if (oldest.isEmpty())
+            _opticalSegments.removeFirst();
+    }
+
+    emit opticalTrackChanged();
+}
+
+QVariantList NavaiOverlay::opticalTrack() const
+{
+    QVariantList segments;
+    for (const QList<QGeoCoordinate> &segment : _opticalSegments) {
+        QVariantList points;
+        for (const QGeoCoordinate &coordinate : segment)
+            points.append(QVariant::fromValue(coordinate));
+        segments.append(QVariant(points));
+    }
+    return segments;
 }
 
 void NavaiOverlay::postToGcsConsole(const QString &text)

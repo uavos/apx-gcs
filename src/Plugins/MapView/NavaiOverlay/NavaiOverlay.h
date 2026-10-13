@@ -91,6 +91,7 @@ class NavaiOverlay : public Fact
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
     Q_PROPERTY(QString overlayTileUrlTemplate READ overlayTileUrlTemplate NOTIFY overlayTileServerChanged)
     Q_PROPERTY(bool overlayTileServerReady READ overlayTileServerReady NOTIFY overlayTileServerChanged)
+    Q_PROPERTY(QVariantList opticalTrack READ opticalTrack NOTIFY opticalTrackChanged)
 
 public:
     explicit NavaiOverlay(Fact *parent = nullptr);
@@ -125,11 +126,15 @@ public:
     QString overlayTileUrlTemplate() const { return _tileServer.urlTemplate(); }
     bool overlayTileServerReady() const { return _tileServer.isListening(); }
 
+    // The optical flow track: one list of coordinates per flow chain.
+    QVariantList opticalTrack() const;
+
 signals:
     void activeChanged();
     void udpReadyChanged();
     void heatmapChanged();
     void overlayTileServerChanged();
+    void opticalTrackChanged();
 
 private slots:
     void readUdpDatagrams();
@@ -152,6 +157,7 @@ private:
     );
     void handleTileGrid(const QJsonObject &);
     void handleDinoRanking(const QJsonObject &);
+    void handleOpticalFlow(const QJsonObject &);
 
     double jsonNumber(
         const QJsonObject &obj,
@@ -181,6 +187,10 @@ private:
     NavaiTileModel _tileGridModel;
     NavaiTileServer _tileServer;
     QHash<int,QJsonObject> _gridChunks;
+
+    QVector<QList<QGeoCoordinate>> _opticalSegments;
+    int _opticalPoints = 0;
+    static constexpr int kMaxOpticalPoints = 3000;
     int _gridChunkCount=0;
     QString _gridRevision;
     QString _gridMode;
