@@ -390,6 +390,15 @@ void ElevationMap::createMissionTools()
     connect(correctApply, &Fact::triggered, this, [this, speed, climb]() {
         // the steepest climb the aircraft can fly, as a slope (rise over run)
         m_correctionSlope = climb->value().toDouble() / speed->value().toDouble();
+        // The corrected route is a set of absolute heights flown along straight
+        // lines between the points: every waypoint gets AMSL and altitude tracking
+        // (the AMSL switch keeps the height, only the number changes)
+        auto m = mission();
+        for (int i = 0; i < m->f_wp->size(); ++i) {
+            auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
+            wp->f_amsl->setValue(true);
+            wp->f_atrack->setValue(true);
+        }
         // a correction interrupted by a mission change never completes: start over
         m_isCorrect = false;
         m_correctionPass = 0;
