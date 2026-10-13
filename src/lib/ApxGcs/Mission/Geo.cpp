@@ -189,24 +189,9 @@ QJsonValue Geo::toJson()
 void Geo::fromJson(const QJsonValue &jsv)
 {
     auto jso = jsv.toObject();
-    // points array
-    if (jso.contains(f_points->name())) {
-        auto jsa = jso.value(f_points->name()).toArray();
-        jso.remove(f_points->name());
-        f_points->deleteChildren();
-        for (auto jv : jsa) {
-            auto jso = jv.toObject();
-            addPoint(QGeoCoordinate(jso.value("lat").toDouble(), jso.value("lon").toDouble()));
-        }
-    }
-
-    // p2 point coordinate
-    if (jso.contains(f_p2->name())) {
-        auto jso2 = jso.value(f_p2->name()).toObject();
-        jso.remove(f_p2->name());
-        f_p2->setCoordinate(
-            QGeoCoordinate(jso2.value("lat").toDouble(), jso2.value("lon").toDouble()));
-    }
+    // shape points are parsed here, not by the base class
+    const auto jsa = jso.take(f_points->name());
+    const auto jso2 = jso.take(f_p2->name());
 
     // rename name to label
     if (jso.contains("name") && !jso.contains(f_label->name())) {
@@ -214,7 +199,23 @@ void Geo::fromJson(const QJsonValue &jsv)
         jso.remove("name");
     }
 
+    // base class resets missing fields (incl. p2) and shape handler sets defaults
     MissionItem::fromJson(jso);
+
+    // points array
+    if (jsa.isArray()) {
+        f_points->deleteChildren();
+        for (auto jv : jsa.toArray()) {
+            auto jso = jv.toObject();
+            addPoint(QGeoCoordinate(jso.value("lat").toDouble(), jso.value("lon").toDouble()));
+        }
+    }
+
+    // p2 point coordinate
+    if (jso2.isObject()) {
+        auto p2 = jso2.toObject();
+        f_p2->setCoordinate(QGeoCoordinate(p2.value("lat").toDouble(), p2.value("lon").toDouble()));
+    }
 }
 
 void Geo::updateTitle()
