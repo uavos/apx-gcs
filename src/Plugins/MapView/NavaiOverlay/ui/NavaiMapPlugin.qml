@@ -187,8 +187,8 @@ AppPlugin {
                         z: 99995
                         center: resultItem.centerCoord
                         radius: resultItem.radiusMeters
-                        color: Qt.rgba(0.0, 0.55, 1.0, 0.12)
-                        border.color: Qt.rgba(0.0, 0.55, 1.0, 0.7)
+                        color: Qt.rgba(0.0, 0.55, 1.0, 0.20)
+                        border.color: Qt.rgba(0.0, 0.55, 1.0, 0.9)
                         border.width: 1
                     }
 
