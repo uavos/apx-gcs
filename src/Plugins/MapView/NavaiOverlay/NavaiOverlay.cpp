@@ -1,4 +1,5 @@
 #include "NavaiOverlay.h"
+#include "NavaiHeatmap.h"
 
 #include <App/AppNotify.h>
 #include <Fleet/Fleet.h>
@@ -16,6 +17,7 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QJsonValue>
+#include <QQmlEngine>
 #include <QStandardPaths>
 
 #include <cmath>
@@ -140,74 +142,6 @@ Fact *factByAnyId(
 }
 
 } // namespace
-
-QVariant NavaiTileModel::data(const QModelIndex &index, int role) const
-{
-    if (!index.isValid() || index.row() < 0 || index.row() >= _items.size())
-        return {};
-    const QVariantMap &tile = _items[index.row()];
-    if (role == PolygonRole)
-        return tile.value("polygon");
-    if (role == ColorRole)
-        return tile.value("color", "transparent");
-    return tile.value("id");
-}
-
-QHash<int, QByteArray> NavaiTileModel::roleNames() const
-{
-    return {{IdRole, "tileId"}, {PolygonRole, "polygon"}, {ColorRole, "tileColor"}};
-}
-
-void NavaiTileModel::replace(const QVector<QVariantMap> &tiles)
-{
-    // NAVAI resends the whole grid during the flight; a tile that is already
-    // known keeps the score it has, only the geometry is taken from the packet.
-    QVector<QVariantMap> items = tiles;
-    for (QVariantMap &tile : items) {
-        const int row = _rows.value(tile.value("id").toString(), -1);
-        if (row < 0)
-            continue;
-        tile["color"] = _items[row].value("color", "transparent");
-        tile["score"] = _items[row].value("score", -1.0);
-    }
-
-    beginResetModel();
-    _items = items;
-    _rows.clear();
-    for (int row = 0; row < _items.size(); ++row)
-        _rows.insert(_items[row].value("id").toString(), row);
-    endResetModel();
-}
-
-void NavaiTileModel::merge(const QVector<QVariantMap> &tiles)
-{
-    // New tiles are added to the grid, known ones are refreshed in place.
-    QVector<QVariantMap> merged = _items;
-    for (const QVariantMap &tile : tiles) {
-        const int row = _rows.value(tile.value("id").toString(), -1);
-        if (row < 0)
-            merged.append(tile);
-        else
-            merged[row] = tile;
-    }
-    replace(merged);
-}
-
-void NavaiTileModel::score(const QHash<QString, QVariantMap> &scores)
-{
-    // One UDP packet carries at most 200 tiles, so only those are touched.
-    for (auto it = scores.constBegin(); it != scores.constEnd(); ++it) {
-        const int row = _rows.value(it.key(), -1);
-        if (row < 0)
-            continue;
-        _items[row]["color"] = it.value().value("color", "transparent");
-        _items[row]["score"] = it.value().value("score", -1.0);
-    }
-    if (!_items.isEmpty())
-        emit dataChanged(index(0, 0), index(_items.size() - 1, 0), {ColorRole});
-}
-
-QVariantList NavaiTileModel::heatmapTiles() const { QVariantList result; for(const auto &tile:_items) if(tile.value("score",-1.0).toDouble()>=0.0) result << tile; return result; }
 
 // ======================= MODEL =======================
 
@@ -431,9 +365,7 @@ NavaiOverlay::NavaiOverlay(Fact *parent)
            Group,
            "crosshairs-gps")
 {
-    _tileServer.setModel(&_tileGridModel);
-    _tileServer.start();
-    emit overlayTileServerChanged();
+    qmlRegisterType<NavaiHeatmap>("Apx.Navai", 1, 0, "NavaiHeatmap");
     f_enabled =
         new Fact(
             this,
@@ -944,47 +876,92 @@ void NavaiOverlay::handleDatagram(
     );
 }
 
-void NavaiOverlay::handleTileGrid(const QJsonObject&o){int n=o.value("chunk_count").toInt(),i=o.value("chunk_index").toInt(-1);QString r=QString::number(o.value("revision").toInt());QString mode=o.value("mode").toString("replace");if(mode!="append")mode="replace";if(n<1||i<0||i>=n)return;if(r!=_gridRevision||mode!=_gridMode){_gridRevision=r;_gridMode=mode;_gridChunks.clear();_gridChunkCount=n;}if(n!=_gridChunkCount)return;_gridChunks[i]=o;if(_gridChunks.size()!=n)return;QVector<QVariantMap> out;for(int k=0;k<n;k++)for(auto v:_gridChunks[k]["tiles"].toArray()){auto t=v.toObject();double la=t["latitude"].toDouble(),lo=t["longitude"].toDouble(),s=t["size_m"].toDouble(),dy=s/111320.,dx=dy/qMax(.1,std::cos(la*M_PI/180.));QVariantList p;for(auto q:{QPointF(-1,-1),QPointF(1,-1),QPointF(1,1),QPointF(-1,1)})p<<QVariant::fromValue(QGeoCoordinate(la+q.y()*dy/2,lo+q.x()*dx/2));QVariantMap x;x["id"]=t["id"].toString();x["polygon"]=p;out<<x;}if(mode=="append")_tileGridModel.merge(out);else _tileGridModel.replace(out);_tileServer.invalidate();postToGcsConsole(QString("Tile grid %1: revision=%2, tiles=%3").arg(mode=="append"?"merged":"applied").arg(r).arg(out.size()));}
-void NavaiOverlay::handleDinoRanking(const QJsonObject &o)
+void NavaiOverlay::handleTileGrid(const QJsonObject &packet)
 {
-    static qint64 frame = 0;
-    const qint64 f = o["frame_id"].toVariant().toLongLong();
-    if (f && f < frame)
+    const int chunkCount = packet.value("chunk_count").toInt();
+    const int chunkIndex = packet.value("chunk_index").toInt(-1);
+    const QString revision = QString::number(packet.value("revision").toInt());
+    QString mode = packet.value("mode").toString("replace");
+    if (mode != "append")
+        mode = "replace";
+    if (chunkCount < 1 || chunkIndex < 0 || chunkIndex >= chunkCount)
         return;
-    frame = f;
 
-    const QJsonArray tiles = o["tiles"].toArray();
-    QHash<QString, QVariantMap> scores;
+    // Chunks of one grid share the revision and mode; a new revision starts over.
+    if (revision != _gridRevision || mode != _gridMode) {
+        _gridRevision = revision;
+        _gridMode = mode;
+        _gridChunks.clear();
+        _gridChunkCount = chunkCount;
+    }
+    if (chunkCount != _gridChunkCount)
+        return;
+    _gridChunks[chunkIndex] = packet.value("tiles").toArray();
+    if (_gridChunks.size() != chunkCount)
+        return;
+
+    QVector<NavaiTile> tiles;
+    for (int chunk = 0; chunk < chunkCount; ++chunk) {
+        for (const QJsonValue &value : _gridChunks[chunk]) {
+            const QJsonObject item = value.toObject();
+            NavaiTile tile;
+            tile.id = item.value("id").toString();
+            tile.latitude = item.value("latitude").toDouble();
+            tile.longitude = item.value("longitude").toDouble();
+            tile.sizeM = item.value("size_m").toDouble();
+            if (tile.id.isEmpty() || tile.sizeM <= 0.0)
+                continue;
+            tiles.append(tile);
+        }
+    }
+    _gridChunks.clear();
+
+    if (mode == "append")
+        _tileMap.merge(tiles);
+    else
+        _tileMap.replace(tiles);
+    emit heatmapChanged();
+
+    postToGcsConsole(
+        QString("Tile grid %1: revision=%2, tiles=%3, total=%4")
+            .arg(mode == "append" ? "merged" : "applied")
+            .arg(revision)
+            .arg(tiles.size())
+            .arg(_tileMap.count())
+    );
+}
+void NavaiOverlay::handleDinoRanking(const QJsonObject &packet)
+{
+    // Chunks of one ranking share the frame id; an older frame is ignored.
+    const qint64 frame = packet.value("frame_id").toVariant().toLongLong();
+    if (frame && frame < _rankingFrame)
+        return;
+    _rankingFrame = frame;
+
+    const QJsonArray tiles = packet.value("tiles").toArray();
     QString topId;
     double topScore = -std::numeric_limits<double>::infinity();
-
+    int applied = 0;
     for (const QJsonValue &value : tiles) {
         const QJsonObject tile = value.toObject();
-        const double score = tile["score"].toDouble();
-        const double normalizedScore = qBound(0.0, score, 1.0);
-        const QColor color = QColor::fromHsvF(normalizedScore * .33, .85, .95);
-        const QString id = tile["id"].toString();
-
-        QVariantMap item;
-        item["color"] = color.name();
-        item["score"] = score;
-        scores[id] = item;
-
+        const QString id = tile.value("id").toString();
+        const double score = tile.value("score").toDouble();
+        if (_tileMap.setScore(id, static_cast<float>(score)))
+            applied++;
         if (score > topScore) {
             topScore = score;
             topId = id;
         }
     }
-
-    _tileGridModel.score(scores);
     emit heatmapChanged();
 
     postToGcsConsole(
         tiles.isEmpty()
-            ? QString("DINO ranking applied: frame=%1, tiles=0").arg(f)
-            : QString("DINO ranking applied: frame=%1, tiles=%2, top=%3 - %4 of 1")
-                  .arg(f)
+            ? QString("DINO ranking applied: frame=%1, tiles=0").arg(frame)
+            : QString("DINO ranking applied: frame=%1, tiles=%2, known=%3, top=%4 - %5 of 1")
+                  .arg(frame)
                   .arg(tiles.size())
+                  .arg(applied)
                   .arg(topId)
                   .arg(topScore, 0, 'f', 3)
     );

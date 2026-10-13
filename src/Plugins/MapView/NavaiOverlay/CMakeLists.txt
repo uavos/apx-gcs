@@ -12,8 +12,10 @@ target_sources(${MODULE} PRIVATE
     NavaiOverlayPlugin.h
     NavaiOverlay.cpp
     NavaiOverlay.h
-    NavaiTileServer.cpp
-    NavaiTileServer.h
+    NavaiTileMap.cpp
+    NavaiTileMap.h
+    NavaiHeatmap.cpp
+    NavaiHeatmap.h
 )
 
 set_target_properties(${MODULE} PROPERTIES

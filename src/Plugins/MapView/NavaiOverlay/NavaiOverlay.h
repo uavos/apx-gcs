@@ -12,38 +12,9 @@
 #include <QUdpSocket>
 #include <QtCore>
 
-#include "NavaiTileServer.h"
+#include "NavaiTileMap.h"
 
 class Unit;
-class NavaiTileModel : public QAbstractListModel
-{
-    Q_OBJECT
-public:
-    enum Roles { IdRole = Qt::UserRole + 1, PolygonRole, ColorRole };
-
-    explicit NavaiTileModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
-
-    int rowCount(const QModelIndex &parent = {}) const override
-    {
-        return parent.isValid() ? 0 : _items.size();
-    }
-    QVariant data(const QModelIndex &index, int role) const override;
-    QHash<int, QByteArray> roleNames() const override;
-
-    // The whole grid from NAVAI: replace it or merge new tiles into it.
-    void replace(const QVector<QVariantMap> &tiles);
-    void merge(const QVector<QVariantMap> &tiles);
-    // Scores for some of the tiles; tiles not named keep their current score.
-    void score(const QHash<QString, QVariantMap> &scores);
-
-    QVariantList heatmapTiles() const;
-    const QVector<QVariantMap> &tiles() const { return _items; }
-
-private:
-    QVector<QVariantMap> _items;
-    QHash<QString, int> _rows; // tile id -> row in _items
-};
-
 class NavaiResultModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -110,14 +81,12 @@ class NavaiOverlay : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QAbstractListModel *resultsModel READ resultsModel CONSTANT)
-    Q_PROPERTY(QAbstractListModel *tileGridModel READ tileGridModel CONSTANT)
-    Q_PROPERTY(QVariantList heatmapTiles READ heatmapTiles NOTIFY heatmapChanged)
+    Q_PROPERTY(int tileCount READ tileCount NOTIFY heatmapChanged)
+    Q_PROPERTY(int scoredTileCount READ scoredTileCount NOTIFY heatmapChanged)
     Q_PROPERTY(Fact *enableFact READ enableFact CONSTANT)
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
     Q_PROPERTY(bool udpReady READ udpReady NOTIFY udpReadyChanged)
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
-    Q_PROPERTY(QString overlayTileUrlTemplate READ overlayTileUrlTemplate NOTIFY overlayTileServerChanged)
-    Q_PROPERTY(bool overlayTileServerReady READ overlayTileServerReady NOTIFY overlayTileServerChanged)
     Q_PROPERTY(QVariantList opticalTrack READ opticalTrack NOTIFY opticalTrackChanged)
 
 public:
@@ -128,8 +97,10 @@ public:
     {
         return &_resultsModel;
     }
-    QAbstractListModel *tileGridModel() { return &_tileGridModel; }
-    QVariantList heatmapTiles() const { return _tileGridModel.heatmapTiles(); }
+    // The copy of the NAVAI map with the scores, read by NavaiHeatmap when it paints.
+    const NavaiTileMap &tileMap() const { return _tileMap; }
+    int tileCount() const { return _tileMap.count(); }
+    int scoredTileCount() const { return _tileMap.scoredCount(); }
 
     Fact *enableFact() const
     {
@@ -150,9 +121,6 @@ public:
     {
         return _udpPort;
     }
-    QString overlayTileUrlTemplate() const { return _tileServer.urlTemplate(); }
-    bool overlayTileServerReady() const { return _tileServer.isListening(); }
-
     // The optical flow track: one list of coordinates per flow chain.
     QVariantList opticalTrack() const;
 
@@ -160,7 +128,6 @@ signals:
     void activeChanged();
     void udpReadyChanged();
     void heatmapChanged();
-    void overlayTileServerChanged();
     void opticalTrackChanged();
 
 private slots:
@@ -211,14 +178,14 @@ private:
     Unit *_unit = nullptr;
 
     NavaiResultModel _resultsModel;
-    NavaiTileModel _tileGridModel;
-    NavaiTileServer _tileServer;
-    QHash<int,QJsonObject> _gridChunks;
+    NavaiTileMap _tileMap;
+    QHash<int, QJsonArray> _gridChunks;
 
     QVector<QList<QGeoCoordinate>> _opticalSegments;
     int _opticalPoints = 0;
     static constexpr int kMaxOpticalPoints = 3000;
-    int _gridChunkCount=0;
+    int _gridChunkCount = 0;
+    qint64 _rankingFrame = 0;
     QString _gridRevision;
     QString _gridMode;
 

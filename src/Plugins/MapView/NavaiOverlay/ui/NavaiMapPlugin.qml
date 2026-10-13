@@ -3,6 +3,7 @@ import QtPositioning
 import QtLocation
 
 import Apx.Application
+import Apx.Navai 1.0
 
 AppPlugin {
     id: plugin
@@ -29,8 +30,7 @@ AppPlugin {
             property bool navaiAvailable: navai !== null && navai !== undefined
             property bool navaiActive: navaiAvailable && navai.active
             property bool navaiUdpReady: navaiAvailable && navai.udpReady
-            property bool navaiHasHeatmap: navaiAvailable &&
-                navai.heatmapTiles.length > 0
+            property bool navaiHasGrid: navaiAvailable && navai.tileCount > 0
 
             anchors.fill: parent
             visible: navaiAvailable && navaiActive
@@ -69,90 +69,24 @@ AppPlugin {
                 }
             }
 
-            Plugin {
-                id: overlayPlugin
-                name: "osm"
-                PluginParameter { name: "osm.mapping.providersrepository.disabled"; value: true }
-                PluginParameter {
-                    name: "osm.mapping.custom.host"
-                    value: navaiLayer.navai
-                        ? navaiLayer.navai.overlayTileUrlTemplate
-                        : "http://127.0.0.1:9293/navai-grid-v2/tile/%z/%x/%y.png"
-                }
-            }
-
-            Map {
-                id: overlayMap
+            // The tile grid and the DINO scores, painted in one pass from the
+            // map copy kept by the plugin, so a huge map costs no QML items.
+            NavaiHeatmap {
+                id: heatmap
                 anchors.fill: parent
-                plugin: overlayPlugin
-                enabled: false
-                color: "transparent"
-                opacity: 1.0
                 visible: navaiLayer.navaiActive && navaiLayer.navaiUdpReady &&
-                         navaiLayer.navaiHasHeatmap &&
-                         navaiLayer.navai.overlayTileServerReady &&
+                         navaiLayer.navaiHasGrid &&
                          navaiLayer.baseMap &&
                          navaiLayer.baseMap.zoomLevel >= navaiLayer.tileGridMinZoom
-                center: navaiLayer.baseMap ? navaiLayer.baseMap.center : QtPositioning.coordinate(0, 0)
-                zoomLevel: navaiLayer.baseMap ? navaiLayer.baseMap.zoomLevel : 16
+                navai: navaiLayer.navaiAvailable ? navaiLayer.navai : null
+                center: navaiLayer.baseMap
+                    ? navaiLayer.baseMap.center
+                    : QtPositioning.coordinate(0, 0)
+                zoomLevel: navaiLayer.baseMap ? navaiLayer.baseMap.zoomLevel : 0
                 bearing: navaiLayer.baseMap ? navaiLayer.baseMap.bearing : 0
-                tilt: navaiLayer.baseMap ? navaiLayer.baseMap.tilt : 0
-                copyrightsVisible: false
-
-                Component.onCompleted: selectCustomMapType()
-                function selectCustomMapType() {
-                    for (var i = 0; i < supportedMapTypes.length; ++i) {
-                        if (supportedMapTypes[i].name.toLowerCase().indexOf("custom") >= 0) {
-                            activeMapType = supportedMapTypes[i]
-                            return
-                        }
-                    }
-                }
+                z: 99900
             }
 
-            Repeater {
-                model: navaiLayer.navaiActive && navaiLayer.navaiUdpReady &&
-                       navaiLayer.baseMap &&
-                       navaiLayer.baseMap.zoomLevel >= navaiLayer.tileGridMinZoom
-                    ? navaiLayer.navai.heatmapTiles
-                    : []
-
-                delegate: Item {
-                    id: heatItem
-                    required property var modelData
-                    property var attachedMap: null
-
-                    function attach() {
-                        if (attachedMap === navaiLayer.baseMap)
-                            return
-                        if (attachedMap)
-                            attachedMap.removeMapItem(heatPolygon)
-                        attachedMap = navaiLayer.baseMap
-                        if (attachedMap)
-                            attachedMap.addMapItem(heatPolygon)
-                    }
-
-                    Component.onCompleted: attach()
-                    Component.onDestruction: {
-                        if (attachedMap)
-                            attachedMap.removeMapItem(heatPolygon)
-                    }
-
-                    MapPolygon {
-                        id: heatPolygon
-                        path: heatItem.modelData.polygon
-                        color: Qt.rgba(
-                            Qt.color(heatItem.modelData.color).r,
-                            Qt.color(heatItem.modelData.color).g,
-                            Qt.color(heatItem.modelData.color).b,
-                            0.10
-                        )
-                        border.width: 1
-                        border.color: heatItem.modelData.color
-                        z: 99901 + heatItem.modelData.score
-                    }
-                }
-            }
             // Optical flow track: where the camera says the aircraft went.
             Repeater {
                 model: navaiLayer.navaiActive && navaiLayer.navaiUdpReady
