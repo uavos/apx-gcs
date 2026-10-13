@@ -141,11 +141,72 @@ Fact *factByAnyId(
 
 } // namespace
 
-QVariant NavaiTileModel::data(const QModelIndex&i,int r)const { if(!i.isValid()||i.row()<0||i.row()>=_items.size())return{};auto&t=_items[i.row()];return r==PolygonRole?t.value("polygon"):r==ColorRole?t.value("color","transparent"):t.value("id"); }
-QHash<int,QByteArray> NavaiTileModel::roleNames()const{return{{IdRole,"tileId"},{PolygonRole,"polygon"},{ColorRole,"tileColor"}};}
-void NavaiTileModel::replace(const QVector<QVariantMap>&v){beginResetModel();_items=v;endResetModel();}
-void NavaiTileModel::merge(const QVector<QVariantMap>&v){QHash<QString,QVariantMap> merged;for(const auto&t:_items)merged.insert(t.value("id").toString(),t);for(const auto&t:v)merged.insert(t.value("id").toString(),t);replace(merged.values().toVector());}
-void NavaiTileModel::score(const QHash<QString,QVariantMap>&s){for(auto&t:_items){auto x=s.value(t.value("id").toString());t["color"]=x.value("color","transparent");t["score"]=x.value("score",-1.0);}if(!_items.isEmpty())emit dataChanged(index(0,0),index(_items.size()-1,0),{ColorRole});}
+QVariant NavaiTileModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid() || index.row() < 0 || index.row() >= _items.size())
+        return {};
+    const QVariantMap &tile = _items[index.row()];
+    if (role == PolygonRole)
+        return tile.value("polygon");
+    if (role == ColorRole)
+        return tile.value("color", "transparent");
+    return tile.value("id");
+}
+
+QHash<int, QByteArray> NavaiTileModel::roleNames() const
+{
+    return {{IdRole, "tileId"}, {PolygonRole, "polygon"}, {ColorRole, "tileColor"}};
+}
+
+void NavaiTileModel::replace(const QVector<QVariantMap> &tiles)
+{
+    // NAVAI resends the whole grid during the flight; a tile that is already
+    // known keeps the score it has, only the geometry is taken from the packet.
+    QVector<QVariantMap> items = tiles;
+    for (QVariantMap &tile : items) {
+        const int row = _rows.value(tile.value("id").toString(), -1);
+        if (row < 0)
+            continue;
+        tile["color"] = _items[row].value("color", "transparent");
+        tile["score"] = _items[row].value("score", -1.0);
+    }
+
+    beginResetModel();
+    _items = items;
+    _rows.clear();
+    for (int row = 0; row < _items.size(); ++row)
+        _rows.insert(_items[row].value("id").toString(), row);
+    endResetModel();
+}
+
+void NavaiTileModel::merge(const QVector<QVariantMap> &tiles)
+{
+    // New tiles are added to the grid, known ones are refreshed in place.
+    QVector<QVariantMap> merged = _items;
+    for (const QVariantMap &tile : tiles) {
+        const int row = _rows.value(tile.value("id").toString(), -1);
+        if (row < 0)
+            merged.append(tile);
+        else
+            merged[row] = tile;
+    }
+    replace(merged);
+}
+
+void NavaiTileModel::score(const QHash<QString, QVariantMap> &scores)
+{
+    // One UDP packet carries at most 200 tiles, so only those are touched.
+    for (auto it = scores.constBegin(); it != scores.constEnd(); ++it) {
+        const int row = _rows.value(it.key(), -1);
+        if (row < 0)
+            continue;
+        _items[row]["color"] = it.value().value("color", "transparent");
+        _items[row]["score"] = it.value().value("score", -1.0);
+    }
+    if (!_items.isEmpty())
+        emit dataChanged(index(0, 0), index(_items.size() - 1, 0), {ColorRole});
+}
+
 QVariantList NavaiTileModel::heatmapTiles() const { QVariantList result; for(const auto &tile:_items) if(tile.value("score",-1.0).toDouble()>=0.0) result << tile; return result; }
 
 // ======================= MODEL =======================

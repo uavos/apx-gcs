@@ -15,7 +15,34 @@
 #include "NavaiTileServer.h"
 
 class Unit;
-class NavaiTileModel : public QAbstractListModel { Q_OBJECT public: enum Roles { IdRole=Qt::UserRole+1, PolygonRole, ColorRole }; NavaiTileModel(QObject*p=nullptr):QAbstractListModel(p){} int rowCount(const QModelIndex&p={})const override{return p.isValid()?0:_items.size();} QVariant data(const QModelIndex&i,int r)const override; QHash<int,QByteArray> roleNames()const override; void replace(const QVector<QVariantMap>&); void merge(const QVector<QVariantMap>&); void score(const QHash<QString,QVariantMap>&); QVariantList heatmapTiles() const; const QVector<QVariantMap> &tiles() const { return _items; } private: QVector<QVariantMap> _items; };
+class NavaiTileModel : public QAbstractListModel
+{
+    Q_OBJECT
+public:
+    enum Roles { IdRole = Qt::UserRole + 1, PolygonRole, ColorRole };
+
+    explicit NavaiTileModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
+
+    int rowCount(const QModelIndex &parent = {}) const override
+    {
+        return parent.isValid() ? 0 : _items.size();
+    }
+    QVariant data(const QModelIndex &index, int role) const override;
+    QHash<int, QByteArray> roleNames() const override;
+
+    // The whole grid from NAVAI: replace it or merge new tiles into it.
+    void replace(const QVector<QVariantMap> &tiles);
+    void merge(const QVector<QVariantMap> &tiles);
+    // Scores for some of the tiles; tiles not named keep their current score.
+    void score(const QHash<QString, QVariantMap> &scores);
+
+    QVariantList heatmapTiles() const;
+    const QVector<QVariantMap> &tiles() const { return _items; }
+
+private:
+    QVector<QVariantMap> _items;
+    QHash<QString, int> _rows; // tile id -> row in _items
+};
 
 class NavaiResultModel : public QAbstractListModel
 {
