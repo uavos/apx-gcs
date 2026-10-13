@@ -157,6 +157,18 @@ void ElevationWorker::requestAreaMax(double lat, double lon, double radius)
     wake();
 }
 
+void ElevationWorker::requestWaypointsTerrain(const QList<QGeoCoordinate> &points)
+{
+    Job job;
+    job.type = Job::WaypointsTerrain;
+    job.points = points;
+    {
+        QMutexLocker lock(&m_mutex);
+        m_points.push_back(job);
+    }
+    wake();
+}
+
 void ElevationWorker::setCorridor(double meters)
 {
     m_corridor = qMax(0, qRound(meters));
@@ -195,6 +207,8 @@ void ElevationWorker::run()
             processProfile(job);
         else if (job.type == Job::AreaMax)
             processAreaMax(job);
+        else if (job.type == Job::WaypointsTerrain)
+            processWaypointsTerrain(job);
         else
             processPoint(job);
     }
@@ -356,8 +370,21 @@ void ElevationWorker::processAreaMax(const Job &job)
     emit areaMaxReady(areaMax(QGeoCoordinate(job.lat, job.lon), job.radius));
 }
 
+// The same circle that ends a profile segment (see processProfile) for points
+// that are not waypoints yet. Replies come in the order of the requests.
+void ElevationWorker::processWaypointsTerrain(const Job &job)
+{
+    QList<double> elevations;
+    elevations.reserve(job.points.size());
+    for (const auto &p : job.points) {
+        double max, min;
+        elevations.append(circleRange(p, 2.0 * m_corridor, max, min) ? max : qQNaN());
+    }
+    emit waypointsTerrainReady(elevations);
+}
+
 // Profile altitude = highest terrain across the corridor (a circle of twice the
-// corridor at the segment end, where the aircraft turns); the lowest terrain across
+// corridor at both segment ends, where the aircraft turns); the lowest terrain across
 // the corridor is reported separately for display.
 void ElevationWorker::processProfile(const Job &job)
 {
@@ -374,12 +401,11 @@ void ElevationWorker::processProfile(const Job &job)
         auto point = route.coordinateAt(i);
         double max, min;
         bool ok;
-        if (i == n - 1) {
-            // segment end: the waypoint, the aircraft turns here
+        if (i == 0 || i == n - 1) {
+            // segment ends: the waypoints, the aircraft turns there (the circle belongs
+            // to both segments that meet at the waypoint, so the chart shows it whole)
             ok = circleRange(point, 2 * halfWidth, max, min);
         } else {
-            // along the path, the segment start included: it is the previous waypoint,
-            // already covered by the turn circle that ends the previous segment
             const double az = point.azimuthTo(route.coordinateAt(i + 1));
             ok = corridorRange(point, az, halfWidth, max, min);
         }

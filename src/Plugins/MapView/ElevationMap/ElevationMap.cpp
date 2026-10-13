@@ -34,6 +34,8 @@
 #include <Mission/Waypoint.h>
 
 #include <QFileDialog>
+
+#include <algorithm>
 #include <QMap>
 #include <QQmlEngine>
 
@@ -48,8 +50,8 @@ ElevationMap::ElevationMap(Fact *parent)
 {
     auto path = AppDirs::db().absolutePath() + "/Elevation";
 
-    f_use = new Fact(this, "use", tr("Use elevation map"), "", Bool | PersistentValue, "check");
-    f_use->setValue(true);
+    f_use = new Fact(this, "use", tr("Use elevation map"), "", Bool, "check");
+    f_use->setValue(false);
 
     f_path = new Fact(this,
                       "open",
@@ -82,14 +84,13 @@ ElevationMap::ElevationMap(Fact *parent)
     connect(Fleet::instance(), &Fleet::currentChanged, this, &ElevationMap::updateMission);
     connect(f_use, &Fact::valueChanged, this, &ElevationMap::changeExternalsVisibility);
     connect(f_path, &Fact::valueChanged, this, &ElevationMap::createElevationDatabase);
+    connect(f_use, &Fact::valueChanged, this, &ElevationMap::checkFiles);
+    connect(f_path, &Fact::valueChanged, this, &ElevationMap::checkFiles);
     connect(f_path, &Fact::triggered, this, &ElevationMap::onOpenTriggered);
     connect(f_corridor, &Fact::valueChanged, this, &ElevationMap::onCorridorChanged);
     connect(f_showAgl, &Fact::valueChanged, this, &ElevationMap::updateUnitAgl);
     m_aglTimer.setInterval(AGL_PERIOD);
     connect(&m_aglTimer, &QTimer::timeout, this, &ElevationMap::updateUnitAgl);
-    m_coverageTimer.setSingleShot(true);
-    m_coverageTimer.setInterval(0);
-    connect(&m_coverageTimer, &QTimer::timeout, this, &ElevationMap::updateCoverage);
     createDir(path);
     updateMission();
     createElevationDatabase();
@@ -157,6 +158,10 @@ void ElevationMap::createElevationDatabase()
             &OfflineElevationDB::areaMaxReceived,
             this,
             &ElevationMap::setUnitTerrain);
+    connect(m_elevationDB.data(),
+            &OfflineElevationDB::waypointsTerrainReceived,
+            this,
+            &ElevationMap::onWaypointsTerrain);
     m_elevationDB->setCorridor(f_corridor->value().toDouble());
     m_minProfiles.clear();
     changeExternalsVisibility();
@@ -256,76 +261,37 @@ void ElevationMap::scanTiles()
     emit availableChanged();
 }
 
-bool ElevationMap::hasTile(const QGeoCoordinate &c) const
+// switched on or the folder changed: tell the operator when there is nothing to load
+void ElevationMap::checkFiles()
 {
-    if (!c.isValid())
-        return true;
-    return m_tileNames.contains(
-        OfflineElevationDB::createASTERFileName(c.latitude(), c.longitude()));
+    if (!f_use->value().toBool())
+        return;
+    if (m_available)
+        apxMsg() << tr("Elevation map: %1 files loaded from").arg(m_tileNames.size())
+                 << f_path->value().toString();
+    else
+        apxMsgW() << tr("Elevation map: no elevation files found in") << f_path->value().toString();
 }
 
-void ElevationMap::scheduleCoverage()
-{
-    m_coverageTimer.start();
-}
-
-// Checks that the elevation files cover the mission area (at least one item
-// lies on an existing file; items outside simply get no elevation) and
-// re-evaluates the plugin state. Items are watched for position changes so
-// moving the mission outside the map (or back) updates the state as well.
-void ElevationMap::updateCoverage()
+// The plugin is active when enabled, switched on and the elevation files exist:
+// no automatic switching by the mission (items outside the files simply get no data)
+void ElevationMap::updateActive()
 {
     if (m_rebuilding)
         return;
-    auto m = mission();
-    int items = 0;
-    int coveredItems = 0;
-    for (Fact *group : {static_cast<Fact *>(m->f_wp),
-                        static_cast<Fact *>(m->f_rw),
-                        static_cast<Fact *>(m->f_pi)}) {
-        for (int i = 0; i < group->size(); ++i) {
-            auto item = static_cast<MissionItem *>(group->child(i));
-            if (!item)
-                continue;
-            connect(item,
-                    &MissionItem::coordinateChanged,
-                    this,
-                    &ElevationMap::scheduleCoverage,
-                    Qt::UniqueConnection);
-            items++;
-            if (hasTile(item->coordinate()))
-                coveredItems++;
-        }
-    }
-    const bool covered = items == 0 || coveredItems > 0;
-    if (m_covered != covered) {
-        m_covered = covered;
-        emit coveredChanged();
-    }
-    updateActive();
-}
-
-void ElevationMap::updateActive()
-{
     bool useValue{false};
     bool controlValue{false};
     if (f_control && !f_control->busy())
         controlValue = f_control->value().toBool();
     if (f_use)
         useValue = f_use->value().toBool();
-    const bool active = controlValue && useValue && m_available && m_covered;
+    const bool active = controlValue && useValue && m_available;
     if (m_active != active) {
         m_active = active;
         emit activeChanged();
     }
     setMissionValues(m_active);
-    const bool usable = controlValue && useValue && m_available;
-    if (m_usable != usable) {
-        m_usable = usable;
-        emit usableChanged();
-    }
-    // unit AGL makes sense only with elevation files in use
-    f_showAgl->setEnabled(usable);
+    f_showAgl->setEnabled(m_active);
     updateUnitAgl();
 }
 
@@ -387,14 +353,52 @@ void ElevationMap::createMissionTools()
     });
     connect(apply, &Fact::triggered, this, &ElevationMap::setMissionAgl);
 
+    // The correction needs the aircraft performance to plan feasible climbs.
+    // The values belong to the aircraft, not to the ground station: they are
+    // entered for the session and never saved.
     auto correct = new Fact(tools,
                             "pathscorrect",
                             tr("All paths correction"),
                             tr("Correct mission paths with unsafe agl"),
-                            CloseOnTrigger,
+                            Group,
                             "puzzle-edit-outline");
     correct->setVisible(false);
-    connect(correct, &Fact::triggered, this, [this]() {
+    auto speed = new Fact(correct, "speed", tr("Flight speed"), tr("Cruise airspeed"), Float);
+    speed->setUnits("m/s");
+    speed->setMin(0);
+    speed->setPrecision(1);
+    speed->setDefaultValue(0);
+    auto climb = new Fact(correct, "climb", tr("Climb rate"), tr("Vertical speed in climb"), Float);
+    climb->setUnits("m/s");
+    climb->setMin(0);
+    climb->setPrecision(1);
+    climb->setDefaultValue(0);
+    auto correctApply = new Fact(correct,
+                                 "apply",
+                                 tr("Apply"),
+                                 "",
+                                 Action | Apply | CloseOnTrigger | ShowDisabled);
+    correctApply->setEnabled(false);
+    auto checkParams = [speed, climb, correctApply]() {
+        const double v = speed->value().toDouble();
+        const double vz = climb->value().toDouble();
+        // a climb angle above ~18 degrees is not a feasible cruise
+        correctApply->setEnabled(v > 0 && vz > 0 && v > 3 * vz);
+    };
+    connect(speed, &Fact::valueChanged, this, checkParams);
+    connect(climb, &Fact::valueChanged, this, checkParams);
+    connect(correctApply, &Fact::triggered, this, [this, speed, climb]() {
+        // the steepest climb the aircraft can fly, as a slope (rise over run)
+        m_correctionSlope = climb->value().toDouble() / speed->value().toDouble();
+        // The corrected route is a set of absolute heights flown along straight
+        // lines between the points: every waypoint gets AMSL and altitude tracking
+        // (the AMSL switch keeps the height, only the number changes)
+        auto m = mission();
+        for (int i = 0; i < m->f_wp->size(); ++i) {
+            auto wp = static_cast<Waypoint *>(m->f_wp->child(i));
+            wp->f_amsl->setValue(true);
+            wp->f_atrack->setValue(true);
+        }
         // a correction interrupted by a mission change never completes: start over
         m_isCorrect = false;
         m_correctionPass = 0;
@@ -426,7 +430,7 @@ void ElevationMap::updateMission()
             this,
             &ElevationMap::setStartPointElevation,
             Qt::UniqueConnection);
-    connect(missionTools()->f_reverse,
+    connect(missionTools()->f_reverseApply,
             &Fact::triggered,
             this,
             &ElevationMap::changeExternalsVisibility,
@@ -487,7 +491,7 @@ void ElevationMap::setMissionAgl()
 
 void ElevationMap::changeExternalsVisibility()
 {
-    updateCoverage();
+    updateActive();
 }
 
 // Active: every item of the current mission gets its terrain object (see
@@ -709,6 +713,15 @@ void ElevationMap::correctUnsafePaths()
     if (wpsSize <= 0)
         return;
 
+    QList<WaypointTerrain *> terrains;
+    for (int i = 0; i < wpsSize; i++)
+        terrains.append(WaypointTerrain::of(static_cast<MissionItem *>(m->f_wp->child(i))));
+    if (std::none_of(terrains.cbegin(), terrains.cend(), [](WaypointTerrain *t) {
+            return t && t->collision();
+        })) {
+        apxMsg() << tr("Nothing to correct");
+        return;
+    }
     apxMsg() << tr("Mission correction started");
 
     m_isCorrect = true;
@@ -716,9 +729,8 @@ void ElevationMap::correctUnsafePaths()
     // correctPath touches Facts and must run in the GUI thread;
     // the heavy part (route points calculation) is scheduled by the waypoint terrain
     for (int i = 0; i < wpsSize; i++) {
-        auto t = WaypointTerrain::of(static_cast<MissionItem *>(m->f_wp->child(i)));
-        if (t)
-            t->correctPath(true);
+        if (terrains[i])
+            terrains[i]->correctPath(m_correctionSlope);
         else
             getCorrectPathResponse(QList<QGeoCoordinate>(), i);
     }
@@ -735,18 +747,59 @@ void ElevationMap::getCorrectPathResponse(QList<QGeoCoordinate> v, int index)
 
 void ElevationMap::insertMissionWaypoints()
 {
-    // Check new points for empty lists to insert
-    // If all values ​​are empty, then we do not insert
-    for (auto k : m_correction.keys()) {
-        if (!m_correction.value(k).empty())
-            break;
-        else if (k != m_correction.lastKey())
-            continue;
-        apxMsg() << tr("Nothing to correct. Mission correction completed");
+    // No points to insert: the waypoints were only lifted, the mission stays as is
+    if (std::all_of(m_correction.cbegin(), m_correction.cend(), [](const auto &list) {
+            return list.isEmpty();
+        })) {
+        apxMsg() << tr("Mission correction completed");
         m_isCorrect = false;
+        QTimer::singleShot(1000, this, &ElevationMap::checkCorrectionResult);
         return;
     }
 
+    // The altitude of a new point comes from the terrain along the path. As a waypoint
+    // it must also clear the terrain around it (the turn circle that ends its profile),
+    // which is requested here, before the points are created.
+    QList<QGeoCoordinate> points;
+    for (const auto &list : std::as_const(m_correction))
+        points.append(list);
+    requestPointsTerrain(points);
+}
+
+void ElevationMap::requestPointsTerrain(const QList<QGeoCoordinate> &points)
+{
+    if (m_available && f_use->value().toBool()) {
+        m_elevationDB->requestWaypointsTerrain(points);
+        return;
+    }
+    // no data: the points keep their altitude
+    onWaypointsTerrain(QList<double>(points.size(), qQNaN()));
+}
+
+void ElevationMap::onWaypointsTerrain(QList<double> elevations)
+{
+    if (!m_isCorrect)
+        return;
+
+    auto m = mission();
+    if (m_correction.size() != m->f_wp->size()) {
+        // the mission was changed meanwhile
+        m_isCorrect = false;
+        return;
+    }
+    QList<QGeoCoordinate> points;
+    for (const auto &list : std::as_const(m_correction))
+        points.append(list);
+    WaypointTerrain::liftPoints(points, elevations);
+    qsizetype k = 0;
+    for (auto &list : m_correction)
+        for (auto &point : list)
+            point = points.at(k++);
+    createCorrectedMission();
+}
+
+void ElevationMap::createCorrectedMission()
+{
     // Create new waypoints array
     auto m = mission();
     QJsonArray jsa;
@@ -770,7 +823,20 @@ void ElevationMap::insertMissionWaypoints()
         newWps = m_correction[i];
         auto prevWp = static_cast<Waypoint *>(m->f_wp->child(i - 1));
         auto prevCoordinate = prevWp->coordinate();
+        auto coordinate = wp->coordinate();
         for (int j = 0; j < newWps.size(); ++j) {
+            if (j == newWps.size() - 1) {
+                // the last point may be the waypoint itself: lift it
+                auto latDiff = std::abs(newWps[j].latitude() - coordinate.latitude());
+                auto lonDiff = std::abs(newWps[j].longitude() - coordinate.longitude());
+                if (latDiff <= DBL_EPSILON && lonDiff <= DBL_EPSILON) {
+                    auto amsl = wp->f_amsl->value().toBool();
+                    wp->f_amsl->setValue(true);
+                    wp->f_altitude->setValue(newWps[j].altitude());
+                    wp->f_amsl->setValue(amsl);
+                    continue;
+                }
+            }
             if (j == 0) {
                 // Check if first point equal prev waypoint
                 auto latDiff = std::abs(newWps[j].latitude() - prevCoordinate.latitude());
@@ -787,7 +853,7 @@ void ElevationMap::insertMissionWaypoints()
             }
             // Append new point
             jso[wp->f_amsl->name()] = true;
-            jso[wp->f_altitude->name()] = static_cast<int>(newWps[j].altitude());
+            jso[wp->f_altitude->name()] = static_cast<int>(std::ceil(newWps[j].altitude()));
             jso["lat"] = newWps[j].latitude();
             jso["lon"] = newWps[j].longitude();
             jso[wp->f_atrack->name()] = wp->f_atrack->value().toBool();
