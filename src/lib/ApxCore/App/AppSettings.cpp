@@ -102,6 +102,14 @@ AppSettings::AppSettings(Fact *parent)
     item->setEnumStrings(st);
     item->setDefaultValue(st.at(2));
 
+    f_systemBattery = new Fact(f_graphics,
+                               "systemBattery",
+                               tr("Show system battery"),
+                               tr("Show computer battery level next to the clock"),
+                               Bool | PersistentValue);
+    f_systemBattery->setDefaultValue(false);
+    f_systemBattery->setVisible(false);
+
     Fact *f = new Fact(f_graphics, "test", tr("Highlight instruments"), "", Bool);
     f->setValue(false);
 

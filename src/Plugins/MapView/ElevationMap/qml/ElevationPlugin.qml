@@ -27,9 +27,13 @@ import Apx.Application
 AppPlugin {
     id: plugin
 
-    fact: apx.tools.datalinkinspector
+    // the chart is a mission planning tool: no button in the widgets bar while the
+    // plugin is passive (map not in use, no elevation files or mission outside them)
+    enabled: fact ? fact.active : true // fact is set by ElevationMap::loadQml
+    onEnabledChanged: if(!enabled) active = false
 
-    sourceComponent: DatalinkInspector { }
+    sourceComponent: ElevationView { }
+
     uiComponent: "main"
     onConfigure: {
         ui.main.add(plugin, GroundControl.Layout.Main)

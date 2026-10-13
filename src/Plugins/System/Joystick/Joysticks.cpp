@@ -25,6 +25,7 @@
 
 #include "Joystick.h"
 #include <SDL.h>
+#include <QFileDialog>
 #include <QtConcurrent>
 
 static int sdlWaitEvent()
@@ -45,6 +46,22 @@ Joysticks::Joysticks(Fact *parent)
                          tr("Joysticks enable"),
                          Bool | PersistentValue);
     f_enabled->setDefaultValue(true);
+
+    f_export = new Fact(this,
+                        "export",
+                        tr("Export"),
+                        tr("Export configs to file"),
+                        Action,
+                        "export");
+    connect(f_export, &Fact::triggered, this, &Joysticks::exportConfigs);
+
+    f_import = new Fact(this,
+                        "import",
+                        tr("Import"),
+                        tr("Import configs from file"),
+                        Action,
+                        "import");
+    connect(f_import, &Fact::triggered, this, &Joysticks::importConfigs);
 
     f_list = new Fact(this, "list", tr("Controllers"), "", Section);
     connect(f_list, &Fact::sizeChanged, this, &Joysticks::updateStatus);
@@ -238,9 +255,21 @@ Joystick *Joysticks::addJoystick(int device_index, QString uid)
     if (configIds.contains(juid)) {
         j->loadConfig(configs.at(configIds.indexOf(juid)));
     }
+    //show matching config in the selection box
+    QString confTitle = j->f_title->text();
+    if (!confTitle.isEmpty()) {
+        if (!j->devName.isEmpty())
+            confTitle.append(" - ").append(j->devName);
+        if (configTitles.contains(confTitle)) {
+            _updatingEnums = true;
+            j->f_conf->setValue(confTitle);
+            _updatingEnums = false;
+        }
+    }
     connect(j->f_conf, &Fact::valueChanged, this, [this, j]() {
+        if (_updatingEnums)
+            return;
         QString s = j->f_conf->text();
-        j->f_conf->setValue(0);
         if (configTitles.contains(s)) {
             //qDebug()<<s<<confTitles.value(s);
             j->loadConfig(configs.at(configTitles.value(s)));
@@ -259,38 +288,82 @@ Joystick *Joysticks::addJoystick(int device_index, QString uid)
     });
     connect(j->f_save, &Fact::triggered, this, [this, j]() {
         QJsonObject config = j->saveConfig();
-        int i = configIndex(config);
         config.remove("index");
         config["uid"] = "user";
+        const QString title = config.value("title").toString().simplified();
+        if (title.isEmpty()) {
+            apxMsgW() << tr("Joystick config title is empty");
+            return;
+        }
+        //update existing config with the same title, create new only when title changed
+        int i = userConfigIndex(title, j->devName);
         if (i >= 0) {
             configs[i] = config;
+            apxMsg() << tr("Joystick config updated") << title;
         } else {
             configs.append(config);
-            configIds.append(QString("0:%1:").arg(j->devName));
+            configIds.append(QString("0:%1:user").arg(j->devName));
+            apxMsg() << tr("Joystick config created") << title;
         }
-        saveEvent.schedule();
+        saveConfigs();
+        //show the saved config in the selection box
+        QString confTitle = title;
+        if (!j->devName.isEmpty())
+            confTitle.append(" - ").append(j->devName);
+        if (configTitles.contains(confTitle)) {
+            _updatingEnums = true;
+            j->f_conf->setValue(confTitle);
+            _updatingEnums = false;
+        }
+    });
+    connect(j->f_remove, &Fact::triggered, this, [this, j]() {
+        const QString title = j->f_title->text().simplified();
+        int i = userConfigIndex(title, j->devName);
+        if (i < 0)
+            i = userConfigIndex(title, QString());
+        if (i < 0) {
+            apxMsgW() << tr("Joystick config not found") << title;
+            return;
+        }
+        configs.removeAt(i);
+        configIds.removeAt(i);
+        j->loadConfig(QJsonObject()); //clear fields
+        apxMsg() << tr("Joystick config removed") << title;
+        saveConfigs();
     });
 
     return j;
 }
 
-int Joysticks::configIndex(const QJsonObject &config)
+int Joysticks::userConfigIndex(const QString &title, const QString &name)
 {
-    QString conf = QJsonDocument(config["config"].toObject()).toJson();
     for (int i = 0; i < configs.size(); ++i) {
-        if (conf != QJsonDocument(configs.at(i)["config"].toObject()).toJson())
+        const auto &c = configs.at(i);
+        if (c.value("uid").toString() != "user")
+            continue;
+        if (c.value("title").toString() != title)
+            continue;
+        if (!name.isEmpty() && c.value("name").toString() != name)
             continue;
         return i;
     }
     return -1;
 }
+
 void Joysticks::updateConfEnums()
 {
+    _updatingEnums = true;
     for (int i = 0; i < f_list->size(); ++i) {
         Joystick *j = static_cast<Joystick *>(f_list->child(i));
+        const QString cur = j->f_conf->text();
         j->f_conf->setEnumStrings(QStringList() << "" << configTitles.keys());
-        j->f_conf->setValue(0);
+        //keep current selection if the config still exists
+        if (!cur.isEmpty() && configTitles.contains(cur))
+            j->f_conf->setValue(cur);
+        else
+            j->f_conf->setValue(0);
     }
+    _updatingEnums = false;
 }
 
 void Joysticks::loadConfigs()
@@ -311,10 +384,31 @@ void Joysticks::loadConfigs()
                 int index = jso.value("index").toVariant().toInt();
                 QString jkey = QString("%1:%2:%3").arg(index).arg(name).arg(uid);
 
-                int cidx = configIndex(jso);
+                //collapse duplicate user configs (same title and name) - keep last saved
+                if (uid == "user") {
+                    int prev = -1;
+                    for (int k = 0; k < configs.size(); ++k) {
+                        const auto &c = configs.at(k);
+                        if (c.value("uid").toString() != "user")
+                            continue;
+                        if (c.value("title").toString() != jso.value("title").toString())
+                            continue;
+                        if (c.value("name").toString() != name)
+                            continue;
+                        prev = k;
+                        break;
+                    }
+                    if (prev >= 0) {
+                        configs[prev] = jso;
+                        continue;
+                    }
+                }
+
                 configs.append(jso);
                 configIds.append(jkey);
-                if (cidx >= 0)
+
+                //device state configs (uid is hardware GUID) are not selectable
+                if (!uid.isEmpty() && uid != "user")
                     continue;
 
                 QString confTitle = jso.value("title").toString();
@@ -352,4 +446,95 @@ void Joysticks::saveConfigs()
     file.write(QJsonDocument(json).toJson());
     file.close();
     loadConfigs();
+}
+
+void Joysticks::exportConfigs()
+{
+    QJsonArray a;
+    for (const auto &i : configs) {
+        if (i.value("uid").isUndefined())
+            continue;
+        a.append(i);
+    }
+    if (a.isEmpty()) {
+        apxMsgW() << tr("No joystick configs to export");
+        return;
+    }
+    QString path = QFileDialog::getSaveFileName(nullptr,
+                                                tr("Export joystick configs"),
+                                                AppDirs::user().filePath("joystick.json"),
+                                                "JSON (*.json)");
+    if (path.isEmpty())
+        return;
+    if (!path.endsWith(".json", Qt::CaseInsensitive))
+        path.append(".json");
+
+    QJsonObject json;
+    json.insert("configs", a);
+    QFile file(path);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        apxMsgW() << file.errorString();
+        return;
+    }
+    file.write(QJsonDocument(json).toJson());
+    file.close();
+    apxMsg() << tr("Joystick configs exported") << QString("(%1)").arg(a.size());
+}
+
+void Joysticks::importConfigs()
+{
+    QString path = QFileDialog::getOpenFileName(nullptr,
+                                                tr("Import joystick configs"),
+                                                AppDirs::user().canonicalPath(),
+                                                "JSON (*.json)");
+    if (path.isEmpty())
+        return;
+    QFile file(path);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        apxMsgW() << file.errorString();
+        return;
+    }
+    QJsonDocument json = QJsonDocument::fromJson(file.readAll());
+    file.close();
+
+    int cnt = 0;
+    for (const auto jsv : json["configs"].toArray()) {
+        auto jso = jsv.toObject();
+        if (jso.value("config").toObject().isEmpty())
+            continue;
+        if (jso.value("uid").toString().isEmpty())
+            jso["uid"] = "user";
+        const QString uid = jso.value("uid").toString();
+        const QString title = jso.value("title").toString();
+        const QString name = jso.value("name").toString();
+        //replace existing config with the same identity, append new otherwise
+        int idx = -1;
+        for (int i = 0; i < configs.size(); ++i) {
+            const auto &c = configs.at(i);
+            if (c.value("uid").toString() != uid)
+                continue;
+            if (c.value("title").toString() != title)
+                continue;
+            if (c.value("name").toString() != name)
+                continue;
+            idx = i;
+            break;
+        }
+        if (idx >= 0) {
+            configs[idx] = jso;
+        } else {
+            configs.append(jso);
+            configIds.append(QString("%1:%2:%3")
+                                 .arg(jso.value("index").toVariant().toInt())
+                                 .arg(name)
+                                 .arg(uid));
+        }
+        cnt++;
+    }
+    if (!cnt) {
+        apxMsgW() << tr("No joystick configs found in file");
+        return;
+    }
+    apxMsg() << tr("Joystick configs imported") << QString("(%1)").arg(cnt);
+    saveConfigs();
 }

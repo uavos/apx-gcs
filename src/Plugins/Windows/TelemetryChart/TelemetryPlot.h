@@ -41,6 +41,9 @@
 #include <qwt_series_data.h>
 #include <qwt_symbol.h>
 #include <qwt_text.h>
+#include <qwt_widget_overlay.h>
+
+class StatsOverlay;
 
 class TelemetryPlot : public QwtPlot
 {
@@ -73,12 +76,14 @@ public:
 protected:
     QwtPlotPicker *picker;
     QwtPlotPicker *pickerPoint;
+    QwtPlotPicker *pickerRange;
     QwtPlotZoomer *zoomer;
     QwtLegend *legend;
     QwtPlotGrid *grid;
     QwtPlotPanner *panner, *panner2;
     QwtPlotMagnifier *magX, *magY, *mag;
     QwtPlotMarker *timeCursor;
+    StatsOverlay *statsOverlay;
 
     void mouseReleaseEvent(QMouseEvent *event);
 
@@ -94,17 +99,43 @@ private:
     QList<QwtPlotMarker *> events;
     bool m_eventsVisible;
 
+    bool m_statsVisible;
+    QwtInterval m_range; // selected time range, invalid when not selected
+    double m_rangeStart; // time where selection dragging started
+    void updateStats();
+
+    // data of the shown stats, to skip refresh when nothing changed (e.g. cursor moved)
+    struct StatsSource
+    {
+        const QwtPointSeriesData *series;
+        size_t size;
+        double min; // all values of the curve, for formatting
+        double max;
+
+        bool operator==(const StatsSource &other) const // same data
+        {
+            return series == other.series && size == other.size;
+        }
+    };
+    QwtInterval m_statsRange;
+    QList<StatsSource> m_statsSources;
+
 private slots:
     void pointSelected(const QPointF &pos);
+    void rangeStarted(const QPointF &pos);
+    void rangeMoved(const QPointF &pos);
     void showCurve(const QVariant &itemInfo, bool on, int index = -1);
 
 signals:
     void itemVisibleChanged(QwtPlotItem *item);
     void timeCursorChanged(double v);
+    void statsVisibleChanged(bool v);
 
     void progressChanged(int v);
 
 public slots:
+    void replot();
+
     void resetZoom();
 
     void setTimeCursor(quint64 time_ms, bool doReplot = true);
@@ -113,6 +144,9 @@ public slots:
 
     bool eventsVisible() const;
     void setEventsVisible(bool v);
+
+    bool statsVisible() const;
+    void setStatsVisible(bool v);
 };
 
 class PlotPicker : public QwtPlotPicker
@@ -132,6 +166,43 @@ protected:
 
 private:
     double sampleValue(const QwtPlotCurve *curve, double t) const;
+};
+
+// selected range and stats table drawn over canvas to avoid replots while dragging
+class StatsOverlay : public QwtWidgetOverlay
+{
+    Q_OBJECT
+public:
+    struct Row
+    {
+        QString name;
+        QColor color;
+        QStringList values;
+    };
+
+    explicit StatsOverlay(TelemetryPlot *plot);
+
+    void setStats(const QwtInterval &selection, const QString &title, const QList<Row> &rows);
+
+    const QwtInterval &selection() const { return m_selection; }
+    const QString &title() const { return m_title; }
+    const QList<Row> &rows() const { return m_rows; }
+
+    QRect tableRect() const;
+
+protected:
+    void drawOverlay(QPainter *painter) const;
+
+private:
+    TelemetryPlot *m_plot;
+    QwtInterval m_selection;
+    QString m_title;
+    QList<Row> m_rows;
+
+    QStringList m_header;
+    int m_nameWidth{0};
+    int m_valueWidth{0};
+    QSize m_tableSize;
 };
 
 class PlotMagnifier : public QwtPlotMagnifier

@@ -12,9 +12,37 @@ The purpose of this application is to manage command & control, mission planing,
 
 The source code, published in this repository, **is not based** on any known open-source projects related to UAV industry.
 
-More information about GCS application and its internals can be found here: [docs.uavos.com](http://docs.uavos.com)
+More information about GCS application and its internals can be found in the enhanced documentation:
+
+- [Online Documentation](http://docs.uavos.com)
+- [Local Documentation](docs/pages/index.md)
+
+The documentation includes:
+
+- System architecture overview
+- Plugin system explanation  
+- Build instructions and development guidelines
+- API documentation structure
 
 ## Build instructions
+
+### Prerequisites
+
+To build APX GCS, you'll need:
+
+#### Required System Libraries
+
+- [Qt6](https://www.qt.io) (minimum version 6.5)
+- [CMake](https://cmake.org) (minimum version 3.19)
+- [Ninja](https://ninja-build.org) build system
+- [Python3](https://python.org)
+
+#### Optional Dependencies
+
+- [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
+- [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
+- [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
+- [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation in [Dockerfile](https://github.com/uavos/apx-gcs/blob/main/Dockerfile);
 
 ### Clone the repository
 
@@ -23,13 +51,6 @@ git clone --recurse-submodules git@github.com:uavos/apx-gcs.git
 ```
 
 GCS project uses [APX Shared Library](https://github.com/uavos/apx-lib) submodule.
-
-### Required libraries
-
-- [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
-- [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
-- [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
-- [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation in [Dockerfile](https://github.com/uavos/apx-gcs/blob/main/Dockerfile);
 
 ### CMAKE build
 
@@ -79,6 +100,30 @@ cmake -H. -Bbuild -G Ninja
 cmake --build build
 ```
 
+### Build Targets
+
+The project provides several build targets:
+
+- `gcs` - Main application executable
+- `deploy_package` - Create platform-specific deployment package (.app or AppImage)
+- `deploy_bundle` - Create application bundle  
+- `install` - Install built components
+- `doc` - Generate documentation
+
+### Build Configuration Options
+
+You can customize the build using CMake options:
+
+```bash
+cmake -H. -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=Debug
+```
+
+Available options:
+
+- `CMAKE_BUILD_TYPE`: Release/Debug/RelWithDebInfo
+- `CMAKE_INSTALL_PREFIX`: Installation directory prefix
+- `CCACHE`: Enable/disable ccache (default: ON)
+
 ### Output directories
 
 - `build/out` contains runtime binaries;
@@ -122,6 +167,6 @@ More information about AppImage standard can be found here: [appimage.org](https
 - [APX Autopilot documentation](http://docs.uavos.com)
 - [UAVOS Inc. GitHub Organization](https://github.com/uavos)
 
-# 
+#
 
 >&copy; [Aliaksei Stratsilatau](https://github.com/uavinda)

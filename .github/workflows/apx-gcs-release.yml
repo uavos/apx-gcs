@@ -218,5 +218,6 @@ jobs:
             github.rest.repos.updateRelease({
               owner, repo,
               release_id: "${{ steps.create_release.outputs.id }}",
-              draft: false
+              draft: false,
+              make_latest: "true"
             });

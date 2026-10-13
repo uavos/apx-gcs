@@ -46,6 +46,14 @@ Fact {
         for(var i=0;i<size;++i){
             var f=child(i)
             var v=data[settingName(f)]
+            if(f === mVisible && v === undefined)
+                continue
+            if(f === mAvg){
+                f.value=(v === true || v === "true")
+                continue
+            }
+            if(f === mAvgWindow && v === undefined)
+                continue
             f.value=v
         }
     }
@@ -55,6 +63,16 @@ Fact {
         data={}
         for(var i=0;i<size;++i){
             var f=child(i)
+            if(f === mVisible){
+                data[settingName(f)]=!!f.value
+                continue
+            }
+            if(f === mAvg){
+                if(f.value) data[settingName(f)]=true
+                continue
+            }
+            if(f === mAvgWindow && !mAvg.value)
+                continue
             var s=f.text.trim()
             if(s === "") continue
             data[settingName(f)]=s
@@ -127,6 +145,13 @@ Fact {
         onValueChanged: updateDescr()
     }
     Fact {
+        name: "adv"
+        title: qsTr("Advisory")
+        descr: qsTr("Blue when true, no alerts")
+        flags: Fact.Text
+        onValueChanged: updateDescr()
+    }
+    Fact {
         name: "warn"
         title: qsTr("Warning")
         descr: qsTr("Expression for warning")
@@ -141,10 +166,42 @@ Fact {
         onValueChanged: updateDescr()
     }
     Fact {
+        id: mVisible
+        name: "visible_num"
+        title: qsTr("Visible")
+        descr: qsTr("Always visible")
+        flags: Fact.Bool
+        value: true
+        onValueChanged: updateDescr()
+    }
+    Fact {
         name: "act"
         title: qsTr("Action")
         descr: "cmd.proc.action=proc_action_reset"
         flags: Fact.Text
+        onValueChanged: updateDescr()
+    }
+    Fact {
+        id: mAvg
+        name: "avg"
+        title: qsTr("Average")
+        descr: qsTr("Show moving average of value")
+        flags: Fact.Bool
+        value: false
+        onValueChanged: updateDescr()
+    }
+    Fact {
+        id: mAvgWindow
+        name: "avgt"
+        title: qsTr("Average window")
+        descr: qsTr("Moving average window in seconds")
+        flags: Fact.Float
+        units: "s"
+        value: 5
+        min: 0.1
+        max: 3600
+        precision: 1
+        visible: mAvg.value
         onValueChanged: updateDescr()
     }
     //actions

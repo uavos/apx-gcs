@@ -2125,7 +2125,7 @@
         <translation>Шырата</translation>
     </message>
     <message>
-        <source>Global postition latitude</source>
+        <source>Global position latitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2133,7 +2133,7 @@
         <translation>Даўгата</translation>
     </message>
     <message>
-        <source>Global postition longitude</source>
+        <source>Global position longitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3828,7 +3828,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation>Шырата</translation>
     </message>
     <message>
-        <source>Global postition latitude</source>
+        <source>Global position latitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3836,7 +3836,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation>Даўгата</translation>
     </message>
     <message>
-        <source>Global postition longitude</source>
+        <source>Global position longitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4158,7 +4158,7 @@ socat -d -d pty,raw,echo=0 pty,raw,echo=0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Current postition</source>
+        <source>Current position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

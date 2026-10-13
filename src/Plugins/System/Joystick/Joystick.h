@@ -48,6 +48,7 @@ public:
     Fact *f_hats;
 
     Fact *f_save;
+    Fact *f_remove;
 
     QString juid() const;
 

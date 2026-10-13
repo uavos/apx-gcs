@@ -41,6 +41,9 @@ public:
 
     Fact *f_list;
 
+    Fact *f_export;
+    Fact *f_import;
+
 private:
     QTimer timer;
     QMap<int, Joystick *> map;
@@ -51,9 +54,11 @@ private:
 
     DelayedEvent saveEvent;
 
+    bool _updatingEnums{false};
+
     Joystick *addJoystick(int device_index, QString uid);
 
-    int configIndex(const QJsonObject &config);
+    int userConfigIndex(const QString &title, const QString &name);
 
     void updateConfEnums();
 
@@ -72,4 +77,7 @@ private slots:
 
     void loadConfigs();
     void saveConfigs();
+
+    void exportConfigs();
+    void importConfigs();
 };

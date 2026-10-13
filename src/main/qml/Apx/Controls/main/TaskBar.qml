@@ -134,6 +134,143 @@ RowLayout {
     }
     Loader {
         Layout.fillHeight: true
+        active: apx.settings.graphics.systemBattery.value && apx.batteryAvailable
+        visible: status === Loader.Ready
+        sourceComponent: Component {
+            // macOS-like horizontal battery with percentage on the right
+            Row {
+                id: systemBattery
+
+                readonly property int level: apx.batteryLevel
+                readonly property bool charging: apx.batteryCharging
+                readonly property bool low: level <= 20 && !charging
+
+                readonly property color frameColor: "#b0ffffff"
+                readonly property color fillColor: low ? "#f44336" : "#ffffff"
+
+                height: parent.height
+                spacing: Math.max(2, height * 0.12)
+
+                Item {
+                    id: batteryIcon
+
+                    height: parent.height
+                    width: height * 1.1
+
+                    Rectangle {
+                        id: batteryBody
+
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        width: parent.width - batteryTip.width - batteryTip.anchors.leftMargin
+                        height: parent.height * 0.5
+
+                        radius: height * 0.22
+
+                        color: "transparent"
+                        border.width: Math.max(1, ui.scale)
+                        border.color: systemBattery.frameColor
+
+                        Rectangle {
+                            id: batteryFill
+
+                            readonly property real gap: Math.max(1.5, batteryBody.border.width * 1.5)
+
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.margins: gap
+
+                            width: (batteryBody.width - gap * 2) * Math.max(0, Math.min(100, systemBattery.level)) / 100
+
+                            radius: Math.max(1, batteryBody.radius - gap)
+
+                            color: systemBattery.fillColor
+
+                            Behavior on width { NumberAnimation { duration: 300 } }
+                        }
+
+                        // charging bolt (white, same shape as the emoji bolt)
+                        Canvas {
+                            id: batteryBolt
+
+                            visible: systemBattery.charging
+
+                            anchors.centerIn: parent
+
+                            width: parent.height * 1.05
+                            height: parent.height * 1.55
+
+                            onWidthChanged: requestPaint()
+                            onHeightChanged: requestPaint()
+                            onVisibleChanged: if (visible) requestPaint()
+
+                            onPaint: {
+                                var ctx = getContext("2d")
+                                ctx.reset()
+                                var w = width, h = height
+                                ctx.beginPath()
+                                ctx.moveTo(w * 0.62, 0)
+                                ctx.lineTo(w * 0.08, h * 0.58)
+                                ctx.lineTo(w * 0.46, h * 0.58)
+                                ctx.lineTo(w * 0.38, h)
+                                ctx.lineTo(w * 0.92, h * 0.40)
+                                ctx.lineTo(w * 0.54, h * 0.40)
+                                ctx.closePath()
+                                ctx.lineJoin = "round"
+                                ctx.lineWidth = Math.max(1, ui.scale)
+                                ctx.strokeStyle = "#c0000000"
+                                ctx.fillStyle = "#ffffff"
+                                ctx.fill()
+                                ctx.stroke()
+                            }
+                        }
+                    }
+
+                    // terminal tip
+                    Rectangle {
+                        id: batteryTip
+
+                        anchors.left: batteryBody.right
+                        anchors.leftMargin: Math.max(1, ui.scale * 0.5)
+                        anchors.verticalCenter: batteryBody.verticalCenter
+
+                        width: Math.max(2, batteryBody.height * 0.16)
+                        height: batteryBody.height * 0.4
+
+                        radius: width * 0.5
+
+                        color: systemBattery.frameColor
+                    }
+                }
+
+                Text {
+                    id: batteryText
+
+                    height: parent.height
+                    // reserve width for "100%" so the taskbar doesn't jump on level change
+                    width: Math.max(implicitWidth, _batteryMetrics.advanceWidth)
+
+                    text: systemBattery.level + "%"
+
+                    verticalAlignment: Text.AlignVCenter
+
+                    color: systemBattery.low ? systemBattery.fillColor : "#fff"
+
+                    font: apx.font_narrow(parent.height * 0.8)
+
+                    TextMetrics {
+                        id: _batteryMetrics
+                        font: batteryText.font
+                        text: "100%"
+                    }
+                }
+            }
+        }
+    }
+    Loader {
+        Layout.fillHeight: true
         active: Qt.platform.os === "linux"
         visible: active
         sourceComponent: Component {
