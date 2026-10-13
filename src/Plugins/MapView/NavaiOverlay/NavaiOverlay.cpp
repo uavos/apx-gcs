@@ -847,17 +847,14 @@ void NavaiOverlay::handleDatagram(
     const QString payloadLabel =
         obj.value("label").toString().trimmed();
 
-    const QString percentText =
-        QString::number(
-            percent,
-            'f',
-            1
-        );
+    // The marker reads "95% (n)": the confidence and the method letter
+    // NAVAI sends as the label, n for nadir, p for PnP.
+    const QString percentText = QString::number(percent, 'f', 0);
 
     const QString label =
         payloadLabel.isEmpty()
-            ? QString("Navai result - %1%").arg(percentText)
-            : QString("%1 - %2%").arg(payloadLabel, percentText);
+            ? QString("%1%").arg(percentText)
+            : QString("%1% (%2)").arg(percentText, payloadLabel);
 
     const QString consoleText =
         QString("%1, lat=%2 lon=%3")
