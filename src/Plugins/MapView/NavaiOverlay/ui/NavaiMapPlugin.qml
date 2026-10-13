@@ -137,6 +137,7 @@ AppPlugin {
                     required property real latitude
                     required property real longitude
                     required property real percent
+                    required property real radiusMeters
                     required property string label
                     required property real itemOpacity
                     required property var trajectoryCoordinates
@@ -154,6 +155,7 @@ AppPlugin {
                             return
 
                         if (trajectoryMap) {
+                            trajectoryMap.removeMapItem(errorCircle)
                             trajectoryMap.removeMapItem(trajectoryLine)
                             trajectoryMap.removeMapItem(trajectoryEndpoint)
                         }
@@ -161,6 +163,7 @@ AppPlugin {
                         trajectoryMap = navaiLayer.baseMap
 
                         if (trajectoryMap) {
+                            trajectoryMap.addMapItem(errorCircle)
                             trajectoryMap.addMapItem(trajectoryLine)
                             trajectoryMap.addMapItem(trajectoryEndpoint)
                         }
@@ -169,9 +172,24 @@ AppPlugin {
                     Component.onCompleted: attachTrajectory()
                     Component.onDestruction: {
                         if (trajectoryMap) {
+                            trajectoryMap.removeMapItem(errorCircle)
                             trajectoryMap.removeMapItem(trajectoryLine)
                             trajectoryMap.removeMapItem(trajectoryEndpoint)
                         }
+                    }
+
+                    // Error radius of the position: the aircraft is inside this circle.
+                    MapCircle {
+                        id: errorCircle
+
+                        visible: resultItem.validCoordinate && resultItem.radiusMeters > 0
+                        opacity: resultItem.itemOpacity
+                        z: 99995
+                        center: resultItem.centerCoord
+                        radius: resultItem.radiusMeters
+                        color: Qt.rgba(0.0, 0.55, 1.0, 0.12)
+                        border.color: Qt.rgba(0.0, 0.55, 1.0, 0.7)
+                        border.width: 1
                     }
 
                     Connections {

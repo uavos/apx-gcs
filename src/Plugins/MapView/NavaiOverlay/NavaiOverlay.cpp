@@ -194,6 +194,9 @@ QVariant NavaiResultModel::data(
     case PercentRole:
         return item.percent;
 
+    case RadiusMetersRole:
+        return item.radiusMeters;
+
     case LabelRole:
         return item.label;
 
@@ -217,6 +220,7 @@ QHash<int, QByteArray> NavaiResultModel::roleNames() const
         {LatitudeRole, "latitude"},
         {LongitudeRole, "longitude"},
         {PercentRole, "percent"},
+        {RadiusMetersRole, "radiusMeters"},
         {LabelRole, "label"},
         {ItemOpacityRole, "itemOpacity"},
         {TrajectoryCoordinatesRole, "trajectoryCoordinates"},
@@ -228,6 +232,7 @@ void NavaiResultModel::addResult(
     double lat,
     double lon,
     double percent,
+    double radiusMeters,
     const QString &label,
     const QVariantList &trajectoryCoordinates)
 {
@@ -238,6 +243,7 @@ void NavaiResultModel::addResult(
     item.lat = lat;
     item.lon = lon;
     item.percent = percent;
+    item.radiusMeters = radiusMeters;
     item.opacity = 0.0;
     item.targetOpacity = 1.0;
     item.label = label;
@@ -810,6 +816,12 @@ void NavaiOverlay::handleDatagram(
             &okPercent
         );
 
+    // NAVAI sends the error radius of the position in metres; older packets have none.
+    bool okRadius = false;
+    double radiusMeters = jsonNumber(obj, {"radius_m"}, &okRadius);
+    if (!okRadius || !std::isfinite(radiusMeters) || radiusMeters < 0.0)
+        radiusMeters = 0.0;
+
     if (okPercent &&
         percent > 0.0 &&
         percent <= 1.0) {
@@ -868,6 +880,7 @@ void NavaiOverlay::handleDatagram(
         lat,
         lon,
         percent,
+        radiusMeters,
         label,
         trajectoryCoordinates
     );

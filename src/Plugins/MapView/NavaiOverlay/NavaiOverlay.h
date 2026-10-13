@@ -24,6 +24,7 @@ public:
         LatitudeRole = Qt::UserRole + 1,
         LongitudeRole,
         PercentRole,
+        RadiusMetersRole,
         LabelRole,
         ItemOpacityRole,
         TrajectoryCoordinatesRole,
@@ -45,6 +46,7 @@ public:
         double lat,
         double lon,
         double percent,
+        double radiusMeters,
         const QString &label,
         const QVariantList &trajectoryCoordinates
     );
@@ -60,6 +62,7 @@ private:
         double lat = 0.0;
         double lon = 0.0;
         double percent = 0.0;
+        double radiusMeters = 0.0; // error radius around the position, 0 = unknown
         double opacity = 0.0;
         double targetOpacity = 1.0;
         QString label;
