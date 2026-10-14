@@ -75,13 +75,17 @@ MissionTools::MissionTools(UnitMission *mission, Flags flags)
     f_altsetApply->setEnabled(false);
     connect(f_altsetApply, &Fact::triggered, this, &MissionTools::altsetTriggered);
 
-    f_reverse = new Fact(this,
-                         "reverse",
-                         tr("Reverse"),
-                         tr("Reverse waypoints order"),
-                         Action | ShowDisabled);
+    // a menu, not a button: the order is reversed only by the apply action inside
+    f_reverse = new Fact(this, "reverse", tr("Reverse"), tr("Reverse waypoints order"), Group);
     f_reverse->setIcon("swap-vertical");
-    connect(f_reverse, &Fact::triggered, this, &MissionTools::reverseTriggered);
+    f_reverseNote = new Fact(f_reverse, "note", "", tr("The last waypoint becomes the first"));
+    f_reverseNote->setIcon("information-outline");
+    f_reverseApply = new Fact(f_reverse,
+                              "apply",
+                              tr("Apply"),
+                              "",
+                              Action | Apply | CloseOnTrigger | ShowDisabled);
+    connect(f_reverseApply, &Fact::triggered, this, &MissionTools::reverseTriggered);
     connect(mission->f_wp, &Fact::sizeChanged, this, &MissionTools::updateReverseEnabled);
     updateReverseEnabled();
 
@@ -128,7 +132,11 @@ void MissionTools::reverseTriggered()
 
 void MissionTools::updateReverseEnabled()
 {
-    f_reverse->setEnabled(mission->f_wp->size() > 1);
+    const int count = mission->f_wp->size();
+    f_reverseNote->setTitle(tr("All %1 waypoints will be reversed").arg(count));
+    const bool enabled = count > 1;
+    f_reverse->setEnabled(enabled);
+    f_reverseApply->setEnabled(enabled);
 }
 
 void MissionTools::updateMaxAltitude()

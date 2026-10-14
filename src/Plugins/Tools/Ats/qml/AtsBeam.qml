@@ -7,6 +7,7 @@ MapItemGroup {
 
     readonly property var f_overlay: apx.tools.ats.overlay
 
+    readonly property bool atsEnabled: apx.tools.ats.enable.value
     readonly property bool showBeam: f_overlay.show_beam.value
     readonly property real beamDistance: f_overlay.beam_distance.value * 1000 // m
 

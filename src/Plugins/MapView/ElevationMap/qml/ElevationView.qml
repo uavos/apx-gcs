@@ -265,7 +265,11 @@ Rectangle {
             ValueAxis {
                 id: axisY
                 min: chartView.minHeight
-                max: Math.ceil(chartView.maxHeight/10)*10
+                // while a marker is dragged the range may only grow, so the chart does
+                // not rescale under the mouse
+                readonly property real liveMax: Math.ceil(chartView.maxHeight/10)*10
+                property real dragMax: 0
+                max: markers.dragging ? Math.max(dragMax, liveMax) : liveMax
                 lineVisible: true
                 labelsFont: elevationView.axisFont
                 labelsColor: "white"
@@ -316,6 +320,7 @@ Rectangle {
         // Waypoint markers (numbers, vertical lines, altitude drag), GPU rendered
         WaypointMarkersItem {
             id: markers
+            onDraggingChanged: axisY.dragMax = axisY.liveMax
             // same area as hoverArea: the plot plus space above it for the top markers
             x: chartView.plotArea.x
             y: chartView.plotArea.y - hoverArea.topExtent

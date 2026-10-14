@@ -61,6 +61,7 @@ public:
     void requestCoordinate(double lat, double lon);
     void requestTerrainProfile(const QGeoPath &path);
     void requestAreaMax(double lat, double lon, double radius);
+    void requestWaypointsTerrain(const QList<QGeoCoordinate> &points);
     void setCorridor(double meters);
     void stop();
 
@@ -70,6 +71,7 @@ signals:
     void terrainProfileReady(QGeoPath path);
     void terrainProfileMinReady(QGeoPath path, QList<double> minElevations);
     void areaMaxReady(double elevation);
+    void waypointsTerrainReady(QList<double> elevations);
 
 protected:
     void run() override;
@@ -77,13 +79,14 @@ protected:
 private:
     struct Job
     {
-        enum Type { Elevation, Coordinate, AreaMax, Profile };
+        enum Type { Elevation, Coordinate, AreaMax, WaypointsTerrain, Profile };
         Type type;
         double lat{0};
         double lon{0};
         double radius{0};
         QGeoPath path;
-        QGeoCoordinate first; // profile endpoints (altitude stripped) used to coalesce
+        QList<QGeoCoordinate> points; // WaypointsTerrain
+        QGeoCoordinate first;         // profile endpoints (altitude stripped) used to coalesce
         QGeoCoordinate last;
     };
 
@@ -95,6 +98,7 @@ private:
     void processPoint(const Job &job);
     void processProfile(const Job &job);
     void processAreaMax(const Job &job);
+    void processWaypointsTerrain(const Job &job);
     ElevationTile *tile(double lat, double lon);
     double elevationAt(double lat, double lon);
     // sampling step across the corridor: the map resolution at the point, m

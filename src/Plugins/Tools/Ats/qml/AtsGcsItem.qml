@@ -13,6 +13,7 @@ MapItemGroup {
 
     readonly property real yaw: ats.yaw.value
     readonly property real pitch: ats.pitch.value
+    readonly property string mode: unit.mandala.cmd.ats.mode.text
 
     // beam heading: exponential smoothing suppresses telemetry jitter
     readonly property real yawFilter: 0.5 // 0..1, lower is smoother
@@ -35,6 +36,8 @@ MapItemGroup {
     readonly property bool showBeam: valid && overlay.showBeam
 
     readonly property color beamColor: "#cc00ffff"
+    // labels are gray while ATS control is disabled
+    readonly property color textColor: overlay.atsEnabled ? "#00ffff" : "#b0b0b0"
 
     visible: showBeam
 
@@ -50,15 +53,20 @@ MapItemGroup {
         color: "#20ffff00"
         border.width: 2
         border.color: "#80ffff00"
+        // cone with a rounded far end: an arc bulging by a fraction of the cone half width
+        readonly property real endBulge: 0.4 // 1 - half circle, lower is flatter
         path: {
             if (!item.valid)
                 return []
             var pts = [item.origin]
-            var steps = 32
-            var a0 = item.beamYaw - overlay.beamHalfAngle
-            var da = 2 * overlay.beamHalfAngle / steps
+            var w = item.beamDistance * Math.tan(overlay.beamHalfAngle * Math.PI / 180)
+            var b = w * endBulge
+            var r = (w * w + b * b) / (2 * b)
+            var center = item.point(item.origin, item.beamYaw, item.beamDistance - (r - b))
+            var span = Math.asin(w / r) * 180 / Math.PI
+            var steps = 16
             for (var i = 0; i <= steps; i++)
-                pts.push(item.point(item.origin, a0 + da * i, item.beamDistance))
+                pts.push(item.point(center, item.beamYaw - span + 2 * span * i / steps, r))
             return pts
         }
     }
@@ -108,13 +116,13 @@ MapItemGroup {
             anchorPoint.y: sourceItem.height / 2 + offset * Math.cos(side)
             sourceItem: Text {
                 text: Math.round(dist / 1000)
-                color: "#00ffff"
+                color: item.textColor
                 font: apx.font_narrow(Style.fontSize * 0.8, true)
             }
         }
     }
 
-    // azimuth and elevation near the antenna
+    // azimuth, elevation and ATS mode near the antenna
     MapQuickItem {
         visible: item.showBeam
         z: 52
@@ -122,8 +130,9 @@ MapItemGroup {
         anchorPoint.x: sourceItem.width + Style.fontSize * 0.5
         anchorPoint.y: -Style.fontSize * 0.5
         sourceItem: Text {
-            text: "AZ " + item.yaw.toFixed(0) + "° EL " + item.pitch.toFixed(1) + "°"
-            color: "#00ffff"
+            text: "AZ " + ((Math.round(item.yaw) + 360) % 360) + "°\nEL " + item.pitch.toFixed(1) + "°\n" + item.mode.toUpperCase()
+            horizontalAlignment: Text.AlignLeft
+            color: item.textColor
             font: apx.font_narrow(Style.fontSize, true)
         }
     }
