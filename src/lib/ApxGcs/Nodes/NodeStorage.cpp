@@ -82,11 +82,11 @@ void NodeStorage::saveNodeDict()
         req,
         &db::nodes::NodeSaveDict::finished,
         this,
-        [this]() {
+        [this](DatabaseRequest::Status status) {
             if (--_dictSaving || !_confSavePending)
                 return;
             _confSavePending = false;
-            if (_node && _node->valid())
+            if (status == DatabaseRequest::Success && _node && _node->valid())
                 saveNodeConf();
         },
         Qt::QueuedConnection);
