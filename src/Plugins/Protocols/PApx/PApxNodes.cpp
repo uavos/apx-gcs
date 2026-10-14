@@ -31,6 +31,8 @@
 
 #include <crc.h>
 
+#include <QtEndian>
+
 #define PAPX_REQ_DELAY_MS 0
 
 #define PAPX_GCS_PART_SIZE 400             // bytes of data in packet
@@ -270,6 +272,14 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
         qWarning() << "gcs nodes data error";
         return;
     }
+
+    // qCompress header: expected uncompressed size, big-endian
+    const uint32_t raw_size = qFromBigEndian<uint32_t>(data.constData());
+    if (raw_size > PAPX_GCS_SIZE_MAX) {
+        qWarning() << "gcs nodes data size" << raw_size;
+        return;
+    }
+
     const auto nodes = QJsonDocument::fromJson(qUncompress(data)).array();
     if (nodes.isEmpty()) {
         qWarning() << "gcs nodes json error";
