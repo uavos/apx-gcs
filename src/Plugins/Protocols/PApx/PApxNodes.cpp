@@ -257,7 +257,7 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
     }
     if (!_gcs_rx_size || hash != _gcs_rx_hash || size != _gcs_rx_size
         || offset != static_cast<uint32_t>(_gcs_rx_data.size()))
-        return; // parts of another sender or non-sequental
+        return; // parts of another sender or non-sequential
 
     _gcs_rx_data.append(stream.payload());
     if (static_cast<uint32_t>(_gcs_rx_data.size()) < size)
