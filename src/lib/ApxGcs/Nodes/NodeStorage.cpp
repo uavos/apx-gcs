@@ -106,8 +106,8 @@ void NodeStorage::loadLatestNodeConf()
     auto req = new db::nodes::NodeLoadConf(_dictID, {});
     connect(req,
             &db::nodes::NodeLoadConf::confLoaded,
-            _node,
-            &NodeItem::importValues,
+            this,
+            &NodeStorage::importConf,
             Qt::QueuedConnection);
     req->exec();
 }
@@ -253,8 +253,21 @@ void NodeStorage::loadNodeConf(quint64 id)
     auto req = new db::nodes::NodeLoadConf(id);
     connect(req,
             &db::nodes::NodeLoadConf::confLoaded,
-            _node,
-            &NodeItem::importValues,
+            this,
+            &NodeStorage::importConf,
             Qt::QueuedConnection);
     req->exec();
+}
+
+void NodeStorage::importConf(QJsonObject values, quint64 dictID)
+{
+    // zero values are not stored in backup, missing field means zero
+    // (applicable only when backup was made with the same node dictionary)
+    if (dictID == _dictID) {
+        for (const auto f : _node->fields()) {
+            if (!values.contains(f->fpath()))
+                values.insert(f->fpath(), QJsonValue());
+        }
+    }
+    _node->importValues(values);
 }

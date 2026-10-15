@@ -516,8 +516,11 @@ void NodeItem::importValues(QJsonObject values)
     uint rcnt = 0;
     for (const auto f : m_fields) {
         const auto fpath = f->fpath();
-        if (!values.contains(fpath))
+        if (!values.contains(fpath)) {
+            // zero values are not stored, missing field means zero
+            f->fromJson(QJsonValue());
             continue;
+        }
         f->fromJson(values.take(fpath));
         rcnt++;
     }
