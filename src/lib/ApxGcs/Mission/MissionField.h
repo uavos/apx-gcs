@@ -35,6 +35,8 @@ public:
                           const QString &descr,
                           Fact::Flags flags);
 
+    QJsonValue toJson() override;
+
 protected:
     void hashData(QCryptographicHash *h) const;
 };
