@@ -816,7 +816,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             xbus::mission::geo_circle_s c{};
             c.pos.lat = mandala::deg_to_a32(im.value("lat").toDouble());
             c.pos.lon = mandala::deg_to_a32(im.value("lon").toDouble());
-            c.radius = im.value("radius").toUInt() / 100; // m*100
+            c.radius = qRound(im.value("radius").toDouble() / 100.0); // m*100
             stream.write(&c, sizeof(c));
         } break;
         case xbus::mission::geo_s::POLYGON: {
@@ -848,7 +848,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             p.cnt = points.size();
             p.circle.pos.lat = mandala::deg_to_a32(center.latitude());
             p.circle.pos.lon = mandala::deg_to_a32(center.longitude());
-            p.circle.radius = radius / 100; // m*100
+            p.circle.radius = qRound(radius / 100.0); // m*100
             stream.write(&p, sizeof(p) - sizeof(p.points));
             for (auto pt : poly.perimeter()) {
                 xbus::mission::pos_ll_s pp{};
