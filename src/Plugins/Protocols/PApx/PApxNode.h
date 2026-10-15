@@ -39,6 +39,9 @@ public:
 
     void process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream);
 
+    // ident response from hardware
+    void process_ident(QJsonObject ident);
+
     void schedule_request(PApxNodeRequest *req);
     void delete_request(PApxNodeRequest *req);
     void reschedule_request(PApxNodeRequest *req);
@@ -113,6 +116,9 @@ private:
 
     void updateProgress();
     void loadDictFields(const QJsonObject &dict);
+
+    // dict, conf or script download from hardware is in progress
+    bool downloading() const;
 
 private slots:
     void infoCacheLoaded(QJsonObject info);

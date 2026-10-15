@@ -81,6 +81,31 @@ void PApxNode::infoCacheLoaded(QJsonObject info)
     setTitle(info.value("name").toString());
 }
 
+// files downloaded to construct the node
+static const QStringList conf_files{"dict", "conf", "script"};
+
+void PApxNode::process_ident(QJsonObject ident)
+{
+    // the same ident while downloading (f.ex. search from another GCS)
+    // must not restart the download
+    if (ident == _ident && downloading())
+        return;
+
+    emit identReceived(ident);
+}
+
+bool PApxNode::downloading() const
+{
+    if (_dict_cache_req)
+        return true;
+
+    for (auto i : _requests) {
+        if (i->uid() == mandala::cmd::env::nmt::file::uid && conf_files.contains(i->cid()))
+            return true;
+    }
+    return false;
+}
+
 void PApxNode::process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream)
 {
     mandala::uid_t uid = pid.uid;
@@ -529,7 +554,6 @@ bool PApxNode::loadGcsData(QJsonObject node)
     setDescr(descr.join(' '));
 
     // stop downloads from hardware
-    static const QStringList conf_files{"dict", "conf", "script"};
     const auto requests = _requests;
     for (auto i : requests) {
         if (i->uid() == mandala::cmd::env::nmt::file::uid && conf_files.contains(i->cid()))

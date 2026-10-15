@@ -264,7 +264,7 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
         {"files", QJsonArray::fromStringList(fnames)},
     };
 
-    _node->identReceived(jso);
+    _node->process_ident(jso);
 
     return true;
 }
