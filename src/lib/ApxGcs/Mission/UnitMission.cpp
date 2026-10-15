@@ -247,7 +247,7 @@ void UnitMission::clearMission()
         group->f_clear->trigger();
     }
     blockSizeUpdate = false;
-    setModified(false);
+    backup(); // reset modified flags of groups too
 
     App::jsync(this);
 }
