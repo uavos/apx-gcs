@@ -223,8 +223,10 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     // always start DB recorder time counter from zero
     auto t = timestamp_ms;
 
-    if (t < _ts_t0)
+    // stream timestamp went backwards (i.e. unit reboot) - start a new file
+    if (!_reset_timestamp && t < _ts_raw)
         reset();
+    _ts_raw = t;
 
     checkFileRecord();
 
@@ -349,7 +351,7 @@ void TelemetryRecorder::reset(void)
     _stream.close();
 
     _reset_timestamp = true;
-    _ts_t0 = _ts_t1 = _ts_t2 = 0;
+    _ts_t0 = _ts_t1 = _ts_t2 = _ts_raw = 0;
     _tsElapsed.invalidate();
     qDebug() << "record reset";
 
