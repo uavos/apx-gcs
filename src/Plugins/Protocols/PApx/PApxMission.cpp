@@ -153,6 +153,8 @@ static void _pack_act_wp(QVariantMap *actions,
     if (!m.isEmpty())
         actions->insert(name, m);
 }
+static bool _pack_act_overflow = false;
+
 static uint _pack_act_add(QVariantList *actions_list, const QVariantMap &action)
 {
     // action must be only one name-value pair
@@ -162,8 +164,9 @@ static uint _pack_act_add(QVariantList *actions_list, const QVariantMap &action)
     auto index = actions_list->indexOf(action);
     if (index >= 0)
         return index + 1;
-    if (actions_list->size() >= 256) {
+    if (actions_list->size() >= 255) { // index is uint8_t, zero means no action
         qWarning() << "too many actions";
+        _pack_act_overflow = true;
         return 0;
     }
     // add new action to global list
@@ -675,6 +678,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     }
 
     // Waypoints
+    _pack_act_overflow = false;
     QVariantList actions_list; // wil collect actions here
     hdr.items.wp.off = stream.pos() - pld_offset;
     hdr.items.wp.cnt = 0;
@@ -688,6 +692,10 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         hdr.items.wp.cnt++;
     }
     // json::save("act-pack", QJsonDocument::fromVariant(actions_list).array());
+    if (_pack_act_overflow) {
+        apxMsgW() << tr("Mission upload failed: too many waypoint actions (max 255)");
+        return {};
+    }
 
     // Taxiways
     hdr.items.tw.off = stream.pos() - pld_offset;
