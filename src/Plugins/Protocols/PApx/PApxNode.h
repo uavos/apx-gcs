@@ -98,6 +98,9 @@ private:
 
     bool _skip_cache{};
     bool _dict_cache_req{};
+    uint _file_downloads{}; // dict, conf or script read requests alive
+
+    PApxNodeRequest *requestFileRead(const QString &name);
 
     QJsonObject _rvalues;
     xbus::node::conf::script_t _script_hash{};

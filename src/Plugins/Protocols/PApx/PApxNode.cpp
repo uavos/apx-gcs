@@ -41,7 +41,12 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
 {
     // store ident to parse dict
     connect(this, &PNode::identReceived, this, [this](QJsonObject ident) {
-        _dict_cache_hash = ident.value("hash").toString();
+        const auto hash = ident.value("hash").toString();
+        if (_dict_cache_hash != hash) {
+            // pending dict cache lookup (if any) is for the old hash
+            _dict_cache_req = false;
+            _dict_cache_hash = hash;
+        }
         if (_ident == ident)
             return;
         _ident = ident;
@@ -96,14 +101,20 @@ void PApxNode::process_ident(QJsonObject ident)
 
 bool PApxNode::downloading() const
 {
-    if (_dict_cache_req)
-        return true;
+    return _dict_cache_req || _file_downloads > 0;
+}
 
-    for (auto i : _requests) {
-        if (i->uid() == mandala::cmd::env::nmt::file::uid && conf_files.contains(i->cid()))
-            return true;
+PApxNodeRequest *PApxNode::requestFileRead(const QString &name)
+{
+    auto req = new PApxNodeRequestFileRead(this, name);
+
+    if (conf_files.contains(name)) {
+        // track the request from creation till deletion
+        // (the request is scheduled with a delay)
+        _file_downloads++;
+        connect(req, &QObject::destroyed, this, [this]() { _file_downloads--; });
     }
-    return false;
+    return req;
 }
 
 void PApxNode::process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream)
@@ -461,7 +472,7 @@ void PApxNode::requestDict()
 
 void PApxNode::requestDictDownload()
 {
-    new PApxNodeRequestFileRead(this, "dict");
+    requestFileRead("dict");
 }
 
 void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
@@ -804,7 +815,7 @@ void PApxNode::requestConf()
         return;
 
     // save request for sequential script requests
-    _req_conf = new PApxNodeRequestFileRead(this, "conf");
+    _req_conf = requestFileRead("conf");
     connect(_req_conf, &PApxNodeRequest::finished, this, [this]() { _req_conf = {}; });
 }
 
@@ -942,7 +953,7 @@ void PApxNode::parseConfData(PApxNode *node,
     // store values and download script
     _rvalues = values;
     if (_req_conf)
-        new PApxNodeRequestFileRead(this, "script");
+        requestFileRead("script");
 }
 template<typename T, typename Tout = T>
 static QJsonValue _read_param(PStreamReader &stream)
