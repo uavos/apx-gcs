@@ -72,7 +72,10 @@ void PApxMission::updateMission(QVariant var)
         apxMsgW() << tr("Mission storage unavailable");
         return;
     }
-    auto req = new PApxNodeRequestFileWrite(f->node(), file_name, _pack(var.value<QVariantMap>()));
+    const auto data = _pack(var.value<QVariantMap>());
+    if (data.isEmpty())
+        return;
+    auto req = new PApxNodeRequestFileWrite(f->node(), file_name, data);
     connect(req, &PApxNodeRequestFile::uploaded, this, &PMission::missionUpdated);
 }
 
@@ -82,7 +85,12 @@ void PApxMission::parseMissionData(PApxNode *_node,
 {
     //qDebug() << "mission data" << info.size << data.size();
     PStreamReader stream(data);
-    auto m = _unpack(stream);
+    bool ok = false;
+    auto m = _unpack(stream, &ok);
+    if (!ok) {
+        apxMsgW() << tr("Mission data error");
+        return;
+    }
     if (!m.isEmpty()) {
         m.insert("node_uid", _node->uid());
     }
@@ -97,6 +105,19 @@ PApxNodeFile *PApxMission::_file() const
             return f;
     }
     return nullptr;
+}
+
+static bool _is_ascii(const QString &s)
+{
+    // the unit (XbusStreamReader::read_string) accepts printable ASCII only
+    for (const auto c : s) {
+        const auto v = c.unicode();
+        if (v == '\n' || v == '\r' || v == '\t')
+            continue;
+        if (v < 32 || v >= 127)
+            return false;
+    }
+    return true;
 }
 
 static void _unpack_act(QVariantMap *wp, const QVariantList &act, int index)
@@ -132,6 +153,8 @@ static void _pack_act_wp(QVariantMap *actions,
     if (!m.isEmpty())
         actions->insert(name, m);
 }
+static bool _pack_act_overflow = false;
+
 static uint _pack_act_add(QVariantList *actions_list, const QVariantMap &action)
 {
     // action must be only one name-value pair
@@ -141,8 +164,9 @@ static uint _pack_act_add(QVariantList *actions_list, const QVariantMap &action)
     auto index = actions_list->indexOf(action);
     if (index >= 0)
         return index + 1;
-    if (actions_list->size() >= 256) {
+    if (actions_list->size() >= 255) { // index is uint8_t, zero means no action
         qWarning() << "too many actions";
+        _pack_act_overflow = true;
         return 0;
     }
     // add new action to global list
@@ -179,8 +203,11 @@ static uint _pack_act(QVariantList *actions_list, const QVariantMap &wp)
     return _pack_act_add(actions_list, {{"seq", seq}});
 }
 
-QVariantMap PApxMission::_unpack(PStreamReader &stream)
+QVariantMap PApxMission::_unpack(PStreamReader &stream, bool *ok)
 {
+    if (ok)
+        *ok = false;
+
     //unpack mission
     if (stream.available() < sizeof(xbus::mission::file_hdr_s))
         return {};
@@ -203,6 +230,8 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
 
     if (stream.available() <= sizeof(xbus::mission::pld_hdr_s)) {
         qWarning() << "empty file" << stream.available();
+        if (ok)
+            *ok = true;
         return {};
     }
 
@@ -365,6 +394,10 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
                     return {};
                 }
                 auto s = stream.read_string(xbus::mission::act_scr_s::MAX);
+                if (!s) {
+                    qWarning() << "error reading act_scr string" << i;
+                    return {};
+                }
                 m.insert("script", QString::fromUtf8(QByteArray(s, strlen(s))));
                 break;
             }
@@ -581,6 +614,9 @@ QVariantMap PApxMission::_unpack(PStreamReader &stream)
     if (!geo.isEmpty())
         m.insert("geo", geo);
 
+    if (ok)
+        *ok = true;
+
     if (m.isEmpty())
         return {};
 
@@ -642,6 +678,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
     }
 
     // Waypoints
+    _pack_act_overflow = false;
     QVariantList actions_list; // wil collect actions here
     hdr.items.wp.off = stream.pos() - pld_offset;
     hdr.items.wp.cnt = 0;
@@ -655,6 +692,10 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         hdr.items.wp.cnt++;
     }
     // json::save("act-pack", QJsonDocument::fromVariant(actions_list).array());
+    if (_pack_act_overflow) {
+        apxMsgW() << tr("Mission upload failed: too many waypoint actions (max 255)");
+        return {};
+    }
 
     // Taxiways
     hdr.items.tw.off = stream.pos() - pld_offset;
@@ -718,6 +759,10 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             e.type = xbus::mission::act_s::TRG_SCR;
             stream.write(&e, sizeof(e));
             auto scr = m.value(key).toString();
+            if (!_is_ascii(scr)) {
+                apxMsgW() << tr("Mission upload failed: script must be ASCII") << scr;
+                return {};
+            }
             auto max = xbus::mission::act_scr_s::MAX;
             if (scr.size() > max - 1)
                 scr.resize(max - 1);
@@ -782,6 +827,10 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
         }
         // optional fields
         auto name = im.value("name").toString().trimmed();
+        if (!_is_ascii(name)) {
+            apxMsgW() << tr("Mission upload failed: geofence label must be ASCII") << name;
+            return {};
+        }
         if (!name.isEmpty()) {
             if (name.size() > 31)
                 name.resize(31);
@@ -816,7 +865,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             xbus::mission::geo_circle_s c{};
             c.pos.lat = mandala::deg_to_a32(im.value("lat").toDouble());
             c.pos.lon = mandala::deg_to_a32(im.value("lon").toDouble());
-            c.radius = im.value("radius").toUInt() / 100; // m*100
+            c.radius = qRound(im.value("radius").toDouble() / 100.0); // m*100
             stream.write(&c, sizeof(c));
         } break;
         case xbus::mission::geo_s::POLYGON: {
@@ -848,7 +897,7 @@ QByteArray PApxMission::_pack(const QVariantMap &m)
             p.cnt = points.size();
             p.circle.pos.lat = mandala::deg_to_a32(center.latitude());
             p.circle.pos.lon = mandala::deg_to_a32(center.longitude());
-            p.circle.radius = radius / 100; // m*100
+            p.circle.radius = qRound(radius / 100.0); // m*100
             stream.write(&p, sizeof(p) - sizeof(p.points));
             for (auto pt : poly.perimeter()) {
                 xbus::mission::pos_ll_s pp{};

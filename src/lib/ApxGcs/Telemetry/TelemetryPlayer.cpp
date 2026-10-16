@@ -383,8 +383,11 @@ void TelemetryPlayer::next()
         blockTimeChange = false;
     }
 
+    // end of file reached - finish replay
+    const bool finished = !ok || _stream.atEnd() || _stream.interrupted();
+
     // update data values
-    if (updated || !ok) {
+    if (updated || finished) {
         for (const auto &[index, value] : _values) {
             updateMandalaFact(index, value);
         }
@@ -393,7 +396,7 @@ void TelemetryPlayer::next()
         _values_init = true;
     }
 
-    if (!ok) {
+    if (finished) {
         apxMsg() << tr("Replay finished");
         stop();
         return;

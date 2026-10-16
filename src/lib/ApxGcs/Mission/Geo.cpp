@@ -92,6 +92,13 @@ Geo::Geo(MissionGroup *parent)
     f_radius->setIncrement(100);
     connect(this, &MissionItem::coordinateChanged, this, &Geo::radiusPointChanged);
     connect(f_radius, &Fact::valueChanged, this, &Geo::radiusPointChanged);
+    // on-board format stores the radius in 100 m units
+    connect(f_radius, &Fact::valueChanged, this, [this]() {
+        const double r = f_radius->value().toDouble();
+        const int snapped = qMax(100, qRound(r / 100.0) * 100);
+        if (snapped != r)
+            f_radius->setValue(snapped);
+    });
     f_radius->setValue(500);
 
     f_points = new Fact(this,
@@ -328,14 +335,10 @@ void Geo::setRadiusPoint(const QGeoCoordinate &v)
         f_radius->setValue(ne.y() > 0 ? rabs : -rabs);
     }
     int dist = ne.x();
-    if (dist < 20)
-        dist = 0;
-    else if (dist > 50000)
+    if (dist > 50000)
         dist = (dist / 1000) * 1000;
-    else if (dist > 500)
-        dist = (dist / 100) * 100;
     else
-        dist = (dist / 10) * 10;
+        dist = qRound(dist / 100.0) * 100; // on-board format resolution
     f_radius->setValue(f_radius->value().toInt() < 0 ? -dist : dist);
 }
 
