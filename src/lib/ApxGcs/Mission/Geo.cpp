@@ -94,7 +94,7 @@ Geo::Geo(MissionGroup *parent)
     connect(f_radius, &Fact::valueChanged, this, &Geo::radiusPointChanged);
     // on-board format stores the radius in 100 m units
     connect(f_radius, &Fact::valueChanged, this, [this]() {
-        const int r = f_radius->value().toInt();
+        const double r = f_radius->value().toDouble();
         const int snapped = qMax(100, qRound(r / 100.0) * 100);
         if (snapped != r)
             f_radius->setValue(snapped);
