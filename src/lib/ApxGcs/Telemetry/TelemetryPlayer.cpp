@@ -286,6 +286,11 @@ void TelemetryPlayer::rec_evt(quint64 timestamp_ms, QString name, QJsonObject da
         if (value.size() > (param.size() + 32) || value.contains('\n'))
             value = "<data>";
         name = QString("%1=%2").arg(param).arg(value);
+
+    } else if (name == telemetry::EVT_CMD.name) {
+        auto cmd = data.value("name").toString();
+        auto value = data.value("value").toString();
+        name = QString("%1=%2").arg(cmd).arg(value);
     }
 
     if (!_values_init || name.isEmpty())
