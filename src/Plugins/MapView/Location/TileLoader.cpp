@@ -25,6 +25,7 @@
 #include <Database/Database.h>
 #include <Fact/Fact.h>
 #include <QImage>
+#include <QtConcurrent>
 #include <QtMath>
 
 #define TILE_DOWNLOAD_MAX 20000    // max tiles per area download request
@@ -76,6 +77,8 @@ TileLoader::TileLoader(Fact *parent)
                        NoFlags,
                        "database");
     connect(f_area, &Fact::triggered, this, &TileLoader::updateCacheInfo);
+    connect(&_cacheInfoWatcher, &QFutureWatcherBase::finished, this, &TileLoader::cacheInfoReady);
+    connect(&_areaInfoWatcher, &QFutureWatcherBase::finished, this, &TileLoader::areaInfoReady);
 
     f_download = new Fact(f_area,
                           "download",
@@ -119,6 +122,8 @@ TileLoader::~TileLoader()
 {
     _instance = nullptr;
     abort();
+    _areaInfoWatcher.waitForFinished();
+    _cacheInfoWatcher.waitForFinished();
 }
 
 void TileLoader::updateStatus()
@@ -506,8 +511,13 @@ int TileLoader::tileY(double lat, int zoom)
     return std::clamp(y, 0, static_cast<int>(n) - 1);
 }
 
-void TileLoader::setVisibleArea(
-    double latN, double lonW, double latS, double lonE, int zoom, QString mapType)
+void TileLoader::setVisibleArea(double latN,
+                                double lonW,
+                                double latS,
+                                double lonE,
+                                int zoom,
+                                QString mapType,
+                                QString provider)
 {
     _visLatN = latN;
     _visLonW = lonW;
@@ -515,51 +525,88 @@ void TileLoader::setVisibleArea(
     _visLonE = lonE;
     _visZoom = zoom;
     _visMapType = mapType;
+    _visProvider = provider;
     updateAreaInfo();
 }
 
-int TileLoader::areaTilesCount(int zoomFrom, int zoomTo) const
+TileLoader::TileArea TileLoader::currentArea() const
+{
+    TileArea area;
+    area.latN = _visLatN;
+    area.lonW = _visLonW;
+    area.latS = _visLatS;
+    area.lonE = _visLonE;
+    area.zoomTo = std::clamp(f_zoom->value().toInt(), 2, 20);
+    area.zoomFrom = std::clamp(_visZoom, 2, area.zoomTo);
+    area.type = _visMapType.contains("satellite", Qt::CaseInsensitive) ? GoogleSatellite
+                                                                        : GoogleHybrid;
+    return area;
+}
+
+QList<QPair<int, int>> TileLoader::tileColumns(double lonW, double lonE, int zoom)
+{
+    const int x1 = tileX(lonW, zoom);
+    const int x2 = tileX(lonE, zoom);
+    if (x1 <= x2)
+        return {{x1, x2}};
+    // the area crosses the antimeridian: west part to the last column, then from column zero
+    return {{x1, (1 << zoom) - 1}, {0, x2}};
+}
+
+qint64 TileLoader::areaTilesCount(const TileArea &area)
 {
     qint64 cnt = 0;
-    for (int zoom = zoomFrom; zoom <= zoomTo; ++zoom) {
-        int x1 = tileX(_visLonW, zoom), x2 = tileX(_visLonE, zoom);
-        int y1 = tileY(_visLatN, zoom), y2 = tileY(_visLatS, zoom);
-        cnt += static_cast<qint64>(std::abs(x2 - x1) + 1) * (std::abs(y2 - y1) + 1);
+    for (int zoom = area.zoomFrom; zoom <= area.zoomTo; ++zoom) {
+        const int y1 = tileY(area.latN, zoom);
+        const int y2 = tileY(area.latS, zoom);
+        const qint64 rows = std::abs(y2 - y1) + 1;
+        for (const auto &c : tileColumns(area.lonW, area.lonE, zoom))
+            cnt += rows * (c.second - c.first + 1);
         if (cnt > TILE_DOWNLOAD_MAX * 100)
             break;
     }
-    return static_cast<int>(std::min<qint64>(cnt, TILE_DOWNLOAD_MAX * 100));
+    return std::min<qint64>(cnt, TILE_DOWNLOAD_MAX * 100);
 }
 
-int TileLoader::areaMissingCount(int zoomFrom, int zoomTo, MapID type) const
+QList<quint64> TileLoader::areaTiles(const TileArea &area, int max)
 {
-    // tiles of the area not found in the cache
-    const auto path = basePath(uid(type, 0, 0, 0));
+    // tiles of the area in zoom order, up to max+1 items
+    QList<quint64> list;
+    for (int zoom = area.zoomFrom; zoom <= area.zoomTo; ++zoom) {
+        int y1 = tileY(area.latN, zoom), y2 = tileY(area.latS, zoom);
+        if (y1 > y2)
+            std::swap(y1, y2);
+        for (const auto &c : tileColumns(area.lonW, area.lonE, zoom)) {
+            for (int x = c.first; x <= c.second; ++x) {
+                for (int y = y1; y <= y2; ++y) {
+                    list.append(uid(area.type, zoom, x, y));
+                    if (list.size() > max)
+                        return list;
+                }
+            }
+        }
+    }
+    return list;
+}
+
+int TileLoader::areaMissingCount(TileArea area, QString path)
+{
+    // tiles of the area not found in the cache (any version)
     const auto versions = QDir(path).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 
     int cnt = 0;
-    for (int zoom = zoomFrom; zoom <= zoomTo; ++zoom) {
-        int x1 = tileX(_visLonW, zoom), x2 = tileX(_visLonE, zoom);
-        int y1 = tileY(_visLatN, zoom), y2 = tileY(_visLatS, zoom);
-        if (x1 > x2)
-            std::swap(x1, x2);
-        if (y1 > y2)
-            std::swap(y1, y2);
-        const auto level = QString::number(zoom);
-        for (int x = x1; x <= x2; ++x) {
-            for (int y = y1; y <= y2; ++y) {
-                const auto fileName = basename(uid(type, zoom, x, y)) + ".jpg";
-                bool exists = false;
-                for (const auto &version : versions) {
-                    if (!QFile::exists(QStringList({path, version, level, fileName}).join('/')))
-                        continue;
-                    exists = true;
-                    break;
-                }
-                if (!exists)
-                    cnt++;
-            }
+    for (auto uid : areaTiles(area, TILE_DOWNLOAD_MAX)) {
+        const auto level = QString::number(TileLoader::level(uid));
+        const auto fileName = basename(uid) + ".jpg";
+        bool exists = false;
+        for (const auto &version : versions) {
+            if (!QFile::exists(QStringList({path, version, level, fileName}).join('/')))
+                continue;
+            exists = true;
+            break;
         }
+        if (!exists)
+            cnt++;
     }
     return cnt;
 }
@@ -568,38 +615,67 @@ void TileLoader::updateAreaInfo()
 {
     if (_visZoom <= 0) {
         f_download->setTitle(tr("Download"));
+        f_download->setEnabled(false);
         return;
     }
-    int zoomTo = std::clamp(f_zoom->value().toInt(), 2, 20);
-    int zoomFrom = std::clamp(_visZoom, 2, zoomTo);
-    const int cnt = areaTilesCount(zoomFrom, zoomTo);
-    MapID type = _visMapType.contains("satellite", Qt::CaseInsensitive) ? GoogleSatellite
-                                                                         : GoogleHybrid;
+
+    const auto area = currentArea();
+    const auto cnt = areaTilesCount(area);
     const bool offline = f_offline->value().toBool();
 
-    // tiles count on the button: missing/total and estimated size (~20 KB per tile)
-    QString title;
-    bool enabled = !offline;
-    if (cnt > TILE_DOWNLOAD_MAX) {
-        title = QString("%1 %2").arg(tr("Too many tiles")).arg(cnt);
-        enabled = false;
-    } else {
-        const int missing = areaMissingCount(zoomFrom, zoomTo, type);
-        if (missing == 0) {
-            title = QString("%1 %2").arg(tr("Cached")).arg(cnt);
-            enabled = false;
-        } else {
-            title = QString("%1 %2/%3 (~%4 MB)")
-                        .arg(tr("Download"))
-                        .arg(missing)
-                        .arg(cnt)
-                        .arg(missing * 20 / 1024);
-        }
-    }
-    f_download->setTitle(title);
-    f_download->setEnabled(enabled);
     f_download->setDescr(tr("Download tiles of the visible area")
-                         + QString(" z%1-%2, %3").arg(zoomFrom).arg(zoomTo).arg(_visMapType));
+                         + QString(" z%1-%2, %3").arg(area.zoomFrom).arg(area.zoomTo).arg(_visMapType));
+
+    if (!providerSupported()) {
+        f_download->setTitle(tr("Download"));
+        f_download->setDescr(tr("Map provider is not supported").append(": ") + _visProvider);
+        f_download->setEnabled(false);
+        return;
+    }
+    if (cnt > TILE_DOWNLOAD_MAX) {
+        f_download->setTitle(QString("%1 %2").arg(tr("Too many tiles")).arg(cnt));
+        f_download->setEnabled(false);
+        return;
+    }
+
+    // total count is shown immediately, missing tiles are counted in a worker thread
+    f_download->setTitle(QString("%1 %2 (~%3 MB)").arg(tr("Download")).arg(cnt).arg(cnt * 20 / 1024));
+    f_download->setEnabled(!offline);
+
+    if (_areaInfoWatcher.isRunning()) {
+        _areaInfoDirty = true; // restart when finished
+        return;
+    }
+    _areaInfoDirty = false;
+    const auto path = basePath(uid(area.type, 0, 0, 0));
+    _areaInfoWatcher.setFuture(QtConcurrent::run(&TileLoader::areaMissingCount, area, path));
+}
+
+void TileLoader::areaInfoReady()
+{
+    if (_areaInfoDirty) {
+        // area changed while counting
+        updateAreaInfo();
+        return;
+    }
+    if (_visZoom <= 0 || !providerSupported())
+        return;
+
+    const auto area = currentArea();
+    const auto cnt = areaTilesCount(area);
+    if (cnt > TILE_DOWNLOAD_MAX)
+        return;
+
+    const int missing = _areaInfoWatcher.result();
+    if (missing == 0) {
+        f_download->setTitle(QString("%1 %2").arg(tr("Cached")).arg(cnt));
+        f_download->setEnabled(false);
+        return;
+    }
+    // missing/total and estimated size (~20 KB per tile)
+    f_download->setTitle(
+        QString("%1 %2/%3 (~%4 MB)").arg(tr("Download")).arg(missing).arg(cnt).arg(missing * 20 / 1024));
+    f_download->setEnabled(!f_offline->value().toBool());
 }
 
 void TileLoader::downloadArea()
@@ -616,31 +692,16 @@ void TileLoader::downloadArea()
         apxMsgW() << tr("Map area is not visible");
         return;
     }
+    if (!providerSupported()) {
+        apxMsgW() << tr("Map provider is not supported").append(": ") << _visProvider;
+        return;
+    }
 
-    const double latN = _visLatN, lonW = _visLonW, latS = _visLatS, lonE = _visLonE;
-    MapID type = _visMapType.contains("satellite", Qt::CaseInsensitive) ? GoogleSatellite
-                                                                         : GoogleHybrid;
-
-    int zoomTo = std::clamp(f_zoom->value().toInt(), 2, 20);
-    int zoomFrom = std::clamp(_visZoom, 2, zoomTo);
-
-    QList<quint64> queue;
-    for (int zoom = zoomFrom; zoom <= zoomTo; ++zoom) {
-        int x1 = tileX(lonW, zoom), x2 = tileX(lonE, zoom);
-        int y1 = tileY(latN, zoom), y2 = tileY(latS, zoom);
-        if (x1 > x2)
-            std::swap(x1, x2);
-        if (y1 > y2)
-            std::swap(y1, y2);
-        for (int x = x1; x <= x2; ++x) {
-            for (int y = y1; y <= y2; ++y) {
-                queue.append(uid(type, zoom, x, y));
-                if (queue.size() > TILE_DOWNLOAD_MAX) {
-                    apxMsgW() << tr("Too many tiles to download, reduce the area or max zoom");
-                    return;
-                }
-            }
-        }
+    const auto area = currentArea();
+    const auto queue = areaTiles(area, TILE_DOWNLOAD_MAX);
+    if (queue.size() > TILE_DOWNLOAD_MAX) {
+        apxMsgW() << tr("Too many tiles to download, reduce the area or max zoom");
+        return;
     }
     if (queue.isEmpty())
         return;
@@ -650,7 +711,7 @@ void TileLoader::downloadArea()
     _areaTotal = queue.size();
     _areaDone = 0;
     apxMsg() << tr("Downloading map tiles").append(':') << _areaTotal
-             << QString("(z%1-%2)").arg(zoomFrom).arg(zoomTo);
+             << QString("(z%1-%2)").arg(area.zoomFrom).arg(area.zoomTo);
     areaNext();
 }
 
@@ -722,13 +783,29 @@ void TileLoader::areaStop()
 
 void TileLoader::updateCacheInfo()
 {
-    quint64 size = 0;
-    uint cnt = 0;
-    QDirIterator it(cachePath(), QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        it.next();
-        size += it.fileInfo().size();
-        cnt++;
+    if (_cacheInfoWatcher.isRunning()) {
+        _cacheInfoDirty = true; // restart when finished
+        return;
     }
-    f_cache->setValue(QString("%1 (%2 MB)").arg(cnt).arg(size / (1024 * 1024)));
+    _cacheInfoDirty = false;
+    const auto path = cachePath();
+    _cacheInfoWatcher.setFuture(QtConcurrent::run([path]() {
+        quint64 size = 0;
+        uint cnt = 0;
+        QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            size += it.fileInfo().size();
+            cnt++;
+        }
+        return QPair<quint64, uint>(size, cnt);
+    }));
+}
+
+void TileLoader::cacheInfoReady()
+{
+    const auto r = _cacheInfoWatcher.result();
+    f_cache->setValue(QString("%1 (%2 MB)").arg(r.second).arg(r.first / (1024 * 1024)));
+    if (_cacheInfoDirty)
+        updateCacheInfo();
 }

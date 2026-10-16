@@ -57,7 +57,8 @@ Control {
             apx.tools.location.setVisibleArea(r.topLeft.latitude, r.topLeft.longitude,
                                               r.bottomRight.latitude, r.bottomRight.longitude,
                                               Math.floor(mapView.zoomLevel),
-                                              mapPlugin.prefs.maptype.text)
+                                              mapPlugin.prefs.maptype.text,
+                                              mapPlugin.prefs.provider.text.trim())
         }
     }
     Connections {
@@ -66,6 +67,8 @@ Control {
         function onZoomLevelChanged() { areaUpdateTimer.restart() }
         function onWidthChanged() { areaUpdateTimer.restart() }
         function onHeightChanged() { areaUpdateTimer.restart() }
+        function onBearingChanged() { areaUpdateTimer.restart() }
+        function onTiltChanged() { areaUpdateTimer.restart() }
         function onActiveMapTypeChanged() { areaUpdateTimer.restart() }
     }
     Component.onCompleted: areaUpdateTimer.restart()

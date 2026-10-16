@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include <QFutureWatcher>
 #include <QtCore>
 #include <QtNetwork>
 
@@ -51,8 +52,14 @@ public:
 
     // visible map area, reported by the map view
     // map type is matched by description ("hybrid map", "satellite map")
-    Q_INVOKABLE void setVisibleArea(
-        double latN, double lonW, double latS, double lonE, int zoom, QString mapType);
+    // provider is the map plugin name, tiles are cached for "default" only
+    Q_INVOKABLE void setVisibleArea(double latN,
+                                    double lonW,
+                                    double latS,
+                                    double lonE,
+                                    int zoom,
+                                    QString mapType,
+                                    QString provider);
 
     enum MapID {
         GoogleHybrid,
@@ -122,9 +129,34 @@ private:
     double _visLatN{}, _visLonW{}, _visLatS{}, _visLonE{};
     int _visZoom{};
     QString _visMapType;
-    int areaTilesCount(int zoomFrom, int zoomTo) const;
-    int areaMissingCount(int zoomFrom, int zoomTo, MapID type) const;
+    QString _visProvider;
+
+    struct TileArea
+    {
+        double latN, lonW, latS, lonE;
+        int zoomFrom, zoomTo;
+        MapID type;
+    };
+    TileArea currentArea() const;
+    bool providerSupported() const { return _visProvider.isEmpty() || _visProvider == "default"; }
+
+    // tile columns [x1..x2] of the area at zoom level, two ranges when crossing the antimeridian
+    static QList<QPair<int, int>> tileColumns(double lonW, double lonE, int zoom);
+    static qint64 areaTilesCount(const TileArea &area);
+    static QList<quint64> areaTiles(const TileArea &area, int max);
+    // runs in a worker thread, filesystem only
+    static int areaMissingCount(TileArea area, QString path);
+
+    // tiles count on the download button, missing tiles are counted in a worker thread
+    QFutureWatcher<int> _areaInfoWatcher;
+    bool _areaInfoDirty{};
     void updateAreaInfo();
+    void areaInfoReady();
+
+    // cache statistics, computed in a worker thread
+    QFutureWatcher<QPair<quint64, uint>> _cacheInfoWatcher;
+    bool _cacheInfoDirty{};
+    void cacheInfoReady();
 
     // area download queue
     QList<quint64> _areaQueue;
