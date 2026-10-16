@@ -92,6 +92,7 @@ public slots:
                             AppNotify::NotifyFlags flags,
                             Fact *fact);
     void recordMsg(QString msg, QString subsystem, QString src_uid);
+    void recordCommand(mandala::uid_t uid, QVariant value);
 
     //PROPERTIES
 public:

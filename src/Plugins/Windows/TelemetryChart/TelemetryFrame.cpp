@@ -28,6 +28,7 @@
 #include <Fleet/Unit.h>
 #include <Telemetry/TelemetryRecords.h>
 #include <Telemetry/TelemetryShare.h>
+#include <Database/TelemetryFileEvents.h>
 #include <QColor>
 #include <QtGui>
 #include <QtNetwork>
@@ -389,6 +390,10 @@ void TelemetryFrame::rec_evt(quint64 timestamp_ms, QString name, QJsonObject dat
         c = QColor(50, 50, 100);
     else if (name == "conf")
         c = QColor(100, 100, 50);
+    else if (name == telemetry::EVT_CMD.name) {
+        c = QColor(100, 50, 50);
+        name = data.value("name").toString(); // i.e. cmd.nav.pos
+    }
 
     auto s = QString("%1%2").arg(uplink ? ">" : "<", name);
 
