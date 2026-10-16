@@ -114,6 +114,8 @@ void FactDelegateScript::addScriptCommands(Fact *fact)
     // commands from the node dictionary, i.e. script.start, script.stop, script.restart
     Fact *group = node->tools->f_usr->child("script");
     if (!group)
+        group = node->tools->f_usr->child("scr");
+    if (!group)
         return;
 
     bool added = false;
