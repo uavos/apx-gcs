@@ -47,6 +47,29 @@ Control {
     //internal
     property var mapPlugin: apx.tools.missionplanner
 
+    // report visible map area to the tiles loader (area download)
+    Timer {
+        id: areaUpdateTimer
+        interval: 300
+        onTriggered: {
+            if(!apx.tools.location) return
+            var r = mapView.visibleRegion.boundingGeoRectangle()
+            apx.tools.location.setVisibleArea(r.topLeft.latitude, r.topLeft.longitude,
+                                              r.bottomRight.latitude, r.bottomRight.longitude,
+                                              Math.floor(mapView.zoomLevel),
+                                              mapPlugin.prefs.maptype.text)
+        }
+    }
+    Connections {
+        target: mapView
+        function onCenterChanged() { areaUpdateTimer.restart() }
+        function onZoomLevelChanged() { areaUpdateTimer.restart() }
+        function onWidthChanged() { areaUpdateTimer.restart() }
+        function onHeightChanged() { areaUpdateTimer.restart() }
+        function onActiveMapTypeChanged() { areaUpdateTimer.restart() }
+    }
+    Component.onCompleted: areaUpdateTimer.restart()
+
     background: Item {
         id: mapTilesItem
         anchors.fill: parent
