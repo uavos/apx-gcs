@@ -50,6 +50,9 @@ private:
 
     void launch_vscode();
 
+    // node script control commands (start, stop, restart) on the toolbar
+    void addScriptCommands(Fact *fact);
+
     //data
 private slots:
     void aSave_triggered(void);
