@@ -512,6 +512,9 @@ void TelemetryPlot::copyFromPlot(TelemetryPlot *plot)
         curve->setVisible(false);
         curve->setTitle(c->title());
         curve->setPen(c->pen());
+        curve->setStyle(c->style());
+        curve->setCurveAttribute(QwtPlotCurve::Inverted,
+                                 c->testCurveAttribute(QwtPlotCurve::Inverted));
         curve->setYAxis(QwtPlot::yLeft);
         curve->setLegendAttribute(QwtPlotCurve::LegendShowLine);
         curve->setRenderHint(QwtPlotItem::RenderAntialiased);
