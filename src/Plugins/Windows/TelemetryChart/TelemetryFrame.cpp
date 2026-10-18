@@ -24,11 +24,11 @@
 #include <App/AppDirs.h>
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
+#include <Database/TelemetryFileEvents.h>
 #include <Fleet/Fleet.h>
 #include <Fleet/Unit.h>
 #include <Telemetry/TelemetryRecords.h>
 #include <Telemetry/TelemetryShare.h>
-#include <Database/TelemetryFileEvents.h>
 #include <QColor>
 #include <QtGui>
 #include <QtNetwork>
@@ -323,6 +323,11 @@ void TelemetryFrame::rec_finished()
         auto descr = field.info.value(1);
         // add curve
         auto curve = plot->addCurve(s, title, descr, QPen(c, 0, style));
+
+        if (f && f->dataType() != Fact::Float) {
+            curve->setStyle(QwtPlotCurve::Steps);
+            curve->setCurveAttribute(QwtPlotCurve::Inverted);
+        }
 
         // assign data to plot
         if (index < _samples.size()) {
