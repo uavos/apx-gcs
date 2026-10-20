@@ -65,6 +65,7 @@ private:
     uint _retry{};
 
     // nodes data exchange between GCS instances
+    Fact *_f_gcsnodes{}; // datalink option to accept the data
     bool _gcs_loading{};
     bool _gcs_requested{}; // another GCS searches for nodes
     bool _gcs_updated{};   // nodes downloaded from hardware since the last data sent
@@ -73,6 +74,7 @@ private:
     uint32_t _gcs_rx_size{};
     QByteArray _gcs_rx_data;
 
+    bool gcsNodesEnabled() const;
     bool loadGcsNode(QJsonObject node);
 
 protected:

@@ -60,6 +60,7 @@ public:
     Protocols *f_protocols;
 
     Fact *f_hbeat;
+    Fact *f_gcsnodes;
 
     DatalinkStats *f_stats;
 

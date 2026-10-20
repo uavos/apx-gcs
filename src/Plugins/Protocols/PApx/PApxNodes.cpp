@@ -28,6 +28,7 @@
 #include <XbusNode.h>
 
 #include <App/AppLog.h>
+#include <Datalink/Datalink.h>
 
 #include <crc.h>
 
@@ -54,6 +55,9 @@ PApxNodes::PApxNodes(PApxUnit *parent)
 
     _gcsSend.setSingleShot(true);
     connect(&_gcsSend, &QTimer::timeout, this, &PApxNodes::sendGcsNodes);
+
+    auto datalink = findParent<Datalink>();
+    _f_gcsnodes = datalink ? datalink->f_gcsnodes : nullptr;
 
     // inactive unit has delay for nodes downloading
     connect(parent, &Fact::activeChanged, this, &PApxNodes::updateActive);
@@ -160,7 +164,8 @@ void PApxNodes::requestSearch()
 // Nodes data exchange between GCS instances.
 // GCS which has the nodes downloaded replies to the search request of another GCS
 // and also sends the data when its own downloading from hardware is finished.
-// The receiver uses the data for the nodes which are not downloaded yet.
+// The receiver uses the data for the nodes which are not downloaded yet,
+// but only when the 'Nodes from GCS' datalink option is enabled.
 // packet format: <cmd.env.aux.gcs> <uid> <data>
 //  <uid> is <nmt.search>
 //  <data> is <hash> <size> <offset> <part of compressed JSON [{info, dict, values}]>
@@ -238,6 +243,12 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
         return;
     }
 
+    if (!gcsNodesEnabled()) {
+        // nodes are always downloaded from hardware
+        trace()->block("off");
+        return;
+    }
+
     if (stream.available() <= sizeof(uint32_t) * 3)
         return;
 
@@ -302,6 +313,11 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
         return;
 
     apxMsg() << tr("Nodes received from GCS").append(':') << st.join(',');
+}
+
+bool PApxNodes::gcsNodesEnabled() const
+{
+    return _f_gcsnodes && _f_gcsnodes->value().toBool();
 }
 
 bool PApxNodes::loadGcsNode(QJsonObject node)
