@@ -38,5 +38,5 @@ public:
     QJsonValue toJson() override;
 
 protected:
-    void hashData(QCryptographicHash *h) const;
+    void hashData(QCryptographicHash *h) const override;
 };

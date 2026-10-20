@@ -31,7 +31,6 @@
 class TileLoader : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(MapID)
 
     Q_PROPERTY(int requestCount READ requestCount NOTIFY requestCountChanged)
 
