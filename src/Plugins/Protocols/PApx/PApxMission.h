@@ -40,7 +40,7 @@ private:
 
     static constexpr const auto file_name{"mission"};
 
-    static QVariantMap _unpack(PStreamReader &stream);
+    static QVariantMap _unpack(PStreamReader &stream, bool *ok = nullptr);
     static QByteArray _pack(const QVariantMap &m);
 
     PApxNodeFile *_file() const;

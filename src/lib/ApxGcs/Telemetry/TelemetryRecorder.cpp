@@ -57,6 +57,9 @@ TelemetryRecorder::TelemetryRecorder(Unit *unit, Fact *parent)
     connect(unit->f_mandala, &Mandala::recordTelemetry, this, &TelemetryRecorder::recordTelemetry);
     connect(unit->f_mandala, &Mandala::recordData, this, &TelemetryRecorder::recordData);
 
+    // record commands sent as bundles (fly here, look here, etc.)
+    connect(unit->f_mandala, &Mandala::sendValue, this, &TelemetryRecorder::recordCommand);
+
     // record serial port data
     connect(unit->protocol()->data(),
             &PData::serialData,
@@ -223,8 +226,10 @@ void TelemetryRecorder::recordTelemetry(PBase::Values values, quint64 timestamp_
     // always start DB recorder time counter from zero
     auto t = timestamp_ms;
 
-    if (t < _ts_t0)
+    // stream timestamp went backwards (i.e. unit reboot) - start a new file
+    if (!_reset_timestamp && t < _ts_raw)
         reset();
+    _ts_raw = t;
 
     checkFileRecord();
 
@@ -284,6 +289,28 @@ void TelemetryRecorder::recordConfigUpdate(NodeItem *node, QString name, QString
 {
     name = QString("%1/%2").arg(node->title()).arg(name);
     _stream.write_evt(getEventTimestamp(), &telemetry::EVT_CONF, {node->uid(), name, value}, true);
+}
+void TelemetryRecorder::recordCommand(mandala::uid_t uid, QVariant value)
+{
+    // regular values are recorded by Mandala::recordData,
+    // bundles have no fact and are recorded as events
+    if (!mandala::is_bundle(uid))
+        return;
+
+    QString text;
+    if (value.typeId() == QMetaType::QByteArray) {
+        text = value.toByteArray().toHex().toUpper();
+    } else if (value.canConvert<QVariantList>()) {
+        QStringList st;
+        for (const auto &v : value.toList())
+            st.append(v.toString());
+        text = st.join(',');
+    } else {
+        text = value.toString();
+    }
+
+    const auto name = QString(Mandala::meta(uid).path);
+    _stream.write_evt(getEventTimestamp(), &telemetry::EVT_CMD, {name, text}, true);
 }
 void TelemetryRecorder::recordSerialData(quint16 portNo, QByteArray data, bool uplink)
 {
@@ -349,7 +376,7 @@ void TelemetryRecorder::reset(void)
     _stream.close();
 
     _reset_timestamp = true;
-    _ts_t0 = _ts_t1 = _ts_t2 = 0;
+    _ts_t0 = _ts_t1 = _ts_t2 = _ts_raw = 0;
     _tsElapsed.invalidate();
     qDebug() << "record reset";
 

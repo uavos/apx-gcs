@@ -24,6 +24,7 @@
 #include <App/AppDirs.h>
 #include <ApxMisc/MaterialIcon.h>
 #include <ApxMisc/QActionFact.h>
+#include <Database/TelemetryFileEvents.h>
 #include <Fleet/Fleet.h>
 #include <Fleet/Unit.h>
 #include <Telemetry/TelemetryRecords.h>
@@ -323,6 +324,11 @@ void TelemetryFrame::rec_finished()
         // add curve
         auto curve = plot->addCurve(s, title, descr, QPen(c, 0, style));
 
+        if (f && f->dataType() != Fact::Float) {
+            curve->setStyle(QwtPlotCurve::Steps);
+            curve->setCurveAttribute(QwtPlotCurve::Inverted);
+        }
+
         // assign data to plot
         if (index < _samples.size()) {
             curve->setSamples(_samples[index]);
@@ -389,6 +395,10 @@ void TelemetryFrame::rec_evt(quint64 timestamp_ms, QString name, QJsonObject dat
         c = QColor(50, 50, 100);
     else if (name == "conf")
         c = QColor(100, 100, 50);
+    else if (name == telemetry::EVT_CMD.name) {
+        c = QColor(100, 50, 50);
+        name = data.value("name").toString(); // i.e. cmd.nav.pos
+    }
 
     auto s = QString("%1%2").arg(uplink ? ">" : "<", name);
 

@@ -71,8 +71,10 @@ Fact {
                 if(f.value) data[settingName(f)]=true
                 continue
             }
-            if(f === mAvgWindow && !mAvg.value)
+            if(f === mAvgWindow){
+                if(mAvg.value) data[settingName(f)]=Number(f.value)
                 continue
+            }
             var s=f.text.trim()
             if(s === "") continue
             data[settingName(f)]=s
@@ -216,7 +218,7 @@ Fact {
         }
     }
     Fact {
-        flags: (Fact.Action | Fact.Remove)
+        flags: (Fact.Action | Fact.Remove | Fact.CloseOnTrigger)
         title: qsTr("Remove")
         visible: !newItem
         icon: "delete"
