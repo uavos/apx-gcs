@@ -51,6 +51,9 @@ public:
     // use data received from another GCS instance instead of requests to hardware
     bool loadGcsData(QJsonObject node);
 
+    // files downloaded from hardware to construct the node (dict, conf, script)
+    static bool isConfFile(const QString &name);
+
     // data to send to another GCS instance {info, dict, values}, empty if not downloaded
     QJsonObject gcsData() const;
 

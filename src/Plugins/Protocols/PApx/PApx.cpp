@@ -22,7 +22,6 @@
 #include "PApx.h"
 
 #include "PApxFirmware.h"
-#include "PApxNodes.h"
 
 #include <App/App.h>
 #include <Mandala/Mandala.h>
@@ -233,7 +232,7 @@ void PApx::process_downlink(QByteArray packet)
         const xbus::unit::squawk_t squawk = stream.read<xbus::unit::squawk_t>();
         trace()->block(PApx::squawkText(squawk));
 
-        if (stream.available() < xbus::pid_s::psize())
+        if (stream.available() <= xbus::pid_s::psize())
             return;
 
         auto v = _squawk_map.value(squawk);
@@ -243,12 +242,6 @@ void PApx::process_downlink(QByteArray packet)
         v->packetReceived(pid.uid);
         trace()->block(v->title().append(':'));
         trace()->tree();
-
-        if (stream.available() == xbus::pid_s::psize()) {
-            // request without payload, i.e. nodes search
-            static_cast<PApxNodes *>(v->nodes())->process_remote_request(stream);
-            return;
-        }
 
         v->process_incoming_data(stream, true);
         return;
