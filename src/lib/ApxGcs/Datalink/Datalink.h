@@ -32,8 +32,6 @@
 class Datalink : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(NetworkMask)
-
     Q_PROPERTY(
         bool valid READ valid WRITE setValid NOTIFY validChanged) //true when any data ever received
     Q_PROPERTY(bool online READ online WRITE setOnline NOTIFY onlineChanged) //timeout received data

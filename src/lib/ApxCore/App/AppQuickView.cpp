@@ -95,7 +95,7 @@ void AppQuickView::restoreState()
     s.beginGroup("windows");
     setGeometry(s.value(objectName() + "_geometry", geometry()).toRect());
     if (s.value(objectName() + "_maximized").toBool()) {
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
         showFullScreen();
 #else
         showMaximized();

@@ -10,8 +10,9 @@
 #ifndef QWT_KNOB_H
 #define QWT_KNOB_H
 
-#include "qwt_global.h"
 #include "qwt_abstract_slider.h"
+#include "qwt_global.h"
+
 
 class QwtRoundScaleDraw;
 
@@ -43,18 +44,16 @@ class QWT_EXPORT QwtKnob : public QwtAbstractSlider
 {
     Q_OBJECT
 
-    Q_ENUMS ( KnobStyle MarkerStyle )
+    Q_PROPERTY(KnobStyle knobStyle READ knobStyle WRITE setKnobStyle)
+    Q_PROPERTY(int knobWidth READ knobWidth WRITE setKnobWidth)
+    Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
+    Q_PROPERTY(double totalAngle READ totalAngle WRITE setTotalAngle)
+    Q_PROPERTY(int numTurns READ numTurns WRITE setNumTurns)
+    Q_PROPERTY(MarkerStyle markerStyle READ markerStyle WRITE setMarkerStyle)
+    Q_PROPERTY(int markerSize READ markerSize WRITE setMarkerSize)
+    Q_PROPERTY(int borderWidth READ borderWidth WRITE setBorderWidth)
 
-    Q_PROPERTY( KnobStyle knobStyle READ knobStyle WRITE setKnobStyle )
-    Q_PROPERTY( int knobWidth READ knobWidth WRITE setKnobWidth )
-    Q_PROPERTY( Qt::Alignment alignment READ alignment WRITE setAlignment )
-    Q_PROPERTY( double totalAngle READ totalAngle WRITE setTotalAngle )
-    Q_PROPERTY( int numTurns READ numTurns WRITE setNumTurns )
-    Q_PROPERTY( MarkerStyle markerStyle READ markerStyle WRITE setMarkerStyle )
-    Q_PROPERTY( int markerSize READ markerSize WRITE setMarkerSize )
-    Q_PROPERTY( int borderWidth READ borderWidth WRITE setBorderWidth )
-
-  public:
+public:
     /*!
        \brief Style of the knob surface
 
@@ -63,8 +62,7 @@ class QWT_EXPORT QwtKnob : public QwtAbstractSlider
 
        \sa setKnobStyle(), knobStyle()
      */
-    enum KnobStyle
-    {
+    enum KnobStyle {
         //! Fill the knob with a brush from QPalette::Button.
         Flat,
 
@@ -83,6 +81,7 @@ class QWT_EXPORT QwtKnob : public QwtAbstractSlider
          */
         Styled
     };
+    Q_ENUM(KnobStyle)
 
     /*!
         \brief Marker type
@@ -92,8 +91,7 @@ class QWT_EXPORT QwtKnob : public QwtAbstractSlider
 
         \sa setMarkerStyle(), setMarkerSize()
      */
-    enum MarkerStyle
-    {
+    enum MarkerStyle {
         //! Don't paint any marker
         NoMarker = -1,
 
@@ -118,61 +116,61 @@ class QWT_EXPORT QwtKnob : public QwtAbstractSlider
          */
         Notch
     };
+    Q_ENUM(MarkerStyle)
 
-    explicit QwtKnob( QWidget* parent = NULL );
+    explicit QwtKnob(QWidget *parent = NULL);
     virtual ~QwtKnob();
 
-    void setAlignment( Qt::Alignment );
+    void setAlignment(Qt::Alignment);
     Qt::Alignment alignment() const;
 
-    void setKnobWidth( int );
+    void setKnobWidth(int);
     int knobWidth() const;
 
-    void setNumTurns( int );
+    void setNumTurns(int);
     int numTurns() const;
 
-    void setTotalAngle ( double angle );
+    void setTotalAngle(double angle);
     double totalAngle() const;
 
-    void setKnobStyle( KnobStyle );
+    void setKnobStyle(KnobStyle);
     KnobStyle knobStyle() const;
 
-    void setBorderWidth( int );
+    void setBorderWidth(int);
     int borderWidth() const;
 
-    void setMarkerStyle( MarkerStyle );
+    void setMarkerStyle(MarkerStyle);
     MarkerStyle markerStyle() const;
 
-    void setMarkerSize( int );
+    void setMarkerSize(int);
     int markerSize() const;
 
     virtual QSize sizeHint() const QWT_OVERRIDE;
     virtual QSize minimumSizeHint() const QWT_OVERRIDE;
 
-    void setScaleDraw( QwtRoundScaleDraw* );
+    void setScaleDraw(QwtRoundScaleDraw *);
 
-    const QwtRoundScaleDraw* scaleDraw() const;
-    QwtRoundScaleDraw* scaleDraw();
+    const QwtRoundScaleDraw *scaleDraw() const;
+    QwtRoundScaleDraw *scaleDraw();
 
     QRect knobRect() const;
 
-  protected:
-    virtual void paintEvent( QPaintEvent* ) QWT_OVERRIDE;
-    virtual void changeEvent( QEvent* ) QWT_OVERRIDE;
+protected:
+    virtual void paintEvent(QPaintEvent *) QWT_OVERRIDE;
+    virtual void changeEvent(QEvent *) QWT_OVERRIDE;
 
-    virtual void drawKnob( QPainter*, const QRectF& ) const;
+    virtual void drawKnob(QPainter *, const QRectF &) const;
 
-    virtual void drawFocusIndicator( QPainter* ) const;
+    virtual void drawFocusIndicator(QPainter *) const;
 
-    virtual void drawMarker( QPainter*,
-        const QRectF&, double angle ) const;
+    virtual void drawMarker(QPainter *, const QRectF &, double angle) const;
 
-    virtual double scrolledTo( const QPoint& ) const QWT_OVERRIDE;
-    virtual bool isScrollPosition( const QPoint& ) const QWT_OVERRIDE;
+    virtual double scrolledTo(const QPoint &) const QWT_OVERRIDE;
+    virtual bool isScrollPosition(const QPoint &) const QWT_OVERRIDE;
 
-  private:
+private:
     class PrivateData;
-    PrivateData* m_data;
+    PrivateData *m_data;
 };
 
 #endif

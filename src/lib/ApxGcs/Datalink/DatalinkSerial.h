@@ -32,7 +32,6 @@
 class DatalinkSerial : public DatalinkConnection
 {
     Q_OBJECT
-    Q_ENUMS(CodecType)
 
 public:
     explicit DatalinkSerial(Fact *parent, QString devName, uint baud);
