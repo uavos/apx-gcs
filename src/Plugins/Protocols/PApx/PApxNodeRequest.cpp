@@ -241,17 +241,6 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
 
     fnames.sort();
 
-    _node->setTitle(sname);
-    _node->updateFiles(fnames);
-
-    // node descr
-    QStringList descr;
-    descr.append(shardware);
-    descr.append(sversion);
-    if (ident.flags.bits.files == 1 && fnames.contains("fw"))
-        descr.append("LOADER");
-    _node->setDescr(descr.join(' '));
-
     QJsonObject jso = {
         {"uid", _node->uid()},
         {"name", sname},
@@ -263,6 +252,22 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
         {"busy", (bool) ident.flags.bits.busy},
         {"files", QJsonArray::fromStringList(fnames)},
     };
+
+    // the same ident while downloading (f.ex. request from another GCS)
+    // must not reset the files being downloaded
+    if (_node->isDownloadingIdent(jso))
+        return true;
+
+    _node->setTitle(sname);
+    _node->updateFiles(fnames);
+
+    // node descr
+    QStringList descr;
+    descr.append(shardware);
+    descr.append(sversion);
+    if (ident.flags.bits.files == 1 && fnames.contains("fw"))
+        descr.append("LOADER");
+    _node->setDescr(descr.join(' '));
 
     _node->process_ident(jso);
 

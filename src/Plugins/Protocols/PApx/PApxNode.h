@@ -42,6 +42,9 @@ public:
     // ident response from hardware
     void process_ident(QJsonObject ident);
 
+    // the same ident is received while the node is downloading
+    bool isDownloadingIdent(const QJsonObject &ident) const;
+
     void schedule_request(PApxNodeRequest *req);
     void delete_request(PApxNodeRequest *req);
     void reschedule_request(PApxNodeRequest *req);

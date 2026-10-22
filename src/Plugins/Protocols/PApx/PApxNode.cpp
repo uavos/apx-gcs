@@ -96,12 +96,12 @@ bool PApxNode::isConfFile(const QString &name)
 
 void PApxNode::process_ident(QJsonObject ident)
 {
-    // the same ident while downloading (f.ex. search from another GCS)
-    // must not restart the download
-    if (ident == _ident && downloading())
-        return;
-
     emit identReceived(ident);
+}
+
+bool PApxNode::isDownloadingIdent(const QJsonObject &ident) const
+{
+    return ident == _ident && downloading();
 }
 
 bool PApxNode::downloading() const
