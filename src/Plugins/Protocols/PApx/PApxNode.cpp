@@ -544,7 +544,8 @@ bool PApxNode::loadGcsData(QJsonObject node)
 
     const auto hash = info.value("hash").toString();
     if (hash.isEmpty() || hash != dict.value("cache").toString()
-        || info.value("uid").toString() != uid()) {
+        || info.value("uid").toString() != uid()
+        || (!_ident.isEmpty() && hash != _ident.value("hash").toString())) {
         qWarning() << title() << "gcs data error" << hash;
         return false;
     }
