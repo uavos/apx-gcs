@@ -294,7 +294,7 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
 
     if (offset == 0) {
         // start of the node data, the most recent sender wins
-        if (size == 0 || size > PAPX_GCS_SIZE_MAX)
+        if (size < sizeof(uint32_t) || size > PAPX_GCS_SIZE_MAX)
             return;
         if (!_gcs_rx.contains(node_uid) && _gcs_rx.size() >= PAPX_GCS_RX_MAX)
             _gcs_rx.clear(); // drop incomplete transfers
