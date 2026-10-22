@@ -51,6 +51,14 @@ Datalink::Datalink(Fact *parent)
                        "heart-circle-outline");
     f_hbeat->setDefaultValue(true);
 
+    f_gcsnodes = new Fact(this,
+                          "gcsnodes",
+                          tr("Nodes from GCS"),
+                          tr("Accept nodes data from other GCS instances"),
+                          Bool | PersistentValue,
+                          "database-import");
+    f_gcsnodes->setDefaultValue(false);
+
     f_stats = new DatalinkStats(this);
 
     f_protocols = new Protocols(this);

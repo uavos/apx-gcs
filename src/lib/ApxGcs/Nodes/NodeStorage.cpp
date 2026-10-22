@@ -75,12 +75,34 @@ void NodeStorage::saveNodeDict()
         this,
         [this](quint64 dictID) { _dictID = dictID; },
         Qt::QueuedConnection);
+
+    // conf saving must wait for dictID
+    _dictSaving++;
+    connect(
+        req,
+        &db::nodes::NodeSaveDict::finished,
+        this,
+        [this](DatabaseRequest::Status status) {
+            if (--_dictSaving || !_confSavePending)
+                return;
+            _confSavePending = false;
+            if (status == DatabaseRequest::Success && _node && _node->valid())
+                saveNodeConf();
+        },
+        Qt::QueuedConnection);
     req->exec();
 }
 
 void NodeStorage::saveNodeConf()
 {
     _confID = 0; // invalidate for unit config
+
+    if (_dictSaving) {
+        // dict is not in db yet
+        _confSavePending = true;
+        return;
+    }
+
     auto cache_hash = _node->dict().value("cache").toString();
     if (cache_hash.isEmpty()) {
         qWarning() << "no dict cache hash";
@@ -170,6 +192,13 @@ void NodeStorage::dictMetaLoaded(QJsonObject jso)
         const auto increment = meta.value("increment").toVariant();
         const auto decimal = meta.value("decimal").toVariant();
 
+        // array field value is its status text, not a value to limit
+        if (nf->size() > 0)
+            continue;
+
+        const bool modified = nf->modified();
+        const auto value = nf->value();
+
         if (!def.isNull())
             nf->setDefaultValue(def);
         if (!min.isNull())
@@ -180,6 +209,17 @@ void NodeStorage::dictMetaLoaded(QJsonObject jso)
             nf->setIncrement(increment.toDouble());
         // if (!decimal.isNull())
         //     nf->setPrecision(decimal.toInt());
+
+        if (nf->value() == value)
+            continue;
+
+        // value is limited by the range from meta
+        qWarning() << "value out of range:" << name << value.toString() << nf->text();
+        if (!modified) {
+            // the limited value becomes the new reference
+            // (the same as when the value is received after meta)
+            nf->backup();
+        }
     }
     // if (cnt > 0)
     //     qDebug() << "meta data loaded:" << cnt << "fields in" << timer.elapsed() << "ms";
