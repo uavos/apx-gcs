@@ -38,6 +38,48 @@ ValueButton {
     property string title: fact?fact.name:""
     text: title
 
+    // moving average of the value over the last avgWindow seconds
+    property bool avgEnabled: false
+    property real avgWindow: 0 // seconds
+    property var avgValue
+
+    property var _avgSamples: [] // [{t: ms, v: value}]
+    property real _avgSum: 0
+
+    function avgPush(x)
+    {
+        x=Number(x)
+        if(!isFinite(x)) return
+        var now=Date.now()
+        _avgSamples.push({"t": now, "v": x})
+        _avgSum+=x
+        _avgTrim(now)
+        avgValue=_avgSum/_avgSamples.length
+    }
+
+    // drop samples older than the window, keep at least the last one
+    function _avgTrim(now)
+    {
+        var expired=now-avgWindow*1000
+        while(_avgSamples.length>1 && _avgSamples[0].t<expired)
+            _avgSum-=_avgSamples.shift().v
+    }
+
+    // cleanup when values stop coming, also recompute sum to avoid float drift
+    Timer {
+        running: control.avgEnabled
+        interval: 1000
+        repeat: true
+        onTriggered: {
+            control._avgTrim(Date.now())
+            var sum=0
+            for(var i=0;i<control._avgSamples.length;++i)
+                sum+=control._avgSamples[i].v
+            control._avgSum=sum
+            control.avgValue=sum/control._avgSamples.length
+        }
+    }
+
     // reserve space for minus sign, so the width doesn't jump when value sign changes
     readonly property real signWidth: /^\d/.test(value)?_signMetrics.advanceWidth:0
     property TextMetrics _signMetrics: TextMetrics {

@@ -347,6 +347,10 @@ void TelemetryReader::addEventFact(quint64 time, QString name, QJsonObject data,
         auto uid = data.value("uid").toString();
         auto title = QString("%1=%2").arg(param).arg(value);
         f = new Fact(g, name + "#", title, uid);
+    } else if (name == telemetry::EVT_CMD.name) {
+        auto cmd = data.value("name").toString();
+        auto value = data.value("value").toString();
+        f = new Fact(g, name + "#", QString("%1=%2").arg(cmd).arg(value), uplink ? "TX" : "RX");
     } else {
         static const QHash<QString, QString> title_keys = {
             // {"info", "name_create"},

@@ -110,7 +110,7 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     if (styleSheet.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qApp->setStyleSheet(styleSheet.readAll());
     }
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QStyle *style = QStyleFactory::create("Fusion");
 #else
     QStyle *style = QStyleFactory::create("Breeze");
@@ -450,7 +450,7 @@ QFont App::getMonospaceFont()
     font.setKerning(false);
 
     do {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         font.setFamily("Menlo");
 #else
         font.setFamily("FreeMono");

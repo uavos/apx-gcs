@@ -56,6 +56,7 @@ public slots:
 
     void loadLatestNodeConf();
     void loadNodeConf(quint64 id);
+    void importConf(QJsonObject values, quint64 dictID);
 
     void updateConfID(quint64 confID);
 

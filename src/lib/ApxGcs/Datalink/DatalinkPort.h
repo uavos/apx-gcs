@@ -31,7 +31,6 @@ class Datalink;
 class DatalinkPort : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(PortType)
 
 public:
     explicit DatalinkPort(DatalinkPorts *parent,

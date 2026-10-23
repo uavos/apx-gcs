@@ -92,6 +92,13 @@ Geo::Geo(MissionGroup *parent)
     f_radius->setIncrement(100);
     connect(this, &MissionItem::coordinateChanged, this, &Geo::radiusPointChanged);
     connect(f_radius, &Fact::valueChanged, this, &Geo::radiusPointChanged);
+    // on-board format stores the radius in 100 m units
+    connect(f_radius, &Fact::valueChanged, this, [this]() {
+        const double r = f_radius->value().toDouble();
+        const int snapped = qMax(100, qRound(r / 100.0) * 100);
+        if (snapped != r)
+            f_radius->setValue(snapped);
+    });
     f_radius->setValue(500);
 
     f_points = new Fact(this,
@@ -189,24 +196,9 @@ QJsonValue Geo::toJson()
 void Geo::fromJson(const QJsonValue &jsv)
 {
     auto jso = jsv.toObject();
-    // points array
-    if (jso.contains(f_points->name())) {
-        auto jsa = jso.value(f_points->name()).toArray();
-        jso.remove(f_points->name());
-        f_points->deleteChildren();
-        for (auto jv : jsa) {
-            auto jso = jv.toObject();
-            addPoint(QGeoCoordinate(jso.value("lat").toDouble(), jso.value("lon").toDouble()));
-        }
-    }
-
-    // p2 point coordinate
-    if (jso.contains(f_p2->name())) {
-        auto jso2 = jso.value(f_p2->name()).toObject();
-        jso.remove(f_p2->name());
-        f_p2->setCoordinate(
-            QGeoCoordinate(jso2.value("lat").toDouble(), jso2.value("lon").toDouble()));
-    }
+    // shape points are parsed here, not by the base class
+    const auto jsa = jso.take(f_points->name());
+    const auto jso2 = jso.take(f_p2->name());
 
     // rename name to label
     if (jso.contains("name") && !jso.contains(f_label->name())) {
@@ -214,7 +206,23 @@ void Geo::fromJson(const QJsonValue &jsv)
         jso.remove("name");
     }
 
+    // base class resets missing fields (incl. p2) and shape handler sets defaults
     MissionItem::fromJson(jso);
+
+    // points array
+    if (jsa.isArray()) {
+        f_points->deleteChildren();
+        for (auto jv : jsa.toArray()) {
+            auto jso = jv.toObject();
+            addPoint(QGeoCoordinate(jso.value("lat").toDouble(), jso.value("lon").toDouble()));
+        }
+    }
+
+    // p2 point coordinate
+    if (jso2.isObject()) {
+        auto p2 = jso2.toObject();
+        f_p2->setCoordinate(QGeoCoordinate(p2.value("lat").toDouble(), p2.value("lon").toDouble()));
+    }
 }
 
 void Geo::updateTitle()
@@ -327,14 +335,10 @@ void Geo::setRadiusPoint(const QGeoCoordinate &v)
         f_radius->setValue(ne.y() > 0 ? rabs : -rabs);
     }
     int dist = ne.x();
-    if (dist < 20)
-        dist = 0;
-    else if (dist > 50000)
+    if (dist > 50000)
         dist = (dist / 1000) * 1000;
-    else if (dist > 500)
-        dist = (dist / 100) * 100;
     else
-        dist = (dist / 10) * 10;
+        dist = qRound(dist / 100.0) * 100; // on-board format resolution
     f_radius->setValue(f_radius->value().toInt() < 0 ? -dist : dist);
 }
 

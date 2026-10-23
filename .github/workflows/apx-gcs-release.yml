@@ -50,7 +50,7 @@ jobs:
     name: Build MacOS
     runs-on: macos-latest
     env:
-      VERSION_QT: 6.11.1
+      VERSION_QT: 6.12.0
       VERSION_SDL: 2.30.8
       VERSION_GST: 1.28.6
 
@@ -218,5 +218,6 @@ jobs:
             github.rest.repos.updateRelease({
               owner, repo,
               release_id: "${{ steps.create_release.outputs.id }}",
-              draft: false
+              draft: false,
+              make_latest: "true"
             });

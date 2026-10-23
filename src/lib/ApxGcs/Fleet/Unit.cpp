@@ -499,6 +499,9 @@ void Unit::message(QString msg, AppNotify::NotifyFlags flags, QString subsystem,
         f_warnings->error(msg);
     } else if (fType == AppNotify::Warning) {
         f_warnings->warning(msg);
+    } else {
+        // all other messages are checked against bubble keywords
+        f_warnings->info(msg);
     }
 }
 

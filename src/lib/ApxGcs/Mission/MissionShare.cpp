@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MissionShare.h"
+#include "MissionItem.h"
 #include "UnitMission.h"
 
 #include <App/AppDirs.h>
@@ -30,6 +31,9 @@ MissionShare::MissionShare(UnitMission *mission, Fact *parent, Flags flags)
     : Share(parent, "mission", tr("Mission"), AppDirs::missions(), flags)
     , _mission(mission)
 {
+    _exportFormats << "geofence";
+    _importFormats << "geofence";
+
     connect(mission, &UnitMission::emptyChanged, this, &MissionShare::updateActions);
     updateActions();
 }
@@ -50,7 +54,15 @@ QString MissionShare::getDefaultTitle()
 }
 bool MissionShare::exportRequest(QString format, QString fileName)
 {
-    if (!saveData(_mission->toJsonDocument().toJson(), fileName))
+    auto jso = _mission->toJson().toObject();
+    if (format == "geofence") {
+        // geofences only
+        const auto name = _mission->f_geo->name();
+        if (!jso.contains(name))
+            return false;
+        jso = QJsonObject{{name, jso.value(name)}};
+    }
+    if (!saveData(QJsonDocument(jso).toJson(), fileName))
         return false;
     _exported(fileName);
     return true;
@@ -63,7 +75,33 @@ bool MissionShare::importRequest(QStringList fileNames)
     if (jso.isEmpty())
         return false;
 
-    _mission->fromJson(jso);
+    // file with geofences only is appended to non-empty current mission
+    MissionGroup *geo = _mission->f_geo;
+    bool append = !_mission->empty();
+    for (auto g : _mission->groups) {
+        if (g != geo && jso.contains(g->name())) {
+            append = false;
+            break;
+        }
+    }
+    if (append && jso.contains(geo->name())) {
+        for (const auto &i : jso.value(geo->name()).toArray()) {
+            // skip geofences already present at the same position
+            const auto jsi = i.toObject();
+            QGeoCoordinate c(jsi.value("lat").toDouble(), jsi.value("lon").toDouble());
+            bool exists = false;
+            for (auto f : geo->facts()) {
+                if (static_cast<MissionItem *>(f)->coordinate().distanceTo(c) < 1.0) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists)
+                geo->createObject()->fromJson(i);
+        }
+    } else {
+        _mission->fromJson(jso);
+    }
 
     _imported(fileName, _mission->f_title->text());
     return true;

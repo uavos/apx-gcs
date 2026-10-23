@@ -328,10 +328,14 @@ bool TelemetryFileReader::parse_next()
         return false;
     }
 
+    const auto pos_s = pos();
     auto dspec = _read_dspec();
     if (dspec._raw8 == 0) {
-        qWarning() << "stream stop marker at" << pos();
-        seek(pos() - 1); // rollback to stop marker (begin of stats)
+        if (pos() > pos_s) {
+            qWarning() << "stream stop marker at" << pos_s;
+            seek(pos_s); // rollback to stop marker (begin of stats)
+        }
+        _commit_values(); // values collected after the last timestamp
         _interrupted = true;
         return true;
     }

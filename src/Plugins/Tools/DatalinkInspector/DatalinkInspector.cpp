@@ -61,7 +61,6 @@ DatalinkInspector::DatalinkInspector(Fact *parent)
     connect(this, &Fact::activeChanged, this, &DatalinkInspector::clear);
 
     setOpt("page", "qrc:/" PLUGIN_NAME "/DatalinkInspector.qml");
-    loadQml("qrc:/" PLUGIN_NAME "/DatalinkInspectorPlugin.qml");
 }
 
 void DatalinkInspector::clear()
