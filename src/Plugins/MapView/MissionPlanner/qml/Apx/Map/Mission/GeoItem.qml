@@ -50,7 +50,7 @@ MissionObject {
     readonly property bool role_term: m_role==="term"
 
     // Shapes
-    readonly property real shapeOpacity: (selected||dragging||hover)?0.7:role_safe?0.2:role_term?0.6:0.4
+    readonly property real shapeOpacity: (selected||dragging||hover)?0.45:role_safe?0.15:role_term?0.45:0.3
     readonly property real pathWidth: 4
     readonly property color bgColor: role_safe?"white":Qt.lighter(color, 1.9)
     
