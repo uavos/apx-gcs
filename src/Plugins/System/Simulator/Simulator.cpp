@@ -334,6 +334,11 @@ void Simulator::startInstance(int idx)
     args << "-u" << QString::number(port_uplink(idx));
     args << "-s" << QString::number(port_sns(idx));
     args << "-x" << QString::number(port_ctr(idx));
+
+    // a distinct unit uid and callsign suffix, otherwise GCS sees all instances
+    // as one unit; #0 keeps the identity of the usual single sim setup
+    if (idx > 0)
+        args << "-i" << QString::number(idx);
     p->setArguments(args);
 
     // node config is stored in $HOME/.config - separate it per instance
