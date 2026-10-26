@@ -36,15 +36,38 @@ public:
     Fact *f_launch;
     Fact *f_stop;
 
+    Fact *f_instances;
+
     Fact *f_type;
 
     Fact *f_sxpl;
 
     Fact *f_cmd;
 
+    // UDP ports offset between SIL instances
+    // instance #0 uses default ports from tcp_ports.h (X-Plane plugin compatible)
+    static constexpr const quint16 port_stride{100};
+
+    static quint16 port_uplink(int idx);
+    static quint16 port_sns(int idx);
+    static quint16 port_ctr(int idx);
+
 private:
     QStringList xplaneDirs;
-    QProcess pShiva;
+
+    // SIL instances, index is the instance number
+    struct Instance
+    {
+        QProcess *process{};
+        QElapsedTimer started;
+        int restarts{};
+    };
+    QList<Instance> _instances;
+    bool _user_stop{};
+
+    // SIL node sometimes crashes right after start (posix platform startup race)
+    static constexpr const int startup_timeout_ms{10000};
+    static constexpr const int max_restarts{3};
 
     QString target_os;
     QString sim_executable;
@@ -55,12 +78,19 @@ private:
 
     void _launchXplane(QString xplaneDir);
 
+    QDir instanceDir(int idx);
+    void startInstance(int idx);
+    void stopInstances();
+    bool isRunning() const;
+    void updateState();
+
 private slots:
     void detectXplane();
     void launch();
     void launchXplane();
     void launchShiva();
+    void stopShiva();
 
-    void pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    void pShivaErrorOccurred(QProcess::ProcessError error);
+    void instanceFinished(int idx, int exitCode, QProcess::ExitStatus exitStatus);
+    void instanceErrorOccurred(int idx, QProcess::ProcessError error);
 };

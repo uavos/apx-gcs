@@ -28,6 +28,8 @@
 #include <App/AppLog.h>
 #include <QDesktopServices>
 
+#include <tcp_ports.h>
+
 APX_LOGGING_CATEGORY(SimLog, "Simulator")
 
 Simulator::Simulator(Fact *parent)
@@ -55,7 +57,17 @@ Simulator::Simulator(Fact *parent)
 
     f_stop = new Fact(this, "stop", tr("Stop"), tr("Stop APX app"), Action | Stop, "stop");
     f_stop->setEnabled(false);
-    connect(f_stop, &Fact::triggered, &pShiva, &QProcess::terminate);
+    connect(f_stop, &Fact::triggered, this, &Simulator::stopShiva);
+
+    f_instances = new Fact(this,
+                           "instances",
+                           tr("SIL instances"),
+                           tr("Number of SIL nodes to run"),
+                           Int | PersistentValue);
+    f_instances->setIcon("numeric");
+    f_instances->setMin(1);
+    f_instances->setMax(32);
+    f_instances->setDefaultValue(1);
 
     // Xplane group
     f_type = new Fact(this, "type", tr("Type"), tr("Simulator type"), Enum | PersistentValue);
@@ -75,30 +87,32 @@ Simulator::Simulator(Fact *parent)
     // jamming
     new SimMods(this);
 
-    //shiva
-    pShiva.setProgram(AppDirs::firmware().absoluteFilePath("sim/" + sim_executable));
-    connect(&pShiva,
-            QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this,
-            &Simulator::pShivaFinished);
-    connect(&pShiva, &QProcess::errorOccurred, this, &Simulator::pShivaErrorOccurred);
-
     QTimer::singleShot(2000, this, &Simulator::detectXplane);
 }
 Simulator::~Simulator()
 {
     //qDebug() << "kill sim";
-    disconnect(&pShiva, nullptr, nullptr, nullptr);
-    pShiva.terminate();
-    pShiva.waitForFinished(1000);
+    stopInstances();
     pShivaKill();
+}
+
+quint16 Simulator::port_uplink(int idx)
+{
+    return UDP_PORT_AP_UPLINK + idx * port_stride;
+}
+quint16 Simulator::port_sns(int idx)
+{
+    return UDP_PORT_AP_SNS + idx * port_stride;
+}
+quint16 Simulator::port_ctr(int idx)
+{
+    return UDP_PORT_SIM_CTR + idx * port_stride;
 }
 
 void Simulator::pShivaKill()
 {
-    if (QProcess::startDetached("killall", QStringList() << sim_executable) == 0) {
-        //apxMsgW() << tr("SIL simulation session restart");
-    }
+    // synchronous call: a detached killall could kill the instances started right after
+    QProcess::execute("killall", QStringList() << sim_executable);
 }
 
 bool Simulator::extract_apxfw()
@@ -250,32 +264,131 @@ void Simulator::launchXplane()
     if (!xplaneDir.isEmpty())
         _launchXplane(xplaneDir);
 }
+
+QDir Simulator::instanceDir(int idx)
+{
+    QDir dir(AppDirs::firmware().absoluteFilePath(QString("sim/units/%1").arg(idx)));
+    dir.mkpath(".");
+    return dir;
+}
+
+void Simulator::startInstance(int idx)
+{
+    while (_instances.size() <= idx)
+        _instances.append(Instance{});
+
+    Instance &inst = _instances[idx];
+    QProcess *p = inst.process;
+    if (!p) {
+        p = new QProcess(this);
+        inst.process = p;
+        connect(p,
+                QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                this,
+                [this, idx](int exitCode, QProcess::ExitStatus exitStatus) {
+                    instanceFinished(idx, exitCode, exitStatus);
+                });
+        connect(p, &QProcess::errorOccurred, this, [this, idx](QProcess::ProcessError error) {
+            instanceErrorOccurred(idx, error);
+        });
+    }
+
+    if (p->state() != QProcess::NotRunning)
+        return;
+
+    QDir dir = instanceDir(idx);
+
+    p->setProgram(AppDirs::firmware().absoluteFilePath("sim/" + sim_executable));
+    p->setWorkingDirectory(dir.absolutePath());
+
+    // each instance listens on its own UDP ports
+    QStringList args;
+    args << "-u" << QString::number(port_uplink(idx));
+    args << "-s" << QString::number(port_sns(idx));
+    args << "-x" << QString::number(port_ctr(idx));
+    p->setArguments(args);
+
+    // node config is stored in $HOME/.config - separate it per instance
+    // instance #0 keeps the user HOME to preserve the existing SIM unit config
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    if (idx > 0)
+        env.insert("HOME", dir.absolutePath());
+    p->setProcessEnvironment(env);
+
+    // console output goes to a per-instance log file
+    p->setProcessChannelMode(QProcess::MergedChannels);
+    p->setStandardOutputFile(dir.absoluteFilePath("sim.log"), QIODevice::Truncate);
+
+    qCDebug(SimLog) << "SIL" << idx << p->program() << args << dir.absolutePath();
+
+    _user_stop = false;
+    inst.started.start();
+    p->start();
+    updateState();
+}
+
+void Simulator::stopInstances()
+{
+    for (auto &inst : _instances) {
+        QProcess *p = inst.process;
+        if (!p)
+            continue;
+        disconnect(p, nullptr, this, nullptr);
+        if (p->state() != QProcess::NotRunning) {
+            p->terminate();
+            if (!p->waitForFinished(1000))
+                p->kill();
+        }
+        p->deleteLater();
+    }
+    _instances.clear();
+}
+
+bool Simulator::isRunning() const
+{
+    for (const auto &inst : _instances) {
+        if (inst.process && inst.process->state() != QProcess::NotRunning)
+            return true;
+    }
+    return false;
+}
+
+void Simulator::updateState()
+{
+    bool running = isRunning();
+    f_launch->setEnabled(!running);
+    f_stop->setEnabled(running);
+}
+
 void Simulator::launchShiva()
 {
     apxMsg() << tr("Launching SIL").append("...");
 
-    //launch shiva
-    pShiva.kill();
+    // stop all instances, including stray ones
+    stopInstances();
     pShivaKill();
 
     if (!extract_apxfw()) {
         apxMsgW() << tr("Simulation firmware unavailable");
-    } else {
-        /*QStringList args;
-    if (f_oDLHD->value().toBool())
-        args << "-a";
-    if (f_oINS->value().toBool())
-        args << "-i";
-    if (f_oNoise->value().toBool())
-        args << "-n";
-    args << "-s"
-         << "-u";
-    pShiva.setArguments(args);*/
+        updateState();
+        return;
+    }
 
-        f_launch->setEnabled(false);
-        f_stop->setEnabled(true);
+    int count = f_instances->value().toInt();
+    if (count < 1)
+        count = 1;
 
-        pShiva.start();
+    for (int i = 0; i < count; ++i) {
+        startInstance(i);
+    }
+}
+
+void Simulator::stopShiva()
+{
+    _user_stop = true;
+    for (const auto &inst : _instances) {
+        if (inst.process && inst.process->state() != QProcess::NotRunning)
+            inst.process->terminate();
     }
 }
 
@@ -325,17 +438,33 @@ void Simulator::_launchXplane(QString xplaneDir)
     }
 }
 
-void Simulator::pShivaFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void Simulator::instanceFinished(int idx, int exitCode, QProcess::ExitStatus exitStatus)
 {
-    Q_UNUSED(exitCode)
-    Q_UNUSED(exitStatus)
-    apxMsg() << tr("SIL simulation stopped");
-    f_launch->setEnabled(true);
-    f_stop->setEnabled(false);
-    if (exitCode == 7)
-        launch();
+    apxMsg() << tr("SIL simulation stopped").append(QString(" #%1").arg(idx));
+    updateState();
+
+    if (idx >= _instances.size())
+        return;
+    Instance &inst = _instances[idx];
+
+    // restart requested by the node
+    if (exitStatus == QProcess::NormalExit && exitCode == 7) {
+        startInstance(idx);
+        return;
+    }
+
+    // crashed on startup - retry
+    if (!_user_stop && exitStatus == QProcess::CrashExit
+        && inst.started.elapsed() < startup_timeout_ms && inst.restarts < max_restarts) {
+        inst.restarts++;
+        apxMsgW() << tr("SIL crashed on start, restarting")
+                         .append(QString(" #%1 (%2)").arg(idx).arg(inst.restarts));
+        startInstance(idx);
+    }
 }
-void Simulator::pShivaErrorOccurred(QProcess::ProcessError error)
+void Simulator::instanceErrorOccurred(int idx, QProcess::ProcessError error)
 {
-    apxMsgW() << pShiva.errorString() << error;
+    QProcess *p = _instances.value(idx).process;
+    apxMsgW() << QString("SIL #%1:").arg(idx) << (p ? p->errorString() : QString()) << error;
+    updateState();
 }
