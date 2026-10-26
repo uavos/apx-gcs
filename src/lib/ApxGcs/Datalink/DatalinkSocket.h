@@ -41,6 +41,7 @@ public:
 
     static bool isLocalHost(const QHostAddress address);
     bool isEqual(const QHostAddress address);
+    bool isEqual(const QHostAddress address, quint16 port);
 
     virtual void close() override;
 

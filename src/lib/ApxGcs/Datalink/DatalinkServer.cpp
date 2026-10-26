@@ -277,9 +277,11 @@ void DatalinkServer::udpReadyRead()
         // qDebug() << datagram.senderAddress() << datagram.senderPort() << datagram.data().size()
         //          << datagram.isValid();
 
+        // match client by address AND port: several local clients
+        // (f.ex. SIL instances) share the same host address
         bool found = false;
         for (auto i : f_clients->findFacts<DatalinkSocketUdp>()) {
-            if (i->isEqual(datagram.senderAddress())) {
+            if (i->isEqual(datagram.senderAddress(), datagram.senderPort())) {
                 i->readDatagram(datagram);
                 found = true;
                 continue;

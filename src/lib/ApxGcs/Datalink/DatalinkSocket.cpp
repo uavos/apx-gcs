@@ -84,6 +84,10 @@ bool DatalinkSocket::isEqual(const QHostAddress address)
 {
     return _hostAddress.isEqual(address);
 }
+bool DatalinkSocket::isEqual(const QHostAddress address, quint16 port)
+{
+    return _hostPort == port && _hostAddress.isEqual(address);
+}
 
 void DatalinkSocket::socketDisconnected()
 {
