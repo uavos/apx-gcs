@@ -23,6 +23,11 @@
 #include "SimMods.h"
 
 #include <App/App.h>
+#include <Fleet/Fleet.h>
+#include <Fleet/Unit.h>
+#include <Mandala/Mandala.h>
+#include <Mission/Runway.h>
+#include <Mission/UnitMission.h>
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
 #include <App/AppLog.h>
@@ -70,8 +75,14 @@ Simulator::Simulator(Fact *parent)
     f_instances->setDefaultValue(1);
 
     // Xplane group
-    f_type = new Fact(this, "type", tr("Type"), tr("Simulator type"), Enum | PersistentValue);
+    f_type = new Fact(this,
+                      "type",
+                      tr("Type"),
+                      tr("Simulator type"),
+                      Enum | PersistentValue);
     f_type->setIcon("package-variant");
+    connect(f_type, &Fact::valueChanged, this, &Simulator::updateType);
+    connect(f_instances, &Fact::valueChanged, this, &Simulator::updateType);
 
     f_sxpl = new Fact(this, "sxpl", tr("Start XPlane"), tr("Run X-Plane on start"), Bool);
     connect(f_sxpl, &Fact::triggered, this, &Simulator::launchXplane);
@@ -87,13 +98,17 @@ Simulator::Simulator(Fact *parent)
     // jamming
     new SimMods(this);
 
+    updateType();
+
     QTimer::singleShot(2000, this, &Simulator::detectXplane);
 }
 Simulator::~Simulator()
 {
     //qDebug() << "kill sim";
     stopInstances();
+    stopFdm();
     pShivaKill();
+    fdmKill();
 }
 
 quint16 Simulator::port_uplink(int idx)
@@ -113,6 +128,13 @@ void Simulator::pShivaKill()
 {
     // synchronous call: a detached killall could kill the instances started right after
     QProcess::execute("killall", QStringList() << sim_executable);
+}
+
+void Simulator::fdmKill()
+{
+    // a stray app keeps the UDP ports of the instances and serves them its own
+    // start point, i.e. the aircraft appear somewhere else than the mission runway
+    QProcess::execute("killall", QStringList() << fdm_executable);
 }
 
 bool Simulator::extract_apxfw()
@@ -194,20 +216,26 @@ void Simulator::detectXplane()
         }
     }
     //qDebug() << st << xplaneDirs;
+
+    // the built-in model is always available, X-Plane indexes xplaneDirs as before
+    st.append(fdm_type);
     f_type->setEnumStrings(st);
-    if (st.isEmpty())
-        f_type->setEnabled(false);
-    else {
-        f_type->setEnabled(true);
-    }
+
+    // the saved option text can only be resolved now, when the list is known
+    f_type->loadPresistentValue();
+
+    updateType();
 }
 
 void Simulator::launch()
 {
     apxMsg() << tr("Launching simulation").append("...");
 
-    if (f_sxpl->value().toBool())
+    if (isFdm()) {
+        launchFdm();
+    } else if (f_sxpl->value().toBool()) {
         launchXplane();
+    }
 
     launchShiva();
 }
@@ -360,6 +388,131 @@ void Simulator::updateState()
     f_stop->setEnabled(running);
 }
 
+bool Simulator::isFdm() const
+{
+    return f_type->valueText() == fdm_type;
+}
+
+void Simulator::updateType()
+{
+    if (f_type->enumStrings().isEmpty())
+        return; // X-Plane installations are not detected yet
+
+    const bool fdm = isFdm();
+
+    const auto max = fdm ? max_instances_fdm : max_instances_xplane;
+    f_instances->setMax(max);
+    if (f_instances->value().toInt() > max) {
+        if (!fdm)
+            apxMsgW() << tr("X-Plane serves one SIL instance only");
+        f_instances->setValue(max);
+    }
+
+    f_sxpl->setEnabled(!fdm);
+}
+
+bool Simulator::missionStartPoint(QGeoCoordinate &p, double &hdg) const
+{
+    auto unit = Fleet::instance()->current();
+    if (!unit)
+        return false;
+
+    auto mission = unit->f_mission;
+    if (!mission)
+        return false;
+
+    // takeoff starts at the threshold of the first runway
+    auto rw = qobject_cast<Runway *>(mission->f_rw->child(0));
+    if (!rw)
+        return false;
+
+    p = rw->coordinate();
+    if (!p.isValid())
+        return false;
+
+    hdg = rw->heading();
+
+    auto hmsl = rw->f_hmsl->value().toDouble();
+    if (hmsl == 0) {
+        // runway altitude is `default`, i.e. the unit home reference
+        if (auto mandala = unit->f_mandala) {
+            if (auto f = mandala->fact(mandala::est::nav::ref::hmsl::uid))
+                hmsl = f->value().toDouble();
+        }
+    }
+    p.setAltitude(hmsl);
+
+    return true;
+}
+
+void Simulator::launchFdm()
+{
+    stopFdm();
+    fdmKill();
+
+    auto fdm_path = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath(fdm_executable);
+    if (!QFile::exists(fdm_path)) {
+        apxMsgW() << tr("Flight dynamics app unavailable").append(":") << fdm_path;
+        return;
+    }
+
+    int count = f_instances->value().toInt();
+    if (count < 1)
+        count = 1;
+
+    QStringList args;
+    args << "-n" << QString::number(count);
+
+    QGeoCoordinate p;
+    double hdg{};
+    if (missionStartPoint(p, hdg)) {
+        args << "--lat" << QString::number(p.latitude(), 'f', 8);
+        args << "--lon" << QString::number(p.longitude(), 'f', 8);
+        args << "--alt" << QString::number(p.altitude(), 'f', 1);
+        args << "--hdg" << QString::number(hdg, 'f', 1);
+    } else {
+        apxMsgW() << tr("No runway in mission, flight dynamics starts at its default point");
+    }
+
+    QDir dir(AppDirs::firmware().absoluteFilePath("sim"));
+    dir.mkpath(".");
+
+    _fdm = new QProcess(this);
+    connect(_fdm,
+            QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this,
+            [this](int exitCode, QProcess::ExitStatus exitStatus) {
+                if (_user_stop)
+                    return;
+                apxMsgW() << tr("Flight dynamics stopped").append(":") << exitCode << exitStatus;
+            });
+
+    _fdm->setProgram(fdm_path);
+    _fdm->setArguments(args);
+    _fdm->setWorkingDirectory(dir.absolutePath());
+    _fdm->setProcessChannelMode(QProcess::MergedChannels);
+    _fdm->setStandardOutputFile(dir.absoluteFilePath("apx-fdm.log"), QIODevice::Truncate);
+
+    qCDebug(SimLog) << "FDM" << fdm_path << args;
+
+    _fdm->start();
+}
+
+void Simulator::stopFdm()
+{
+    if (!_fdm)
+        return;
+
+    disconnect(_fdm, nullptr, this, nullptr);
+    if (_fdm->state() != QProcess::NotRunning) {
+        _fdm->terminate();
+        if (!_fdm->waitForFinished(1000))
+            _fdm->kill();
+    }
+    _fdm->deleteLater();
+    _fdm = nullptr;
+}
+
 void Simulator::launchShiva()
 {
     apxMsg() << tr("Launching SIL").append("...");
@@ -386,6 +539,7 @@ void Simulator::launchShiva()
 void Simulator::stopShiva()
 {
     _user_stop = true;
+    stopFdm();
     for (const auto &inst : _instances) {
         if (inst.process && inst.process->state() != QProcess::NotRunning)
             inst.process->terminate();

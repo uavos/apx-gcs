@@ -22,6 +22,7 @@
 #pragma once
 
 #include <Fact/Fact.h>
+#include <QGeoCoordinate>
 #include <QtCore>
 Q_DECLARE_LOGGING_CATEGORY(SimLog)
 
@@ -48,6 +49,14 @@ public:
     // instance #0 uses default ports from tcp_ports.h (X-Plane plugin compatible)
     static constexpr const quint16 port_stride{100};
 
+    // f_type option of the built-in flight dynamics, the others are X-Plane installations
+    static constexpr const char *fdm_type{"apx-fdm"};
+    static constexpr const char *fdm_executable{"apx-fdm"};
+
+    // X-Plane plugin serves the default ports only, apx-fdm is limited by its kMaxUnits
+    static constexpr const int max_instances_xplane{1};
+    static constexpr const int max_instances_fdm{10};
+
     static quint16 port_uplink(int idx);
     static quint16 port_sns(int idx);
     static quint16 port_ctr(int idx);
@@ -65,6 +74,9 @@ private:
     QList<Instance> _instances;
     bool _user_stop{};
 
+    // built-in flight dynamics (apx-fdm), serves all instances at once
+    QProcess *_fdm{};
+
     // SIL node sometimes crashes right after start (posix platform startup race)
     static constexpr const int startup_timeout_ms{10000};
     static constexpr const int max_restarts{3};
@@ -75,8 +87,16 @@ private:
     bool extract_apxfw();
 
     void pShivaKill();
+    void fdmKill();
 
     void _launchXplane(QString xplaneDir);
+
+    bool isFdm() const;
+    void launchFdm();
+    void stopFdm();
+    bool missionStartPoint(QGeoCoordinate &p, double &hdg) const;
+
+    void updateType();
 
     QDir instanceDir(int idx);
     void startInstance(int idx);
