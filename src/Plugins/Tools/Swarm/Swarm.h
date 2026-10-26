@@ -2,14 +2,10 @@
 
 #include <QTimer>
 #include <QTimerEvent>
-#include <QtNetwork>
 
 #include "App/AppGcs.h"
 #include "Fact/Fact.h"
 #include "Fleet/Unit.h"
-
-#include <serial/CobsDecoder.h>
-#include <serial/CobsEncoder.h>
 
 namespace swarm {
 
@@ -60,30 +56,6 @@ private:
 
     bool swarm_update{false};
 
-    // UDP relay: local apx.sim bus COBS stream -> swarm bundles (pid + payload)
-    // -> COBS -> uplink port of apx.sim on other computers, the same as from GCU
-    Fact *f_udp_enabled;
-    Fact *f_udp_local;
-    Fact *f_udp_sims;
-
-    QUdpSocket _udp_local;
-    QList<QPair<QHostAddress, quint16>> _sims;
-
-    CobsDecoder<> _dec_local;
-    CobsEncoder<> _enc;
-
-    // recently sent packets, to break loops through remote sims
-    QElapsedTimer _time;
-    QList<QPair<qint64, QByteArray>> _sent;
-
-    void udpBind();
-    void udpUpdateSims();
-
-    void sendToSims(const QByteArray &packet);
-    void dropExpired();
-    bool wasSent(const QByteArray &packet);
-
 private slots:
     void onSwarmTimer();
-    void udpReadLocal();
 };

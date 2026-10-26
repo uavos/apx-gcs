@@ -33,3 +33,22 @@ would appear somewhere else than the mission runway.
 An X-Plane type uses the default ports, i.e. it serves one instance, so `SIL instances` is limited
 to `1` for it.
 
+## Swarm
+
+The `Swarm` option relays swarm bundles of the master instance to the other instances, so that a
+swarm can be tested without a radio network. Set the master instance VCP `udp` port to the `BUS`
+mode and point its destination to the `Master bus port` (`9236` by default). Every swarm bundle
+(`cmd.nav.swarm`) decoded from that stream is sent as is to the uplink port of every instance, COBS
+encoded, i.e. the same way the GCS uplink does it. The master gets its own bundle back and ignores
+it, because a node acts on received bundles in the `slave` mode only.
+
+Two setups are supported, and they can be mixed:
+
+* one unit per computer, each with its own X-Plane: `Type` is an X-Plane installation, `SIL
+instances` is `1` and `Peers` lists the other computers (the uplink port `9225` is used when the
+address has no port). `Swarm` is enabled on the master computer only;
+* all units on one computer: `Type` is `apx-fdm`, `SIL instances` is the number of units and
+`Peers` is empty. The bundles go to `9225`, `9325`, `9425`, ... of the local instances.
+
+NOTE: the SIL node must be built with the `swarm` module, otherwise the master publishes no bundles
+and the others ignore them.

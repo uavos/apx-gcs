@@ -21,6 +21,7 @@
  */
 #include "Simulator.h"
 #include "SimMods.h"
+#include "SimSwarm.h"
 
 #include <App/App.h>
 #include <Fleet/Fleet.h>
@@ -97,6 +98,9 @@ Simulator::Simulator(Fact *parent)
 
     // jamming
     new SimMods(this);
+
+    // swarm bundles relay between instances
+    new SimSwarm(this);
 
     updateType();
 
