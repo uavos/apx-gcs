@@ -26,6 +26,8 @@
 #include <QtCore>
 Q_DECLARE_LOGGING_CATEGORY(SimLog)
 
+class Unit;
+
 class Simulator : public Fact
 {
     Q_OBJECT
@@ -95,6 +97,12 @@ private:
     void launchFdm();
     void stopFdm();
     bool missionStartPoint(QGeoCoordinate &p, double &hdg) const;
+    bool unitStartPoint(Unit *unit, QGeoCoordinate &p, double &hdg) const;
+
+    // the mission is not available until some unit is connected, so the point
+    // of the last launch is remembered and used instead of the app defaults
+    void saveStartPoint(const QGeoCoordinate &p, double hdg) const;
+    bool loadStartPoint(QGeoCoordinate &p, double &hdg) const;
 
     void updateType();
 

@@ -32,6 +32,7 @@
 #include <App/AppDirs.h>
 #include <App/AppGcs.h>
 #include <App/AppLog.h>
+#include <App/AppPrefs.h>
 #include <QDesktopServices>
 
 #include <tcp_ports.h>
@@ -245,6 +246,11 @@ void Simulator::launch()
 {
     apxMsg() << tr("Launching simulation").append("...");
 
+    // the type list is filled with a delay after start, resolve it now when
+    // the simulation is launched before that, or the type is still unknown
+    if (f_type->enumStrings().isEmpty())
+        detectXplane();
+
     if (isFdm()) {
         launchFdm();
     } else if (f_sxpl->value().toBool()) {
@@ -430,9 +436,8 @@ void Simulator::updateType()
     f_sxpl->setEnabled(!fdm);
 }
 
-bool Simulator::missionStartPoint(QGeoCoordinate &p, double &hdg) const
+bool Simulator::unitStartPoint(Unit *unit, QGeoCoordinate &p, double &hdg) const
 {
-    auto unit = Fleet::instance()->current();
     if (!unit)
         return false;
 
@@ -464,6 +469,46 @@ bool Simulator::missionStartPoint(QGeoCoordinate &p, double &hdg) const
     return true;
 }
 
+bool Simulator::missionStartPoint(QGeoCoordinate &p, double &hdg) const
+{
+    // the current unit first, then any other one with a runway in its mission
+    if (unitStartPoint(Fleet::instance()->current(), p, hdg))
+        return true;
+
+    for (auto f : Fleet::instance()->facts()) {
+        if (unitStartPoint(qobject_cast<Unit *>(f), p, hdg))
+            return true;
+    }
+    return false;
+}
+
+void Simulator::saveStartPoint(const QGeoCoordinate &p, double hdg) const
+{
+    const QString grp = "simulator";
+    AppPrefs::instance()->saveValue("start_lat", p.latitude(), grp);
+    AppPrefs::instance()->saveValue("start_lon", p.longitude(), grp);
+    AppPrefs::instance()->saveValue("start_alt", p.altitude(), grp);
+    AppPrefs::instance()->saveValue("start_hdg", hdg, grp);
+}
+
+bool Simulator::loadStartPoint(QGeoCoordinate &p, double &hdg) const
+{
+    const QString grp = "simulator";
+    auto prefs = AppPrefs::instance();
+    const auto lat = prefs->loadValue("start_lat", grp);
+    const auto lon = prefs->loadValue("start_lon", grp);
+    if (lat.isNull() || lon.isNull())
+        return false;
+
+    p = QGeoCoordinate(lat.toDouble(), lon.toDouble());
+    if (!p.isValid())
+        return false;
+
+    p.setAltitude(prefs->loadValue("start_alt", grp).toDouble());
+    hdg = prefs->loadValue("start_hdg", grp).toDouble();
+    return true;
+}
+
 void Simulator::launchFdm()
 {
     stopFdm();
@@ -485,12 +530,19 @@ void Simulator::launchFdm()
     QGeoCoordinate p;
     double hdg{};
     if (missionStartPoint(p, hdg)) {
+        saveStartPoint(p, hdg);
+    } else if (loadStartPoint(p, hdg)) {
+        // no unit is connected yet, i.e. no mission to take the runway from
+        apxMsg() << tr("Starting at the runway of the previous launch");
+    } else {
+        apxMsgW() << tr("No runway in mission, flight dynamics starts at its default point");
+    }
+
+    if (p.isValid()) {
         args << "--lat" << QString::number(p.latitude(), 'f', 8);
         args << "--lon" << QString::number(p.longitude(), 'f', 8);
         args << "--alt" << QString::number(p.altitude(), 'f', 1);
         args << "--hdg" << QString::number(hdg, 'f', 1);
-    } else {
-        apxMsgW() << tr("No runway in mission, flight dynamics starts at its default point");
     }
 
     QDir dir(AppDirs::firmware().absoluteFilePath("sim"));

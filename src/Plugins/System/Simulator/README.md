@@ -25,7 +25,9 @@ it has now.
 Besides the detected X-Plane installations, the `Type` option offers `apx-fdm`: the built-in flight
 dynamics ([`fdm`](apx-fdm/README.md)), one process for all instances (up to `10`). It is launched by
 this plugin with the start point taken from the first runway of the current mission (threshold, its
-heading and `MSL`, the unit home reference when the runway altitude is `default`). X-Plane is not
+heading and `MSL`, the unit home reference when the runway altitude is `default`). The mission is taken from the current unit, or from any other one that has a runway;
+when no unit is connected yet the point of the previous launch is used, so that the aircraft do not
+appear at the app default point on the first start. X-Plane is not
 needed and is not started. Stray `apx-fdm` apps are killed on start, as the SIL nodes are: one left
 running from a manual session keeps the UDP ports and serves its own start point, so the aircraft
 would appear somewhere else than the mission runway.
