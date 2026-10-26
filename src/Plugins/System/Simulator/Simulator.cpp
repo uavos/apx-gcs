@@ -104,6 +104,16 @@ Simulator::Simulator(Fact *parent)
 
     updateType();
 
+    // the plugin control is never deleted on exit (AppPlugin::unload is empty),
+    // so the destructor can't be relied on to stop the child processes
+    connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() {
+        _user_stop = true;
+        stopInstances();
+        stopFdm();
+        pShivaKill();
+        fdmKill();
+    });
+
     QTimer::singleShot(2000, this, &Simulator::detectXplane);
 }
 Simulator::~Simulator()
