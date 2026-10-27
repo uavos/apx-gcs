@@ -32,6 +32,10 @@ needed and is not started. Stray `apx-fdm` apps are killed on start, as the SIL 
 running from a manual session keeps the UDP ports and serves its own start point, so the aircraft
 would appear somewhere else than the mission runway.
 
+The `Model` option selects the aircraft, i.e. one of the `*.fdm` files in `resources/fdm`. The
+format and how to make a new model are described in [`apx-fdm`](apx-fdm/README.md); the built-in
+model is used when no file is found.
+
 An X-Plane type uses the default ports, i.e. it serves one instance, so `SIL instances` is limited
 to `1` for it.
 

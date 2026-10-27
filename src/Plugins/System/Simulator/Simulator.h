@@ -43,6 +43,8 @@ public:
 
     Fact *f_type;
 
+    Fact *f_model;
+
     Fact *f_sxpl;
 
     Fact *f_cmd;
@@ -105,6 +107,9 @@ private:
     bool loadStartPoint(QGeoCoordinate &p, double &hdg) const;
 
     void updateType();
+    void updateModels();
+    QString modelFile() const;
+    static QDir modelsDir();
 
     QDir instanceDir(int idx);
     void startInstance(int idx);

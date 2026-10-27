@@ -86,6 +86,16 @@ Simulator::Simulator(Fact *parent)
     connect(f_type, &Fact::valueChanged, this, &Simulator::updateType);
     connect(f_instances, &Fact::valueChanged, this, &Simulator::updateType);
 
+    // `model` is a property of Fact itself (the QML list model), so the
+    // option is named after what it selects, not after the parameter
+    f_model = new Fact(this,
+                       "aircraft",
+                       tr("Model"),
+                       tr("Aircraft model of apx-fdm"),
+                       Enum | PersistentValue);
+    f_model->setIcon("airplane");
+    updateModels();
+
     f_sxpl = new Fact(this, "sxpl", tr("Start XPlane"), tr("Run X-Plane on start"), Bool);
     connect(f_sxpl, &Fact::triggered, this, &Simulator::launchXplane);
 
@@ -413,6 +423,34 @@ void Simulator::updateState()
     f_stop->setEnabled(running);
 }
 
+QDir Simulator::modelsDir()
+{
+    return QDir(AppDirs::res().absoluteFilePath("fdm"), "*.fdm");
+}
+
+void Simulator::updateModels()
+{
+    QStringList st;
+    for (const auto &fi : modelsDir().entryInfoList())
+        st.append(fi.completeBaseName());
+
+    f_model->setEnumStrings(st);
+    f_model->setEnabled(!st.isEmpty());
+
+    // the saved option text can only be resolved when the list is known
+    f_model->loadPresistentValue();
+}
+
+QString Simulator::modelFile() const
+{
+    const auto name = f_model->valueText();
+    if (name.isEmpty())
+        return {};
+
+    auto fi = QFileInfo(modelsDir(), name + ".fdm");
+    return fi.exists() ? fi.absoluteFilePath() : QString{};
+}
+
 bool Simulator::isFdm() const
 {
     return f_type->valueText() == fdm_type;
@@ -433,7 +471,10 @@ void Simulator::updateType()
         f_instances->setValue(max);
     }
 
+    // the model belongs to apx-fdm, the rest to X-Plane
+    f_model->setEnabled(fdm && !f_model->enumStrings().isEmpty());
     f_sxpl->setEnabled(!fdm);
+    f_cmd->setEnabled(!fdm);
 }
 
 bool Simulator::unitStartPoint(Unit *unit, QGeoCoordinate &p, double &hdg) const
@@ -526,6 +567,10 @@ void Simulator::launchFdm()
 
     QStringList args;
     args << "-n" << QString::number(count);
+
+    const auto model = modelFile();
+    if (!model.isEmpty())
+        args << "--model" << model;
 
     QGeoCoordinate p;
     double hdg{};
