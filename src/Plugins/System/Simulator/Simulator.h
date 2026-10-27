@@ -109,7 +109,11 @@ private:
     void updateType();
     void updateModels();
     QString modelFile() const;
-    static QDir modelsDir();
+
+    // bundled models and the user ones, the user folder first: its file
+    // replaces the bundled one of the same name, nothing is copied
+    static QDir userModelsDir();
+    static QList<QDir> modelsDirs();
 
     QDir instanceDir(int idx);
     void startInstance(int idx);

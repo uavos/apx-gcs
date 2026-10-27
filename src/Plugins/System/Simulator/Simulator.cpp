@@ -91,10 +91,21 @@ Simulator::Simulator(Fact *parent)
     f_model = new Fact(this,
                        "aircraft",
                        tr("Model"),
-                       tr("Aircraft model of apx-fdm"),
+                       tr("Aircraft model, user files in %1")
+                           .arg(QDir::home().relativeFilePath(userModelsDir().absolutePath())),
                        Enum | PersistentValue);
     f_model->setIcon("airplane");
+    userModelsDir().mkpath(".");
     updateModels();
+
+    // the list follows the folders, so a model dropped into the user folder shows up at once
+    auto models_watcher = new QFileSystemWatcher(this);
+    for (const auto &dir : modelsDirs())
+        models_watcher->addPath(dir.absolutePath());
+    connect(models_watcher, &QFileSystemWatcher::directoryChanged, this, [this]() {
+        updateModels();
+        updateType();
+    });
 
     f_sxpl = new Fact(this, "sxpl", tr("Start XPlane"), tr("Run X-Plane on start"), Bool);
     connect(f_sxpl, &Fact::triggered, this, &Simulator::launchXplane);
@@ -423,16 +434,29 @@ void Simulator::updateState()
     f_stop->setEnabled(running);
 }
 
-QDir Simulator::modelsDir()
+QDir Simulator::userModelsDir()
 {
-    return QDir(AppDirs::res().absoluteFilePath("fdm"), "*.fdm");
+    // a top-level user folder, versioned like Missions, Scripts, etc.
+    return QDir(AppDirs::versioned_dir(QDir(AppDirs::user().absoluteFilePath("FDM"))).absolutePath(),
+                "*.fdm");
+}
+
+QList<QDir> Simulator::modelsDirs()
+{
+    return {userModelsDir(), QDir(AppDirs::res().absoluteFilePath("fdm"), "*.fdm")};
 }
 
 void Simulator::updateModels()
 {
     QStringList st;
-    for (const auto &fi : modelsDir().entryInfoList())
-        st.append(fi.completeBaseName());
+    for (const auto &dir : modelsDirs()) {
+        for (const auto &fi : dir.entryInfoList(QDir::Files)) {
+            const auto name = fi.completeBaseName();
+            if (!st.contains(name))
+                st.append(name);
+        }
+    }
+    st.sort(Qt::CaseInsensitive);
 
     f_model->setEnumStrings(st);
     f_model->setEnabled(!st.isEmpty());
@@ -447,8 +471,13 @@ QString Simulator::modelFile() const
     if (name.isEmpty())
         return {};
 
-    auto fi = QFileInfo(modelsDir(), name + ".fdm");
-    return fi.exists() ? fi.absoluteFilePath() : QString{};
+    for (const auto &dir : modelsDirs()) {
+        auto fi = QFileInfo(dir, name + ".fdm");
+        if (fi.exists())
+            return fi.absoluteFilePath();
+    }
+    apxMsgW() << tr("Aircraft model not found, built-in is used").append(":") << name;
+    return {};
 }
 
 bool Simulator::isFdm() const
