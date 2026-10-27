@@ -13,6 +13,8 @@ apx_module(
     "Aircraft.h"
     "Atmosphere.h"
     "Geo.h"
+    "ModelFile.cpp"
+    "ModelFile.h"
     "SimLink.cpp"
     "SimLink.h"
     "Vec3.h"

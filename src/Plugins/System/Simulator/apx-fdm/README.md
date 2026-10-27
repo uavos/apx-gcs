@@ -28,6 +28,8 @@ apx-fdm [options]
       --rate HZ       sensors output rate [100]
       --wind-spd MPS  wind speed [0]
       --wind-dir DEG  wind direction (from) [0]
+      --model FILE    aircraft model file [built-in]
+      --model-dump    print the model and exit
   -v, --verbose       print state of every aircraft once a second
 ```
 
@@ -169,3 +171,34 @@ climbs and switches to `WPT`, then flies the mission at 42 m/s holding
 altitude. Three aircraft with three SIL instances (ports +100/+200) run
 stably; `apx-fdm` needs ~0.5% of a core per aircraft (3 aircraft, one
 of them flying: 1.6..2%), each `sim-darwin` ~3.3%.
+
+## Aircraft model
+
+Without `--model` the built-in model is used: a ~1200 kg MALE class UAV. Any
+other aircraft is described by a text file of `name value` pairs, where the
+names are the `AircraftParams` fields of [`Aircraft.h`](Aircraft.h), angles are
+in degrees and everything else is in SI units:
+
+```
+mass               25
+inertia            5.0 3.0 7.5      # Ixx Iyy Izz
+S                  0.9
+alpha_stall        14               # deg
+wheel              0.5 0 0.25  8e3 600  1 0   # x y z  k c  steerable brakes
+```
+
+Values that are not listed keep their built-in defaults, so a file only has to
+describe what differs. `#` starts a comment, unknown names are reported and
+skipped, a malformed value stops the app. The three `wheel` lines are the nose
+and the two main wheels, in that order.
+
+Use `--model-dump` to get the complete current model in the same format, which
+is the easiest way to start a new one:
+
+```sh
+apx-fdm --model-dump > my-aircraft.fdm
+apx-fdm --model my-aircraft.fdm
+```
+
+The models shipped with the GCS are in `resources/fdm`, they are listed by the
+`Model` option of the simulator plugin.

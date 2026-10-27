@@ -41,6 +41,7 @@
 
 #include "Aircraft.h"
 #include "Geo.h"
+#include "ModelFile.h"
 #include "SimLink.h"
 
 #ifndef VERSION
@@ -76,6 +77,8 @@ struct Options
     double wind_spd{0.0};
     double wind_dir{0.0};
     bool verbose{false};
+    std::string model;      // aircraft model file, empty = built-in defaults
+    bool model_dump{false}; // print the built-in model and exit
 };
 
 void usage(const char *prog)
@@ -96,6 +99,8 @@ void usage(const char *prog)
            "      --rate HZ       sensors output rate (50..100) [100]\n"
            "      --wind-spd MPS  wind speed [0]\n"
            "      --wind-dir DEG  wind direction (from) [0]\n"
+           "      --model FILE    aircraft model file [built-in]\n"
+           "      --model-dump    print the built-in model and exit\n"
            "  -v, --verbose       print state of every aircraft once a second\n"
            "  -h, --help          this help\n"
            "      --version       print version\n"
@@ -124,6 +129,8 @@ bool parse_args(int argc, char **argv, Options &opt)
         OPT_WIND_SPD,
         OPT_WIND_DIR,
         OPT_VERSION,
+        OPT_MODEL,
+        OPT_MODEL_DUMP,
     };
     static const struct option long_opts[] = {
         {"count", required_argument, nullptr, 'n'},
@@ -140,6 +147,8 @@ bool parse_args(int argc, char **argv, Options &opt)
         {"verbose", no_argument, nullptr, 'v'},
         {"help", no_argument, nullptr, 'h'},
         {"version", no_argument, nullptr, OPT_VERSION},
+        {"model", required_argument, nullptr, OPT_MODEL},
+        {"model-dump", no_argument, nullptr, OPT_MODEL_DUMP},
         {nullptr, 0, nullptr, 0},
     };
 
@@ -185,6 +194,12 @@ bool parse_args(int argc, char **argv, Options &opt)
         case OPT_VERSION:
             printf("%s\n", VERSION);
             exit(0);
+        case OPT_MODEL:
+            opt.model = optarg;
+            break;
+        case OPT_MODEL_DUMP:
+            opt.model_dump = true;
+            break;
         case 'h':
         default:
             usage(argv[0]);
@@ -299,6 +314,16 @@ int main(int argc, char **argv)
     if (!parse_args(argc, argv, opt))
         return 1;
 
+    AircraftParams params;
+    if (!opt.model.empty() && !fdm::load_model(opt.model, params))
+        return 1;
+
+    if (opt.model_dump) {
+        // the built-in model, or the given one with its values applied
+        fdm::dump_model(params);
+        return 0;
+    }
+
     signal(SIGINT, on_signal);
     signal(SIGTERM, on_signal);
 
@@ -320,6 +345,8 @@ int main(int argc, char **argv)
                UDP_PORT_SIM_CTR,
                UDP_PORT_SIM_CTR + kPortStride * (kMaxUnits - 1),
                kPortStride);
+    if (!opt.model.empty())
+        printf("model: %s\n", opt.model.c_str());
     if (opt.wind_spd > 0)
         printf("wind: %.1f m/s from %.0f deg\n", opt.wind_spd, opt.wind_dir);
     fflush(stdout);
@@ -341,6 +368,7 @@ int main(int argc, char **argv)
         u.link->open();
 
         u.start_pos = Vec3(std::cos(hdg) * opt.spacing * i, std::sin(hdg) * opt.spacing * i, 0.0);
+        u.aircraft = Aircraft(params);
         u.aircraft.set_wind_ned(wind_ned);
         u.aircraft.init(u.start_pos, hdg, opt.alt);
     }
