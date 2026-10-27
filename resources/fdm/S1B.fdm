@@ -1,0 +1,88 @@
+# S1B - small UAV, 120 kg
+#
+# Mass, inertia, geometry, engine and landing gear are converted from
+# apx-sim-xpl/models/S1B/S1B.acf (the X-Plane model of the same aircraft).
+# The non-dimensional aerodynamic coefficients are taken from S1C: both are
+# straight-wing UAVs of a similar aspect ratio, and the .acf describes the
+# aerodynamics as airfoil tables of separate surfaces, which this model does
+# not have. Only the lift slope follows from the wing aspect ratio.
+#
+# Derived from the .acf: stalls at ~18 m/s clean.
+# angles are in degrees, everything else in SI units
+
+# mass 265 lb
+mass               120
+# inertia per unit mass 5.0 / 5.7 / 3.05 ft^2; assigned so that yaw is the
+# largest and roll the smallest, as the airframe geometry implies
+inertia            34 56 64
+
+# wing: two panels per side, 3.30 m^2 total, span 7.09 m, AR 15.3
+S                  3.3
+b                  7.09
+c                  0.465
+
+# lift (CLa from AR 15.3)
+CL0                0.4
+CLa                5.51
+CLq                6
+CLde               -0.15
+CLdf               0.8
+alpha_stall        15
+stall_width        4
+
+# drag
+CD0                0.03
+e                  0.85
+CDdf               0.08
+CDsb               0.12
+CDb                0.3
+
+# side force
+CYb                -0.6
+CYp                0
+CYr                0.2
+CYdr               0.12
+
+# roll moment
+Clb                -0.08
+Clp                -0.55
+Clr                0.15
+Clda               0.1
+Cldr               0.01
+
+# pitch moment
+Cm0                0.04
+Cma                -1
+Cmq                -18
+Cmde               0.65
+Cmdf               -0.12
+
+# yaw moment
+Cnb                0.09
+Cnp                -0.04
+Cnr                -0.18
+Cndr               0.07
+Cnda               -0.005
+
+# propulsion: 50 hp, 80% propeller efficiency, redline 7500 rpm.
+# NOTE the .acf engine looks oversized for this airframe (static thrust is
+# about 0.9 of the weight); it is kept as it is to match the X-Plane model.
+thrust_static      1095
+power              29828
+rpm_idle           1000
+rpm_max            7500
+engine_tau         0.3
+
+# ground handling
+steer_max          20
+steer_fade_speed   15
+mu_roll            0.03
+mu_brake           0.6
+mu_side            0.9
+slip_speed         0.3
+
+# x y z  k c  steerable brakes
+# gear positions from the .acf, all three contacts at the height of the mains
+wheel              1.38 0 0.56  10e3 800  1 0
+wheel              -0.09 -0.73 0.56  16e3 1.2e3  0 1
+wheel              -0.09 0.73 0.56  16e3 1.2e3  0 1

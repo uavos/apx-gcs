@@ -1,0 +1,83 @@
+# S1C - MALE class UAV, 1200 kg
+#
+# Mass, inertia, geometry, engine and landing gear are converted from
+# apx-sim-xpl/models/S1C/S1C.acf (the X-Plane model of the same aircraft).
+# The non-dimensional aerodynamic coefficients are the tuned values of the
+# built-in apx-fdm model, which was made for this aircraft; only the lift
+# slope follows from the wing aspect ratio of the .acf.
+#
+# Derived from the .acf: stalls at ~25 m/s clean, prop design speed 70 kts.
+# angles are in degrees, everything else in SI units
+
+# mass 2645.55 lb; inertia 16.4 ft^2 per unit mass about all three axes
+mass               1200
+inertia            1828 1828 1828
+
+# wing: Croot 1.20 m, Ctip 0.60 m, semi-span 9.00 m, AR 20
+S                  16.2
+b                  18.0
+c                  0.9
+
+# lift (CLa from AR 20)
+CL0                0.4
+CLa                5.69
+CLq                6
+CLde               -0.15
+CLdf               0.8
+alpha_stall        15
+stall_width        4
+
+# drag
+CD0                0.03
+e                  0.85
+CDdf               0.08
+CDsb               0.12
+CDb                0.3
+
+# side force
+CYb                -0.6
+CYp                0
+CYr                0.2
+CYdr               0.12
+
+# roll moment
+Clb                -0.08
+Clp                -0.55
+Clr                0.15
+Clda               0.1
+Cldr               0.01
+
+# pitch moment
+Cm0                0.04
+Cma                -1
+Cmq                -18
+Cmde               0.65
+Cmdf               -0.12
+
+# yaw moment
+Cnb                0.09
+Cnp                -0.04
+Cnr                -0.18
+Cndr               0.07
+Cnda               -0.005
+
+# propulsion: 141 hp, 80% propeller efficiency, redline 8000 rpm
+thrust_static      3087
+power              84115
+rpm_idle           1000
+rpm_max            8000
+engine_tau         0.4
+
+# ground handling
+steer_max          20
+steer_fade_speed   20
+mu_roll            0.03
+mu_brake           0.6
+mu_side            0.9
+slip_speed         0.3
+
+# x y z  k c  steerable brakes
+# gear positions from the .acf, all three contacts at the height of the mains
+wheel              2.58 0 1.45  60e3 5e3  1 0
+wheel              -0.43 -1.44 1.45  100e3 8e3  0 1
+wheel              -0.43 1.44 1.45  100e3 8e3  0 1
