@@ -1,10 +1,10 @@
 # S1C - MALE class UAV, 1200 kg
 #
-# Mass, inertia, geometry, engine and landing gear are converted from
+# Mass, inertia, geometry and landing gear are converted from
 # apx-sim-xpl/models/S1C/S1C.acf (the X-Plane model of the same aircraft).
-# The non-dimensional aerodynamic coefficients are the tuned values of the
-# built-in apx-fdm model, which was made for this aircraft; only the lift
-# slope follows from the wing aspect ratio of the .acf.
+# The non-dimensional aerodynamic coefficients and the engine are the tuned
+# values of the built-in apx-fdm model, which was made for this aircraft;
+# only the lift slope follows from the wing aspect ratio of the .acf.
 #
 # Derived from the .acf: stalls at ~25 m/s clean, prop design speed 70 kts.
 # angles are in degrees, everything else in SI units
@@ -61,9 +61,11 @@ Cnr                -0.18
 Cndr               0.07
 Cnda               -0.005
 
-# propulsion: 141 hp, 80% propeller efficiency, redline 8000 rpm
-thrust_static      3087
-power              84115
+# propulsion: the built-in model engine, the autopilot is tuned for it;
+# the .acf has 141 hp (thrust_static 3087, power 84115), which halves the
+# climb rate and doubles the takeoff roll. rpm range from the .acf.
+thrust_static      5500
+power              150000
 rpm_idle           1000
 rpm_max            8000
 engine_tau         0.4
