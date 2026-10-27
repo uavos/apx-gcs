@@ -23,6 +23,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 #include <XbusNode.h>
@@ -226,6 +227,18 @@ void SimLink::apply(Input in, float v)
     case Input::Airbrake:
         _controls.airbrake = v;
         break;
+    case Input::Collective:
+        _controls.collective = v;
+        break;
+    case Input::TailRotor:
+        _controls.rud = v;
+        break;
+    case Input::Launch:
+        _controls.launch = v;
+        break;
+    case Input::Parachute:
+        _controls.parachute = v;
+        break;
     case Input::None:
         break;
     }
@@ -253,10 +266,13 @@ SimLink::Input SimLink::map_channel(const std::string &name_in)
         start++;
     name = name.substr(start);
 
-    // strip array index
+    // strip array index, keep its value: ENGN_thro_use[1] is the second engine
+    int index = 0;
     const auto br = name.find('[');
-    if (br != std::string::npos)
+    if (br != std::string::npos) {
+        index = atoi(name.c_str() + br + 1);
         name = name.substr(0, br);
+    }
 
     // last path component
     std::string base = name;
@@ -288,11 +304,18 @@ SimLink::Input SimLink::map_channel(const std::string &name_in)
         {"sbrkrqst", Input::Airbrake},
         {"sbrkrat", Input::Airbrake},
         {"speedbrake_ratio", Input::Airbrake},
+        {"POINT_pitch_deg", Input::Collective}, // helicopter collective [deg]
+        {"launch", Input::Launch},              // uavos/launch
+        {"parachute", Input::Parachute},        // uavos/parachute
     };
 
     for (const auto &a : aliases) {
-        if (base == a.name)
-            return a.input;
+        if (base != a.name)
+            continue;
+        // the second engine of a helicopter is the electric tail rotor
+        if (a.input == Input::Thr && index == 1)
+            return Input::TailRotor;
+        return a.input;
     }
     return Input::None;
 }
@@ -316,6 +339,14 @@ const char *SimLink::input_name(Input in)
         return "brake";
     case Input::Airbrake:
         return "airbrake";
+    case Input::Collective:
+        return "collective";
+    case Input::TailRotor:
+        return "tail rotor";
+    case Input::Launch:
+        return "launch";
+    case Input::Parachute:
+        return "parachute";
     case Input::None:
         break;
     }

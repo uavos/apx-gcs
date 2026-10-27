@@ -256,7 +256,7 @@ void fill_sensors(const Aircraft &ac, const GeoOrigin &geo, mandala::bundle::sim
     sns.lon_deg = lon;
     sns.hmsl = (float) hmsl;
 
-    sns.agl = (float) (hmsl - ac.ground_alt());
+    sns.agl = (float) s.agl;
     sns.rpm = (float) s.rpm;
 
     sns.airspeed = (float) s.eas;

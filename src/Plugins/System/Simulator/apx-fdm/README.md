@@ -92,9 +92,9 @@ For aircraft `i`:
 | `acc_ned[3]` | specific force in NED [m/s^2]; (0, 0, -9.81) at rest |
 | `lat_deg`, `lon_deg`, `hmsl` | position; flat earth around the start point |
 | `vel_ned[3]` | ground velocity NED [m/s] |
-| `agl` | CG height above the (flat) ground [m] |
+| `agl` | CG height above the (flat) ground [m], like the X-Plane `y_agl` dataref (the node configs expect ~0.3..1 m when standing) |
 | `rpm` | engine speed |
-| `airspeed` | equivalent airspeed [m/s] (the node converts it to pitot pressure with sea level density) |
+| `airspeed` | equivalent airspeed [m/s] of the forward body axis component, i.e. what a pitot reads (the node converts it to pitot pressure with sea level density) |
 | `baro_mbar` | ISA static pressure at `hmsl` [hPa] |
 | `air_temp`, `room_temp` | ISA temperature at `hmsl` [C] and +20 C |
 | `slip` | sideslip angle [deg] |
@@ -120,6 +120,10 @@ index is ignored, so the stock unit configs
 | `sim/flightmodel/controls/flaprqst` | flaps | 0..1 |
 | `sim/flightmodel/controls/parkbrake` | wheel brakes (main gear) | 0..1 |
 | `sim/flightmodel/controls/sbrkrqst` | airbrake / spoilers | 0..1 |
+| `sim/flightmodel/engine/POINT_pitch_deg[0]` | helicopter collective [deg] | |
+| `sim/flightmodel/engine/ENGN_thro_use[1]` | helicopter tail rotor (+ nose right) | -1..1 |
+| `uavos/launch` | catapult release | 0/1 |
+| `uavos/parachute` | parachute deploy | 0/1 |
 
 A few X-Plane aliases are recognised too (`throttle_ratio`,
 `flap_ratio`, `parking_brake_ratio`, `speedbrake_ratio`, ...). Unknown
@@ -142,8 +146,10 @@ derivatives instead of the SIH flat plate segments:
   nondimensional rates `p^ q^ r^` and the surface commands
   (`CYb, Clb, Clp, Clr, Clda, Cm0, Cma, Cmq, Cmde, Cnb, Cnr, Cndr`, ...);
 - propeller thrust `T = thr * P / (V + P/T_static)`: static thrust at
-  low speed, power limited at high speed; engine speed follows the
-  throttle with a first order lag;
+  low speed, power limited at high speed; with `prop_pitch_speed` set, a
+  fixed pitch propeller instead: `T = thr * T_static * (1 - V/V_pitch)`,
+  whose strong speed dependence damps the phugoid of small aircraft;
+  engine speed follows the throttle with a first order lag;
 - landing gear: three wheels, each a vertical spring-damper with
   saturated viscous friction (rolling resistance, brakes on the main
   wheels, lateral tyre friction); the nose wheel follows the steering
@@ -201,4 +207,49 @@ apx-fdm --model my-aircraft.fdm
 ```
 
 The models shipped with the GCS are in `resources/fdm`, they are listed by the
-`Model` option of the simulator plugin.
+`Model` option of the simulator plugin together with the files from
+`Documents/UAVOS/FDM`, where a file of the same name replaces the
+bundled one:
+
+| file | aircraft | takeoff / landing |
+|---|---|---|
+| `S1C.fdm` | 1200 kg MALE class fixed wing (default) | runway |
+| `S1B.fdm` | 120 kg fixed wing | runway |
+| `FW10.fdm` | 12 kg fixed wing | catapult launch, parachute landing |
+| `LR70.fdm` | 23 kg helicopter | helipad |
+
+### Catapult launch and parachute
+
+`launcher 1` holds the aircraft on a rail (`rail_pitch`, `rail_height`)
+until the `uavos/launch` channel (`ctr.sw.sw1` in `SIM-FW10.unit`) goes to 1,
+then pushes it along the body x axis with `launch_acc` for `launch_time`
+seconds; the autopilot detects the launch by the longitudinal acceleration
+(`takeoff.launcher.acc`). `parachute 1` enables the `uavos/parachute` channel
+(`ctr.ers.launch`): the canopy drag `chute_cda` acts at `chute_attach` above
+the CG for the rest of the flight, `chute_damping` settles the swing.
+
+### Helicopter
+
+`type helicopter` replaces the wing and propeller by a main rotor, a tail
+rotor and skids (the `wheel` lines are the skid contact points, with
+`mu_roll` as the skid friction and no steering or brakes):
+
+- the engine speed follows the throttle (`ENGN_thro_use[0]`) with the
+  `rotor_rpm_tau` lag, reaching `rotor_rpm_free` at full throttle without
+  load and losing `rotor_rpm_droop` per degree of collective; the autopilot
+  governor (`shiva.eng.Kp`) holds `eng.rpm.cruise`, which should equal
+  `rotor_rpm_nominal`;
+- thrust `T = rotor_kT * (rpm/rotor_rpm_nominal)^2 * (collective +
+  rotor_k_inflow * w - rotor_theta0)` with the collective in degrees from
+  `POINT_pitch_deg[0]` (`ctr.eng.prop` times the channel multiplier) and
+  `w` the vertical airspeed, so that thrust falls with climb rate; forward
+  speed adds translational lift (`rotor_k_tl` per m/s, up to +30%);
+- the cyclic (`yoke_roll_ratio`, `yoke_pitch_ratio`) tilts the thrust by up to
+  `rotor_tilt_max` and adds a hub spring moment `rotor_k_hub`; the thrust acts
+  `rotor_hub_height` above the CG;
+- the tail rotor (`ENGN_thro_use[1]`, `ctr.att.rud`, -1..1) gives `rotor_k_tail`
+  at full command on the arm `rotor_tail_arm` against the main rotor reaction
+  torque `rotor_k_torque * T`;
+- `rotor_cda` is the fuselage drag area, `rotor_damping` the angular damping,
+  `rotor_k_fin` a vertical fin at `rotor_tail_arm` that turns the nose into
+  the airflow in forward flight.

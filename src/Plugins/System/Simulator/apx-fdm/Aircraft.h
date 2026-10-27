@@ -31,14 +31,18 @@ namespace fdm {
 //  - throttle, flaps, brake, airbrake 0..1
 struct Controls
 {
-    double ail{};      // sim/joystick/yoke_roll_ratio
-    double elv{};      // sim/joystick/yoke_pitch_ratio
-    double rud{};      // sim/joystick/yoke_heading_ratio (rudder + nose wheel steering)
-    double rud_trim{}; // sim/flightmodel/controls/rud_trim (rudder only)
-    double thr{};      // sim/flightmodel/engine/ENGN_thro_use[0]
-    double flaps{};    // sim/flightmodel/controls/flaprqst
-    double brake{};    // sim/flightmodel/controls/parkbrake
-    double airbrake{}; // sim/flightmodel/controls/sbrkrqst
+    double ail{};        // sim/joystick/yoke_roll_ratio (cyclic roll for a helicopter)
+    double elv{};        // sim/joystick/yoke_pitch_ratio (cyclic pitch for a helicopter)
+    double rud{};        // sim/joystick/yoke_heading_ratio (rudder + nose wheel steering),
+                         // sim/flightmodel/engine/ENGN_thro_use[1] (tail rotor of a helicopter)
+    double rud_trim{};   // sim/flightmodel/controls/rud_trim (rudder only)
+    double thr{};        // sim/flightmodel/engine/ENGN_thro_use[0]
+    double flaps{};      // sim/flightmodel/controls/flaprqst
+    double brake{};      // sim/flightmodel/controls/parkbrake
+    double airbrake{};   // sim/flightmodel/controls/sbrkrqst
+    double collective{}; // sim/flightmodel/engine/POINT_pitch_deg[0]: rotor blade pitch [deg]
+    double launch{};     // uavos/launch: catapult release (0/1)
+    double parachute{};  // uavos/parachute: parachute deploy (0/1)
 };
 
 struct Wheel
@@ -50,13 +54,19 @@ struct Wheel
     bool brakes;    // affected by the brake command
 };
 
-// Rigid body 6-DOF fixed-wing aircraft with linear aerodynamic
+enum class AircraftType { FixedWing, Helicopter };
+
+// Rigid body 6-DOF aircraft. A fixed wing uses linear aerodynamic
 // coefficients (stability and control derivatives), a power-limited
-// propeller and three-wheel landing gear.
+// propeller and three-wheel landing gear, optionally a catapult launcher
+// and a parachute. A helicopter uses a simple main rotor (collective,
+// cyclic tilt, inflow), a tail rotor and skids.
 // Default values describe a ~1200 kg MALE class UAV, roughly the S1C
 // model used with X-Plane: stalls at ~29 m/s clean, cruises at ~40 m/s.
 struct AircraftParams
 {
+    AircraftType type{AircraftType::FixedWing};
+
     // mass properties
     double mass{1200.0};                  // [kg]
     Vec3 inertia{2200.0, 1500.0, 3300.0}; // Ixx, Iyy, Izz [kg*m^2] (products of inertia ignored)
@@ -109,12 +119,54 @@ struct AircraftParams
     double Cndr{0.07};
     double Cnda{-0.005};
 
-    // propulsion: T = thr * power / (V + power/thrust_static)
+    // propulsion: T = thr * power / (V + power/thrust_static), or with a
+    // fixed pitch propeller T = thr * thrust_static * (1 - V/prop_pitch_speed)
     double thrust_static{5500.0}; // [N]
     double power{150000.0};       // propeller shaft power * efficiency [W]
+    double prop_pitch_speed{
+        0.0}; // [m/s] airspeed where a fixed pitch propeller stops pulling, 0: power model
     double rpm_idle{1500.0};
     double rpm_max{6500.0};
     double engine_tau{0.4}; // engine speed time constant [s]
+
+    // catapult launcher (fixed wing): the aircraft is held on the rail
+    // until the launch command, then pushed along the body x axis
+    bool launcher{false};
+    double launch_acc{30.0};         // [m/s^2]
+    double launch_time{0.7};         // [s]
+    double rail_pitch{deg2rad(8.0)}; // rail angle
+    double rail_height{1.0};         // CG above ground on the rail [m]
+
+    // parachute recovery (fixed wing): canopy drag at an attachment
+    // point above the CG, deployed once and for the rest of the flight
+    bool parachute{false};
+    double chute_cda{15.0};            // Cd*A of the canopy [m^2]
+    Vec3 chute_attach{0.0, 0.0, -1.5}; // body frame [m]
+    double chute_damping{2.0};         // extra angular damping [N*m*s]
+
+    // helicopter: thrust T = kT * (rpm/rpm_nominal)^2 * (collective + k_inflow*w - theta0)
+    struct Rotor
+    {
+        double hub_height{0.5}; // main rotor hub above CG [m]
+        double kT{37.7};        // thrust per degree of effective collective at nominal rpm [N/deg]
+        double theta0{-2.0};    // zero thrust collective [deg]
+        double k_inflow{0.4};   // collective equivalent of vertical airspeed [deg per m/s]
+        double k_tl{
+            0.015}; // translational lift: thrust gain per m/s of horizontal airspeed (max +30%)
+        double tilt_max{deg2rad(15.0)}; // thrust vector tilt at full cyclic
+        double k_hub{10.0};             // hub spring moment per unit cyclic at nominal rpm [N*m]
+        Vec3 damping{4.0, 6.0, 3.0};    // angular damping [N*m*s]
+        double tail_arm{1.3};           // tail rotor arm behind CG [m]
+        double k_tail{40.0};            // tail rotor thrust at full command [N]
+        double k_torque{0.08};          // main rotor reaction torque per N of thrust [m]
+        double cda{0.15};               // fuselage drag area [m^2]
+        double k_fin{
+            0.09}; // vertical fin at tail_arm: side force per (sideslip speed * airspeed) [N/(m/s)^2]
+        double rpm_nominal{8000.0}; // governor set point used for rotor speed scaling
+        double rpm_free{10000.0};   // engine rpm at full throttle without load
+        double rpm_droop{150.0};    // rpm lost per degree of collective load at full throttle
+        double rpm_tau{1.5};        // engine speed time constant [s]
+    } rotor;
 
     // ground handling
     double steer_max{deg2rad(20.0)}; // nose wheel deflection at full command
@@ -142,6 +194,7 @@ struct AircraftState
 
     // derived
     double hmsl{};     // [m]
+    double agl{};      // CG above the ground [m]
     double tas{};      // true airspeed [m/s]
     double eas{};      // equivalent airspeed [m/s]
     double alpha{};    // angle of attack [rad]
@@ -150,6 +203,12 @@ struct AircraftState
     double pressure{}; // static pressure [Pa]
     double air_temp{}; // [C]
     bool on_ground{true};
+
+    // launcher / parachute
+    bool on_rail{false};
+    bool launched{false};
+    double t_launch{};
+    bool chute{false};
 };
 
 class Aircraft
@@ -157,9 +216,11 @@ class Aircraft
 public:
     explicit Aircraft(const AircraftParams &params = {});
 
-    // Place the aircraft on the ground at NED position (z is ground level)
-    // with the given heading [rad]. ground_alt is the MSL altitude of the
-    // (flat) ground.
+    void set_params(const AircraftParams &params) { _p = params; }
+
+    // Place the aircraft on the ground (or on the launcher rail) at NED
+    // position (z is ground level) with the given heading [rad].
+    // ground_alt is the MSL altitude of the (flat) ground.
     void init(const Vec3 &pos_ned, double heading, double ground_alt);
 
     void set_controls(const Controls &c) { _ctr = c; }
@@ -174,11 +235,16 @@ public:
     double ground_alt() const { return _ground_alt; }
 
 private:
+    void fixed_wing_forces(const Vec3 &v_air_b, double V, double rho, double dt, Vec3 &F, Vec3 &M);
+    void helicopter_forces(const Vec3 &v_air_b, double V, double rho, double dt, Vec3 &F, Vec3 &M);
+    void gear_forces(const Vec3 &v_gnd_b, Vec3 &F, Vec3 &M, bool &on_ground);
+
     AircraftParams _p;
     AircraftState _s;
     Controls _ctr;
     Vec3 _wind_ned;
     double _ground_alt{};
+    double _t{}; // model time [s]
 };
 
 } // namespace fdm

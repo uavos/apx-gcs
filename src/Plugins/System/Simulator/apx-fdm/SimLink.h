@@ -78,7 +78,21 @@ public:
     uint64_t tx_sns_count() const { return _tx_sns; }
 
 private:
-    enum class Input : uint8_t { None, Ail, Elv, Rud, RudTrim, Thr, Flaps, Brake, Airbrake };
+    enum class Input : uint8_t {
+        None,
+        Ail,
+        Elv,
+        Rud,
+        RudTrim,
+        Thr,
+        Flaps,
+        Brake,
+        Airbrake,
+        Collective, // helicopter rotor blade pitch [deg]
+        TailRotor,  // helicopter tail rotor (yaw)
+        Launch,     // catapult release
+        Parachute,  // parachute deploy
+    };
 
     // map an X-Plane dataref name to a model input
     static Input map_channel(const std::string &name);

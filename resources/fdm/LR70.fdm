@@ -1,0 +1,56 @@
+# LR70 - UAV helicopter, 23 kg MTOW, diesel engine, electric tail rotor
+#
+# Controls of SIM-LR70.unit: yoke roll/pitch are the cyclic, ENGN_thro_use[0]
+# is the engine throttle (rpm governor of the autopilot holds eng.rpm.cruise
+# 8000), ENGN_thro_use[1] is the electric tail rotor (ctr.att.rud, -1..1),
+# POINT_pitch_deg[0] is the collective in degrees (ctr.eng.prop * 6).
+#
+# Rotor: hovers at ~3 deg collective at 8000 rpm, full collective (6 deg)
+# gives thrust/weight 1.6; thrust falls with climb rate through the inflow
+# term. The engine reaches 8000 rpm at ~80% throttle without load.
+# Control authority is kept moderate (full cyclic ~3 rad/s, full tail rotor
+# ~2 rad/s steady rates) so that the SIM-LR70.unit attitude loops, tuned for
+# the X-Plane model, do not saturate.
+# angles are in degrees, everything else in SI units
+
+type               helicopter
+launcher           0
+parachute          0
+
+mass               23
+inertia            0.8 2.0 2.5
+
+# rotor
+rotor_hub_height   0.5
+rotor_kT           45
+rotor_theta0       -2
+rotor_k_inflow     0.4
+rotor_k_tl         0.015
+rotor_tilt_max     10
+rotor_k_hub        5
+rotor_damping      8 10 14
+rotor_tail_arm     1.3
+rotor_k_tail       5
+rotor_k_torque     0.01
+rotor_cda          0.15
+rotor_k_fin        0.09
+rotor_rpm_nominal  8000
+rotor_rpm_free     10000
+rotor_rpm_droop    150
+rotor_rpm_tau      1.5
+
+# ground handling: skids, no steering, no brakes; the friction ramps up to
+# 1 m/s of slip so that a small drift at touchdown does not roll the
+# helicopter over its narrow skids
+steer_max          0
+steer_fade_speed   10
+mu_roll            0.6
+mu_brake           0
+mu_side            0.5
+slip_speed         1.0
+
+# x y z  k c  steerable brakes
+# skid contact points: front, rear left, rear right
+wheel              0.6 0 0.7  3e3 150  0 0
+wheel              -0.5 -0.45 0.7  3e3 150  0 0
+wheel              -0.5 0.45 0.7  3e3 150  0 0

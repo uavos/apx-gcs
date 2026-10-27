@@ -1,0 +1,103 @@
+# FW10 - small fixed wing UAV, 10 kg class, catapult launch, parachute landing
+#
+# Mass and geometry follow apx-sim-xpl/models/FW10/FW10.acf (10.4 kg empty,
+# span 1.93 m, chord 0.23 m, 2 kW electric motor); the wing area is enlarged
+# to stall below the 15 m/s of SIM-FW10.unit (VSO) and the motor power is set
+# so that the climb of perf.climb (4 m/s) is reachable at VY (18 m/s).
+# The node config applies mult 0.5 to aileron and elevator, the control
+# derivatives are doubled to keep full authority.
+#
+# Launch: the aircraft waits on the catapult rail (uavos/launch channel,
+# ctr.sw.sw1) and is pushed to ~21 m/s in 0.7 s (30 m/s^2 > takeoff.launcher.acc).
+# Landing: uavos/parachute (ctr.ers.launch) deploys the canopy, ~4 m/s descent.
+# angles are in degrees, everything else in SI units
+
+type               fixedwing
+launcher           1
+parachute          1
+
+mass               12
+inertia            0.6 0.8 1.2
+
+# wing
+S                  0.7
+b                  1.93
+c                  0.36
+
+# lift
+CL0                0.35
+CLa                5.0
+CLq                5
+CLde               -0.2
+CLdf               0.6
+alpha_stall        15
+stall_width        4
+
+# drag
+CD0                0.05
+e                  0.8
+CDdf               0.1
+CDsb               0.1
+CDb                0.3
+
+# side force
+CYb                -0.4
+CYp                0
+CYr                0.15
+CYdr               0.1
+
+# roll moment (per unit command, the node sends +-0.5 at full stick)
+Clb                -0.06
+Clp                -0.45
+Clr                0.1
+Clda               0.2
+Cldr               0
+
+# pitch moment
+Cm0                0.03
+Cma                -0.6
+Cmq                -15
+Cmde               1.0
+Cmdf               -0.1
+
+# yaw moment
+Cnb                0.08
+Cnp                -0.03
+Cnr                -0.12
+Cndr               0.05
+Cnda               0
+
+# propulsion: electric motor with a fixed pitch propeller, 90 N static
+# thrust falling to zero at 35 m/s: ~44 N at VY (18 m/s) for perf.climb
+# (4 m/s), and a thrust slope of -2.6 N per m/s that damps the phugoid,
+# which the integral pitch loop of SIM-FW10.unit (pitch.Kp 1) relies on
+thrust_static      90
+prop_pitch_speed   35
+power              3200
+rpm_idle           1000
+rpm_max            6500
+engine_tau         0.3
+
+# catapult
+launch_acc         30
+launch_time        0.7
+rail_pitch         8
+rail_height        1.0
+
+# parachute
+chute_cda          15
+chute_attach       0 0 -1.5
+chute_damping      2
+
+# ground handling
+steer_max          20
+steer_fade_speed   10
+mu_roll            0.05
+mu_brake           0.6
+mu_side            0.9
+slip_speed         0.3
+
+# x y z  k c  steerable brakes
+wheel              0.18 0 0.12  2e3 60  1 0
+wheel              -0.3 -0.37 0.12  2e3 60  0 1
+wheel              -0.3 0.37 0.12  2e3 60  0 1
