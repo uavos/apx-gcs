@@ -18,7 +18,7 @@ Ats::Ats(Fact *parent)
     f_ats_unit->setValue(ats_unit_active);
 
     f_units = new Fact(this,
-                       "units",
+                       "trackers",
                        tr("ATS units"),
                        tr("Mode and RSSI window of each ATS"),
                        Fact::Group,
