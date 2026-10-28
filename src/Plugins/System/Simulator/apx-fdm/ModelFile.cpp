@@ -125,7 +125,6 @@ static std::vector<Field> fields_of(AircraftParams &p)
     };
 }
 
-constexpr size_t wheels_cnt = sizeof(AircraftParams::wheels) / sizeof(Wheel);
 
 } // namespace
 
@@ -195,18 +194,14 @@ bool load_model(const std::string &path, AircraftParams &params)
         }
 
         if (name == "wheel") {
-            if (wheel_idx >= wheels_cnt) {
-                printf("model: %s:%d: only %zu wheels are supported\n",
-                       path.c_str(),
-                       lineno,
-                       wheels_cnt);
-                return false;
-            }
+            // the first wheel line replaces the built-in gear
+            if (wheel_idx++ == 0)
+                params.wheels.clear();
             double x, y, z, k, c, steerable, brakes;
             if (!number(x) || !number(y) || !number(z) || !number(k) || !number(c)
                 || !number(steerable) || !number(brakes))
                 return false;
-            params.wheels[wheel_idx++] = Wheel{Vec3(x, y, z), k, c, steerable != 0.0, brakes != 0.0};
+            params.wheels.push_back(Wheel{Vec3(x, y, z), k, c, steerable != 0.0, brakes != 0.0});
             continue;
         }
 
@@ -261,8 +256,7 @@ void dump_model(const AircraftParams &params)
     }
 
     printf("\n# x y z  k c  steerable brakes\n");
-    for (size_t i = 0; i < wheels_cnt; ++i) {
-        const auto &w = p.wheels[i];
+    for (const auto &w : p.wheels) {
         printf("%-18s %g %g %g  %g %g  %d %d\n",
                "wheel",
                w.pos.x,

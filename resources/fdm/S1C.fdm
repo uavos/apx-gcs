@@ -80,6 +80,6 @@ slip_speed         0.3
 
 # x y z  k c  steerable brakes
 # gear positions from the .acf, all three contacts at the height of the mains
-wheel              2.58 0 1.45  60e3 5e3  1 0
-wheel              -0.43 -1.44 1.45  100e3 8e3  0 1
-wheel              -0.43 1.44 1.45  100e3 8e3  0 1
+wheel              2.58 0 1.61  60e3 5e3  1 0
+wheel              -0.43 -1.44 1.61  100e3 8e3  0 1
+wheel              -0.43 1.44 1.61  100e3 8e3  0 1

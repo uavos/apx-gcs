@@ -16,14 +16,16 @@ mass               120
 # largest and roll the smallest, as the airframe geometry implies
 inertia            34 56 64
 
-# wing: two panels per side, 3.30 m^2 total, span 7.09 m, AR 15.3
-S                  3.3
-b                  7.09
-c                  0.465
+# wing: two panels per side starting 0.21 m off the centreline (inner
+# 0.85 m x 0.59 m chord, outer 2.69 m tapering 0.59 -> 0.25 m) plus the
+# fuselage strip: 3.54 m^2, span 7.51 m, AR 15.9, MAC 0.50 m
+S                  3.54
+b                  7.51
+c                  0.50
 
-# lift (CLa from AR 15.3)
+# lift (CLa from AR 15.9)
 CL0                0.4
-CLa                5.51
+CLa                5.58
 CLq                6
 CLde               -0.15
 CLdf               0.8
@@ -74,7 +76,7 @@ rpm_max            7500
 engine_tau         0.3
 
 # ground handling
-steer_max          20
+steer_max          10
 steer_fade_speed   15
 mu_roll            0.03
 mu_brake           0.6
@@ -83,6 +85,6 @@ slip_speed         0.3
 
 # x y z  k c  steerable brakes
 # gear positions from the .acf, all three contacts at the height of the mains
-wheel              1.38 0 0.56  10e3 800  1 0
-wheel              -0.09 -0.73 0.56  16e3 1.2e3  0 1
-wheel              -0.09 0.73 0.56  16e3 1.2e3  0 1
+wheel              1.38 0 0.68  10e3 800  1 0
+wheel              -0.09 -0.73 0.70  16e3 1.2e3  0 1
+wheel              -0.09 0.73 0.70  16e3 1.2e3  0 1

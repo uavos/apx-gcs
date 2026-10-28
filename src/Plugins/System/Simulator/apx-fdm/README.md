@@ -216,7 +216,7 @@ bundled one:
 | `S1C.fdm` | 1200 kg MALE class fixed wing (default) | runway |
 | `S1B.fdm` | 120 kg fixed wing | runway |
 | `FW10.fdm` | 12 kg fixed wing | catapult launch, parachute landing |
-| `LR70.fdm` | 23 kg helicopter | helipad |
+| `LR70.fdm` | 25 kg helicopter | helipad |
 
 ### Catapult launch and parachute
 

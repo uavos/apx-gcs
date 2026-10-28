@@ -21,6 +21,8 @@
  */
 #pragma once
 
+#include <vector>
+
 #include "Vec3.h"
 
 namespace fdm {
@@ -176,7 +178,8 @@ struct AircraftParams
     double mu_side{0.9};             // lateral tyre friction
     double slip_speed{0.3};          // friction saturates above this slip speed [m/s]
 
-    Wheel wheels[3]{
+    // any number of contact points: wheels or skids
+    std::vector<Wheel> wheels{
         {{2.3, 0.0, 1.2}, 60e3, 5e3, true, false},      // nose
         {{-0.45, -1.45, 1.2}, 100e3, 8e3, false, true}, // left main
         {{-0.45, 1.45, 1.2}, 100e3, 8e3, false, true},  // right main
