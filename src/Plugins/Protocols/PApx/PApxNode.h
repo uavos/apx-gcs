@@ -117,6 +117,7 @@ private:
     QJsonObject _ident;
     QJsonObject _dict;
     QJsonObject _values;
+    bool _values_complete{}; // the whole conf received, not only saved fields
     void updateValues(const QJsonObject &values);
 
     // ext gcs values update

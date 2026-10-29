@@ -52,16 +52,29 @@ PApxNode::PApxNode(PApxNodes *parent, QString uid)
         _ident = ident;
         _dict = {};
         _values = {};
+        _values_complete = false;
     });
 
     // store the node data
     connect(this, &PNode::dictReceived, this, [this](QJsonObject dict) {
-        if (_dict.value("fields") != dict.value("fields"))
+        if (_dict.value("fields") != dict.value("fields")) {
             _values = {};
+            _values_complete = false;
+        }
         _dict = dict;
         _dict.remove("cached");
     });
-    connect(this, &PNode::confReceived, this, &PApxNode::updateValues);
+    connect(this, &PNode::confReceived, this, [this](QJsonObject values) {
+        updateValues(values);
+        // script upload emits a part of the conf, only the whole conf makes the values complete
+        if (_values_complete || _field_names.isEmpty())
+            return;
+        for (const auto &name : _field_names) {
+            if (!values.contains(name))
+                return;
+        }
+        _values_complete = true;
+    });
     connect(this, &PNode::paramsSaved, this, &PApxNode::updateValues);
 
     // get node info guess from cache
@@ -662,11 +675,9 @@ QJsonObject PApxNode::gcsData() const
     if (upgrading() || _ident.isEmpty() || _dict.isEmpty() || _field_names.isEmpty())
         return {};
 
-    // all values must be downloaded
-    for (const auto &name : _field_names) {
-        if (!_values.contains(name))
-            return {};
-    }
+    // saved fields before the whole conf leave the values incomplete
+    if (!_values_complete)
+        return {};
 
     QJsonObject node;
     node.insert("info", _ident);
