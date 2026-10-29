@@ -226,9 +226,11 @@ void PApxNode::process_incoming_data(const xbus::pid_s &pid, PStreamReader &stre
         return;
     }
 
-    // check for pending request's response
-    for (auto req : _requests) {
-        if (req->uid() != uid)
+    // check for pending request's response,
+    // a response may delete other requests (f.ex. ident updates files)
+    const auto requests = _requests;
+    for (auto req : requests) {
+        if (!_requests.contains(req) || req->uid() != uid)
             continue;
         // there's a request waiting for the packet's uid
         if (req->check_response(stream)) {
@@ -241,8 +243,9 @@ void PApxNode::schedule_request(PApxNodeRequest *req)
 {
     mandala::uid_t uid = req->uid();
     // check duplicates
-    for (auto i : _requests) {
-        if (i->equals(req)) {
+    const auto requests = _requests;
+    for (auto i : requests) {
+        if (_requests.contains(i) && i->equals(req)) {
             // the most recent for the uid is the only valid
             if (uid == mandala::cmd::env::nmt::ident::uid || i->active()) {
                 delete_request(req);
@@ -302,8 +305,9 @@ void PApxNode::updateFiles(QStringList fnames)
         i->deleteLater();
     }
     _files_map.clear();
-    for (auto i : _requests) {
-        if (i->uid() == mandala::cmd::env::nmt::file::uid)
+    const auto requests = _requests;
+    for (auto i : requests) {
+        if (_requests.contains(i) && i->uid() == mandala::cmd::env::nmt::file::uid)
             delete_request(i);
     }
     for (auto i : fnames) {
@@ -624,9 +628,16 @@ void PApxNode::parseDictData(PApxNode *node,
 
 void PApxNode::requestConf()
 {
-    // save request for sequential script requests
-    _req_conf = new PApxNodeRequestFileRead(this, "conf");
-    connect(_req_conf, &PApxNodeRequest::finished, this, [this]() { _req_conf = {}; });
+    new PApxNodeRequestFileRead(this, "conf");
+}
+bool PApxNode::confReadPending() const
+{
+    // the read request is deleted after its data is parsed (on the close reply)
+    for (auto i : _requests) {
+        if (i->uid() == mandala::cmd::env::nmt::file::uid && i->cid() == "conf")
+            return true;
+    }
+    return false;
 }
 
 void PApxNode::parseConfData(PApxNode *node,
@@ -760,9 +771,9 @@ void PApxNode::parseConfData(PApxNode *node,
         return;
     }
 
-    // store values and download script
+    // store values and download script, when the conf is read by this GCS
     _rvalues = values;
-    if (_req_conf)
+    if (confReadPending())
         new PApxNodeRequestFileRead(this, "script");
 }
 template<typename T, typename Tout = T>

@@ -250,8 +250,10 @@ void PApxNodes::cancel_requests(PApxNode *node)
         _reqTimeout.stop();
         _request = nullptr;
     }
-    for (auto req : _requests) {
-        if (node && req->node() != node)
+    // iterate a copy, the handlers of finished requests may delete others
+    const auto requests = _requests;
+    for (auto req : requests) {
+        if (!_requests.contains(req) || (node && req->node() != node))
             continue;
         _requests.removeOne(req);
         req->finished();

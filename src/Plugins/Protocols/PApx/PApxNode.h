@@ -76,7 +76,9 @@ private:
     PApxNodes *_nodes;
     PApxRequest _req;
     QList<PApxNodeRequest *> _requests;
-    PApxNodeRequest *_req_conf{};
+
+    // conf is read by this GCS, not received from another GCS download
+    bool confReadPending() const;
 
     QMap<QString, PApxNodeFile *> _files_map;
 
