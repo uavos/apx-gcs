@@ -70,6 +70,8 @@ protected:
     void reconnect();
 
     //DatalinkConnection overrided
+    bool isGcsLink() const override { return true; }
+
     virtual void open() override;
     void resetDataStream() override;
 
