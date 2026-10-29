@@ -167,6 +167,7 @@ void PApxNodes::requestSearch()
 // of another GCS for this node (ident, dict/conf/script file read) with the node data.
 // Every node is sent individually. The receiver uses the data for the nodes
 // which are not downloaded yet, but only when the 'Nodes from GCS' datalink option is enabled.
+// The ident from hardware is still requested, a different ident reloads the node from hardware.
 // packet format: <cmd.env.aux.gcs> <uid> <guid> <data>
 //  <uid> is <nmt.ident>
 //  <guid> is the node uid
@@ -381,7 +382,8 @@ bool PApxNodes::loadGcsNode(QJsonObject node)
         return false;
     }
 
-    auto f = getNode(uid);
+    // only the nodes found by this instance, their ident requests verify the data
+    auto f = getNode(uid, false);
     if (!f)
         return false;
 

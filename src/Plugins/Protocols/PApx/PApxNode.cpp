@@ -440,9 +440,6 @@ QString PApxNode::hashToText(xbus::node::hash_t hash)
 
 void PApxNode::requestIdent()
 {
-    if (_nodes->gcsLoading())
-        return;
-
     new PApxNodeRequestIdent(this);
 }
 
@@ -549,7 +546,8 @@ void PApxNode::loadDictFields(const QJsonObject &dict)
 bool PApxNode::loadGcsData(QJsonObject node)
 {
     // node data received from another GCS instance is used instead of downloading from hardware,
-    // requests to hardware initiated by the signals are blocked by PApxNodes::gcsLoading()
+    // dict and conf requests initiated by the signals are blocked by PApxNodes::gcsLoading(),
+    // ident requests are kept to verify the data with hardware
 
     auto info = node.value("info").toObject();
     const auto dict = node.value("dict").toObject();
@@ -606,13 +604,9 @@ bool PApxNode::loadGcsData(QJsonObject node)
     descr.append(info.value("version").toString());
     setDescr(descr.join(' '));
 
-    // stop downloads from hardware, the data is already here
-    const auto requests = _requests;
-    for (auto i : requests) {
-        if (i->uid() == mandala::cmd::env::nmt::ident::uid)
-            delete_request(i);
-    }
-    // dict, conf and script reads, including the ones not scheduled yet
+    // stop downloads from hardware, the data is already here,
+    // including dict, conf and script reads not scheduled yet;
+    // the hardware ident is still awaited, a different one reloads the node
     const auto reads = _file_reads;
     for (auto i : reads)
         delete_request(i);
