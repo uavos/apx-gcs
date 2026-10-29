@@ -553,10 +553,11 @@ bool PApxNode::loadGcsData(QJsonObject node)
     const auto dict = node.value("dict").toObject();
     auto values = node.value("values").toObject();
 
+    // the ident already received from hardware must match as a whole, flags and version too
+    info.remove("host");
     const auto hash = info.value("hash").toString();
     if (hash.isEmpty() || hash != dict.value("cache").toString()
-        || info.value("uid").toString() != uid()
-        || (!_ident.isEmpty() && hash != _ident.value("hash").toString())) {
+        || info.value("uid").toString() != uid() || (!_ident.isEmpty() && info != _ident)) {
         qWarning() << title() << "gcs data error" << hash;
         return false;
     }
@@ -588,8 +589,6 @@ bool PApxNode::loadGcsData(QJsonObject node)
         return false;
 
     // update from ident
-    info.remove("host");
-
     QStringList fnames;
     for (const auto &i : info.value("files").toArray())
         fnames.append(i.toString());
