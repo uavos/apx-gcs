@@ -31,15 +31,16 @@
 #include <Datalink/Datalink.h>
 
 #include <crc.h>
+#include <zlib.h>
 
 #include <QtEndian>
 
 #define PAPX_REQ_DELAY_MS 0
 
-#define PAPX_GCS_PART_SIZE 400             // bytes of data in packet
-#define PAPX_GCS_SIZE_MAX (8 * 1024 * 1024) // bytes of compressed data
-#define PAPX_GCS_DELAY_MS 100              // delay to merge consequent requests of the same node
-#define PAPX_GCS_RX_MAX 64                 // incomplete node transfers to keep
+#define PAPX_GCS_PART_SIZE 400              // bytes of data in packet
+#define PAPX_GCS_SIZE_MAX (8 * 1024 * 1024) // bytes of data, compressed or inflated
+#define PAPX_GCS_DELAY_MS 100               // delay to merge consequent requests of the same node
+#define PAPX_GCS_RX_MAX 64                  // incomplete node transfers to keep
 
 PApxNodes::PApxNodes(PApxUnit *parent)
     : PNodes(parent)
@@ -326,7 +327,20 @@ void PApxNodes::process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream)
         return;
     }
 
-    const auto node = QJsonDocument::fromJson(qUncompress(data)).object();
+    // inflate to the expected size at most, qUncompress grows the buffer beyond it
+    QByteArray raw(raw_size, Qt::Uninitialized);
+    uLongf raw_len = raw_size;
+    const auto zdata = reinterpret_cast<const Bytef *>(data.constData()) + sizeof(uint32_t);
+    const auto zres = uncompress(reinterpret_cast<Bytef *>(raw.data()),
+                                 &raw_len,
+                                 zdata,
+                                 size - sizeof(uint32_t));
+    if (zres != Z_OK || raw_len != raw_size) {
+        qWarning() << "gcs node data inflate error" << node_uid << zres;
+        return;
+    }
+
+    const auto node = QJsonDocument::fromJson(raw).object();
     if (node.isEmpty()) {
         qWarning() << "gcs node json error" << node_uid;
         return;
