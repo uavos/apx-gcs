@@ -635,9 +635,16 @@ bool PApxNode::loadGcsData(QJsonObject node)
 
     qDebug() << title() << "data from gcs" << _field_names.size();
 
+    // without the ident from hardware the data is verified by its response
+    const bool verify = _ident.isEmpty();
+
     emit identReceived(info);
     emit dictReceived(dict);
     emit confReceived(values);
+
+    // dropped as a duplicate when an ident request is already pending
+    if (verify)
+        requestIdent();
     return true;
 }
 void PApxNode::updateValues(const QJsonObject &values)
