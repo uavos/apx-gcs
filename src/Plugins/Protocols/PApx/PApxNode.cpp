@@ -513,6 +513,16 @@ void PApxNode::dictCacheLoaded(quint64 dictID, QJsonObject dict)
 
     emit dictReceived(dict);
 }
+// data field type by its dict name, zero for groups, commands and unknown types
+static xbus::node::conf::type_e dictFieldType(const QString &type)
+{
+    for (uint8_t t = xbus::node::conf::type_field; t < xbus::node::conf::type_max; ++t) {
+        QString s = xbus::node::conf::type_to_str((xbus::node::conf::type_e) t);
+        if (s == type)
+            return (xbus::node::conf::type_e) t;
+    }
+    return {};
+}
 void PApxNode::loadDictFields(const QJsonObject &dict)
 {
     _field_types.clear();
@@ -526,15 +536,7 @@ void PApxNode::loadDictFields(const QJsonObject &dict)
 
     for (const auto &i : dict.value("fields").toArray()) {
         const auto field = i.toObject();
-        auto type = field.value("type").toString();
-        xbus::node::conf::type_e type_id{};
-        for (uint8_t t = xbus::node::conf::type_field; t < xbus::node::conf::type_max; ++t) {
-            QString s = xbus::node::conf::type_to_str((xbus::node::conf::type_e) t);
-            if (s != type)
-                continue;
-            type_id = (xbus::node::conf::type_e) t;
-            break;
-        }
+        const auto type_id = dictFieldType(field.value("type").toString());
         if (!type_id)
             continue;
         _field_types.append(type_id);
@@ -562,13 +564,12 @@ bool PApxNode::loadGcsData(QJsonObject node)
         return false;
     }
 
-    // the dict must have data fields, array size is uint8 in the dict format
+    // the dict must have data fields of known types, array size is uint8 in the dict format
     // and the node creates a field for every array element
     int data_fields = 0;
     for (const auto &i : dict.value("fields").toArray()) {
         const auto field = i.toObject();
-        const auto type = field.value("type").toString();
-        if (type != "group" && type != "command")
+        if (dictFieldType(field.value("type").toString()))
             data_fields++;
 
         const auto array = field.value("array");
