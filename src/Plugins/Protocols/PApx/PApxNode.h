@@ -104,7 +104,7 @@ private:
 
     bool _skip_cache{};
     bool _dict_cache_req{};
-    uint _file_downloads{}; // dict, conf or script read requests alive
+    QList<PApxNodeRequest *> _file_reads; // dict, conf or script reads alive, scheduled or not
 
     PApxNodeRequest *requestFileRead(const QString &name);
 

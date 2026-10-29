@@ -37,8 +37,12 @@ PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeou
 {
     if (!uid)
         return;
-    // schedule delayed to avoid consequent requests duplicate deletions by uid
-    QTimer::singleShot(1, node, [this]() { _node->schedule_request(this); });
+    // schedule delayed to avoid consequent requests duplicate deletions by uid,
+    // the request may be deleted before it is scheduled (f.ex. by node data from another GCS)
+    QTimer::singleShot(1, this, [this]() {
+        if (_node)
+            _node->schedule_request(this);
+    });
 }
 PApxNodeRequest::~PApxNodeRequest()
 {

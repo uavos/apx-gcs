@@ -119,7 +119,7 @@ bool PApxNode::isDownloadingIdent(const QJsonObject &ident) const
 
 bool PApxNode::downloading() const
 {
-    return _dict_cache_req || _file_downloads > 0;
+    return _dict_cache_req || !_file_reads.isEmpty();
 }
 
 PApxNodeRequest *PApxNode::requestFileRead(const QString &name)
@@ -129,8 +129,8 @@ PApxNodeRequest *PApxNode::requestFileRead(const QString &name)
     if (conf_files.contains(name)) {
         // track the request from creation till deletion
         // (the request is scheduled with a delay)
-        _file_downloads++;
-        connect(req, &QObject::destroyed, this, [this]() { _file_downloads--; });
+        _file_reads.append(req);
+        connect(req, &QObject::destroyed, this, [this, req]() { _file_reads.removeOne(req); });
     }
     return req;
 }
@@ -611,9 +611,11 @@ bool PApxNode::loadGcsData(QJsonObject node)
     for (auto i : requests) {
         if (i->uid() == mandala::cmd::env::nmt::ident::uid)
             delete_request(i);
-        else if (i->uid() == mandala::cmd::env::nmt::file::uid && conf_files.contains(i->cid()))
-            delete_request(i);
     }
+    // dict, conf and script reads, including the ones not scheduled yet
+    const auto reads = _file_reads;
+    for (auto i : reads)
+        delete_request(i);
     for (const auto &i : conf_files) {
         auto f = file(i);
         if (f)
