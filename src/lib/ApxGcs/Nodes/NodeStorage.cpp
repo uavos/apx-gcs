@@ -86,8 +86,10 @@ void NodeStorage::saveNodeDict()
             if (--_dictSaving || !_confSavePending)
                 return;
             _confSavePending = false;
+            const auto values = _confSaveValues;
+            _confSaveValues = {};
             if (status == DatabaseRequest::Success && _node && _node->valid())
-                saveNodeConf();
+                saveConfValues(values);
         },
         Qt::QueuedConnection);
     req->exec();
@@ -98,17 +100,21 @@ void NodeStorage::saveNodeConf()
     _confID = 0; // invalidate for unit config
 
     if (_dictSaving) {
-        // dict is not in db yet
+        // dict is not in db yet, the values may change before it is saved
         _confSavePending = true;
+        _confSaveValues = _node->get_values();
         return;
     }
-
+    saveConfValues(_node->get_values());
+}
+void NodeStorage::saveConfValues(const QJsonObject &values)
+{
     auto cache_hash = _node->dict().value("cache").toString();
     if (cache_hash.isEmpty()) {
         qWarning() << "no dict cache hash";
         return;
     }
-    auto req = new db::nodes::NodeSaveConf(_dictID, _node->get_values());
+    auto req = new db::nodes::NodeSaveConf(_dictID, values);
     connect(req,
             &db::nodes::NodeSaveConf::confSaved,
             this,
