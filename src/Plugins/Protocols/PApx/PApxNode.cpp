@@ -550,6 +550,29 @@ bool PApxNode::loadGcsData(QJsonObject node)
         return false;
     }
 
+    // the dict must have data fields, array size is uint8 in the dict format
+    // and the node creates a field for every array element
+    int data_fields = 0;
+    for (const auto &i : dict.value("fields").toArray()) {
+        const auto field = i.toObject();
+        const auto type = field.value("type").toString();
+        if (type != "group" && type != "command")
+            data_fields++;
+
+        const auto array = field.value("array");
+        if (array.isUndefined())
+            continue;
+        const auto size = array.toDouble(-1);
+        if (size < 0 || size > 255 || size != static_cast<int>(size)) {
+            qWarning() << title() << "gcs data array size" << field.value("name").toString();
+            return false;
+        }
+    }
+    if (!data_fields) {
+        qWarning() << title() << "gcs data without fields";
+        return false;
+    }
+
     if (upgrading())
         return false;
 
