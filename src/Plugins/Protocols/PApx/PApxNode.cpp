@@ -628,9 +628,16 @@ void PApxNode::parseDictData(PApxNode *node,
 
 void PApxNode::requestConf()
 {
-    // save request for sequential script requests
-    _req_conf = new PApxNodeRequestFileRead(this, "conf");
-    connect(_req_conf, &PApxNodeRequest::finished, this, [this]() { _req_conf = {}; });
+    new PApxNodeRequestFileRead(this, "conf");
+}
+bool PApxNode::confReadPending() const
+{
+    // the read request is deleted after its data is parsed (on the close reply)
+    for (auto i : _requests) {
+        if (i->uid() == mandala::cmd::env::nmt::file::uid && i->cid() == "conf")
+            return true;
+    }
+    return false;
 }
 
 void PApxNode::parseConfData(PApxNode *node,
@@ -764,9 +771,9 @@ void PApxNode::parseConfData(PApxNode *node,
         return;
     }
 
-    // store values and download script
+    // store values and download script, when the conf is read by this GCS
     _rvalues = values;
-    if (_req_conf)
+    if (confReadPending())
         new PApxNodeRequestFileRead(this, "script");
 }
 template<typename T, typename Tout = T>
