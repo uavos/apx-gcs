@@ -242,7 +242,6 @@ void PApx::process_downlink(QByteArray packet)
         v->packetReceived(pid.uid);
         trace()->block(v->title().append(':'));
         trace()->tree();
-
         v->process_incoming_data(stream, true);
         return;
     }
