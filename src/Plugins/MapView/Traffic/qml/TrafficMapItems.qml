@@ -31,7 +31,7 @@ MapItemGroup {
     property var map: ui.map
     property var traffic: apx.tools.traffic
 
-    z: 150
+    z: 50
     visible: traffic.active
 
     // airspaces (ATC)
@@ -45,24 +45,6 @@ MapItemGroup {
             opacity: 0.8
         }
     }
-    MapItemView {
-        id: airspaceLabels
-        model: traffic.airspaces
-        delegate: MapQuickItem {
-            coordinate: model.center
-            zoomLevel: 0
-            anchorPoint.x: lbl.width/2
-            anchorPoint.y: lbl.height/2
-            sourceItem: Text {
-                id: lbl
-                text: model.label
-                color: model.color
-                font: apx.font_narrow(Style.fontSize*0.8)
-                style: Text.Outline
-                styleColor: "#000"
-            }
-        }
-    }
 
     // aircraft (ADS-B)
     MapItemView {
@@ -73,7 +55,6 @@ MapItemGroup {
 
     Component.onCompleted: {
         map.addMapItemView(airspaceView)
-        map.addMapItemView(airspaceLabels)
         map.addMapItemView(aircraftView)
         traffic.setMapCenter(map.center)
     }

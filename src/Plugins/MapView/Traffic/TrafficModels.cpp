@@ -42,6 +42,7 @@ QHash<int, QByteArray> AircraftModel::roleNames() const
         {BrgRole, "brg"},
         {LevelRole, "level"},
         {LabelRole, "label"},
+        {NumberRole, "number"},
     };
 }
 
@@ -67,6 +68,8 @@ QVariant AircraftModel::data(const QModelIndex &index, int role) const
         return a.brg;
     case LevelRole:
         return a.level;
+    case NumberRole:
+        return a.number;
     case LabelRole: {
         // "CSN3083  11550 ft  288 kt"
         QString s = a.callsign.isEmpty() ? a.hex.toUpper() : a.callsign;
@@ -101,19 +104,22 @@ void AircraftModel::update(const QList<Aircraft> &list)
         endRemoveRows();
     }
     // update or append
-    for (const auto &a : list) {
+    for (const auto &incoming : list) {
         int idx = -1;
         for (int i = 0; i < _items.size(); ++i) {
-            if (_items.at(i).hex == a.hex) {
+            if (_items.at(i).hex == incoming.hex) {
                 idx = i;
                 break;
             }
         }
+        Aircraft a = incoming;
         if (idx >= 0) {
+            a.number = _items.at(idx).number;
             _items[idx] = a;
             emit dataChanged(index(idx), index(idx));
             continue;
         }
+        a.number = _nextNumber++;
         beginInsertRows({}, _items.size(), _items.size());
         _items.append(a);
         endInsertRows();
@@ -122,11 +128,14 @@ void AircraftModel::update(const QList<Aircraft> &list)
 
 void AircraftModel::clear()
 {
-    if (_items.isEmpty())
+    if (_items.isEmpty()) {
+        _nextNumber = 1;
         return;
+    }
     beginResetModel();
     _items.clear();
     endResetModel();
+    _nextNumber = 1;
 }
 
 // airspaces

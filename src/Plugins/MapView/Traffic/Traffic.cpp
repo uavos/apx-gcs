@@ -41,21 +41,48 @@ static const char *atc_url = "https://storage.openaip.net/openaip-system-exports
 QStringList Traffic::countries() const
 {
     static const QStringList list{
-        "-",  "BY", "RU", "KZ", "LT", "LV", "EE", "PL", "UZ", "TJ", "TM", "MD", "GE", "AM", "AZ",
-        "TR", "AL", "AT", "BA", "BE", "BG", "CH", "CN", "CY", "CZ", "DE", "DK", "ES", "FI", "FR",
-        "GB", "GR", "HR", "HU", "IE", "IL", "IS", "IT", "LU", "MK", "MT", "NL", "NO", "PT", "RO",
-        "RS", "SE", "SI", "SK", "US", "CA", "MX", "BR", "AR", "CL", "AU", "NZ", "JP", "IN", "TH",
-        "ID", "MY", "ZA", "MA", "AE", "SA", "QA", "OM", "IR", "PK", "AF", "MN",
+        "-",
+        "Afghanistan (AF)", "Albania (AL)", "Argentina (AR)", "Armenia (AM)",
+        "Australia (AU)", "Austria (AT)", "Azerbaijan (AZ)", "Belarus (BY)",
+        "Belgium (BE)", "Bosnia and Herzegovina (BA)", "Brazil (BR)",
+        "Bulgaria (BG)", "Canada (CA)", "Chile (CL)", "China (CN)",
+        "Croatia (HR)", "Cyprus (CY)", "Czechia (CZ)", "Denmark (DK)",
+        "Estonia (EE)", "Finland (FI)", "France (FR)", "Georgia (GE)",
+        "Germany (DE)", "Greece (GR)", "Hungary (HU)", "Iceland (IS)",
+        "India (IN)", "Indonesia (ID)", "Iran (IR)", "Ireland (IE)",
+        "Israel (IL)", "Italy (IT)", "Japan (JP)", "Kazakhstan (KZ)",
+        "Latvia (LV)", "Lithuania (LT)", "Luxembourg (LU)", "Malaysia (MY)",
+        "Malta (MT)", "Mexico (MX)", "Moldova (MD)", "Mongolia (MN)",
+        "Morocco (MA)", "Netherlands (NL)", "New Zealand (NZ)",
+        "North Macedonia (MK)", "Norway (NO)", "Oman (OM)", "Pakistan (PK)",
+        "Poland (PL)", "Portugal (PT)", "Qatar (QA)", "Romania (RO)",
+        "Russia (RU)", "Saudi Arabia (SA)", "Serbia (RS)", "Slovakia (SK)",
+        "Slovenia (SI)", "South Africa (ZA)", "Spain (ES)", "Sweden (SE)",
+        "Switzerland (CH)", "Tajikistan (TJ)", "Thailand (TH)", "Turkey (TR)",
+        "Turkmenistan (TM)", "United Arab Emirates (AE)",
+        "United Kingdom (GB)", "United States (US)", "Uzbekistan (UZ)",
     };
     return list;
 }
 
 // two letter country code of the airspaces export, empty when off
-// (an Enum fact value is the index, the code is its text)
 static QString countryCode(Fact *f)
 {
-    QString cc = f->enumText(f->value().toInt()).toLower();
-    return cc.size() == 2 ? cc : QString();
+    QString value = f->value().toString().trimmed();
+    if (value == "-")
+        return {};
+    QString cc = value;
+    int pos = value.lastIndexOf('(');
+    if (pos >= 0 && value.endsWith(')'))
+        cc = value.mid(pos + 1, value.size() - pos - 2);
+    cc = cc.trimmed().toUpper();
+    if (cc.size() != 2)
+        return {};
+    for (const auto &entry : f->enumStrings()) {
+        if (entry.endsWith("(" + cc + ")"))
+            return cc.toLower();
+    }
+    return {};
 }
 
 Traffic::Traffic(Fact *parent)
@@ -87,10 +114,31 @@ Traffic::Traffic(Fact *parent)
                          "country",
                          tr("Airspaces"),
                          tr("Country of the airspaces (OpenAIP), '-' is off"),
-                         Enum | PersistentValue,
+                         Text | PersistentValue,
                          "map-marker-radius");
     f_country->setEnumStrings(countries());
     f_country->setDefaultValue("-");
+
+    auto updateCountryDescription = [this]() {
+        QString value = f_country->value().toString().trimmed();
+        QString cc = countryCode(f_country);
+        if (value == "-" || value.isEmpty()) {
+            f_country->setDescr(tr("Airspaces are off"));
+            return;
+        }
+        if (cc.isEmpty()) {
+            f_country->setDescr(tr("Select a valid country"));
+            return;
+        }
+        for (const auto &entry : countries()) {
+            if (entry.endsWith("(" + cc.toUpper() + ")")) {
+                f_country->setDescr(tr("Selected: %1").arg(entry));
+                return;
+            }
+        }
+    };
+    connect(f_country, &Fact::valueChanged, this, updateCountryDescription);
+    updateCountryDescription();
 
     _aircraft = new AircraftModel(this);
     _aircraftSorted = new QSortFilterProxyModel(this);
@@ -168,6 +216,7 @@ void Traffic::clearAirspaces()
     _atcShown.clear();
     _atcFilterOrigin = QGeoCoordinate();
     _airspaces->reset({});
+    f_country->setProgress(-1);
     _atcStatus.clear();
     updateStatus();
 }
@@ -301,7 +350,16 @@ void Traffic::requestAtc()
     req.setTransferTimeout(60000);
     _atcCountry = cc;
     _atcTimeMs = QDateTime::currentMSecsSinceEpoch();
+    _atcStatus.clear();
+    updateStatus();
+    f_country->setProgress(0);
+    f_country->setDescr(tr("Downloading airspaces..."));
     _atcReply = _net.get(req);
+    connect(_atcReply, &QNetworkReply::downloadProgress, this,
+            [this](qint64 received, qint64 total) {
+                if (total > 0)
+                    f_country->setProgress(qBound(1, int(received * 90 / total), 90));
+            });
     connect(_atcReply, &QNetworkReply::finished, this, &Traffic::onAtcReply);
 }
 
@@ -389,19 +447,32 @@ void Traffic::onAtcReply()
     if (reply->error() != QNetworkReply::NoError) {
         if (reply->error() != QNetworkReply::OperationCanceledError) {
             _atcStatus = replyError("ATC", reply);
+            f_country->setDescr(_atcStatus);
             updateStatus();
         }
+        f_country->setProgress(-1);
         return;
     }
+    f_country->setProgress(95);
+    f_country->setDescr(tr("Parsing airspaces..."));
     _atcWatcher.setFuture(QtConcurrent::run(parseAirspaces, reply->readAll()));
 }
 
 void Traffic::onAtcParsed()
 {
+    f_country->setProgress(-1);
     if (_atcCountry != countryCode(f_country))
         return; // country changed while parsing
     _atcAll = _atcWatcher.result();
     filterAirspaces(true);
+    if (_atcAll.isEmpty()) {
+        _atcStatus = tr("ATC: no valid airspaces in file");
+        f_country->setDescr(_atcStatus);
+    } else {
+        f_country->setDescr(tr("Loaded %1 airspaces, %2 in range")
+                               .arg(_atcAll.size()).arg(_atcShown.size()));
+    }
+    updateStatus();
 }
 
 // the model gets the airspaces within 1.5 radius of the origin,
@@ -438,5 +509,8 @@ void Traffic::filterAirspaces(bool force)
     _airspaces->reset(list);
     _atcStatus = (!_atcAll.isEmpty() && list.isEmpty()) ? tr("ATC: no airspaces in range")
                                                           : QString();
+    if (!_atcAll.isEmpty())
+        f_country->setDescr(tr("Loaded %1 airspaces, %2 in range")
+                               .arg(_atcAll.size()).arg(list.size()));
     updateStatus();
 }

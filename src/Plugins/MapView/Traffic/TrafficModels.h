@@ -39,6 +39,7 @@ struct Aircraft
     double brg{0};    // from origin, deg
     int level{0};     // 0 other, 1 proximity, 2 alert
     qint64 seenMs{0}; // last reply that contained the aircraft
+    int number{0};
 };
 
 class AircraftModel : public QAbstractListModel
@@ -55,6 +56,7 @@ public:
         BrgRole,
         LevelRole,
         LabelRole,
+        NumberRole,
     };
 
     explicit AircraftModel(QObject *parent = nullptr);
@@ -69,6 +71,7 @@ public:
 
 private:
     QList<Aircraft> _items;
+    int _nextNumber{1};
 };
 
 // airspace polygon from the ATC data provider

@@ -45,21 +45,30 @@ MapQuickItem {
         MaterialIcon {
             id: icon
             name: "airplane"
-            size: Style.buttonSize
+            size: Style.buttonSize*0.8
             color: levelColor
             rotation: model.track
             style: Text.Outline
             styleColor: "#000"
         }
-        Text {
+        Rectangle {
             anchors.left: icon.right
+            anchors.leftMargin: 1
             anchors.verticalCenter: icon.verticalCenter
-            anchors.leftMargin: 2
-            text: model.label
-            color: levelColor
-            font: apx.font_narrow(Style.fontSize*0.8)
-            style: Text.Outline
-            styleColor: "#000"
+            width: numberText.implicitWidth+6
+            height: numberText.implicitHeight+3
+            radius: 3
+            color: "#CC000000"
+            border.color: levelColor
+            border.width: 1
+
+            Text {
+                id: numberText
+                anchors.centerIn: parent
+                text: model.number
+                color: levelColor
+                font: apx.font_narrow(Style.fontSize*0.8, true)
+            }
         }
     }
 }

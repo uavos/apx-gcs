@@ -71,7 +71,7 @@ Rectangle {
 
         delegate: Rectangle {
             width: list.width - Style.buttonSize/4
-            height: fs*1.3
+            height: fs*1.4
             color: model.level===2 ? "#40FF4C00" : "transparent"
             radius: 2
 
@@ -82,7 +82,8 @@ Rectangle {
             Row {
                 anchors.fill: parent
                 anchors.leftMargin: Style.spacing
-                spacing: fs
+                spacing: fs*0.5
+                Text { width: fs*2.8; text: model.number; color: c; font: apx.font_narrow(fs, true); horizontalAlignment: Text.AlignHCenter }
                 Text { width: fs*6; text: model.callsign; color: c; font: apx.font_narrow(fs, true); elide: Text.ElideRight }
                 Text { width: fs*5; text: model.altFt>0 ? Math.round(model.altFt)+" ft" : "GND"; color: c; font: apx.font_narrow(fs) }
                 Text { width: fs*5; text: model.distKm.toFixed(1)+" km"; color: "#aaa"; font: apx.font_narrow(fs) }
