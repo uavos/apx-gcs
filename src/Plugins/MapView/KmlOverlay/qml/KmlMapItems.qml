@@ -23,7 +23,6 @@ import QtQuick
 import QtLocation
 import QtPositioning
 import QtQml
-import KmlGeoPolygon
 
 MapItemGroup {
     id: control
@@ -33,31 +32,67 @@ MapItemGroup {
     property var plugin: apx.tools.kmloverlay
     property var kmlCenter: plugin.center
     onKmlCenterChanged: {
-        ui.map.centerOn(kmlCenter)
+        if (map && kmlCenter.isValid) {
+            map.centerOn(kmlCenter)
+            updateTimer.restart()
+        }
     }
-    onAreaChanged: plugin.updateKmlModels(area)
+
+    function updateVisiblePolygons()
+    {
+        if (map && map.visibleRegion.isValid)
+            plugin.updateKmlModels(map.visibleRegion)
+    }
+
+    Timer {
+        id: updateTimer
+        interval: 250
+        repeat: false
+        onTriggered: control.updateVisiblePolygons()
+    }
+
+    Connections {
+        target: control.map
+
+        function onCenterChanged() {
+            updateTimer.restart()
+        }
+
+        function onZoomLevelChanged() {
+            updateTimer.restart()
+        }
+    }
+
+    Connections {
+        target: control.plugin
+
+        function onLoadingChanged() {
+            if (!control.plugin.loading)
+                updateTimer.restart()
+        }
+    }
+
+    onAreaChanged: updateTimer.restart()
 
     MapItemView {
         id: borderPointsView
         model: plugin.kmlPolygons
 
         z: 1
-        delegate: MapQuickItem
-        {
-            coordinate: control.area.boundingGeoRectangle().topLeft
-
-            sourceItem: KmlGeoPolygon {
-                id: kmlPolygon
-                area: control.area
-                map: ui.map
-                geoPolygon: polygon
-                color: polygonColor
-                opacity: plugin.opacity.value
-            }
+        delegate: MapPolygon {
+            path: polygonPath
+            color: polygonColor
+            opacity: plugin.opacity.value
+            border.color: polygonColor
+            border.width: 1
+            autoFadeIn: false
         }
     }
 
     Component.onCompleted: {
-        map.addMapItemView(borderPointsView)
+        if (map) {
+            map.addMapItemView(borderPointsView)
+            updateTimer.start()
+        }
     }
 }

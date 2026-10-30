@@ -23,14 +23,18 @@
 
 #include "kmlpolygonsmodel.h"
 #include <Fact/Fact.h>
+#include <QtConcurrent>
 #include <QtCore>
 #include <QtLocation>
 
 class KmlOverlay : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(KmlPolygonsModel *kmlPolygons READ getKmlPolygons CONSTANT);
+    Q_PROPERTY(KmlPolygonsModel *kmlPolygons READ getKmlPolygons CONSTANT)
     Q_PROPERTY(QGeoCoordinate center READ getCenter NOTIFY centerChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
+
 public:
     explicit KmlOverlay(Fact *parent = nullptr);
 
@@ -41,19 +45,47 @@ public:
     KmlPolygonsModel *getKmlPolygons() const;
     QGeoCoordinate getCenter() const;
 
+    bool loading() const { return m_loading; }
+    int loadProgress() const { return m_loadProgress; }
+
     Q_INVOKABLE void updateKmlModels(const QGeoShape &shape);
 
 private:
-    KmlParser m_parser;
+    struct ImportResult
+    {
+        QList<KmlPolygon> polygons;
+        QString error;
+    };
+
     QGeoCoordinate m_center;
     KmlPolygonsModel *m_kmlPolygons;
+
+    QFutureWatcher<ImportResult> m_importWatcher;
+    QTimer m_importTimer;
+    QTimer m_progressTimer;
+
+    QList<KmlPolygon> m_pendingPolygons;
+    QList<KmlPolygon> m_loadedPolygons;
+    int m_importIndex{0};
+    int m_loadProgress{0};
+    int m_pulse{0};
+    bool m_loading{false};
+
     QPointF gc2p(const QGeoCoordinate &c);
     QGeoCoordinate p2gc(const QPointF &p);
+
+    void setLoading(bool loading);
+    void setLoadProgress(int progress);
+    void finishImport();
 
 private slots:
     void onOpenTriggered();
     void onOverlayVisibleValueChanged();
+    void onImportFinished();
+    void importBatch();
 
 signals:
     void centerChanged();
+    void loadingChanged();
+    void loadProgressChanged();
 };

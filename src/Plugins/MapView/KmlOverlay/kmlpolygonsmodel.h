@@ -29,10 +29,13 @@ class KmlPolygonsModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    enum Roles { Polygon = Qt::UserRole + 1, Color };
+    enum Roles { Polygon = Qt::UserRole + 1, Color, Path };
     KmlPolygonsModel();
 
     QPointF setPolygons(const QList<KmlPolygon> &kmlPolygons);
+    void clearPolygons();
+    void appendPolygons(const QList<KmlPolygon> &polygons, int start, int count);
+    QPointF center() const;
     void setBoundingBox(const QRectF &bb);
 
     int rowCount(const QModelIndex &index) const override;
@@ -44,18 +47,19 @@ private:
     struct KmlPolygonExtended
     {
         KmlPolygon kmlPolygon;
-        QPolygonF polygon;
+        QRectF boundingBox;
         bool operator==(const KmlPolygonExtended &other) const
         {
             return kmlPolygon.id == other.kmlPolygon.id;
         }
     };
 
-    QPolygonF m_bb;
+    QRectF m_bb;
+    bool m_hasBoundingBox{false};
     QList<KmlPolygonExtended> m_allPolygons;
     QList<KmlPolygonExtended> m_viewPolygons;
+    QPointF m_centerSum;
+    int m_centerCount{0};
 
     void updateViewPolygons();
-
-    QPolygonF toPolygon(const QGeoPolygon &geoPolygon);
 };
