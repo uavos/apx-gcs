@@ -237,7 +237,8 @@ MissionObject {
                          && (runwayItem.is_current || runwayItem.selected || mission.rw.size===1)
                 opacity: ui.effects?0.6:1
                 line.width: Math.max(1,2*ui.scale)
-                line.color: "#1E50C8"
+                // blue for the current (active) runway, orange for another selected one
+                line.color: runwayItem.is_current ? "#1E50C8" : "#FF8C00"
                 path: runwayItem.taPath
             }
         }

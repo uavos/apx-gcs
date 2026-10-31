@@ -170,7 +170,7 @@ Fact *Runway::shivaParam(const QString &path) const
 Runway::PerfParams Runway::perfParams()
 {
     // defaults when node config is not available (apx-fw defaults)
-    PerfParams p{200.0, 22.0, 25.0, 0.9, false};
+    PerfParams p{200.0, 30.0, 25.0, 0.9, 30.0, false};
 
     auto read = [this](const QString &path, double &v) {
         auto f = shivaParam(path);
@@ -186,17 +186,20 @@ Runway::PerfParams Runway::perfParams()
     read("perf.VC", p.speed);
     read("bearing.dist", p.l1_period);
     read("bearing.damp", p.l1_damp);
+    read("roll.cmd.max", p.roll_max);
     read("perf.type", vtol);
     p.vtol = vtol > 0;
 
     if (p.radius <= 0)
         p.radius = 200.0;
     if (p.speed <= 0)
-        p.speed = 22.0;
+        p.speed = 30.0;
     if (p.l1_period <= 0)
         p.l1_period = 25.0;
     if (p.l1_damp <= 0)
         p.l1_damp = 0.9;
+    if (p.roll_max <= 0 || p.roll_max >= 90)
+        p.roll_max = 30.0;
     return p;
 }
 
@@ -257,10 +260,20 @@ QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
         return path;
 
     const double spd = p.speed;
-    const double dt = 1.0;
-    const double turnRate = qRadiansToDegrees(spd / p.radius); // perf.radius is the min turn radius
+    const double dt = 0.5;
+    const double step = dt * spd;
+    // turn radius is limited by the roll command limit (RegRoll, shiva.roll.cmd.max),
+    // perf.radius is the loiter radius and only bounds the estimate from above
+    const double turnRadius = std::min(p.radius,
+                                       spd * spd
+                                           / (9.81 * std::tan(qDegreesToRadians(p.roll_max))));
+    const double turnStep = qRadiansToDegrees(spd / turnRadius) * dt; // max heading change per step
     const double L1 = std::max(10.0, p.l1_damp * p.l1_period / M_PI * spd);
     const bool cw = !left; // right pattern: m.radius > 0 -> clockwise
+
+    // capture tolerance: the discrete model keeps a small steady state offset
+    // from the circle (about L1*step/(2*radius)), the rest is blended on the arc
+    const double captureTol = std::max(radius * 0.01, step);
 
     double crs = last->bearing();
     double turnCnt = 0;
@@ -279,25 +292,27 @@ QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
         const double desired = tangent + (cw ? eta1 : -eta1);
         double deltaHdg = AppRoot::angle(desired - crs);
 
-        if (std::abs(err) < radius * 0.05 && std::abs(AppRoot::angle(tangent - crs)) < 10.0) {
+        if (std::abs(err) < captureTol && std::abs(AppRoot::angle(tangent - crs)) < 10.0) {
             captured = true;
             break;
         }
 
-        double step = dt * spd;
-        if (std::abs(deltaHdg) < (dt * 10.0) && err > (L1 * 2.0)) {
+        double d = step;
+        if (std::abs(deltaHdg) < 10.0 && err > (L1 * 2.0)) {
             // course ok and far away - jump towards the circle
             crs += deltaHdg;
             deltaHdg = 0;
-            step = std::min(err - L1, 10.0e+3);
+            d = std::min(err - L1, 10.0e+3);
         }
 
-        pt = pt.atDistanceAndAzimuth(step, crs);
-        path.addCoordinate(pt);
-
-        const double turn = dt * AppRoot::limit(deltaHdg, -turnRate, turnRate);
+        // update the heading first, then move: the position step with the
+        // previous heading lags on a curved path and never converges to the circle
+        const double turn = AppRoot::limit(deltaHdg, -turnStep, turnStep);
         crs += turn;
         turnCnt += turn;
+
+        pt = pt.atDistanceAndAzimuth(d, crs);
+        path.addCoordinate(pt);
 
         if (std::abs(turnCnt) > (360.0 * 2.0))
             return QGeoPath(); // can't capture the circle
@@ -306,14 +321,20 @@ QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
     if (!captured)
         return QGeoPath();
 
-    // follow the circle to the approach point (ProcLD_runway::APP -> FINAL)
+    // follow the circle to the approach point (ProcLD_runway::APP -> FINAL),
+    // blend the remaining offset from the circle smoothly along the arc
     const double hdgTA = heading() + (left ? -90.0 : 90.0);
     const double aApp = hdgTA + 180.0; // azimuth from center to approach point
     const double a0 = center.azimuthTo(pt);
+    const double err0 = pt.distanceTo(center) - radius;
     const double sweep = AppRoot::angle360(cw ? (aApp - a0) : (a0 - aApp));
+    const double sweepLen = radius * qDegreesToRadians(sweep);
+    const double blendLen = std::min(L1, sweepLen / 3.0); // complete the blend before the approach point
     const double stepA = 5.0;
-    for (double a = stepA; a < sweep; a += stepA) {
-        path.addCoordinate(center.atDistanceAndAzimuth(radius, cw ? (a0 + a) : (a0 - a)));
+    for (double a = stepA; (a + 1.0) < sweep; a += stepA) {
+        const double s = radius * qDegreesToRadians(a); // arc length from the capture point
+        const double r = radius + err0 * std::exp(-s / blendLen);
+        path.addCoordinate(center.atDistanceAndAzimuth(r, cw ? (a0 + a) : (a0 - a)));
     }
     path.addCoordinate(appPoint());
 

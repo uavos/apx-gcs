@@ -65,6 +65,7 @@ private:
         double speed;     // shiva.perf.VC [m/s]
         double l1_period; // shiva.bearing.dist [s]
         double l1_damp;   // shiva.bearing.damp
+        double roll_max;  // shiva.roll.cmd.max [deg]
         bool vtol;        // shiva.perf.type
     };
     PerfParams perfParams();
