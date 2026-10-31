@@ -35,10 +35,11 @@ class Traffic : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QAbstractListModel *aircraft READ aircraft CONSTANT)
-    Q_PROPERTY(QAbstractItemModel *aircraftSorted READ aircraftSorted CONSTANT)
     Q_PROPERTY(QAbstractListModel *airspaces READ airspaces CONSTANT)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QStringList countries READ countries CONSTANT)
+    // hex of the aircraft with the info panel pinned on the map (click), empty is none
+    Q_PROPERTY(QString selected READ selected WRITE setSelected NOTIFY selectedChanged)
 
 public:
     explicit Traffic(Fact *parent = nullptr);
@@ -48,17 +49,17 @@ public:
     Fact *f_country; // airspaces country code, empty is off
 
     QAbstractListModel *aircraft() const { return _aircraft; }
-    QAbstractItemModel *aircraftSorted() const { return _aircraftSorted; }
     QAbstractListModel *airspaces() const { return _airspaces; }
     QString status() const { return _status; }
     QStringList countries() const; // airspaces exports available on OpenAIP, "-" is off
+    QString selected() const { return _selected; }
+    void setSelected(const QString &hex);
 
     // map view center, used when the current unit has no position
     Q_INVOKABLE void setMapCenter(const QGeoCoordinate &c) { _mapCenter = c; }
 
 private:
     AircraftModel *_aircraft;
-    QSortFilterProxyModel *_aircraftSorted;
     AirspaceModel *_airspaces;
 
     QNetworkAccessManager _net;
@@ -82,6 +83,8 @@ private:
     void filterAirspaces(bool force = false);
     void clearAirspaces();
 
+    QString _selected;
+
     QString _status;
     QString _adsbStatus;
     QString _atcStatus;
@@ -102,4 +105,5 @@ private slots:
 
 signals:
     void statusChanged();
+    void selectedChanged();
 };

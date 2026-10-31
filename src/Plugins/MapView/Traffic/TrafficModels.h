@@ -29,17 +29,23 @@ struct Aircraft
 {
     QString hex;
     QString callsign;
-    QString type;
+    QString type;     // ICAO type code, "A320"
+    QString category; // ADS-B emitter category, "A3"
     QGeoCoordinate coordinate;
-    double altFt{0};  // barometric altitude, ft (0 on ground)
-    double gsKt{0};   // ground speed, kt
-    double track{0};  // deg
-    double vsFpm{0};  // vertical speed, ft/min
-    double distKm{0}; // from origin
-    double brg{0};    // from origin, deg
-    int level{0};     // 0 other, 1 proximity, 2 alert
-    qint64 seenMs{0}; // last reply that contained the aircraft
-    int number{0};
+    bool onGround{false};
+    double altBaroM{qQNaN()}; // pressure altitude (std 1013), m
+    double altGeomM{qQNaN()}; // GNSS altitude (WGS84), m
+    double gsKt{0};           // ground speed, kt
+    double track{0};          // deg
+    double vsMs{0};           // vertical speed, m/s
+    double distKm{0};         // from origin
+    double brg{0};            // from origin, deg
+    int level{0};             // 0 other, 1 proximity, 2 alert
+    qint64 seenMs{0};         // last reply that contained the aircraft
+
+    // altitude used for display and alerts: GNSS when available, baro otherwise
+    double altM() const { return qIsNaN(altGeomM) ? altBaroM : altGeomM; }
+    QString altSrc() const { return qIsNaN(altGeomM) ? "BARO" : "GNSS"; }
 };
 
 class AircraftModel : public QAbstractListModel
@@ -49,14 +55,23 @@ public:
     enum Roles {
         HexRole = Qt::UserRole + 1,
         CallsignRole,
+        TypeRole,
+        CategoryRole,
+        CategoryTextRole,
+        IconRole,
+        IconScaleRole,
         CoordinateRole,
-        AltRole,
+        OnGroundRole,
+        AltRole,     // altM, m
+        AltSrcRole,  // "BARO" or "GNSS"
+        AltBaroRole, // m, NaN when unknown
+        AltGeomRole, // m, NaN when unknown
+        GsRole,      // kt
         TrackRole,
+        VsRole, // m/s
         DistRole,
         BrgRole,
         LevelRole,
-        LabelRole,
-        NumberRole,
     };
 
     explicit AircraftModel(QObject *parent = nullptr);
@@ -68,10 +83,10 @@ public:
     // merge a complete reply: update, insert and drop missing (by hex)
     void update(const QList<Aircraft> &list);
     void clear();
+    bool contains(const QString &hex) const;
 
 private:
     QList<Aircraft> _items;
-    int _nextNumber{1};
 };
 
 // airspace polygon from the ATC data provider

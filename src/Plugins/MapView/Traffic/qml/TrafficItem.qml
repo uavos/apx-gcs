@@ -25,18 +25,31 @@ import QtPositioning
 
 import Apx.Common
 
-// ADS-B aircraft: icon rotated by track and a short data label
+// ADS-B aircraft: icon by category rotated by track,
+// info panel on hover, pinned by a click (traffic.selected)
 MapQuickItem {
     id: item
+
+    readonly property var traffic: apx.tools.traffic
+    readonly property bool pinned: traffic.selected === model.hex
+    readonly property bool hovered: hoverHandler.hovered
+    readonly property bool showInfo: hovered || pinned
 
     readonly property color levelColor: model.level===2 ? "#FF4C00"
                                       : model.level===1 ? "#FFC800"
                                       : "#00FFFF"
+    readonly property real fs: Style.fontSize*0.8
 
     coordinate: model.coordinate
     zoomLevel: 0
     anchorPoint.x: icon.width/2
     anchorPoint.y: icon.height/2
+    z: showInfo ? 100 : 50
+
+    function altText(v)
+    {
+        return isNaN(v) ? "---" : (Math.round(v) + " m")
+    }
 
     sourceItem: Item {
         width: icon.width
@@ -44,30 +57,71 @@ MapQuickItem {
 
         MaterialIcon {
             id: icon
-            name: "airplane"
-            size: Style.buttonSize*0.8
+            name: model.icon
+            size: Style.buttonSize*0.8*model.iconScale
             color: levelColor
             rotation: model.track
             style: Text.Outline
-            styleColor: "#000"
+            styleColor: showInfo ? "#fff" : "#000"
         }
-        Rectangle {
-            anchors.left: icon.right
-            anchors.leftMargin: 1
-            anchors.verticalCenter: icon.verticalCenter
-            width: numberText.implicitWidth+6
-            height: numberText.implicitHeight+3
-            radius: 3
-            color: "#CC000000"
-            border.color: levelColor
-            border.width: 1
 
-            Text {
-                id: numberText
+        HoverHandler {
+            id: hoverHandler
+        }
+        TapHandler {
+            onTapped: traffic.selected = pinned ? "" : model.hex
+        }
+
+        // info panel
+        Rectangle {
+            visible: showInfo
+            anchors.left: icon.right
+            anchors.leftMargin: 2
+            anchors.verticalCenter: icon.verticalCenter
+            width: infoColumn.implicitWidth + fs
+            height: infoColumn.implicitHeight + fs*0.6
+            radius: 3
+            color: "#D0000000"
+            border.color: pinned ? "#fff" : levelColor
+            border.width: pinned ? 2 : 1
+
+            Column {
+                id: infoColumn
                 anchors.centerIn: parent
-                text: model.number
-                color: levelColor
-                font: apx.font_narrow(Style.fontSize*0.8, true)
+                spacing: 1
+
+                Text {
+                    text: model.callsign
+                    color: levelColor
+                    font: apx.font_narrow(fs, true)
+                }
+                Text {
+                    text: model.categoryText + (model.type ? "  " + model.type : "")
+                    color: "#ccc"
+                    font: apx.font_narrow(fs)
+                }
+                Text {
+                    text: model.onGround ? "GND"
+                                         : ("ALT " + model.altSrc + " " + altText(model.altM)
+                                            + (model.vsMs > 0.5 ? "  \u2191" + model.vsMs.toFixed(1) + " m/s"
+                                              : model.vsMs < -0.5 ? "  \u2193" + (-model.vsMs).toFixed(1) + " m/s"
+                                              : ""))
+                    color: "#fff"
+                    font: apx.font_narrow(fs)
+                }
+                Text {
+                    visible: !model.onGround && !isNaN(model.altBaroM) && !isNaN(model.altGeomM)
+                    text: "BARO " + altText(model.altBaroM) + "  GNSS " + altText(model.altGeomM)
+                    color: "#aaa"
+                    font: apx.font_narrow(fs)
+                }
+                Text {
+                    text: (model.gsKt > 0 ? Math.round(model.gsKt) + " kt  " : "")
+                          + model.distKm.toFixed(1) + " km  "
+                          + ("00"+Math.round(model.brg)).slice(-3) + "\u00B0"
+                    color: "#aaa"
+                    font: apx.font_narrow(fs)
+                }
             }
         }
     }

@@ -141,11 +141,6 @@ Traffic::Traffic(Fact *parent)
     updateCountryDescription();
 
     _aircraft = new AircraftModel(this);
-    _aircraftSorted = new QSortFilterProxyModel(this);
-    _aircraftSorted->setSourceModel(_aircraft);
-    _aircraftSorted->setSortRole(AircraftModel::DistRole);
-    _aircraftSorted->setDynamicSortFilter(true);
-    _aircraftSorted->sort(0);
     _airspaces = new AirspaceModel(this);
 
     _timer.setInterval(adsb_period_ms);
@@ -161,11 +156,10 @@ Traffic::Traffic(Fact *parent)
 
     connect(App::instance(), &App::loadingFinished, this, &Traffic::onEnabledChanged);
 
-    loadQml("qrc:/" PLUGIN_NAME "/TrafficPlugin.qml");   // traffic list widget
     loadQml("qrc:/" PLUGIN_NAME "/TrafficMapLayer.qml"); // aircraft and airspaces on the map
 }
 
-// short status for the panel: "ADS-B: HTTP 429" or the error text
+// short status for the tools menu: "ADS-B: HTTP 429" or the error text
 static QString replyError(const QString &src, QNetworkReply *reply)
 {
     int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -182,6 +176,7 @@ void Traffic::updateStatus()
     if (_status == s)
         return;
     _status = s;
+    setDescr(_status.isEmpty() ? tr("ADS-B traffic and airspaces") : _status);
     emit statusChanged();
 }
 
@@ -201,6 +196,7 @@ void Traffic::onEnabledChanged()
     if (_adsbReply)
         _adsbReply->abort();
     _aircraft->clear();
+    setSelected({});
     clearAirspaces();
     _adsbStatus.clear();
     updateStatus();
@@ -319,14 +315,29 @@ void Traffic::onAdsbReply()
             continue;
         a.callsign = j.value("flight").toString().trimmed();
         a.type = j.value("t").toString();
-        a.altFt = j.value("alt_baro").toDouble(); // "ground" -> 0
+        a.category = j.value("category").toString();
+        // altitudes come in ft: alt_baro is the pressure altitude ("ground" on the surface),
+        // alt_geom is the GNSS altitude above the WGS84 ellipsoid
+        auto baro = j.value("alt_baro");
+        a.onGround = baro.isString();
+        if (baro.isDouble())
+            a.altBaroM = baro.toDouble() * 0.3048;
+        else if (a.onGround)
+            a.altBaroM = 0;
+        auto geom = j.value("alt_geom");
+        if (geom.isDouble())
+            a.altGeomM = geom.toDouble() * 0.3048;
         a.gsKt = j.value("gs").toDouble();
         a.track = j.value("track").toDouble();
-        a.vsFpm = j.value("baro_rate").toDouble();
+        auto rate = j.value("geom_rate");
+        if (!rate.isDouble())
+            rate = j.value("baro_rate");
+        a.vsMs = rate.toDouble() * 0.3048 / 60.0;
         a.distKm = o.distanceTo(a.coordinate) / 1000.0;
         a.brg = o.azimuthTo(a.coordinate);
         a.seenMs = now;
-        double dAlt = qAbs(a.altFt * 0.3048 - oAlt);
+        double alt = a.altM();
+        double dAlt = qIsNaN(alt) ? 0 : qAbs(alt - oAlt);
         if (a.distKm < alert_dist_km && dAlt < alert_dalt_m)
             a.level = 2;
         else if (a.distKm < prox_dist_km && dAlt < alert_dalt_m * 2)
@@ -334,8 +345,18 @@ void Traffic::onAdsbReply()
         list.append(a);
     }
     _aircraft->update(list);
+    if (!_selected.isEmpty() && !_aircraft->contains(_selected))
+        setSelected({}); // pinned aircraft is gone
     _adsbStatus.clear();
     updateStatus();
+}
+
+void Traffic::setSelected(const QString &hex)
+{
+    if (_selected == hex)
+        return;
+    _selected = hex;
+    emit selectedChanged();
 }
 
 void Traffic::requestAtc()
