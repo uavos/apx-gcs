@@ -21,12 +21,107 @@
  */
 #include "kmloverlay.h"
 
-#include "kmlgeopolygon.h"
 #include "kmlparser.h"
+#include "kmlrasteritem.h"
 #include <App/App.h>
 #include <QFileDialog>
 #include <QGeoRectangle>
 #include <QMessageBox>
+
+#include "quazip/quazip.h"
+#include "quazip/quazipfile.h"
+
+namespace {
+
+constexpr qint64 kMaxKmlSize = 128 * 1024 * 1024;
+
+bool isKmzArchive(const QString &path, QFile &file)
+{
+    if (path.endsWith(QStringLiteral(".kmz"), Qt::CaseInsensitive))
+        return true;
+
+    // KMZ is a regular zip archive, check the local file header signature
+    const QByteArray magic = file.peek(4);
+    return magic == QByteArrayLiteral("PK\x03\x04");
+}
+
+QByteArray readKmzData(const QString &path, QString &error)
+{
+    QuaZip zip(path);
+    if (!zip.open(QuaZip::mdUnzip)) {
+        error = QStringLiteral("Unable to open KMZ archive");
+        return {};
+    }
+
+    // KMZ keeps the main document as doc.kml in the archive root,
+    // fall back to the first *.kml entry if it is named differently
+    QString entry;
+    for (const QString &name : zip.getFileNameList()) {
+        if (!name.endsWith(QStringLiteral(".kml"), Qt::CaseInsensitive))
+            continue;
+        if (name.compare(QStringLiteral("doc.kml"), Qt::CaseInsensitive) == 0) {
+            entry = name;
+            break;
+        }
+        if (entry.isEmpty() || !name.contains('/'))
+            entry = name;
+    }
+
+    if (entry.isEmpty()) {
+        error = QStringLiteral("No KML document found in KMZ archive");
+        return {};
+    }
+
+    if (!zip.setCurrentFile(entry)) {
+        error = QStringLiteral("Unable to locate %1 in KMZ archive").arg(entry);
+        return {};
+    }
+
+    QuaZipFileInfo64 info;
+    if (zip.getCurrentFileInfo(&info) && info.uncompressedSize > quint64(kMaxKmlSize)) {
+        error = QStringLiteral("KML document in KMZ archive is too large");
+        return {};
+    }
+
+    QuaZipFile kml(&zip);
+    if (!kml.open(QIODevice::ReadOnly)) {
+        error = QStringLiteral("Unable to read %1 from KMZ archive").arg(entry);
+        return {};
+    }
+
+    const QByteArray data = kml.readAll();
+    kml.close();
+
+    if (data.size() > kMaxKmlSize) {
+        error = QStringLiteral("KML document in KMZ archive is too large");
+        return {};
+    }
+
+    return data;
+}
+
+QByteArray readKmlData(const QString &path, QString &error)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        error = QStringLiteral("Unable to open file");
+        return {};
+    }
+
+    if (isKmzArchive(path, file)) {
+        file.close();
+        return readKmzData(path, error);
+    }
+
+    if (file.size() > kMaxKmlSize) {
+        error = QStringLiteral("KML file is too large");
+        return {};
+    }
+
+    return file.readAll();
+}
+
+} // namespace
 
 KmlOverlay::KmlOverlay(Fact *parent)
     : Fact(parent,
@@ -34,13 +129,12 @@ KmlOverlay::KmlOverlay(Fact *parent)
            tr("KML Overlay"),
            tr("KML objects overlay"),
            Group)
-    , m_kmlPolygons(new KmlPolygonsModel())
 {
-    KmlGeoPolygon::registerQmlType();
+    KmlRasterItem::registerQmlType();
 
     setIcon("google-earth");
 
-    f_open = new Fact(this, "open", tr("Open..."), tr("Open KML file"));
+    f_open = new Fact(this, "open", tr("Open..."), tr("Open KML or KMZ file"));
     f_open->setIcon("import");
 
     f_visible = new Fact(this, "show", tr("Show overlay"), "", Fact::Bool);
@@ -53,27 +147,24 @@ KmlOverlay::KmlOverlay(Fact *parent)
     f_opacity->setValue(1);
 
     connect(f_open, &Fact::triggered, this, &KmlOverlay::onOpenTriggered);
-    connect(f_visible, &Fact::valueChanged, this, &KmlOverlay::onOverlayVisibleValueChanged);
 
     connect(&m_importWatcher, &QFutureWatcherBase::finished,
             this, &KmlOverlay::onImportFinished);
 
-    m_importTimer.setInterval(0);
-    connect(&m_importTimer, &QTimer::timeout, this, &KmlOverlay::importBatch);
-
-    m_progressTimer.setInterval(120);
+    // the import thread reports parse progress in percent, the UI polls it
+    m_progressTimer.setInterval(100);
     connect(&m_progressTimer, &QTimer::timeout, this, [this]() {
-        m_pulse = (m_pulse + 1) % 20;
-        setProgress(m_pulse + 1);
-        f_open->setProgress(m_pulse + 1);
+        if (!m_parseProgress)
+            return;
+        const int parsed = m_parseProgress->load();
+        // parsing is 1..95, the rest is building the dataset
+        const int progress = qBound(1, 1 + parsed * 94 / 100, 95);
+        setProgress(progress);
+        f_open->setProgress(progress);
+        setValue(tr("Parsing KML: %1%").arg(parsed));
     });
 
     loadQml("qrc:/" PLUGIN_NAME "/KmlOverlayPlugin.qml");
-}
-
-KmlPolygonsModel *KmlOverlay::getKmlPolygons() const
-{
-    return m_kmlPolygons;
 }
 
 QGeoCoordinate KmlOverlay::getCenter() const
@@ -81,24 +172,9 @@ QGeoCoordinate KmlOverlay::getCenter() const
     return m_center;
 }
 
-void KmlOverlay::updateKmlModels(const QGeoShape &shape)
+int KmlOverlay::zonesCount() const
 {
-    if (!shape.isValid())
-        return;
-
-    QRectF bb(gc2p(shape.boundingGeoRectangle().topLeft()),
-              gc2p(shape.boundingGeoRectangle().bottomRight()));
-    m_kmlPolygons->setBoundingBox(bb);
-}
-
-QPointF KmlOverlay::gc2p(const QGeoCoordinate &c)
-{
-    return QPointF(c.latitude(), c.longitude());
-}
-
-QGeoCoordinate KmlOverlay::p2gc(const QPointF &p)
-{
-    return QGeoCoordinate(p.x(), p.y());
+    return m_data ? int(m_data->zones.size()) : 0;
 }
 
 void KmlOverlay::setLoading(bool loading)
@@ -113,20 +189,9 @@ void KmlOverlay::setLoading(bool loading)
         m_progressTimer.stop();
         setProgress(-1);
         f_open->setProgress(-1);
-        setLoadProgress(0);
     }
 
     emit loadingChanged();
-}
-
-void KmlOverlay::setLoadProgress(int progress)
-{
-    progress = qBound(0, progress, 100);
-    if (m_loadProgress == progress)
-        return;
-
-    m_loadProgress = progress;
-    emit loadProgressChanged();
 }
 
 void KmlOverlay::onOpenTriggered()
@@ -135,37 +200,27 @@ void KmlOverlay::onOpenTriggered()
         return;
 
     QString path = QFileDialog::getOpenFileName(nullptr,
-                                                tr("Open kml"),
+                                                tr("Open KML"),
                                                 QDir::homePath(),
-                                                "KML (*.kml)");
+                                                tr("KML files (*.kml *.kmz);;KML (*.kml);;KMZ (*.kmz)"));
     if (path.isEmpty())
         return;
 
     setLoading(true);
-    setLoadProgress(0);
 
-    m_pulse = 0;
+    m_parseProgress = QSharedPointer<std::atomic<int>>::create(0);
     setProgress(1);
     f_open->setProgress(1);
     setValue(tr("Reading KML..."));
     m_progressTimer.start();
 
-    m_importWatcher.setFuture(QtConcurrent::run([path]() -> ImportResult {
+    auto parseProgress = m_parseProgress;
+    m_importWatcher.setFuture(QtConcurrent::run([path, parseProgress]() -> ImportResult {
         ImportResult result;
 
-        QFile file(path);
-        if (!file.open(QIODevice::ReadOnly)) {
-            result.error = QStringLiteral("Unable to open file");
+        const QByteArray data = readKmlData(path, result.error);
+        if (!result.error.isEmpty())
             return result;
-        }
-
-        if (file.size() > 128 * 1024 * 1024) {
-            result.error = QStringLiteral("KML file is too large");
-            return result;
-        }
-
-        const QByteArray data = file.readAll();
-        file.close();
 
         if (data.isEmpty()) {
             result.error = QStringLiteral("KML file is empty");
@@ -173,10 +228,11 @@ void KmlOverlay::onOpenTriggered()
         }
 
         KmlParser parser;
-        parser.parse(data);
-        result.polygons = parser.getPolygons();
+        parser.parse(data, [parseProgress](int percent) { parseProgress->store(percent); });
 
-        if (result.polygons.isEmpty())
+        result.data = KmlDataSet::fromPolygons(parser.getPolygons());
+
+        if (result.data->zones.isEmpty())
             result.error = QStringLiteral("No valid polygons found");
 
         return result;
@@ -186,6 +242,7 @@ void KmlOverlay::onOpenTriggered()
 void KmlOverlay::onImportFinished()
 {
     m_progressTimer.stop();
+    m_parseProgress.reset();
 
     ImportResult result = m_importWatcher.result();
 
@@ -196,78 +253,14 @@ void KmlOverlay::onImportFinished()
         return;
     }
 
-    m_pendingPolygons = std::move(result.polygons);
-    m_importIndex = 0;
+    m_data = result.data;
+    m_center = KmlMercator::toGeo(m_data->bbox.center());
 
-    m_kmlPolygons->clearPolygons();
+    setValue(tr("%1 KML zones loaded").arg(m_data->zones.size()));
 
-    setValue(tr("Adding KML zones..."));
-    setLoadProgress(0);
-    setProgress(20);
-    f_open->setProgress(20);
-
-    m_importTimer.start();
-}
-
-void KmlOverlay::importBatch()
-{
-    if (m_importIndex >= m_pendingPolygons.size()) {
-        finishImport();
-        return;
-    }
-
-    QElapsedTimer elapsed;
-    elapsed.start();
-
-    const int total = m_pendingPolygons.size();
-
-    while (m_importIndex < total && elapsed.elapsed() < 6) {
-        const int count = qMin(8, total - m_importIndex);
-        m_kmlPolygons->appendPolygons(m_pendingPolygons, m_importIndex, count);
-        m_importIndex += count;
-    }
-
-    const int progress = 20 + (m_importIndex * 79 / total);
-    setLoadProgress(m_importIndex * 100 / total);
-    setProgress(progress);
-    f_open->setProgress(progress);
-
-    setValue(tr("Adding zones: %1/%2").arg(m_importIndex).arg(total));
-}
-
-void KmlOverlay::finishImport()
-{
-    m_importTimer.stop();
-
-    const QPointF center = m_kmlPolygons->center();
-    m_center = p2gc(center);
-
-    m_loadedPolygons = std::move(m_pendingPolygons);
-    m_pendingPolygons.clear();
-    m_importIndex = 0;
-
-    setLoadProgress(100);
-    setProgress(100);
-    f_open->setProgress(100);
-
-    setValue(tr("%1 KML zones loaded").arg(m_loadedPolygons.size()));
-
+    emit dataChanged();
     if (m_center.isValid())
         emit centerChanged();
 
-    if (!f_visible->value().toBool())
-        m_kmlPolygons->clearPolygons();
-
     setLoading(false);
-}
-
-void KmlOverlay::onOverlayVisibleValueChanged()
-{
-    if (m_loading)
-        return;
-
-    if (f_visible->value().toBool())
-        m_kmlPolygons->setPolygons(m_loadedPolygons);
-    else
-        m_kmlPolygons->clearPolygons();
 }

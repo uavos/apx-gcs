@@ -21,7 +21,8 @@
  */
 #pragma once
 
-#include "kmlpolygonsmodel.h"
+#include "kmldataset.h"
+#include <atomic>
 #include <Fact/Fact.h>
 #include <QtConcurrent>
 #include <QtCore>
@@ -30,10 +31,9 @@
 class KmlOverlay : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(KmlPolygonsModel *kmlPolygons READ getKmlPolygons CONSTANT)
     Q_PROPERTY(QGeoCoordinate center READ getCenter NOTIFY centerChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
-    Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
+    Q_PROPERTY(int zonesCount READ zonesCount NOTIFY dataChanged)
 
 public:
     explicit KmlOverlay(Fact *parent = nullptr);
@@ -42,50 +42,36 @@ public:
     Fact *f_visible;
     Fact *f_opacity;
 
-    KmlPolygonsModel *getKmlPolygons() const;
     QGeoCoordinate getCenter() const;
-
     bool loading() const { return m_loading; }
-    int loadProgress() const { return m_loadProgress; }
+    int zonesCount() const;
 
-    Q_INVOKABLE void updateKmlModels(const QGeoShape &shape);
+    // immutable snapshot of the loaded zones, shared with the render thread
+    KmlDataSetPtr dataSet() const { return m_data; }
 
 private:
     struct ImportResult
     {
-        QList<KmlPolygon> polygons;
+        KmlDataSetPtr data;
         QString error;
     };
 
     QGeoCoordinate m_center;
-    KmlPolygonsModel *m_kmlPolygons;
+    KmlDataSetPtr m_data;
 
     QFutureWatcher<ImportResult> m_importWatcher;
-    QTimer m_importTimer;
     QTimer m_progressTimer;
-
-    QList<KmlPolygon> m_pendingPolygons;
-    QList<KmlPolygon> m_loadedPolygons;
-    int m_importIndex{0};
-    int m_loadProgress{0};
-    int m_pulse{0};
+    QSharedPointer<std::atomic<int>> m_parseProgress; // written by the import thread
     bool m_loading{false};
 
-    QPointF gc2p(const QGeoCoordinate &c);
-    QGeoCoordinate p2gc(const QPointF &p);
-
     void setLoading(bool loading);
-    void setLoadProgress(int progress);
-    void finishImport();
 
 private slots:
     void onOpenTriggered();
-    void onOverlayVisibleValueChanged();
     void onImportFinished();
-    void importBatch();
 
 signals:
     void centerChanged();
     void loadingChanged();
-    void loadProgressChanged();
+    void dataChanged();
 };
