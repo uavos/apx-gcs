@@ -21,16 +21,20 @@
  */
 #pragma once
 
-#include "kmlpolygonsmodel.h"
+#include "kmldataset.h"
+#include <atomic>
 #include <Fact/Fact.h>
+#include <QtConcurrent>
 #include <QtCore>
 #include <QtLocation>
 
 class KmlOverlay : public Fact
 {
     Q_OBJECT
-    Q_PROPERTY(KmlPolygonsModel *kmlPolygons READ getKmlPolygons CONSTANT);
     Q_PROPERTY(QGeoCoordinate center READ getCenter NOTIFY centerChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(int zonesCount READ zonesCount NOTIFY dataChanged)
+
 public:
     explicit KmlOverlay(Fact *parent = nullptr);
 
@@ -38,22 +42,36 @@ public:
     Fact *f_visible;
     Fact *f_opacity;
 
-    KmlPolygonsModel *getKmlPolygons() const;
     QGeoCoordinate getCenter() const;
+    bool loading() const { return m_loading; }
+    int zonesCount() const;
 
-    Q_INVOKABLE void updateKmlModels(const QGeoShape &shape);
+    // immutable snapshot of the loaded zones, shared with the render thread
+    KmlDataSetPtr dataSet() const { return m_data; }
 
 private:
-    KmlParser m_parser;
+    struct ImportResult
+    {
+        KmlDataSetPtr data;
+        QString error;
+    };
+
     QGeoCoordinate m_center;
-    KmlPolygonsModel *m_kmlPolygons;
-    QPointF gc2p(const QGeoCoordinate &c);
-    QGeoCoordinate p2gc(const QPointF &p);
+    KmlDataSetPtr m_data;
+
+    QFutureWatcher<ImportResult> m_importWatcher;
+    QTimer m_progressTimer;
+    QSharedPointer<std::atomic<int>> m_parseProgress; // written by the import thread
+    bool m_loading{false};
+
+    void setLoading(bool loading);
 
 private slots:
     void onOpenTriggered();
-    void onOverlayVisibleValueChanged();
+    void onImportFinished();
 
 signals:
     void centerChanged();
+    void loadingChanged();
+    void dataChanged();
 };

@@ -23,41 +23,88 @@ import QtQuick
 import QtLocation
 import QtPositioning
 import QtQml
-import KmlGeoPolygon
+
+import KmlOverlay 1.0
 
 MapItemGroup {
     id: control
 
     property var map: ui.map
-    property var area: apx.tools.missionplanner.area
     property var plugin: apx.tools.kmloverlay
     property var kmlCenter: plugin.center
     onKmlCenterChanged: {
-        ui.map.centerOn(kmlCenter)
+        if (map && kmlCenter.isValid)
+            map.centerOn(kmlCenter)
     }
-    onAreaChanged: plugin.updateKmlModels(area)
 
-    MapItemView {
-        id: borderPointsView
-        model: plugin.kmlPolygons
+    function refresh(force)
+    {
+        if (!map || !map.visibleRegion.isValid)
+            return
+        if (!plugin.show.value)
+            return
+        raster.scheduleRender(map.visibleRegion, map.zoomLevel, force === true)
+    }
 
+    // zooming and resizing are debounced, the texture is scaled meanwhile
+    Timer {
+        id: updateTimer
+        interval: 120
+        repeat: false
+        onTriggered: control.refresh(false)
+    }
+
+    Connections {
+        target: control.map
+
+        function onCenterChanged() {
+            // panning inside the rendered margin needs no new image,
+            // once the viewport leaves it render right away
+            if (raster.covers(control.map.visibleRegion))
+                updateTimer.restart()
+            else
+                control.refresh(false)
+        }
+
+        function onZoomLevelChanged() {
+            updateTimer.restart()
+        }
+
+        function onWidthChanged() {
+            updateTimer.restart()
+        }
+
+        function onHeightChanged() {
+            updateTimer.restart()
+        }
+    }
+
+    Connections {
+        target: control.plugin.show
+
+        function onValueChanged() {
+            if (control.plugin.show.value)
+                control.refresh(true)
+        }
+    }
+
+    MapQuickItem {
+        id: layer
         z: 1
-        delegate: MapQuickItem
-        {
-            coordinate: control.area.boundingGeoRectangle().topLeft
+        coordinate: raster.origin
+        zoomLevel: raster.renderZoom
+        anchorPoint: Qt.point(0, 0)
+        visible: raster.ready && control.plugin.show.value
+        opacity: control.plugin.opacity.value
 
-            sourceItem: KmlGeoPolygon {
-                id: kmlPolygon
-                area: control.area
-                map: ui.map
-                geoPolygon: polygon
-                color: polygonColor
-                opacity: plugin.opacity.value
-            }
+        sourceItem: KmlRasterItem {
+            id: raster
+            overlay: control.plugin
         }
     }
 
     Component.onCompleted: {
-        map.addMapItemView(borderPointsView)
+        if (map)
+            updateTimer.start()
     }
 }
