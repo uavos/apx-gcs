@@ -22,7 +22,9 @@
 #pragma once
 
 #include "MissionItem.h"
+#include <ApxMisc/DelayedEvent.h>
 #include <QGeoCoordinate>
+#include <QGeoPath>
 #include <QtCore>
 
 class Runway : public MissionItem
@@ -31,6 +33,11 @@ class Runway : public MissionItem
     Q_PROPERTY(QGeoCoordinate endPoint READ endPoint WRITE setEndPoint NOTIFY endPointChanged)
     Q_PROPERTY(QGeoCoordinate appPoint READ appPoint WRITE setAppPoint NOTIFY appPointChanged)
     Q_PROPERTY(double heading READ heading NOTIFY headingChanged)
+
+    // landing pattern estimation (apx-fw ProcLD_runway)
+    Q_PROPERTY(QGeoCoordinate taCenter READ taCenter NOTIFY taChanged)
+    Q_PROPERTY(double taRadius READ taRadius NOTIFY taChanged)
+    Q_PROPERTY(QGeoPath taPath READ taPath NOTIFY taChanged)
 
 public:
     explicit Runway(MissionGroup *parent);
@@ -48,6 +55,33 @@ private slots:
     void updateTitle();
     void updateMissionStartPoint();
 
+    void scheduleTaUpdate();
+    void updateTa();
+
+private:
+    struct PerfParams
+    {
+        double radius;    // shiva.perf.radius [m]
+        double speed;     // shiva.perf.VC [m/s]
+        double l1_period; // shiva.bearing.dist [s]
+        double l1_damp;   // shiva.bearing.damp
+        bool vtol;        // shiva.perf.type
+    };
+    PerfParams perfParams();
+    Fact *shivaParam(const QString &path) const;
+    MissionItem *lastWaypoint() const;
+    QGeoPath estimateTaPath(const QGeoCoordinate &center,
+                            double radius,
+                            bool left,
+                            const PerfParams &p) const;
+
+    DelayedEvent _taUpdate{0, false}; // coalesce signals of one event loop pass only
+    QPointer<MissionItem> m_lastWp;   // tracked last waypoint (signals connected)
+
+    QGeoCoordinate m_taCenter;
+    double m_taRadius{};
+    QGeoPath m_taPath;
+
 public slots:
 
     //---------------------------------------
@@ -61,9 +95,14 @@ public:
 
     double heading() const;
 
+    QGeoCoordinate taCenter() const { return m_taCenter; }
+    double taRadius() const { return m_taRadius; }
+    QGeoPath taPath() const { return m_taPath; }
+
 protected:
 signals:
     void endPointChanged();
     void appPointChanged();
     void headingChanged();
+    void taChanged();
 };

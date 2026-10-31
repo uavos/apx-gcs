@@ -24,6 +24,9 @@
 #include "MissionField.h"
 #include "UnitMission.h"
 #include <App/App.h>
+#include <Fleet/Unit.h>
+#include <Nodes/NodeItem.h>
+#include <Nodes/Nodes.h>
 
 Runway::Runway(MissionGroup *parent)
     : MissionItem(parent, "r#", "", "")
@@ -100,7 +103,221 @@ Runway::Runway(MissionGroup *parent)
         }
     });
 
+    // landing pattern estimation
+    connect(&_taUpdate, &DelayedEvent::triggered, this, &Runway::updateTa);
+    connect(this, &Runway::appPointChanged, this, &Runway::scheduleTaUpdate);
+    connect(f_type, &Fact::valueChanged, this, &Runway::scheduleTaUpdate);
+
+    // last waypoint signals are connected in updateTa():
+    // itemInserted is emitted from the Fact base constructor,
+    // when the item is not a MissionItem yet
+    auto wp = group->mission->f_wp;
+    connect(wp, &Fact::sizeChanged, this, &Runway::scheduleTaUpdate);
+    connect(wp, &Fact::itemMoved, this, &Runway::scheduleTaUpdate);
+
+    connect(unit()->f_nodes, &Nodes::validChanged, this, &Runway::scheduleTaUpdate);
+
+    scheduleTaUpdate();
+
     App::jsync(this);
+}
+
+void Runway::scheduleTaUpdate()
+{
+    _taUpdate.schedule();
+}
+
+MissionItem *Runway::lastWaypoint() const
+{
+    auto wp = group->mission->f_wp;
+    if (wp->size() <= 0)
+        return nullptr;
+    return qobject_cast<MissionItem *>(wp->child(wp->size() - 1));
+}
+
+Fact *Runway::shivaParam(const QString &path) const
+{
+    auto nodes = unit()->f_nodes;
+    if (!nodes)
+        return nullptr;
+
+    // prefer node with shiva enabled
+    NodeItem *best{};
+    for (auto node : nodes->nodes()) {
+        auto shiva = node->child("shiva");
+        if (!shiva)
+            continue;
+        auto mode = shiva->child("mode");
+        if (mode && mode->value().toUInt() > 0) {
+            best = node;
+            break;
+        }
+        if (!best)
+            best = node;
+    }
+    if (!best)
+        return nullptr;
+
+    Fact *f = best->child("shiva");
+    for (const auto &s : path.split('.')) {
+        f = f->child(s);
+        if (!f)
+            return nullptr;
+    }
+    return f;
+}
+
+Runway::PerfParams Runway::perfParams()
+{
+    // defaults when node config is not available (apx-fw defaults)
+    PerfParams p{200.0, 22.0, 25.0, 0.9, false};
+
+    auto read = [this](const QString &path, double &v) {
+        auto f = shivaParam(path);
+        if (!f)
+            return;
+        // track config changes
+        connect(f, &Fact::valueChanged, this, &Runway::scheduleTaUpdate, Qt::UniqueConnection);
+        v = f->value().toDouble();
+    };
+
+    double vtol{};
+    read("perf.radius", p.radius);
+    read("perf.VC", p.speed);
+    read("bearing.dist", p.l1_period);
+    read("bearing.damp", p.l1_damp);
+    read("perf.type", vtol);
+    p.vtol = vtol > 0;
+
+    if (p.radius <= 0)
+        p.radius = 200.0;
+    if (p.speed <= 0)
+        p.speed = 22.0;
+    if (p.l1_period <= 0)
+        p.l1_period = 25.0;
+    if (p.l1_damp <= 0)
+        p.l1_damp = 0.9;
+    return p;
+}
+
+void Runway::updateTa()
+{
+    // track the last waypoint
+    MissionItem *last = lastWaypoint();
+    if (last != m_lastWp) {
+        if (m_lastWp)
+            disconnect(m_lastWp, nullptr, this, nullptr);
+        m_lastWp = last;
+        if (last) {
+            connect(last, &MissionItem::coordinateChanged, this, &Runway::scheduleTaUpdate);
+            connect(last, &MissionItem::bearingChanged, this, &Runway::scheduleTaUpdate);
+        }
+    }
+
+    const PerfParams p = perfParams();
+
+    // ProcLD::event(evt_cmd_rw): CTOL circle radius is twice the loiter radius
+    const double radius = p.vtol ? p.radius : p.radius * 2.0;
+    const bool left = f_type->value().toInt() == 0;
+    const double hdgTA = heading() + (left ? -90.0 : 90.0);
+
+    QGeoCoordinate center;
+    const QGeoCoordinate app = appPoint();
+    if (app.isValid())
+        center = app.atDistanceAndAzimuth(radius, hdgTA);
+
+    QGeoPath path = estimateTaPath(center, radius, left, p);
+
+    if (m_taCenter == center && m_taRadius == radius && m_taPath == path)
+        return;
+    m_taCenter = center;
+    m_taRadius = radius;
+    m_taPath = path;
+    emit taChanged();
+}
+
+QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
+                                double radius,
+                                bool left,
+                                const PerfParams &p) const
+{
+    // Estimates the flight path after the last waypoint:
+    // ProcWPT::_done -> LANDING -> ProcLD_runway::INIT (loiter to TA circle)
+    // -> TA/APP (circle to approach point) -> FINAL (straight to runway).
+    // Guidance mimics RegL1::navigate_loiter: fly towards the circle center,
+    // blend into the tangent when closer than L1 distance.
+
+    QGeoPath path;
+    MissionItem *last = lastWaypoint();
+    if (!last || !center.isValid() || radius <= 0)
+        return path;
+
+    QGeoCoordinate pt = last->coordinate();
+    if (!pt.isValid())
+        return path;
+
+    const double spd = p.speed;
+    const double dt = 1.0;
+    const double turnRate = qRadiansToDegrees(spd / p.radius); // perf.radius is the min turn radius
+    const double L1 = std::max(10.0, p.l1_damp * p.l1_period / M_PI * spd);
+    const bool cw = !left; // right pattern: m.radius > 0 -> clockwise
+
+    double crs = last->bearing();
+    double turnCnt = 0;
+    bool captured = false;
+
+    path.addCoordinate(pt);
+
+    for (int i = 0; i < 5000; ++i) {
+        const double dist = pt.distanceTo(center);
+        const double err = dist - radius;
+        const double azc = pt.azimuthTo(center);
+        const double tangent = azc + (cw ? -90.0 : 90.0);
+
+        // RegL1: eta1 = asin(xtrack_err / L1), limited to +-90deg
+        const double eta1 = qRadiansToDegrees(std::asin(AppRoot::limit(err / L1, -1.0, 1.0)));
+        const double desired = tangent + (cw ? eta1 : -eta1);
+        double deltaHdg = AppRoot::angle(desired - crs);
+
+        if (std::abs(err) < radius * 0.05 && std::abs(AppRoot::angle(tangent - crs)) < 10.0) {
+            captured = true;
+            break;
+        }
+
+        double step = dt * spd;
+        if (std::abs(deltaHdg) < (dt * 10.0) && err > (L1 * 2.0)) {
+            // course ok and far away - jump towards the circle
+            crs += deltaHdg;
+            deltaHdg = 0;
+            step = std::min(err - L1, 10.0e+3);
+        }
+
+        pt = pt.atDistanceAndAzimuth(step, crs);
+        path.addCoordinate(pt);
+
+        const double turn = dt * AppRoot::limit(deltaHdg, -turnRate, turnRate);
+        crs += turn;
+        turnCnt += turn;
+
+        if (std::abs(turnCnt) > (360.0 * 2.0))
+            return QGeoPath(); // can't capture the circle
+    }
+
+    if (!captured)
+        return QGeoPath();
+
+    // follow the circle to the approach point (ProcLD_runway::APP -> FINAL)
+    const double hdgTA = heading() + (left ? -90.0 : 90.0);
+    const double aApp = hdgTA + 180.0; // azimuth from center to approach point
+    const double a0 = center.azimuthTo(pt);
+    const double sweep = AppRoot::angle360(cw ? (aApp - a0) : (a0 - aApp));
+    const double stepA = 5.0;
+    for (double a = stepA; a < sweep; a += stepA) {
+        path.addCoordinate(center.atDistanceAndAzimuth(radius, cw ? (a0 + a) : (a0 - a)));
+    }
+    path.addCoordinate(appPoint());
+
+    return path;
 }
 
 void Runway::updateTitle()

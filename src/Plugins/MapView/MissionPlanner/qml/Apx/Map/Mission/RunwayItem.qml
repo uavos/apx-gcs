@@ -112,104 +112,13 @@ MissionObject {
 
     property variant appCircleAppCoord: appPointCoordinate
     property variant appCircleCoordinate: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===0?-90:90)):coordinate
-    property variant appCircleCoordinateDefault: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadiusDefault,f_heading+(f_type===0?-90:90)):coordinate
-    property real appCircleRadiusDefault: f_approach/2
+    //TA circle estimated by the model from the autopilot config (shiva.perf.radius)
+    property variant appCircleCoordinateDefault: fact?fact.taCenter:coordinate
+    property real appCircleRadiusDefault: fact?fact.taRadius:0
+    property var taPath: fact?fact.taPath.path:[]
     property real appCircleRadius: Math.max(100,is_landing?Math.abs(m_radius):appCircleRadiusDefault)
 
-    property var lastWaypoint: null
-    property var lastWaypointCoordinate: lastWaypoint && lastWaypoint.coordinate
-                                         ? lastWaypoint.coordinate : QtPositioning.coordinate()
-    property real lastWaypointBearing: lastWaypoint && typeof lastWaypoint.bearing === "number"
-                                       ? lastWaypoint.bearing : NaN
-
-    function updateLastWaypoint()
-    {
-        var wp = mission.wp
-        lastWaypoint = wp && wp.size>0 ? wp.child(wp.size-1) : null
-    }
-
-    Connections {
-        target: mission.wp
-        function onSizeChanged(){ runwayItem.updateLastWaypoint() }
-        function onItemMoved(){ runwayItem.updateLastWaypoint() }
-    }
-
-    property var taPath: {
-        var start = lastWaypointCoordinate
-        var center = appCircleCoordinateDefault
-        var radius = appCircleRadiusDefault
-        var heading = lastWaypointBearing
-
-        if (!start || !center || !start.isValid || !center.isValid ||
-            !isFinite(heading) || radius<=0)
-            return []
-
-        if (start.distanceTo(center)<=radius)
-            return []
-
-        var spd = 22
-        var dt = 1
-        var turnR = 100
-        var turnRate = (360/(2*Math.PI))*spd/turnR
-
-        var point = start
-        var course = heading
-        var turnCnt = 0
-        var path = [start]
-
-        for (var i=0; i<2000; ++i) {
-            var distance = point.distanceTo(center)
-            if (distance<=radius)
-                break
-
-            var deltaHdg = point.azimuthTo(center)-course
-            deltaHdg = ((deltaHdg+540)%360)-180
-
-            var step = spd*dt
-
-            if (Math.abs(deltaHdg)<dt*10) {
-                course += deltaHdg
-                step = Math.min(10000*dt,distance)
-            }
-
-            var next = point.atDistanceAndAzimuth(step,course)
-
-            if (next.distanceTo(center)<=radius) {
-                var low = 0
-                var high = step
-
-                for (var j=0; j<24; ++j) {
-                    var mid = (low+high)/2
-                    var candidate = point.atDistanceAndAzimuth(mid,course)
-
-                    if (candidate.distanceTo(center)>radius)
-                        low = mid
-                    else
-                        high = mid
-                }
-
-                path.push(point.atDistanceAndAzimuth(high,course))
-                return path
-            }
-
-            path.push(next)
-            point = next
-
-            var turn = Math.max(-turnRate*dt,Math.min(turnRate*dt,deltaHdg))
-            course += turn
-            turnCnt += turn
-
-            if (Math.abs(turnCnt)>720)
-                return []
-        }
-
-        return []
-    }
-
-
     Component.onCompleted: {
-        updateLastWaypoint()
-
         var c
         //c=createMapComponent(endPointC)
         //c=createMapComponent(appPointC)
@@ -317,8 +226,9 @@ MissionObject {
         }
     }
 
-    //Flight Path
+    //estimated flight path from the last waypoint to the approach point
     Loader {
+        active: fact
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MapPolyline {
@@ -326,8 +236,8 @@ MissionObject {
                 visible: runwayItem.visible && runwayItem.taPath.length>=2
                          && (runwayItem.is_current || runwayItem.selected || mission.rw.size===1)
                 opacity: ui.effects?0.6:1
-                line.width: Math.max(1,4*ui.scale)
-                line.color: Style.cLineCyan
+                line.width: Math.max(1,2*ui.scale)
+                line.color: "#1E50C8"
                 path: runwayItem.taPath
             }
         }
