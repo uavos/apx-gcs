@@ -40,18 +40,18 @@ MissionObject {
     shadow: interacting || active || (!largeDataSet)
 
     //Fact bindings
-    property real f_distance: fact?fact.distance:0
-    property real f_totalDistance: fact?fact.totalDistance:0
-    property int f_time: fact?fact.time:0
-    property int f_totalTime: fact?fact.totalTime:0
-    property string actionsText: fact?fact.actions.text:""
-    property real f_bearing: fact?fact.bearing:0
+    property real f_distance: fact && typeof fact.distance === "number" ? fact.distance : 0
+    property real f_totalDistance: fact && typeof fact.totalDistance === "number" ? fact.totalDistance : 0
+    property int f_time: fact && typeof fact.time === "number" ? fact.time : 0
+    property int f_totalTime: fact && typeof fact.totalTime === "number" ? fact.totalTime : 0
+    property string actionsText: fact && fact.actions && typeof fact.actions.text === "string" ? fact.actions.text : ""
+    property real f_bearing: fact && typeof fact.bearing === "number" ? fact.bearing : 0
     property bool f_first: num === 0
-    property bool f_warning: fact?fact.warning:false
-    property bool f_reachable: fact?fact.reachable:false
-    property int f_xtrack: fact?fact.xtrack.value:0
-    property var path: fact?fact.geoPath:0
-    property int num: fact?fact.num:0
+    property bool f_warning: fact && typeof fact.warning === "boolean" ? fact.warning : false
+    property bool f_reachable: fact && typeof fact.reachable === "boolean" ? fact.reachable : false
+    property int f_xtrack: fact && fact.xtrack && fact.xtrack.value !== undefined ? fact.xtrack.value : 0
+    property var path: fact && fact.geoPath !== undefined ? fact.geoPath : null
+    property int num: fact && typeof fact.num === "number" ? fact.num : 0
 
 
     //internal

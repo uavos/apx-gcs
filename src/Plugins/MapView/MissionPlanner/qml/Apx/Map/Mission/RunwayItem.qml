@@ -104,7 +104,7 @@ MissionObject {
     property bool showDetailsApp: runwayItem.visible && detailsLevel>10
     property real appOpacity: ui.effects?(is_landing?1:0.6):1
 
-    property bool appHover: fact?(hover||appPoint.hover||dragging||appPoint.dragging):false
+    property bool appHover: fact?(hover||(appPoint && appPoint.hover)||dragging||(appPoint && appPoint.dragging)):false
     property bool appCircleActive: is_landing||appHover
     property bool appCircleVisible: runwayItem.visible && showDetailsApp && (f_approach>0||appHover)
     property int appCircleLineWidth: Math.max(1,(appCircleActive?2:1)*ui.scale)
@@ -112,10 +112,11 @@ MissionObject {
 
     property variant appCircleAppCoord: appPointCoordinate
     property variant appCircleCoordinate: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===0?-90:90)):coordinate
-    property variant appCircleCoordinateDefault: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadiusDefault,f_heading+(f_type===0?-90:90)):coordinate
-    property real appCircleRadiusDefault: f_approach/2
+    //TA circle estimated by the model from the autopilot config (shiva.perf.radius)
+    property variant appCircleCoordinateDefault: fact?fact.taCenter:coordinate
+    property real appCircleRadiusDefault: fact?fact.taRadius:0
+    property var taPath: fact?fact.taPath.path:[]
     property real appCircleRadius: Math.max(100,is_landing?Math.abs(m_radius):appCircleRadiusDefault)
-
 
     Component.onCompleted: {
         var c
@@ -221,6 +222,24 @@ MissionObject {
                         }
                     }
                 ]
+            }
+        }
+    }
+
+    //estimated flight path from the last waypoint to the approach point
+    Loader {
+        active: fact
+        onLoaded: map.addMapItem(item)
+        sourceComponent: Component {
+            MapPolyline {
+                z: 50
+                visible: runwayItem.visible && runwayItem.taPath.length>=2
+                         && (runwayItem.is_current || runwayItem.selected || mission.rw.size===1)
+                opacity: ui.effects?0.6:1
+                line.width: Math.max(1,2*ui.scale)
+                // blue for the current (active) runway, orange for another selected one
+                line.color: runwayItem.is_current ? "#1E50C8" : "#FF8C00"
+                path: runwayItem.taPath
             }
         }
     }
