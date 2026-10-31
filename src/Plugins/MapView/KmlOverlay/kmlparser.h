@@ -23,39 +23,58 @@
 
 #include <functional>
 #include <QColor>
-#include <QDomDocument>
 #include <QGeoPolygon>
+#include <QHash>
+#include <QXmlStreamReader>
 
 struct KmlPolygon
 {
     uint64_t id;
     QColor color;
     QGeoPolygon data;
+    QString name;  // zone identifier as written in the file
+    QString upper; // upper limit text as written in the file
+    QString lower; // lower limit text as written in the file
 };
 
+// Streaming KML parser: collects polygons with their style color and
+// best effort zone attributes without building a DOM of the whole file.
 class KmlParser
 {
 public:
+    using ProgressCallback = std::function<void(int percent)>;
+
     KmlParser();
-    void parse(const QByteArray &data);
+    void parse(const QByteArray &data, const ProgressCallback &progress = {});
     QList<KmlPolygon> getPolygons();
 
 private:
-    using IterateCallback = std::function<void(const QDomElement &)>;
+    struct PlacemarkInfo
+    {
+        QColor color;
+        QString styleId;
+        QString name;
+        QString upper;
+        QString lower;
+    };
 
     QList<KmlPolygon> m_polygons;
-    QDomDocument m_dom;
+    QList<QString> m_polygonStyles; // style id per polygon, resolved after parsing
+    QHash<QString, QColor> m_styles;
+    QHash<QString, QString> m_styleMaps;
     uint64_t m_polygonId;
+    int m_warnings;
 
-    void iterateOverChildrenElements(const QDomElement &parent,
-                                     const QString &tagname,
-                                     const IterateCallback &cb);
+    void parseStyle(QXmlStreamReader &xml, bool shared);
+    void parseStyleMap(QXmlStreamReader &xml);
+    void parsePlacemark(QXmlStreamReader &xml);
+    void parseExtendedData(QXmlStreamReader &xml, PlacemarkInfo &info);
+    void parsePolygon(QXmlStreamReader &xml, const PlacemarkInfo &info);
+    void skipElement(QXmlStreamReader &xml);
+    void resolveColors();
 
-    void placemarkCallback(const QDomElement &el);
-    void polygonCallback(const QDomElement &el, const QColor &color);
-    void polygonOuterCallback(const QDomElement &el, KmlPolygon &polygon);
-    void polygonInnerCallback(const QDomElement &el, KmlPolygon &polygon);
-    void polygonCoordinatesCallback(const QDomElement &el, KmlPolygon &polygon);
-    void polygonHolesCallback(const QDomElement &el, KmlPolygon &polygon);
-    QList<QGeoCoordinate> parseCoordinates(const QString &text);
+    QColor readStyleColor(QXmlStreamReader &xml);
+    QList<QGeoCoordinate> parseCoordinates(QStringView text);
+    static QColor parseKmlColor(QStringView text);
+    static QString styleIdFromUrl(const QString &url);
 };
