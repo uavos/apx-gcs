@@ -24,9 +24,10 @@
 #include "kmlparser.h"
 #include "kmlrasteritem.h"
 #include <App/App.h>
+#include <App/AppLog.h>
 #include <QFileDialog>
 #include <QGeoRectangle>
-#include <QMessageBox>
+#include <QtConcurrent/QtConcurrentRun>
 
 #include "quazip/quazip.h"
 #include "quazip/quazipfile.h"
@@ -34,6 +35,11 @@
 namespace {
 
 constexpr qint64 kMaxKmlSize = 128 * 1024 * 1024;
+
+QString importError(const char *text)
+{
+    return QCoreApplication::translate("KmlOverlay", text);
+}
 
 bool isKmzArchive(const QString &path, QFile &file)
 {
@@ -49,13 +55,15 @@ QByteArray readKmzData(const QString &path, QString &error)
 {
     QuaZip zip(path);
     if (!zip.open(QuaZip::mdUnzip)) {
-        error = QStringLiteral("Unable to open KMZ archive");
+        error = importError("Unable to open KMZ archive");
         return {};
     }
 
     // KMZ keeps the main document as doc.kml in the archive root,
-    // fall back to the first *.kml entry if it is named differently
+    // fall back to a root level *.kml, then to any *.kml entry
     QString entry;
+    QString rootEntry;
+    QString anyEntry;
     for (const QString &name : zip.getFileNameList()) {
         if (!name.endsWith(QStringLiteral(".kml"), Qt::CaseInsensitive))
             continue;
@@ -63,29 +71,34 @@ QByteArray readKmzData(const QString &path, QString &error)
             entry = name;
             break;
         }
-        if (entry.isEmpty() || !name.contains('/'))
-            entry = name;
+        if (rootEntry.isEmpty() && !name.contains('/'))
+            rootEntry = name;
+        if (anyEntry.isEmpty())
+            anyEntry = name;
     }
+    if (entry.isEmpty())
+        entry = rootEntry.isEmpty() ? anyEntry : rootEntry;
 
     if (entry.isEmpty()) {
-        error = QStringLiteral("No KML document found in KMZ archive");
+        error = importError("No KML document found in KMZ archive");
         return {};
     }
 
     if (!zip.setCurrentFile(entry)) {
-        error = QStringLiteral("Unable to locate %1 in KMZ archive").arg(entry);
+        error = importError("Unable to locate %1 in KMZ archive").arg(entry);
         return {};
     }
 
+    // check the declared size before inflating, and the real size after
     QuaZipFileInfo64 info;
     if (zip.getCurrentFileInfo(&info) && info.uncompressedSize > quint64(kMaxKmlSize)) {
-        error = QStringLiteral("KML document in KMZ archive is too large");
+        error = importError("KML document in KMZ archive is too large");
         return {};
     }
 
     QuaZipFile kml(&zip);
     if (!kml.open(QIODevice::ReadOnly)) {
-        error = QStringLiteral("Unable to read %1 from KMZ archive").arg(entry);
+        error = importError("Unable to read %1 from KMZ archive").arg(entry);
         return {};
     }
 
@@ -93,7 +106,7 @@ QByteArray readKmzData(const QString &path, QString &error)
     kml.close();
 
     if (data.size() > kMaxKmlSize) {
-        error = QStringLiteral("KML document in KMZ archive is too large");
+        error = importError("KML document in KMZ archive is too large");
         return {};
     }
 
@@ -104,7 +117,7 @@ QByteArray readKmlData(const QString &path, QString &error)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
-        error = QStringLiteral("Unable to open file");
+        error = importError("Unable to open file");
         return {};
     }
 
@@ -114,7 +127,7 @@ QByteArray readKmlData(const QString &path, QString &error)
     }
 
     if (file.size() > kMaxKmlSize) {
-        error = QStringLiteral("KML file is too large");
+        error = importError("KML file is too large");
         return {};
     }
 
@@ -223,7 +236,7 @@ void KmlOverlay::onOpenTriggered()
             return result;
 
         if (data.isEmpty()) {
-            result.error = QStringLiteral("KML file is empty");
+            result.error = importError("KML file is empty");
             return result;
         }
 
@@ -233,7 +246,7 @@ void KmlOverlay::onOpenTriggered()
         result.data = KmlDataSet::fromPolygons(parser.getPolygons());
 
         if (result.data->zones.isEmpty())
-            result.error = QStringLiteral("No valid polygons found");
+            result.error = importError("No valid polygons found");
 
         return result;
     }));
@@ -247,9 +260,9 @@ void KmlOverlay::onImportFinished()
     ImportResult result = m_importWatcher.result();
 
     if (!result.error.isEmpty()) {
-        setValue(tr("KML import failed"));
+        setValue(result.error);
         setLoading(false);
-        QMessageBox::warning(nullptr, tr("KML Overlay"), result.error);
+        apxMsgW() << tr("KML import failed:") << result.error;
         return;
     }
 

@@ -45,13 +45,11 @@ bool isTag(const QXmlStreamReader &xml, const char *name)
 } // namespace
 
 KmlParser::KmlParser()
-    : m_polygonId(0)
-    , m_warnings(0)
+    : m_warnings(0)
 {}
 
 void KmlParser::parse(const QByteArray &data, const ProgressCallback &progress)
 {
-    m_polygonId = 0;
     m_warnings = 0;
     m_polygons.clear();
     m_polygonStyles.clear();
@@ -97,15 +95,9 @@ void KmlParser::parse(const QByteArray &data, const ProgressCallback &progress)
         progress(100);
 }
 
-QList<KmlPolygon> KmlParser::getPolygons()
+QList<KmlPolygon> KmlParser::getPolygons() const
 {
     return m_polygons;
-}
-
-// consumes the rest of the current element including its end tag
-void KmlParser::skipElement(QXmlStreamReader &xml)
-{
-    xml.skipCurrentElement();
 }
 
 // KML stores colors as aabbggrr hex
@@ -145,7 +137,7 @@ QColor KmlParser::readStyleColor(QXmlStreamReader &xml)
         const bool isPoly = isTag(xml, "PolyStyle");
         const bool isLine = isTag(xml, "LineStyle");
         if (!isPoly && !isLine) {
-            skipElement(xml);
+            xml.skipCurrentElement();
             continue;
         }
         while (xml.readNextStartElement()) {
@@ -156,7 +148,7 @@ QColor KmlParser::readStyleColor(QXmlStreamReader &xml)
                 else
                     line = c;
             } else {
-                skipElement(xml);
+                xml.skipCurrentElement();
             }
         }
     }
@@ -179,28 +171,29 @@ void KmlParser::parseStyleMap(QXmlStreamReader &xml)
 
     while (xml.readNextStartElement()) {
         if (!isTag(xml, "Pair")) {
-            skipElement(xml);
+            xml.skipCurrentElement();
             continue;
         }
         QString key;
         QString url;
+        QColor inlineColor;
         while (xml.readNextStartElement()) {
             if (isTag(xml, "key"))
                 key = xml.readElementText().trimmed();
             else if (isTag(xml, "styleUrl"))
-                url = xml.readElementText();
-            else if (isTag(xml, "Style")) {
-                // inline style inside a pair, register under a synthetic id
-                const QString inlineId = id + QStringLiteral("#pair");
-                const QColor c = readStyleColor(xml);
-                if (c.isValid())
-                    m_styles.insert(inlineId, c);
-                url = inlineId;
-            } else
-                skipElement(xml);
+                url = styleIdFromUrl(xml.readElementText());
+            else if (isTag(xml, "Style"))
+                inlineColor = readStyleColor(xml);
+            else
+                xml.skipCurrentElement();
+        }
+        if (inlineColor.isValid()) {
+            // inline style inside a pair, register under a synthetic id unique to the pair
+            url = id + QLatin1Char('#') + (key.isEmpty() ? QStringLiteral("pair") : key);
+            m_styles.insert(url, inlineColor);
         }
         if (!url.isEmpty() && (normal.isEmpty() || key == QLatin1String("normal")))
-            normal = styleIdFromUrl(url);
+            normal = url;
     }
 
     if (!id.isEmpty() && !normal.isEmpty())
@@ -232,7 +225,7 @@ void KmlParser::parseExtendedData(QXmlStreamReader &xml, PlacemarkInfo &info)
                 if (isTag(xml, "value"))
                     value = xml.readElementText().simplified();
                 else
-                    skipElement(xml);
+                    xml.skipCurrentElement();
             }
             assign(key, value);
         } else if (isTag(xml, "SchemaData")) {
@@ -241,10 +234,10 @@ void KmlParser::parseExtendedData(QXmlStreamReader &xml, PlacemarkInfo &info)
                     const QString key = xml.attributes().value("name").toString();
                     assign(key, xml.readElementText().simplified());
                 } else
-                    skipElement(xml);
+                    xml.skipCurrentElement();
             }
         } else {
-            skipElement(xml);
+            xml.skipCurrentElement();
         }
     }
 }
@@ -287,7 +280,6 @@ void KmlParser::parsePolygon(QXmlStreamReader &xml, const PlacemarkInfo &info)
     polygon.name = info.name;
     polygon.upper = info.upper;
     polygon.lower = info.lower;
-    polygon.id = m_polygonId++;
 
     bool outer = false;
     bool inner = false;

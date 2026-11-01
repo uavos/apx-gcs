@@ -30,6 +30,10 @@ MapItemGroup {
     id: control
 
     property var map: ui.map
+    onMapChanged: {
+        if (map)
+            updateTimer.restart()
+    }
     property var plugin: apx.tools.kmloverlay
     property var kmlCenter: plugin.center
     onKmlCenterChanged: {

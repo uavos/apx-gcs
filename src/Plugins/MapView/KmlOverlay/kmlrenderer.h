@@ -30,7 +30,6 @@ struct KmlRenderRequest
     QRectF rect;    // mercator unit rect covered by the image
     double zoom{0}; // map zoom level the image is rendered for
     qreal dpr{1};
-    quint64 serial{0};
 };
 
 struct KmlRenderResult
@@ -40,7 +39,6 @@ struct KmlRenderResult
     QRectF rect;
     double zoom{0};
     qreal dpr{1};
-    quint64 serial{0};
 };
 
 namespace KmlRenderer {

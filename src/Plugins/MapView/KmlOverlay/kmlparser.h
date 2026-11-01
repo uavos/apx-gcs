@@ -29,7 +29,6 @@
 
 struct KmlPolygon
 {
-    uint64_t id;
     QColor color;
     QGeoPolygon data;
     QString name;  // zone identifier as written in the file
@@ -46,7 +45,7 @@ public:
 
     KmlParser();
     void parse(const QByteArray &data, const ProgressCallback &progress = {});
-    QList<KmlPolygon> getPolygons();
+    QList<KmlPolygon> getPolygons() const;
 
 private:
     struct PlacemarkInfo
@@ -62,7 +61,6 @@ private:
     QList<QString> m_polygonStyles; // style id per polygon, resolved after parsing
     QHash<QString, QColor> m_styles;
     QHash<QString, QString> m_styleMaps;
-    uint64_t m_polygonId;
     int m_warnings;
 
     void parseStyle(QXmlStreamReader &xml, bool shared);
@@ -70,7 +68,6 @@ private:
     void parsePlacemark(QXmlStreamReader &xml);
     void parseExtendedData(QXmlStreamReader &xml, PlacemarkInfo &info);
     void parsePolygon(QXmlStreamReader &xml, const PlacemarkInfo &info);
-    void skipElement(QXmlStreamReader &xml);
     void resolveColors();
 
     QColor readStyleColor(QXmlStreamReader &xml);

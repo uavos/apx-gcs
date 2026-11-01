@@ -47,7 +47,12 @@ QGeoCoordinate toGeo(const QPointF &p)
 
 QRectF fromGeoRect(const QGeoRectangle &r)
 {
-    return QRectF(fromGeo(r.topLeft()), fromGeo(r.bottomRight())).normalized();
+    const QPointF tl = fromGeo(r.topLeft());
+    const QPointF br = fromGeo(r.bottomRight());
+    // a rectangle crossing the antimeridian covers the whole width in mercator space
+    if (tl.x() > br.x())
+        return QRectF(QPointF(0, tl.y()), QPointF(1, br.y())).normalized();
+    return QRectF(tl, br).normalized();
 }
 
 } // namespace KmlMercator
@@ -83,7 +88,9 @@ QPointF centroid(const QVector<QPointF> &ring, const QRectF &bbox)
         cx += (a.x() + b.x()) * f;
         cy += (a.y() + b.y()) * f;
     }
-    if (qFuzzyIsNull(area * 1e12))
+    // mercator unit areas are tiny, treat anything below ~1 m^2 as degenerate
+    constexpr double kMinArea = 1e-24;
+    if (std::abs(area) < kMinArea)
         return bbox.center();
 
     const QPointF c = QPointF(cx, cy) / (3.0 * area) + o;

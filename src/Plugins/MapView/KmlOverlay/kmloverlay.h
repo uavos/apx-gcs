@@ -24,7 +24,7 @@
 #include "kmldataset.h"
 #include <atomic>
 #include <Fact/Fact.h>
-#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <QtCore>
 #include <QtLocation>
 

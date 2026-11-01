@@ -135,7 +135,6 @@ KmlRenderResult KmlRenderer::render(const KmlRenderRequest &request)
     result.rect = request.rect;
     result.zoom = request.zoom;
     result.dpr = request.dpr;
-    result.serial = request.serial;
 
     if (!request.data || request.rect.isEmpty() || request.dpr <= 0)
         return result;

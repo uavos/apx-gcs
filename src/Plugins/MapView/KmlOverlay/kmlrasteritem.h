@@ -73,7 +73,6 @@ private:
     QFutureWatcher<KmlRenderResult> m_watcher;
     KmlRenderRequest m_pending;
     bool m_hasPending{false};
-    quint64 m_serial{0};
 
     QImage m_image;
     bool m_imageDirty{false};

@@ -143,7 +143,6 @@ void KmlRasterItem::scheduleRender(const QGeoShape &visibleRegion, double zoomLe
     request.rect = rect;
     request.zoom = zoomLevel;
     request.dpr = dpr;
-    request.serial = ++m_serial;
 
     if (m_watcher.isRunning()) {
         // keep only the latest request while the previous one is still rendering
@@ -166,7 +165,9 @@ void KmlRasterItem::onRenderFinished()
 {
     const KmlRenderResult result = m_watcher.result();
 
-    if (!result.image.isNull()) {
+    // a frame rendered for a dataset that was replaced or cleared meanwhile is stale
+    const KmlDataSetPtr current = m_overlay ? m_overlay->dataSet() : KmlDataSetPtr();
+    if (!result.image.isNull() && result.data == current) {
         m_image = result.image;
         m_imageDirty = true;
         m_rect = result.rect;
