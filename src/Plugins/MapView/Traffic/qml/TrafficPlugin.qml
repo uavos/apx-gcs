@@ -24,26 +24,63 @@ import QtQuick
 import Apx.Application
 
 // Traffic list: an instruments panel next to the Terminal,
-// switched by its button in the panel buttons row
+// switched by its button in the panel buttons row.
+// The panel and its button are there only while the plugin is enabled
 AppPlugin {
     id: plugin
 
     sourceComponent: TrafficView { }
 
     uiComponent: "main"
-    onConfigure: ui.main.add(plugin, GroundControl.Layout.Instrument)
+    onConfigure: trafficSync()
 
-    // bring the panel to front when the plugin is switched on.
     // The main layout copies the plugin properties into its buttons model,
     // so the names here must not clash with its own functions (show, add)
     Connections {
         target: fact
-        function onActiveChanged(){ if(fact.active) plugin.trafficBringToFront() }
+        function onActiveChanged(){ plugin.trafficSync() }
     }
-    function trafficBringToFront()
+
+    // added to the instruments layout and listed in its buttons row
+    property bool trafficListed: false
+
+    // enabled: add (once) and bring the panel to front, disabled: take it out of the row
+    function trafficSync()
     {
         var inst = trafficFindInstruments(ui.main, 3)
-        if(inst && inst.show) inst.show(plugin)
+        if(!inst) return
+        if(fact.active){
+            if(!trafficListed){
+                trafficListed = true
+                ui.main.add(plugin, GroundControl.Layout.Instrument)
+            }
+            if(inst.show) inst.show(plugin)
+            return
+        }
+        if(!trafficListed) return
+        trafficListed = false
+        trafficRemoveFrom(inst)
+    }
+    // the instruments layout has no remove: take the entry out of the buttons model
+    // (the model of its ListView) and switch its StackView to another panel.
+    // The layout keeps the plugin in its plugins array, the next add appends a new entry
+    function trafficRemoveFrom(inst)
+    {
+        var model = null
+        var stack = null
+        for(var i=0;i<inst.children.length;++i){
+            var c = inst.children[i]
+            if(c.delegate!==undefined && c.model!==undefined) model = c.model
+            else if(c.replace!==undefined && c.currentItem!==undefined) stack = c
+        }
+        if(!model || !inst.plugins) return
+        for(var j=0;j<model.count;++j){
+            if(inst.plugins[model.get(j).idx]!==plugin) continue
+            model.remove(j)
+            break
+        }
+        if(stack && stack.currentItem===plugin && model.count>0 && inst.show)
+            inst.show(inst.plugins[model.get(0).idx])
     }
     // the instruments stack of the main layout (InstrumentsLayout.instrumentsItem)
     function trafficFindInstruments(item, depth)
