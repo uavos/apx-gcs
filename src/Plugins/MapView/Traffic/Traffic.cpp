@@ -26,11 +26,14 @@
 #include <Fleet/Unit.h>
 
 static constexpr int adsb_period_ms = 1000;
+static constexpr int adsb_timeout_ms = 5000;      // inactivity, also the offline detection time
+static constexpr int adsb_offline_poll_ms = 5000; // request period while offline
 static constexpr int adsb_backoff_max_ms = 120000;
 static constexpr int adsb_stale_ms = 30000;     // drop aircraft not updated for this long
 static constexpr double adsb_seen_pos_max = 60; // skip aircraft with an older position, s
 static constexpr int atc_period_ms = 10 * 60 * 1000;
-static constexpr int atc_retry_ms = 30 * 1000; // after a failed download
+static constexpr int atc_retry_ms = 30 * 1000; // after a failed download (HTTP errors)
+static constexpr int atc_timeout_ms = 15000;   // inactivity, a live download keeps resetting it
 static constexpr double alert_dist_km = 10;
 static constexpr double alert_dalt_m = 600;
 static constexpr double prox_dist_km = 25;
@@ -122,26 +125,8 @@ Traffic::Traffic(Fact *parent)
     f_country->setEnumStrings(countries());
     f_country->setDefaultValue("-");
 
-    auto updateCountryDescription = [this]() {
-        QString value = f_country->value().toString().trimmed();
-        QString cc = countryCode(f_country);
-        if (value == "-" || value.isEmpty()) {
-            f_country->setDescr(tr("Airspaces are off"));
-            return;
-        }
-        if (cc.isEmpty()) {
-            f_country->setDescr(tr("Select a valid country"));
-            return;
-        }
-        for (const auto &entry : countries()) {
-            if (entry.endsWith("(" + cc.toUpper() + ")")) {
-                f_country->setDescr(tr("Selected: %1").arg(entry));
-                return;
-            }
-        }
-    };
-    connect(f_country, &Fact::valueChanged, this, updateCountryDescription);
-    updateCountryDescription();
+    connect(f_country, &Fact::valueChanged, this, &Traffic::updateCountryDescr);
+    updateCountryDescr();
 
     _aircraft = new AircraftModel(this);
     _aircraftSorted = new QSortFilterProxyModel(this);
@@ -164,8 +149,38 @@ Traffic::Traffic(Fact *parent)
 
     connect(App::instance(), &App::loadingFinished, this, &Traffic::onEnabledChanged);
 
+    // reachability from the OS when its backend is available, the requests tell otherwise
+    if (QNetworkInformation::loadBackendByFeatures(QNetworkInformation::Feature::Reachability)) {
+        connect(QNetworkInformation::instance(),
+                &QNetworkInformation::reachabilityChanged,
+                this,
+                &Traffic::onReachabilityChanged);
+        onReachabilityChanged();
+    }
+
     loadQml("qrc:/" PLUGIN_NAME "/TrafficPlugin.qml");   // traffic list, instruments panel
     loadQml("qrc:/" PLUGIN_NAME "/TrafficMapLayer.qml"); // aircraft and airspaces on the map
+}
+
+// the country item description when nothing is going on
+void Traffic::updateCountryDescr()
+{
+    QString value = f_country->value().toString().trimmed();
+    QString cc = countryCode(f_country);
+    if (value == "-" || value.isEmpty()) {
+        f_country->setDescr(tr("Airspaces are off"));
+        return;
+    }
+    if (cc.isEmpty()) {
+        f_country->setDescr(tr("Select a valid country"));
+        return;
+    }
+    for (const auto &entry : countries()) {
+        if (entry.endsWith("(" + cc.toUpper() + ")")) {
+            f_country->setDescr(tr("Selected: %1").arg(entry));
+            return;
+        }
+    }
 }
 
 // short status for the tools menu: "ADS-B: HTTP 429" or the error text
@@ -181,14 +196,65 @@ static QString replyError(const QString &src, QNetworkReply *reply)
 
 void Traffic::updateStatus()
 {
-    QString s = _adsbStatus;
-    if (!_atcStatus.isEmpty())
-        s += (s.isEmpty() ? "" : "  ") + _atcStatus;
+    QString s;
+    if (_offline) {
+        s = tr("OFFLINE");
+    } else {
+        s = _adsbStatus;
+        if (!_atcStatus.isEmpty())
+            s += (s.isEmpty() ? "" : "  ") + _atcStatus;
+    }
     if (_status == s)
         return;
     _status = s;
     setDescr(_status.isEmpty() ? tr("ADS-B traffic and airspaces") : _status);
     emit statusChanged();
+}
+
+// the reply failed below HTTP: no route, DNS, refused, timeout (codes 1..199)
+bool Traffic::isNetworkDown(QNetworkReply *reply)
+{
+    if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt())
+        return false; // the server answered
+    auto e = reply->error();
+    return e != QNetworkReply::NoError && e < QNetworkReply::ContentAccessDenied;
+}
+
+void Traffic::setRequestDown(bool v)
+{
+    _reqDown = v;
+    if (!v)
+        _netDown = false; // a reply came, whatever the OS reachability says
+    updateOffline();
+}
+
+void Traffic::updateOffline()
+{
+    bool v = f_enabled->value().toBool() && (_netDown || _reqDown);
+    if (_offline == v)
+        return;
+    _offline = v;
+    if (!v) {
+        // back online: request now, not after the backoff or the retry period
+        _adsbHoldMs = 0;
+        if (_atcAll.isEmpty() && !_atcBlocked)
+            _atcTimeMs = 0;
+    }
+    emit offlineChanged();
+    updateStatus();
+}
+
+void Traffic::onReachabilityChanged()
+{
+    using R = QNetworkInformation::Reachability;
+    auto r = QNetworkInformation::instance()->reachability();
+    bool down = r == R::Disconnected || r == R::Local || r == R::Site;
+    if (_netDown == down)
+        return;
+    _netDown = down;
+    if (!down)
+        _adsbHoldMs = 0; // probe now
+    updateOffline();
 }
 
 // a transfer timeout also finishes the reply with OperationCanceledError,
@@ -205,10 +271,14 @@ void Traffic::onEnabledChanged()
 {
     bool v = f_enabled->value().toBool();
     setActive(v);
+    // a blocked airspaces download is retried on restart only
+    _atcBlocked = false;
+    f_country->setEnabled(true);
     if (v) {
         _atcTimeMs = 0;
         _adsbHoldMs = 0;
         _adsbBackoffMs = 0;
+        updateOffline();
         onTimer();
         _timer.start();
         return;
@@ -219,6 +289,8 @@ void Traffic::onEnabledChanged()
     setSelected({});
     clearAirspaces();
     _adsbStatus.clear();
+    _reqDown = false;
+    updateOffline();
     updateStatus();
 }
 
@@ -232,6 +304,7 @@ void Traffic::clearAirspaces()
     _atcFilterOrigin = QGeoCoordinate();
     _airspaces->reset({});
     f_country->setProgress(-1);
+    updateCountryDescr();
     _atcStatus.clear();
     updateStatus();
 }
@@ -277,7 +350,7 @@ void Traffic::onTimer()
 
     // airspaces: the country file once per period, the visible part on every move
     auto cc = countryCode(f_country);
-    if (cc.isEmpty())
+    if (cc.isEmpty() || _atcBlocked)
         return;
     if (cc != _atcCountry || now - _atcTimeMs > atc_period_ms)
         requestAtc();
@@ -295,7 +368,7 @@ void Traffic::requestAdsb()
                                  .arg(c.longitude(), 0, 'f', 5)
                                  .arg(qRound(nm)))};
     req.setHeader(QNetworkRequest::UserAgentHeader, "apx-gcs");
-    req.setTransferTimeout(10000);
+    req.setTransferTimeout(adsb_timeout_ms);
     _adsbReply = _net.get(req);
     connect(_adsbReply, &QNetworkReply::finished, this, &Traffic::onAdsbReply);
 }
@@ -309,6 +382,9 @@ void Traffic::onAdsbReply()
     if (reply->error() != QNetworkReply::NoError) {
         if (reply->property("aborted").toBool())
             return;
+        setRequestDown(isNetworkDown(reply));
+        if (_reqDown) // offline: keep probing, but not every second
+            _adsbHoldMs = QDateTime::currentMSecsSinceEpoch() + adsb_offline_poll_ms;
         _adsbStatus = replyError("ADS-B", reply);
         updateStatus();
         // rate limit: back off, Retry-After when given
@@ -324,6 +400,7 @@ void Traffic::onAdsbReply()
         return;
     }
     _adsbBackoffMs = 0;
+    setRequestDown(false);
 
     auto root = QJsonDocument::fromJson(reply->readAll()).object();
     auto ac = root.value("aircraft").toArray(); // adsb.fi
@@ -411,7 +488,7 @@ void Traffic::requestAtc()
         return;
     QNetworkRequest req{QUrl(QString(atc_url).arg(cc))};
     req.setHeader(QNetworkRequest::UserAgentHeader, "apx-gcs");
-    req.setTransferTimeout(60000);
+    req.setTransferTimeout(atc_timeout_ms);
     _atcCountry = cc;
     _atcTimeMs = QDateTime::currentMSecsSinceEpoch();
     _atcStatus.clear();
@@ -510,15 +587,26 @@ void Traffic::onAtcReply()
     reply->deleteLater();
     if (reply->error() != QNetworkReply::NoError) {
         if (!reply->property("aborted").toBool()) {
-            _atcStatus = replyError("ATC", reply);
-            f_country->setDescr(_atcStatus);
+            bool down = isNetworkDown(reply);
+            setRequestDown(down);
+            if (down) {
+                // one try without a connection: the country is locked until the plugin restarts
+                _atcBlocked = true;
+                f_country->setEnabled(false);
+                _atcStatus = tr("ATC: offline");
+                f_country->setDescr(tr("Offline, restart the plugin to retry"));
+            } else {
+                _atcStatus = replyError("ATC", reply);
+                f_country->setDescr(_atcStatus);
+                // retry sooner than the regular period
+                _atcTimeMs = QDateTime::currentMSecsSinceEpoch() - atc_period_ms + atc_retry_ms;
+            }
             updateStatus();
-            // retry sooner than the regular period
-            _atcTimeMs = QDateTime::currentMSecsSinceEpoch() - atc_period_ms + atc_retry_ms;
         }
         f_country->setProgress(-1);
         return;
     }
+    setRequestDown(false);
     f_country->setProgress(95);
     f_country->setDescr(tr("Parsing airspaces..."));
     _atcWatcher.setFuture(QtConcurrent::run(parseAirspaces, reply->readAll()));

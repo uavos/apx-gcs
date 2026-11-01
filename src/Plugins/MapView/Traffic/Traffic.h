@@ -38,6 +38,8 @@ class Traffic : public Fact
     Q_PROPERTY(QAbstractItemModel *aircraftSorted READ aircraftSorted CONSTANT) // alerts first, then nearest
     Q_PROPERTY(QAbstractListModel *airspaces READ airspaces CONSTANT)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
+    // no internet: the network is unreachable or the requests fail at the network layer
+    Q_PROPERTY(bool offline READ offline NOTIFY offlineChanged)
     Q_PROPERTY(QStringList countries READ countries CONSTANT)
     // hex of the aircraft with the info panel pinned on the map (click), empty is none
     Q_PROPERTY(QString selected READ selected WRITE setSelected NOTIFY selectedChanged)
@@ -53,6 +55,7 @@ public:
     QAbstractItemModel *aircraftSorted() const { return _aircraftSorted; }
     QAbstractListModel *airspaces() const { return _airspaces; }
     QString status() const { return _status; }
+    bool offline() const { return _offline; }
     QStringList countries() const; // airspaces exports available on OpenAIP, "-" is off
     QString selected() const { return _selected; }
     void setSelected(const QString &hex);
@@ -83,8 +86,12 @@ private:
     QGeoCoordinate _atcFilterOrigin;
     double _atcFilterDist{0};
     QList<int> _atcShown;  // indexes of _atcAll in the model
+    // the download failed without a connection: the country is locked, no retries
+    // until the plugin is switched off and on
+    bool _atcBlocked{false};
     void filterAirspaces(bool force = false);
     void clearAirspaces();
+    void updateCountryDescr();
 
     QString _selected;
 
@@ -92,6 +99,16 @@ private:
     QString _adsbStatus;
     QString _atcStatus;
     void updateStatus();
+
+    // offline is reported while the plugin is enabled and either the OS says the network
+    // is unreachable or the last request failed below HTTP (no route, DNS, timeout).
+    // ADS-B goes on at a slower rate while offline, a reply clears both flags.
+    bool _offline{false};
+    bool _netDown{false}; // QNetworkInformation reachability
+    bool _reqDown{false}; // the last reply failed at the network layer
+    static bool isNetworkDown(QNetworkReply *reply);
+    void setRequestDown(bool v);
+    void updateOffline();
 
     // the unit position, or the map center when the unit has no position
     // (then unitOrigin is false and no alert levels are computed)
@@ -108,8 +125,10 @@ private slots:
     void onAdsbReply();
     void onAtcReply();
     void onAtcParsed();
+    void onReachabilityChanged();
 
 signals:
     void statusChanged();
+    void offlineChanged();
     void selectedChanged();
 };

@@ -46,10 +46,39 @@ Rectangle {
     border.width: 0
     color: "#000"
 
+    // no internet: the message instead of the list, requests go on in background
+    Row {
+        id: offline
+        visible: traffic.offline
+        anchors.centerIn: parent
+        spacing: view.height*0.08
+        readonly property real h: Math.min(view.height, view.width*0.3)
+        readonly property color c: "#FFC800"
+        MaterialIcon {
+            anchors.verticalCenter: parent.verticalCenter
+            name: "wifi-off"
+            size: offline.h*0.5
+            color: offline.c
+        }
+        Column {
+            anchors.verticalCenter: parent.verticalCenter
+            Text {
+                text: qsTr("OFFLINE")
+                color: offline.c
+                font: apx.font_narrow(offline.h*0.36, true)
+            }
+            Text {
+                text: qsTr("No internet connection")
+                color: "#aaa"
+                font: apx.font_narrow(offline.h*0.14)
+            }
+        }
+    }
 
     // header: count and error
     Text {
         id: header
+        visible: !traffic.offline
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -64,6 +93,7 @@ Rectangle {
     // column titles
     Row {
         id: columns
+        visible: !traffic.offline
         anchors.left: parent.left
         anchors.top: header.bottom
         anchors.leftMargin: Style.spacing*2
@@ -79,6 +109,7 @@ Rectangle {
 
     ListView {
         id: list
+        visible: !traffic.offline
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: columns.bottom
