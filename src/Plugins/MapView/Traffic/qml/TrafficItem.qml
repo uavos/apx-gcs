@@ -69,7 +69,7 @@ MapQuickItem {
             id: hoverHandler
         }
         TapHandler {
-            onTapped: traffic.selected = pinned ? "" : model.hex
+            onTapped: traffic.selected = (pinned || !model.hex) ? "" : model.hex
         }
 
         // info panel
