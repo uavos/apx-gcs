@@ -85,6 +85,11 @@ MapQuickItem {
             border.color: pinned ? "#fff" : levelColor
             border.width: pinned ? 2 : 1
 
+            // a click on the pinned panel unpins it
+            TapHandler {
+                onTapped: traffic.selected = ""
+            }
+
             Column {
                 id: infoColumn
                 anchors.centerIn: parent

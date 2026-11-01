@@ -35,6 +35,7 @@ class Traffic : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QAbstractListModel *aircraft READ aircraft CONSTANT)
+    Q_PROPERTY(QAbstractItemModel *aircraftSorted READ aircraftSorted CONSTANT) // alerts first, then nearest
     Q_PROPERTY(QAbstractListModel *airspaces READ airspaces CONSTANT)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QStringList countries READ countries CONSTANT)
@@ -49,6 +50,7 @@ public:
     Fact *f_country; // airspaces country code, empty is off
 
     QAbstractListModel *aircraft() const { return _aircraft; }
+    QAbstractItemModel *aircraftSorted() const { return _aircraftSorted; }
     QAbstractListModel *airspaces() const { return _airspaces; }
     QString status() const { return _status; }
     QStringList countries() const; // airspaces exports available on OpenAIP, "-" is off
@@ -60,6 +62,7 @@ public:
 
 private:
     AircraftModel *_aircraft;
+    QSortFilterProxyModel *_aircraftSorted;
     AirspaceModel *_airspaces;
 
     QNetworkAccessManager _net;
@@ -90,8 +93,11 @@ private:
     QString _atcStatus;
     void updateStatus();
 
-    QGeoCoordinate origin() const;
+    // the unit position, or the map center when the unit has no position
+    // (then unitOrigin is false and no alert levels are computed)
+    QGeoCoordinate origin(bool *unitOrigin = nullptr) const;
     double originAltM() const;
+    static void abortReply(QNetworkReply *reply); // abort by the plugin, not a timeout
 
     void requestAdsb();
     void requestAtc();

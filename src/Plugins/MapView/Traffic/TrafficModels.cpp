@@ -52,6 +52,7 @@ QHash<int, QByteArray> AircraftModel::roleNames() const
         {DistRole, "distKm"},
         {BrgRole, "brg"},
         {LevelRole, "level"},
+        {SortKeyRole, "sortKey"},
     };
 }
 
@@ -133,45 +134,67 @@ QVariant AircraftModel::data(const QModelIndex &index, int role) const
         return a.brg;
     case LevelRole:
         return a.level;
+    case SortKeyRole:
+        return (2 - a.level) * 10000.0 + a.distKm; // distKm is below 10000
     }
     return {};
 }
 
+void AircraftModel::reindex(int from)
+{
+    if (from == 0)
+        _index.clear();
+    for (int i = from; i < _items.size(); ++i)
+        _index.insert(_items.at(i).hex, i);
+}
+
 void AircraftModel::update(const QList<Aircraft> &list)
 {
+    QSet<QString> incoming;
+    for (const auto &a : list)
+        incoming.insert(a.hex);
+
     // drop aircraft missing in the reply
+    int removed = 0;
     for (int i = _items.size() - 1; i >= 0; --i) {
-        bool found = false;
-        for (const auto &a : list) {
-            if (a.hex == _items.at(i).hex) {
-                found = true;
-                break;
-            }
-        }
-        if (found)
+        if (incoming.contains(_items.at(i).hex))
             continue;
         beginRemoveRows({}, i, i);
         _items.removeAt(i);
         endRemoveRows();
+        removed++;
     }
+    if (removed)
+        reindex();
+
     // update or append
-    for (const auto &incoming : list) {
-        int idx = -1;
-        for (int i = 0; i < _items.size(); ++i) {
-            if (_items.at(i).hex == incoming.hex) {
-                idx = i;
-                break;
-            }
-        }
+    for (const auto &a : list) {
+        int idx = _index.value(a.hex, -1);
         if (idx >= 0) {
-            _items[idx] = incoming;
+            _items[idx] = a;
             emit dataChanged(index(idx), index(idx));
             continue;
         }
         beginInsertRows({}, _items.size(), _items.size());
-        _items.append(incoming);
+        _items.append(a);
+        _index.insert(a.hex, _items.size() - 1);
         endInsertRows();
     }
+}
+
+void AircraftModel::dropStale(qint64 seenBeforeMs)
+{
+    int removed = 0;
+    for (int i = _items.size() - 1; i >= 0; --i) {
+        if (_items.at(i).seenMs >= seenBeforeMs)
+            continue;
+        beginRemoveRows({}, i, i);
+        _items.removeAt(i);
+        endRemoveRows();
+        removed++;
+    }
+    if (removed)
+        reindex();
 }
 
 void AircraftModel::clear()
@@ -180,16 +203,8 @@ void AircraftModel::clear()
         return;
     beginResetModel();
     _items.clear();
+    _index.clear();
     endResetModel();
-}
-
-bool AircraftModel::contains(const QString &hex) const
-{
-    for (const auto &a : _items) {
-        if (a.hex == hex)
-            return true;
-    }
-    return false;
 }
 
 // airspaces

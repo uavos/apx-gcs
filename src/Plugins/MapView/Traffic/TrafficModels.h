@@ -72,6 +72,7 @@ public:
         DistRole,
         BrgRole,
         LevelRole,
+        SortKeyRole, // alerts first, then by distance
     };
 
     explicit AircraftModel(QObject *parent = nullptr);
@@ -82,11 +83,15 @@ public:
 
     // merge a complete reply: update, insert and drop missing (by hex)
     void update(const QList<Aircraft> &list);
+    // drop aircraft not seen since the time (no replies: errors, rate limit backoff)
+    void dropStale(qint64 seenBeforeMs);
     void clear();
-    bool contains(const QString &hex) const;
+    bool contains(const QString &hex) const { return _index.contains(hex); }
 
 private:
     QList<Aircraft> _items;
+    QHash<QString, int> _index; // hex -> row
+    void reindex(int from = 0);
 };
 
 // airspace polygon from the ATC data provider

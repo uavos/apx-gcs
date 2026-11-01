@@ -27,7 +27,10 @@
 
 static constexpr int adsb_period_ms = 1000;
 static constexpr int adsb_backoff_max_ms = 120000;
+static constexpr int adsb_stale_ms = 30000;     // drop aircraft not updated for this long
+static constexpr double adsb_seen_pos_max = 60; // skip aircraft with an older position, s
 static constexpr int atc_period_ms = 10 * 60 * 1000;
+static constexpr int atc_retry_ms = 30 * 1000; // after a failed download
 static constexpr double alert_dist_km = 10;
 static constexpr double alert_dalt_m = 600;
 static constexpr double prox_dist_km = 25;
@@ -141,6 +144,11 @@ Traffic::Traffic(Fact *parent)
     updateCountryDescription();
 
     _aircraft = new AircraftModel(this);
+    _aircraftSorted = new QSortFilterProxyModel(this);
+    _aircraftSorted->setSourceModel(_aircraft);
+    _aircraftSorted->setSortRole(AircraftModel::SortKeyRole); // red, yellow, then by distance
+    _aircraftSorted->setDynamicSortFilter(true);
+    _aircraftSorted->sort(0);
     _airspaces = new AirspaceModel(this);
 
     _timer.setInterval(adsb_period_ms);
@@ -156,6 +164,7 @@ Traffic::Traffic(Fact *parent)
 
     connect(App::instance(), &App::loadingFinished, this, &Traffic::onEnabledChanged);
 
+    loadQml("qrc:/" PLUGIN_NAME "/TrafficPlugin.qml");   // traffic list, instruments panel
     loadQml("qrc:/" PLUGIN_NAME "/TrafficMapLayer.qml"); // aircraft and airspaces on the map
 }
 
@@ -165,6 +174,8 @@ static QString replyError(const QString &src, QNetworkReply *reply)
     int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if (code)
         return QString("%1: HTTP %2").arg(src).arg(code);
+    if (reply->error() == QNetworkReply::OperationCanceledError)
+        return QString("%1: %2").arg(src).arg(QObject::tr("timeout"));
     return QString("%1: %2").arg(src).arg(reply->errorString().section(" - ", -1));
 }
 
@@ -180,6 +191,16 @@ void Traffic::updateStatus()
     emit statusChanged();
 }
 
+// a transfer timeout also finishes the reply with OperationCanceledError,
+// the property tells the aborts of the plugin apart to report the timeouts
+void Traffic::abortReply(QNetworkReply *reply)
+{
+    if (!reply)
+        return;
+    reply->setProperty("aborted", true);
+    reply->abort();
+}
+
 void Traffic::onEnabledChanged()
 {
     bool v = f_enabled->value().toBool();
@@ -193,8 +214,7 @@ void Traffic::onEnabledChanged()
         return;
     }
     _timer.stop();
-    if (_adsbReply)
-        _adsbReply->abort();
+    abortReply(_adsbReply);
     _aircraft->clear();
     setSelected({});
     clearAirspaces();
@@ -204,8 +224,7 @@ void Traffic::onEnabledChanged()
 
 void Traffic::clearAirspaces()
 {
-    if (_atcReply)
-        _atcReply->abort();
+    abortReply(_atcReply);
     _atcAll.clear();
     _atcCountry.clear();
     _atcTimeMs = 0;
@@ -217,13 +236,18 @@ void Traffic::clearAirspaces()
     updateStatus();
 }
 
-QGeoCoordinate Traffic::origin() const
+QGeoCoordinate Traffic::origin(bool *unitOrigin) const
 {
+    if (unitOrigin)
+        *unitOrigin = false;
     auto unit = Fleet::instance()->current();
     if (unit) {
         auto c = unit->coordinate();
-        if (c.isValid() && (c.latitude() != 0 || c.longitude() != 0))
+        if (c.isValid() && (c.latitude() != 0 || c.longitude() != 0)) {
+            if (unitOrigin)
+                *unitOrigin = true;
             return c;
+        }
     }
     return _mapCenter;
 }
@@ -242,6 +266,11 @@ void Traffic::onTimer()
     if (!f_enabled->value().toBool() || !origin().isValid())
         return;
     auto now = QDateTime::currentMSecsSinceEpoch();
+
+    // no replies for a while (errors, rate limit backoff): the positions are stale
+    _aircraft->dropStale(now - adsb_stale_ms);
+    if (!_selected.isEmpty() && !_aircraft->contains(_selected))
+        setSelected({});
 
     if (now >= _adsbHoldMs)
         requestAdsb();
@@ -278,7 +307,7 @@ void Traffic::onAdsbReply()
         return;
     reply->deleteLater();
     if (reply->error() != QNetworkReply::NoError) {
-        if (reply->error() == QNetworkReply::OperationCanceledError)
+        if (reply->property("aborted").toBool())
             return;
         _adsbStatus = replyError("ADS-B", reply);
         updateStatus();
@@ -301,7 +330,8 @@ void Traffic::onAdsbReply()
     if (ac.isEmpty())
         ac = root.value("ac").toArray(); // adsb.lol, airplanes.live
 
-    auto o = origin();
+    bool unitOrigin = false;
+    auto o = origin(&unitOrigin);
     double oAlt = originAltM();
     auto now = QDateTime::currentMSecsSinceEpoch();
 
@@ -313,6 +343,8 @@ void Traffic::onAdsbReply()
         a.coordinate = QGeoCoordinate(j.value("lat").toDouble(), j.value("lon").toDouble());
         if (a.hex.isEmpty() || !a.coordinate.isValid())
             continue;
+        if (j.value("seen_pos").toDouble() > adsb_seen_pos_max)
+            continue; // the position is too old
         a.callsign = j.value("flight").toString().trimmed();
         a.type = j.value("t").toString();
         a.category = j.value("category").toString();
@@ -328,7 +360,14 @@ void Traffic::onAdsbReply()
         if (geom.isDouble())
             a.altGeomM = geom.toDouble() * 0.3048;
         a.gsKt = j.value("gs").toDouble();
-        a.track = j.value("track").toDouble();
+        // track is often missing (on the ground, slow), heading is the next best for the icon
+        for (const char *key : {"track", "true_heading", "mag_heading", "nav_heading"}) {
+            auto t = j.value(QLatin1String(key));
+            if (t.isDouble()) {
+                a.track = t.toDouble();
+                break;
+            }
+        }
         auto rate = j.value("geom_rate");
         if (!rate.isDouble())
             rate = j.value("baro_rate");
@@ -336,9 +375,13 @@ void Traffic::onAdsbReply()
         a.distKm = o.distanceTo(a.coordinate) / 1000.0;
         a.brg = o.azimuthTo(a.coordinate);
         a.seenMs = now;
+        // alert levels are relative to the unit only (not to the map center),
+        // unknown altitude counts as the same altitude
         double alt = a.altM();
         double dAlt = qIsNaN(alt) ? 0 : qAbs(alt - oAlt);
-        if (a.distKm < alert_dist_km && dAlt < alert_dalt_m)
+        if (!unitOrigin)
+            a.level = 0;
+        else if (a.distKm < alert_dist_km && dAlt < alert_dalt_m)
             a.level = 2;
         else if (a.distKm < prox_dist_km && dAlt < alert_dalt_m * 2)
             a.level = 1;
@@ -466,10 +509,12 @@ void Traffic::onAtcReply()
         return;
     reply->deleteLater();
     if (reply->error() != QNetworkReply::NoError) {
-        if (reply->error() != QNetworkReply::OperationCanceledError) {
+        if (!reply->property("aborted").toBool()) {
             _atcStatus = replyError("ATC", reply);
             f_country->setDescr(_atcStatus);
             updateStatus();
+            // retry sooner than the regular period
+            _atcTimeMs = QDateTime::currentMSecsSinceEpoch() - atc_period_ms + atc_retry_ms;
         }
         f_country->setProgress(-1);
         return;
