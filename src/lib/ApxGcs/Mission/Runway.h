@@ -61,12 +61,13 @@ private slots:
 private:
     struct PerfParams
     {
-        double radius;    // shiva.perf.radius [m]
-        double speed;     // shiva.perf.VC [m/s]
-        double l1_period; // shiva.bearing.dist [s]
-        double l1_damp;   // shiva.bearing.damp
-        double roll_max;  // shiva.roll.cmd.max [deg]
-        bool vtol;        // shiva.perf.type
+        // apx-fw defaults, used when the node config is not available
+        double radius{200.0};   // shiva.perf.radius: loiter radius [m]
+        double speed{30.0};     // shiva.perf.VC: cruise speed [m/s]
+        double l1_period{25.0}; // shiva.bearing.dist: L1 period [s]
+        double l1_damp{0.9};    // shiva.bearing.damp: L1 damping factor
+        double roll_max{30.0};  // shiva.roll.cmd.max: roll setpoint limit [deg]
+        bool vtol{false};       // shiva.perf.type == VTOL
     };
     PerfParams perfParams();
     Fact *shivaParam(const QString &path) const;

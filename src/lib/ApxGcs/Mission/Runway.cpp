@@ -28,6 +28,21 @@
 #include <Nodes/NodeItem.h>
 #include <Nodes/Nodes.h>
 
+#include <algorithm>
+#include <cmath>
+#include <QtMath>
+
+namespace {
+// landing pattern estimation model (Runway::estimateTaPath)
+constexpr double kGravity = 9.81;          // [m/s^2]
+constexpr double kModelDt = 0.5;           // integration step [s]
+constexpr int kModelMaxSteps = 5000;       // integration steps limit
+constexpr double kModelFarJump = 10.0e+3;  // max straight segment when far from the circle [m]
+constexpr double kModelHdgTolerance = 10.; // heading error treated as "on course" [deg]
+constexpr double kModelMaxTurns = 2.0;     // give up the capture after this many full turns
+constexpr double kModelArcStep = 5.0;      // circle path resolution [deg]
+} // namespace
+
 Runway::Runway(MissionGroup *parent)
     : MissionItem(parent, "r#", "", "")
 {
@@ -137,13 +152,9 @@ MissionItem *Runway::lastWaypoint() const
 
 Fact *Runway::shivaParam(const QString &path) const
 {
-    auto nodes = unit()->f_nodes;
-    if (!nodes)
-        return nullptr;
-
-    // prefer node with shiva enabled
+    // prefer the node with shiva enabled
     NodeItem *best{};
-    for (auto node : nodes->nodes()) {
+    for (auto node : unit()->f_nodes->nodes()) {
         auto shiva = node->child("shiva");
         if (!shiva)
             continue;
@@ -169,8 +180,7 @@ Fact *Runway::shivaParam(const QString &path) const
 
 Runway::PerfParams Runway::perfParams()
 {
-    // defaults when node config is not available (apx-fw defaults)
-    PerfParams p{200.0, 30.0, 25.0, 0.9, 30.0, false};
+    PerfParams p; // apx-fw defaults
 
     auto read = [this](const QString &path, double &v) {
         auto f = shivaParam(path);
@@ -190,16 +200,18 @@ Runway::PerfParams Runway::perfParams()
     read("perf.type", vtol);
     p.vtol = vtol > 0;
 
+    // fall back to defaults for unset or invalid values
+    const PerfParams def;
     if (p.radius <= 0)
-        p.radius = 200.0;
+        p.radius = def.radius;
     if (p.speed <= 0)
-        p.speed = 30.0;
+        p.speed = def.speed;
     if (p.l1_period <= 0)
-        p.l1_period = 25.0;
+        p.l1_period = def.l1_period;
     if (p.l1_damp <= 0)
-        p.l1_damp = 0.9;
+        p.l1_damp = def.l1_damp;
     if (p.roll_max <= 0 || p.roll_max >= 90)
-        p.roll_max = 30.0;
+        p.roll_max = def.roll_max;
     return p;
 }
 
@@ -260,14 +272,15 @@ QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
         return path;
 
     const double spd = p.speed;
-    const double dt = 0.5;
-    const double step = dt * spd;
+    const double step = kModelDt * spd;
     // turn radius is limited by the roll command limit (RegRoll, shiva.roll.cmd.max),
     // perf.radius is the loiter radius and only bounds the estimate from above
     const double turnRadius = std::min(p.radius,
                                        spd * spd
-                                           / (9.81 * std::tan(qDegreesToRadians(p.roll_max))));
-    const double turnStep = qRadiansToDegrees(spd / turnRadius) * dt; // max heading change per step
+                                           / (kGravity * std::tan(qDegreesToRadians(p.roll_max))));
+    const double turnStep = qRadiansToDegrees(spd / turnRadius)
+                            * kModelDt; // max heading change per step
+    // RegL1::configure: L1 = damp * period / pi * ground speed
     const double L1 = std::max(10.0, p.l1_damp * p.l1_period / M_PI * spd);
     const bool cw = !left; // right pattern: m.radius > 0 -> clockwise
 
@@ -281,7 +294,7 @@ QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
 
     path.addCoordinate(pt);
 
-    for (int i = 0; i < 5000; ++i) {
+    for (int i = 0; i < kModelMaxSteps; ++i) {
         const double dist = pt.distanceTo(center);
         const double err = dist - radius;
         const double azc = pt.azimuthTo(center);
@@ -292,17 +305,18 @@ QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
         const double desired = tangent + (cw ? eta1 : -eta1);
         double deltaHdg = AppRoot::angle(desired - crs);
 
-        if (std::abs(err) < captureTol && std::abs(AppRoot::angle(tangent - crs)) < 10.0) {
+        if (std::abs(err) < captureTol
+            && std::abs(AppRoot::angle(tangent - crs)) < kModelHdgTolerance) {
             captured = true;
             break;
         }
 
         double d = step;
-        if (std::abs(deltaHdg) < 10.0 && err > (L1 * 2.0)) {
+        if (std::abs(deltaHdg) < kModelHdgTolerance && err > (L1 * 2.0)) {
             // course ok and far away - jump towards the circle
             crs += deltaHdg;
             deltaHdg = 0;
-            d = std::min(err - L1, 10.0e+3);
+            d = std::min(err - L1, kModelFarJump);
         }
 
         // update the heading first, then move: the position step with the
@@ -314,7 +328,7 @@ QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
         pt = pt.atDistanceAndAzimuth(d, crs);
         path.addCoordinate(pt);
 
-        if (std::abs(turnCnt) > (360.0 * 2.0))
+        if (std::abs(turnCnt) > (360.0 * kModelMaxTurns))
             return QGeoPath(); // can't capture the circle
     }
 
@@ -323,20 +337,20 @@ QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
 
     // follow the circle to the approach point (ProcLD_runway::APP -> FINAL),
     // blend the remaining offset from the circle smoothly along the arc
-    const double hdgTA = heading() + (left ? -90.0 : 90.0);
-    const double aApp = hdgTA + 180.0; // azimuth from center to approach point
+    const QGeoCoordinate app = appPoint();
+    const double aApp = center.azimuthTo(app); // the approach point is on the circle
     const double a0 = center.azimuthTo(pt);
     const double err0 = pt.distanceTo(center) - radius;
     const double sweep = AppRoot::angle360(cw ? (aApp - a0) : (a0 - aApp));
     const double sweepLen = radius * qDegreesToRadians(sweep);
-    const double blendLen = std::min(L1, sweepLen / 3.0); // complete the blend before the approach point
-    const double stepA = 5.0;
-    for (double a = stepA; (a + 1.0) < sweep; a += stepA) {
+    // complete the blend before the approach point
+    const double blendLen = std::max(1.0, std::min(L1, sweepLen / 3.0));
+    for (double a = kModelArcStep; (a + 1.0) < sweep; a += kModelArcStep) {
         const double s = radius * qDegreesToRadians(a); // arc length from the capture point
         const double r = radius + err0 * std::exp(-s / blendLen);
         path.addCoordinate(center.atDistanceAndAzimuth(r, cw ? (a0 + a) : (a0 - a)));
     }
-    path.addCoordinate(appPoint());
+    path.addCoordinate(app);
 
     return path;
 }

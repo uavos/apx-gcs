@@ -112,7 +112,7 @@ MissionObject {
 
     property variant appCircleAppCoord: appPointCoordinate
     property variant appCircleCoordinate: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===0?-90:90)):coordinate
-    //TA circle estimated by the model from the autopilot config (shiva.perf.radius)
+    //TA circle and the flight path to it, estimated from the autopilot config (shiva.perf.radius)
     property variant appCircleCoordinateDefault: fact?fact.taCenter:coordinate
     property real appCircleRadiusDefault: fact?fact.taRadius:0
     property var taPath: fact?fact.taPath.path:[]
@@ -228,15 +228,17 @@ MissionObject {
 
     //estimated flight path from the last waypoint to the approach point
     Loader {
+        // asynchronous: true
         active: fact
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
             MapPolyline {
-                z: 50
-                visible: runwayItem.visible && runwayItem.taPath.length>=2
+                z: runwayItem.implicitZ-10
+                // shown for the active runway, the selected one or when there is nothing to choose from
+                visible: runwayItem.visible && runwayItem.showDetailsApp && runwayItem.taPath.length>=2
                          && (runwayItem.is_current || runwayItem.selected || mission.rw.size===1)
-                opacity: ui.effects?0.6:1
-                line.width: Math.max(1,2*ui.scale)
+                opacity: runwayItem.appOpacity
+                line.width: runwayItem.appCircleLineWidth
                 // blue for the current (active) runway, orange for another selected one
                 line.color: runwayItem.is_current ? "#1E50C8" : "#FF8C00"
                 path: runwayItem.taPath
