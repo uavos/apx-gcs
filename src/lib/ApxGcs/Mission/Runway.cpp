@@ -28,20 +28,6 @@
 #include <Nodes/NodeItem.h>
 #include <Nodes/Nodes.h>
 
-#include <algorithm>
-#include <cmath>
-#include <QtMath>
-
-namespace {
-// landing pattern estimation model (Runway::estimateTaPath)
-constexpr double kGravity = 9.81;          // [m/s^2]
-constexpr double kModelDt = 0.5;           // integration step [s]
-constexpr int kModelMaxSteps = 5000;       // integration steps limit
-constexpr double kModelFarJump = 10.0e+3;  // max straight segment when far from the circle [m]
-constexpr double kModelHdgTolerance = 10.; // heading error treated as "on course" [deg]
-constexpr double kModelMaxTurns = 2.0;     // give up the capture after this many full turns
-constexpr double kModelArcStep = 5.0;      // circle path resolution [deg]
-} // namespace
 
 Runway::Runway(MissionGroup *parent)
     : MissionItem(parent, "r#", "", "")
@@ -193,10 +179,6 @@ Runway::PerfParams Runway::perfParams()
 
     double vtol{};
     read("perf.radius", p.radius);
-    read("perf.VC", p.speed);
-    read("bearing.dist", p.l1_period);
-    read("bearing.damp", p.l1_damp);
-    read("roll.cmd.max", p.roll_max);
     read("perf.type", vtol);
     p.vtol = vtol > 0;
 
@@ -204,14 +186,6 @@ Runway::PerfParams Runway::perfParams()
     const PerfParams def;
     if (p.radius <= 0)
         p.radius = def.radius;
-    if (p.speed <= 0)
-        p.speed = def.speed;
-    if (p.l1_period <= 0)
-        p.l1_period = def.l1_period;
-    if (p.l1_damp <= 0)
-        p.l1_damp = def.l1_damp;
-    if (p.roll_max <= 0 || p.roll_max >= 90)
-        p.roll_max = def.roll_max;
     return p;
 }
 
@@ -225,7 +199,6 @@ void Runway::updateTa()
         m_lastWp = last;
         if (last) {
             connect(last, &MissionItem::coordinateChanged, this, &Runway::scheduleTaUpdate);
-            connect(last, &MissionItem::bearingChanged, this, &Runway::scheduleTaUpdate);
         }
     }
 
@@ -241,7 +214,7 @@ void Runway::updateTa()
     if (app.isValid())
         center = app.atDistanceAndAzimuth(radius, hdgTA);
 
-    QGeoPath path = estimateTaPath(center, radius, left, p);
+    QGeoPath path = estimateTaPath(center, radius);
 
     if (m_taCenter == center && m_taRadius == radius && m_taPath == path)
         return;
@@ -251,107 +224,28 @@ void Runway::updateTa()
     emit taChanged();
 }
 
-QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center,
-                                double radius,
-                                bool left,
-                                const PerfParams &p) const
+QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center, double radius) const
 {
-    // Estimates the flight path after the last waypoint:
-    // ProcWPT::_done -> LANDING -> ProcLD_runway::INIT (loiter to TA circle)
-    // -> TA/APP (circle to approach point) -> FINAL (straight to runway).
-    // Guidance mimics RegL1::navigate_loiter: fly towards the circle center,
-    // blend into the tangent when closer than L1 distance.
+    // Flight path after the last waypoint:
+    // ProcWPT::_done -> LANDING -> ProcLD_runway::INIT sets the TA circle center
+    // as the loiter destination, so the vehicle flies straight towards the center
+    // (RegL1::navigate_loiter) until it gets close to the circle.
+    // Only this straight segment is estimated, up to the circle edge.
 
     QGeoPath path;
     MissionItem *last = lastWaypoint();
     if (!last || !center.isValid() || radius <= 0)
         return path;
 
-    QGeoCoordinate pt = last->coordinate();
+    const QGeoCoordinate pt = last->coordinate();
     if (!pt.isValid())
         return path;
 
-    const double spd = p.speed;
-    const double step = kModelDt * spd;
-    // turn radius is limited by the roll command limit (RegRoll, shiva.roll.cmd.max),
-    // perf.radius is the loiter radius and only bounds the estimate from above
-    const double turnRadius = std::min(p.radius,
-                                       spd * spd
-                                           / (kGravity * std::tan(qDegreesToRadians(p.roll_max))));
-    const double turnStep = qRadiansToDegrees(spd / turnRadius)
-                            * kModelDt; // max heading change per step
-    // RegL1::configure: L1 = damp * period / pi * ground speed
-    const double L1 = std::max(10.0, p.l1_damp * p.l1_period / M_PI * spd);
-    const bool cw = !left; // right pattern: m.radius > 0 -> clockwise
-
-    // capture tolerance: the discrete model keeps a small steady state offset
-    // from the circle (about L1*step/(2*radius)), the rest is blended on the arc
-    const double captureTol = std::max(radius * 0.01, step);
-
-    double crs = last->bearing();
-    double turnCnt = 0;
-    bool captured = false;
+    if (pt.distanceTo(center) <= radius)
+        return path; // already inside the circle
 
     path.addCoordinate(pt);
-
-    for (int i = 0; i < kModelMaxSteps; ++i) {
-        const double dist = pt.distanceTo(center);
-        const double err = dist - radius;
-        const double azc = pt.azimuthTo(center);
-        const double tangent = azc + (cw ? -90.0 : 90.0);
-
-        // RegL1: eta1 = asin(xtrack_err / L1), limited to +-90deg
-        const double eta1 = qRadiansToDegrees(std::asin(AppRoot::limit(err / L1, -1.0, 1.0)));
-        const double desired = tangent + (cw ? eta1 : -eta1);
-        double deltaHdg = AppRoot::angle(desired - crs);
-
-        if (std::abs(err) < captureTol
-            && std::abs(AppRoot::angle(tangent - crs)) < kModelHdgTolerance) {
-            captured = true;
-            break;
-        }
-
-        double d = step;
-        if (std::abs(deltaHdg) < kModelHdgTolerance && err > (L1 * 2.0)) {
-            // course ok and far away - jump towards the circle
-            crs += deltaHdg;
-            deltaHdg = 0;
-            d = std::min(err - L1, kModelFarJump);
-        }
-
-        // update the heading first, then move: the position step with the
-        // previous heading lags on a curved path and never converges to the circle
-        const double turn = AppRoot::limit(deltaHdg, -turnStep, turnStep);
-        crs += turn;
-        turnCnt += turn;
-
-        pt = pt.atDistanceAndAzimuth(d, crs);
-        path.addCoordinate(pt);
-
-        if (std::abs(turnCnt) > (360.0 * kModelMaxTurns))
-            return QGeoPath(); // can't capture the circle
-    }
-
-    if (!captured)
-        return QGeoPath();
-
-    // follow the circle to the approach point (ProcLD_runway::APP -> FINAL),
-    // blend the remaining offset from the circle smoothly along the arc
-    const QGeoCoordinate app = appPoint();
-    const double aApp = center.azimuthTo(app); // the approach point is on the circle
-    const double a0 = center.azimuthTo(pt);
-    const double err0 = pt.distanceTo(center) - radius;
-    const double sweep = AppRoot::angle360(cw ? (aApp - a0) : (a0 - aApp));
-    const double sweepLen = radius * qDegreesToRadians(sweep);
-    // complete the blend before the approach point
-    const double blendLen = std::max(1.0, std::min(L1, sweepLen / 3.0));
-    for (double a = kModelArcStep; (a + 1.0) < sweep; a += kModelArcStep) {
-        const double s = radius * qDegreesToRadians(a); // arc length from the capture point
-        const double r = radius + err0 * std::exp(-s / blendLen);
-        path.addCoordinate(center.atDistanceAndAzimuth(r, cw ? (a0 + a) : (a0 - a)));
-    }
-    path.addCoordinate(app);
-
+    path.addCoordinate(center.atDistanceAndAzimuth(radius, center.azimuthTo(pt)));
     return path;
 }
 

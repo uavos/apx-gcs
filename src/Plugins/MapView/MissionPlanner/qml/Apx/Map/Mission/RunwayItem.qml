@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
+import QtQuick.Shapes
 import QtLocation
 import QtPositioning
 
@@ -226,22 +227,65 @@ MissionObject {
         }
     }
 
-    //estimated flight path from the last waypoint to the approach point
+    //estimated flight path from the last waypoint to the TA circle (dashed, screen space)
     Loader {
         // asynchronous: true
         active: fact
         onLoaded: map.addMapItem(item)
         sourceComponent: Component {
-            MapPolyline {
+            MapQuickItem {
+                id: taLine
                 z: runwayItem.implicitZ-10
                 // shown for the active runway, the selected one or when there is nothing to choose from
                 visible: runwayItem.visible && runwayItem.showDetailsApp && runwayItem.taPath.length>=2
                          && (runwayItem.is_current || runwayItem.selected || mission.rw.size===1)
-                opacity: runwayItem.appOpacity
-                line.width: runwayItem.appCircleLineWidth
-                // blue for the current (active) runway, orange for another selected one
-                line.color: runwayItem.is_current ? "#1E50C8" : "#FF8C00"
-                path: runwayItem.taPath
+                opacity: ui.effects?0.9:1
+
+                readonly property var p1: runwayItem.taPath.length>=2 ? runwayItem.taPath[0] : QtPositioning.coordinate()
+                readonly property var p2: runwayItem.taPath.length>=2 ? runwayItem.taPath[1] : QtPositioning.coordinate()
+
+                // screen vector from p1 to p2, re-evaluated on map view changes
+                readonly property point d: {
+                    var deps = [map.zoomLevel, map.bearing, map.tilt, map.center]
+                    if(!visible || !p1.isValid || !p2.isValid)
+                        return Qt.point(0,0)
+                    var s1 = map.fromCoordinate(p1,false)
+                    var s2 = map.fromCoordinate(p2,false)
+                    return Qt.point(s2.x-s1.x, s2.y-s1.y)
+                }
+                readonly property real lineWidth: Math.max(1,3*ui.scale)
+                readonly property real margin: lineWidth*2
+
+                // dash length is fixed in meters (relative to the circle radius),
+                // so the pattern scales with the map and does not jump on zoom
+                readonly property real lengthM: (p1.isValid && p2.isValid) ? p1.distanceTo(p2) : 0
+                readonly property real pxPerM: lengthM>0 ? Math.hypot(d.x,d.y)/lengthM : 0
+                readonly property real dashPx: Math.max(3, runwayItem.appCircleRadiusDefault/8*pxPerM)
+
+                coordinate: p1
+                anchorPoint.x: (d.x<0 ? -d.x : 0) + margin
+                anchorPoint.y: (d.y<0 ? -d.y : 0) + margin
+
+                sourceItem: Shape {
+                    width: Math.abs(taLine.d.x) + taLine.margin*2
+                    height: Math.abs(taLine.d.y) + taLine.margin*2
+                    preferredRendererType: Shape.CurveRenderer
+                    ShapePath {
+                        strokeWidth: taLine.lineWidth
+                        // blue for the current (active) runway, orange for another selected one
+                        strokeColor: runwayItem.is_current ? "#1E50C8" : "#FF8C00"
+                        strokeStyle: ShapePath.DashLine
+                        // dash pattern is in stroke width units
+                        dashPattern: [taLine.dashPx/taLine.lineWidth, taLine.dashPx*0.6/taLine.lineWidth]
+                        fillColor: "transparent"
+                        startX: taLine.anchorPoint.x
+                        startY: taLine.anchorPoint.y
+                        PathLine {
+                            x: taLine.anchorPoint.x + taLine.d.x
+                            y: taLine.anchorPoint.y + taLine.d.y
+                        }
+                    }
+                }
             }
         }
     }

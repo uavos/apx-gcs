@@ -62,20 +62,13 @@ private:
     struct PerfParams
     {
         // apx-fw defaults, used when the node config is not available
-        double radius{200.0};   // shiva.perf.radius: loiter radius [m]
-        double speed{30.0};     // shiva.perf.VC: cruise speed [m/s]
-        double l1_period{25.0}; // shiva.bearing.dist: L1 period [s]
-        double l1_damp{0.9};    // shiva.bearing.damp: L1 damping factor
-        double roll_max{30.0};  // shiva.roll.cmd.max: roll setpoint limit [deg]
-        bool vtol{false};       // shiva.perf.type == VTOL
+        double radius{200.0}; // shiva.perf.radius: loiter radius [m]
+        bool vtol{false};     // shiva.perf.type == VTOL
     };
     PerfParams perfParams();
     Fact *shivaParam(const QString &path) const;
     MissionItem *lastWaypoint() const;
-    QGeoPath estimateTaPath(const QGeoCoordinate &center,
-                            double radius,
-                            bool left,
-                            const PerfParams &p) const;
+    QGeoPath estimateTaPath(const QGeoCoordinate &center, double radius) const;
 
     DelayedEvent _taUpdate{0, false}; // coalesce signals of one event loop pass only
     QPointer<MissionItem> m_lastWp;   // tracked last waypoint (signals connected)
