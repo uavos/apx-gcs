@@ -111,9 +111,7 @@ private:
     void updateOffline();
 
     // the unit position, or the map center when the unit has no position
-    // (then unitOrigin is false and no alert levels are computed)
-    QGeoCoordinate origin(bool *unitOrigin = nullptr) const;
-    double originAltM() const;
+    QGeoCoordinate origin() const;
     static void abortReply(QNetworkReply *reply); // abort by the plugin, not a timeout
 
     void requestAdsb();

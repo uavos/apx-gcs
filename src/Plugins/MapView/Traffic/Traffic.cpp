@@ -34,9 +34,8 @@ static constexpr double adsb_seen_pos_max = 60; // skip aircraft with an older p
 static constexpr int atc_period_ms = 10 * 60 * 1000;
 static constexpr int atc_retry_ms = 30 * 1000; // after a failed download (HTTP errors)
 static constexpr int atc_timeout_ms = 15000;   // inactivity, a live download keeps resetting it
-static constexpr double alert_dist_km = 10;
-static constexpr double alert_dalt_m = 600;
-static constexpr double prox_dist_km = 25;
+static constexpr double alert_dist_km = 2;
+static constexpr double prox_dist_km = 4;
 
 // readsb style traffic around a point, no key
 static const char *adsb_url = "https://opendata.adsb.fi/api/v2/lat/%1/lon/%2/dist/%3";
@@ -131,7 +130,7 @@ Traffic::Traffic(Fact *parent)
     _aircraft = new AircraftModel(this);
     _aircraftSorted = new QSortFilterProxyModel(this);
     _aircraftSorted->setSourceModel(_aircraft);
-    _aircraftSorted->setSortRole(AircraftModel::SortKeyRole); // red, yellow, then by distance
+    _aircraftSorted->setSortRole(AircraftModel::DistRole); // red, yellow, then by distance
     _aircraftSorted->setDynamicSortFilter(true);
     _aircraftSorted->sort(0);
     _airspaces = new AirspaceModel(this);
@@ -309,29 +308,15 @@ void Traffic::clearAirspaces()
     updateStatus();
 }
 
-QGeoCoordinate Traffic::origin(bool *unitOrigin) const
+QGeoCoordinate Traffic::origin() const
 {
-    if (unitOrigin)
-        *unitOrigin = false;
     auto unit = Fleet::instance()->current();
     if (unit) {
         auto c = unit->coordinate();
-        if (c.isValid() && (c.latitude() != 0 || c.longitude() != 0)) {
-            if (unitOrigin)
-                *unitOrigin = true;
+        if (c.isValid() && (c.latitude() != 0 || c.longitude() != 0))
             return c;
-        }
     }
     return _mapCenter;
-}
-
-double Traffic::originAltM() const
-{
-    auto unit = Fleet::instance()->current();
-    if (!unit || !unit->f_mandala)
-        return 0;
-    auto f = unit->f_mandala->fact(mandala::est::nav::pos::hmsl::uid);
-    return f ? f->value().toDouble() : 0;
 }
 
 void Traffic::onTimer()
@@ -407,9 +392,7 @@ void Traffic::onAdsbReply()
     if (ac.isEmpty())
         ac = root.value("ac").toArray(); // adsb.lol, airplanes.live
 
-    bool unitOrigin = false;
-    auto o = origin(&unitOrigin);
-    double oAlt = originAltM();
+    auto o = origin();
     auto now = QDateTime::currentMSecsSinceEpoch();
 
     QList<Aircraft> list;
@@ -453,14 +436,9 @@ void Traffic::onAdsbReply()
         a.brg = o.azimuthTo(a.coordinate);
         a.seenMs = now;
         // alert levels are relative to the unit only (not to the map center),
-        // unknown altitude counts as the same altitude
-        double alt = a.altM();
-        double dAlt = qIsNaN(alt) ? 0 : qAbs(alt - oAlt);
-        if (!unitOrigin)
-            a.level = 0;
-        else if (a.distKm < alert_dist_km && dAlt < alert_dalt_m)
+        if (a.distKm < alert_dist_km)
             a.level = 2;
-        else if (a.distKm < prox_dist_km && dAlt < alert_dalt_m * 2)
+        else if (a.distKm < prox_dist_km)
             a.level = 1;
         list.append(a);
     }

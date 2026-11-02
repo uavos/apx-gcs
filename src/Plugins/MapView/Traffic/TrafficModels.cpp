@@ -52,7 +52,6 @@ QHash<int, QByteArray> AircraftModel::roleNames() const
         {DistRole, "distKm"},
         {BrgRole, "brg"},
         {LevelRole, "level"},
-        {SortKeyRole, "sortKey"},
     };
 }
 
@@ -134,8 +133,6 @@ QVariant AircraftModel::data(const QModelIndex &index, int role) const
         return a.brg;
     case LevelRole:
         return a.level;
-    case SortKeyRole:
-        return (2 - a.level) * 10000.0 + a.distKm; // distKm is below 10000
     }
     return {};
 }

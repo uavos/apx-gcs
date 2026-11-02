@@ -72,7 +72,6 @@ public:
         DistRole,
         BrgRole,
         LevelRole,
-        SortKeyRole, // alerts first, then by distance
     };
 
     explicit AircraftModel(QObject *parent = nullptr);
