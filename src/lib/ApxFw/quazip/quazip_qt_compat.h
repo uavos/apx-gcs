@@ -103,16 +103,28 @@ inline QString quazip_symlink_target(const QFileInfo &fi) {
 }
 #endif
 
-// this is not a deprecation but an improvement, for a change
+// QDateTime(QDate, QTime, Qt::TimeSpec) is deprecated since Qt 6.9
 #include <QtCore/QDateTime>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#include <QtCore/QTimeZone>
+inline QDateTime quazip_utc_datetime(const QDate &date, const QTime &time) {
+    return QDateTime(date, time, QTimeZone::UTC);
+}
+#else
+inline QDateTime quazip_utc_datetime(const QDate &date, const QTime &time) {
+    return QDateTime(date, time, Qt::UTC);
+}
+#endif
+
+// this is not a deprecation but an improvement, for a change
 #if (QT_VERSION >= 0x040700)
 inline quint64 quazip_ntfs_ticks(const QDateTime &time, int fineTicks) {
-    QDateTime base(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    QDateTime base = quazip_utc_datetime(QDate(1601, 1, 1), QTime(0, 0));
     return base.msecsTo(time) * 10000 + fineTicks;
 }
 #else
 inline quint64 quazip_ntfs_ticks(const QDateTime &time, int fineTicks) {
-    QDateTime base(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    QDateTime base = quazip_utc_datetime(QDate(1601, 1, 1), QTime(0, 0));
     QDateTime utc = time.toUTC();
     return (static_cast<qint64>(base.date().daysTo(utc.date()))
             * Q_INT64_C(86400000)
