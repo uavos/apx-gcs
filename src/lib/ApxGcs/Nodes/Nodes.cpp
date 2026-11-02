@@ -314,6 +314,15 @@ QJsonValue Nodes::toJson()
     }
     return jsa;
 }
+
+static bool nodeNameMatch(const QString &nodeName, const QString &importName)
+{
+    if (nodeName == importName)
+        return true;
+    static const QStringList aliases{"nav", "sim"};
+    return aliases.contains(nodeName) && aliases.contains(importName);
+}
+
 void Nodes::fromJson(const QJsonValue &jsv)
 {
     const auto nodes = jsv.toArray();
@@ -390,7 +399,7 @@ void Nodes::fromJson(const QJsonValue &jsv)
             auto label = node["values"].toObject().value("label").toString();
 
             for (auto f : nlist) {
-                if (f->title() != name && f->label() != label)
+                if (!nodeNameMatch(f->title(), name) && f->label() != label)
                     continue;
                 f->fromJson(node);
                 nlist.removeOne(f);
@@ -409,7 +418,7 @@ void Nodes::fromJson(const QJsonValue &jsv)
             auto name = node["info"].toObject().value("name").toString();
 
             for (auto n : nlist) {
-                if (n->title() != name)
+                if (!nodeNameMatch(n->title(), name))
                     continue;
                 n->fromJson(node);
                 nlist.removeOne(n);
@@ -455,8 +464,8 @@ void Nodes::fromJson(const QJsonValue &jsv)
             for (int i = 0; i < shivas.size(); ++i) {
                 // look for nodes by priority
                 NodeItem *n = {};
-                // search for enabled nav
-                n = nshiva.value("nav");
+                // search for enabled nav (or sim)
+                n = nshiva.value("nav", nshiva.value("sim"));
                 if (n) {
                     auto on = n->findChild("shiva.mode")->value().toUInt();
                     if (!on)
@@ -471,8 +480,8 @@ void Nodes::fromJson(const QJsonValue &jsv)
                         break;
                     }
                 }
-                if (!n) { // search for any nav
-                    n = nshiva.value("nav");
+                if (!n) { // search for any nav (or sim)
+                    n = nshiva.value("nav", nshiva.value("sim"));
                 }
                 if (!n) { // search for any available
                     n = nshiva.values().first();
