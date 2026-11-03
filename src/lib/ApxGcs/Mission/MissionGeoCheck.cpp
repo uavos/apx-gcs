@@ -170,8 +170,12 @@ bool MissionGeoCheck::segmentInZone(const Zone &z, const QGeoCoordinate &a, cons
         return false;
     case xbus::mission::geo_s::LINE: {
         const QLineF line(z.pts.at(0), z.pts.at(1));
-        return crosses(s, line) || crosses(s, sideRay(line, line.p1()))
-               || crosses(s, sideRay(line, line.p2()));
+        const auto crossesSide = [&s, &line](const QPointF &p) {
+            QLineF ray = sideRay(line, p);
+            ray.setLength(std::max(QLineF(p, s.p1()).length(), QLineF(p, s.p2()).length()));
+            return crosses(s, ray);
+        };
+        return crosses(s, line) || crossesSide(line.p1()) || crossesSide(line.p2());
     }
     }
     return false;
