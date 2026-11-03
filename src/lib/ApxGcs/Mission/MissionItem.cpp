@@ -57,10 +57,9 @@ MissionItem::MissionItem(MissionGroup *parent,
                                   "target");
         connect(f_select, &Fact::triggered, this, &MissionItem::selectTriggered);
 
-        connect(group->f_activeIndex, &Fact::valueChanged, this, [this]() {
-            setActive(group->f_activeIndex->value().toInt() == num());
-        });
-        setActive(group->f_activeIndex->value().toInt() == num());
+        connect(group->f_activeIndex, &Fact::valueChanged, this, &MissionItem::updateActive);
+        connect(this, &Fact::numChanged, this, &MissionItem::updateActive);
+        updateActive();
     }
 
     connect(this, &MissionItem::itemDataLoaded, this, &MissionItem::updateCoordinate);
@@ -199,6 +198,10 @@ void MissionItem::updateOrderState()
 void MissionItem::updateSelected()
 {
     setSelected(group->mission->selectedItem() == this);
+}
+void MissionItem::updateActive()
+{
+    setActive(group->f_activeIndex->value().toInt() == num());
 }
 
 void MissionItem::selectTriggered()

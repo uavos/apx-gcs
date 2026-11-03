@@ -92,6 +92,7 @@ private slots:
 
     void updateOrderState();
     void updateSelected();
+    void updateActive();
 
     void selectTriggered();
 
