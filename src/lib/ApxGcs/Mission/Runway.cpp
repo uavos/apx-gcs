@@ -115,6 +115,7 @@ Runway::Runway(MissionGroup *parent)
     auto wp = group->mission->f_wp;
     connect(wp, &Fact::sizeChanged, this, &Runway::scheduleTaUpdate);
     connect(wp, &Fact::itemMoved, this, &Runway::scheduleTaUpdate);
+    connect(wp, &Fact::itemInserted, this, &Runway::scheduleTaUpdate);
 
     connect(unit()->f_nodes, &Nodes::validChanged, this, &Runway::scheduleTaUpdate);
 
