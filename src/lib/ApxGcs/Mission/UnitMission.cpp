@@ -384,6 +384,7 @@ void UnitMission::uploadMission()
     if (!unit->protocol())
         return;
     unit->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
+    geoCheck->update();
     if (geoCheck->denied())
         unit->message(tr("Mission path crosses deny zones"), AppNotify::Warning);
     unit->protocol()->mission()->updateMission(toJson());
