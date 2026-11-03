@@ -1,6 +1,6 @@
 #version 440
 
-layout(location = 0) in vec2 texCoord;
+layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 
 layout(std140, binding = 0) uniform buf {
@@ -12,7 +12,7 @@ layout(binding = 1) uniform sampler2D source;
 
 void main()
 {
-    vec2 uv = texCoord.xy;
+    vec2 uv = qt_TexCoord0.xy;
     vec4 orig = texture(source, uv);
     float cr = pow(0.05, 2.0);
     float pt = pow(uv.x - 0.5, 2.0) + pow(uv.y - 0.5, 2.0);
