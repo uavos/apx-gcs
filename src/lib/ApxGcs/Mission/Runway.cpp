@@ -118,6 +118,7 @@ Runway::Runway(MissionGroup *parent)
     connect(wp, &Fact::itemInserted, this, &Runway::scheduleTaUpdate);
 
     connect(unit()->f_nodes, &Nodes::validChanged, this, &Runway::scheduleTaUpdate);
+    connect(unit()->f_nodes, &Nodes::nodeNotify, this, &Runway::scheduleTaUpdate);
 
     scheduleTaUpdate();
 
