@@ -24,16 +24,17 @@ import QtQuick.Controls
 
 import Apx.Common
 
-// Traffic list: red, yellow, then the rest, nearest first in each group (see TrafficPlugin.qml)
+// Traffic list: nearest first (see TrafficPlugin.qml)
 Rectangle {
     id: view
 
     property var traffic: apx.tools.traffic
     readonly property real fs: Style.fontSize*0.8
 
-    // columns: icon, callsign, GNSS alt, BARO alt, distance, bearing
+    // columns: icon, callsign, ICAO hex, GNSS alt, BARO alt, distance, bearing
     readonly property real wIcon: fs*1.4
     readonly property real wCallsign: fs*5.5
+    readonly property real wHex: fs*4
     readonly property real wAlt: fs*4.5
     readonly property real wDist: fs*4.5
     readonly property real wBrg: fs*3
@@ -101,6 +102,7 @@ Rectangle {
         spacing: fs*0.5
         Item { width: wIcon; height: 1 }
         Text { width: wCallsign; text: qsTr("Callsign"); color: "#888"; font: apx.font_narrow(fs) }
+        Text { width: wHex; text: qsTr("Hex"); color: "#888"; font: apx.font_narrow(fs) }
         Text { width: wAlt; text: "GNSS"; color: "#888"; font: apx.font_narrow(fs) }
         Text { width: wAlt; text: "BARO"; color: "#888"; font: apx.font_narrow(fs) }
         Text { width: wDist; text: qsTr("Dist"); color: "#888"; font: apx.font_narrow(fs) }
@@ -131,11 +133,14 @@ Rectangle {
         delegate: Rectangle {
             width: list.width - Style.buttonSize/4
             height: fs*1.4
+            // our own aircraft (traffic.own) is a grey row, the others are colored by the alert level
             color: traffic.selected===model.hex ? "#40FFFFFF"
+                 : model.own ? "#30808080"
                  : model.level===2 ? "#40FF4C00" : "transparent"
             radius: 2
 
-            readonly property color c: model.level===2 ? "#FF4C00"
+            readonly property color c: model.own ? "#A0A0A0"
+                                     : model.level===2 ? "#FF4C00"
                                      : model.level===1 ? "#FFC800"
                                      : "#fff"
 
@@ -155,7 +160,8 @@ Rectangle {
                         rotation: model.track
                     }
                 }
-                Text { width: wCallsign; text: model.callsign; color: c; font: apx.font_narrow(fs, true); elide: Text.ElideRight; anchors.verticalCenter: parent.verticalCenter }
+                Text { width: wCallsign; text: model.callsign || "---"; color: c; font: apx.font_narrow(fs, true); elide: Text.ElideRight; anchors.verticalCenter: parent.verticalCenter }
+                Text { width: wHex; text: model.hex.toUpperCase(); color: model.own ? c : "#aaa"; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
                 Text { width: wAlt; text: altText(model.altGeomM); color: c; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
                 Text { width: wAlt; text: model.onGround ? "GND" : altText(model.altBaroM); color: c; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
                 Text { width: wDist; text: model.distKm.toFixed(1)+" km"; color: "#aaa"; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }

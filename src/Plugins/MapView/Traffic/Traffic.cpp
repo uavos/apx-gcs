@@ -127,10 +127,21 @@ Traffic::Traffic(Fact *parent)
     connect(f_country, &Fact::valueChanged, this, &Traffic::updateCountryDescr);
     updateCountryDescr();
 
+    // our own aircraft as seen by ADS-B: shown in grey, excluded from the alerts
+    f_own = new Fact(this,
+                     "own",
+                     tr("Own aircraft"),
+                     tr("ICAO hex or callsign of our aircraft (ADS-B), empty is off"),
+                     Text | PersistentValue,
+                     "identifier");
+    f_own->setDefaultValue("");
+    connect(f_own, &Fact::valueChanged, this, &Traffic::updateOwnDescr);
+    updateOwnDescr();
+
     _aircraft = new AircraftModel(this);
     _aircraftSorted = new QSortFilterProxyModel(this);
     _aircraftSorted->setSourceModel(_aircraft);
-    _aircraftSorted->setSortRole(AircraftModel::DistRole); // red, yellow, then by distance
+    _aircraftSorted->setSortRole(AircraftModel::DistRole); // nearest first (the alerts are the nearest)
     _aircraftSorted->setDynamicSortFilter(true);
     _aircraftSorted->sort(0);
     _airspaces = new AirspaceModel(this);
@@ -146,7 +157,12 @@ Traffic::Traffic(Fact *parent)
     connect(f_radius, &Fact::valueChanged, this, [this]() { filterAirspaces(true); });
     connect(&_atcWatcher, &QFutureWatcher<QList<Airspace>>::finished, this, &Traffic::onAtcParsed);
 
-    connect(App::instance(), &App::loadingFinished, this, &Traffic::onEnabledChanged);
+    // start when the app is loaded, or right away (queued, after the QML below is loaded)
+    // when the plugin is enabled at runtime from the plugins settings
+    if (App::loaded())
+        QTimer::singleShot(0, this, &Traffic::onEnabledChanged);
+    else
+        connect(App::instance(), &App::loadingFinished, this, &Traffic::onEnabledChanged);
 
     // reachability from the OS when its backend is available, the requests tell otherwise
     if (QNetworkInformation::loadBackendByFeatures(QNetworkInformation::Feature::Reachability)) {
@@ -180,6 +196,21 @@ void Traffic::updateCountryDescr()
             return;
         }
     }
+}
+
+QString Traffic::ownId() const
+{
+    return f_own->value().toString().trimmed();
+}
+
+void Traffic::updateOwnDescr()
+{
+    QString id = ownId();
+    if (id.isEmpty()) {
+        f_own->setDescr(tr("Own aircraft is not set"));
+        return;
+    }
+    f_own->setDescr(tr("Own aircraft: %1").arg(id.toUpper()));
 }
 
 // short status for the tools menu: "ADS-B: HTTP 429" or the error text
@@ -236,7 +267,7 @@ void Traffic::updateOffline()
     if (!v) {
         // back online: request now, not after the backoff or the retry period
         _adsbHoldMs = 0;
-        if (_atcAll.isEmpty() && !_atcBlocked)
+        if (_atcAll.isEmpty() && !_atcBlocked && !_atcReply && !_atcWatcher.isRunning())
             _atcTimeMs = 0;
     }
     emit offlineChanged();
@@ -296,6 +327,7 @@ void Traffic::onEnabledChanged()
 void Traffic::clearAirspaces()
 {
     abortReply(_atcReply);
+    _atcReply = nullptr; // finished was emitted, the reply is deleted later
     _atcAll.clear();
     _atcCountry.clear();
     _atcTimeMs = 0;
@@ -375,8 +407,8 @@ void Traffic::onAdsbReply()
         // rate limit: back off, Retry-After when given
         int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         if (code == 429 || code == 503) {
-            int retry = reply->rawHeader("Retry-After").toInt() * 1000;
-            _adsbBackoffMs = retry > 0 ? retry
+            qint64 retry = reply->rawHeader("Retry-After").toLongLong() * 1000; // seconds or a date (0)
+            _adsbBackoffMs = retry > 0 ? int(qMin<qint64>(retry, adsb_backoff_max_ms))
                                        : qMin(adsb_backoff_max_ms,
                                               _adsbBackoffMs ? _adsbBackoffMs * 2
                                                              : adsb_period_ms * 2);
@@ -388,19 +420,30 @@ void Traffic::onAdsbReply()
     setRequestDown(false);
 
     auto root = QJsonDocument::fromJson(reply->readAll()).object();
-    auto ac = root.value("aircraft").toArray(); // adsb.fi
-    if (ac.isEmpty())
-        ac = root.value("ac").toArray(); // adsb.lol, airplanes.live
+    auto acv = root.value("aircraft"); // adsb.fi
+    if (!acv.isArray())
+        acv = root.value("ac"); // adsb.lol, airplanes.live
+    if (!acv.isArray()) {
+        // not the API reply (captive portal, proxy page): keep the aircraft, not an empty list
+        _adsbStatus = QString("ADS-B: %1").arg(tr("bad reply"));
+        updateStatus();
+        return;
+    }
+    auto ac = acv.toArray(); // empty is no traffic around
 
     auto o = origin();
     auto now = QDateTime::currentMSecsSinceEpoch();
+    auto own = ownId();
 
     QList<Aircraft> list;
     for (const auto &v : ac) {
         auto j = v.toObject();
         Aircraft a;
         a.hex = j.value("hex").toString();
-        a.coordinate = QGeoCoordinate(j.value("lat").toDouble(), j.value("lon").toDouble());
+        auto lat = j.value("lat"), lon = j.value("lon");
+        if (!lat.isDouble() || !lon.isDouble())
+            continue; // no position (would be placed at 0,0)
+        a.coordinate = QGeoCoordinate(lat.toDouble(), lon.toDouble());
         if (a.hex.isEmpty() || !a.coordinate.isValid())
             continue;
         if (j.value("seen_pos").toDouble() > adsb_seen_pos_max)
@@ -435,8 +478,14 @@ void Traffic::onAdsbReply()
         a.distKm = o.distanceTo(a.coordinate) / 1000.0;
         a.brg = o.azimuthTo(a.coordinate);
         a.seenMs = now;
-        // alert levels are relative to the unit only (not to the map center),
-        if (a.distKm < alert_dist_km)
+        // our own aircraft by the ICAO hex or the callsign: grey, no alerts
+        a.own = !own.isEmpty()
+                && (QString::compare(a.hex, own, Qt::CaseInsensitive) == 0
+                    || QString::compare(a.callsign, own, Qt::CaseInsensitive) == 0);
+        // alert levels are by the distance from the origin (the unit, or the map center)
+        if (a.own)
+            a.level = 0;
+        else if (a.distKm < alert_dist_km)
             a.level = 2;
         else if (a.distKm < prox_dist_km)
             a.level = 1;
@@ -484,7 +533,7 @@ void Traffic::requestAtc()
 
 static QString limitText(const QJsonObject &j)
 {
-    int v = j.value("value").toInt();
+    int v = qRound(j.value("value").toDouble());
     int unit = j.value("unit").toInt();            // 0 m, 1 ft, 6 FL
     int datum = j.value("referenceDatum").toInt(); // 0 GND, 1 MSL, 2 STD
     if (unit == 6)
@@ -592,10 +641,13 @@ void Traffic::onAtcReply()
 
 void Traffic::onAtcParsed()
 {
-    f_country->setProgress(-1);
-    if (_atcCountry != countryCode(f_country))
-        return; // country changed while parsing
+    if (!_atcReply)
+        f_country->setProgress(-1);
+    // country changed, switched off or the plugin disabled while parsing
+    if (_atcCountry.isEmpty() || _atcCountry != countryCode(f_country))
+        return;
     _atcAll = _atcWatcher.result();
+    _atcFilterOrigin = QGeoCoordinate(); // _atcShown is of the previous list
     filterAirspaces(true);
     if (_atcAll.isEmpty()) {
         _atcStatus = tr("ATC: no valid airspaces in file");

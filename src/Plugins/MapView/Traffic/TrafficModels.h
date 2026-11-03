@@ -41,6 +41,7 @@ struct Aircraft
     double distKm{0};         // from origin
     double brg{0};            // from origin, deg
     int level{0};             // 0 other, 1 proximity, 2 alert
+    bool own{false};          // our own aircraft (Traffic::f_own), grey, no alerts
     qint64 seenMs{0};         // last reply that contained the aircraft
 
     // altitude used for display and alerts: GNSS when available, baro otherwise
@@ -72,6 +73,7 @@ public:
         DistRole,
         BrgRole,
         LevelRole,
+        OwnRole,
     };
 
     explicit AircraftModel(QObject *parent = nullptr);
@@ -80,7 +82,8 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    // merge a complete reply: update, insert and drop missing (by hex)
+    // merge a complete reply: update, insert and drop missing (by hex),
+    // an empty reply drops everything (no traffic in range)
     void update(const QList<Aircraft> &list);
     // drop aircraft not seen since the time (no replies: errors, rate limit backoff)
     void dropStale(qint64 seenBeforeMs);

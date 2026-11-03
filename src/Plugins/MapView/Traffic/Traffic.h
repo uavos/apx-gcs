@@ -35,7 +35,7 @@ class Traffic : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QAbstractListModel *aircraft READ aircraft CONSTANT)
-    Q_PROPERTY(QAbstractItemModel *aircraftSorted READ aircraftSorted CONSTANT) // alerts first, then nearest
+    Q_PROPERTY(QAbstractItemModel *aircraftSorted READ aircraftSorted CONSTANT) // nearest first
     Q_PROPERTY(QAbstractListModel *airspaces READ airspaces CONSTANT)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     // no internet: the network is unreachable or the requests fail at the network layer
@@ -50,6 +50,7 @@ public:
     Fact *f_enabled;
     Fact *f_radius;
     Fact *f_country; // airspaces country code, empty is off
+    Fact *f_own;     // ICAO hex or callsign of our aircraft (ADS-B), empty is off
 
     QAbstractListModel *aircraft() const { return _aircraft; }
     QAbstractItemModel *aircraftSorted() const { return _aircraftSorted; }
@@ -92,6 +93,10 @@ private:
     void filterAirspaces(bool force = false);
     void clearAirspaces();
     void updateCountryDescr();
+
+    // ICAO hex or callsign of our aircraft (trimmed), empty when not set
+    QString ownId() const;
+    void updateOwnDescr();
 
     QString _selected;
 

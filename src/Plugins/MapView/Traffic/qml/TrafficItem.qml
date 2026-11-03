@@ -35,7 +35,9 @@ MapQuickItem {
     readonly property bool hovered: hoverHandler.hovered
     readonly property bool showInfo: hovered || pinned
 
-    readonly property color levelColor: model.level===2 ? "#FF4C00"
+    // our own aircraft (traffic.own) is grey, the others are colored by the alert level
+    readonly property color levelColor: model.own ? "#A0A0A0"
+                                      : model.level===2 ? "#FF4C00"
                                       : model.level===1 ? "#FFC800"
                                       : "#00FFFF"
     readonly property real fs: Style.fontSize*0.8
@@ -60,7 +62,7 @@ MapQuickItem {
             name: model.icon
             size: Style.buttonSize*0.8*model.iconScale
             color: levelColor
-            rotation: model.track
+            rotation: model.track - ui.map.bearing // track is true north, the map can be rotated
             style: Text.Outline
             styleColor: showInfo ? "#fff" : "#000"
         }
@@ -95,10 +97,22 @@ MapQuickItem {
                 anchors.centerIn: parent
                 spacing: 1
 
-                Text {
-                    text: model.callsign
-                    color: levelColor
-                    font: apx.font_narrow(fs, true)
+                // callsign (or the hex when not reported) and the ICAO hex
+                Row {
+                    spacing: fs*0.5
+                    Text {
+                        id: callsignText
+                        text: model.callsign || model.hex.toUpperCase()
+                        color: levelColor
+                        font: apx.font_narrow(fs, true)
+                    }
+                    Text {
+                        visible: model.callsign.length > 0
+                        text: model.hex.toUpperCase()
+                        color: "#aaa"
+                        font: apx.font_narrow(fs)
+                        anchors.baseline: callsignText.baseline
+                    }
                 }
                 Text {
                     text: model.categoryText + (model.type ? "  " + model.type : "")

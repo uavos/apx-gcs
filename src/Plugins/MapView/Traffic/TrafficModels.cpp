@@ -52,6 +52,7 @@ QHash<int, QByteArray> AircraftModel::roleNames() const
         {DistRole, "distKm"},
         {BrgRole, "brg"},
         {LevelRole, "level"},
+        {OwnRole, "own"},
     };
 }
 
@@ -80,11 +81,10 @@ static CategoryInfo categoryInfo(const QString &c)
         {"B7", {"Space vehicle", "rocket", 0.9}},
         {"C1", {"Emergency vehicle", "car", 0.7}},
         {"C2", {"Service vehicle", "car", 0.7}},
-        {"C3", {"Obstacle", "radio-tower", 0.8}},
-        {"C4", {"Obstacle", "radio-tower", 0.8}},
-        {"C5", {"Obstacle", "radio-tower", 0.8}},
-        {"C6", {"Obstacle", "radio-tower", 0.8}},
-        {"C7", {"Obstacle", "radio-tower", 0.8}},
+        {"C3", {"Obstacle", "radio-tower", 0.8}}, // point (tethered balloons)
+        {"C4", {"Obstacle", "radio-tower", 0.8}}, // cluster
+        {"C5", {"Obstacle", "radio-tower", 0.8}}, // line
+        // A0, B0, C0: no category, B5, C6, C7: reserved
     };
     return map.value(c, {"Aircraft", "airplane", 1.0});
 }
@@ -98,7 +98,7 @@ QVariant AircraftModel::data(const QModelIndex &index, int role) const
     case HexRole:
         return a.hex;
     case CallsignRole:
-        return a.callsign.isEmpty() ? a.hex.toUpper() : a.callsign;
+        return a.callsign; // empty when not reported, the views show the hex then
     case TypeRole:
         return a.type;
     case CategoryRole:
@@ -133,6 +133,8 @@ QVariant AircraftModel::data(const QModelIndex &index, int role) const
         return a.brg;
     case LevelRole:
         return a.level;
+    case OwnRole:
+        return a.own;
     }
     return {};
 }
@@ -165,11 +167,14 @@ void AircraftModel::update(const QList<Aircraft> &list)
         reindex();
 
     // update or append
+    // every row left after the drop is in the reply: one dataChanged for all of them
+    // (hundreds of per-row signals a second make the sorted proxy re-sort for each)
+    int last = -1; // last updated row
     for (const auto &a : list) {
         int idx = _index.value(a.hex, -1);
         if (idx >= 0) {
-            _items[idx] = a;
-            emit dataChanged(index(idx), index(idx));
+            _items[idx] = a; // also a duplicate hex in the reply: the last one wins
+            last = qMax(last, idx);
             continue;
         }
         beginInsertRows({}, _items.size(), _items.size());
@@ -177,6 +182,8 @@ void AircraftModel::update(const QList<Aircraft> &list)
         _index.insert(a.hex, _items.size() - 1);
         endInsertRows();
     }
+    if (last >= 0)
+        emit dataChanged(index(0), index(last));
 }
 
 void AircraftModel::dropStale(qint64 seenBeforeMs)
@@ -248,6 +255,8 @@ QVariant AirspaceModel::data(const QModelIndex &index, int role) const
 
 void AirspaceModel::reset(const QList<Airspace> &list)
 {
+    if (_items.isEmpty() && list.isEmpty())
+        return; // nothing to reset (called on every filter pass while no file is loaded)
     beginResetModel();
     _items = list;
     endResetModel();

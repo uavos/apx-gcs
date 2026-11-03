@@ -32,34 +32,41 @@ AppPlugin {
     sourceComponent: TrafficView { }
 
     uiComponent: "main"
-    onConfigure: trafficSync()
+    onConfigure: trafficSync(false)
 
     // The main layout copies the plugin properties into its buttons model,
     // so the names here must not clash with its own functions (show, add)
+
+    // the panel follows the plugin state (startup: the layout restores the saved panel)
     Connections {
         target: fact
-        function onActiveChanged(){ plugin.trafficSync() }
+        function onActiveChanged(){ plugin.trafficSync(false) }
+    }
+    // switched on by the user: bring the panel to front
+    Connections {
+        target: fact ? fact.child("use") : null
+        function onValueChanged(){ plugin.trafficSync(true) }
     }
 
     // added to the instruments layout and listed in its buttons row
     property bool trafficListed: false
 
-    // enabled: add (once) and bring the panel to front, disabled: take it out of the row
-    function trafficSync()
+    // enabled: add (once) and bring the panel to front (front), disabled: take it out of the row
+    function trafficSync(front)
     {
+        if(!ui.main) return // the main layout is not loaded yet, called again on configure
         var inst = trafficFindInstruments(ui.main, 3)
-        if(!inst) return
         if(fact.active){
             if(!trafficListed){
                 trafficListed = true
                 ui.main.add(plugin, GroundControl.Layout.Instrument)
             }
-            if(inst.show) inst.show(plugin)
+            if(front && inst && inst.show) inst.show(plugin)
             return
         }
         if(!trafficListed) return
         trafficListed = false
-        trafficRemoveFrom(inst)
+        if(inst) trafficRemoveFrom(inst)
     }
     // the instruments layout has no remove: take the entry out of the buttons model
     // (the model of its ListView) and switch its StackView to another panel.
