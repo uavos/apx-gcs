@@ -170,6 +170,13 @@ Runway::PerfParams Runway::perfParams()
 {
     PerfParams p; // apx-fw defaults
 
+    for (auto node : unit()->f_nodes->nodes()) {
+        auto shiva = node->child("shiva");
+        auto mode = shiva ? shiva->child("mode") : nullptr;
+        if (mode)
+            connect(mode, &Fact::valueChanged, this, &Runway::scheduleTaUpdate, Qt::UniqueConnection);
+    }
+
     auto read = [this](const QString &path, double &v) {
         auto f = shivaParam(path);
         if (!f)
