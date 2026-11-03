@@ -19,6 +19,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QAbstractItemView>
+#include <QAccessibleWidget>
 #include <QApplication>
 #include <QtCore>
 
@@ -34,6 +36,17 @@ int main(int argc, char *argv[])
                argv,
                "Ground Control",
                QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
+
+#if defined(Q_OS_MACOS) && QT_VERSION < QT_VERSION_CHECK(6, 12, 1)
+    // QTBUG-149612: an accessibility client asking an item view for its selected row
+    // makes Qt read freed cells and crash - expose item views as plain widgets
+    // (installed after QApplication, so it is asked before the Qt widgets factory)
+    QAccessible::installFactory([](const QString &, QObject *object) -> QAccessibleInterface * {
+        if (auto view = qobject_cast<QAbstractItemView *>(object))
+            return new QAccessibleWidget(view);
+        return nullptr;
+    });
+#endif
 
     int rv = app.exec();
     qInstallMessageHandler(nullptr);

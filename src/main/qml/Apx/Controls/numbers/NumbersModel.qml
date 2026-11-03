@@ -102,13 +102,14 @@ ObjectModel {
             var index=0
             while(index<model.count && model.get(index)!==obj)
                 ++index
-            if(obj.warning || obj.error){
+            if(obj.active || obj.warning || obj.error){
                 if(index===model.count)
                     model.append(obj)
             }else if(index<model.count){
                 model.remove(index)
             }
         }
+        obj.activeChanged.connect(update)
         obj.warningChanged.connect(update)
         obj.errorChanged.connect(update)
         update()
