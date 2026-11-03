@@ -200,6 +200,11 @@ void MissionGeoCheck::update()
                 this,
                 &MissionGeoCheck::schedule,
                 Qt::UniqueConnection);
+        connect(wp,
+                &MissionItem::coordinateChanged,
+                this,
+                &MissionGeoCheck::schedule,
+                Qt::UniqueConnection);
 
         const auto p = wp->geoPath().path();
         for (const auto &z : zones) {
