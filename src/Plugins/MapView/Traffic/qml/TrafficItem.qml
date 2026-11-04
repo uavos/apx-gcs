@@ -26,12 +26,17 @@ import QtPositioning
 import Apx.Common
 
 // ADS-B aircraft: icon by category rotated by track,
-// info panel on hover, pinned by a click (traffic.selected)
+// info panel on hover, pinned by a click (traffic.selected, the aircraft is highlighted
+// in the list and on the radar as well); the white outline (as on hover, no panel) when
+// highlighted from the list or the radar (traffic.highlighted)
 MapQuickItem {
     id: item
 
+    visible: !model.own // our own aircraft (at the unit) is not drawn
+
     readonly property var traffic: apx.tools.traffic
     readonly property bool pinned: traffic.selected === model.hex
+    readonly property bool highlighted: traffic.highlighted === model.hex
     readonly property bool hovered: hoverHandler.hovered
     readonly property bool showInfo: hovered || pinned
 
@@ -64,14 +69,19 @@ MapQuickItem {
             color: levelColor
             rotation: model.track - ui.map.bearing // track is true north, the map can be rotated
             style: Text.Outline
-            styleColor: showInfo ? "#fff" : "#000"
+            styleColor: (showInfo || highlighted) ? "#fff" : "#000"
         }
 
         HoverHandler {
             id: hoverHandler
         }
         TapHandler {
-            onTapped: traffic.selected = (pinned || !model.hex) ? "" : model.hex
+            // pin (and highlight everywhere), click again: unpin and drop the highlight
+            onTapped: {
+                var hex = (pinned || !model.hex) ? "" : model.hex
+                traffic.selected = hex
+                traffic.highlighted = hex
+            }
         }
 
         // info panel
@@ -89,7 +99,10 @@ MapQuickItem {
 
             // a click on the pinned panel unpins it
             TapHandler {
-                onTapped: traffic.selected = ""
+                onTapped: {
+                    traffic.selected = ""
+                    traffic.highlighted = ""
+                }
             }
 
             Column {
@@ -119,19 +132,41 @@ MapQuickItem {
                     color: "#ccc"
                     font: apx.font_narrow(fs)
                 }
-                Text {
-                    text: model.onGround ? "GND"
-                                         : ("ALT " + model.altSrc + " " + altText(model.altM)
-                                            + (model.vsMs > 0.5 ? "  \u2191" + model.vsMs.toFixed(1) + " m/s"
-                                              : model.vsMs < -0.5 ? "  \u2193" + (-model.vsMs).toFixed(1) + " m/s"
-                                              : ""))
-                    color: "#fff"
-                    font: apx.font_narrow(fs)
+                // the altitude and the vertical speed with the climb or descent icon
+                // (the narrow font has no arrow glyphs)
+                Row {
+                    spacing: 0
+                    Text {
+                        text: model.onGround ? "GND" : ("ALT " + model.altSrc + " " + altText(model.altM))
+                        color: "#fff"
+                        font: apx.font_narrow(fs)
+                    }
+                    MaterialIcon {
+                        visible: !model.onGround && Math.abs(model.vsMs) > 0.5
+                        anchors.verticalCenter: parent.verticalCenter
+                        name: model.vsMs > 0 ? "arrow-up-bold" : "arrow-down-bold"
+                        size: fs*0.9
+                        color: "#fff"
+                    }
+                    Text {
+                        visible: !model.onGround && Math.abs(model.vsMs) > 0.5
+                        text: Math.abs(model.vsMs).toFixed(1) + " m/s"
+                        color: "#fff"
+                        font: apx.font_narrow(fs)
+                    }
                 }
                 Text {
                     visible: !model.onGround && !isNaN(model.altBaroM) && !isNaN(model.altGeomM)
                     text: "BARO " + altText(model.altBaroM) + "  GNSS " + altText(model.altGeomM)
                     color: "#aaa"
+                    font: apx.font_narrow(fs)
+                }
+                // the altitude above the unit and the time to the proximity zone
+                Text {
+                    visible: !isNaN(model.dAltM) || isFinite(model.tauS)
+                    text: (isNaN(model.dAltM) ? "" : "\u0394" + (model.dAltM >= 0 ? "+" : "-") + Math.round(Math.abs(model.dAltM)) + " m  ")
+                          + (isFinite(model.tauS) ? "\u03C4 " + Math.round(model.tauS) + " s" : "")
+                    color: levelColor
                     font: apx.font_narrow(fs)
                 }
                 Text {

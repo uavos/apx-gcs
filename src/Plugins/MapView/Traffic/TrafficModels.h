@@ -37,9 +37,12 @@ struct Aircraft
     double altGeomM{qQNaN()}; // GNSS altitude (WGS84), m
     double gsKt{0};           // ground speed, kt
     double track{0};          // deg
+    bool trackValid{false};   // the track (or a heading) was reported
     double vsMs{0};           // vertical speed, m/s
     double distKm{0};         // from origin
     double brg{0};            // from origin, deg
+    double dAltM{qQNaN()};    // altitude above the unit (aircraft - unit), m, NaN when unknown
+    double tauS{qInf()};      // time to the proximity zone, s: 0 inside now, inf never
     int level{0};             // 0 other, 1 proximity, 2 alert
     bool own{false};          // our own aircraft (Traffic::f_own), grey, no alerts
     qint64 seenMs{0};         // last reply that contained the aircraft
@@ -69,11 +72,15 @@ public:
         AltGeomRole, // m, NaN when unknown
         GsRole,      // kt
         TrackRole,
+        TrackValidRole,
         VsRole, // m/s
         DistRole,
         BrgRole,
+        DAltRole,    // m, NaN when unknown
+        TauRole,     // s, Infinity when never
         LevelRole,
         OwnRole,
+        SortKeyRole, // time to the proximity zone, then distance
     };
 
     explicit AircraftModel(QObject *parent = nullptr);

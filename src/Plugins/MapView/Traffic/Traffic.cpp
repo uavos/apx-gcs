@@ -24,6 +24,10 @@
 #include <App/App.h>
 #include <Fleet/Fleet.h>
 #include <Fleet/Unit.h>
+#include <Mandala/Mandala.h>
+#include <Mandala/MandalaFact.h>
+
+#include <cmath>
 
 static constexpr int adsb_period_ms = 1000;
 static constexpr int adsb_timeout_ms = 5000;      // inactivity, also the offline detection time
@@ -34,8 +38,26 @@ static constexpr double adsb_seen_pos_max = 60; // skip aircraft with an older p
 static constexpr int atc_period_ms = 10 * 60 * 1000;
 static constexpr int atc_retry_ms = 30 * 1000; // after a failed download (HTTP errors)
 static constexpr int atc_timeout_ms = 15000;   // inactivity, a live download keeps resetting it
-static constexpr double alert_dist_km = 2;
-static constexpr double prox_dist_km = 4;
+// alert zones around the unit (TCAS-like): an aircraft is a threat when it is inside the
+// zone (within the radius and the altitude band) or will enter it within the time,
+// by the relative position and velocity (ground speed and track, vertical speed)
+struct AlertZone
+{
+    double tauS;    // s
+    double radiusM; // m
+    double dAltM;   // m, the altitude band above and below the unit
+};
+static constexpr AlertZone alert_zone{30, 2000, 300}; // red
+static constexpr AlertZone prox_zone{60, 4000, 600};  // yellow
+static constexpr double kt_to_ms = 0.514444;
+// our own aircraft as seen by ADS-B: within this distance of the unit on every axis
+static constexpr double own_dist_m = 25;
+// the cone of the possible maneuvers of an aircraft (the track and the vertical speed may
+// change), narrowing with its speed: the half angle is cone_angle_k / speed (deg, m/s)
+// and the vertical speed change is cone_vs_k / speed (m/s), both bounded
+static constexpr double cone_angle_k = 1500, cone_angle_min = 10, cone_angle_max = 60;
+static constexpr double cone_vs_k = 150, cone_vs_min = 1, cone_vs_max = 5;
+static constexpr int cone_steps = 3; // tracks sampled on each side of the reported one
 
 // readsb style traffic around a point, no key
 static const char *adsb_url = "https://opendata.adsb.fi/api/v2/lat/%1/lon/%2/dist/%3";
@@ -127,23 +149,12 @@ Traffic::Traffic(Fact *parent)
     connect(f_country, &Fact::valueChanged, this, &Traffic::updateCountryDescr);
     updateCountryDescr();
 
-    // our own aircraft as seen by ADS-B: shown in grey, excluded from the alerts
-    f_own = new Fact(this,
-                     "own",
-                     tr("Own aircraft"),
-                     tr("ICAO hex or callsign of our aircraft (ADS-B), empty is off"),
-                     Text | PersistentValue,
-                     "identifier");
-    f_own->setDefaultValue("");
-    connect(f_own, &Fact::valueChanged, this, &Traffic::updateOwnDescr);
-    updateOwnDescr();
-
     _aircraft = new AircraftModel(this);
     _aircraftSorted = new QSortFilterProxyModel(this);
     _aircraftSorted->setSourceModel(_aircraft);
-    _aircraftSorted->setSortRole(AircraftModel::DistRole); // nearest first (the alerts are the nearest)
+    _aircraftSorted->setSortRole(AircraftModel::SortKeyRole); // threats first, then nearest
     _aircraftSorted->setDynamicSortFilter(true);
-    _aircraftSorted->sort(0);
+    _aircraftSorted->sort(-1); // sorted while the unit has a position only (see onAdsbReply)
     _airspaces = new AirspaceModel(this);
 
     _timer.setInterval(adsb_period_ms);
@@ -173,8 +184,9 @@ Traffic::Traffic(Fact *parent)
         onReachabilityChanged();
     }
 
-    loadQml("qrc:/" PLUGIN_NAME "/TrafficPlugin.qml");   // traffic list, instruments panel
-    loadQml("qrc:/" PLUGIN_NAME "/TrafficMapLayer.qml"); // aircraft and airspaces on the map
+    loadQml("qrc:/" PLUGIN_NAME "/TrafficPlugin.qml");      // traffic list, instruments panel
+    loadQml("qrc:/" PLUGIN_NAME "/TrafficMapLayer.qml");    // aircraft and airspaces on the map
+    loadQml("qrc:/" PLUGIN_NAME "/TrafficRadarPlugin.qml"); // radar widget, main layout
 }
 
 // the country item description when nothing is going on
@@ -196,21 +208,6 @@ void Traffic::updateCountryDescr()
             return;
         }
     }
-}
-
-QString Traffic::ownId() const
-{
-    return f_own->value().toString().trimmed();
-}
-
-void Traffic::updateOwnDescr()
-{
-    QString id = ownId();
-    if (id.isEmpty()) {
-        f_own->setDescr(tr("Own aircraft is not set"));
-        return;
-    }
-    f_own->setDescr(tr("Own aircraft: %1").arg(id.toUpper()));
 }
 
 // short status for the tools menu: "ADS-B: HTTP 429" or the error text
@@ -316,7 +313,7 @@ void Traffic::onEnabledChanged()
     _timer.stop();
     abortReply(_adsbReply);
     _aircraft->clear();
-    setSelected({});
+    dropGone();
     clearAirspaces();
     _adsbStatus.clear();
     _reqDown = false;
@@ -351,6 +348,119 @@ QGeoCoordinate Traffic::origin() const
     return _mapCenter;
 }
 
+double Traffic::alertRadiusM()
+{
+    return alert_zone.radiusM;
+}
+double Traffic::proxRadiusM()
+{
+    return prox_zone.radiusM;
+}
+QString Traffic::unitAltSrc() const
+{
+    if (qIsNaN(_unit.altM))
+        return {};
+    return _unit.baro ? "PA" : "HMSL";
+}
+
+// the unit altitude is the pressure altitude from the static pressure (sns.baro.mbar) when
+// the unit reports it, like the ADS-B baro altitude of the aircraft, HMSL (GNSS) otherwise
+Traffic::UnitState Traffic::unitState() const
+{
+    UnitState s;
+    auto unit = Fleet::instance()->current();
+    if (!unit)
+        return s;
+    auto c = unit->coordinate();
+    if (c.isValid() && (c.latitude() != 0 || c.longitude() != 0)) {
+        s.pos = c;
+        s.valid = true;
+    }
+    auto m = unit->f_mandala;
+    if (!m)
+        return s;
+    // the values as they are (the replay and the simulator do not mark them as received)
+    auto value = [m](mandala::uid_t uid) {
+        auto f = m->fact(uid);
+        return f ? f->value().toDouble() : 0.0;
+    };
+    double mbar = value(mandala::sns::nav::baro::mbar::uid);
+    if (mbar > 0) {
+        s.altM = 44330.8 * (1 - std::pow(mbar / 1013.25, 0.190284));
+        s.baro = true;
+    } else if (s.valid) {
+        s.altM = value(mandala::est::nav::pos::hmsl::uid); // with the position only
+    }
+    s.spdMs = value(mandala::est::nav::pos::speed::uid);
+    s.crsDeg = value(mandala::est::nav::pos::bearing::uid);
+    s.vsMs = value(mandala::est::nav::pos::vspeed::uid);
+    return s;
+}
+
+// seconds until the aircraft is inside the zone, assuming straight line motion:
+// r is its position relative to the unit (east, north, up: m), v its velocity relative
+// to the unit (m/s). 0 when it is inside now, inf when it never is (passes by, diverges).
+// An unknown altitude (dz NaN) counts as inside the altitude band
+static double threatTime(double rx, double ry, double dz, double vx, double vy, double vz, const AlertZone &z)
+{
+    const double inf = qInf();
+    // the time window inside the circle: |r + v t| <= R
+    double v2 = vx * vx + vy * vy;
+    double b = rx * vx + ry * vy;
+    double c = rx * rx + ry * ry - z.radiusM * z.radiusM;
+    double tIn = 0, tOut = inf;
+    if (v2 < 1e-6) {
+        if (c > 0)
+            return inf; // not moving relative to the unit, outside
+    } else {
+        double disc = b * b - v2 * c;
+        if (disc < 0)
+            return inf; // passes by
+        double s = std::sqrt(disc);
+        tOut = (-b + s) / v2;
+        if (tOut < 0)
+            return inf; // was inside in the past, diverging
+        tIn = qMax(0.0, (-b - s) / v2);
+    }
+    // the time window inside the altitude band: |dz + vz t| <= H
+    double zIn = 0, zOut = inf;
+    if (!qIsNaN(dz)) {
+        if (qAbs(vz) < 1e-3) {
+            if (qAbs(dz) > z.dAltM)
+                return inf; // level, outside the band
+        } else {
+            double t1 = (-z.dAltM - dz) / vz, t2 = (z.dAltM - dz) / vz;
+            zOut = qMax(t1, t2);
+            if (zOut < 0)
+                return inf; // left the band in the past
+            zIn = qMax(0.0, qMin(t1, t2));
+        }
+    }
+    double t = qMax(tIn, zIn);
+    if (t > tOut || t > zOut)
+        return inf; // the windows do not overlap: out of the band while inside the circle
+    return t;
+}
+
+// the threat time over the cone of the possible maneuvers of the aircraft (speed va m/s,
+// track and vertical speed as reported) relative to the unit velocity: the worst case
+static double threatTimeCone(double rx, double ry, double dz, double va, double trackDeg,
+                             double vsA, double uvx, double uvy, double uvz, const AlertZone &z)
+{
+    double v = qMax(va, 1.0);
+    double halfAngle = qBound(cone_angle_min, cone_angle_k / v, cone_angle_max);
+    double dvs = qBound(cone_vs_min, cone_vs_k / v, cone_vs_max);
+    double tau = qInf();
+    for (int i = -cone_steps; i <= cone_steps; ++i) {
+        double t = qDegreesToRadians(trackDeg + halfAngle * i / cone_steps);
+        double vx = va * std::sin(t) - uvx;
+        double vy = va * std::cos(t) - uvy;
+        for (int k = -1; k <= 1; ++k)
+            tau = qMin(tau, threatTime(rx, ry, dz, vx, vy, vsA + dvs * k - uvz, z));
+    }
+    return tau;
+}
+
 void Traffic::onTimer()
 {
     if (!f_enabled->value().toBool() || !origin().isValid())
@@ -359,8 +469,7 @@ void Traffic::onTimer()
 
     // no replies for a while (errors, rate limit backoff): the positions are stale
     _aircraft->dropStale(now - adsb_stale_ms);
-    if (!_selected.isEmpty() && !_aircraft->contains(_selected))
-        setSelected({});
+    dropGone();
 
     if (now >= _adsbHoldMs)
         requestAdsb();
@@ -431,9 +540,12 @@ void Traffic::onAdsbReply()
     }
     auto ac = acv.toArray(); // empty is no traffic around
 
-    auto o = origin();
+    auto unit = unitState();
+    auto o = unit.valid ? unit.pos : _mapCenter;
     auto now = QDateTime::currentMSecsSinceEpoch();
-    auto own = ownId();
+    // the unit velocity (east, north), m/s
+    double uvx = unit.spdMs * std::sin(qDegreesToRadians(unit.crsDeg));
+    double uvy = unit.spdMs * std::cos(qDegreesToRadians(unit.crsDeg));
 
     QList<Aircraft> list;
     for (const auto &v : ac) {
@@ -468,6 +580,7 @@ void Traffic::onAdsbReply()
             auto t = j.value(QLatin1String(key));
             if (t.isDouble()) {
                 a.track = t.toDouble();
+                a.trackValid = true;
                 break;
             }
         }
@@ -478,22 +591,48 @@ void Traffic::onAdsbReply()
         a.distKm = o.distanceTo(a.coordinate) / 1000.0;
         a.brg = o.azimuthTo(a.coordinate);
         a.seenMs = now;
-        // our own aircraft by the ICAO hex or the callsign: grey, no alerts
-        a.own = !own.isEmpty()
-                && (QString::compare(a.hex, own, Qt::CaseInsensitive) == 0
-                    || QString::compare(a.callsign, own, Qt::CaseInsensitive) == 0);
-        // alert levels are by the distance from the origin (the unit, or the map center)
-        if (a.own)
+        // the altitude of the same kind as the unit altitude: baro with the pressure
+        // altitude, GNSS with HMSL (the other one when the aircraft has no such)
+        double alt = unit.baro ? (qIsNaN(a.altBaroM) ? a.altGeomM : a.altBaroM)
+                               : (qIsNaN(a.altGeomM) ? a.altBaroM : a.altGeomM);
+        a.dAltM = alt - unit.altM; // NaN when either is unknown
+        // the alert is by the time to the zone around the unit (or the map center, then
+        // the unit is still): the relative position and velocity (east, north, up)
+        double rx = a.distKm * 1000 * std::sin(qDegreesToRadians(a.brg));
+        double ry = a.distKm * 1000 * std::cos(qDegreesToRadians(a.brg));
+        double va = a.gsKt * kt_to_ms;
+        double vx = va * std::sin(qDegreesToRadians(a.track)) - uvx;
+        double vy = va * std::cos(qDegreesToRadians(a.track)) - uvy;
+        // our own aircraft as seen by ADS-B: at the unit on every axis (an unknown altitude
+        // counts as the same), not drawn on the map, grey in the list, no alerts
+        a.own = unit.valid && qAbs(rx) < own_dist_m && qAbs(ry) < own_dist_m
+                && (qIsNaN(a.dAltM) || qAbs(a.dAltM) < own_dist_m);
+        // the alerts are relative to the unit only: none with the map center as the origin
+        if (!unit.valid || a.own || a.onGround) {
+            a.tauS = qInf();
             a.level = 0;
-        else if (a.distKm < alert_dist_km)
-            a.level = 2;
-        else if (a.distKm < prox_dist_km)
-            a.level = 1;
+        } else {
+            // the worst case over the cone of the possible maneuvers
+            a.tauS = threatTimeCone(rx, ry, a.dAltM, va, a.track, a.vsMs, uvx, uvy, unit.vsMs, prox_zone);
+            if (threatTimeCone(rx, ry, a.dAltM, va, a.track, a.vsMs, uvx, uvy, unit.vsMs, alert_zone)
+                <= alert_zone.tauS)
+                a.level = 2;
+            else if (a.tauS <= prox_zone.tauS)
+                a.level = 1;
+            else
+                a.level = 0;
+        }
         list.append(a);
     }
+    bool unitChanged = unit.valid != _unit.valid || unit.baro != _unit.baro
+                       || !(unit.altM == _unit.altM || (qIsNaN(unit.altM) && qIsNaN(_unit.altM)));
+    if (unit.valid != _unit.valid)
+        _aircraftSorted->sort(unit.valid ? 0 : -1); // no unit: the reply order
+    _unit = unit;
+    if (unitChanged)
+        emit unitStateChanged();
     _aircraft->update(list);
-    if (!_selected.isEmpty() && !_aircraft->contains(_selected))
-        setSelected({}); // pinned aircraft is gone
+    dropGone();
     _adsbStatus.clear();
     updateStatus();
 }
@@ -504,6 +643,22 @@ void Traffic::setSelected(const QString &hex)
         return;
     _selected = hex;
     emit selectedChanged();
+}
+
+void Traffic::setHighlighted(const QString &hex)
+{
+    if (_highlighted == hex)
+        return;
+    _highlighted = hex;
+    emit highlightedChanged();
+}
+
+void Traffic::dropGone()
+{
+    if (!_selected.isEmpty() && !_aircraft->contains(_selected))
+        setSelected({});
+    if (!_highlighted.isEmpty() && !_aircraft->contains(_highlighted))
+        setHighlighted({});
 }
 
 void Traffic::requestAtc()

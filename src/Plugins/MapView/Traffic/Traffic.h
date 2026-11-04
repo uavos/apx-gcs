@@ -35,7 +35,7 @@ class Traffic : public Fact
     Q_OBJECT
 
     Q_PROPERTY(QAbstractListModel *aircraft READ aircraft CONSTANT)
-    Q_PROPERTY(QAbstractItemModel *aircraftSorted READ aircraftSorted CONSTANT) // nearest first
+    Q_PROPERTY(QAbstractItemModel *aircraftSorted READ aircraftSorted CONSTANT) // threats first
     Q_PROPERTY(QAbstractListModel *airspaces READ airspaces CONSTANT)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     // no internet: the network is unreachable or the requests fail at the network layer
@@ -43,6 +43,18 @@ class Traffic : public Fact
     Q_PROPERTY(QStringList countries READ countries CONSTANT)
     // hex of the aircraft with the info panel pinned on the map (click), empty is none
     Q_PROPERTY(QString selected READ selected WRITE setSelected NOTIFY selectedChanged)
+    // hex of the aircraft highlighted by a click in the list or on the radar (a white frame
+    // on the map, the radar and the list, no info panel), empty is none
+    Q_PROPERTY(QString highlighted READ highlighted WRITE setHighlighted NOTIFY highlightedChanged)
+    // the unit state the alerts were computed with (updated with every reply):
+    // the origin is the unit (not the map center), its altitude in m (NaN when unknown)
+    // and the altitude kind: "PA" pressure altitude from sns.baro.mbar, "HMSL" from GNSS, "" none
+    Q_PROPERTY(bool unitOrigin READ unitOrigin NOTIFY unitStateChanged)
+    Q_PROPERTY(double unitAltM READ unitAltM NOTIFY unitStateChanged)
+    Q_PROPERTY(QString unitAltSrc READ unitAltSrc NOTIFY unitStateChanged)
+    // alert zones radius around the unit, m (red and yellow)
+    Q_PROPERTY(double alertRadiusM READ alertRadiusM CONSTANT)
+    Q_PROPERTY(double proxRadiusM READ proxRadiusM CONSTANT)
 
 public:
     explicit Traffic(Fact *parent = nullptr);
@@ -50,7 +62,6 @@ public:
     Fact *f_enabled;
     Fact *f_radius;
     Fact *f_country; // airspaces country code, empty is off
-    Fact *f_own;     // ICAO hex or callsign of our aircraft (ADS-B), empty is off
 
     QAbstractListModel *aircraft() const { return _aircraft; }
     QAbstractItemModel *aircraftSorted() const { return _aircraftSorted; }
@@ -60,6 +71,13 @@ public:
     QStringList countries() const; // airspaces exports available on OpenAIP, "-" is off
     QString selected() const { return _selected; }
     void setSelected(const QString &hex);
+    QString highlighted() const { return _highlighted; }
+    void setHighlighted(const QString &hex);
+    bool unitOrigin() const { return _unit.valid; }
+    double unitAltM() const { return _unit.altM; }
+    QString unitAltSrc() const;
+    static double alertRadiusM();
+    static double proxRadiusM();
 
     // map view center, used when the current unit has no position
     Q_INVOKABLE void setMapCenter(const QGeoCoordinate &c) { _mapCenter = c; }
@@ -94,11 +112,23 @@ private:
     void clearAirspaces();
     void updateCountryDescr();
 
-    // ICAO hex or callsign of our aircraft (trimmed), empty when not set
-    QString ownId() const;
-    void updateOwnDescr();
-
     QString _selected;
+    QString _highlighted;
+    void dropGone(); // clear the selection and the highlight of an aircraft that is gone
+
+    // the unit position, altitude and velocity the alerts are relative to
+    struct UnitState
+    {
+        bool valid{false}; // the unit has a position (otherwise the map center is the origin)
+        QGeoCoordinate pos;
+        double altM{qQNaN()}; // NaN when unknown
+        bool baro{false};     // altM is the pressure altitude (compare with the ADS-B baro)
+        double spdMs{0};      // ground speed, m/s
+        double crsDeg{0};     // course, deg
+        double vsMs{0};       // vertical speed, m/s
+    };
+    UnitState _unit;
+    UnitState unitState() const;
 
     QString _status;
     QString _adsbStatus;
@@ -134,4 +164,6 @@ signals:
     void statusChanged();
     void offlineChanged();
     void selectedChanged();
+    void highlightedChanged();
+    void unitStateChanged();
 };

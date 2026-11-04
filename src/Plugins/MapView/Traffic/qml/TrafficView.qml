@@ -31,13 +31,12 @@ Rectangle {
     property var traffic: apx.tools.traffic
     readonly property real fs: Style.fontSize*0.8
 
-    // columns: icon, callsign, ICAO hex, GNSS alt, BARO alt, distance, bearing
+    // columns: icon, GNSS alt, BARO alt, distance, bearing, tau
     readonly property real wIcon: fs*1.4
-    readonly property real wCallsign: fs*5.5
-    readonly property real wHex: fs*4
     readonly property real wAlt: fs*4.5
     readonly property real wDist: fs*4.5
     readonly property real wBrg: fs*3
+    readonly property real wTau: fs*3
 
     function altText(v)
     {
@@ -85,6 +84,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.margins: Style.spacing
         text: qsTr("Traffic") + "  " + list.count
+              + (traffic.unitAltSrc ? "  " + traffic.unitAltSrc + " " + Math.round(traffic.unitAltM) + " m" : "")
               + (traffic.status ? "  " + traffic.status : "")
         color: traffic.status ? "#FF4C00" : "#fff"
         font: apx.font_narrow(fs, true)
@@ -101,12 +101,11 @@ Rectangle {
         anchors.rightMargin: Style.spacing
         spacing: fs*0.5
         Item { width: wIcon; height: 1 }
-        Text { width: wCallsign; text: qsTr("Callsign"); color: "#888"; font: apx.font_narrow(fs) }
-        Text { width: wHex; text: qsTr("Hex"); color: "#888"; font: apx.font_narrow(fs) }
         Text { width: wAlt; text: "GNSS"; color: "#888"; font: apx.font_narrow(fs) }
         Text { width: wAlt; text: "BARO"; color: "#888"; font: apx.font_narrow(fs) }
         Text { width: wDist; text: qsTr("Dist"); color: "#888"; font: apx.font_narrow(fs) }
         Text { width: wBrg; text: qsTr("Brg"); color: "#888"; font: apx.font_narrow(fs) }
+        Text { width: wTau; text: qsTr("Tau"); color: "#888"; font: apx.font_narrow(fs) }
     }
 
     ListView {
@@ -133,10 +132,12 @@ Rectangle {
         delegate: Rectangle {
             width: list.width - Style.buttonSize/4
             height: fs*1.4
-            // our own aircraft (traffic.own) is a grey row, the others are colored by the alert level
-            color: traffic.selected===model.hex ? "#40FFFFFF"
-                 : model.own ? "#30808080"
+            // our own aircraft (at the unit, model.own) is a grey row, the others are colored by the alert level
+            color: model.own ? "#30808080"
                  : model.level===2 ? "#40FF4C00" : "transparent"
+            // highlighted: a thin white frame
+            border.color: "#fff"
+            border.width: traffic.highlighted===model.hex ? 1 : 0
             radius: 2
 
             readonly property color c: model.own ? "#A0A0A0"
@@ -160,24 +161,22 @@ Rectangle {
                         rotation: model.track
                     }
                 }
-                Text { width: wCallsign; text: model.callsign || "---"; color: c; font: apx.font_narrow(fs, true); elide: Text.ElideRight; anchors.verticalCenter: parent.verticalCenter }
-                Text { width: wHex; text: model.hex.toUpperCase(); color: model.own ? c : "#aaa"; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
                 Text { width: wAlt; text: altText(model.altGeomM); color: c; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
                 Text { width: wAlt; text: model.onGround ? "GND" : altText(model.altBaroM); color: c; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
                 Text { width: wDist; text: model.distKm.toFixed(1)+" km"; color: "#aaa"; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
                 Text { width: wBrg; text: ("00"+Math.round(model.brg)).slice(-3)+"°"; color: "#aaa"; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
+                // time to the proximity zone around the unit, s (the sort order)
+                Text { width: wTau; text: isFinite(model.tauS) ? Math.round(model.tauS)+" s" : "---"; color: model.level>0 ? c : "#aaa"; font: apx.font_narrow(fs); anchors.verticalCenter: parent.verticalCenter }
             }
 
-            // click: center the map on the aircraft and pin its info panel,
-            // click again: unpin
+            // click: highlight the aircraft (on the map, the radar and here, click again to
+            // drop) and center the map on it; the info panel is on hover on the map, a panel
+            // pinned on the map is unpinned
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if(traffic.selected===model.hex){
-                        traffic.selected = ""
-                        return
-                    }
-                    traffic.selected = model.hex
+                    traffic.selected = ""
+                    traffic.highlighted = (traffic.highlighted===model.hex || model.own) ? "" : model.hex
                     ui.map.showCoordinate(model.coordinate)
                 }
             }

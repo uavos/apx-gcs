@@ -48,11 +48,15 @@ QHash<int, QByteArray> AircraftModel::roleNames() const
         {AltGeomRole, "altGeomM"},
         {GsRole, "gsKt"},
         {TrackRole, "track"},
+        {TrackValidRole, "trackValid"},
         {VsRole, "vsMs"},
         {DistRole, "distKm"},
         {BrgRole, "brg"},
+        {DAltRole, "dAltM"},
+        {TauRole, "tauS"},
         {LevelRole, "level"},
         {OwnRole, "own"},
+        {SortKeyRole, "sortKey"},
     };
 }
 
@@ -125,16 +129,25 @@ QVariant AircraftModel::data(const QModelIndex &index, int role) const
         return a.gsKt;
     case TrackRole:
         return a.track;
+    case TrackValidRole:
+        return a.trackValid;
     case VsRole:
         return a.vsMs;
     case DistRole:
         return a.distKm;
     case BrgRole:
         return a.brg;
+    case DAltRole:
+        return a.dAltM;
+    case TauRole:
+        return a.tauS;
     case LevelRole:
         return a.level;
     case OwnRole:
         return a.own;
+    case SortKeyRole:
+        // the threats by the time to the zone (distance breaks the ties), the rest by distance
+        return qIsInf(a.tauS) ? 1e6 + a.distKm : a.tauS + a.distKm * 1e-4;
     }
     return {};
 }
