@@ -615,9 +615,10 @@ void Traffic::onAdsbReply()
                 break;
             }
         }
-        auto rate = j.value("geom_rate");
+        // the vertical speed as reported (ft/min): baro first, the same source as the altitude
+        auto rate = j.value("baro_rate");
         if (!rate.isDouble())
-            rate = j.value("baro_rate");
+            rate = j.value("geom_rate");
         a.vsMs = rate.toDouble() * 0.3048 / 60.0;
         a.distKm = o.distanceTo(a.coordinate) / 1000.0;
         a.brg = o.azimuthTo(a.coordinate);
