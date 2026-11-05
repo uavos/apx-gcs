@@ -37,7 +37,7 @@ static constexpr int adsb_stale_ms = 30000;     // drop aircraft not updated for
 static constexpr double adsb_seen_pos_max = 60; // skip aircraft with an older position, s
 static constexpr int atc_period_ms = 10 * 60 * 1000;
 static constexpr int atc_retry_ms = 30 * 1000; // after a failed download (HTTP errors)
-static constexpr int atc_timeout_ms = 15000;   // inactivity, a live download keeps resetting it
+static constexpr int atc_timeout_ms = 5000;    // inactivity, a live download keeps resetting it
 // alert zones around the unit (TCAS-like): an aircraft is a threat when it is inside the
 // zone (within the radius and the altitude band) or will enter it within the time,
 // by the relative position and velocity (ground speed and track, vertical speed)
@@ -64,11 +64,11 @@ static const char *adsb_url = "https://opendata.adsb.fi/api/v2/lat/%1/lon/%2/dis
 // OpenAIP airspaces export of a country
 static const char *atc_url = "https://storage.openaip.net/openaip-system-exports/%1_asp.geojson";
 
-// country codes with an airspaces export on OpenAIP (checked 2026-10), "-" is off
+// country codes with an airspaces export on OpenAIP (checked 2026-10), "Off" is off
 QStringList Traffic::countries() const
 {
     static const QStringList list{
-        "-",
+        "Off",
         "Afghanistan (AF)", "Albania (AL)", "Argentina (AR)", "Armenia (AM)",
         "Australia (AU)", "Austria (AT)", "Azerbaijan (AZ)", "Belarus (BY)",
         "Belgium (BE)", "Bosnia and Herzegovina (BA)", "Brazil (BR)",
@@ -96,7 +96,7 @@ QStringList Traffic::countries() const
 static QString countryCode(Fact *f)
 {
     QString value = f->value().toString().trimmed();
-    if (value == "-")
+    if (value.isEmpty() || value == "-" || value.compare("off", Qt::CaseInsensitive) == 0)
         return {};
     QString cc = value;
     int pos = value.lastIndexOf('(');
@@ -144,7 +144,7 @@ Traffic::Traffic(Fact *parent)
                          Text | PersistentValue,
                          "map-marker-radius");
     f_country->setEnumStrings(countries());
-    f_country->setDefaultValue("-");
+    f_country->setDefaultValue("Off");
 
     connect(f_country, &Fact::valueChanged, this, &Traffic::updateCountryDescr);
     updateCountryDescr();
@@ -194,7 +194,12 @@ void Traffic::updateCountryDescr()
 {
     QString value = f_country->value().toString().trimmed();
     QString cc = countryCode(f_country);
-    if (value == "-" || value.isEmpty()) {
+    if (value.isEmpty() || value == "-" || value.compare("off", Qt::CaseInsensitive) == 0) {
+        // an empty (or legacy "-") input is "Off": show it as such, called again by valueChanged
+        if (value != "Off") {
+            f_country->setValue("Off");
+            return;
+        }
         f_country->setDescr(tr("Airspaces are off"));
         return;
     }

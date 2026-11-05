@@ -68,7 +68,7 @@ public:
     QAbstractListModel *airspaces() const { return _airspaces; }
     QString status() const { return _status; }
     bool offline() const { return _offline; }
-    QStringList countries() const; // airspaces exports available on OpenAIP, "-" is off
+    QStringList countries() const; // airspaces exports available on OpenAIP, "Off" is off
     QString selected() const { return _selected; }
     void setSelected(const QString &hex);
     QString highlighted() const { return _highlighted; }
