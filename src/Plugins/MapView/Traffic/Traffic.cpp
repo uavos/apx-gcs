@@ -92,6 +92,22 @@ QStringList Traffic::countries() const
     return list;
 }
 
+QStringList Traffic::cachedCountries() const
+{
+    QStringList list;
+    for (const auto &entry : countries()) {
+        int pos = entry.lastIndexOf('(');
+        if (pos < 0 || !entry.endsWith(')')) {
+            list.append(entry); // "Off"
+            continue;
+        }
+        auto cc = entry.mid(pos + 1, entry.size() - pos - 2).toLower();
+        if (QFileInfo(cacheFile(cc)).size() > 0)
+            list.append(entry);
+    }
+    return list;
+}
+
 // two letter country code of the airspaces export, empty when off
 static QString countryCode(Fact *f)
 {
@@ -312,9 +328,10 @@ void Traffic::onEnabledChanged()
 {
     bool v = f_enabled->value().toBool();
     setActive(v);
-    // a blocked airspaces download is retried on restart only
+    // a blocked airspaces download is retried on restart only: the full list is back
+    if (_atcBlocked)
+        f_country->setEnumStrings(countries());
     _atcBlocked = false;
-    f_country->setEnabled(true);
     if (v) {
         _atcRetryAtMs = 0;
         _adsbHoldMs = 0;
@@ -490,7 +507,7 @@ void Traffic::onTimer()
 
     // airspaces: the country file once (cache or download), the visible part on every move
     auto cc = countryCode(f_country);
-    if (cc.isEmpty() || _atcBlocked)
+    if (cc.isEmpty())
         return;
     if (cc != _atcCountry || (_atcRetryAtMs && now >= _atcRetryAtMs))
         requestAtc();
@@ -697,6 +714,11 @@ void Traffic::requestAtc()
         _atcWatcher.setFuture(QtConcurrent::run(loadAirspaces, path, QByteArray()));
         return;
     }
+    if (_atcBlocked) {
+        // offline: the cached countries only, no download until the plugin restarts
+        f_country->setDescr(tr("Offline, not in the cache"));
+        return;
+    }
 
     QNetworkRequest req{QUrl(QString(atc_url).arg(cc))};
     req.setHeader(QNetworkRequest::UserAgentHeader, "apx-gcs");
@@ -820,11 +842,11 @@ void Traffic::onAtcReply()
             bool down = isNetworkDown(reply);
             setRequestDown(down);
             if (down) {
-                // one try without a connection: the country is locked until the plugin restarts
+                // one try without a connection: the cached countries only until the plugin restarts
                 _atcBlocked = true;
-                f_country->setEnabled(false);
+                f_country->setEnumStrings(cachedCountries());
                 _atcStatus = tr("ATC: offline");
-                f_country->setDescr(tr("Offline, restart the plugin to retry"));
+                f_country->setDescr(tr("Offline, cached countries only"));
             } else {
                 _atcStatus = replyError("ATC", reply);
                 f_country->setDescr(_atcStatus);

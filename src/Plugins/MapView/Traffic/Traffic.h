@@ -71,6 +71,7 @@ public:
     QString status() const { return _status; }
     bool offline() const { return _offline; }
     QStringList countries() const; // airspaces exports available on OpenAIP, "Off" is off
+    QStringList cachedCountries() const; // the part of countries() with a file in the cache
     QString selected() const { return _selected; }
     void setSelected(const QString &hex);
     QString highlighted() const { return _highlighted; }
@@ -107,8 +108,8 @@ private:
     QGeoCoordinate _atcFilterOrigin;
     double _atcFilterDist{0};
     QList<int> _atcShown;  // indexes of _atcAll in the model
-    // the download failed without a connection: the country is locked, no retries
-    // until the plugin is switched off and on
+    // the download failed without a connection: only the cached countries are offered,
+    // no downloads until the plugin is switched off and on
     bool _atcBlocked{false};
     // the country files are kept in the storage next to the maps cache (as TileLoader does):
     // Storage/airspaces/openaip/<cc>.geojson
