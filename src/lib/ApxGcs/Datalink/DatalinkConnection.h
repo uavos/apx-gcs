@@ -75,6 +75,10 @@ public:
 protected:
     // helpers
     bool isControlPacket(const QByteArray &packet) const;
+    bool isGcsPacket(const QByteArray &packet) const;
+
+    // true when the peer is another GCS instance
+    virtual bool isGcsLink() const { return false; }
     virtual void resetDataStream();
 
     // interface with codec implementation
