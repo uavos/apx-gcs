@@ -23,6 +23,7 @@
 
 #include "TrafficModels.h"
 
+#include <App/AppDirs.h>
 #include <Fact/Fact.h>
 #include <QtConcurrent>
 #include <QtCore>
@@ -62,6 +63,7 @@ public:
     Fact *f_enabled;
     Fact *f_radius;
     Fact *f_country; // airspaces country code, empty is off
+    Fact *f_cache;   // airspaces files on disk (info)
 
     QAbstractListModel *aircraft() const { return _aircraft; }
     QAbstractItemModel *aircraftSorted() const { return _aircraftSorted; }
@@ -101,13 +103,26 @@ private:
     QFutureWatcher<QList<Airspace>> _atcWatcher;
     QList<Airspace> _atcAll;
     QString _atcCountry;   // country of _atcAll (and of the request in progress)
-    qint64 _atcTimeMs{0};  // time of the last download
+    qint64 _atcRetryAtMs{0}; // retry the download at this time (HTTP errors), 0 is none
     QGeoCoordinate _atcFilterOrigin;
     double _atcFilterDist{0};
     QList<int> _atcShown;  // indexes of _atcAll in the model
     // the download failed without a connection: the country is locked, no retries
     // until the plugin is switched off and on
     bool _atcBlocked{false};
+    // the country files are kept in the storage next to the maps cache (as TileLoader does):
+    // Storage/airspaces/openaip/<cc>.geojson
+    static auto cachePath() { return AppDirs::storage().absoluteFilePath("airspaces"); }
+    static auto cacheFile(const QString &cc)
+    {
+        return QStringList({cachePath(), "openaip", cc + ".geojson"}).join('/');
+    }
+    // cache statistics, computed in a worker thread
+    QFutureWatcher<QPair<quint64, uint>> _cacheInfoWatcher;
+    bool _cacheInfoDirty{};
+    void updateCacheInfo();
+    void cacheInfoReady();
+
     void filterAirspaces(bool force = false);
     void clearAirspaces();
     void updateCountryDescr();

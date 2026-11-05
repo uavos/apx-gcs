@@ -22,6 +22,7 @@
 #include "Traffic.h"
 
 #include <App/App.h>
+#include <App/AppDirs.h>
 #include <Fleet/Fleet.h>
 #include <Fleet/Unit.h>
 #include <Mandala/Mandala.h>
@@ -35,7 +36,6 @@ static constexpr int adsb_offline_poll_ms = 5000; // request period while offlin
 static constexpr int adsb_backoff_max_ms = 120000;
 static constexpr int adsb_stale_ms = 30000;     // drop aircraft not updated for this long
 static constexpr double adsb_seen_pos_max = 60; // skip aircraft with an older position, s
-static constexpr int atc_period_ms = 10 * 60 * 1000;
 static constexpr int atc_retry_ms = 30 * 1000; // after a failed download (HTTP errors)
 static constexpr int atc_timeout_ms = 5000;    // inactivity, a live download keeps resetting it
 // alert zones around the unit (TCAS-like): an aircraft is a threat when it is inside the
@@ -148,6 +148,15 @@ Traffic::Traffic(Fact *parent)
 
     connect(f_country, &Fact::valueChanged, this, &Traffic::updateCountryDescr);
     updateCountryDescr();
+
+    f_cache = new Fact(this,
+                       "cache",
+                       tr("Cache size"),
+                       tr("Airspaces files on disk"),
+                       NoFlags,
+                       "database");
+    connect(this, &Fact::triggered, this, &Traffic::updateCacheInfo);
+    connect(&_cacheInfoWatcher, &QFutureWatcherBase::finished, this, &Traffic::cacheInfoReady);
 
     _aircraft = new AircraftModel(this);
     _aircraftSorted = new QSortFilterProxyModel(this);
@@ -270,7 +279,7 @@ void Traffic::updateOffline()
         // back online: request now, not after the backoff or the retry period
         _adsbHoldMs = 0;
         if (_atcAll.isEmpty() && !_atcBlocked && !_atcReply && !_atcWatcher.isRunning())
-            _atcTimeMs = 0;
+            _atcRetryAtMs = 1; // on the next tick
     }
     emit offlineChanged();
     updateStatus();
@@ -307,7 +316,7 @@ void Traffic::onEnabledChanged()
     _atcBlocked = false;
     f_country->setEnabled(true);
     if (v) {
-        _atcTimeMs = 0;
+        _atcRetryAtMs = 0;
         _adsbHoldMs = 0;
         _adsbBackoffMs = 0;
         updateOffline();
@@ -332,7 +341,7 @@ void Traffic::clearAirspaces()
     _atcReply = nullptr; // finished was emitted, the reply is deleted later
     _atcAll.clear();
     _atcCountry.clear();
-    _atcTimeMs = 0;
+    _atcRetryAtMs = 0;
     _atcShown.clear();
     _atcFilterOrigin = QGeoCoordinate();
     _airspaces->reset({});
@@ -479,11 +488,11 @@ void Traffic::onTimer()
     if (now >= _adsbHoldMs)
         requestAdsb();
 
-    // airspaces: the country file once per period, the visible part on every move
+    // airspaces: the country file once (cache or download), the visible part on every move
     auto cc = countryCode(f_country);
     if (cc.isEmpty() || _atcBlocked)
         return;
-    if (cc != _atcCountry || now - _atcTimeMs > atc_period_ms)
+    if (cc != _atcCountry || (_atcRetryAtMs && now >= _atcRetryAtMs))
         requestAtc();
     filterAirspaces();
 }
@@ -666,6 +675,8 @@ void Traffic::dropGone()
         setHighlighted({});
 }
 
+static QList<Airspace> loadAirspaces(const QString &path, const QByteArray &data);
+
 void Traffic::requestAtc()
 {
     if (_atcReply || _atcWatcher.isRunning())
@@ -673,13 +684,23 @@ void Traffic::requestAtc()
     QString cc = countryCode(f_country);
     if (cc.isEmpty())
         return;
+    _atcCountry = cc;
+    _atcRetryAtMs = 0;
+    _atcStatus.clear();
+    updateStatus();
+
+    // the country file is kept in the storage, no download when it is there
+    QString path = cacheFile(cc);
+    if (QFileInfo(path).size() > 0) {
+        f_country->setProgress(95);
+        f_country->setDescr(tr("Loading airspaces..."));
+        _atcWatcher.setFuture(QtConcurrent::run(loadAirspaces, path, QByteArray()));
+        return;
+    }
+
     QNetworkRequest req{QUrl(QString(atc_url).arg(cc))};
     req.setHeader(QNetworkRequest::UserAgentHeader, "apx-gcs");
     req.setTransferTimeout(atc_timeout_ms);
-    _atcCountry = cc;
-    _atcTimeMs = QDateTime::currentMSecsSinceEpoch();
-    _atcStatus.clear();
-    updateStatus();
     f_country->setProgress(0);
     f_country->setDescr(tr("Downloading airspaces..."));
     _atcReply = _net.get(req);
@@ -766,6 +787,28 @@ static QList<Airspace> parseAirspaces(const QByteArray &data)
     return list;
 }
 
+// worker thread: parse the downloaded data and keep it in the storage when it is valid,
+// or (no data) parse the stored file
+static QList<Airspace> loadAirspaces(const QString &path, const QByteArray &data)
+{
+    if (data.isEmpty()) {
+        QFile f(path);
+        if (!f.open(QIODevice::ReadOnly))
+            return {};
+        return parseAirspaces(f.readAll());
+    }
+    auto list = parseAirspaces(data);
+    if (list.isEmpty())
+        return list; // not a valid file, nothing to keep
+    QFileInfo fi(path);
+    if (!QDir().mkpath(fi.absolutePath()))
+        return list;
+    QSaveFile f(path);
+    if (f.open(QIODevice::WriteOnly) && f.write(data) == data.size())
+        f.commit();
+    return list;
+}
+
 void Traffic::onAtcReply()
 {
     auto reply = qobject_cast<QNetworkReply *>(sender());
@@ -785,8 +828,7 @@ void Traffic::onAtcReply()
             } else {
                 _atcStatus = replyError("ATC", reply);
                 f_country->setDescr(_atcStatus);
-                // retry sooner than the regular period
-                _atcTimeMs = QDateTime::currentMSecsSinceEpoch() - atc_period_ms + atc_retry_ms;
+                _atcRetryAtMs = QDateTime::currentMSecsSinceEpoch() + atc_retry_ms;
             }
             updateStatus();
         }
@@ -796,7 +838,7 @@ void Traffic::onAtcReply()
     setRequestDown(false);
     f_country->setProgress(95);
     f_country->setDescr(tr("Parsing airspaces..."));
-    _atcWatcher.setFuture(QtConcurrent::run(parseAirspaces, reply->readAll()));
+    _atcWatcher.setFuture(QtConcurrent::run(loadAirspaces, cacheFile(_atcCountry), reply->readAll()));
 }
 
 void Traffic::onAtcParsed()
@@ -817,6 +859,38 @@ void Traffic::onAtcParsed()
                                .arg(_atcAll.size()).arg(_atcShown.size()));
     }
     updateStatus();
+    updateCacheInfo(); // a new file may have been kept
+}
+
+// cache on disk (as TileLoader::updateCacheInfo)
+
+void Traffic::updateCacheInfo()
+{
+    if (_cacheInfoWatcher.isRunning()) {
+        _cacheInfoDirty = true; // restart when finished
+        return;
+    }
+    _cacheInfoDirty = false;
+    const auto path = cachePath();
+    _cacheInfoWatcher.setFuture(QtConcurrent::run([path]() {
+        quint64 size = 0;
+        uint cnt = 0;
+        QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            size += it.fileInfo().size();
+            cnt++;
+        }
+        return QPair<quint64, uint>(size, cnt);
+    }));
+}
+
+void Traffic::cacheInfoReady()
+{
+    const auto r = _cacheInfoWatcher.result();
+    f_cache->setValue(QString("%1 (%2 MB)").arg(r.second).arg(r.first / (1024 * 1024)));
+    if (_cacheInfoDirty)
+        updateCacheInfo();
 }
 
 // the model gets the airspaces within 1.5 radius of the origin,
