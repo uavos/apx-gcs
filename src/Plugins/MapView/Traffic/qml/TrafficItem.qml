@@ -132,12 +132,12 @@ MapQuickItem {
                     color: "#ccc"
                     font: apx.font_narrow(fs)
                 }
-                // the altitude and the vertical speed with the climb or descent icon
-                // (the narrow font has no arrow glyphs)
+                // the baro altitude (the one compared with the unit) and the vertical speed
+                // with the climb or descent icon (the narrow font has no arrow glyphs)
                 Row {
                     spacing: 0
                     Text {
-                        text: model.onGround ? "GND" : ("ALT " + model.altSrc + " " + altText(model.altM))
+                        text: model.onGround ? "GND" : ("BARO " + altText(model.altBaroM))
                         color: "#fff"
                         font: apx.font_narrow(fs)
                     }
@@ -154,12 +154,6 @@ MapQuickItem {
                         color: "#fff"
                         font: apx.font_narrow(fs)
                     }
-                }
-                Text {
-                    visible: !model.onGround && !isNaN(model.altBaroM) && !isNaN(model.altGeomM)
-                    text: "BARO " + altText(model.altBaroM) + "  GNSS " + altText(model.altGeomM)
-                    color: "#aaa"
-                    font: apx.font_narrow(fs)
                 }
                 // the altitude above the unit and the time to the proximity zone
                 Text {

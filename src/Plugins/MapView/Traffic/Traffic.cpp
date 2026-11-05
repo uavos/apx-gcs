@@ -622,10 +622,10 @@ void Traffic::onAdsbReply()
         a.distKm = o.distanceTo(a.coordinate) / 1000.0;
         a.brg = o.azimuthTo(a.coordinate);
         a.seenMs = now;
-        // the altitude of the same kind as the unit altitude: baro with the pressure
-        // altitude, GNSS with HMSL (the other one when the aircraft has no such)
-        double alt = unit.baro ? (qIsNaN(a.altBaroM) ? a.altGeomM : a.altBaroM)
-                               : (qIsNaN(a.altGeomM) ? a.altBaroM : a.altGeomM);
+        // the aircraft pressure altitude (every transponder reports it, the GNSS altitude
+        // only when there is no baro) against the unit altitude: the pressure altitude
+        // from sns.baro.mbar when the unit has it, est.pos.hmsl otherwise
+        double alt = qIsNaN(a.altBaroM) ? a.altGeomM : a.altBaroM;
         a.dAltM = alt - unit.altM; // NaN when either is unknown
         // the alert is by the time to the zone around the unit (or the map center, then
         // the unit is still): the relative position and velocity (east, north, up)
