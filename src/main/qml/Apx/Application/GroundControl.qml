@@ -80,9 +80,11 @@ Item {
             // detach from the menu tree so the Tools counter stays correct
             f.parentFact = lite ? null : apx.tools
         }
-        // hidden menu entries: windows and fleet (system menu and application page), plugins set in preferences
+        // hidden menu entries: windows and fleet (system menu and application page), plugins set in preferences,
+        // application updates (preferences group and system menu action)
         var hidden = [apx.sysmenu.child("windows"), apx.sysmenu.child("fleet"),
-                      apx.settings.application.child("plugins"), apx.windows, apx.fleet]
+                      apx.settings.application.child("plugins"), apx.windows, apx.fleet,
+                      apx.settings.application.child("appupdate"), apx.sysmenu.child("app").child("update")]
         for (var j = 0; j < hidden.length; ++j) {
             if(hidden[j]) hidden[j].visible = !lite
         }
