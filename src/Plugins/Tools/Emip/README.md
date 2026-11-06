@@ -11,4 +11,5 @@ Mandala bindings and limits: defaults in `EmipConfig.qml`, overridden by the use
 `<Documents>/UAVOS/emip/emip.json` (same keys). The file is created with defaults on first start.
 Without the file the bundled defaults are used; unknown keys are reported in the console.
 
-Fuel pumps are controlled from the `FP` page of the Controls panel (lite layout profile).
+The plugin also adds the `FP` page (fuel pumps 1-3 and manual mode, `ctr.sw.sw5..sw8`)
+to the Controls panel in any layout profile.

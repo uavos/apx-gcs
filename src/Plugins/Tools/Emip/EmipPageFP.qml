@@ -24,16 +24,22 @@ import QtQuick.Layouts
 
 import Apx.Common
 
-// fuel pumps control page (lite profile)
-Page {
+// fuel pumps page of the Controls panel, registered by the EMIP plugin
+Item {
+    id: page
+    clip: true
 
     readonly property var f_pump1: mandala.ctr.sw.sw5
     readonly property var f_pump2: mandala.ctr.sw.sw6
     readonly property var f_pump3: mandala.ctr.sw.sw7
     readonly property var f_manual: mandala.ctr.sw.sw8
 
-    component SwButton: CtrButton {
+    // buttonHeight and buttonSpacing come from the Controls panel context
+    component SwButton: TextButton {
+        property var fact
         Layout.fillWidth: true
+        size: buttonHeight
+        toolTip: fact.title + " (" + fact.descr + ")"
         highlighted: fact.value > 0
         onTriggered: fact.value = highlighted ? 0 : 1
     }
@@ -49,6 +55,6 @@ Page {
         SwButton { text: qsTr("PUMP 1"); fact: f_pump1 }
         SwButton { text: qsTr("PUMP 2"); fact: f_pump2 }
         SwButton { text: qsTr("PUMP 3"); fact: f_pump3 }
-        SwButton { text: qsTr("MANUAL"); fact: f_manual; info: qsTr("Manual fuel pumps mode") }
+        SwButton { text: qsTr("MANUAL"); fact: f_manual; toolTip: qsTr("Manual fuel pumps mode") }
     }
 }

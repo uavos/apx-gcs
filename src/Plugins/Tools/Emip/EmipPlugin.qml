@@ -42,6 +42,9 @@ AppPlugin {
     uiComponent: "main"
     onConfigure: {
         ui.main.add(plugin, GroundControl.Layout.Instrument)
+        // fuel pumps page in the Controls panel
+        if(typeof(ui.main.addControlPage) === "function")
+            ui.main.addControlPage({ "name": "FP", "mode": "", "source": Qt.resolvedUrl("EmipPageFP.qml") })
     }
 
     // user JSON config overrides the bundled defaults (same keys as EmipConfig.qml)
