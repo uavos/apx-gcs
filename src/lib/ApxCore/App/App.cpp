@@ -351,7 +351,7 @@ QVariant App::loadJson(const QString &fileName)
     QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
     if (err.error != QJsonParseError::NoError) {
         apxMsgW() << tr("JSON parse error").append(':') << path << err.errorString();
-        return QVariant();
+        return QVariantMap();
     }
     return doc.toVariant();
 }

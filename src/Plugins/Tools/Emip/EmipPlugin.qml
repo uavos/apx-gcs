@@ -50,9 +50,14 @@ AppPlugin {
     function loadUserConfig()
     {
         var obj = application.loadJson(userConfig)
-        if(!obj || typeof(obj) !== "object"){
-            console.warn("EMIP: config not loaded, using defaults:", userConfig)
+        if(obj === undefined || obj === null){
+            // no file yet: write the defaults as a template, never overwrite an existing file
+            console.warn("EMIP: config file not found, using defaults:", userConfig)
             saveDefaultConfig()
+            return
+        }
+        if(typeof(obj) !== "object"){
+            console.warn("EMIP: config is not a JSON object, using defaults:", userConfig)
             return
         }
         var n = 0

@@ -5,8 +5,7 @@ QtObject {
     property var unit: null
     property var config: null
     readonly property var mandala: unit ? unit.mandala : null
-    // local unit: values are injected by the simulator or test scripts (tools/emip-sim.py)
-    readonly property bool available: !!unit && (unit.streamType > 0 || unit.isReplay === true || unit.isLocal === true)
+    readonly property bool available: !!unit && (unit.streamType > 0 || unit.isReplay === true)
 
     function find(paths) {
         if (!mandala || !paths) return null
