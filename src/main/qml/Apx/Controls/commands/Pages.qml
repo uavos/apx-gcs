@@ -93,4 +93,22 @@ RowLayout {
         ListElement { name: "RC"; mode: "EMG,RPV" }
         ListElement { name: "FL"; mode: "" }
     }
+
+    // fuel pumps page is available in lite profile only
+    readonly property bool lite: root.lite
+    onLiteChanged: updatePages()
+    Component.onCompleted: updatePages()
+    function updatePages()
+    {
+        var idx = -1
+        for(var i=0;i<pagesModel.count;++i){
+            if(pagesModel.get(i).name !== "FP") continue
+            idx = i
+            break
+        }
+        if(lite && idx < 0)
+            pagesModel.append({ "name": "FP", "mode": "" })
+        else if(!lite && idx >= 0)
+            pagesModel.remove(idx)
+    }
 }

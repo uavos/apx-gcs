@@ -50,6 +50,14 @@ AppSettings::AppSettings(Fact *parent)
     item->setEnumStrings(st);
     item->setDefaultValue(st.first());
 
+    item = new Fact(f_interface,
+                    "layout",
+                    tr("Layout"),
+                    tr("Main screen profile"),
+                    Enum | PersistentValue);
+    item->setEnumStrings(QStringList() << "default" << "lite");
+    item->setDefaultValue("default");
+
     item = new Fact(f_graphics, "scale", tr("Scale"), tr("UI scale factor"), Int | PersistentValue);
     item->setUnits("%");
     item->setDefaultValue(100);

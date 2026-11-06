@@ -27,6 +27,7 @@ Fact {
     Fact {
         title: mandala.ctr.title
         icon: "dip-switch"
+        visible: !root.lite
         Fact { binding: mandala.ctr.str.brake; flags: Fact.Bool; }
         Fact { binding: mandala.ctr.wing.flaps; flags: Fact.Bool; }
         Fact { binding: mandala.ctr.wing.airbrk; flags: Fact.Bool; }
@@ -42,7 +43,7 @@ Fact {
     Fact {
         title: mandala.ctr.eng.title
         icon: "engine"
-        Fact { binding: mandala.ctr.eng.choke; flags: Fact.Bool; }
+        Fact { binding: mandala.ctr.eng.choke; flags: Fact.Bool; visible: !root.lite }
         Fact { binding: mandala.cmd.eng.cut; flags: Fact.Bool; }
         Fact { binding: mandala.cmd.eng.ovr; flags: Fact.Bool; }
         Fact { enabled: false }
