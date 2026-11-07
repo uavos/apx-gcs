@@ -4,6 +4,8 @@ page: plugins
 
 # EMIP
 
+The panel is off by default, switch it on in Tools, System features, EMIP, Enabled.
+
 Engine Monitoring and Indication Panel: RPM and EGT gauges, fuel tanks and annunciators
 (LOW FUEL, LOW BAT, SATCOM). Shown in the instruments area next to the system terminal.
 
