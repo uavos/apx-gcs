@@ -64,10 +64,6 @@ public:
     static void jsync(Fact *fact);
     Q_INVOKABLE static QJSValue jsexec(const QString &s);
     Q_INVOKABLE static QObject *loadQml(const QString &qmlFile, const QVariantMap &opts);
-    // parse JSON file (path or file:// url) into JS object; invalid value when the file is missing, empty object on parse error
-    Q_INVOKABLE static QVariant loadJson(const QString &fileName);
-    // write JSON text to file (path or file:// url), creates directories
-    Q_INVOKABLE static bool saveJson(const QString &fileName, const QString &json);
 
     template<class T>
     static T propertyValue(const QString &path)
