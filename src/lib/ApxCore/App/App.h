@@ -64,6 +64,9 @@ public:
     static void jsync(Fact *fact);
     Q_INVOKABLE static QJSValue jsexec(const QString &s);
     Q_INVOKABLE static QObject *loadQml(const QString &qmlFile, const QVariantMap &opts);
+    // plain text file helpers (path, file:// or qrc: url); loadText returns an empty string when the file is missing
+    Q_INVOKABLE static QString loadText(const QString &fileName);
+    Q_INVOKABLE static bool saveText(const QString &fileName, const QString &text);
 
     template<class T>
     static T propertyValue(const QString &path)
