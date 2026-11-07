@@ -33,18 +33,17 @@ Window {
 
     property var runner
 
-    readonly property real fs: Style.fontSize
-    readonly property real sp: Style.spacing
+    readonly property real sp: ChecklistStyle.sp
+    readonly property real fs: ChecklistStyle.fs
 
     title: runner && runner.title ? runner.title : qsTr("Checklist")
     transientParent: application.window
     width: fs*60
-    height: fs*40
+    height: fs*42
     minimumWidth: fs*28
     minimumHeight: fs*18
-    color: "#101010"
+    color: ChecklistStyle.background
     Material.theme: Material.Dark
-    Material.accent: Material.Blue
 
     function open()
     {
@@ -57,35 +56,22 @@ Window {
         if(runner && runner.state === "running") runner.abort()
     }
 
-    // step shown on the right: selected by the operator, follows the running step otherwise
+    // step shown on the right: a passed step selected by the operator, the running step otherwise
     property int viewed: -1
     readonly property int current: runner ? runner.current : -1
     onCurrentChanged: viewed = current
     readonly property string runState: runner ? runner.state : ""
-    onRunStateChanged: if(runState === "finished") viewed = -1
     readonly property var shown: (runner && viewed >= 0 && viewed < runner.steps.length) ? runner.steps[viewed] : null
     readonly property var shownResult: (runner && viewed >= 0) ? runner.results[viewed] : undefined
-    readonly property bool shownIsActive: runner && runner.state === "running" && viewed === current
+    readonly property bool shownIsCurrent: runner && runner.state === "running" && viewed === current
+    readonly property bool shownFailed: !!(shownResult && shownResult.status === "fail")
+    readonly property bool shownPassed: !!(shownResult && shownResult.status === "ok")
 
-    function statusText(s)
+    // only the steps already reached can be opened while running
+    function selectable(index)
     {
-        switch(s){
-        case "ok": return qsTr("Passed")
-        case "fail": return qsTr("Failed")
-        case "skipped": return qsTr("Skipped")
-        case "running": return qsTr("In progress")
-        }
-        return qsTr("Pending")
-    }
-    function statusColor(s)
-    {
-        switch(s){
-        case "ok": return "#4cab50"
-        case "fail": return "#ff5050"
-        case "skipped": return "#666"
-        case "running": return "#fafe86"
-        }
-        return "#888"
+        if(runState !== "running") return true
+        return index <= current
     }
     function stepStatus(index)
     {
@@ -94,23 +80,41 @@ Window {
         if(r) return r.status
         return (index === current && runner.state === "running") ? "running" : ""
     }
+    function statusColor(s)
+    {
+        switch(s){
+        case "ok": return ChecklistStyle.ok
+        case "fail": return ChecklistStyle.fail
+        case "running": return ChecklistStyle.running
+        }
+        return ChecklistStyle.pending
+    }
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: sp*2
         spacing: sp*2
 
-        // header: procedure title from the markdown file, click shows the description page
-        Text {
+        // header: procedure title, click shows the description page
+        RowLayout {
             Layout.fillWidth: true
-            text: runner ? runner.title : ""
-            color: control.viewed < 0 ? "#fff" : "#bbb"
-            font: apx.font_narrow(fs*2, true)
-            elide: Text.ElideRight
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: control.viewed = -1
+            Text {
+                Layout.fillWidth: true
+                text: runner ? runner.title : ""
+                color: control.viewed < 0 ? ChecklistStyle.textBright : ChecklistStyle.text
+                font: apx.font_narrow(ChecklistStyle.fontTitle, true)
+                elide: Text.ElideRight
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: control.viewed = -1
+                }
+            }
+            Text {
+                visible: runState === "finished"
+                text: runner && runner.takeoffAllowed ? qsTr("CHECK PASSED") : qsTr("CHECK FAILED")
+                color: runner && runner.takeoffAllowed ? ChecklistStyle.ok : ChecklistStyle.fail
+                font: apx.font_narrow(ChecklistStyle.fontStep, true)
             }
         }
 
@@ -119,7 +123,7 @@ Window {
             Layout.fillHeight: true
             spacing: sp*2
 
-            // steps, click to read any of them
+            // steps: the current one is highlighted, passed ones can be opened
             ListView {
                 id: stepsView
                 Layout.preferredWidth: control.width*0.32
@@ -129,13 +133,25 @@ Window {
                 model: runner ? runner.steps : []
                 delegate: Rectangle {
                     width: stepsView.width
-                    height: fs*2.6
-                    color: index === control.viewed ? "#30ffffff" : "transparent"
-                    radius: sp*0.5
+                    height: ChecklistStyle.rowHeight
+                    readonly property bool isCurrent: index === control.current && runState === "running"
+                    readonly property bool isViewed: index === control.viewed
+                    readonly property bool canOpen: control.selectable(index)
                     readonly property string st: stepStatus(index)
+                    color: isCurrent ? ChecklistStyle.currentBg : (isViewed ? ChecklistStyle.viewedBg : "transparent")
+                    radius: sp*0.5
+                    Rectangle {
+                        // bar marking the step being executed
+                        visible: parent.isCurrent
+                        width: sp*0.6
+                        height: parent.height
+                        radius: parent.radius
+                        color: ChecklistStyle.currentMark
+                    }
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: sp
+                        anchors.leftMargin: sp*1.5
                         spacing: sp
                         Rectangle {
                             width: fs*0.8; height: width; radius: width/2
@@ -144,19 +160,21 @@ Window {
                         Text {
                             Layout.fillWidth: true
                             text: (index + 1) + ". " + modelData.title
-                            color: st === "skipped" ? "#777" : "#ddd"
-                            font: apx.font_narrow(fs*1.3, index === control.current)
+                            color: canOpen ? ChecklistStyle.text : ChecklistStyle.textMuted
+                            font: apx.font_narrow(ChecklistStyle.fontList, isCurrent)
                             elide: Text.ElideRight
                         }
                     }
                     MouseArea {
                         anchors.fill: parent
+                        enabled: parent.canOpen
+                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                         onClicked: control.viewed = index
                     }
                 }
             }
 
-            Rectangle { width: 1; Layout.fillHeight: true; color: "#444" }
+            Rectangle { width: 1; Layout.fillHeight: true; color: ChecklistStyle.separator }
 
             // selected step
             ColumnLayout {
@@ -168,8 +186,8 @@ Window {
                     Layout.fillWidth: true
                     visible: shown
                     text: shown ? ((viewed + 1) + ". " + shown.title) : ""
-                    color: "#fff"
-                    font: apx.font_narrow(fs*1.8, true)
+                    color: ChecklistStyle.textBright
+                    font: apx.font_narrow(ChecklistStyle.fontStep, true)
                     wrapMode: Text.Wrap
                 }
                 Flickable {
@@ -182,19 +200,27 @@ Window {
                         width: parent.width
                         text: (shown ? shown.body : (runner ? runner.intro : "")).replace(/`([^`]+)`/g, "**$1**")
                         textFormat: Text.MarkdownText
-                        color: "#ddd"
-                        font: apx.font_narrow(fs*1.5)
+                        color: ChecklistStyle.text
+                        font: apx.font_narrow(ChecklistStyle.fontBody)
                         wrapMode: Text.Wrap
                     }
+                }
+                // live message of the running step
+                Text {
+                    Layout.fillWidth: true
+                    visible: shownIsCurrent && !shownFailed && runner && runner.message
+                    text: runner ? runner.message : ""
+                    color: ChecklistStyle.textInfo
+                    font: apx.font_narrow(ChecklistStyle.fontSmall)
+                    wrapMode: Text.Wrap
                 }
                 // result of the shown step: red alert with the reason, green when passed
                 Rectangle {
                     Layout.fillWidth: true
-                    visible: shownResult !== undefined && shownResult.status !== "skipped"
-                    readonly property bool failed: !!(shownResult && shownResult.status === "fail")
+                    visible: shownResult !== undefined
                     implicitHeight: resultColumn.implicitHeight + sp*3
-                    color: failed ? "#40ff0000" : "#2040ff40"
-                    border.color: failed ? "#ff5050" : "#4cab50"
+                    color: shownFailed ? ChecklistStyle.failBg : ChecklistStyle.okBg
+                    border.color: shownFailed ? ChecklistStyle.fail : ChecklistStyle.ok
                     border.width: 1
                     radius: sp
                     ColumnLayout {
@@ -203,71 +229,95 @@ Window {
                         anchors.margins: sp*1.5
                         spacing: sp*0.5
                         Text {
-                            text: parent.parent.failed ? qsTr("FAILED") : qsTr("PASSED")
-                            color: parent.parent.failed ? "#ff5050" : "#4cab50"
-                            font: apx.font_narrow(fs*1.4, true)
+                            text: shownFailed ? qsTr("FAILED") : qsTr("PASSED")
+                            color: shownFailed ? ChecklistStyle.fail : ChecklistStyle.ok
+                            font: apx.font_narrow(ChecklistStyle.fontSmall, true)
                         }
                         Text {
                             Layout.fillWidth: true
                             visible: text
                             text: shownResult ? shownResult.message : ""
-                            color: "#eee"
-                            font: apx.font_narrow(fs*1.4)
+                            color: ChecklistStyle.text
+                            font: apx.font_narrow(ChecklistStyle.fontSmall)
                             wrapMode: Text.Wrap
                         }
                     }
                 }
-                // live message of the running step
-                Text {
+
+                // input fields requested by the step script
+                ColumnLayout {
                     Layout.fillWidth: true
-                    visible: shownIsActive && runner && runner.message
-                    text: runner ? runner.message : ""
-                    color: "#FFBE00"
-                    font: apx.font_narrow(fs*1.3)
-                    wrapMode: Text.Wrap
+                    visible: shownIsCurrent && runner && runner.form !== null
+                    spacing: sp
+                    Repeater {
+                        id: formFields
+                        model: (runner && runner.form) ? Object.keys(runner.form) : []
+                        delegate: ChecklistField {
+                            Layout.fillWidth: true
+                            readonly property string key: modelData
+                            label: modelData
+                            value: String(runner.form[modelData])
+                            onAccepted: control.submitForm()
+                        }
+                    }
+                    ChecklistButton {
+                        text: qsTr("Apply")
+                        kind: "primary"
+                        onTriggered: control.submitForm()
+                    }
                 }
 
-                // answers of the running confirm step
+                // buttons requested by the step script
                 Flow {
                     Layout.fillWidth: true
                     spacing: sp
-                    visible: shownIsActive && shown && shown.type === "confirm"
+                    visible: shownIsCurrent && runner && runner.buttons.length > 0
                     Repeater {
-                        model: (shown && shown.type === "confirm") ? (shown.buttons.length ? shown.buttons : [qsTr("Confirm")]) : []
-                        TextButton {
-                            text: modelData
-                            size: fs*2.4
-                            color: Material.color(Material.Green, Material.Shade800)
-                            onTriggered: runner.answer(modelData)
+                        model: runner ? runner.buttons : []
+                        ChecklistButton {
+                            text: modelData.text
+                            kind: modelData.kind
+                            onTriggered: runner.answer(modelData.text)
                         }
-                    }
-                    TextButton {
-                        text: qsTr("Not confirmed")
-                        size: fs*2.4
-                        color: Material.color(Material.Red, Material.Shade900)
-                        onTriggered: runner.fail(qsTr("Not confirmed by operator"))
                     }
                 }
 
-                // one control button: start or abort
+                // control buttons
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: sp
                     Item { Layout.fillWidth: true }
-                    TextButton {
-                        visible: runner && runner.state !== "running"
-                        text: qsTr("Start")
-                        size: fs*2.4
-                        color: Material.color(Material.Blue, Material.Shade800)
-                        onTriggered: runner.start()
+                    // restart the shown step: the current one or a passed one (then the check returns to the current step)
+                    ChecklistButton {
+                        visible: runState === "running" && shown && control.viewed <= control.current
+                        text: shownIsCurrent ? (shownFailed ? qsTr("Retry") : qsTr("Restart step")) : qsTr("Repeat step")
+                        kind: "warn"
+                        onTriggered: shownIsCurrent ? runner.retry() : runner.rerun(control.viewed)
                     }
-                    TextButton {
-                        visible: runner && runner.state === "running"
-                        text: qsTr("Abort")
-                        size: fs*2.4
-                        onTriggered: runner.abort()
+                    ChecklistButton {
+                        visible: shownIsCurrent && shownFailed
+                        text: qsTr("Continue")
+                        kind: "neutral"
+                        onTriggered: runner.proceed()
+                    }
+                    ChecklistButton {
+                        visible: runState !== "running"
+                        text: runState === "finished" ? qsTr("Restart") : qsTr("Start")
+                        kind: "primary"
+                        onTriggered: runner.start()
                     }
                 }
             }
         }
+    }
+
+    function submitForm()
+    {
+        var values = {}
+        for (var i = 0; i < formFields.count; ++i) {
+            var item = formFields.itemAt(i)
+            if(item) values[item.key] = item.value
+        }
+        runner.submit(values)
     }
 }

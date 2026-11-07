@@ -20,14 +20,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
-import QtCore
 
 import Apx.Application
 import APX.Facts
 
 /*
     Checklist plugin: aircraft check procedure.
-    Steps are described in <Documents>/UAVOS/checklist/checklist.md
+    Steps are described in Checklist.md (plugin resources).
 */
 
 AppPlugin {
@@ -41,14 +40,14 @@ AppPlugin {
     unloadOnHide: false
     active: false
 
-    readonly property string dir: StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/UAVOS/checklist"
-
     ChecklistRunner {
         id: runner
-        dir: plugin.dir
     }
     // runner is reachable as ui.checklist (takeoff gating, scripts)
-    Component.onCompleted: ui.checklist = runner
+    Component.onCompleted: {
+        ui.checklist = runner
+        runner.load()
+    }
 
     // checklist window
     property var dialog: null
@@ -62,7 +61,7 @@ AppPlugin {
             }
             dialog = c.createObject(plugin, { "runner": runner })
         }
-        runner.start()
+        if(runner.state === "idle") runner.load()
         dialog.viewed = runner.current
         dialog.open()
     }

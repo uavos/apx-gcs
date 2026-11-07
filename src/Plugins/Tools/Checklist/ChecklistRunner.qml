@@ -22,116 +22,124 @@
 import QtQuick
 
 /*
-    Checklist engine: parses the Markdown procedure and runs its steps.
+    Checklist engine: parses the Markdown procedure and runs its steps one by one.
 
-    Step options (key: value lines right after the "## " heading):
-      type: auto | confirm      auto - the "check" snippet decides, confirm - operator presses a button
-      fail: stop | continue     what happens when the step fails (default continue)
-      buttons: A, B, C                      buttons for confirm steps (default: Confirm)
-      wait: 30                              auto step: poll "check" up to N seconds
-    Markdown between "# title" and the first step is the procedure description.
-    Headings "###" and deeper are ordinary text inside descriptions.
-    Snippets: ```js check```, ```js start```, ```js confirm```, ```js cleanup```
-    run in the GCS JS engine with globals cfg (checklist.json) and answer (pressed button).
+    Markdown format (nothing else is parsed):
+      # Title                 procedure title, text below it is the description
+      ```js ... ```           in the description: shared code, prepended to every step script
+      ## Step title           a step, text below it is shown to the operator
+      ```js ... ```           in a step: the step script, gets the `step` object (see api below)
+
+    A step without a script shows a single Confirm button.
+    A script finishes the step with step.pass()/step.fail(); when it returns with nothing
+    pending (no buttons, no form, no poll) the step passes.
 */
 
 QtObject {
     id: runner
 
-    property string dir
-    readonly property string mdFile: dir + "/checklist.md"
-    readonly property string cfgFile: dir + "/checklist.json"
+    property string source: "qrc:/Checklist/Checklist.md"
 
+    // procedure
     property string title: ""
     property string intro: ""        // markdown between the title and the first step
-    property var steps: []
-    property var config: ({})
+    property string shared: ""       // js from the description
+    property var steps: []           // {title, body, code}
 
     // run state
-    property string state: "idle"          // idle | running | finished
+    property string state: "idle"    // idle | running | finished
     property int current: -1
-    property string message: ""
+    property var results: []         // by step index: {status: ok|fail, message}
+    property string message: ""      // live text of the running step
+    property var buttons: []         // [{text, kind}] requested by the step script
+    property var form: null          // {label: default} requested by the step script
     property bool takeoffAllowed: false
-    property var results: []               // {title, status, message}
+
     readonly property var step: (current >= 0 && current < steps.length) ? steps[current] : null
+    readonly property bool failed: !!(step && results[current] && results[current].status === "fail")
+    readonly property bool pending: buttons.length > 0 || form !== null || pollTimer.running
 
-    signal changed()
+    // script callbacks of the running step
+    property var _askHandler: null
+    property var _formHandler: null
+    property var _pollCond: null
+    property var _pollThen: null
+    property var _cleanup: null
+    property bool _done: false       // the running step has passed or failed
+    property int _returnTo: -1       // step to continue with after a repeated earlier step
 
-    // ---------------------------------------------------------------- files
-    function loadFiles()
+    // ---------------------------------------------------------------- api for step scripts
+    readonly property var api: ({
+        // buttons for the operator, handler(answer) is called on press;
+        // items are strings or {text, kind}, kind: ok (default), primary, danger, neutral
+        "ask": function(list, handler) {
+            runner._askHandler = handler ? handler : null
+            runner.buttons = list.map(function(b) {
+                if(b && typeof(b) === "object") return { "text": String(b.text), "kind": b.kind ? String(b.kind) : "ok" }
+                return { "text": String(b), "kind": "ok" }
+            })
+            runner.form = null
+        },
+        // input fields {label: default}, handler(values) is called on submit
+        "form": function(fields, handler) {
+            runner._formHandler = handler ? handler : null
+            runner.form = fields
+            runner.buttons = []
+        },
+        // live text under the step description
+        "info": function(msg) { runner.message = msg ? String(msg) : "" },
+        // cond() is evaluated every 0.5 s up to sec seconds (0: forever);
+        // true -> then() or pass, timeout -> fail
+        "poll": function(cond, sec, then) {
+            runner._pollCond = cond
+            runner._pollThen = then ? then : null
+            runner.pollTimer.deadline = sec > 0 ? Date.now() + sec*1000 : 0
+            runner.pollTimer.restart()
+        },
+        // fn() is called when the step ends for any reason (pass, fail, restart, abort)
+        "cleanup": function(fn) { runner._cleanup = fn },
+        "pass": function(msg) { runner.pass(msg) },
+        "fail": function(msg) { runner.fail(msg) },
+    })
+
+    // ---------------------------------------------------------------- markdown
+    function load()
     {
-        var text = application.loadText(mdFile)
-        if(!text){
-            text = application.loadText("qrc:/Checklist/Checklist.md")
-            application.saveText(mdFile, text)
-        }
+        var text = application.loadText(source)
+        if(!text) console.warn("Checklist: can't read", source)
         var doc = parse(text)
         title = doc.title
         intro = doc.intro
+        shared = doc.shared
         steps = doc.steps
-
-        var obj = null
-        var json = application.loadText(cfgFile)
-        if(json){
-            try { obj = JSON.parse(json) } catch(e) { console.warn("Checklist: config parse error:", e) }
-        }else{
-            obj = defaultConfig()
-            application.saveText(cfgFile, JSON.stringify(obj, null, 2))
-        }
-        config = obj ? obj : defaultConfig()
-        application.jsexec("cfg=" + JSON.stringify(config))
     }
-    function defaultConfig()
-    {
-        return {
-            "batteryMin": 15.0,
-            "fuelMin": 10,
-            "ekfMagMax": 1,
-            "gpsMinSats": 6,
-            "engineStatusPath": "est.usrc.c2",
-            "magToleranceDeg": 15,
-            "airspeedZeroMax": 3,
-            "airspeedBlowMin": 5,
-            "tiltMinDeg": 10,
-            "tiltMaxDeg": 30,
-            "levelMaxDeg": 5,
-            "catapultHeadingToleranceDeg": 10,
-            "diveAltitudeMin": 1000,
-            "ranges": [
-                { "path": "sns.pwr.vsys", "min": 14, "max": 17.5 },
-                { "path": "sns.pwr.vsrv", "min": 7, "max": 9 }
-            ]
-        }
-    }
-
-    // ---------------------------------------------------------------- markdown
     function parse(text)
     {
-        var doc = { "title": "", "intro": "", "steps": [] }
+        var doc = { "title": "", "intro": "", "shared": "", "steps": [] }
         var lines = text.split(/\r?\n/)
-        var step = null
-        var body = []
-        var code = null
-        var role = ""
+        var step = null      // current step, null while in the description
+        var body = []        // markdown lines of the current section
+        var code = null      // lines of the open ```js block
         function flush()
         {
-            if(!step) return
-            step.body = body.join("\n").trim()
+            var md = body.join("\n").trim()
+            if(step) step.body = md
+            else doc.intro = md
             body = []
         }
         for (var i = 0; i < lines.length; ++i) {
             var line = lines[i]
             if(code !== null){
                 if(/^```/.test(line)){
-                    if(step) step[role] = code.join("\n")
+                    var js = code.join("\n") + "\n"
+                    if(step) step.code += js
+                    else doc.shared += js
                     code = null
                 }else code.push(line)
                 continue
             }
-            var m = line.match(/^```\s*js\s+(check|start|confirm|cleanup)\s*$/)
-            if(m && step){
+            if(/^```\s*js\b/.test(line)){
                 code = []
-                role = m[1]
                 continue
             }
             if(/^#\s+/.test(line)){
@@ -139,163 +147,208 @@ QtObject {
                 continue
             }
             if(/^##\s+/.test(line)){
-                if(step) flush()
-                else { doc.intro = body.join("\n").trim(); body = [] }
-                step = { "title": line.replace(/^##\s+/, "").trim(), "type": "confirm", "fail": "continue",
-                         "buttons": [], "wait": 0, "body": "",
-                         "check": "", "start": "", "confirm": "", "cleanup": "" }
+                flush()
+                step = { "title": line.replace(/^##\s+/, "").trim(), "body": "", "code": "" }
                 doc.steps.push(step)
                 continue
             }
-            m = line.match(/^(type|fail|buttons|wait):\s*(.*)$/)
-            if(m && step && body.length === 0){
-                var v = m[2].trim()
-                if(m[1] === "buttons") step.buttons = v.split(",").map(function(s){ return s.trim() }).filter(function(s){ return s })
-                else if(m[1] === "wait") step.wait = Number(v)
-                else step[m[1]] = v
-                continue
-            }
-            if(step) body.push(line)
-            else body.push(line)   // before the first step: procedure description
+            body.push(line)
         }
-        if(step) flush()
-        else doc.intro = body.join("\n").trim()
+        flush()
         return doc
     }
 
-    // ---------------------------------------------------------------- js
-    function exec(code, extra)
-    {
-        if(!code) return true
-        if(extra) application.jsexec(extra)
-        var r = application.jsexec(code)
-        if(r && typeof(r) === "object" && r.ok !== undefined){
-            if(r.msg) message = String(r.msg)
-            return !!r.ok
-        }
-        if(r instanceof Error){
-            message = String(r)
-            return false
-        }
-        return !!r
-    }
-
-    // ---------------------------------------------------------------- run
+    // ---------------------------------------------------------------- procedure control
     function start()
     {
-        stopTimers()
-        loadFiles()
+        reset()
+        load()
         state = "running"
-        takeoffAllowed = false
         results = []
-        message = ""
-        current = -1
         next()
     }
     function abort()
     {
         if(state !== "running") return
-        cleanupStep()
-        setResult("fail", qsTr("Aborted by operator"))
+        endStep()
+        setResult(current, "fail", qsTr("Aborted by operator"))
         finish()
     }
+    function finish()
+    {
+        endStep()
+        _returnTo = -1
+        state = "finished"
+        takeoffAllowed = steps.length > 0 && !results.some(function(r){ return r && r.status === "fail" })
+    }
+    function reset()
+    {
+        endStep()
+        state = "idle"
+        takeoffAllowed = false
+        current = -1
+        _returnTo = -1
+        message = ""
+        _done = false
+    }
+
+    // ---------------------------------------------------------------- step control
     function next()
     {
-        stopTimers()
-        current++
-        if(current >= steps.length){
+        endStep()
+        if(_returnTo >= 0){
+            // a repeated earlier step is done: back to the step that was interrupted
+            goTo(_returnTo)
+            _returnTo = -1
+            return
+        }
+        if(current + 1 >= steps.length){
             finish()
             return
         }
-        message = ""
-        exec(step.start)
-        if(step.type === "auto")
-            runCheck()
-        changed()
+        goTo(current + 1)
     }
-    function runCheck()
-    {
-        if(exec(step.check)){
-            pass()
-            return
-        }
-        if(step.wait > 0 && pollTimer.elapsed < step.wait*1000){
-            pollTimer.start()
-            return
-        }
-        fail(message ? message : qsTr("Check failed"))
-    }
-    function answer(button)
-    {
-        if(state !== "running" || !step) return
-        if(exec(step.confirm, "answer=" + JSON.stringify(button)))
-            pass()
-        else
-            fail(message ? message : qsTr("Not confirmed") + ": " + button)
-    }
+    // restart the current step (also used as Retry after a failure)
     function retry()
     {
         if(state !== "running" || !step) return
-        pollTimer.elapsed = 0
-        message = ""
-        if(step.type === "auto") runCheck()
-        changed()
+        goTo(current)
     }
-    function pass()
+    // repeat an already passed step, then continue with the current one
+    function rerun(index)
     {
-        cleanupStep()
-        setResult("ok", message)
+        if(state !== "running" || index < 0 || index >= current) return
+        if(_returnTo < 0) _returnTo = current
+        goTo(index)
+    }
+    // go on after a failed step
+    function proceed()
+    {
+        if(state !== "running" || !failed) return
+        next()
+    }
+    function goTo(index)
+    {
+        endStep()
+        current = index
+        setResult(current, "", "")
+        runStep()
+    }
+    function runStep()
+    {
+        message = ""
+        _done = false
+        if(!step.code.trim()){
+            api.ask([qsTr("Confirm")], null)
+            return
+        }
+        var fn = application.jsexec("(function(step){\n" + shared + "\n" + step.code + "\n})")
+        if(typeof(fn) !== "function"){
+            fail(qsTr("Script error") + ": " + String(fn))
+            return
+        }
+        call(fn, api)
+    }
+    // run a script callback: errors fail the step, nothing pending passes it
+    function call(fn, arg)
+    {
+        if(!fn) return
+        try {
+            fn(arg)
+        } catch(e) {
+            fail(qsTr("Script error") + ": " + String(e))
+            return
+        }
+        if(state === "running" && !_done && !pending) pass(message)
+    }
+    // operator pressed a button
+    function answer(button)
+    {
+        if(state !== "running" || _done) return
+        var h = _askHandler
+        _askHandler = null
+        buttons = []
+        call(h, button)
+    }
+    // operator submitted the form
+    function submit(values)
+    {
+        if(state !== "running" || _done) return
+        var h = _formHandler
+        _formHandler = null
+        form = null
+        call(h, values)
+    }
+    function pass(msg)
+    {
+        if(_done) return
+        _done = true
+        endStep()
+        setResult(current, "ok", msg)
         next()
     }
     function fail(msg)
     {
-        cleanupStep()
-        setResult("fail", msg)
-        if(step.fail === "stop"){
-            finish()
-            return
-        }
-        next()
+        if(_done) return
+        _done = true
+        endStep()
+        setResult(current, "fail", msg ? msg : (message ? message : qsTr("Check failed")))
     }
-    function cleanupStep()
-    {
-        stopTimers()
-        if(step) exec(step.cleanup)
-    }
-    function setResult(status, msg)
-    {
-        var r = results.slice()
-        r.push({ "title": step ? step.title : "", "status": status, "message": msg ? msg : "" })
-        results = r
-    }
-    function finish()
-    {
-        stopTimers()
-        state = "finished"
-        takeoffAllowed = !results.some(function(r){ return r.status === "fail" })
-        saveReport()
-        changed()
-    }
-    function saveReport()
-    {
-        var d = new Date()
-        var stamp = d.toISOString().replace(/[:.]/g, "-").slice(0, 19)
-        var report = { "time": d.toISOString(), "passed": takeoffAllowed, "steps": results }
-        application.saveText(dir + "/reports/" + stamp + ".json", JSON.stringify(report, null, 2))
-    }
-    function stopTimers()
+    // stop everything the step script has requested
+    function endStep()
     {
         pollTimer.stop()
-        pollTimer.elapsed = 0
+        _pollCond = null
+        _pollThen = null
+        _askHandler = null
+        _formHandler = null
+        buttons = []
+        form = null
+        var c = _cleanup
+        _cleanup = null
+        if(c){
+            try { c() } catch(e) { console.warn("Checklist: cleanup error:", e) }
+        }
+    }
+    // status "" clears the result of the step
+    function setResult(index, status, msg)
+    {
+        if(index < 0) return
+        var r = results.slice()
+        r[index] = status ? { "status": status, "message": msg ? String(msg) : "" } : undefined
+        results = r
     }
 
     property Timer pollTimer: Timer {
         interval: 500
-        repeat: false
-        property int elapsed: 0
+        repeat: true
+        property real deadline: 0
         onTriggered: {
-            elapsed += interval
-            runner.runCheck()
+            if(runner.state !== "running" || runner._done || !runner._pollCond){
+                stop()
+                return
+            }
+            var ok = false
+            try {
+                ok = !!runner._pollCond()
+            } catch(e) {
+                stop()
+                runner.fail(qsTr("Script error") + ": " + String(e))
+                return
+            }
+            if(ok){
+                stop()
+                var then = runner._pollThen
+                runner._pollCond = null
+                runner._pollThen = null
+                if(then) runner.call(then, undefined)
+                else runner.pass(runner.message)
+                return
+            }
+            if(deadline > 0 && Date.now() >= deadline){
+                stop()
+                runner.fail(runner.message ? runner.message : qsTr("Timeout"))
+            }
         }
     }
 }
