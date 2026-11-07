@@ -46,9 +46,6 @@ Rectangle {
 
     property APX.Unit unit: apx.fleet.current
 
-    // simplified interface profile
-    readonly property bool lite: typeof(groundControl) !== 'undefined' && groundControl.lite
-
     //sizes
     readonly property real buttonHeight: height/10
     readonly property real buttonSpacing: buttonHeight/10
@@ -70,7 +67,6 @@ Rectangle {
                 size: buttonHeight
                 fact: unit
                 toolTip: apx.fleet.title
-                visible: !root.lite
                 showText: false
                 value: unit.title
                 active: false
@@ -82,7 +78,6 @@ Rectangle {
                 size: buttonHeight
                 fact: unit.nodes
                 showText: false
-                visible: !root.lite
                 showIcon: true
                 //valueScale: 0.6
                 value: fact.value?fact.value:""

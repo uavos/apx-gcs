@@ -55,34 +55,6 @@ Item {
     readonly property int instrumentsHeight: width*0.2
     readonly property color sepColor: "#244"
 
-    // simplified interface profile (Preferences -> Interface -> Layout)
-    readonly property bool lite: apx.settings.interface.layout.text === "lite"
-
-    // tools removed from the Tools menu in lite profile
-    readonly property var liteHiddenTools: ["script", "datalinkinspector", "terminal", "vcpforwarding", "videostreaming"]
-    property var liteToolFacts: ({})
-    onLiteChanged: updateTools()
-    Component.onCompleted: updateTools()
-    function updateTools()
-    {
-        for (var i = 0; i < liteHiddenTools.length; ++i) {
-            var name = liteHiddenTools[i]
-            var f = liteToolFacts[name] ? liteToolFacts[name] : apx.tools[name]
-            if(!f) continue
-            liteToolFacts[name] = f
-            // detach from the menu tree so the Tools counter stays correct
-            f.parentFact = lite ? null : apx.tools
-        }
-        // hidden menu entries: windows and fleet (system menu and application page), plugins set in preferences,
-        // application updates (preferences group and system menu action)
-        var hidden = [apx.sysmenu.child("windows"), apx.sysmenu.child("fleet"),
-                      apx.settings.application.child("plugins"), apx.windows, apx.fleet,
-                      apx.settings.application.child("appupdate"), apx.sysmenu.child("app").child("update")]
-        for (var j = 0; j < hidden.length; ++j) {
-            if(hidden[j]) hidden[j].visible = !lite
-        }
-    }
-
     Settings {
         id: settings
         category: "Layout"

@@ -65,17 +65,13 @@ RowLayout {
         Component.onCompleted: sync()
         property int size: apx.windows.model.count
         onSizeChanged: sync()
-        // launchers hidden in lite profile
-        readonly property var liteHidden: ["ekf", "parameters", "mandalatree"]
-        readonly property bool lite: groundControl.lite
-        onLiteChanged: sync()
         function sync()
         {
             for( var i = 0;i < items.count;i++ ) {
                 var entry = items.get(i)
-                var d = entry.model.modelData
-                var show = d && d.showLauncher && !(lite && liteHidden.indexOf(d.name) >= 0)
-                toolsModel.items.setGroups(i, 1, show ? ["items", "launcher"] : ["items"])
+                if(entry.model.modelData && entry.model.modelData.showLauncher) {
+                    toolsModel.items.setGroups(i--,1,"launcher")
+                }
             }
         }
     }
@@ -100,7 +96,6 @@ RowLayout {
         iconName: apx.windows.icon
         toolTip: apx.windows.title
         onTriggered: apx.windows.trigger()
-        visible: !groundControl.lite
     }
 
     //simulator

@@ -28,7 +28,6 @@
 #include <QDesktopServices>
 
 #include "AppUpdateChecker.h"
-#include <App/AppSettings.h>
 
 AppUpdate::AppUpdate(Fact *parent)
     : Fact(parent,
@@ -73,11 +72,7 @@ AppUpdate::AppUpdate(Fact *parent)
 
     App::jsync(this);
 
-    // no automatic checks in the simplified (lite) layout profile
-    bool lite = false;
-    if (auto f_layout = AppSettings::instance()->f_interface->child("layout"))
-        lite = f_layout->text() == "lite";
-    if (App::bundle() && f_auto->value().toBool() && !lite) {
+    if (App::bundle() && f_auto->value().toBool()) {
         QTimer::singleShot(5000, f_checker, &AppUpdateChecker::checkForUpdates);
     }
 }

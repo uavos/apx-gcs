@@ -36,15 +36,11 @@ ListView {
     visible: count>0
     orientation: ListView.Horizontal
 
-    // widgets hidden in lite profile: realtime chart and camera
-    readonly property var liteHidden: ["signals", "videostreaming"]
-    readonly property bool lite: groundControl.lite
-
     delegate: IconButton {
         property var plugin: plugins[model.idx]
         // a plugin disables itself when it has nothing to show, its button is hidden
-        visible: plugin.enabled && !(control.lite && control.liteHidden.indexOf(plugin.name) >= 0)
-        width: visible ? implicitWidth : -control.spacing // hidden buttons take no space
+        visible: plugin.enabled
+        width: plugin.enabled ? implicitWidth : -control.spacing // hidden buttons take no space
         text: plugin.title
         toolTip: plugin.descr
         iconName: plugin.icon
