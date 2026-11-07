@@ -170,16 +170,20 @@ void AppMenu::createMenuBar()
         if (!f)
             continue;
         QMenu *menu = _menuBar->addMenu(g->title());
+        // native menu bar (macOS) follows the group visibility, e.g. hidden in the lite profile
+        menu->menuAction()->setVisible(g->visible());
+        connect(g, &Fact::visibleChanged, menu, [g, menu]() {
+            menu->menuAction()->setVisible(g->visible());
+        });
         f->setOpt("qmenu", QVariant::fromValue(menu));
         updateMenu(f);
         auto model = f->model();
         if (model) {
-            connect(
-                model,
-                &QAbstractItemModel::layoutChanged,
-                this,
-                [this, f]() { updateMenu(f); },
-                Qt::QueuedConnection);
+            auto update = [this, f]() { updateMenu(f); };
+            connect(model, &QAbstractItemModel::layoutChanged, menu, update, Qt::QueuedConnection);
+            // items added or removed at runtime (tools detached in the lite profile)
+            connect(model, &QAbstractItemModel::rowsInserted, menu, update, Qt::QueuedConnection);
+            connect(model, &QAbstractItemModel::rowsRemoved, menu, update, Qt::QueuedConnection);
         }
     }
 }
