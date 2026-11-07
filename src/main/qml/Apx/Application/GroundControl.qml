@@ -28,7 +28,8 @@ import "qrc:/Apx/Application"
 /*
 
     Main layout QML.
-    Copy this file to `~/Documents/UAVOS/Plugins` and edit to override.
+    The file `~/Documents/UAVOS/Plugins/main/GroundControl.qml` overrides this layout:
+    either a copy of this file or a derived `GroundControl { }` item.
 
 */
 
@@ -44,12 +45,22 @@ Item {
     }
     function add(item, layout, index)
     {
+        // plugins switched off in preferences are not shown
+        var pluginSettings = apx.settings.application.child("plugins")
+        var p = (item.name && pluginSettings) ? pluginSettings.child(item.name) : null
+        if(p && !p.value)
+            return
         if(instrumentsLayout.add(item, layout, index))
             return
         if(mainLayout.add(item, layout, index))
             return
         console.error("Unsupported item layout:", layout, item)
     }
+
+    // customization points, set them in the override file
+    property bool showWindowsButton: true   // windows menu button in the task bar
+    property bool showFleetControls: true   // fleet and nodes buttons in the commands panel
+    property bool showControlsMenu: true    // controls group and choke in the commands menu
 
     //internal
     readonly property int instrumentsHeight: width*0.2

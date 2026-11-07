@@ -93,6 +93,7 @@ RowLayout {
     //windows menu
     IconButton {
         Layout.fillHeight: true
+        visible: groundControl.showWindowsButton
         iconName: apx.windows.icon
         toolTip: apx.windows.title
         onTriggered: apx.windows.trigger()
