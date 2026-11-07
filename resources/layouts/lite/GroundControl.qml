@@ -16,9 +16,8 @@ import Apx.Application
 
 GroundControl {
 
-    showWindowsButton: false
-    showFleetControls: false
-    showControlsMenu: false
+    // nodes button, controls group and choke in the commands panel
+    hiddenItems: ["nodes", "controls", "choke"]
 
     // plugins switched off at startup
     readonly property var disabledPlugins: [

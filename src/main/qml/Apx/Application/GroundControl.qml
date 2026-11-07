@@ -57,10 +57,12 @@ Item {
         console.error("Unsupported item layout:", layout, item)
     }
 
-    // customization points, set them in the override file
-    property bool showWindowsButton: true   // windows menu button in the task bar
-    property bool showFleetControls: true   // fleet and nodes buttons in the commands panel
-    property bool showControlsMenu: true    // controls group and choke in the commands menu
+    // interface elements hidden by the override file, by element name
+    property var hiddenItems: []
+    function itemVisible(name)
+    {
+        return hiddenItems.indexOf(name) < 0
+    }
 
     //internal
     readonly property int instrumentsHeight: width*0.2
