@@ -26,8 +26,8 @@ import QtQuick.Controls.Material
 
 import Apx.Common
 
-// labeled input field of the checklist form
-RowLayout {
+// input field of the checklist form: label above, text field across the full width
+ColumnLayout {
     id: control
 
     property string label
@@ -36,17 +36,18 @@ RowLayout {
 
     readonly property real fs: Style.fontSize*1.4
 
-    spacing: Style.spacing
+    spacing: 0
 
     Text {
+        Layout.fillWidth: true
         text: control.label
         color: "#ddd"
         font: apx.font_narrow(control.fs)
+        wrapMode: Text.Wrap
     }
     TextField {
         id: field
         Layout.fillWidth: true
-        Layout.preferredWidth: Style.fontSize*8
         font: apx.font_narrow(control.fs)
         color: "#fff"
         selectByMouse: true
