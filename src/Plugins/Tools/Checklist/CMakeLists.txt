@@ -1,3 +1,3 @@
 apx_plugin(SRCS "*.qml")
 
-apx_qrc(${MODULE} PREFIX ${MODULE} SRCS "*.qml;*.js;*.md;ui/*.qml")
+apx_qrc(${MODULE} PREFIX ${MODULE} SRCS "*.qml;*.js;ui/*.qml")

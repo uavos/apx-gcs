@@ -20,6 +20,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
+import QtCore
+import Qt.labs.folderlistmodel
 
 import Apx.Application
 import APX.Facts
@@ -28,9 +30,12 @@ import "ui"
 import "ChecklistParser.js" as Parser
 
 /*
-    Checklist plugin: aircraft check procedure driven by Checklist.md (plugin resources).
+    Checklist plugin: aircraft check procedure driven by a Markdown file.
 
-    Tools -> Checklist -> Enabled (off by default) shows the window and loads the procedure.
+    Procedures live in <Documents>/UAVOS/Checklists/*.md. The first file (by name) whose name is
+    the beginning of the current unit callsign (case insensitive: Borey-123 -> borey.md) is the
+    procedure of that unit, checklist.md is the default when nothing matches; while a procedure
+    exists a launcher button is shown in the task bar and opens the window.
     This file is the engine: it parses the Markdown (ChecklistParser.js), fills {{expression}}
     placeholders of the texts and runs the steps one by one. The window (ui/ChecklistWindow.qml)
     only displays `doc`, `results`, `buttons`, `form`, `message` and calls back
@@ -51,43 +56,80 @@ AppPlugin {
     descr: qsTr("Aircraft check procedures")
     icon: "clipboard-check"
 
-    property string file: "qrc:/Checklist/Checklist.md"
+    // ---------------------------------------------------------------- procedure file
+    readonly property string dir: StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/UAVOS/Checklists"
+    readonly property string callsign: apx.fleet.current ? apx.fleet.current.title : ""
+    property string file: ""         // procedure of the current unit, empty when there is none
 
-    // ---------------------------------------------------------------- tools menu
+    FolderListModel {
+        id: folder
+        folder: plugin.dir
+        nameFilters: ["*.md"]
+        caseSensitive: false
+        sortField: FolderListModel.Name
+        sortCaseSensitive: false
+        showDirs: false
+        onCountChanged: plugin.match()
+        onStatusChanged: if(status === FolderListModel.Ready) plugin.match()
+    }
+    onCallsignChanged: match()
+    // the first file (by name) that starts the callsign, checklist.md when none does
+    function match()
+    {
+        var cs = callsign.toLowerCase()
+        var found = "", fallback = ""
+        for (var i = 0; i < folder.count; ++i) {
+            var n = String(folder.get(i, "fileBaseName")).toLowerCase()
+            var path = String(folder.get(i, "filePath"))
+            if(n === "checklist"){
+                if(!fallback) fallback = path
+                continue
+            }
+            if(!found && n && cs && cs.indexOf(n) === 0) found = path
+        }
+        file = found ? found : fallback
+    }
+    onFileChanged: {
+        if(!file) shown = false
+        else if(shown) load()
+    }
+
+    // ---------------------------------------------------------------- task bar button and window
     Fact {
+        id: f_launcher
+        property bool showLauncher: true   // task bar button (see TaskBar.qml)
         name: "checklist"
         title: qsTr("Checklist")
-        descr: qsTr("Aircraft check procedure")
+        descr: callsign + ": " + file
         icon: "clipboard-check"
-        flags: Fact.Group
-        section: qsTr("Tools")
-        Component.onCompleted: parentFact = apx.tools
-        Fact {
-            id: f_enabled
-            name: "use"
-            title: qsTr("Enabled")
-            descr: qsTr("Show the checklist window")
-            flags: Fact.Bool | Fact.PersistentValue
-            defaultValue: false
+        parentFact: plugin.file ? apx.windows : null   // a child (not an Action): the task bar lists apx.windows children
+        onTriggered: plugin.open()
+    }
+    property bool shown: false
+    function open()
+    {
+        if(!file) return
+        if(!shown){
+            load()
+            shown = true
+        }
+        if(window.item){
+            window.item.raise()
+            window.item.requestActivate()
         }
     }
-    readonly property bool opened: f_enabled.value ? true : false
-    onOpenedChanged: opened ? load() : reset()
-
-    // the window lives while the tool is enabled; closing it disables the tool
     Loader {
-        active: plugin.opened
+        id: window
+        active: plugin.shown
         sourceComponent: ChecklistWindow {
             checklist: plugin
-            onClosing: Qt.callLater(function(){ f_enabled.value = false })
+            onClosing: Qt.callLater(function(){ plugin.shown = false })
         }
     }
+    onShownChanged: if(!shown) reset()
 
     // reachable from QML and scripts as ui.checklist (phase, takeoffAllowed)
-    Component.onCompleted: {
-        ui.checklist = plugin
-        if(opened && !steps.length) load()
-    }
+    Component.onCompleted: ui.checklist = plugin
 
     // ---------------------------------------------------------------- procedure
     property var doc: ({ "title": "", "intro": "", "shared": "", "steps": [] })
@@ -96,8 +138,8 @@ AppPlugin {
     function load()
     {
         reset()
-        var text = application.loadText(file)
-        if(!text) console.warn("Checklist: can't read", file)
+        var text = file ? application.loadText(file) : ""
+        if(file && !text) console.warn("Checklist: can't read", file)
         var d = Parser.parse(text)
         // {{expression}} in titles and descriptions is replaced by its value, shared block variables are visible
         var err = runShared(d.shared)
