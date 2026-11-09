@@ -783,12 +783,11 @@ void NodeItem::paramsSaved(QJsonObject params)
         if (bMod) {
             // field was modified and uploaded - reset modified status
             f->backup();
-        } else {
-            // Field was not modified, but updated (f.ex. from other GCS)
+        } else if (f->modified()) {
+            // Field was not modified, but updated to a different value (f.ex. from other GCS)
             // Should never happen because GCS also marks fields modified when request is sent.
-            // Mark field as modified, indicating unsync with other GCS
+            // Field stays modified, indicating unsync with other GCS
             apxMsgW() << tr("Modified field") << key;
-            f->setModified(true);
         }
     }
 

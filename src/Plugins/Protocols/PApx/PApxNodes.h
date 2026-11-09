@@ -23,6 +23,8 @@
 
 #include "PApxUnit.h"
 
+#include <QPointer>
+
 class PApxUnit;
 class PApxNode;
 class PApxNodeRequest;
@@ -36,8 +38,14 @@ public:
 
     bool process_incoming_data(const xbus::pid_s &pid, PStreamReader &stream, bool is_remote_uplink);
 
+    // node data from another GCS instance
+    void process_gcs_data(const xbus::pid_s &pid, PStreamReader &stream);
+
     auto nodes() const { return _nodes.values(); }
     auto local() const { return _local; }
+
+    // true while nodes data from another GCS instance is loaded
+    auto gcsLoading() const { return _gcs_loading; }
 
     void cancel_requests(PApxNode *node);
 
@@ -55,6 +63,28 @@ private:
     PApxNodeRequest *_request{};
     uint _retry{};
 
+    // nodes data exchange between GCS instances
+    Fact *_f_gcsnodes{}; // datalink option to accept the data
+    bool _gcs_loading{};
+
+    // nodes requested by another GCS instance, sent individually after a short delay
+    QList<QPointer<PApxNode>> _gcs_tx;
+    QTimer _gcsSend;
+
+    // node data parts being received, by node uid
+    struct GcsRx
+    {
+        uint32_t hash;
+        uint32_t size;
+        QByteArray data;
+    };
+    QHash<QString, GcsRx> _gcs_rx;
+
+    bool gcsNodesEnabled() const;
+    void gcsNodeRequested(PApxNode *node, const xbus::pid_s &pid, PStreamReader &stream);
+    void sendGcsNode(PApxNode *node);
+    bool loadGcsNode(QJsonObject node);
+
 protected:
     void requestSearch() override;
 
@@ -67,6 +97,8 @@ private slots:
     void request_timeout();
     void request_next();
     void request_current();
+
+    void sendGcsNodes();
 
     void updateActive();
 };
