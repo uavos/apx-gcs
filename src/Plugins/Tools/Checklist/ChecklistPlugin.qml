@@ -32,13 +32,16 @@ import "ChecklistParser.js" as Parser
 
     Tools -> Checklist -> Enabled (off by default) shows the window and loads the procedure.
     This file is the engine: it parses the Markdown (ChecklistParser.js), fills {{expression}}
-    placeholders of the texts from the shared block scope and runs the steps one by one. The window (ui/ChecklistWindow.qml) only displays `doc`, `results`, `buttons`,
-    `form`, `message` and calls back start/abort/answer/submit/retry/rerun/proceed.
+    placeholders of the texts and runs the steps one by one. The window (ui/ChecklistWindow.qml)
+    only displays `doc`, `results`, `buttons`, `form`, `message` and calls back
+    start/abort/answer/submit/retry/rerun/proceed.
 
-    A step script runs in the GCS JS engine with the `step` object (see `api` below);
-    `step.data` keeps values between the steps of one run.
-    It finishes the step with step.pass()/step.fail(); when it returns with nothing pending
-    (no buttons, no form, no poll) the step passes. A step without a script shows Confirm.
+    All scripts run in the global scope of the GCS JS engine, the same one as the Terminal
+    console: the shared block is executed once per run (and once on load, for the {{}} texts),
+    the variables and functions of a step stay visible to the following steps. The step script
+    gets the global `step` object (see `api` below) and finishes the step with step.pass()/
+    step.fail(); when it returns with nothing pending (no buttons, no form, no poll) the step
+    passes. A step without a script shows Confirm.
 */
 
 AppPlugin {
@@ -83,7 +86,7 @@ AppPlugin {
     // reachable from QML and scripts as ui.checklist (phase, takeoffAllowed)
     Component.onCompleted: {
         ui.checklist = plugin
-        if(opened) load()
+        if(opened && !steps.length) load()
     }
 
     // ---------------------------------------------------------------- procedure
@@ -96,31 +99,43 @@ AppPlugin {
         var text = application.loadText(file)
         if(!text) console.warn("Checklist: can't read", file)
         var d = Parser.parse(text)
-        // {{expression}} in titles and descriptions is replaced by its value from the shared block scope
-        var ev = application.jsexec("(function(){\n" + d.shared + "\nreturn function(__e){ return eval(__e) }\n})()")
-        if(typeof(ev) !== "function"){
-            console.warn("Checklist: shared block error:", String(ev))
-            ev = null
+        // {{expression}} in titles and descriptions is replaced by its value, shared block variables are visible
+        var err = runShared(d.shared)
+        if(err){
+            console.warn("Checklist: shared block error:", err)
+        }else{
+            d.title = expand(d.title)
+            d.intro = expand(d.intro)
+            d.steps.forEach(function(st){
+                st.title = expand(st.title)
+                st.body = expand(st.body)
+            })
         }
-        d.title = expand(d.title, ev)
-        d.intro = expand(d.intro, ev)
-        d.steps.forEach(function(st){
-            st.title = expand(st.title, ev)
-            st.body = expand(st.body, ev)
-        })
         doc = d
     }
-    function expand(text, ev)
+    function expand(text)
     {
         return text.replace(/\{\{([\s\S]+?)\}\}/g, function(m, e){
-            if(!ev) return m
-            try {
-                var v = ev(e)
-                return v === undefined || v === null ? "" : String(v)
-            } catch(err) {
-                return "{{" + String(err) + "}}"
-            }
+            var v = application.jsexec("(" + e + "\n)")
+            if(errorOf(v)) return "{{" + errorOf(v) + "}}"
+            return v === undefined || v === null ? "" : String(v)
         })
+    }
+
+    // ---------------------------------------------------------------- scripts environment
+    // scripts are evaluated in the global JS scope (as Terminal commands); `step` is the api object
+    function runShared(code)
+    {
+        ui.checklist = plugin   // may run before Component.onCompleted (persistent setting restored)
+        application.jsexec("var step = ui.checklist.api")
+        return errorOf(application.jsexec(code))
+    }
+    // error text of a jsexec result, "" when the script completed
+    function errorOf(v)
+    {
+        if(v instanceof Error) return String(v)
+        if(v && typeof(v) === "object" && typeof(v.name) === "string" && /Error$/.test(v.name) && v.message !== undefined) return v.name + ": " + v.message
+        return ""
     }
 
     // ---------------------------------------------------------------- run phase
@@ -131,7 +146,6 @@ AppPlugin {
     property var buttons: []         // [{text, kind}] requested by the step script
     property var form: null          // {label: default} requested by the step script
     property bool takeoffAllowed: false
-    property var store: ({})        // step.data: values shared by the steps of one run, cleared on start
 
     readonly property var step: (current >= 0 && current < steps.length) ? steps[current] : null
     readonly property bool failed: !!(step && results[current] && results[current].status === "fail")
@@ -148,8 +162,6 @@ AppPlugin {
 
     // ---------------------------------------------------------------- api for step scripts
     readonly property var api: ({
-        // storage shared by all steps of the run (step.data.mode = answer), cleared on start
-        get data() { return plugin.store },
         // buttons for the operator, handler(answer) is called on press;
         // items are strings or {text, kind, restart}, kind: ok (default), primary, danger, warn, neutral;
         // a button with restart: true restarts the step instead of calling the handler
@@ -189,10 +201,11 @@ AppPlugin {
     function start()
     {
         reset()
-        store = {}
+        _sharedError = runShared(doc.shared)
         phase = "running"
         next()
     }
+    property string _sharedError: ""   // the shared block failed on start: every step fails with it
     function abort()
     {
         if(phase !== "running") return
@@ -269,14 +282,18 @@ AppPlugin {
             api.ask([qsTr("Confirm")], null)
             return
         }
-        var fn = application.jsexec("(function(step){\n" + doc.shared + "\n" + step.code + "\n})")
-        if(typeof(fn) !== "function"){
-            fail(qsTr("Script error") + ": " + String(fn))
+        if(_sharedError){
+            fail(qsTr("Shared block error") + ": " + _sharedError)
             return
         }
-        call(fn, api)
+        var err = errorOf(application.jsexec(step.code))
+        if(err){
+            fail(qsTr("Script error") + ": " + err)
+            return
+        }
+        settle()
     }
-    // run a script callback: errors fail the step, nothing pending passes it
+    // run a script callback: errors fail the step
     function call(fn, arg)
     {
         if(!fn) return
@@ -286,6 +303,11 @@ AppPlugin {
             fail(qsTr("Script error") + ": " + String(e))
             return
         }
+        settle()
+    }
+    // a script that returned with nothing pending passes the step
+    function settle()
+    {
         if(phase === "running" && !_done && !pending) pass(message)
     }
     // operator pressed a button (by its text)

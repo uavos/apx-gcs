@@ -16,7 +16,7 @@ edit them for the aircraft. The step texts show the current values from that blo
 for example battery minimum {{cfg.batteryMin}} V.
 
 ```js
-// shared block: runs before every step script
+// shared block: runs once when the procedure starts, visible to every step
 var cfg = {
     batteryMin: 15,              // V, sns.pwr.vsys
     fuelMin: 10,                 // %, sns.fuel.level

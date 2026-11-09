@@ -30,22 +30,23 @@ Files:
 Markdown format, nothing else is parsed:
 
 - `# Title` - procedure title, the text below it is the description;
-- a ```` ```js ```` block in the description is shared code (thresholds, helpers),
-  prepended to every step script;
+- a ```` ```js ```` block in the description is shared code (thresholds, helpers), executed
+  once when the procedure starts;
 - `## Step` - a step, the text below it is shown to the operator;
 - `{{expression}}` in the title, the description or a step text is replaced by the value
   of the JS expression, evaluated in the shared block scope when the procedure is loaded
   (`{{cfg.batteryMin}}`, `{{cfg.ers.length}}`); an error is shown in place;
-- a ```` ```js ```` block in a step is the step script. It runs in the GCS JS engine
-  (same scope as the Terminal console: `cmd.proc.mode`, `sns.pwr.vsys`, `apx`...)
-  with the `step` object:
+- a ```` ```js ```` block in a step is the step script. All scripts run in the global scope
+  of the GCS JS engine, the same as the Terminal console (`cmd.proc.mode`, `sns.pwr.vsys`,
+  `apx`...): what a step declares stays visible to the following steps, so a value chosen
+  in one step (`mode = answer`) can be checked in a later one (`if(mode === ...)`). Names of
+  GCS globals are write-protected; a top-level `return` is not allowed. The script uses the
+  global `step` object:
   - `step.ask(["A", {text: "B", kind: "danger"}], function(answer){})` - buttons for the
     operator; kind picks the color: ok (default), primary, danger, warn, neutral;
     `{text: "Restart", kind: "warn", restart: true}` restarts the step instead of
     calling the handler;
   - `step.restart()` - run the step from the beginning;
-  - `step.data` - object shared by all steps of one run (`step.data.mode = answer` in one
-    step, `if(step.data.mode === ...)` in a later one); cleared on **Start**;
   - `step.form({"Label": default}, function(values){})` - input fields;
   - `step.poll(function(){ return cond }, seconds, then)` - wait for a condition,
     timeout fails the step, `then` is optional (default: pass);
