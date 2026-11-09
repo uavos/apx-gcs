@@ -23,13 +23,15 @@ import QtQuick
 import QtCore
 
 import Apx.Application
-import APX.Facts
 
 /*
     EMIP instrument panel (engine, fuel, annunciators).
     Bindings and limits: bundled defaults in EmipConfig.qml, overridden by the user file
     <Documents>/UAVOS/emip/emip.json (same keys).
-    The panel is off by default: Tools, System features, EMIP, Enabled.
+    The panel is off by default: on its first start the plugin switches itself off in the
+    plugins settings (the standard per-plugin switch) and remembers that with a stamp in
+    QSettings, nothing is shown that time. Switch it on in Preferences, Plugins, EMIP: the
+    plugin is loaded again and registers the panel and the FP page.
 */
 
 AppPlugin {
@@ -44,81 +46,28 @@ AppPlugin {
     visible: false // shown by the instruments layout once registered
     uiComponent: "main"
 
-    // the only setting of the plugin
-    Fact {
-        id: f_tool
-        name: "emip"
-        title: qsTr("EMIP")
-        descr: qsTr("Engine monitoring panel settings")
-        icon: "gauge"
-        flags: Fact.Group
-        section: qsTr("System features")
-        Component.onCompleted: parentFact = apx.tools
-        Fact {
-            id: f_enabled
-            name: "enabled"
-            title: qsTr("Enabled")
-            descr: qsTr("Show the panel and the FP page")
-            flags: Fact.Bool | Fact.PersistentValue
-            defaultValue: false
-        }
+    // first start: switch the plugin off (standard plugins setting) once, stamp it in QSettings
+    Settings {
+        id: stamp
+        category: "Emip"
+        property bool initialized: false
     }
-    readonly property bool panelEnabled: f_enabled.value ? true : false
+    readonly property var pluginSwitch: apx.settings.application.plugins.emip
 
-    // the panel and the FP page are registered while enabled
-    property bool registered: false
-    onConfigure: update()
-    onPanelEnabledChanged: update()
-    function update()
-    {
-        if(!ui.main || registered === panelEnabled)
-            return
-        registered = panelEnabled
-        if(panelEnabled){
-            ui.main.add(plugin, GroundControl.Layout.Instrument)
-            // fuel pumps page in the Controls panel
-            if(typeof(ui.main.addControlPage) === "function")
-                ui.main.addControlPage({ "name": "FP", "mode": "", "source": Qt.resolvedUrl("EmipPageFP.qml") })
+    onConfigure: {
+        if(!stamp.initialized){
+            stamp.initialized = true
+            if(pluginSwitch) pluginSwitch.value = false
             return
         }
-        var inst = findInstruments(ui.main, 3)
-        if(inst)
-            removeFrom(inst)
-        if(ui.main.controlPages)
-            ui.main.controlPages = ui.main.controlPages.filter(function(p){ return p.name !== "FP" })
+        register()
     }
-    // the instruments layout has no remove: take the entry out of the buttons model
-    // (the model of its ListView) and switch its StackView to another panel.
-    // The layout keeps the plugin in its plugins array, the next add appends a new entry
-    function removeFrom(inst)
+    // the panel in the instruments area and the fuel pumps page in the Controls panel
+    function register()
     {
-        var model = null
-        var stack = null
-        for(var i = 0; i < inst.children.length; ++i){
-            var c = inst.children[i]
-            if(c.delegate !== undefined && c.model !== undefined) model = c.model
-            else if(c.replace !== undefined && c.currentItem !== undefined) stack = c
-        }
-        if(!model || !inst.plugins) return
-        for(var j = 0; j < model.count; ++j){
-            if(inst.plugins[model.get(j).idx] !== plugin) continue
-            model.remove(j)
-            break
-        }
-        if(stack && stack.currentItem === plugin && model.count > 0 && inst.show)
-            inst.show(inst.plugins[model.get(0).idx])
-        plugin.visible = false
-    }
-    // the instruments stack of the main layout (InstrumentsLayout.instrumentsItem)
-    function findInstruments(item, depth)
-    {
-        if(!item || depth < 0) return null
-        if(item.instrumentsItem) return item.instrumentsItem
-        for(var i = 0; i < item.children.length; ++i){
-            var r = findInstruments(item.children[i], depth - 1)
-            if(r) return r
-        }
-        return null
+        ui.main.add(plugin, GroundControl.Layout.Instrument)
+        if(typeof(ui.main.addControlPage) === "function")
+            ui.main.addControlPage({ "name": "FP", "mode": "", "source": Qt.resolvedUrl("EmipPageFP.qml") })
     }
 
     // user JSON config overrides the bundled defaults (same keys as EmipConfig.qml)
