@@ -80,6 +80,15 @@ void PApxUnit::process_incoming_data(PStreamReader &stream, bool is_remote_uplin
     }
     emit packetReceived(uid);
 
+    if (uid == mandala::cmd::env::aux::gcs::uid) {
+        // data exchange between GCS instances
+        if (is_remote_uplink)
+            static_cast<PApxNodes *>(m_nodes)->process_gcs_data(pid, stream);
+        else
+            trace()->data(stream.payload());
+        return;
+    }
+
     if (static_cast<PApxNodes *>(m_nodes)->process_incoming_data(pid, stream, is_remote_uplink)) {
         setStreamType(NMT);
         return;
