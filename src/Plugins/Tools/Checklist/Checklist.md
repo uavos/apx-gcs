@@ -12,7 +12,8 @@ and the operator. A failed step can be repeated with **Retry** or passed over wi
 - the area around the control surfaces, the propeller and the parachute cover is clear.
 
 Thresholds and signal names used by the steps are in the shared block below,
-edit them for the aircraft.
+edit them for the aircraft. The step texts show the current values from that block,
+for example battery minimum {{cfg.batteryMin}} V.
 
 ```js
 // shared block: runs before every step script
@@ -79,13 +80,13 @@ Problems are listed below the description while the check waits for valid data
 
 | Check | Condition |
 |---|---|
-| Battery voltage | `sns.pwr.vsys` above `batteryMin` |
-| Fuel level | `sns.fuel.level` above `fuelMin` |
+| Battery voltage | `sns.pwr.vsys` above {{cfg.batteryMin}} V |
+| Fuel level | `sns.fuel.level` above {{cfg.fuelMin}} % |
 | Nodes | all nodes are loaded and valid |
 | EKF | attitude estimation status is OK |
-| Variables | every entry of `ranges` is inside its range |
-| Engine status | `engineStatus.path` equals `engineStatus.ok` |
-| GPS | 3D fix and at least `gpsMinSats` used satellites |
+| Variables | {{cfg.ranges.map(function (r) { return r.path + " in " + r.min + ".." + r.max }).join(", ")}} |
+| Engine status | `{{cfg.engineStatus.path}}` equals {{cfg.engineStatus.ok}} |
+| GPS | 3D fix and at least {{cfg.gpsMinSats}} used satellites |
 
 ```js
 function problems() {
@@ -115,9 +116,9 @@ step.poll(function () {
 Enter the flight parameters. The values are written to the autopilot nodes
 (parameter names from `params` in the shared block) and uploaded.
 
-- **Dive altitude** is limited from below by `diveAltitudeMin`;
+- **Dive altitude** is limited from below by {{cfg.diveAltitudeMin}} m;
 - **Safety timeout** is the return time after a datalink loss, seconds;
-- **Dive angle** must be inside `diveAngleMin`..`diveAngleMax`.
+- **Dive angle** must be inside {{cfg.diveAngleMin}}..{{cfg.diveAngleMax}} deg.
 
 Guide altitude is set to 0 automatically.
 
@@ -189,8 +190,8 @@ step.ask([{ text: "Start", kind: "primary" }], function () {
 ## Semi-automatic control (RPV)
 
 Put the aircraft level and press **Start**: the system switches to RPV and waits for
-roll and pitch inside `levelMaxDeg`. Then the operator tells the technician how to tilt
-the aircraft, the system detects the tilt (`tiltMinDeg`..`tiltMaxDeg`) and asks whether
+roll and pitch within {{cfg.levelMaxDeg}} deg. Then the operator tells the technician how to tilt
+the aircraft, the system detects the tilt ({{cfg.tiltMinDeg}}..{{cfg.tiltMaxDeg}} deg) and asks whether
 the control surfaces reacted correctly.
 
 | Tilt | Expected reaction |
@@ -240,7 +241,7 @@ step.ask([{ text: "Start", kind: "primary" }], function () {
 
 The operator tells the technician to turn the aircraft to the next direction and
 presses **Check**. The estimated heading must match the direction within
-`magToleranceDeg`.
+{{cfg.magToleranceDeg}} deg.
 
 Directions: north, west, south, east (counter-clockwise), from the start the aircraft
 makes a full turn.
@@ -265,8 +266,8 @@ check(0)
 ## Pitot
 
 Put the cover on the pitot tube and press **Start**. The system checks that the
-airspeed is below `airspeedZeroMax`. Then remove the cover and blow into the tube:
-the airspeed must rise above `airspeedBlowMin`.
+airspeed is below {{cfg.airspeedZeroMax}} m/s. Then remove the cover and blow into the tube:
+the airspeed must rise above {{cfg.airspeedBlowMin}} m/s.
 
 ```js
 step.ask([{ text: "Start", kind: "primary" }], function () {
@@ -287,7 +288,7 @@ step.ask([{ text: "Start", kind: "primary" }], function () {
 ## Parachute
 
 Press **Start**: the system opens the parachute locks one after another
-(`ers` list in the shared block, Rel-1 first), the technician confirms every opening.
+({{cfg.ers.length}} locks, Rel-1 first), the technician confirms every opening.
 After the last lock the system closes all locks; confirm that the risers are back in
 their locks, the auxiliary lines are removed and the cover is closed.
 
@@ -314,8 +315,8 @@ step.ask([{ text: "Start", kind: "primary" }], function () { open(0) })
 
 ## Fuel pumps
 
-Press **Start**: the system switches the pumps on one by one (`pumps` list in the
-shared block), the technician confirms each. Then the fuel transfer is switched to
+Press **Start**: the system switches the {{cfg.pumps.length}} pumps on one by one,
+the technician confirms each. Then the fuel transfer is switched to
 automatic mode and the ignition is turned on to check the transfer algorithm.
 Confirm the result, the ignition is turned off.
 
@@ -349,7 +350,7 @@ step.ask([{ text: "Start", kind: "primary" }], function () { pump(0) })
 Put the aircraft 2-3 m behind the catapult pointing along the launch direction and
 press **Aircraft positioned**: the system records the heading. Install the aircraft
 on the catapult without turning or tilting it, then press **Installed**. If the heading
-drifts by more than `catapultHeadingToleranceDeg` the step fails and the positioning
+drifts by more than {{cfg.catapultHeadingToleranceDeg}} deg the step fails and the positioning
 is repeated. Engine start stays blocked until the Takeoff mode is activated.
 
 ```js
@@ -370,7 +371,7 @@ step.ask([{ text: "Aircraft positioned", kind: "primary" }], function () {
 2. Start the engine: the system watches the engine status and errors.
 3. Press **next stage** when the engine runs without errors, the system checks for
    factors preventing the takeoff.
-4. **Ready**: the engine must reach `rpmReady`, no errors, nothing prevents the takeoff.
+4. **Ready**: the engine must reach {{cfg.rpmReady}} rpm, no errors, nothing prevents the takeoff.
 
 On failure the engine rpm is reduced to zero and the takeoff is prohibited.
 

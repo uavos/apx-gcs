@@ -33,6 +33,9 @@ Markdown format, nothing else is parsed:
 - a ```` ```js ```` block in the description is shared code (thresholds, helpers),
   prepended to every step script;
 - `## Step` - a step, the text below it is shown to the operator;
+- `{{expression}}` in the title, the description or a step text is replaced by the value
+  of the JS expression, evaluated in the shared block scope when the procedure is loaded
+  (`{{cfg.batteryMin}}`, `{{cfg.ers.length}}`); an error is shown in place;
 - a ```` ```js ```` block in a step is the step script. It runs in the GCS JS engine
   (same scope as the Terminal console: `cmd.proc.mode`, `sns.pwr.vsys`, `apx`...)
   with the `step` object:

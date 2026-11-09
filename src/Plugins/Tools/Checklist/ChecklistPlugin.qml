@@ -31,8 +31,8 @@ import "ChecklistParser.js" as Parser
     Checklist plugin: aircraft check procedure driven by Checklist.md (plugin resources).
 
     Tools -> Checklist -> Enabled (off by default) shows the window and loads the procedure.
-    This file is the engine: it parses the Markdown (ChecklistParser.js) and runs the steps
-    one by one. The window (ui/ChecklistWindow.qml) only displays `doc`, `results`, `buttons`,
+    This file is the engine: it parses the Markdown (ChecklistParser.js), fills {{expression}}
+    placeholders of the texts from the shared block scope and runs the steps one by one. The window (ui/ChecklistWindow.qml) only displays `doc`, `results`, `buttons`,
     `form`, `message` and calls back start/abort/answer/submit/retry/rerun/proceed.
 
     A step script runs in the GCS JS engine with the `step` object (see `api` below).
@@ -94,7 +94,32 @@ AppPlugin {
         reset()
         var text = application.loadText(file)
         if(!text) console.warn("Checklist: can't read", file)
-        doc = Parser.parse(text)
+        var d = Parser.parse(text)
+        // {{expression}} in titles and descriptions is replaced by its value from the shared block scope
+        var ev = application.jsexec("(function(){\n" + d.shared + "\nreturn function(__e){ return eval(__e) }\n})()")
+        if(typeof(ev) !== "function"){
+            console.warn("Checklist: shared block error:", String(ev))
+            ev = null
+        }
+        d.title = expand(d.title, ev)
+        d.intro = expand(d.intro, ev)
+        d.steps.forEach(function(st){
+            st.title = expand(st.title, ev)
+            st.body = expand(st.body, ev)
+        })
+        doc = d
+    }
+    function expand(text, ev)
+    {
+        return text.replace(/\{\{([\s\S]+?)\}\}/g, function(m, e){
+            if(!ev) return m
+            try {
+                var v = ev(e)
+                return v === undefined || v === null ? "" : String(v)
+            } catch(err) {
+                return "{{" + String(err) + "}}"
+            }
+        })
     }
 
     // ---------------------------------------------------------------- run phase
