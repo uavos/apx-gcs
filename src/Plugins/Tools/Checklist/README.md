@@ -44,6 +44,8 @@ Markdown format, nothing else is parsed:
     `{text: "Restart", kind: "warn", restart: true}` restarts the step instead of
     calling the handler;
   - `step.restart()` - run the step from the beginning;
+  - `step.data` - object shared by all steps of one run (`step.data.mode = answer` in one
+    step, `if(step.data.mode === ...)` in a later one); cleared on **Start**;
   - `step.form({"Label": default}, function(values){})` - input fields;
   - `step.poll(function(){ return cond }, seconds, then)` - wait for a condition,
     timeout fails the step, `then` is optional (default: pass);

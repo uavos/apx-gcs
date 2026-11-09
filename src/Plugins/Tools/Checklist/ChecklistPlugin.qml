@@ -35,7 +35,8 @@ import "ChecklistParser.js" as Parser
     placeholders of the texts from the shared block scope and runs the steps one by one. The window (ui/ChecklistWindow.qml) only displays `doc`, `results`, `buttons`,
     `form`, `message` and calls back start/abort/answer/submit/retry/rerun/proceed.
 
-    A step script runs in the GCS JS engine with the `step` object (see `api` below).
+    A step script runs in the GCS JS engine with the `step` object (see `api` below);
+    `step.data` keeps values between the steps of one run.
     It finishes the step with step.pass()/step.fail(); when it returns with nothing pending
     (no buttons, no form, no poll) the step passes. A step without a script shows Confirm.
 */
@@ -130,6 +131,7 @@ AppPlugin {
     property var buttons: []         // [{text, kind}] requested by the step script
     property var form: null          // {label: default} requested by the step script
     property bool takeoffAllowed: false
+    property var store: ({})        // step.data: values shared by the steps of one run, cleared on start
 
     readonly property var step: (current >= 0 && current < steps.length) ? steps[current] : null
     readonly property bool failed: !!(step && results[current] && results[current].status === "fail")
@@ -146,6 +148,8 @@ AppPlugin {
 
     // ---------------------------------------------------------------- api for step scripts
     readonly property var api: ({
+        // storage shared by all steps of the run (step.data.mode = answer), cleared on start
+        get data() { return plugin.store },
         // buttons for the operator, handler(answer) is called on press;
         // items are strings or {text, kind, restart}, kind: ok (default), primary, danger, warn, neutral;
         // a button with restart: true restarts the step instead of calling the handler
@@ -185,6 +189,7 @@ AppPlugin {
     function start()
     {
         reset()
+        store = {}
         phase = "running"
         next()
     }
