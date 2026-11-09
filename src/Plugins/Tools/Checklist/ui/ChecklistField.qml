@@ -20,13 +20,37 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
 import Apx.Common
 
-// button of the checklist window: kind selects the color (see ChecklistStyle)
-TextButton {
-    property string kind: "ok"
-    size: ChecklistStyle.buttonSize
-    color: ChecklistStyle.buttonColor(kind)
-    textBold: kind === "primary"
+// labeled input field of the checklist form
+RowLayout {
+    id: control
+
+    property string label
+    property alias value: field.text
+    signal accepted()
+
+    readonly property real fs: Style.fontSize*1.4
+
+    spacing: Style.spacing
+
+    Text {
+        text: control.label
+        color: "#ddd"
+        font: apx.font_narrow(control.fs)
+    }
+    TextField {
+        id: field
+        Layout.fillWidth: true
+        Layout.preferredWidth: Style.fontSize*8
+        font: apx.font_narrow(control.fs)
+        color: "#fff"
+        selectByMouse: true
+        Material.accent: "#4a8df8"
+        onAccepted: control.accepted()
+    }
 }

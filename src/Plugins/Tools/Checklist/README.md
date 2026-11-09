@@ -4,18 +4,29 @@ page: plugins
 
 # Checklist
 
-Aircraft check procedure driven by a Markdown file with embedded JS snippets,
-shown in its own window (Tools -> Checklist). Steps run strictly in order: the
-current step is highlighted, only the steps already reached can be opened, none can
-be skipped. Any step can be restarted: the current one with **Retry**, a passed one with
-**Repeat step** (the check returns to the current step afterwards); a failed step is
-retried or passed over with **Continue**. Closing the window aborts the check.
+Aircraft check procedure driven by a Markdown file with embedded JS snippets.
+Switched on in Tools -> Checklist -> Enabled (off by default): the window appears
+and the procedure is loaded; closing the window switches the tool off again.
 
-Colors, sizes and button kinds are in `ChecklistStyle.qml`, buttons and fields are
-`ChecklistButton.qml` / `ChecklistField.qml`; the Markdown never styles anything.
+Steps run strictly in order: the current step is highlighted, only the steps already
+reached can be opened, none can be skipped. Any step can be restarted: the current one
+with **Retry**, a passed one with **Repeat step** (the check returns to the current step
+afterwards); a failed step is retried or passed over with **Continue**. Closing the window
+aborts the check.
 
-The procedure is `Checklist.md` in the plugin resources, nothing is written to disk.
-Format, nothing else is parsed:
+Files:
+
+- `ChecklistPlugin.qml` - the plugin: Tools menu entry, procedure loading and the step
+  engine (state, step API, control functions). Reachable from QML and scripts as
+  `ui.checklist` (`phase`, `takeoffAllowed`);
+- `ChecklistParser.js` - the Markdown parser, `parse(text)` returns
+  `{title, intro, shared, steps: [{title, body, code}]}`;
+- `ui/` - the window and its widgets. The window shows what the engine exposes
+  (`doc`, `results`, `buttons`, `form`, `message`) and knows nothing about Markdown;
+  colors and sizes are in `ui/ChecklistTheme.qml`, button kinds in `ui/ChecklistButton.qml`;
+- `Checklist.md` - the procedure, in the plugin resources, nothing is written to disk.
+
+Markdown format, nothing else is parsed:
 
 - `# Title` - procedure title, the text below it is the description;
 - a ```` ```js ```` block in the description is shared code (thresholds, helpers),
@@ -25,7 +36,7 @@ Format, nothing else is parsed:
   (same scope as the Terminal console: `cmd.proc.mode`, `sns.pwr.vsys`, `apx`...)
   with the `step` object:
   - `step.ask(["A", {text: "B", kind: "danger"}], function(answer){})` - buttons for the
-    operator; kind picks the color from `ChecklistStyle.qml`: ok (default), primary, danger, neutral;
+    operator; kind picks the color: ok (default), primary, danger, neutral;
   - `step.form({"Label": default}, function(values){})` - input fields;
   - `step.poll(function(){ return cond }, seconds, then)` - wait for a condition,
     timeout fails the step, `then` is optional (default: pass);
@@ -35,4 +46,3 @@ Format, nothing else is parsed:
     with nothing pending passes.
 
 A step without a script shows a single Confirm button.
-The runner is reachable from QML and scripts as `ui.checklist` (`state`, `takeoffAllowed`).

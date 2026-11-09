@@ -20,33 +20,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Controls.Material
 
-// labeled input field of the checklist form
-RowLayout {
-    id: control
+import Apx.Common
 
-    property string label
-    property alias value: field.text
-    signal accepted()
+// Checklist button: kind selects the color, step scripts only name a kind
+TextButton {
+    property string kind: "ok"
 
-    spacing: ChecklistStyle.sp
+    readonly property var colors: ({
+        "ok": "#2e7d32",          // positive answer, confirmation
+        "primary": "#1565c0",     // start an action, apply
+        "danger": "#b71c1c",      // negative answer, something is wrong
+        "warn": "#e65100",        // retry
+        "neutral": "#37474f",     // continue, misc
+    })
 
-    Text {
-        text: control.label
-        color: ChecklistStyle.text
-        font: apx.font_narrow(ChecklistStyle.fontField)
-    }
-    TextField {
-        id: field
-        Layout.fillWidth: true
-        Layout.preferredWidth: ChecklistStyle.fieldWidth
-        font: apx.font_narrow(ChecklistStyle.fontField)
-        color: ChecklistStyle.textBright
-        selectByMouse: true
-        Material.accent: ChecklistStyle.currentMark
-        onAccepted: control.accepted()
-    }
+    size: Style.fontSize*2.4
+    color: colors[kind] ? colors[kind] : colors["ok"]
+    textBold: kind === "primary"
 }

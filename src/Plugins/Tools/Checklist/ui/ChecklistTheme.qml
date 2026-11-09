@@ -19,15 +19,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-pragma Singleton
 import QtQuick
 
 import Apx.Common
 
-/*
-    Look of the checklist window: colors, sizes and button kinds.
-    Markdown scripts only name a kind (ok, primary, danger, neutral), the colors live here.
-*/
+// Look of the checklist window: colors and sizes, created once by ChecklistWindow as `theme`
 QtObject {
     readonly property real fs: Style.fontSize
     readonly property real sp: Style.spacing
@@ -35,7 +31,6 @@ QtObject {
     // window
     readonly property color background: "#101010"
     readonly property color separator: "#444"
-    readonly property color panel: "#1a1a1a"
 
     // text
     readonly property color text: "#ddd"
@@ -62,18 +57,13 @@ QtObject {
     readonly property color viewedBg: "#30ffffff"      // step the operator is reading
     readonly property color currentMark: "#4a8df8"     // bar at the left of the current step
 
-    // buttons by kind
-    readonly property real buttonSize: fs*2.4
-    readonly property var buttonColors: ({
-        "ok": "#2e7d32",          // positive answer, confirmation
-        "primary": "#1565c0",     // start an action, apply
-        "danger": "#b71c1c",      // negative answer, something is wrong
-        "warn": "#e65100",        // retry
-        "neutral": "#37474f",     // continue, misc
-    })
-    function buttonColor(kind) { return buttonColors[kind] ? buttonColors[kind] : buttonColors["ok"] }
-
-    // input fields
-    readonly property real fieldWidth: fs*8
-    readonly property real fontField: fs*1.4
+    function statusColor(s)
+    {
+        switch(s){
+        case "ok": return ok
+        case "fail": return fail
+        case "running": return running
+        }
+        return pending
+    }
 }
