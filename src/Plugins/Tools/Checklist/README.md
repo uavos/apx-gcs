@@ -9,10 +9,8 @@ Aircraft check procedure driven by a Markdown file with embedded JS snippets.
 Procedures are the `*.md` files in `<Documents>/UAVOS/Checklists/`. The file is picked by
 the callsign of the current unit: its name must be the beginning of the callsign, case
 insensitive (`Borey-123` opens `borey.md`; when several names match the first one by name
-is used). `checklist.md` is the default procedure, used when no name matches the callsign
-(no unit, unknown unit). While a procedure exists a Checklist button is shown in the task
-bar; it opens the window with it. No file, no button. `Checklist.md` in this folder is an
-example to copy there.
+is used). While a procedure exists a Checklist button is shown in the task
+bar; it opens the window with it. No file, no button.
 
 Steps run strictly in order: the current step is highlighted, only the steps already
 reached can be opened, none can be skipped. A failed step is retried with **Retry** or
@@ -21,17 +19,18 @@ returns to the current step afterwards). A running step offers no restart button
 own: the script adds one when it makes sense (`restart: true` in `step.ask`). Closing the
 window aborts the check.
 
-Files:
+Files, loaded in stages so that nothing exists before it is needed:
 
-- `ChecklistPlugin.qml` - the plugin: procedure file lookup, task bar button, procedure
-  loading and the step engine (state, step API, control functions). Reachable from QML and scripts as
-  `ui.checklist` (`phase`, `takeoffAllowed`);
+- `ChecklistPlugin.qml` - stage 1, always present: finds the procedure file of the current
+  unit and loads the launcher while one exists;
+- `ChecklistLauncher.qml` - stage 2, the task bar button; loads the checklist on press;
+- `Checklist.qml` - stage 3, the engine and its window, destroyed when the window is closed.
+  Reachable from QML and scripts as `ui.checklist` (`phase`, `takeoffAllowed`) while open;
 - `ChecklistParser.js` - the Markdown parser, `parse(text)` returns
   `{title, intro, shared, steps: [{title, body, code}]}`;
 - `ui/` - the window and its widgets. The window shows what the engine exposes
   (`doc`, `results`, `buttons`, `form`, `message`) and knows nothing about Markdown;
-  colors and sizes are in `ui/ChecklistTheme.qml`, button kinds in `ui/ChecklistButton.qml`;
-- `Checklist.md` - an example procedure (not bundled, copy it to the Checklists folder).
+  colors and sizes are in `ui/ChecklistTheme.qml`, button kinds in `ui/ChecklistButton.qml`.
 
 Markdown format, nothing else is parsed:
 
