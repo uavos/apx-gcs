@@ -107,7 +107,7 @@ step.poll(function () {
     var p = problems()
     step.info(p.length ? p.join("\n") : "all checks passed")
     return p.length === 0
-}, 10)
+}, 3)
 ```
 
 ## Flight configuration
@@ -122,7 +122,7 @@ Enter the flight parameters. The values are written to the autopilot nodes
 Guide altitude is set to 0 automatically.
 
 ```js
-step.form({ "Dive altitude, m": 1500, "Safety timeout, s": 60, "Dive angle, deg": 30 }, function (v) {
+step.form({ "Dive altitude, m:": 1500, "Safety timeout, s:": 60, "Dive angle, deg:": 30 }, function (v) {
     var alt = Number(v["Dive altitude, m"])
     var timeout = Number(v["Safety timeout, s"])
     var angle = Number(v["Dive angle, deg"])
