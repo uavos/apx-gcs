@@ -1010,6 +1010,7 @@ void PApxNode::parseConfData(PApxNode *node,
     _rvalues = values;
     if (confReadPending())
         requestFileRead("script");
+}
 
 template<typename T, typename Tout = T>
 static QJsonValue _read_param(PStreamReader &stream)
