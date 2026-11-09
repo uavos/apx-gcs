@@ -152,6 +152,7 @@ the operator presses the matching button. A wrong answer fails the step.
 | Rudder | left, right |
 
 All six deflections must be confirmed. Controls are released when the step ends.
+**Restart** starts the sequence over with a new random order.
 
 ```js
 var moves = shuffle([
@@ -173,7 +174,7 @@ function deflect(i) {
     cmd.rc.pitch = m.pitch || 0
     cmd.rc.yaw = m.yaw || 0
     step.info("deflection " + (i + 1) + " of " + moves.length + ": ask the technician what moved")
-    step.ask(names, function (answer) {
+    step.ask(names.concat([{ text: "Restart", kind: "warn", restart: true }]), function (answer) {
         if (answer !== m.name) return step.fail("expected " + m.name + ", technician saw " + answer)
         deflect(i + 1)
     })

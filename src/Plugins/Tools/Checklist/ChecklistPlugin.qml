@@ -122,12 +122,13 @@ AppPlugin {
     // ---------------------------------------------------------------- api for step scripts
     readonly property var api: ({
         // buttons for the operator, handler(answer) is called on press;
-        // items are strings or {text, kind}, kind: ok (default), primary, danger, neutral
+        // items are strings or {text, kind, restart}, kind: ok (default), primary, danger, warn, neutral;
+        // a button with restart: true restarts the step instead of calling the handler
         "ask": function(list, handler) {
             plugin._askHandler = handler ? handler : null
             plugin.buttons = list.map(function(b) {
-                if(b && typeof(b) === "object") return { "text": String(b.text), "kind": b.kind ? String(b.kind) : "ok" }
-                return { "text": String(b), "kind": "ok" }
+                if(b && typeof(b) === "object") return { "text": String(b.text), "kind": b.kind ? String(b.kind) : "ok", "restart": !!b.restart }
+                return { "text": String(b), "kind": "ok", "restart": false }
             })
             plugin.form = null
         },
@@ -149,6 +150,8 @@ AppPlugin {
         },
         // fn() is called when the step ends for any reason (pass, fail, restart, abort)
         "cleanup": function(fn) { plugin._cleanup = fn },
+        // run the step from the beginning
+        "restart": function() { plugin.retry() },
         "pass": function(msg) { plugin.pass(msg) },
         "fail": function(msg) { plugin.fail(msg) },
     })
@@ -255,10 +258,14 @@ AppPlugin {
         }
         if(phase === "running" && !_done && !pending) pass(message)
     }
-    // operator pressed a button
+    // operator pressed a button (by its text)
     function answer(button)
     {
         if(phase !== "running" || _done) return
+        if(buttons.some(function(b){ return b.text === button && b.restart })){
+            retry()
+            return
+        }
         var h = _askHandler
         _askHandler = null
         buttons = []

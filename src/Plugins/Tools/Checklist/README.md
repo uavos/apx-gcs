@@ -9,10 +9,11 @@ Switched on in Tools -> Checklist -> Enabled (off by default): the window appear
 and the procedure is loaded; closing the window switches the tool off again.
 
 Steps run strictly in order: the current step is highlighted, only the steps already
-reached can be opened, none can be skipped. Any step can be restarted: the current one
-with **Retry**, a passed one with **Repeat step** (the check returns to the current step
-afterwards); a failed step is retried or passed over with **Continue**. Closing the window
-aborts the check.
+reached can be opened, none can be skipped. A failed step is retried with **Retry** or
+passed over with **Continue**, a passed step is repeated with **Repeat step** (the check
+returns to the current step afterwards). A running step offers no restart button of its
+own: the script adds one when it makes sense (`restart: true` in `step.ask`). Closing the
+window aborts the check.
 
 Files:
 
@@ -36,7 +37,10 @@ Markdown format, nothing else is parsed:
   (same scope as the Terminal console: `cmd.proc.mode`, `sns.pwr.vsys`, `apx`...)
   with the `step` object:
   - `step.ask(["A", {text: "B", kind: "danger"}], function(answer){})` - buttons for the
-    operator; kind picks the color: ok (default), primary, danger, neutral;
+    operator; kind picks the color: ok (default), primary, danger, warn, neutral;
+    `{text: "Restart", kind: "warn", restart: true}` restarts the step instead of
+    calling the handler;
+  - `step.restart()` - run the step from the beginning;
   - `step.form({"Label": default}, function(values){})` - input fields;
   - `step.poll(function(){ return cond }, seconds, then)` - wait for a condition,
     timeout fails the step, `then` is optional (default: pass);
