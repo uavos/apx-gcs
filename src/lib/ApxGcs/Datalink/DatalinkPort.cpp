@@ -374,6 +374,9 @@ void DatalinkPort::fromJson(const QJsonValue &jsv)
         if (q.hasQueryItem("baud")) {
             jso["baud"] = q.queryItemValue("baud");
         }
+        if (jso["baud"].toString().toUInt() == 0) {
+            jso["baud"] = "460800";
+        }
         if (q.hasQueryItem("codec")) {
             jso["codec"] = q.queryItemValue("codec").toUpper();
         }
