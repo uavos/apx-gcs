@@ -184,7 +184,9 @@ Window {
                     }
                     Text {
                         Layout.fillWidth: true
-                        text: (shown ? shown.body : checklist.doc.intro).replace(/`([^`]+)`/g, "**$1**")
+                        // the running step's body is expanded on activation: read it from stepBody,
+                        // body mutations inside `steps` are invisible to bindings
+                        text: (shownIsCurrent ? checklist.stepBody : (shown ? shown.body : checklist.doc.intro)).replace(/`([^`]+)`/g, "**$1**")
                         textFormat: Text.MarkdownText
                         color: theme.text
                         font: apx.font_narrow(theme.fontBody)

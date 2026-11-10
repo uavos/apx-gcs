@@ -73,6 +73,7 @@ QtObject {
     onFileChanged: load()
     property var doc: ({ "title": "", "intro": "", "steps": [] })
     readonly property var steps: doc.steps     // [{title, body, code}]
+    property string stepBody: ""   // expanded body of the running step, shown by the window while current
 
     function load()
     {
@@ -80,20 +81,29 @@ QtObject {
         var text = file ? application.loadText(file) : ""
         if(!text) console.warn("Checklist: can't read", file)
         var d = Parser.parse(text)
-        // {{expression}} of the title, the intro and the step titles is expanded on load;
-        // step bodies are expanded when the step becomes current (runStep)
-        d.title = expand(d.title)
-        d.intro = expand(d.intro)
+        // {{expression}} is expanded on load; whatever cannot be evaluated yet is kept as
+        // typed, and the step body is expanded again when the step becomes current (runStep),
+        // when everything declared by the scripts of the earlier steps already exists
+        d.title = expand(d.title, true)
+        d.intro = expand(d.intro, true)
         d.steps.forEach(function(st){
-            st.title = expand(st.title)
+            st.title = expand(st.title, true)
+            st.raw = st.body
+            st.body = expand(st.body, true)
         })
         doc = d
     }
-    function expand(text)
+    // tolerant: an expression that fails is left as typed instead of the error text.
+    // The expression runs through eval inside try/catch: jsexec logs every error it sees
+    // to the console, a bad expression must fail silently here
+    function expand(text, tolerant)
     {
         return text.replace(/\{\{([\s\S]+?)\}\}/g, function(m, e){
-            var v = application.jsexec("(" + e + "\n)")
-            if(errorOf(v)) return "{{" + errorOf(v) + "}}"
+            var r = application.jsexec(
+                "(function(c){try{return [true, eval('(' + c + '\\n)')]}catch(err){return [false, String(err)]}})("
+                + JSON.stringify(e) + ")")
+            if(!r || r[0] !== true) return tolerant ? m : "{{" + (r ? r[1] : "error") + "}}"
+            var v = r[1]
             return v === undefined || v === null ? "" : String(v)
         })
     }
@@ -252,11 +262,11 @@ QtObject {
     {
         message = ""
         _done = false
-        // the body may use {{values}} declared by the scripts of earlier steps
+        // the body may use {{anything}} declared by the scripts of earlier steps;
+        // st.body mutation is invisible to QML bindings, the window reads stepBody while current
         var st = doc.steps[current]
-        if(st.raw === undefined) st.raw = st.body
         st.body = expand(st.raw)
-        docChanged()
+        stepBody = st.body
         if(!step.code.trim()){
             api.ask([qsTr("Confirm")], null)
             return
