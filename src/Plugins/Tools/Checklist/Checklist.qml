@@ -129,7 +129,7 @@ QtObject {
     property var results: []         // by step index: {status: ok|fail, message}
     property string message: ""      // live text of the running step
     property var buttons: []         // [{text, kind}] requested by the step script
-    property var form: null          // {label: default} requested by the step script
+    property var form: null          // [{label, type, options, value}] requested by the step script
     property bool takeoffAllowed: false
 
     readonly property var step: (current >= 0 && current < steps.length) ? steps[current] : null
@@ -158,10 +158,32 @@ QtObject {
             })
             engine.form = null
         },
-        // input fields {label: default}, handler(values) is called on submit
+        // form fields {label: field}, handler(values) is called on submit;
+        // a field is a plain default for a text input, or a descriptor:
+        // {input: "text"}, {select: [items], value: item}, {checkbox: bool}
         "form": function(fields, handler) {
             engine._formHandler = handler ? handler : null
-            engine.form = fields
+            var list = []
+            for (var label in fields) {
+                var f = fields[label]
+                var d = { "label": String(label), "type": "input", "options": [], "value": "" }
+                if (f && typeof(f) === "object") {
+                    if (f.select !== undefined) {
+                        d.type = "select"
+                        d.options = f.select.map(String)
+                        d.value = f.value !== undefined ? String(f.value) : (d.options.length ? d.options[0] : "")
+                    } else if (f.checkbox !== undefined) {
+                        d.type = "checkbox"
+                        d.value = !!f.checkbox
+                    } else if (f.input !== undefined) {
+                        d.value = String(f.input)
+                    }
+                } else if (f !== undefined && f !== null) {
+                    d.value = String(f)
+                }
+                list.push(d)
+            }
+            engine.form = list.length ? list : null
             engine.buttons = []
         },
         // live text under the step description

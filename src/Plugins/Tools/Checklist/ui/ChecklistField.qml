@@ -26,13 +26,20 @@ import QtQuick.Controls.Material
 
 import Apx.Common
 
-// input field of the checklist form: label above, text field across the full width
+// one field of the checklist form: text input, drop-down or checkbox across the full width
 ColumnLayout {
     id: control
 
     property string label
-    property alias value: field.text
+    property string type: "input"    // input | select | checkbox
+    property var options: []         // select items
+    property var value: ""           // default from the step script
     signal accepted()
+
+    // current state reported back to the script on submit (string; bool for checkbox)
+    readonly property var result: type === "checkbox" ? check.checked
+                                : type === "select" ? combo.currentText
+                                : field.text
 
     readonly property real fs: Style.fontSize*1.4
 
@@ -40,6 +47,7 @@ ColumnLayout {
 
     Text {
         Layout.fillWidth: true
+        visible: control.type !== "checkbox"
         text: control.label
         color: "#ddd"
         font: apx.font_narrow(control.fs)
@@ -47,11 +55,34 @@ ColumnLayout {
     }
     TextField {
         id: field
+        visible: control.type === "input"
         Layout.fillWidth: true
+        text: control.type === "input" ? String(control.value) : ""
         font: apx.font_narrow(control.fs)
         color: "#fff"
         selectByMouse: true
         Material.accent: "#4a8df8"
         onAccepted: control.accepted()
+    }
+    ComboBox {
+        id: combo
+        visible: control.type === "select"
+        Layout.fillWidth: true
+        model: control.options
+        currentIndex: Math.max(0, control.options.indexOf(String(control.value)))
+        font: apx.font_narrow(control.fs)
+        Material.accent: "#4a8df8"
+        Material.theme: Material.Dark
+    }
+    CheckBox {
+        id: check
+        visible: control.type === "checkbox"
+        Layout.fillWidth: true
+        text: control.label
+        checked: control.value === true || control.value === "true"
+        font: apx.font_narrow(control.fs)
+        Material.accent: "#4a8df8"
+        Material.theme: Material.Dark
+        Material.foreground: "#ddd"
     }
 }

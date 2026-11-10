@@ -238,12 +238,14 @@ Window {
                         spacing: sp
                         Repeater {
                             id: formFields
-                            model: checklist.form ? Object.keys(checklist.form) : []
+                            model: checklist.form ? checklist.form : []
                             delegate: ChecklistField {
                                 Layout.fillWidth: true
-                                readonly property string key: modelData
-                                label: modelData
-                                value: String(checklist.form[modelData])
+                                readonly property string key: modelData.label
+                                label: modelData.label
+                                type: modelData.type
+                                options: modelData.options
+                                value: modelData.value
                                 onAccepted: control.submitForm()
                             }
                         }
@@ -303,7 +305,7 @@ Window {
         var values = {}
         for (var i = 0; i < formFields.count; ++i) {
             var item = formFields.itemAt(i)
-            if(item) values[item.key] = item.value
+            if(item) values[item.key] = item.result
         }
         checklist.submit(values)
     }

@@ -54,7 +54,10 @@ Markdown format, nothing else is parsed:
     `{text: "Restart", kind: "warn", restart: true}` restarts the step instead of
     calling the handler;
   - `step.restart()` - run the step from the beginning;
-  - `step.form({"Label": default}, function(values){})` - input fields;
+  - `step.form({"Label": field}, function(values){})` - form fields, one per label,
+    in the order written; a field is a text input (`"Label": "default"`), a drop-down
+    (`{select: ["a", "b"], value: "a"}`) or a checkbox (`{checkbox: true}`);
+    `values` holds the entered strings, a checkbox comes back as a bool;
   - `step.poll(function(){ return cond }, seconds, then)` - wait for a condition,
     timeout fails the step, `then` is optional (default: pass);
   - `step.info("text")` - live message under the description;
