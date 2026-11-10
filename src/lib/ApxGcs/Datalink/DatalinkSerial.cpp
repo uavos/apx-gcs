@@ -89,8 +89,8 @@ void DatalinkSerial::setBaud(uint v)
     if (m_baud == v)
         return;
     m_baud = v;
-    if (dev->isOpen())
-        dev->setBaudRate(static_cast<int>(v));
+    if (dev->isOpen() && dev->setBaudRate(static_cast<int>(v)))
+        setUrl(QString("serial://?port=%1&baud=%2").arg(_portPath).arg(v));
 }
 
 void DatalinkSerial::setCodec(CodecType v)
@@ -174,7 +174,8 @@ void DatalinkSerial::openNext()
             // warn once per port, don't spam on every retry
             if (_failedPath != path) {
                 _failedPath = path;
-                apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(path);
+                apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(path)
+                          << dev->errorString();
             }
             // in [auto] mode move on to the next candidate on the next attempt
             if (m_devName.isEmpty() || m_devName == "auto")
