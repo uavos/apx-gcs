@@ -197,10 +197,9 @@ bool DatalinkSerial::openPort(const QString &path, uint baud)
     setStatus(tr("Connecting"));
 
     dev->setPortName(path);
-    dev->setBaudRate(9600);
+    dev->setBaudRate(static_cast<int>(baud));
     if (!dev->open(QIODevice::ReadWrite))
         return false;
-    dev->setBaudRate(static_cast<int>(baud));
     //lock
     if (lock) {
         lock->unlock();
@@ -217,7 +216,7 @@ bool DatalinkSerial::openPort(const QString &path, uint baud)
         return false;
     }
 
-    apxMsg() << tr("Serial port connected: %1 %2bps").arg(dev->portName()).arg(m_baud);
+    apxMsg() << tr("Serial port connected: %1 %2bps").arg(dev->portName()).arg(dev->baudRate());
 
     return true;
 }
