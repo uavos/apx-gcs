@@ -82,6 +82,28 @@ void AppPlugins::load(const QStringList &names)
     if (!stRepQml.isEmpty())
         apxConsole() << QObject::tr("User QML plugins").append(": ").append(stRepQml.join(','));
 
+    // third party QML plugins (sources) installed from GitHub: github/<repo>/**/<Name>Plugin.qml
+    QDir githubDir = AppDirs::githubPlugins();
+    QStringList stRepGithub;
+    if (githubDir.exists()) {
+        for (const auto &repoName :
+             githubDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)) {
+            if (repoName.startsWith('-') || repoName.startsWith('.'))
+                continue;
+            const auto files = findQmlPlugins(QDir(githubDir.absoluteFilePath(repoName)));
+            if (files.isEmpty()) {
+                apxConsoleW() << QObject::tr("No plugins found").append(": ") << repoName;
+                continue;
+            }
+            for (const auto &f : files) {
+                stRepGithub.append(pluginName(f));
+                allFiles.append(f);
+            }
+        }
+    }
+    if (!stRepGithub.isEmpty())
+        apxConsole() << QObject::tr("GitHub plugins").append(": ").append(stRepGithub.join(','));
+
     QDir pluginsDir = AppDirs::plugins();
     pluginsDir.setSorting(QDir::Name | QDir::IgnoreCase);
     pluginsDir.refresh();
@@ -96,10 +118,7 @@ void AppPlugins::load(const QStringList &names)
         QStringList st;
         for (const auto pname : names) {
             for (const auto fname : allFiles) {
-                QString s = QFileInfo(fname).baseName();
-                if (s.startsWith("lib"))
-                    s.remove(0, 3);
-                if (s != pname)
+                if (pluginName(fname) != pname)
                     continue;
                 st.append(fname);
             }
@@ -168,21 +187,81 @@ void AppPlugins::fixDuplicates(QStringList &list, const QString &userPluginsPath
 
 void AppPlugins::loadFiles(const QStringList &fileNames)
 {
-    QStringList loadedNames;
-    for (const auto fileName : fileNames) {
-        QString pname = QFileInfo(fileName).baseName();
-        if (pname.startsWith("lib"))
-            pname.remove(0, 3);
-        if (loadedNames.contains(pname)) {
-            apxMsgW() << tr("Duplicate plugin").append(":") << pname;
-            continue;
-        }
-        //apxConsole()<<tr("Loading")<<pname;
-        loadedNames.append(pname);
+    for (const auto &fileName : fileNames)
+        addPlugin(fileName);
+}
 
-        AppPlugin *plugin = new AppPlugin(this, pname, fileName);
-        append(plugin);
+AppPlugin *AppPlugins::addPlugin(const QString &fileName)
+{
+    QString pname = pluginName(fileName);
+    if (plugin(pname)) {
+        apxMsgW() << tr("Duplicate plugin").append(":") << pname;
+        return nullptr;
     }
+    AppPlugin *p = new AppPlugin(this, pname, fileName);
+    append(p);
+    return p;
+}
+
+QString AppPlugins::pluginName(const QString &fileName)
+{
+    QString pname = QFileInfo(fileName).baseName();
+    if (pname.startsWith("lib"))
+        pname.remove(0, 3);
+    // github/<repo>/<Name>/<Name>Plugin.qml -> Name
+    if (fileName.endsWith(".qml", Qt::CaseInsensitive) && pname.endsWith("Plugin")
+        && pname.size() > 6
+        && fileName.startsWith(AppDirs::githubPlugins().absolutePath() + "/"))
+        pname.chop(6);
+    return pname;
+}
+
+QStringList AppPlugins::findQmlPlugins(const QDir &dir, int depth)
+{
+    QStringList files;
+    for (const auto &fi :
+         dir.entryInfoList({"*Plugin.qml"}, QDir::Files, QDir::Name | QDir::IgnoreCase)) {
+        if (fi.completeBaseName() == "Plugin")
+            continue;
+        files.append(fi.absoluteFilePath());
+    }
+    if (depth <= 0)
+        return files;
+    for (const auto &fi :
+         dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)) {
+        if (fi.fileName().startsWith('.'))
+            continue;
+        files.append(findQmlPlugins(QDir(fi.absoluteFilePath()), depth - 1));
+    }
+    return files;
+}
+
+void AppPlugins::loadGithubRepo(const QString &path)
+{
+    for (const auto &f : findQmlPlugins(QDir(path))) {
+        AppPlugin *p = addPlugin(f);
+        if (!p)
+            continue;
+        if (p->f_enabled->value().toBool()) {
+            p->load();
+        } else {
+            apxConsole() << tr("Loading skipped").append(":") << p->name;
+        }
+    }
+    updateStatus();
+}
+
+void AppPlugins::removePlugin(AppPlugin *plugin)
+{
+    if (!plugin || plugin->isLoaded())
+        return;
+    removeAll(plugin);
+    if (plugin->f_enabled) {
+        plugin->f_enabled->deleteFact();
+        plugin->f_enabled = nullptr;
+    }
+    plugin->deleteLater();
+    updateStatus();
 }
 
 void AppPlugins::unload()

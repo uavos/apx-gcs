@@ -129,3 +129,32 @@ The system provides runtime management capabilities:
 - Plugin version checking
 - Dependency resolution
 - Error reporting and recovery
+
+## Third Party Plugins from GitHub
+
+Pure QML plugins can be installed directly from a GitHub repository without rebuilding the
+application. The sources are kept in the user plugins folder:
+
+```
+<Documents>/UAVOS/Plugins/github/<repo>/        repository sources (latest release)
+<Documents>/UAVOS/Plugins/github/<repo>.json    installed release info (url, tag, plugins)
+```
+
+Every `<Name>Plugin.qml` file found in the repository (up to two folder levels deep) is loaded
+as the plugin `<Name>`, the same way as the other user plugins: it gets its switch in
+`Preferences / Application / Plugins` and is skipped on the next start when switched off.
+
+To install a plugin open `Preferences / Application / Plugins / GitHub plugins`, enter the
+repository URL (`https://github.com/<owner>/<repo>`) and press `Install`. The latest release
+archive is downloaded (the default branch when the repository has no releases) and checked
+before it is installed:
+
+- the repository folder must not exist in `Plugins/github`;
+- the repository must contain at least one `<Name>Plugin.qml`;
+- no plugin with the same name may already be loaded.
+
+The new plugins are loaded immediately. Installed repositories are listed in the same menu
+with their release tag; `Update` downloads a newer release and `Remove` deletes the folder
+(a restart is needed to unload plugins that are already running).
+
+Example: [EMIP](https://github.com/Alexandr-one/emip), the engine monitoring and indication panel.

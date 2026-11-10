@@ -33,6 +33,8 @@ public:
 
     static QDir plugins();
     static QDir userPlugins();
+    // third party plugins installed from GitHub (sources), inside userPlugins()
+    static QDir githubPlugins();
 
     static QDir firmware();
 

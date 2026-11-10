@@ -115,6 +115,8 @@ void AppPlugin::loadLib()
     if (!f_enabled->value().toBool())
         return;
 
+    _loaded = true;
+
     //check depends
     depends = p->depends();
     if (!depends.isEmpty()) {
@@ -192,6 +194,7 @@ void AppPlugin::loadLib()
 }
 void AppPlugin::loadQml()
 {
+    _loaded = true;
     f_enabled->setSection(tr("Controls"));
     if (QFileInfo(fileName).completeBaseName().contains("Plugin")) {
         QVariantMap opts;

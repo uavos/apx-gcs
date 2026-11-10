@@ -48,9 +48,11 @@ public:
     QString section;
 
     QString errorString() const { return _errorString; }
+    bool isLoaded() const { return _loaded; }
 
 private:
     QString _errorString;
+    bool _loaded{};
     QString _hash;
 
     void loadLib();

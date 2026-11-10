@@ -8,6 +8,7 @@ apx_lib(
     lib.ApxFw
     QT
     Widgets
+    Network
     SerialPort
     Positioning
     Bluetooth

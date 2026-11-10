@@ -57,6 +57,7 @@ public:
     explicit App(int &argc, char **argv, const QString &name, const QUrl &url);
     ~App();
     static App *instance() { return _instance; }
+    static AppPlugins *appPlugins() { return _instance->plugins; }
 
     Q_INVOKABLE static void sound(const QString &v) { _instance->playSoundEffect(v); }
 

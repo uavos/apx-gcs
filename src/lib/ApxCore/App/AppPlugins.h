@@ -39,6 +39,18 @@ public:
 
     AppPlugin *plugin(QString name);
 
+    // third party QML plugins (sources) installed from GitHub into AppDirs::githubPlugins()/<repo>
+    // find <Name>Plugin.qml files in dir and its subfolders (depth levels)
+    static QStringList findQmlPlugins(const QDir &dir, int depth = 2);
+    // plugin name from file name (Emip.so, Emip.qml, github/<repo>/Emip/EmipPlugin.qml -> Emip)
+    static QString pluginName(const QString &fileName);
+    // create plugin entry, nullptr when a plugin with the same name exists
+    AppPlugin *addPlugin(const QString &fileName);
+    // add and load plugins found in the installed repository folder
+    void loadGithubRepo(const QString &path);
+    // remove plugin entry (not loaded plugins only)
+    void removePlugin(AppPlugin *plugin);
+
     Fact *f_enabled;
 
     const QFileInfo check_tool;
