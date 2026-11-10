@@ -36,9 +36,11 @@ Markdown format, nothing else is parsed:
 
 - `# Title` - procedure title, the text below it is the description;
 - `## Step` - a step, the text below it is shown to the operator;
-- `{{expression}}` in the title, the description or a step text is replaced by the value
-  of the JS expression, evaluated in the global scope when the procedure is loaded
-  (`{{apx.fleet.current.title}}`); an error is shown in place;
+- `{{expression}}` is replaced by the value of the JS expression, evaluated in the global
+  scope; an error is shown in place. The title, the description and the step titles are
+  expanded when the procedure is loaded; the step body is expanded when the step becomes
+  current, so it sees the values declared by the scripts of earlier steps
+  (`{{cfg.batteryMin}}` works in every step after the one that declared `cfg`);
 - a ```` ```js ```` block in a step is the step script. All scripts run in the global scope
   of the GCS JS engine, the same as the Terminal console (`cmd.proc.mode`, `sns.pwr.vsys`,
   `apx`...): what a step declares stays visible to the following steps, so thresholds and

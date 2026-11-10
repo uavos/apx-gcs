@@ -28,8 +28,10 @@ import "ChecklistParser.js" as Parser
     Checklist: the procedure engine and its window. Created by ChecklistLauncher when the
     operator presses the task bar button, destroyed when the window is closed.
 
-    The engine parses the Markdown (ChecklistParser.js), fills {{expression}} placeholders of
-    the texts and runs the steps one by one. The window (ui/ChecklistWindow.qml) only displays
+    The engine parses the Markdown (ChecklistParser.js), fills {{expression}} placeholders
+    (title, intro and step titles on load; the step body when the step becomes current, so
+    it sees the values declared by the scripts of earlier steps) and runs the steps one by
+    one. The window (ui/ChecklistWindow.qml) only displays
     `doc`, `results`, `buttons`, `form`, `message` and calls back start/abort/answer/submit/
     retry/rerun/proceed.
 
@@ -78,12 +80,12 @@ QtObject {
         var text = file ? application.loadText(file) : ""
         if(!text) console.warn("Checklist: can't read", file)
         var d = Parser.parse(text)
-        // {{expression}} in titles and descriptions is replaced by its value (global JS scope)
+        // {{expression}} of the title, the intro and the step titles is expanded on load;
+        // step bodies are expanded when the step becomes current (runStep)
         d.title = expand(d.title)
         d.intro = expand(d.intro)
         d.steps.forEach(function(st){
             st.title = expand(st.title)
-            st.body = expand(st.body)
         })
         doc = d
     }
@@ -250,6 +252,11 @@ QtObject {
     {
         message = ""
         _done = false
+        // the body may use {{values}} declared by the scripts of earlier steps
+        var st = doc.steps[current]
+        if(st.raw === undefined) st.raw = st.body
+        st.body = expand(st.raw)
+        docChanged()
         if(!step.code.trim()){
             api.ask([qsTr("Confirm")], null)
             return
