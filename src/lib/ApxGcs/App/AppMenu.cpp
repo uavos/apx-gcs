@@ -179,11 +179,9 @@ void AppMenu::createMenuBar()
         updateMenu(f);
         auto model = f->model();
         if (model) {
+            // FactListModel::syncModel emits layoutChanged after any batch of row changes
             auto update = [this, f]() { updateMenu(f); };
             connect(model, &QAbstractItemModel::layoutChanged, menu, update, Qt::QueuedConnection);
-            // items added or removed at runtime (tools detached in the lite profile)
-            connect(model, &QAbstractItemModel::rowsInserted, menu, update, Qt::QueuedConnection);
-            connect(model, &QAbstractItemModel::rowsRemoved, menu, update, Qt::QueuedConnection);
         }
     }
 }

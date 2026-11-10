@@ -64,8 +64,13 @@ GroundControl {
                 p.value = false
             // window launcher of a plugin loaded before this file
             var w = apx.windows.child(name)
-            if (w)
-                w.parentFact = null
+            if (w) {
+                // a window restored on startup must be closed first:
+                // a detached launcher crashes AppWindow::saveStateDo on move/resize
+                w.value = false
+                if (!w.value)
+                    w.parentFact = null
+            }
         }
         for (var j = 0; j < hiddenTools.length; ++j) {
             var t = apx.tools.child(hiddenTools[j])
