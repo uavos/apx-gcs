@@ -167,6 +167,7 @@ void DatalinkSerial::openNext()
         }
         //try to open valid spi port
         //qDebug("Trying to open %s", path.toUtf8().data());
+        _portPath = path;
         if (!openPort(path, m_baud)) {
             // warn once per port, don't spam on every retry
             if (_failedPath != path) {
@@ -181,7 +182,6 @@ void DatalinkSerial::openNext()
 
         // port opened successfully
         _failedPath.clear();
-        _portPath = path;
         openPorts.append(path);
         setUrl(QString("serial://?port=%1&baud=%2").arg(path).arg(m_baud));
         setStatus(tr("Connected"));
@@ -230,6 +230,7 @@ void DatalinkSerial::closePort()
     if (dev->isOpen())
         dev->close();
     openPorts.removeAll(_portPath);
+    _portPath.clear();
     closed();
     setStatus("");
     // setUrl(m_devName);
