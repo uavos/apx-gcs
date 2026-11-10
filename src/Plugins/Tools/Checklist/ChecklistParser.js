@@ -24,15 +24,17 @@
 /*
     Markdown procedure parser. Nothing else is recognised:
       # Title           procedure title, the text below it is the description (intro)
-      ```js ... ```     in the description: shared code, prepended to every step script
       ## Step title     a step, the text below it is shown to the operator
       ```js ... ```     in a step: the step script
 
-    parse(text) -> { title, intro, shared, steps: [{ title, body, code }] }
+    All scripts share one global scope, so values used by several steps are declared
+    in the script of the first step that needs them; there is no shared block.
+
+    parse(text) -> { title, intro, steps: [{ title, body, code }] }
 */
 function parse(text)
 {
-    var doc = { "title": "", "intro": "", "shared": "", "steps": [] }
+    var doc = { "title": "", "intro": "", "steps": [] }
     var lines = (text ? text : "").split(/\r?\n/)
     var step = null      // current step, null while in the description
     var body = []        // markdown lines of the current section
@@ -50,14 +52,12 @@ function parse(text)
         var line = lines[i]
         if(code !== null){
             if(/^```/.test(line)){
-                var js = code.join("\n") + "\n"
-                if(step) step.code += js
-                else doc.shared += js
+                step.code += code.join("\n") + "\n"
                 code = null
             }else code.push(line)
             continue
         }
-        if(/^```\s*js\b/.test(line)){
+        if(step && /^```\s*js\b/.test(line)){
             code = []
             continue
         }

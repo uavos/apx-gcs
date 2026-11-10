@@ -34,11 +34,11 @@ import "ChecklistParser.js" as Parser
     retry/rerun/proceed.
 
     All scripts run in the global scope of the GCS JS engine, the same one as the Terminal
-    console: the shared block is executed once per run (and once on load, for the {{}} texts),
-    the variables and functions of a step stay visible to the following steps. The step script
-    gets the global `step` object (see `api` below) and finishes the step with step.pass()/
-    step.fail(); when it returns with nothing pending (no buttons, no form, no poll) the step
-    passes. A step without a script shows Confirm.
+    console: the variables and functions of a step stay visible to the following steps, so
+    values used by several steps are declared in the first step that needs them. The step
+    script gets the global `step` object (see `api` below) and finishes the step with
+    step.pass()/step.fail(); when it returns with nothing pending (no buttons, no form,
+    no poll) the step passes. A step without a script shows Confirm.
 */
 
 QtObject {
@@ -69,7 +69,7 @@ QtObject {
     // ---------------------------------------------------------------- procedure
     property string file                 // markdown procedure, set by the launcher
     onFileChanged: load()
-    property var doc: ({ "title": "", "intro": "", "shared": "", "steps": [] })
+    property var doc: ({ "title": "", "intro": "", "steps": [] })
     readonly property var steps: doc.steps     // [{title, body, code}]
 
     function load()
@@ -78,18 +78,13 @@ QtObject {
         var text = file ? application.loadText(file) : ""
         if(!text) console.warn("Checklist: can't read", file)
         var d = Parser.parse(text)
-        // {{expression}} in titles and descriptions is replaced by its value, shared block variables are visible
-        var err = runShared(d.shared)
-        if(err){
-            console.warn("Checklist: shared block error:", err)
-        }else{
-            d.title = expand(d.title)
-            d.intro = expand(d.intro)
-            d.steps.forEach(function(st){
-                st.title = expand(st.title)
-                st.body = expand(st.body)
-            })
-        }
+        // {{expression}} in titles and descriptions is replaced by its value (global JS scope)
+        d.title = expand(d.title)
+        d.intro = expand(d.intro)
+        d.steps.forEach(function(st){
+            st.title = expand(st.title)
+            st.body = expand(st.body)
+        })
         doc = d
     }
     function expand(text)
@@ -103,11 +98,10 @@ QtObject {
 
     // ---------------------------------------------------------------- scripts environment
     // scripts are evaluated in the global JS scope (as Terminal commands); `step` is the api object
-    function runShared(code)
+    function prepare()
     {
         ui.checklist = engine
         application.jsexec("var step = ui.checklist.api")
-        return errorOf(application.jsexec(code))
     }
     // error text of a jsexec result, "" when the script completed
     function errorOf(v)
@@ -180,11 +174,10 @@ QtObject {
     function start()
     {
         reset()
-        _sharedError = runShared(doc.shared)
+        prepare()
         phase = "running"
         next()
     }
-    property string _sharedError: ""   // the shared block failed on start: every step fails with it
     function abort()
     {
         if(phase !== "running") return
@@ -261,10 +254,6 @@ QtObject {
             api.ask([qsTr("Confirm")], null)
             return
         }
-        if(_sharedError){
-            fail(qsTr("Shared block error") + ": " + _sharedError)
-            return
-        }
         var err = errorOf(application.jsexec(step.code))
         if(err){
             fail(qsTr("Script error") + ": " + err)
@@ -272,10 +261,13 @@ QtObject {
         }
         settle()
     }
-    // run a script callback: errors fail the step
+    // run a script callback: errors fail the step; no callback passes when nothing is pending (Confirm)
     function call(fn, arg)
     {
-        if(!fn) return
+        if(!fn){
+            settle()
+            return
+        }
         try {
             fn(arg)
         } catch(e) {

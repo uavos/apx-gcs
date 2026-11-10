@@ -27,7 +27,7 @@ Files, loaded in stages so that nothing exists before it is needed:
 - `Checklist.qml` - stage 3, the engine and its window, destroyed when the window is closed.
   Reachable from QML and scripts as `ui.checklist` (`phase`, `takeoffAllowed`) while open;
 - `ChecklistParser.js` - the Markdown parser, `parse(text)` returns
-  `{title, intro, shared, steps: [{title, body, code}]}`;
+  `{title, intro, steps: [{title, body, code}]}`;
 - `ui/` - the window and its widgets. The window shows what the engine exposes
   (`doc`, `results`, `buttons`, `form`, `message`) and knows nothing about Markdown;
   colors and sizes are in `ui/ChecklistTheme.qml`, button kinds in `ui/ChecklistButton.qml`.
@@ -35,16 +35,15 @@ Files, loaded in stages so that nothing exists before it is needed:
 Markdown format, nothing else is parsed:
 
 - `# Title` - procedure title, the text below it is the description;
-- a ```` ```js ```` block in the description is shared code (thresholds, helpers), executed
-  once when the procedure starts;
 - `## Step` - a step, the text below it is shown to the operator;
 - `{{expression}}` in the title, the description or a step text is replaced by the value
-  of the JS expression, evaluated in the shared block scope when the procedure is loaded
-  (`{{cfg.batteryMin}}`, `{{cfg.ers.length}}`); an error is shown in place;
+  of the JS expression, evaluated in the global scope when the procedure is loaded
+  (`{{apx.fleet.current.title}}`); an error is shown in place;
 - a ```` ```js ```` block in a step is the step script. All scripts run in the global scope
   of the GCS JS engine, the same as the Terminal console (`cmd.proc.mode`, `sns.pwr.vsys`,
-  `apx`...): what a step declares stays visible to the following steps, so a value chosen
-  in one step (`mode = answer`) can be checked in a later one (`if(mode === ...)`). Names of
+  `apx`...): what a step declares stays visible to the following steps, so thresholds and
+  helpers used by several steps are declared in the first step that needs them, and a value
+  chosen in one step (`mode = answer`) can be checked in a later one (`if(mode === ...)`). Names of
   GCS globals are write-protected; a top-level `return` is not allowed. The script uses the
   global `step` object:
   - `step.ask(["A", {text: "B", kind: "danger"}], function(answer){})` - buttons for the
