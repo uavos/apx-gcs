@@ -188,6 +188,15 @@ QtObject {
         },
         // live text under the step description
         "info": function(msg) { engine.message = msg ? String(msg) : "" },
+        // note recorded into the telemetry file (msg event, src gcs/checklist);
+        // goes to the recorder directly and never shows in the console
+        "log": function(msg) {
+            if(!msg) return
+            var unit = apx.fleet.current
+            var rec = unit ? unit.child("telemetry") : null
+            rec = rec ? rec.child("recorder") : null
+            if(rec) rec.recordMsg(String(msg), "gcs/checklist", "")
+        },
         // cond() is evaluated every 0.5 s up to sec seconds (0: forever);
         // true -> then() or pass, timeout -> fail
         "poll": function(cond, sec, then) {

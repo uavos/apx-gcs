@@ -61,6 +61,8 @@ Markdown format, nothing else is parsed:
   - `step.poll(function(){ return cond }, seconds, then)` - wait for a condition,
     timeout fails the step, `then` is optional (default: pass);
   - `step.info("text")` - live message under the description;
+  - `step.log("text")` - note recorded into the telemetry file (a `msg` event with
+    src `gcs/checklist`) while telemetry is recording; not shown in the console;
   - `step.cleanup(function(){})` - called when the step ends for any reason;
   - `step.pass(msg)` / `step.fail(msg)` - finish the step; a script that returns
     with nothing pending passes.
