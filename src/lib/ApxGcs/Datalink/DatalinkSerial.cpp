@@ -89,6 +89,8 @@ void DatalinkSerial::setBaud(uint v)
     if (m_baud == v)
         return;
     m_baud = v;
+    if (dev->isOpen())
+        dev->setBaudRate(static_cast<int>(v));
 }
 
 void DatalinkSerial::setCodec(CodecType v)
