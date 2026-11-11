@@ -132,29 +132,30 @@ The system provides runtime management capabilities:
 
 ## Third Party Plugins from GitHub
 
-Pure QML plugins can be installed directly from a GitHub repository without rebuilding the
-application. The sources are kept in the user plugins folder:
+Plugins can be installed directly from a GitHub repository without rebuilding the
+application. Each repository gets a folder in the user plugins folder:
 
 ```
-<Documents>/UAVOS/Plugins/github/<repo>/        repository sources (latest release)
-<Documents>/UAVOS/Plugins/github/<repo>.json    installed release info (url, tag, plugins)
+<Documents>/UAVOS/Plugins/github/<repo>/<Name>.so       plugin library for this platform
+<Documents>/UAVOS/Plugins/github/<repo>/<repo>.json     installed release info (url, tag, asset)
 ```
 
-Every `<Name>Plugin.qml` file found in the repository (up to two folder levels deep) is loaded
-as the plugin `<Name>`, the same way as the other user plugins: it gets its switch in
-`Preferences / Application / Plugins` and is skipped on the next start when switched off.
+The repository keeps the plugin sources (C++ or QML) and its release provides the plugin
+library built for every platform as an asset named `<Name>-<os>-<arch>.so|dylib`
+(`linux-x86_64`, `macos-universal`, `macos-arm64`). See the
+[EMIP](https://github.com/Alexandr-one/emip) repository for the build script and the GitHub
+workflow: the plugin folder is copied into `src/Plugins/Tools` of the GCS tree and built with
+the regular `apx_plugin()` cmake function, so the same setup works for C++ and QML plugins.
 
 To install a plugin open `Preferences / Application / Plugins / GitHub plugins`, enter the
-repository URL (`https://github.com/<owner>/<repo>`) and press `Install`. The latest release
-archive is downloaded (the default branch when the repository has no releases) and checked
-before it is installed:
+repository URL (`https://github.com/<owner>/<repo>`) and press `Install`. The GCS reads the
+latest release, picks the library for its platform and downloads it. Checks: the repository
+folder must not exist in `Plugins/github`, the release must have a library for the platform,
+no plugin with the same name may be loaded already. The plugin is loaded immediately and
+behaves like the other user plugins: it gets a switch in `Preferences / Application / Plugins`
+and is skipped on the next start when switched off.
 
-- the repository folder must not exist in `Plugins/github`;
-- the repository must contain at least one `<Name>Plugin.qml`;
-- no plugin with the same name may already be loaded.
-
-The new plugins are loaded immediately. Installed repositories are listed in the same menu
-with their release tag; `Update` downloads a newer release and `Remove` deletes the folder
-(a restart is needed to unload plugins that are already running).
-
-Example: [EMIP](https://github.com/Alexandr-one/emip), the engine monitoring and indication panel.
+Installed repositories are listed in the same menu with their release tag; `Update`
+downloads a newer release and `Remove` deletes the folder (a restart is needed to unload a
+plugin that is already running). The library links against the GCS libraries, so it has to
+be built against the GCS version in use (`BUILD_INFO-*.txt` of the release names it).

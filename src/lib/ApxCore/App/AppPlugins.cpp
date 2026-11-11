@@ -82,7 +82,7 @@ void AppPlugins::load(const QStringList &names)
     if (!stRepQml.isEmpty())
         apxConsole() << QObject::tr("User QML plugins").append(": ").append(stRepQml.join(','));
 
-    // third party QML plugins (sources) installed from GitHub: github/<repo>/**/<Name>Plugin.qml
+    // third party plugins installed from GitHub: github/<repo>/<Name>.so
     QDir githubDir = AppDirs::githubPlugins();
     QStringList stRepGithub;
     if (githubDir.exists()) {
@@ -90,7 +90,7 @@ void AppPlugins::load(const QStringList &names)
              githubDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)) {
             if (repoName.startsWith('-') || repoName.startsWith('.'))
                 continue;
-            const auto files = findQmlPlugins(QDir(githubDir.absoluteFilePath(repoName)));
+            const auto files = findLibPlugins(QDir(githubDir.absoluteFilePath(repoName)));
             if (files.isEmpty()) {
                 apxConsoleW() << QObject::tr("No plugins found").append(": ") << repoName;
                 continue;
@@ -208,37 +208,25 @@ QString AppPlugins::pluginName(const QString &fileName)
     QString pname = QFileInfo(fileName).baseName();
     if (pname.startsWith("lib"))
         pname.remove(0, 3);
-    // github/<repo>/<Name>/<Name>Plugin.qml -> Name
-    if (fileName.endsWith(".qml", Qt::CaseInsensitive) && pname.endsWith("Plugin")
-        && pname.size() > 6
-        && fileName.startsWith(AppDirs::githubPlugins().absolutePath() + "/"))
-        pname.chop(6);
     return pname;
 }
 
-QStringList AppPlugins::findQmlPlugins(const QDir &dir, int depth)
+QStringList AppPlugins::findLibPlugins(const QDir &dir)
 {
     QStringList files;
-    for (const auto &fi :
-         dir.entryInfoList({"*Plugin.qml"}, QDir::Files, QDir::Name | QDir::IgnoreCase)) {
-        if (fi.completeBaseName() == "Plugin")
+    for (const auto &fi : dir.entryInfoList({"*.gcs", "*.so", "*.dylib", "*.bundle"},
+                                            QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
+                                            QDir::Name | QDir::IgnoreCase)) {
+        if (fi.fileName().startsWith('-'))
             continue;
         files.append(fi.absoluteFilePath());
-    }
-    if (depth <= 0)
-        return files;
-    for (const auto &fi :
-         dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)) {
-        if (fi.fileName().startsWith('.'))
-            continue;
-        files.append(findQmlPlugins(QDir(fi.absoluteFilePath()), depth - 1));
     }
     return files;
 }
 
 void AppPlugins::loadGithubRepo(const QString &path)
 {
-    for (const auto &f : findQmlPlugins(QDir(path))) {
+    for (const auto &f : findLibPlugins(QDir(path))) {
         AppPlugin *p = addPlugin(f);
         if (!p)
             continue;
