@@ -53,9 +53,15 @@ class Traffic : public Fact
     Q_PROPERTY(bool unitOrigin READ unitOrigin NOTIFY unitStateChanged)
     Q_PROPERTY(double unitAltM READ unitAltM NOTIFY unitStateChanged)
     Q_PROPERTY(QString unitAltSrc READ unitAltSrc NOTIFY unitStateChanged)
-    // alert zones radius around the unit, m (red and yellow)
+    // alert zones radius around the unit, m (red and yellow, radar rings)
     Q_PROPERTY(double alertRadiusM READ alertRadiusM CONSTANT)
     Q_PROPERTY(double proxRadiusM READ proxRadiusM CONSTANT)
+    // conflict parameters: two aircraft possible positions closer than the separation
+    // within the horizon (red) or the full horizon (yellow), see reachSlice in Traffic.cpp
+    Q_PROPERTY(double sepRadiusM READ sepRadiusM CONSTANT)
+    Q_PROPERTY(double sepAltM READ sepAltM CONSTANT)
+    Q_PROPERTY(double horizonS READ horizonS CONSTANT)
+    Q_PROPERTY(double horizonRedS READ horizonRedS CONSTANT)
 
 public:
     explicit Traffic(Fact *parent = nullptr);
@@ -64,6 +70,7 @@ public:
     Fact *f_radius;
     Fact *f_country; // airspaces country code, empty is off
     Fact *f_cache;   // airspaces files on disk (info)
+    Fact *f_view3d;  // 3D traffic window on/off
 
     QAbstractListModel *aircraft() const { return _aircraft; }
     QAbstractItemModel *aircraftSorted() const { return _aircraftSorted; }
@@ -81,14 +88,24 @@ public:
     QString unitAltSrc() const;
     static double alertRadiusM();
     static double proxRadiusM();
+    static double sepRadiusM();
+    static double sepAltM();
+    static double horizonS();
+    static double horizonRedS();
 
     // map view center, used when the current unit has no position
     Q_INVOKABLE void setMapCenter(const QGeoCoordinate &c) { _mapCenter = c; }
+
+    // the possible positions of an aircraft over the horizon (empty hex is the unit) for
+    // the 3D view: a list of {t, ring, lo, hi}, the ring a flat [east, north, ...] m
+    // relative to the aircraft, lo/hi the altitude band relative to its altitude
+    Q_INVOKABLE QVariantList reachVolume(const QString &hex) const;
 
 private:
     AircraftModel *_aircraft;
     QSortFilterProxyModel *_aircraftSorted;
     AirspaceModel *_airspaces;
+    QObject *_window3d{nullptr};
 
     QNetworkAccessManager _net;
     QTimer _timer;
@@ -182,4 +199,5 @@ signals:
     void selectedChanged();
     void highlightedChanged();
     void unitStateChanged();
+    void trafficUpdated(); // a complete ADS-B reply was merged into the model
 };

@@ -42,7 +42,7 @@ struct Aircraft
     double distKm{0};         // from origin
     double brg{0};            // from origin, deg
     double dAltM{qQNaN()};    // altitude above the unit (aircraft - unit), m, NaN when unknown
-    double tauS{qInf()};      // time to the proximity zone, s: 0 inside now, inf never
+    double tauS{qInf()};      // time to the first possible conflict, s: 0 now, inf never
     int level{0};             // 0 other, 1 proximity, 2 alert
     bool own{false};          // our own aircraft (Traffic::f_own), grey, no alerts
     qint64 seenMs{0};         // last reply that contained the aircraft
@@ -80,7 +80,8 @@ public:
         TauRole,     // s, Infinity when never
         LevelRole,
         OwnRole,
-        SortKeyRole, // time to the proximity zone, then distance
+        SeenRole,    // last update, ms since epoch (extrapolation in the 3D view)
+        SortKeyRole, // time to the first possible conflict, then distance
     };
 
     explicit AircraftModel(QObject *parent = nullptr);
@@ -96,6 +97,11 @@ public:
     void dropStale(qint64 seenBeforeMs);
     void clear();
     bool contains(const QString &hex) const { return _index.contains(hex); }
+    const Aircraft *get(const QString &hex) const
+    {
+        int i = _index.value(hex, -1);
+        return i < 0 ? nullptr : &_items.at(i);
+    }
 
 private:
     QList<Aircraft> _items;

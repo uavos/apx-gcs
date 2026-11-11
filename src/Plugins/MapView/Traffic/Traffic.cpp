@@ -28,6 +28,8 @@
 #include <Mandala/Mandala.h>
 #include <Mandala/MandalaFact.h>
 
+#include <QPolygonF>
+
 #include <cmath>
 
 static constexpr int adsb_period_ms = 1000;
@@ -38,26 +40,158 @@ static constexpr int adsb_stale_ms = 30000;     // drop aircraft not updated for
 static constexpr double adsb_seen_pos_max = 60; // skip aircraft with an older position, s
 static constexpr int atc_retry_ms = 30 * 1000; // after a failed download (HTTP errors)
 static constexpr int atc_timeout_ms = 5000;    // inactivity, a live download keeps resetting it
-// alert zones around the unit (TCAS-like): an aircraft is a threat when it is inside the
-// zone (within the radius and the altitude band) or will enter it within the time,
-// by the relative position and velocity (ground speed and track, vertical speed)
-struct AlertZone
-{
-    double tauS;    // s
-    double radiusM; // m
-    double dAltM;   // m, the altitude band above and below the unit
-};
-static constexpr AlertZone alert_zone{30, 2000, 300}; // red
-static constexpr AlertZone prox_zone{60, 4000, 600};  // yellow
 static constexpr double kt_to_ms = 0.514444;
 // our own aircraft as seen by ADS-B: within this distance of the unit on every axis
 static constexpr double own_dist_m = 25;
-// the cone of the possible maneuvers of an aircraft (the track and the vertical speed may
-// change), narrowing with its speed: the half angle is cone_angle_k / speed (deg, m/s)
-// and the vertical speed change is cone_vs_k / speed (m/s), both bounded
-static constexpr double cone_angle_k = 1500, cone_angle_min = 10, cone_angle_max = 60;
-static constexpr double cone_vs_k = 150, cone_vs_min = 1, cone_vs_max = 5;
-static constexpr int cone_steps = 3; // tracks sampled on each side of the reported one
+
+// conflict prediction: the possible positions of every aircraft (a slice of its reach
+// volume) are computed for the instants of the horizon; an aircraft is a threat when
+// its possible positions come closer than the separation to ours
+static constexpr double sep_radius_m = 500; // the separation, horizontal
+static constexpr double sep_alt_m = 150;    // and vertical
+static constexpr double horizon_s = 60;     // yellow within the horizon
+static constexpr double horizon_red_s = 30; // red this close
+static constexpr double reach_step_s = 2;   // the conflict scan time step
+static constexpr double alt_unc_m = 50;     // altitude uncertainty (baro vs the reference)
+static constexpr double omega_cap = qDegreesToRadians(6.0); // turn rate cap, rad/s
+// radar display rings, m (red and yellow)
+static constexpr double alert_radius_m = 2000;
+static constexpr double prox_radius_m = 4000;
+
+// how far an aircraft can maneuver: the turn is limited by the bank angle
+// (omega = g tan(bank) / v, R = v^2 / (g tan(bank))) and the rate cap, the vertical
+// speed can change by dVs. A hover capable craft (disc) can go anywhere within its
+// speed (at least vMin), and so can one with an unknown track. The banks model the
+// plausible maneuvering of the class, not the airframe limits: wider makes the
+// prediction more conservative (more alerts)
+struct ManeuverClass
+{
+    double bankDeg;
+    double dVs;  // m/s
+    bool disc;   // hover capable
+    double vMin; // m/s, the floor of the speed assumed for the reach
+};
+
+// by the ADS-B emitter category (see categoryInfo in TrafficModels.cpp)
+static ManeuverClass maneuverClass(const QString &c)
+{
+    static const QHash<QString, ManeuverClass> map{
+        {"A1", {30, 4, false, 0}},   // light
+        {"A2", {25, 6, false, 0}},   // small
+        {"A3", {15, 8, false, 0}},   // large
+        {"A4", {15, 8, false, 0}},   // high vortex
+        {"A5", {12, 8, false, 0}},   // heavy
+        {"A6", {45, 30, false, 0}},  // high performance
+        {"A7", {0, 8, true, 60}},    // rotorcraft
+        {"B1", {30, 3, false, 0}},   // glider
+        {"B2", {0, 3, true, 15}},    // lighter-than-air
+        {"B3", {0, 8, true, 15}},    // parachutist
+        {"B4", {25, 3, false, 0}},   // ultralight
+        {"B6", {0, 8, true, 40}},    // UAV
+        {"B7", {30, 100, false, 0}}, // space vehicle
+    };
+    return map.value(c, {20, 8, false, 0});
+}
+static constexpr ManeuverClass unit_class{30, 5, false, 0}; // our own aircraft
+
+// the possible positions at time t: the horizontal ring (ENU m relative to the position
+// now) and the altitude band (m relative to the altitude now)
+struct ReachSlice
+{
+    QPolygonF ring;
+    double lo{0}, hi{0};
+};
+
+// v m/s, track deg, vertical speed vs m/s. Fixed wing at constant speed: the turn at the
+// full rate for tau then straight traces the outer boundary on each side (Dubins), the
+// rear is closed by a chord (slightly wider than the true set). A hover capable craft,
+// or one that can turn all the way around within t, gets the full disc
+static ReachSlice reachSlice(double v, double trackDeg, double vs, const ManeuverClass &mc, double t)
+{
+    ReachSlice s;
+    s.lo = vs * t - (mc.dVs * t + alt_unc_m);
+    s.hi = vs * t + (mc.dVs * t + alt_unc_m);
+    double vv = qMax(v, mc.vMin);
+    double omega = mc.disc ? 0
+                           : qMin(omega_cap,
+                                  9.81 * std::tan(qDegreesToRadians(mc.bankDeg)) / qMax(vv, 1.0));
+    if (mc.disc || omega * t >= M_PI) {
+        double r = vv * t;
+        for (int i = 0; i < 12; ++i) {
+            double a = 2 * M_PI * i / 12;
+            s.ring << QPointF(std::sin(a) * r, std::cos(a) * r);
+        }
+        return s;
+    }
+    // local frame (x to the right of the track, y along it), rotated to ENU by the track
+    double tr = qDegreesToRadians(trackDeg);
+    double sinT = std::sin(tr), cosT = std::cos(tr);
+    auto pt = [&](double side, double tau) {
+        double th = omega * tau; // the heading change over the turn
+        double R = vv / qMax(omega, 1e-6);
+        double x = side * R * (1 - std::cos(th));
+        double y = R * std::sin(th);
+        x += side * vv * (t - tau) * std::sin(th);
+        y += vv * (t - tau) * std::cos(th);
+        return QPointF(y * sinT + x * cosT, y * cosT - x * sinT); // east, north
+    };
+    const int N = 5;
+    for (int k = 0; k <= N; ++k) // the tip (straight) to the full right turn
+        s.ring << pt(+1, t * k / N);
+    for (int k = N; k >= 1; --k) // the full left turn back towards the tip
+        s.ring << pt(-1, t * k / N);
+    return s;
+}
+
+// the smallest distance from the point to the segment
+static double segDist(const QPointF &p, const QPointF &a, const QPointF &b)
+{
+    QPointF d = b - a;
+    double l2 = d.x() * d.x() + d.y() * d.y();
+    double u = l2 < 1e-9 ? 0.0
+                         : qBound(0.0,
+                                  ((p.x() - a.x()) * d.x() + (p.y() - a.y()) * d.y()) / l2,
+                                  1.0);
+    return std::hypot(p.x() - (a.x() + d.x() * u), p.y() - (a.y() + d.y() * u));
+}
+
+// the smallest distance between two rings, m (0 when one is inside the other), B offset by ob
+static double ringGap(const QPolygonF &A, const QPolygonF &B, const QPointF &ob)
+{
+    QPolygonF Bo(B);
+    Bo.translate(ob);
+    if (A.containsPoint(Bo.first(), Qt::OddEvenFill) || Bo.containsPoint(A.first(), Qt::OddEvenFill))
+        return 0;
+    double best = qInf();
+    for (const auto &p : A)
+        for (int i = 0; i < Bo.size(); ++i)
+            best = qMin(best, segDist(p, Bo.at(i), Bo.at((i + 1) % Bo.size())));
+    for (const auto &p : Bo)
+        for (int i = 0; i < A.size(); ++i)
+            best = qMin(best, segDist(p, A.at(i), A.at((i + 1) % A.size())));
+    return best;
+}
+
+// the first instant of the horizon when the possible positions of the aircraft (at rx, ry
+// east/north m and dAlt m above the unit, NaN counts as the same altitude) come closer
+// than the separation to the possible positions of the unit (a slice per scan step)
+static double conflictTime(const QList<ReachSlice> &own, double rx, double ry, double dAlt,
+                           double v, double trackDeg, double vs, const ManeuverClass &mc)
+{
+    for (int k = 0; k < own.size(); ++k) {
+        double t = k * reach_step_s;
+        auto s = reachSlice(v, trackDeg, vs, mc, t);
+        if (ringGap(own.at(k).ring, s.ring, QPointF(rx, ry)) >= sep_radius_m)
+            continue;
+        if (!qIsNaN(dAlt)) {
+            double gap = qMax((own.at(k).lo - (dAlt + s.hi)), ((dAlt + s.lo) - own.at(k).hi));
+            if (gap >= sep_alt_m)
+                continue;
+        }
+        return t;
+    }
+    return qInf();
+}
 
 // readsb style traffic around a point, no key
 static const char *adsb_url = "https://opendata.adsb.fi/api/v2/lat/%1/lon/%2/dist/%3";
@@ -165,6 +299,14 @@ Traffic::Traffic(Fact *parent)
     connect(f_country, &Fact::valueChanged, this, &Traffic::updateCountryDescr);
     updateCountryDescr();
 
+    f_view3d = new Fact(this,
+                        "view3d",
+                        tr("3D view"),
+                        tr("Traffic and reach volumes in 3D"),
+                        Bool | PersistentValue,
+                        "video-3d");
+    f_view3d->setDefaultValue(false);
+
     f_cache = new Fact(this,
                        "cache",
                        tr("Cache size"),
@@ -212,6 +354,12 @@ Traffic::Traffic(Fact *parent)
     loadQml("qrc:/" PLUGIN_NAME "/TrafficPlugin.qml");      // traffic list, instruments panel
     loadQml("qrc:/" PLUGIN_NAME "/TrafficMapLayer.qml");    // aircraft and airspaces on the map
     loadQml("qrc:/" PLUGIN_NAME "/TrafficRadarPlugin.qml"); // radar widget, main layout
+
+    // 3D traffic window, visibility follows f_view3d (as the Ats RSSI window)
+    QVariantMap opts;
+    opts.insert("fact", QVariant::fromValue(f_view3d));
+    opts.insert("traffic", QVariant::fromValue(this));
+    _window3d = App::loadQml("qrc:/" PLUGIN_NAME "/Traffic3DWindow.qml", opts);
 }
 
 // the country item description when nothing is going on
@@ -345,6 +493,7 @@ void Traffic::onEnabledChanged()
     abortReply(_adsbReply);
     _aircraft->clear();
     dropGone();
+    f_view3d->setValue(false); // close the 3D window
     clearAirspaces();
     _adsbStatus.clear();
     _reqDown = false;
@@ -381,11 +530,60 @@ QGeoCoordinate Traffic::origin() const
 
 double Traffic::alertRadiusM()
 {
-    return alert_zone.radiusM;
+    return alert_radius_m;
 }
 double Traffic::proxRadiusM()
 {
-    return prox_zone.radiusM;
+    return prox_radius_m;
+}
+double Traffic::sepRadiusM()
+{
+    return sep_radius_m;
+}
+double Traffic::sepAltM()
+{
+    return sep_alt_m;
+}
+double Traffic::horizonS()
+{
+    return horizon_s;
+}
+double Traffic::horizonRedS()
+{
+    return horizon_red_s;
+}
+
+QVariantList Traffic::reachVolume(const QString &hex) const
+{
+    double v, trk, vs;
+    ManeuverClass mc;
+    if (hex.isEmpty()) {
+        if (!_unit.valid)
+            return {};
+        v = _unit.spdMs;
+        trk = _unit.crsDeg;
+        vs = _unit.vsMs;
+        mc = unit_class;
+    } else {
+        auto a = _aircraft->get(hex);
+        if (!a || a->onGround)
+            return {};
+        v = a->gsKt * kt_to_ms;
+        trk = a->track;
+        vs = a->vsMs;
+        mc = maneuverClass(a->category);
+        if (!a->trackValid)
+            mc.disc = true; // the direction is unknown
+    }
+    QVariantList out;
+    for (double t = 0; t <= horizon_s + 0.1; t += 6) {
+        auto s = reachSlice(v, trk, vs, mc, t);
+        QVariantList ring;
+        for (const auto &p : s.ring)
+            ring << p.x() << p.y();
+        out.append(QVariantMap{{"t", t}, {"ring", ring}, {"lo", s.lo}, {"hi", s.hi}});
+    }
+    return out;
 }
 QString Traffic::unitAltSrc() const
 {
@@ -426,70 +624,6 @@ Traffic::UnitState Traffic::unitState() const
     s.crsDeg = value(mandala::est::nav::pos::bearing::uid);
     s.vsMs = value(mandala::est::nav::pos::vspeed::uid);
     return s;
-}
-
-// seconds until the aircraft is inside the zone, assuming straight line motion:
-// r is its position relative to the unit (east, north, up: m), v its velocity relative
-// to the unit (m/s). 0 when it is inside now, inf when it never is (passes by, diverges).
-// An unknown altitude (dz NaN) counts as inside the altitude band
-static double threatTime(double rx, double ry, double dz, double vx, double vy, double vz, const AlertZone &z)
-{
-    const double inf = qInf();
-    // the time window inside the circle: |r + v t| <= R
-    double v2 = vx * vx + vy * vy;
-    double b = rx * vx + ry * vy;
-    double c = rx * rx + ry * ry - z.radiusM * z.radiusM;
-    double tIn = 0, tOut = inf;
-    if (v2 < 1e-6) {
-        if (c > 0)
-            return inf; // not moving relative to the unit, outside
-    } else {
-        double disc = b * b - v2 * c;
-        if (disc < 0)
-            return inf; // passes by
-        double s = std::sqrt(disc);
-        tOut = (-b + s) / v2;
-        if (tOut < 0)
-            return inf; // was inside in the past, diverging
-        tIn = qMax(0.0, (-b - s) / v2);
-    }
-    // the time window inside the altitude band: |dz + vz t| <= H
-    double zIn = 0, zOut = inf;
-    if (!qIsNaN(dz)) {
-        if (qAbs(vz) < 1e-3) {
-            if (qAbs(dz) > z.dAltM)
-                return inf; // level, outside the band
-        } else {
-            double t1 = (-z.dAltM - dz) / vz, t2 = (z.dAltM - dz) / vz;
-            zOut = qMax(t1, t2);
-            if (zOut < 0)
-                return inf; // left the band in the past
-            zIn = qMax(0.0, qMin(t1, t2));
-        }
-    }
-    double t = qMax(tIn, zIn);
-    if (t > tOut || t > zOut)
-        return inf; // the windows do not overlap: out of the band while inside the circle
-    return t;
-}
-
-// the threat time over the cone of the possible maneuvers of the aircraft (speed va m/s,
-// track and vertical speed as reported) relative to the unit velocity: the worst case
-static double threatTimeCone(double rx, double ry, double dz, double va, double trackDeg,
-                             double vsA, double uvx, double uvy, double uvz, const AlertZone &z)
-{
-    double v = qMax(va, 1.0);
-    double halfAngle = qBound(cone_angle_min, cone_angle_k / v, cone_angle_max);
-    double dvs = qBound(cone_vs_min, cone_vs_k / v, cone_vs_max);
-    double tau = qInf();
-    for (int i = -cone_steps; i <= cone_steps; ++i) {
-        double t = qDegreesToRadians(trackDeg + halfAngle * i / cone_steps);
-        double vx = va * std::sin(t) - uvx;
-        double vy = va * std::cos(t) - uvy;
-        for (int k = -1; k <= 1; ++k)
-            tau = qMin(tau, threatTime(rx, ry, dz, vx, vy, vsA + dvs * k - uvz, z));
-    }
-    return tau;
 }
 
 void Traffic::onTimer()
@@ -574,9 +708,12 @@ void Traffic::onAdsbReply()
     auto unit = unitState();
     auto o = unit.valid ? unit.pos : _mapCenter;
     auto now = QDateTime::currentMSecsSinceEpoch();
-    // the unit velocity (east, north), m/s
-    double uvx = unit.spdMs * std::sin(qDegreesToRadians(unit.crsDeg));
-    double uvy = unit.spdMs * std::cos(qDegreesToRadians(unit.crsDeg));
+    // the possible positions of the unit over the horizon, one slice per scan step
+    QList<ReachSlice> ownSlices;
+    if (unit.valid) {
+        for (double t = 0; t <= horizon_s + 0.1; t += reach_step_s)
+            ownSlices.append(reachSlice(unit.spdMs, unit.crsDeg, unit.vsMs, unit_class, t));
+    }
 
     QList<Aircraft> list;
     for (const auto &v : ac) {
@@ -628,31 +765,25 @@ void Traffic::onAdsbReply()
         // from sns.baro.mbar when the unit has it, est.pos.hmsl otherwise
         double alt = qIsNaN(a.altBaroM) ? a.altGeomM : a.altBaroM;
         a.dAltM = alt - unit.altM; // NaN when either is unknown
-        // the alert is by the time to the zone around the unit (or the map center, then
-        // the unit is still): the relative position and velocity (east, north, up)
+        // the relative position (east, north), m
         double rx = a.distKm * 1000 * std::sin(qDegreesToRadians(a.brg));
         double ry = a.distKm * 1000 * std::cos(qDegreesToRadians(a.brg));
-        double va = a.gsKt * kt_to_ms;
-        double vx = va * std::sin(qDegreesToRadians(a.track)) - uvx;
-        double vy = va * std::cos(qDegreesToRadians(a.track)) - uvy;
         // our own aircraft as seen by ADS-B: at the unit on every axis (an unknown altitude
         // counts as the same), not drawn on the map, grey in the list, no alerts
         a.own = unit.valid && qAbs(rx) < own_dist_m && qAbs(ry) < own_dist_m
                 && (qIsNaN(a.dAltM) || qAbs(a.dAltM) < own_dist_m);
-        // the alerts are relative to the unit only: none with the map center as the origin
+        // the alerts are relative to the unit only: none with the map center as the origin.
+        // The conflict time: the first instant when the possible positions of the aircraft
+        // (its reach slice by the maneuver class) come closer than the separation to ours
         if (!unit.valid || a.own || a.onGround) {
             a.tauS = qInf();
             a.level = 0;
         } else {
-            // the worst case over the cone of the possible maneuvers
-            a.tauS = threatTimeCone(rx, ry, a.dAltM, va, a.track, a.vsMs, uvx, uvy, unit.vsMs, prox_zone);
-            if (threatTimeCone(rx, ry, a.dAltM, va, a.track, a.vsMs, uvx, uvy, unit.vsMs, alert_zone)
-                <= alert_zone.tauS)
-                a.level = 2;
-            else if (a.tauS <= prox_zone.tauS)
-                a.level = 1;
-            else
-                a.level = 0;
+            auto mc = maneuverClass(a.category);
+            if (!a.trackValid)
+                mc.disc = true; // the direction is unknown
+            a.tauS = conflictTime(ownSlices, rx, ry, a.dAltM, a.gsKt * kt_to_ms, a.track, a.vsMs, mc);
+            a.level = a.tauS <= horizon_red_s ? 2 : a.tauS <= horizon_s ? 1 : 0;
         }
         list.append(a);
     }
@@ -667,6 +798,7 @@ void Traffic::onAdsbReply()
     dropGone();
     _adsbStatus.clear();
     updateStatus();
+    emit trafficUpdated();
 }
 
 void Traffic::setSelected(const QString &hex)

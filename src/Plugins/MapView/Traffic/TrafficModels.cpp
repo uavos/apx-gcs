@@ -56,6 +56,7 @@ QHash<int, QByteArray> AircraftModel::roleNames() const
         {TauRole, "tauS"},
         {LevelRole, "level"},
         {OwnRole, "own"},
+        {SeenRole, "seenMs"},
         {SortKeyRole, "sortKey"},
     };
 }
@@ -145,8 +146,10 @@ QVariant AircraftModel::data(const QModelIndex &index, int role) const
         return a.level;
     case OwnRole:
         return a.own;
+    case SeenRole:
+        return a.seenMs;
     case SortKeyRole:
-        // the threats by the time to the zone (distance breaks the ties), the rest by distance
+        // the threats by the conflict time (distance breaks the ties), the rest by distance
         return qIsInf(a.tauS) ? 1e6 + a.distKm : a.tauS + a.distKm * 1e-4;
     }
     return {};
