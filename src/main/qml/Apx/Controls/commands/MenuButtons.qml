@@ -38,6 +38,8 @@ ListView {
 
     delegate: IconButton {
         size: listView.height
+        visible: modelData.visible
+        width: visible ? implicitWidth : -listView.spacing // hidden buttons take no space
         toolTip: modelData.descr?modelData.descr:modelData.title
         iconName: modelData.icon
         highlighted: modelData.active
