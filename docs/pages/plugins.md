@@ -165,8 +165,9 @@ plugins: it gets a switch in `Preferences / Application / Plugins` and is skippe
 start when switched off.
 
 Updates work like the application updates: `Check for updates` (also run automatically a few
-seconds after start when `Auto` is on) asks every installed repository for its releases and
-opens the `Updates` list when something can be installed. Per plugin the list shows one of:
+seconds after start) asks every installed repository for its releases. With `Auto` on every
+release that can be installed is installed right away; with `Auto` off the `Updates` list is
+opened instead and the user picks what to install. Per plugin the list shows one of:
 
 * `Update available: <tag>` - a newer build for the running GCS version, click to install;
 * `Not compatible with version <gcs>, reinstall <tag>` - the installed plugin is built for

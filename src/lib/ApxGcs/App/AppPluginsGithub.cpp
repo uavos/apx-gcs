@@ -61,9 +61,9 @@ AppPluginsGithub::AppPluginsGithub(Fact *parent)
     f_auto = new Fact(this,
                       "auto",
                       tr("Auto"),
-                      tr("Automatically check for plugin updates"),
+                      tr("Install plugin updates automatically, otherwise show the updates list"),
                       Bool | PersistentValue);
-    f_auto->setDefaultValue(true);
+    f_auto->setDefaultValue(false);
     f_auto->setSection(tr("Updates"));
 
     f_check = new Fact(this,
@@ -86,7 +86,8 @@ AppPluginsGithub::AppPluginsGithub(Fact *parent)
     loadRepos();
     updateStatus();
 
-    if (f_auto->value().toBool() && !_repos.isEmpty()) {
+    // check on start: auto installs the updates, otherwise the updates list is shown
+    if (!_repos.isEmpty()) {
         QTimer::singleShot(5000, this, [this]() {
             // skip silently when something is already going on
             if (_checking > 0 || _installing)
@@ -252,12 +253,21 @@ void AppPluginsGithub::repoChecked()
 
     updateStatus();
 
-    // checkForUpdates: show the updates when all repositories are checked
-    if (_checking > 0) {
-        _checking--;
-        if (_checking == 0 && f_updates->enabled())
-            f_updates->trigger();
+    if (_checking == 0)
+        return;
+    _checking--;
+
+    // auto: install the release right away
+    if (f_auto->value().toBool()) {
+        if (r->hasUpdate()) {
+            apxMsg() << title().append(':') << tr("Updating") << r->title() << r->latestTag();
+            r->install();
+        }
+        return;
     }
+    // show the updates list when all repositories are checked
+    if (_checking == 0 && f_updates->enabled())
+        f_updates->trigger();
 }
 
 void AppPluginsGithub::repoInstalled(QString libPath)
