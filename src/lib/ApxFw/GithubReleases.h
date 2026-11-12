@@ -41,6 +41,9 @@ private:
     QString _repo;
     QVersionNumber _latest;
 
+    QJsonArray _releases; // pages collected by requestReleases
+    int _releasesPages{};
+
     QNetworkAccessManager _net;
     QNetworkReply *_reply{};
     QNetworkReply *request(QUrl url);
@@ -53,6 +56,7 @@ private slots:
     void responseLatestVersionInfo();
     void responseReleaseInfo();
     void responseReleases();
+    void requestReleasesPage(QUrl url);
     void responseDownload();
     void responseDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
