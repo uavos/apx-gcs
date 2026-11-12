@@ -6,7 +6,7 @@ apx_module(
     "SDK/**/*.[h]*"
     DEPENDS
     shared.xbus
-    shared.xbus.tcp
+    shared.net
     shared.mandala
 )
 
@@ -35,7 +35,7 @@ if(APPLE)
 
 elseif(UNIX AND NOT APPLE)
     target_compile_definitions(${MODULE} PRIVATE APL=0 IBM=0 LIN=1)
-    target_compile_options(shared.xbus.tcp PRIVATE -fPIC)
+    target_compile_options(shared.net PRIVATE -fPIC)
 
 elseif(WIN32)
     message(WARNING "Not implemented")
