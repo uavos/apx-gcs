@@ -175,7 +175,7 @@ void DatalinkSerial::openNext()
             if (_failedPath != path) {
                 _failedPath = path;
                 apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(path)
-                          << dev->errorString();
+                          << _lastError;
             }
             // in [auto] mode move on to the next candidate on the next attempt
             if (m_devName.isEmpty() || m_devName == "auto")
@@ -263,6 +263,7 @@ void DatalinkSerial::serialPortError(QSerialPort::SerialPortError error)
         return;
     apxConsoleW() << "Serial error:" << error;
 
+    _lastError = dev->errorString();
     dev->clearError();
     if (dev->isOpen()) {
         auto name = dev->portName();
