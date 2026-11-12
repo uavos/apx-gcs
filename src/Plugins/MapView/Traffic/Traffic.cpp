@@ -49,8 +49,7 @@ static constexpr double own_dist_m = 25;
 // its possible positions come closer than the separation to ours
 static constexpr double sep_radius_m = 500; // the separation, horizontal
 static constexpr double sep_alt_m = 150;    // and vertical
-static constexpr double horizon_s = 60;     // yellow within the horizon
-static constexpr double horizon_red_s = 30; // red this close
+static constexpr double horizon_red_s = 30; // red this close (the horizon, f_horizon, is yellow)
 static constexpr double reach_step_s = 2;   // the conflict scan time step
 static constexpr double alt_unc_m = 50;     // altitude uncertainty (baro vs the reference)
 static constexpr double omega_cap = qDegreesToRadians(6.0); // turn rate cap, rad/s
@@ -155,13 +154,28 @@ static double segDist(const QPointF &p, const QPointF &a, const QPointF &b)
     return std::hypot(p.x() - (a.x() + d.x() * u), p.y() - (a.y() + d.y() * u));
 }
 
-// the smallest distance between two rings, m (0 when one is inside the other), B offset by ob
+// the segments ab and cd cross (touching counts)
+static bool segCross(const QPointF &a, const QPointF &b, const QPointF &c, const QPointF &d)
+{
+    auto side = [](const QPointF &p, const QPointF &q, const QPointF &r) {
+        return (q.x() - p.x()) * (r.y() - p.y()) - (q.y() - p.y()) * (r.x() - p.x());
+    };
+    double s1 = side(a, b, c), s2 = side(a, b, d), s3 = side(c, d, a), s4 = side(c, d, b);
+    return s1 * s2 <= 0 && s3 * s4 <= 0;
+}
+
+// the smallest distance between two rings, m: 0 when one is inside the other or their
+// edges cross (two narrow rings crossing may have no vertex inside the other), B offset by ob
 static double ringGap(const QPolygonF &A, const QPolygonF &B, const QPointF &ob)
 {
     QPolygonF Bo(B);
     Bo.translate(ob);
     if (A.containsPoint(Bo.first(), Qt::OddEvenFill) || Bo.containsPoint(A.first(), Qt::OddEvenFill))
         return 0;
+    for (int i = 0; i < A.size(); ++i)
+        for (int j = 0; j < Bo.size(); ++j)
+            if (segCross(A.at(i), A.at((i + 1) % A.size()), Bo.at(j), Bo.at((j + 1) % Bo.size())))
+                return 0;
     double best = qInf();
     for (const auto &p : A)
         for (int i = 0; i < Bo.size(); ++i)
@@ -286,6 +300,19 @@ Traffic::Traffic(Fact *parent)
     f_radius->setMax(400);
     f_radius->setUnits("km");
     f_radius->setDefaultValue(100);
+
+    f_horizon = new Fact(this,
+                         "horizon",
+                         tr("Horizon"),
+                         tr("Conflict prediction time, yellow within it"),
+                         Int | PersistentValue,
+                         "timer-sand");
+    f_horizon->setMin(10);
+    f_horizon->setMax(600);
+    f_horizon->setUnits("s");
+    f_horizon->setDefaultValue(60);
+    connect(f_horizon, &Fact::valueChanged, this, &Traffic::paramsChanged);
+    connect(f_radius, &Fact::valueChanged, this, &Traffic::paramsChanged);
 
     f_country = new Fact(this,
                          "country",
@@ -544,13 +571,17 @@ double Traffic::sepAltM()
 {
     return sep_alt_m;
 }
-double Traffic::horizonS()
+double Traffic::horizonS() const
 {
-    return horizon_s;
+    return f_horizon->value().toDouble();
 }
-double Traffic::horizonRedS()
+double Traffic::horizonRedS() const
 {
-    return horizon_red_s;
+    return qMin(horizon_red_s, horizonS());
+}
+double Traffic::radiusKm() const
+{
+    return f_radius->value().toDouble();
 }
 
 QVariantList Traffic::reachVolume(const QString &hex) const
@@ -576,7 +607,8 @@ QVariantList Traffic::reachVolume(const QString &hex) const
             mc.disc = true; // the direction is unknown
     }
     QVariantList out;
-    for (double t = 0; t <= horizon_s + 0.1; t += 6) {
+    const double T = horizonS(), step = T / 10; // 11 slices whatever the horizon
+    for (double t = 0; t <= T + 0.1; t += step) {
         auto s = reachSlice(v, trk, vs, mc, t);
         QVariantList ring;
         for (const auto &p : s.ring)
@@ -710,8 +742,9 @@ void Traffic::onAdsbReply()
     auto now = QDateTime::currentMSecsSinceEpoch();
     // the possible positions of the unit over the horizon, one slice per scan step
     QList<ReachSlice> ownSlices;
+    const double T = horizonS(), redT = horizonRedS();
     if (unit.valid) {
-        for (double t = 0; t <= horizon_s + 0.1; t += reach_step_s)
+        for (double t = 0; t <= T + 0.1; t += reach_step_s)
             ownSlices.append(reachSlice(unit.spdMs, unit.crsDeg, unit.vsMs, unit_class, t));
     }
 
@@ -783,7 +816,7 @@ void Traffic::onAdsbReply()
             if (!a.trackValid)
                 mc.disc = true; // the direction is unknown
             a.tauS = conflictTime(ownSlices, rx, ry, a.dAltM, a.gsKt * kt_to_ms, a.track, a.vsMs, mc);
-            a.level = a.tauS <= horizon_red_s ? 2 : a.tauS <= horizon_s ? 1 : 0;
+            a.level = a.tauS <= redT ? 2 : a.tauS <= T ? 1 : 0;
         }
         list.append(a);
     }

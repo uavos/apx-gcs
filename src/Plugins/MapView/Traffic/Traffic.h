@@ -60,8 +60,9 @@ class Traffic : public Fact
     // within the horizon (red) or the full horizon (yellow), see reachSlice in Traffic.cpp
     Q_PROPERTY(double sepRadiusM READ sepRadiusM CONSTANT)
     Q_PROPERTY(double sepAltM READ sepAltM CONSTANT)
-    Q_PROPERTY(double horizonS READ horizonS CONSTANT)
-    Q_PROPERTY(double horizonRedS READ horizonRedS CONSTANT)
+    Q_PROPERTY(double horizonS READ horizonS NOTIFY paramsChanged)
+    Q_PROPERTY(double horizonRedS READ horizonRedS NOTIFY paramsChanged)
+    Q_PROPERTY(double radiusKm READ radiusKm NOTIFY paramsChanged) // the request radius
 
 public:
     explicit Traffic(Fact *parent = nullptr);
@@ -70,6 +71,7 @@ public:
     Fact *f_radius;
     Fact *f_country; // airspaces country code, empty is off
     Fact *f_cache;   // airspaces files on disk (info)
+    Fact *f_horizon; // conflict prediction time, s
     Fact *f_view3d;  // 3D traffic window on/off
 
     QAbstractListModel *aircraft() const { return _aircraft; }
@@ -90,8 +92,9 @@ public:
     static double proxRadiusM();
     static double sepRadiusM();
     static double sepAltM();
-    static double horizonS();
-    static double horizonRedS();
+    double horizonS() const;
+    double horizonRedS() const;
+    double radiusKm() const;
 
     // map view center, used when the current unit has no position
     Q_INVOKABLE void setMapCenter(const QGeoCoordinate &c) { _mapCenter = c; }
@@ -199,5 +202,6 @@ signals:
     void selectedChanged();
     void highlightedChanged();
     void unitStateChanged();
+    void paramsChanged(); // horizon, radius
     void trafficUpdated(); // a complete ADS-B reply was merged into the model
 };

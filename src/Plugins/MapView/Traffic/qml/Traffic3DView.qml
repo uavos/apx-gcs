@@ -27,14 +27,17 @@ import Apx.Common
 
 // 3D traffic scene on a Canvas (QtQuick3D is not a project dependency): ENU world
 // around the unit, the sea level (AMSL 0) is the ground grid. The aircraft are drawn
-// at their reported positions extrapolated by velocity between the ADS-B replies
+// (the airborne ones, the ground traffic of an airport is left out) at their reported
+// positions extrapolated by velocity between the ADS-B replies
 // (smoothed, no jumps), with the velocity vector (60 s), an altitude stem down to the
 // sea level and a label. The reachability volumes (Traffic::reachVolume) are drawn as
-// a stack of time slice rings with a wave: on every reply the live slice sweeps the
-// horizon in ~1 s and turns red from the moment the slices intersect (tauS); the
-// pause button stops the wave and the slider scrubs the slice time by hand.
+// a stack of time slices (the altitude band of each as a top and a bottom ring joined
+// by the corner edges) with a wave: on every reply the live slice sweeps the horizon
+// in ~1 s and turns red from the moment the slices intersect (tauS).
 // Orbit camera: left drag rotates, wheel zooms, right (or shift) drag pans,
-// double click resets. A click on an aircraft highlights it (as on the radar)
+// double click resets. A click on an aircraft highlights it (as on the radar).
+// The canvas is painted at a resolution that follows the paint time and a frame waits
+// for the previous paint: no lag builds up in a big window
 Item {
     id: view
 
@@ -83,19 +86,31 @@ Item {
     readonly property real distMin: 2000
     readonly property real distMax: 300000
 
-    // time of the live reachability slice, s. While playing a wave sweeps the
-    // volumes from 0 to the horizon in ~1 s (ease out) on every ADS-B reply; the
-    // wave of an aircraft and the own one turn red from the moment the wave time
-    // reaches its tauS (the slices intersect from there on). Paused: the slider
-    // scrubs the slice time by hand
+    // time of the live reachability slice, s: a wave sweeps the volumes from 0 to the
+    // horizon in ~1 s (ease out) on every ADS-B reply; the wave of an aircraft and the
+    // own one turn red from the moment the wave time reaches its tauS (the slices
+    // intersect from there on)
     property real sliceT: 0
-    property bool playing: true
+    readonly property bool playing: true
     property double waveStartMs: 0
 
     // smoothed display positions by hex and the reachability volumes cache
     property var smoothPos: ({})
     property var volumes: ({})
     property double lastFrameMs: 0
+
+    // the airborne count for the header (the aircraft on the ground are not drawn)
+    property int airborne: 0
+    function countAirborne()
+    {
+        var n = 0
+        for (var i = 0; i < targets.count; ++i) {
+            var a = targets.objectAt(i)
+            if (a && !a.onGround)
+                n++
+        }
+        airborne = n
+    }
 
     // the aircraft of the model as plain objects (the canvas reads them every frame)
     Instantiator {
@@ -135,6 +150,7 @@ Item {
 
     function updateVolumes()
     {
+        countAirborne()
         if (!traffic || !running)
             return
         var v = {}
@@ -159,7 +175,7 @@ Item {
         var far = 10000
         for (var i = 0; i < targets.count; ++i) {
             var a = targets.objectAt(i)
-            if (a)
+            if (a && !a.onGround)
                 far = Math.max(far, a.distKm*1000)
         }
         if (targets.count > 0)
@@ -198,16 +214,27 @@ Item {
         return p
     }
 
-    // frame: smooth the positions, advance the slice time, repaint
+    // frame: smooth the positions, advance the slice time, repaint. A frame is skipped
+    // while the previous paint is still running (no backlog on a slow machine), and the
+    // canvas resolution follows the paint time (see resScale)
     Timer {
         interval: 33
         repeat: true
         running: view.running
         onTriggered: view.frame()
     }
+    // the canvas is painted at resScale of the view (1 or 0.75) and scaled up:
+    // lowered when a paint takes longer than a frame, restored when it is fast again
+    property real resScale: 1
+    property bool painting: false
+    property double paintStartMs: 0
+    property real paintMs: 0 // smoothed paint time
+    property double resCheckMs: 0
 
     function frame()
     {
+        if (painting)
+            return
         var now = Date.now()
         var dt = lastFrameMs > 0 ? Math.min((now - lastFrameMs)/1000, 0.1) : 0.033
         lastFrameMs = now
@@ -216,8 +243,6 @@ Item {
             var wp = Math.min(Math.max((now - waveStartMs)/1000, 0), 1)
             sliceT = (1 - Math.pow(1 - wp, 3))*horizonS // ease out, done in ~1 s
         }
-        if (!tSlider.pressed)
-            tSlider.value = sliceT
         if (autoRotate)
             camYaw = (camYaw + dt*3) % 360
 
@@ -226,7 +251,7 @@ Item {
         var seen = {}
         for (var i = 0; i < targets.count; ++i) {
             var a = targets.objectAt(i)
-            if (!a)
+            if (!a || a.onGround)
                 continue
             var p = targetPos(a, now)
             var s = smoothPos[a.hex]
@@ -243,7 +268,22 @@ Item {
             if (!seen[hex])
                 delete smoothPos[hex]
         }
+        painting = true
+        paintStartMs = now
         canvas.requestPaint()
+    }
+    function painted()
+    {
+        var now = Date.now()
+        paintMs = paintMs*0.8 + (now - paintStartMs)*0.2
+        painting = false
+        if (now - resCheckMs < 1500)
+            return
+        resCheckMs = now
+        if (paintMs > 50 && resScale > 0.75)
+            resScale -= 0.25
+        else if (paintMs < 20 && resScale < 1)
+            resScale += 0.25
     }
 
     // camera basis for this frame
@@ -262,8 +302,8 @@ Item {
         var u = { x: f.y*r.z - f.z*r.y, y: f.z*r.x - f.x*r.z, z: f.x*r.y - f.y*r.x } // cross(f, r)
         return {
             eye: eye, f: f, r: r, u: u,
-            w: canvas.width, h: canvas.height,
-            focal: (canvas.height/2)/Math.tan(22.5*Math.PI/180)
+            w: view.width, h: view.height,
+            focal: (view.height/2)/Math.tan(22.5*Math.PI/180)
         }
     }
     function norm3(x, y, z)
@@ -317,17 +357,26 @@ Item {
 
     Canvas {
         id: canvas
-        anchors.fill: parent
+        // painted at resScale of the view and scaled up by the scene graph (a plain
+        // texture scale): the paint cost follows the pixels, the picture stays whole
+        width: Math.max(1, Math.round(view.width*view.resScale))
+        height: Math.max(1, Math.round(view.height*view.resScale))
+        transformOrigin: Item.TopLeft
+        scale: 1/view.resScale
+        renderStrategy: Canvas.Threaded
 
         readonly property string fam: apx.font_narrow(10).family
 
+        onPainted: view.painted()
         onPaint: {
             var ctx = getContext("2d")
-            ctx.clearRect(0, 0, width, height)
+            ctx.setTransform(1, 0, 0, 1, 0, 0)
             ctx.fillStyle = "#0B1016"
             ctx.fillRect(0, 0, width, height)
             if (!view.traffic)
                 return
+            // everything is drawn in the view pixels
+            ctx.scale(view.resScale, view.resScale)
             view.render(ctx, view.makeCamera())
         }
     }
@@ -336,8 +385,8 @@ Item {
     {
         drawGrid(ctx, cam)
 
-        var prims = []  // translucent world primitives, sorted far to near
-        var labels = [] // screen space labels, drawn over everything
+        var prims = []   // translucent world primitives, sorted far to near
+        var symbols = [] // the aircraft symbols, over the primitives
         var newHits = []
         var now = Date.now()
 
@@ -367,14 +416,17 @@ Item {
         // the aircraft
         for (var i = 0; i < targets.count; ++i) {
             var a = targets.objectAt(i)
+            var lbl = labels.itemAt(i)
             if (!a)
                 continue
-            var s = smoothPos[a.hex]
-            if (!s)
+            // the aircraft on the ground are not drawn (the ground traffic of an airport)
+            var s = a.onGround ? null : smoothPos[a.hex]
+            var p = s ? project(cam, s.x, s.y, s.z) : null
+            if (!p) {
+                if (lbl)
+                    lbl.visible = false
                 continue
-            var p = project(cam, s.x, s.y, s.z)
-            if (!p)
-                continue
+            }
             var col = levelColor(a.level, a.own)
             var noAlt = isNaN(a.altM)
             var hl = traffic.highlighted === a.hex
@@ -408,19 +460,22 @@ Item {
                 if (pd)
                     ang = Math.atan2(pd.y - p.y, pd.x - p.x) + Math.PI/2
             }
-            prims.push({ d: p.d, f: makeSymbol(p, ang, a.category, col, a.onGround, noAlt, hl) })
+            // the symbol and the label are drawn over the translucent volumes (far first)
+            symbols.push({ d: p.d, f: makeSymbol(p, ang, a.category, col, a.onGround, noAlt, hl) })
             newHits.push({ x: p.x, y: p.y, hex: a.hex, own: a.own })
 
-            labels.push({ d: p.d, hl: hl, f: makeLabel(p, a, col, noAlt) })
+            // the label: a QML item (crisp whatever the canvas resolution), placed here
+            if (lbl)
+                lbl.place(p.x, p.y, p.d, col, hl)
         }
 
         prims.sort(function(x, y) { return y.d - x.d })
         for (var j = 0; j < prims.length; ++j)
             prims[j].f(ctx)
 
-        labels.sort(function(x, y) { return (x.hl ? 1 : 0) - (y.hl ? 1 : 0) || y.d - x.d })
-        for (var l = 0; l < labels.length; ++l)
-            labels[l].f(ctx)
+        symbols.sort(function(x, y) { return y.d - x.d })
+        for (var m = 0; m < symbols.length; ++m)
+            symbols[m].f(ctx)
 
         hits = newHits
     }
@@ -449,7 +504,10 @@ Item {
         ctx.font = Math.round(fs*0.9) + "px \"" + canvas.fam + "\""
         ctx.textAlign = "left"
         ctx.textBaseline = "middle"
-        var rings = [10000, 20000, 50000, 100000]
+        // the range rings: the usual steps up to the request radius, and the radius itself
+        var radius = (traffic && traffic.radiusKm ? traffic.radiusKm : 100)*1000
+        var rings = [5000, 10000, 20000, 50000, 100000, 200000, 400000].filter(function(x){ return x < radius*0.95 })
+        rings.push(radius)
         for (var r = 0; r < rings.length; ++r) {
             var rad = rings[r]
             if (rad > ext*2.5)
@@ -508,59 +566,85 @@ Item {
         } })
     }
 
-    // reachability volume: the slice rings lofted by the corner edges and the live
-    // (wave) slice, colored liveCol from the moment the slices intersect
+    // reachability volume: every slice is its altitude band, a top and a bottom ring
+    // (lo..hi) joined by the corner edges, the slices lofted by the corner edges; the
+    // live (wave) slice is brighter with its side faces, colored liveCol from the moment
+    // the slices intersect
     function addVolume(prims, cam, vol, base, col, own, liveCol)
     {
         if (!vol || vol.length === 0)
             return
-        var fillA = own ? 0.04 : 0.05
-        var corners = [] // 4 corner points per ring, world
+        var fillA = own ? 0.03 : 0.04
+        var top = [], bot = [] // 4 corner points per ring, world
         for (var i = 0; i < vol.length; ++i) {
             var s = vol[i]
-            var pts = ringWorld(s, base)
-            if (pts.length < 3)
+            var pt = ringWorld(s, base, s.hi)
+            var pb = ringWorld(s, base, s.lo)
+            if (pt.length < 3)
                 continue
-            var bright = 0.12 + 0.25*i/Math.max(vol.length - 1, 1)
-            addRing(prims, cam, pts, ca(col, bright), ca(col, fillA), 1)
-            var n = pts.length
-            corners.push([pts[0], pts[Math.floor(n/4)], pts[Math.floor(n/2)], pts[Math.floor(3*n/4)]])
+            var bright = 0.1 + 0.25*i/Math.max(vol.length - 1, 1)
+            addRing(prims, cam, pb, ca(col, bright), ca(col, fillA), 1)
+            addRing(prims, cam, pt, ca(col, bright), ca(col, fillA), 1)
+            var n = pt.length
+            var idx = [0, Math.floor(n/4), Math.floor(n/2), Math.floor(3*n/4)]
+            var ct = [], cb = []
+            for (var q = 0; q < 4; ++q) {
+                ct.push(pt[idx[q]])
+                cb.push(pb[idx[q]])
+                addEdge(prims, cam, pb[idx[q]], pt[idx[q]], ca(col, bright*0.8))
+            }
+            top.push(ct)
+            bot.push(cb)
         }
         // the edges between the consecutive rings
         var ec = ca(col, 0.22)
-        for (var j = 0; j + 1 < corners.length; ++j) {
+        for (var j = 0; j + 1 < top.length; ++j) {
             for (var k = 0; k < 4; ++k) {
-                let a = project(cam, corners[j][k].x, corners[j][k].y, corners[j][k].z)
-                let b = project(cam, corners[j + 1][k].x, corners[j + 1][k].y, corners[j + 1][k].z)
-                if (!a || !b)
-                    continue
-                prims.push({ d: (a.d + b.d)/2, f: function(ctx) {
-                    ctx.strokeStyle = ec
-                    ctx.lineWidth = 1
-                    ctx.beginPath()
-                    ctx.moveTo(a.x, a.y)
-                    ctx.lineTo(b.x, b.y)
-                    ctx.stroke()
-                } })
+                addEdge(prims, cam, top[j][k], top[j + 1][k], ec)
+                addEdge(prims, cam, bot[j][k], bot[j + 1][k], ec)
             }
         }
-        // the live (wave) slice, brighter and filled
+        // the live (wave) slice: the band as a box, brighter and filled
         var live = sliceAt(vol, sliceT)
         if (live) {
             var lc = liveCol === undefined ? col : liveCol
-            var lp = ringWorld(live, base)
-            if (lp.length >= 3)
-                addRing(prims, cam, lp, ca(lc, 0.95), ca(lc, own ? 0.1 : 0.14), 1.5)
+            var lt = ringWorld(live, base, live.hi)
+            var lb = ringWorld(live, base, live.lo)
+            if (lt.length >= 3) {
+                var fa = own ? 0.08 : 0.12
+                for (var e = 0; e < lt.length; ++e) {
+                    var f = (e + 1) % lt.length
+                    addRing(prims, cam, [lb[e], lb[f], lt[f], lt[e]], ca(lc, 0.5), ca(lc, fa*0.6), 1)
+                }
+                addRing(prims, cam, lb, ca(lc, 0.95), ca(lc, fa), 1.5)
+                addRing(prims, cam, lt, ca(lc, 0.95), ca(lc, fa), 1.5)
+            }
         }
     }
-    // ring of a slice in world coordinates: relative to the aircraft, at the band center
-    function ringWorld(s, base)
+    // ring of a slice in world coordinates: relative to the aircraft, at the altitude
+    // offset dy (the top or the bottom of the band)
+    function ringWorld(s, base, dy)
     {
-        var y = base.y + (s.lo + s.hi)/2
+        var y = base.y + dy
         var pts = []
         for (var i = 0; i + 1 < s.ring.length; i += 2)
             pts.push({ x: base.x + s.ring[i], y: y, z: base.z + s.ring[i + 1] })
         return pts
+    }
+    function addEdge(prims, cam, p1, p2, stroke)
+    {
+        var a = project(cam, p1.x, p1.y, p1.z)
+        var b = project(cam, p2.x, p2.y, p2.z)
+        if (!a || !b)
+            return
+        prims.push({ d: (a.d + b.d)/2, f: function(ctx) {
+            ctx.strokeStyle = stroke
+            ctx.lineWidth = 1
+            ctx.beginPath()
+            ctx.moveTo(a.x, a.y)
+            ctx.lineTo(b.x, b.y)
+            ctx.stroke()
+        } })
     }
     function addRing(prims, cam, pts, stroke, fill, lw)
     {
@@ -637,7 +721,7 @@ Item {
 
     function makeSymbol(p, ang, category, col, onGround, noAlt, hl)
     {
-        var size = Math.min(Math.max(14*8000/p.d, 8), 20)
+        var size = Math.min(Math.max(16*8000/p.d, 12), 22)
         var alpha = noAlt ? 0.55 : 1
         var heli = category === "A7"
         var dot = category.length > 0 && (category[0] === "B" || category[0] === "C") && category !== "B1" && category !== "B4"
@@ -646,11 +730,7 @@ Item {
             ctx.save()
             ctx.translate(p.x, p.y)
             ctx.globalAlpha = alpha
-            if (onGround) {
-                // flat ground marker
-                ctx.fillStyle = ca(col, 0.5)
-                ctx.fillRect(-size*0.25, -size*0.25, size*0.5, size*0.5)
-            } else if (heli) {
+            if (heli) {
                 ctx.strokeStyle = col
                 ctx.fillStyle = ca(col, 0.25)
                 ctx.lineWidth = 1.5
@@ -702,13 +782,14 @@ Item {
     function drawUnit(ctx, cam, p, yawDeg, alt)
     {
         var s = Math.min(Math.max(16*8000/p.d, 10), 24)
-        // glow
-        var g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, s*1.6)
-        g.addColorStop(0, ca(colUnit, 0.22))
-        g.addColorStop(1, ca(colUnit, 0))
-        ctx.fillStyle = g
+        // glow: two soft discs (a gradient object per frame is costly)
+        ctx.fillStyle = ca(colUnit, 0.06)
         ctx.beginPath()
         ctx.arc(p.x, p.y, s*1.6, 0, Math.PI*2)
+        ctx.fill()
+        ctx.fillStyle = ca(colUnit, 0.12)
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, s*0.9, 0, Math.PI*2)
         ctx.fill()
 
         ctx.save()
@@ -744,64 +825,59 @@ Item {
         ctx.restore()
     }
 
-    // two line label with a rounded dark plate; the climb/descent triangle is drawn
-    // by hand (the narrow font has no arrow glyphs)
-    function makeLabel(p, a, col, noAlt)
-    {
-        var line1 = a.callsign.length > 0 ? a.callsign : a.hex.toUpperCase()
-        var line2 = a.onGround ? "GND" : noAlt ? "---" : Math.round(a.altM) + " m"
-        var vs = (!a.onGround && Math.abs(a.vsMs) > 0.5) ? (a.vsMs > 0 ? 1 : -1) : 0
-        if (isFinite(a.tauS))
-            line2 += "  τ " + Math.round(a.tauS) + " s"
-        var px = Math.round(fs)
-        var fam = canvas.fam
-        return function(ctx) {
-            ctx.font = "bold " + px + "px \"" + fam + "\""
-            var w1 = ctx.measureText(line1).width
-            ctx.font = px + "px \"" + fam + "\""
-            var w2 = ctx.measureText(line2).width + (vs !== 0 ? px : 0)
-            var w = Math.max(w1, w2) + px
-            var h = px*2.6
-            var x = p.x + 10
-            var y = p.y - h - 6
-            ctx.fillStyle = "rgba(8,12,18,0.75)"
-            roundRect(ctx, x, y, w, h, 3)
-            ctx.fill()
-            ctx.textAlign = "left"
-            ctx.textBaseline = "middle"
-            ctx.font = "bold " + px + "px \"" + fam + "\""
-            ctx.fillStyle = col
-            ctx.fillText(line1, x + px*0.5, y + h*0.28)
-            ctx.font = px + "px \"" + fam + "\""
-            ctx.fillStyle = "#DDDDDD"
-            ctx.fillText(line2, x + px*0.5, y + h*0.74)
-            if (vs !== 0) {
-                // climb or descent triangle after the text
-                var tx = x + px*0.5 + ctx.measureText(line2).width + px*0.45
-                var ty = y + h*0.74
-                ctx.fillStyle = col
-                ctx.beginPath()
-                ctx.moveTo(tx, ty - vs*px*0.3)
-                ctx.lineTo(tx - px*0.25, ty + vs*px*0.2)
-                ctx.lineTo(tx + px*0.25, ty + vs*px*0.2)
-                ctx.closePath()
-                ctx.fill()
+    // the labels: two lines on a dark plate next to the symbol, native items over the
+    // canvas (the text stays sharp when the canvas is painted at a lower resolution),
+    // placed by render() every frame, the far ones behind, the highlighted one on top
+    Repeater {
+        id: labels
+        model: view.traffic ? view.traffic.aircraft : null
+        delegate: Rectangle {
+            id: plate
+            required property var model
+            readonly property bool noAlt: isNaN(model.altM)
+            property color col: view.colOk
+            visible: false
+            width: col1.implicitWidth + fs
+            height: fs*2.6
+            radius: 3
+            color: "#BF080C12"
+            function place(x, y, d, c, hl)
+            {
+                plate.x = x + 10
+                plate.y = y - height - 6
+                plate.z = (hl ? 1e7 : 0) + Math.max(0, 1e6 - d)
+                plate.col = c
+                plate.visible = true
+            }
+            Column {
+                id: col1
+                anchors.left: parent.left
+                anchors.leftMargin: fs*0.5
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 0
+                Text {
+                    text: plate.model.callsign.length > 0 ? plate.model.callsign : plate.model.hex.toUpperCase()
+                    color: plate.col
+                    font: apx.font_narrow(fs, true)
+                }
+                Row {
+                    spacing: fs*0.3
+                    Text {
+                        text: (plate.model.onGround ? "GND" : plate.noAlt ? "---" : Math.round(plate.model.altM) + " m")
+                              + (isFinite(plate.model.tauS) ? "  tau " + Math.round(plate.model.tauS) + " s" : "")
+                        color: "#DDDDDD"
+                        font: apx.font_narrow(fs)
+                    }
+                    MaterialIcon {
+                        visible: !plate.model.onGround && Math.abs(plate.model.vsMs) > 0.5
+                        anchors.verticalCenter: parent.verticalCenter
+                        name: plate.model.vsMs > 0 ? "arrow-up-bold" : "arrow-down-bold"
+                        size: fs*0.9
+                        color: plate.col
+                    }
+                }
             }
         }
-    }
-    function roundRect(ctx, x, y, w, h, r)
-    {
-        ctx.beginPath()
-        ctx.moveTo(x + r, y)
-        ctx.lineTo(x + w - r, y)
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r)
-        ctx.lineTo(x + w, y + h - r)
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
-        ctx.lineTo(x + r, y + h)
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r)
-        ctx.lineTo(x, y + r)
-        ctx.quadraticCurveTo(x, y, x + r, y)
-        ctx.closePath()
     }
 
     // orbit, zoom, pan and the aircraft click
@@ -885,7 +961,7 @@ Item {
             font: apx.font_narrow(fs*1.4, true)
         }
         Text {
-            text: targets.count + " " + qsTr("aircraft")
+            text: view.airborne + " " + qsTr("aircraft")
                   + (view.traffic && view.traffic.unitAltSrc
                      ? "  " + view.traffic.unitAltSrc + " " + Math.round(view.unitAltM) + " m" : "")
             color: "#AAAAAA"
@@ -1006,65 +1082,4 @@ Item {
         }
     }
 
-    // overlay: the time of the live reachability slice
-    Row {
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.margins: Style.spacing*2
-        spacing: Style.spacing*2
-
-        MaterialIcon {
-            anchors.verticalCenter: parent.verticalCenter
-            name: view.playing ? "pause" : "play"
-            size: fs*1.8
-            color: "#CCCCCC"
-            MouseArea {
-                anchors.fill: parent
-                anchors.margins: -Style.spacing
-                onClicked: {
-                    view.playing = !view.playing
-                    if (view.playing)
-                        view.waveStartMs = Date.now() // resume with a fresh wave
-                }
-            }
-        }
-        Slider {
-            id: tSlider
-            anchors.verticalCenter: parent.verticalCenter
-            width: fs*20
-            from: 0
-            to: view.horizonS
-            onMoved: {
-                view.playing = false
-                view.sliceT = value
-            }
-            background: Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
-                width: tSlider.width
-                height: 3
-                radius: 1.5
-                color: "#2A3542"
-                Rectangle {
-                    width: tSlider.visualPosition*parent.width
-                    height: parent.height
-                    radius: 1.5
-                    color: "#5A7A94"
-                }
-            }
-            handle: Rectangle {
-                x: tSlider.visualPosition*(tSlider.width - width)
-                anchors.verticalCenter: parent.verticalCenter
-                width: fs*0.9
-                height: fs*0.9
-                radius: width/2
-                color: tSlider.pressed ? "#FFFFFF" : "#CCCCCC"
-            }
-        }
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: "t = " + Math.round(view.sliceT) + " s"
-            color: "#CCCCCC"
-            font: apx.font_narrow(fs, true)
-        }
-    }
 }
