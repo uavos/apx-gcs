@@ -186,7 +186,7 @@ void AppPluginsGithub::removeRepo(AppPluginsGithubRepo *r)
     auto plugins = App::appPlugins();
     bool restart = false;
     for (auto p : QList<AppPlugin *>(*plugins)) {
-        if (!p->fileName.startsWith(path + "/"))
+        if (!p->libFileName.startsWith(path + "/"))
             continue;
         if (p->isLoaded()) {
             restart = true;

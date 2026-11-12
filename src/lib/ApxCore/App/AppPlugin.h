@@ -39,7 +39,8 @@ public:
     AppPlugins *plugins;
 
     QString name;
-    QString fileName;
+    QString fileName;          // what is loaded, replaced with the qrc QML file for compiled QML plugins
+    const QString libFileName; // the plugin file as found on disk
     Fact *f_enabled;
     PluginInterface *interface;
     QObject *control;
