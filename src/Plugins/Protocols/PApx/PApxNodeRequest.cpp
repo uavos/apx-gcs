@@ -37,8 +37,12 @@ PApxNodeRequest::PApxNodeRequest(PApxNode *node, mandala::uid_t uid, uint timeou
 {
     if (!uid)
         return;
-    // schedule delayed to avoid consequent requests duplicate deletions by uid
-    QTimer::singleShot(1, node, [this]() { _node->schedule_request(this); });
+    // schedule delayed to avoid consequent requests duplicate deletions by uid,
+    // the request may be deleted before it is scheduled (f.ex. by node data from another GCS)
+    QTimer::singleShot(1, this, [this]() {
+        if (_node)
+            _node->schedule_request(this);
+    });
 }
 PApxNodeRequest::~PApxNodeRequest()
 {
@@ -241,17 +245,6 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
 
     fnames.sort();
 
-    _node->setTitle(sname);
-    _node->updateFiles(fnames);
-
-    // node descr
-    QStringList descr;
-    descr.append(shardware);
-    descr.append(sversion);
-    if (ident.flags.bits.files == 1 && fnames.contains("fw"))
-        descr.append("LOADER");
-    _node->setDescr(descr.join(' '));
-
     QJsonObject jso = {
         {"uid", _node->uid()},
         {"name", sname},
@@ -264,7 +257,23 @@ bool PApxNodeRequestIdent::response(PStreamReader &stream)
         {"files", QJsonArray::fromStringList(fnames)},
     };
 
-    _node->identReceived(jso);
+    // the same ident while downloading (f.ex. request from another GCS)
+    // must not reset the files being downloaded
+    if (_node->isDownloadingIdent(jso))
+        return true;
+
+    _node->setTitle(sname);
+    _node->updateFiles(fnames);
+
+    // node descr
+    QStringList descr;
+    descr.append(shardware);
+    descr.append(sversion);
+    if (ident.flags.bits.files == 1 && fnames.contains("fw"))
+        descr.append("LOADER");
+    _node->setDescr(descr.join(' '));
+
+    _node->process_ident(jso);
 
     return true;
 }

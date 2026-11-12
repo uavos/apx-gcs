@@ -339,6 +339,18 @@ QObject *App::loadQml(const QString &qmlFile, const QVariantMap &opts)
         return nullptr;
     return _instance->engine()->loadQml(qmlFile, opts);
 }
+QString App::loadText(const QString &fileName)
+{
+    QString path = fileName;
+    if (path.startsWith("file:"))
+        path = QUrl(path).toLocalFile();
+    else if (path.startsWith("qrc:"))
+        path = path.mid(3);
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return QString();
+    return QString::fromUtf8(f.readAll());
+}
 QVariant App::loadJson(const QString &fileName)
 {
     QString path = fileName;

@@ -41,7 +41,12 @@ private:
     quint64 _dictID{};
     quint64 _confID{};
 
+    uint _dictSaving{};
+    bool _confSavePending{};
+    QJsonObject _confSaveValues; // values at the time of the pending conf save
+
     QStringList get_names(Fact *f, QStringList path = QStringList());
+    void saveConfValues(const QJsonObject &values);
 
 private slots:
     void dictMetaLoaded(QJsonObject jso);
