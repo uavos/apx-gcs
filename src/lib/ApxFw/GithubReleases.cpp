@@ -170,6 +170,41 @@ void GithubReleases::responseReleaseInfo()
     }*/
 }
 
+void GithubReleases::requestReleases()
+{
+    _reply = request(QString("https://api.github.com/repos/%1/releases?per_page=100").arg(_repo));
+    connect(_reply, &QNetworkReply::finished, this, &GithubReleases::responseReleases);
+}
+
+void GithubReleases::responseReleases()
+{
+    QNetworkReply *reply = getReply(sender());
+    if (!reply)
+        return;
+
+    emit finished();
+
+    const bool failed = reply->error(); // already reported by getReply
+
+    QJsonParseError jserr;
+    QJsonDocument json(QJsonDocument::fromJson(reply->readAll(), &jserr));
+    if (jserr.error != QJsonParseError::NoError) {
+        if (!failed)
+            responseError(jserr.errorString());
+        return;
+    }
+    if (json.isObject()) {
+        // {"message": "Not Found"}
+        if (!failed)
+            responseError(json["message"].toString());
+        return;
+    }
+    if (failed)
+        return;
+
+    emit releasesInfo(json.array());
+}
+
 void GithubReleases::requestDownload(QUrl url)
 {
     _reply = request(url);

@@ -51,12 +51,21 @@ public:
     // remove plugin entry (not loaded plugins only)
     void removePlugin(AppPlugin *plugin);
 
+    // GitHub plugin releases are tagged with the application version plus the plugin build number
+    // ([v]11.2.32.1 for GCS 11.2.32); a plugin is loaded only when the versions match
+    static QVersionNumber pluginVersion(const QString &tag);
+    static bool isCompatible(const QVersionNumber &version);
+    // release info of the installed repository folder (<repo>/<repo>.json)
+    static QJsonObject githubRepoInfo(const QString &repoPath);
+
     Fact *f_enabled;
 
     const QFileInfo check_tool;
 
 private:
     void loadFiles(const QStringList &fileNames);
+    // the installed release matches the application version, reports disabled plugins otherwise
+    static bool checkGithubRepo(const QString &repoPath, const QStringList &files);
 
     void fixDuplicates(QStringList &list, const QString &userPluginsPath) const;
 

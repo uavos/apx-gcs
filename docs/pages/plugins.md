@@ -147,15 +147,33 @@ library built for every platform as an asset named `<Name>-<os>-<arch>.so|dylib`
 workflow: the plugin folder is copied into `src/Plugins/Tools` of the GCS tree and built with
 the regular `apx_plugin()` cmake function, so the same setup works for C++ and QML plugins.
 
+The library links against the GCS libraries, so every plugin release is made for one GCS
+version: the release tag is the GCS version plus the plugin build number, `v11.2.32.1` is the
+first build for GCS 11.2.32 and `v11.2.32.2` the next one. The GCS loads an installed plugin
+only when the version in `<repo>.json` matches its own (the first three numbers); a plugin
+built for another version is reported in the console as disabled and is not loaded.
+
 To install a plugin open `Preferences / Application / Plugins / GitHub plugins`, enter the
 repository URL (`https://github.com/<owner>/<repo>`) and press `Install`. The GCS reads the
-latest release, picks the library for its platform and downloads it. Checks: the repository
-folder must not exist in `Plugins/github`, the release must have a library for the platform,
-no plugin with the same name may be loaded already. The plugin is loaded immediately and
-behaves like the other user plugins: it gets a switch in `Preferences / Application / Plugins`
-and is skipped on the next start when switched off.
+releases, takes the latest one made for its version with a library for its platform and
+downloads it. Checks: the repository folder must not exist in `Plugins/github`, a release
+for the GCS version with a library for the platform must exist, no plugin with the same name
+may be loaded already. The plugin is loaded immediately and behaves like the other user
+plugins: it gets a switch in `Preferences / Application / Plugins` and is skipped on the next
+start when switched off.
 
-Installed repositories are listed in the same menu with their release tag; `Update`
-downloads a newer release and `Remove` deletes the folder (a restart is needed to unload a
-plugin that is already running). The library links against the GCS libraries, so it has to
-be built against the GCS version in use (`BUILD_INFO-*.txt` of the release names it).
+Updates work like the application updates: `Check for updates` (also run automatically a few
+seconds after start when `Auto` is on) asks every installed repository for its releases and
+opens the `Updates` list when something can be installed. Per plugin the list shows one of:
+
+* `Update available: <tag>` - a newer build for the running GCS version, click to install;
+* `Not compatible with version <gcs>, reinstall <tag>` - the installed plugin is built for
+  another GCS version (older or newer), click to install the latest build for this version;
+* `Not available for version <gcs>` - the repository has no release for this version, the
+  plugin stays disabled.
+
+Installed repositories are listed in the same menu with their release tag and status;
+`Update` in the entry installs the same release as the list and is disabled when the installed
+build is the latest one for this version, `Remove` deletes the folder. A restart is needed to
+reload a plugin that is already running; a plugin disabled by the version check is loaded right
+after the install.

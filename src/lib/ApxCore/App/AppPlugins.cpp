@@ -90,11 +90,14 @@ void AppPlugins::load(const QStringList &names)
              githubDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)) {
             if (repoName.startsWith('-') || repoName.startsWith('.'))
                 continue;
-            const auto files = findLibPlugins(QDir(githubDir.absoluteFilePath(repoName)));
+            const QString repoPath = githubDir.absoluteFilePath(repoName);
+            const auto files = findLibPlugins(QDir(repoPath));
             if (files.isEmpty()) {
                 apxConsoleW() << QObject::tr("No plugins found").append(": ") << repoName;
                 continue;
             }
+            if (!checkGithubRepo(repoPath, files))
+                continue;
             for (const auto &f : files) {
                 stRepGithub.append(pluginName(f));
                 allFiles.append(f);
@@ -224,9 +227,58 @@ QStringList AppPlugins::findLibPlugins(const QDir &dir)
     return files;
 }
 
+QVersionNumber AppPlugins::pluginVersion(const QString &tag)
+{
+    // release-11.2.32.1, v11.2.32.1, 11.2.32.1
+    QString s = tag.trimmed();
+    s = s.mid(s.lastIndexOf('-') + 1);
+    if (s.startsWith('v', Qt::CaseInsensitive))
+        s.remove(0, 1);
+    qsizetype idx = 0;
+    const auto v = QVersionNumber::fromString(s, &idx);
+    if (idx != s.size() || v.segmentCount() < 3)
+        return {};
+    return v;
+}
+
+bool AppPlugins::isCompatible(const QVersionNumber &version)
+{
+    if (version.segmentCount() < 3)
+        return false;
+    const auto app = QVersionNumber::fromString(App::version());
+    if (app.segmentCount() < 3)
+        return false;
+    return QVersionNumber(version.majorVersion(), version.minorVersion(), version.microVersion())
+           == QVersionNumber(app.majorVersion(), app.minorVersion(), app.microVersion());
+}
+
+QJsonObject AppPlugins::githubRepoInfo(const QString &repoPath)
+{
+    const QDir d(repoPath);
+    QFile f(d.absoluteFilePath(d.dirName() + ".json"));
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+    return QJsonDocument::fromJson(f.readAll()).object();
+}
+
+bool AppPlugins::checkGithubRepo(const QString &repoPath, const QStringList &files)
+{
+    const QString tag = githubRepoInfo(repoPath).value("tag").toString();
+    if (isCompatible(pluginVersion(tag)))
+        return true;
+    for (const auto &f : files) {
+        apxMsgW() << tr("Plugin disabled").append(":") << pluginName(f) << tag
+                  << tr("(requires release %1.x)").arg(App::version());
+    }
+    return false;
+}
+
 void AppPlugins::loadGithubRepo(const QString &path)
 {
-    for (const auto &f : findLibPlugins(QDir(path))) {
+    const auto files = findLibPlugins(QDir(path));
+    if (!checkGithubRepo(path, files))
+        return;
+    for (const auto &f : files) {
         AppPlugin *p = addPlugin(f);
         if (!p)
             continue;

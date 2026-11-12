@@ -23,15 +23,18 @@
 
 #include <Fact/Fact.h>
 #include <QtCore>
-#include <QtNetwork>
+
+#include "AppPluginsGithubRepo.h"
 
 /*
  * Third party plugins installed from GitHub repositories.
- * The latest release of the repository provides the plugin library built for every platform
+ * A release of the repository provides the plugin library built for every platform
  * as an asset named <Name>-<os>-<arch>.so|dylib (linux-x86_64, macos-universal, macos-arm64).
- * The library is downloaded to AppDirs::githubPlugins()/<repo>/<Name>.so, the release info is kept
- * in <repo>/<repo>.json next to it. The plugins are loaded by AppPlugins like the other user
- * plugins and are switched on and off in the plugins settings.
+ * Releases are tagged with the application version plus the plugin build number ([v]11.2.32.1),
+ * the library of the latest release for the current application version is installed to
+ * AppDirs::githubPlugins()/<repo>/<Name>.so, the release info is kept in <repo>/<repo>.json next to it.
+ * The plugins are loaded by AppPlugins like the other user plugins and are switched on and off
+ * in the plugins settings. Updates are checked on startup and on request, like the app updates.
  */
 class AppPluginsGithub : public Fact
 {
@@ -41,50 +44,37 @@ public:
 
     // https://github.com/<owner>/<repo>[.git], github.com/<owner>/<repo>, <owner>/<repo>
     static bool parseRepoUrl(const QString &url, QString &owner, QString &repo);
-    // release asset suffixes for this platform, most specific first: linux-x86_64, macos-universal
-    static QStringList platformTags();
-    // the asset for this platform: <Name>-<tag>.<so|dylib>, sets the library file name <Name>.<ext>
-    static QString pickAsset(const QJsonArray &assets, QString &assetName, QString &libName);
 
-private:
     Fact *f_url;
     Fact *f_install;
 
-    QNetworkAccessManager _net;
-    QNetworkReply *_reply{};
-    QFile *_file{};
+    Fact *f_auto;
+    Fact *f_check;
+    Fact *f_updates;
 
-    struct Job
-    {
-        QString owner;
-        QString repo;
-        QString url;
-        QString tag;
-        QString assetName;
-        QString libName;
-        bool update{};
-        QString currentTag;
-    } _job;
+    QList<AppPluginsGithubRepo *> repos() const { return _repos; }
+    AppPluginsGithubRepo *repo(const QString &name) const;
 
-    QHash<Fact *, QJsonObject> _repos;
-
-    QNetworkReply *get(const QUrl &url);
-    void start(const QString &owner, const QString &repo, bool update, const QString &currentTag = {});
-    void requestRelease();
-    void requestDownload(const QString &url);
-    void finish(bool ok, const QString &msg = {});
+private:
+    QList<AppPluginsGithubRepo *> _repos;
+    AppPluginsGithubRepo *_installing{};
+    int _checking{}; // repositories being checked
 
     static QDir dir();
-    static QString infoPath(const QString &repo);
-    static bool writeInfo(const QJsonObject &info);
-    static QJsonObject readInfo(const QString &path);
 
-    void updateRepos();
-    Fact *repoFact(const QString &repo) const;
-    Fact *addRepoFact(const QJsonObject &info);
-    void updateRepo(Fact *f);
-    void removeRepo(Fact *f);
+    void loadRepos();
+    AppPluginsGithubRepo *addRepo(const QJsonObject &info);
+    void connectRepo(AppPluginsGithubRepo *r);
+    void removeRepo(AppPluginsGithubRepo *r);
+    void deleteRepo(AppPluginsGithubRepo *r);
+
+    void updateStatus();
 
 private slots:
     void install();
+    void checkForUpdates();
+
+    void repoChecked();
+    void repoInstalled(QString libPath);
+    void repoFailed();
 };
