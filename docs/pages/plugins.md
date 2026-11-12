@@ -153,8 +153,9 @@ first build for GCS 11.2.32 and `v11.2.32.2` the next one. The GCS loads an inst
 only when the version in `<repo>.json` matches its own (the first three numbers); a plugin
 built for another version is reported in the console as disabled and is not loaded.
 
-To install a plugin open `Preferences / Application / Plugins / GitHub plugins`, enter the
-repository URL (`https://github.com/<owner>/<repo>`) and press `Install`. The GCS reads the
+To install a plugin open `Preferences / Application / Plugins / GitHub plugins / Install
+plugin`, enter the repository URL (`https://github.com/<owner>/<repo>`) and press `Install`;
+the new entry appears in the list with the download progress. The GCS reads the
 releases, takes the latest one made for its version with a library for its platform and
 downloads it. Checks: the repository folder must not exist in `Plugins/github`, a release
 for the GCS version with a library for the platform must exist, no plugin with the same name

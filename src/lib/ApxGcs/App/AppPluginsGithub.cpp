@@ -35,21 +35,27 @@ AppPluginsGithub::AppPluginsGithub(Fact *parent)
            Group | ProgressTrack,
            "github")
 {
-    f_url = new Fact(this,
+    // install page: repository URL and the Install button
+    f_install = new Fact(this,
+                         "install",
+                         tr("Install plugin"),
+                         tr("Download a plugin released for version %1").arg(App::version()),
+                         Group,
+                         "download");
+
+    f_url = new Fact(f_install,
                      "url",
                      tr("Repository"),
                      tr("GitHub repository URL (https://github.com/<owner>/<repo>)"),
                      Text);
-    f_url->setSection(tr("Install"));
 
-    f_install = new Fact(this,
-                         "install",
-                         tr("Install"),
-                         tr("Download the plugin library released for version %1").arg(App::version()),
-                         Action | Apply,
-                         "download");
-    f_install->setSection(tr("Install"));
-    connect(f_install, &Fact::triggered, this, &AppPluginsGithub::install);
+    f_download = new Fact(f_install,
+                          "download",
+                          tr("Install"),
+                          tr("Download the plugin library of the latest release for this version"),
+                          Action | Apply | CloseOnTrigger,
+                          "download");
+    connect(f_download, &Fact::triggered, this, &AppPluginsGithub::install);
 
     // updates, like the app updates
     f_auto = new Fact(this,
@@ -216,7 +222,7 @@ void AppPluginsGithub::install()
     r->f_remove->setVisible(false);
     connectRepo(r);
     _installing = r;
-    f_install->setEnabled(false);
+    f_download->setEnabled(false);
     apxMsg() << title().append(':') << tr("Checking") << r->url();
     r->check();
 }
@@ -262,7 +268,7 @@ void AppPluginsGithub::repoInstalled(QString libPath)
 
     if (r == _installing) {
         _installing = nullptr;
-        f_install->setEnabled(true);
+        f_download->setEnabled(true);
         f_url->setValue(QString());
         r->setSection(tr("Installed"));
         r->f_update->setVisible(true);
@@ -287,7 +293,7 @@ void AppPluginsGithub::repoFailed()
     if (!r)
         return;
     if (r == _installing) {
-        f_install->setEnabled(true);
+        f_download->setEnabled(true);
         // remove the folder created for the download when nothing else is there
         QDir target(r->dir());
         if (target.exists() && target.isEmpty())

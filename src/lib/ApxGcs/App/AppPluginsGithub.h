@@ -45,8 +45,9 @@ public:
     // https://github.com/<owner>/<repo>[.git], github.com/<owner>/<repo>, <owner>/<repo>
     static bool parseRepoUrl(const QString &url, QString &owner, QString &repo);
 
+    Fact *f_install; // page
     Fact *f_url;
-    Fact *f_install;
+    Fact *f_download;
 
     Fact *f_auto;
     Fact *f_check;
