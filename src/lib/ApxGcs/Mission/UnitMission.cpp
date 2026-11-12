@@ -21,6 +21,7 @@
  */
 #include "UnitMission.h"
 #include "MissionField.h"
+#include "MissionGeoCheck.h"
 #include "MissionGroup.h"
 #include "MissionListModel.h"
 #include "MissionShare.h"
@@ -84,6 +85,8 @@ UnitMission::UnitMission(Unit *parent)
                             unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
 
     f_geo = new GeoItems(this, "geo", tr("Geofences"), tr("Airspace"), nullptr);
+
+    geoCheck = new MissionGeoCheck(this);
 
     for (auto group : groups) {
         connect(group, &Fact::sizeChanged, this, &UnitMission::updateSize, Qt::QueuedConnection);
@@ -381,6 +384,9 @@ void UnitMission::uploadMission()
     if (!unit->protocol())
         return;
     unit->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
+    geoCheck->update();
+    if (geoCheck->denied())
+        unit->message(tr("Mission path crosses deny zones"), AppNotify::Warning);
     unit->protocol()->mission()->updateMission(toJson());
 }
 void UnitMission::downloadMission()
