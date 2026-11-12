@@ -80,6 +80,7 @@ private:
     static QJsonObject readInfo(const QString &path);
 
     void updateRepos();
+    Fact *repoFact(const QString &repo) const;
     Fact *addRepoFact(const QJsonObject &info);
     void updateRepo(Fact *f);
     void removeRepo(Fact *f);

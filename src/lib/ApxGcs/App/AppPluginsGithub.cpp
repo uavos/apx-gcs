@@ -56,6 +56,15 @@ AppPluginsGithub::AppPluginsGithub(Fact *parent)
     updateRepos();
 }
 
+Fact *AppPluginsGithub::repoFact(const QString &repo) const
+{
+    for (auto it = _repos.constBegin(); it != _repos.constEnd(); ++it) {
+        if (it.value().value("repo").toString() == repo)
+            return it.key();
+    }
+    return nullptr;
+}
+
 bool AppPluginsGithub::parseRepoUrl(const QString &url, QString &owner, QString &repo)
 {
     static const QRegularExpression re_url(
@@ -276,13 +285,13 @@ void AppPluginsGithub::requestDownload(const QString &url)
         if (!writeInfo(info))
             apxMsgW() << title().append(':') << tr("Can't write") << infoPath(_job.repo);
 
+        updateRepos(); // the repository entry exists before the plugin is loaded (plugins attach settings to it)
         if (_job.update) {
             apxMsgW() << title().append(':')
                       << tr("Restart the application to reload the updated plugin");
         } else {
             App::appPlugins()->loadGithubRepo(QFileInfo(libPath).absolutePath());
         }
-        updateRepos();
         f_url->setValue(QString());
         finish(true,
                (_job.update ? tr("Updated") : tr("Installed")).append(": ") + pname + " " + _job.tag);
@@ -331,23 +340,38 @@ QJsonObject AppPluginsGithub::readInfo(const QString &path)
     return QJsonDocument::fromJson(f.readAll()).object();
 }
 
+// sync the repository entries with the folders; existing entries are kept:
+// plugins attach their settings facts to their entry (apx.settings.application.plugins.github.<repo>)
 void AppPluginsGithub::updateRepos()
 {
-    for (auto f : _repos.keys())
-        f->deleteFact();
-    _repos.clear();
-
+    QStringList found;
     const QDir d = dir();
-    if (!d.exists())
-        return;
-    for (const auto &repo :
-         d.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)) {
-        if (repo.startsWith('.') || repo.startsWith('-'))
+    if (d.exists()) {
+        for (const auto &repo :
+             d.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)) {
+            if (repo.startsWith('.') || repo.startsWith('-'))
+                continue;
+            const auto info = readInfo(infoPath(repo));
+            if (info.value("repo").toString() != repo)
+                continue;
+            found.append(repo);
+            Fact *f = repoFact(repo);
+            if (!f) {
+                addRepoFact(info);
+                continue;
+            }
+            // updated release
+            _repos[f] = info;
+            f->setValue(info.value("tag").toString());
+            if (auto c = f->child("library"))
+                c->setValue(info.value("asset").toString() + " " + info.value("tag").toString());
+        }
+    }
+    for (auto f : _repos.keys()) {
+        if (found.contains(_repos.value(f).value("repo").toString()))
             continue;
-        const auto info = readInfo(infoPath(repo));
-        if (info.value("repo").toString() != repo)
-            continue;
-        addRepoFact(info);
+        _repos.remove(f);
+        f->deleteFact();
     }
 }
 
@@ -355,9 +379,6 @@ Fact *AppPluginsGithub::addRepoFact(const QJsonObject &info)
 {
     const QString repo = info.value("repo").toString();
     const QString tag = info.value("tag").toString();
-    QStringList names;
-    for (const auto &v : info.value("plugins").toArray())
-        names.append(v.toString());
 
     Fact *f = new Fact(this,
                        repo.toLower(),
@@ -369,12 +390,8 @@ Fact *AppPluginsGithub::addRepoFact(const QJsonObject &info)
     f->setValue(tag);
     _repos.insert(f, info);
 
-    Fact *f_tag = new Fact(f, "release", tr("Release"), tr("Installed release tag"));
-    f_tag->setValue(tag);
-    Fact *f_plugins = new Fact(f, "plugins", tr("Plugins"), tr("Installed plugins"));
-    f_plugins->setValue(names.join(", "));
-    Fact *f_asset = new Fact(f, "asset", tr("Library"), tr("Installed release asset"));
-    f_asset->setValue(info.value("asset").toString());
+    Fact *f_lib = new Fact(f, "library", tr("Library"));
+    f_lib->setValue(info.value("asset").toString() + " " + tag);
 
     Fact *f_update = new Fact(f,
                               "update",

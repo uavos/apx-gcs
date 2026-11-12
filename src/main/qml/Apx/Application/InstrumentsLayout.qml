@@ -137,10 +137,15 @@ RowLayout {
 
                 //plugin.parent=control
                 plugins.push(plugin)
+                // model roles: plain values only (title, descr, icon, name),
+                // objects would be copied recursively by the ListModel
                 var p = {}
                 for(var i in plugin) {
                     var v=plugin[i]
-                    if(v) p[i]=v
+                    if(!v) continue
+                    var t=typeof(v)
+                    if(t!=='string' && t!=='number' && t!=='boolean') continue
+                    p[i]=v
                 }
                 p.idx = plugins.length-1
                 pluginsModel.insert(index, p)
