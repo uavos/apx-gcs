@@ -215,9 +215,10 @@ jobs:
               });            
             }
 
-            github.rest.repos.updateRelease({
+            await github.rest.repos.updateRelease({
               owner, repo,
               release_id: "${{ steps.create_release.outputs.id }}",
               draft: false,
+              prerelease: false,
               make_latest: "true"
             });
