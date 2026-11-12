@@ -288,20 +288,37 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
     const QString ext = QFileInfo(_latestAsset).suffix().toLower();
     QString libPath;
     if (ext == "zip") {
-        // replace the libraries with the archive content
-        for (const auto &f : AppPlugins::findLibPlugins(d))
-            QFile::remove(f);
-        const auto files = JlCompress::extractDir(data->fileName(), d.absolutePath());
-        if (files.isEmpty()) {
+        // unpack into a staging folder next to the libraries, validate, then replace
+        QTemporaryDir staging(d.absoluteFilePath(".part-XXXXXX"));
+        if (!staging.isValid()) {
+            fail(tr("Can't create folder").append(": ") + d.absolutePath());
+            return;
+        }
+        const QDir sd(staging.path());
+        if (JlCompress::extractDir(data->fileName(), sd.absolutePath()).isEmpty()) {
             fail(tr("Can't unpack").append(": ") + _latestAsset);
             return;
         }
-        const auto libs = AppPlugins::findLibPlugins(d);
+        const auto libs = AppPlugins::findLibPlugins(sd);
         if (libs.isEmpty()) {
             fail(tr("No plugin library in").append(": ") + _latestAsset);
             return;
         }
-        libPath = libs.first();
+        // commit: the old libraries are replaced with the archive content
+        for (const auto &f : AppPlugins::findLibPlugins(d))
+            QFile::remove(f);
+        for (const auto &fi : sd.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+            const QString dest = d.absoluteFilePath(fi.fileName());
+            if (fi.isDir())
+                QDir(dest).removeRecursively();
+            else
+                QFile::remove(dest);
+            if (!QFile::rename(fi.absoluteFilePath(), dest)) {
+                fail(tr("Can't write").append(": ") + dest);
+                return;
+            }
+        }
+        libPath = d.absoluteFilePath(QFileInfo(libs.first()).fileName());
     } else {
         // bare library: <Name>.so.part is renamed when complete
         libPath = d.absoluteFilePath(_latestPlugin + "." + ext);
