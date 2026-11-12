@@ -63,7 +63,7 @@ AppPluginsGithub::AppPluginsGithub(Fact *parent)
                       tr("Auto"),
                       tr("Install plugin updates automatically, otherwise show the updates list"),
                       Bool | PersistentValue);
-    f_auto->setDefaultValue(false);
+    f_auto->setDefaultValue(true);
     f_auto->setSection(tr("Updates"));
 
     f_check = new Fact(this,
@@ -205,6 +205,10 @@ void AppPluginsGithub::removeRepo(AppPluginsGithubRepo *r)
 void AppPluginsGithub::install()
 {
     QString owner, name;
+    if (f_url->text().trimmed().isEmpty()) {
+        apxMsgW() << title().append(':') << tr("Enter the repository URL");
+        return;
+    }
     if (!parseRepoUrl(f_url->text(), owner, name)) {
         apxMsgW() << title().append(':') << tr("Invalid repository URL") << f_url->text();
         return;

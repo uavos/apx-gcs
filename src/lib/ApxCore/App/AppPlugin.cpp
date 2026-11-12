@@ -286,6 +286,11 @@ bool AppPlugin::checkLib(const QString &fname)
     QCoreApplication::processEvents();
     QCoreApplication::processEvents();
     QProcess proc;
+    // the error text must reach stderr: Qt logs to the system log when stderr is not a terminal
+    auto env = QProcessEnvironment::systemEnvironment();
+    env.insert("QT_FORCE_STDERR_LOGGING", "1");
+    env.insert("QT_LOGGING_TO_CONSOLE", "1");
+    proc.setProcessEnvironment(env);
     proc.start(tool.absoluteFilePath(), QStringList() << fname);
     if (!proc.waitForStarted())
         return false;
