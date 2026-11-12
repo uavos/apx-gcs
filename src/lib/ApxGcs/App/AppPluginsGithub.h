@@ -29,10 +29,10 @@
 /*
  * Third party plugins installed from GitHub repositories.
  * A release of the repository provides the plugin library built for every platform
- * as an asset named <Name>-<os>-<arch>.so|dylib (linux-x86_64, macos-universal, macos-arm64).
+ * as an asset named <Name>-<os>-<arch>.zip (linux-x86_64, macos-universal, macos-arm64).
  * Releases are tagged with the application version plus the plugin build number ([v]11.2.32.1),
- * the library of the latest release for the current application version is installed to
- * AppDirs::githubPlugins()/<repo>/<Name>.so, the release info is kept in <repo>/<repo>.json next to it.
+ * the archive of the latest release for the current application version is unpacked into
+ * AppDirs::githubPlugins()/<repo>/, the release info is kept in <repo>/<repo>.json next to it.
  * The plugins are loaded by AppPlugins like the other user plugins and are switched on and off
  * in the plugins settings. Updates are checked on startup and on request, like the app updates.
  */

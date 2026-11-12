@@ -26,6 +26,8 @@
 #include <App/AppLog.h>
 #include <App/AppPlugins.h>
 
+#include <quazip/JlCompress.h>
+
 AppPluginsGithubRepo::AppPluginsGithubRepo(Fact *parent, const QJsonObject &info)
     : Fact(parent,
            info.value("repo").toString().toLower(),
@@ -143,7 +145,10 @@ void AppPluginsGithubRepo::updateStatus()
 {
     const QString tag = installedTag();
     setValue(tag);
-    f_library->setValue(isInstalled() ? _info.value("asset").toString() + " " + tag : QString());
+    QString lib = _info.value("library").toString();
+    if (lib.isEmpty())
+        lib = _info.value("asset").toString();
+    f_library->setValue(isInstalled() ? lib + " " + tag : QString());
 
     const QString st = status();
     setDescr(st.isEmpty() ? url() : st);
@@ -172,22 +177,22 @@ QStringList AppPluginsGithubRepo::platformTags()
 
 QString AppPluginsGithubRepo::pickAsset(const QJsonArray &assets,
                                         QString &assetName,
-                                        QString &libName)
+                                        QString &pluginName)
 {
-    static const QStringList exts{"so", "dylib", "gcs"};
+    // zip archive with the library inside is preferred, bare library accepted
+    static const QStringList exts{"zip", "so", "dylib", "gcs"};
     for (const auto &tag : platformTags()) {
-        for (const auto &v : assets) {
-            const auto a = v.toObject();
-            const QString name = a.value("name").toString();
-            const QString ext = QFileInfo(name).suffix().toLower();
-            if (!exts.contains(ext))
-                continue;
+        for (const auto &ext : exts) {
             const QString suffix = "-" + tag + "." + ext;
-            if (!name.endsWith(suffix, Qt::CaseInsensitive) || name.size() <= suffix.size())
-                continue;
-            assetName = name;
-            libName = name.left(name.size() - suffix.size()) + "." + ext;
-            return a.value("browser_download_url").toString();
+            for (const auto &v : assets) {
+                const auto a = v.toObject();
+                const QString name = a.value("name").toString();
+                if (!name.endsWith(suffix, Qt::CaseInsensitive) || name.size() <= suffix.size())
+                    continue;
+                assetName = name;
+                pluginName = AppPlugins::pluginName(name.left(name.size() - suffix.size()));
+                return a.value("browser_download_url").toString();
+            }
         }
     }
     return {};
@@ -209,7 +214,7 @@ void AppPluginsGithubRepo::releasesInfo(QJsonArray releases)
     _latestVersion = QVersionNumber();
     _latestTag.clear();
     _latestAsset.clear();
-    _latestLib.clear();
+    _latestPlugin.clear();
     _latestUrl.clear();
 
     // the latest release built for the application version (11.2.32.x) with a library for this platform
@@ -223,14 +228,14 @@ void AppPluginsGithubRepo::releasesInfo(QJsonArray releases)
             continue;
         if (!_latestVersion.isNull() && version <= _latestVersion)
             continue;
-        QString asset, lib;
-        const QString url = pickAsset(r.value("assets").toArray(), asset, lib);
+        QString asset, plugin;
+        const QString url = pickAsset(r.value("assets").toArray(), asset, plugin);
         if (url.isEmpty())
             continue;
         _latestVersion = version;
         _latestTag = tag;
         _latestAsset = asset;
-        _latestLib = lib;
+        _latestPlugin = plugin;
         _latestUrl = url;
     }
 
@@ -279,19 +284,39 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
         fail(tr("Unknown response").append(": ") + assetName);
         return;
     }
-    // replace the library: <Name>.so.part is renamed when complete
-    const QString libPath = dir().absoluteFilePath(_latestLib);
-    const QString partPath = libPath + ".part";
-    QFile::remove(partPath);
-    if (!data->copy(partPath)) {
-        fail(tr("Can't write").append(": ") + partPath);
-        return;
-    }
-    QFile::remove(libPath);
-    if (!QFile::rename(partPath, libPath)) {
+    const QDir d = dir();
+    const QString ext = QFileInfo(_latestAsset).suffix().toLower();
+    QString libPath;
+    if (ext == "zip") {
+        // replace the libraries with the archive content
+        for (const auto &f : AppPlugins::findLibPlugins(d))
+            QFile::remove(f);
+        const auto files = JlCompress::extractDir(data->fileName(), d.absolutePath());
+        if (files.isEmpty()) {
+            fail(tr("Can't unpack").append(": ") + _latestAsset);
+            return;
+        }
+        const auto libs = AppPlugins::findLibPlugins(d);
+        if (libs.isEmpty()) {
+            fail(tr("No plugin library in").append(": ") + _latestAsset);
+            return;
+        }
+        libPath = libs.first();
+    } else {
+        // bare library: <Name>.so.part is renamed when complete
+        libPath = d.absoluteFilePath(_latestPlugin + "." + ext);
+        const QString partPath = libPath + ".part";
         QFile::remove(partPath);
-        fail(tr("Can't write").append(": ") + libPath);
-        return;
+        if (!data->copy(partPath)) {
+            fail(tr("Can't write").append(": ") + partPath);
+            return;
+        }
+        QFile::remove(libPath);
+        if (!QFile::rename(partPath, libPath)) {
+            QFile::remove(partPath);
+            fail(tr("Can't write").append(": ") + libPath);
+            return;
+        }
     }
 
     _info = QJsonObject();
@@ -300,6 +325,7 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
     _info["repo"] = _repo;
     _info["tag"] = _latestTag;
     _info["asset"] = _latestAsset;
+    _info["library"] = QFileInfo(libPath).fileName();
     _info["platform"] = platformTags().first();
     _info["plugins"] = QJsonArray{AppPlugins::pluginName(libPath)};
     _info["installed"] = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
@@ -308,7 +334,8 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
 
     setProgress(-1);
     updateStatus();
-    apxMsg() << title().append(':') << tr("Installed") << _latestAsset << _latestTag;
+    apxMsg() << title().append(':') << tr("Installed") << QFileInfo(libPath).fileName()
+             << _latestTag;
     emit installed(libPath);
 }
 

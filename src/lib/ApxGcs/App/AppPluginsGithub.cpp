@@ -240,7 +240,7 @@ void AppPluginsGithub::repoChecked()
             deleteRepo(r);
             return;
         }
-        const QString pname = AppPlugins::pluginName(r->latestLib());
+        const QString pname = r->latestPlugin();
         if (App::appPlugins()->plugin(pname)) {
             apxMsgW() << title().append(':') << tr("Plugin already exists").append(": ") << pname;
             deleteRepo(r);

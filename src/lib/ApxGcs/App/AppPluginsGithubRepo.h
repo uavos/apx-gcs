@@ -28,6 +28,7 @@
 /*
  * A third party plugin repository installed from GitHub (or being installed):
  * AppDirs::githubPlugins()/<repo>/<Name>.so with the release info in <repo>/<repo>.json.
+ * The release asset <Name>-<os>-<arch>.zip is unpacked into the repository folder.
  * Releases are tagged with the application version plus the plugin build number ([v]11.2.32.1),
  * check() finds the latest release built for the current application version.
  */
@@ -56,7 +57,8 @@ public:
     bool isChecked() const { return _checked; }
     // the latest release for the application version
     auto latestTag() const { return _latestTag; }
-    auto latestLib() const { return _latestLib; }
+    // the plugin name from the asset name (Emip-linux-x86_64.zip -> Emip)
+    auto latestPlugin() const { return _latestPlugin; }
     // the latest release is newer than the installed one, or the installed one is not compatible
     bool hasUpdate() const;
     // short text: Up to date, Update available: v.., Not compatible.., Not available..
@@ -64,8 +66,8 @@ public:
 
     // release asset suffixes for this platform, most specific first: linux-x86_64, macos-universal
     static QStringList platformTags();
-    // the asset for this platform: <Name>-<tag>.<so|dylib>, sets the library file name <Name>.<ext>
-    static QString pickAsset(const QJsonArray &assets, QString &assetName, QString &libName);
+    // the asset for this platform: <Name>-<tag>.zip with the library inside (or a bare <Name>-<tag>.so|dylib)
+    static QString pickAsset(const QJsonArray &assets, QString &assetName, QString &pluginName);
 
     Fact *f_library{};
     Fact *f_update{};
@@ -97,7 +99,7 @@ private:
     QVersionNumber _latestVersion;
     QString _latestTag;
     QString _latestAsset;
-    QString _latestLib;
+    QString _latestPlugin;
     QString _latestUrl;
 
     void init();
