@@ -169,8 +169,10 @@ void AppPluginsGithub::connectRepo(AppPluginsGithubRepo *r)
 void AppPluginsGithub::deleteRepo(AppPluginsGithubRepo *r)
 {
     _repos.removeAll(r);
-    if (_installing == r)
+    if (_installing == r) {
         _installing = nullptr;
+        f_download->setEnabled(true);
+    }
     r->deleteFact();
     updateStatus();
 }
@@ -307,7 +309,6 @@ void AppPluginsGithub::repoFailed()
     if (!r)
         return;
     if (r == _installing) {
-        f_download->setEnabled(true);
         // remove the folder created for the download when nothing else is there
         QDir target(r->dir());
         if (target.exists() && target.isEmpty())
