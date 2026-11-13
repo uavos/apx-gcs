@@ -296,10 +296,19 @@ void AppPluginsGithub::repoInstalled(QString libPath)
     auto p = plugins->plugin(AppPlugins::pluginName(libPath));
     if (!p) {
         plugins->loadGithubRepo(QFileInfo(libPath).absolutePath());
+    } else if (p->libFileName != libPath) {
+        apxMsgW() << title().append(':') << tr("Plugin with the same name is loaded from")
+                  << p->libFileName;
     } else if (p->isLoaded()) {
         apxMsgW() << title().append(':')
                   << tr("Restart the application to reload the updated plugin");
+    } else if (p->f_enabled->value().toBool()) {
+        // the installed library failed to load on start: retry with the replacement
+        p->f_enabled->setTitle(p->name);
+        p->load();
+        plugins->updateStatus();
     }
+    // switched off by the user: loaded on the next start when enabled
     updateStatus();
 }
 
