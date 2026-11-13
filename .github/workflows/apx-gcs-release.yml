@@ -51,7 +51,6 @@ jobs:
     runs-on: macos-latest
     env:
       VERSION_QT: 6.12.0
-      VERSION_SDL: 2.30.8
       VERSION_GST: 1.28.6
 
       # we replace system python with brew python
@@ -81,15 +80,6 @@ jobs:
             qtspeech qtlocation qtpositioning qtserialport \
             qtconnectivity qttasktree qtimageformats
           echo "/tmp/$VERSION_QT/macos/bin" >> $GITHUB_PATH
-
-      - name: Install SDL
-        working-directory: /tmp
-        run: |
-          curl -L https://github.com/libsdl-org/SDL/releases/download/release-$VERSION_SDL/SDL2-$VERSION_SDL.dmg --output sdl.dmg
-          hdiutil attach -noverify sdl.dmg
-          sudo cp -a /Volumes/SDL2/SDL2.framework /Library/Frameworks/
-          hdiutil detach /Volumes/SDL2
-          rm -f sdl.dmg
 
       - name: Install GST
         working-directory: /tmp

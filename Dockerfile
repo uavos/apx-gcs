@@ -41,7 +41,7 @@ RUN apt install -y --no-install-recommends \
     libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
     libodbc2 libpq5 \
     libcups2 \
-    libz-dev libsdl2-dev zsync \
+    libz-dev zsync \
     \
     libgstreamer1.0-0 \
     gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
@@ -59,7 +59,6 @@ RUN apt install -y --no-install-recommends \
 # libs: to include in release package
 ENV LIBS_DIST_DIR=/dist
 RUN mkdir -p $LIBS_DIST_DIR
-RUN cd $LIBS_DIST_DIR && apt download libsdl2-2.0-0 libsndio7.0
 
 
 # python tools
