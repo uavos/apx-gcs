@@ -290,10 +290,20 @@ Window {
                         }
                         ChecklistButton {
                             visible: phase !== "running"
+                            enabled: !checklist.blocked
                             text: phase === "finished" ? qsTr("Restart") : qsTr("Start")
                             kind: "primary"
                             onTriggered: checklist.start()
                         }
+                    }
+                    // why the check cannot be started now
+                    Text {
+                        Layout.fillWidth: true
+                        visible: phase !== "running" && checklist.blocked
+                        text: checklist.blocked
+                        color: theme.textInfo
+                        font: apx.font_narrow(theme.fontSmall)
+                        wrapMode: Text.Wrap
                     }
                 }
             }

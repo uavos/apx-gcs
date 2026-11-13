@@ -68,6 +68,11 @@ QtObject {
         if(ui.checklist === engine) ui.checklist = null
     }
 
+    // ---------------------------------------------------------------- launch conditions (from the plugin)
+    property string blocked              // why the check cannot be started now, empty when it can
+    property bool airborne
+    onAirborneChanged: if(airborne) abort(qsTr("The aircraft is in the air"))
+
     // ---------------------------------------------------------------- procedure
     property string file                 // markdown procedure, set by the launcher
     onFileChanged: load()
@@ -216,16 +221,18 @@ QtObject {
     // ---------------------------------------------------------------- procedure control
     function start()
     {
+        if(blocked) return
         reset()
         prepare()
         phase = "running"
         next()
     }
-    function abort()
+    // stop the running check, the current step fails with the reason
+    function abort(reason)
     {
         if(phase !== "running") return
         endStep()
-        setResult(current, "fail", qsTr("Aborted by operator"))
+        setResult(current, "fail", reason ? reason : qsTr("Aborted by operator"))
         finish()
     }
     function finish()

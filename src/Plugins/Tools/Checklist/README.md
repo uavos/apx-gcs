@@ -9,8 +9,16 @@ Aircraft check procedure driven by a Markdown file with embedded JS snippets.
 Procedures are the `*.md` files in `<Documents>/UAVOS/Checklists/`. The file is picked by
 the callsign of the current unit: its name must be the beginning of the callsign, case
 insensitive (`Borey-123` opens `borey.md`; when several names match the first one by name
-is used). While a procedure exists a Checklist button is shown in the task
-bar; it opens the window with it. No file, no button.
+is used). While a procedure exists and the check can be started, a Checklist button is
+shown in the task bar; it opens the window with the procedure. No file, no button.
+
+The check is started on the ground only: the button and **Start** are available while the
+unit is in TAXI, not in the air (`cmd.ins.inair`, `est.sys.mode`) and the uplink is enabled;
+otherwise the window names the reason. Mode changes during the run are left to the
+procedure (its steps switch EMG, RPV, TAKEOFF themselves), but the check is aborted as
+soon as the unit gets airborne. The main layout flag `checklistAuto` (set by the lite
+profile, `resources/layouts/lite/GroundControl.qml`) opens the checklist by itself when
+the unit enters TAXI; the stock layout only shows the button.
 
 Steps run strictly in order: the current step is highlighted, only the steps already
 reached can be opened, none can be skipped. A failed step is retried with **Retry** or

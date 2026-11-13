@@ -59,6 +59,8 @@ Item {
 
     // interface elements hidden by the override file, by element name
     property var hiddenItems: []
+    // the override file of the main GCS sets it: the checklist opens itself when the unit is in TAXI
+    property bool checklistAuto: false
     function itemVisible(name)
     {
         return hiddenItems.indexOf(name) < 0
