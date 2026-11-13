@@ -351,6 +351,38 @@ QString App::loadText(const QString &fileName)
         return QString();
     return QString::fromUtf8(f.readAll());
 }
+QVariant App::loadJson(const QString &fileName)
+{
+    QString path = fileName;
+    if (path.startsWith("file:"))
+        path = QUrl(path).toLocalFile();
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return QVariant();
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
+    if (err.error != QJsonParseError::NoError) {
+        apxMsgW() << tr("JSON parse error").append(':') << path << err.errorString();
+        return QVariantMap();
+    }
+    return doc.toVariant();
+}
+bool App::saveJson(const QString &fileName, const QString &json)
+{
+    QString path = fileName;
+    if (path.startsWith("file:"))
+        path = QUrl(path).toLocalFile();
+    QFileInfo fi(path);
+    if (!fi.absoluteDir().exists() && !fi.absoluteDir().mkpath("."))
+        return false;
+    QFile f(path);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+    f.write(json.toUtf8());
+    if (!json.endsWith('\n'))
+        f.write("\n");
+    return true;
+}
 void App::setGlobalProperty(const QString &path, const QVariant &value)
 {
     AppEngine *e = _instance->engine();

@@ -82,6 +82,31 @@ void AppPlugins::load(const QStringList &names)
     if (!stRepQml.isEmpty())
         apxConsole() << QObject::tr("User QML plugins").append(": ").append(stRepQml.join(','));
 
+    // third party plugins installed from GitHub: github/<repo>/<Name>.so
+    QDir githubDir = AppDirs::githubPlugins();
+    QStringList stRepGithub;
+    if (githubDir.exists()) {
+        for (const auto &repoName :
+             githubDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)) {
+            if (repoName.startsWith('-') || repoName.startsWith('.'))
+                continue;
+            const QString repoPath = githubDir.absoluteFilePath(repoName);
+            const auto files = findLibPlugins(QDir(repoPath));
+            if (files.isEmpty()) {
+                apxConsoleW() << QObject::tr("No plugins found").append(": ") << repoName;
+                continue;
+            }
+            if (!checkGithubRepo(repoPath, files))
+                continue;
+            for (const auto &f : files) {
+                stRepGithub.append(pluginName(f));
+                allFiles.append(f);
+            }
+        }
+    }
+    if (!stRepGithub.isEmpty())
+        apxConsole() << QObject::tr("GitHub plugins").append(": ").append(stRepGithub.join(','));
+
     QDir pluginsDir = AppDirs::plugins();
     pluginsDir.setSorting(QDir::Name | QDir::IgnoreCase);
     pluginsDir.refresh();
@@ -96,10 +121,7 @@ void AppPlugins::load(const QStringList &names)
         QStringList st;
         for (const auto pname : names) {
             for (const auto fname : allFiles) {
-                QString s = QFileInfo(fname).baseName();
-                if (s.startsWith("lib"))
-                    s.remove(0, 3);
-                if (s != pname)
+                if (pluginName(fname) != pname)
                     continue;
                 st.append(fname);
             }
@@ -168,21 +190,118 @@ void AppPlugins::fixDuplicates(QStringList &list, const QString &userPluginsPath
 
 void AppPlugins::loadFiles(const QStringList &fileNames)
 {
-    QStringList loadedNames;
-    for (const auto fileName : fileNames) {
-        QString pname = QFileInfo(fileName).baseName();
-        if (pname.startsWith("lib"))
-            pname.remove(0, 3);
-        if (loadedNames.contains(pname)) {
-            apxMsgW() << tr("Duplicate plugin").append(":") << pname;
-            continue;
-        }
-        //apxConsole()<<tr("Loading")<<pname;
-        loadedNames.append(pname);
+    for (const auto &fileName : fileNames)
+        addPlugin(fileName);
+}
 
-        AppPlugin *plugin = new AppPlugin(this, pname, fileName);
-        append(plugin);
+AppPlugin *AppPlugins::addPlugin(const QString &fileName)
+{
+    QString pname = pluginName(fileName);
+    if (plugin(pname)) {
+        apxMsgW() << tr("Duplicate plugin").append(":") << pname;
+        return nullptr;
     }
+    AppPlugin *p = new AppPlugin(this, pname, fileName);
+    append(p);
+    return p;
+}
+
+QString AppPlugins::pluginName(const QString &fileName)
+{
+    QString pname = QFileInfo(fileName).baseName();
+    if (pname.startsWith("lib"))
+        pname.remove(0, 3);
+    return pname;
+}
+
+QStringList AppPlugins::findLibPlugins(const QDir &dir)
+{
+    QStringList files;
+    for (const auto &fi : dir.entryInfoList({"*.gcs", "*.so", "*.dylib", "*.bundle"},
+                                            QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
+                                            QDir::Name | QDir::IgnoreCase)) {
+        if (fi.fileName().startsWith('-'))
+            continue;
+        files.append(fi.absoluteFilePath());
+    }
+    return files;
+}
+
+QVersionNumber AppPlugins::pluginVersion(const QString &tag)
+{
+    // release-11.2.32.1, v11.2.32.1, 11.2.32.1
+    QString s = tag.trimmed();
+    s = s.mid(s.lastIndexOf('-') + 1);
+    if (s.startsWith('v', Qt::CaseInsensitive))
+        s.remove(0, 1);
+    qsizetype idx = 0;
+    const auto v = QVersionNumber::fromString(s, &idx);
+    if (idx != s.size() || v.segmentCount() < 3)
+        return {};
+    return v;
+}
+
+bool AppPlugins::isCompatible(const QVersionNumber &version)
+{
+    if (version.segmentCount() < 3)
+        return false;
+    const auto app = QVersionNumber::fromString(App::version());
+    if (app.segmentCount() < 3)
+        return false;
+    return QVersionNumber(version.majorVersion(), version.minorVersion(), version.microVersion())
+           == QVersionNumber(app.majorVersion(), app.minorVersion(), app.microVersion());
+}
+
+QJsonObject AppPlugins::githubRepoInfo(const QString &repoPath)
+{
+    const QDir d(repoPath);
+    QFile f(d.absoluteFilePath(d.dirName() + ".json"));
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+    return QJsonDocument::fromJson(f.readAll()).object();
+}
+
+bool AppPlugins::checkGithubRepo(const QString &repoPath, const QStringList &files)
+{
+    const QString tag = githubRepoInfo(repoPath).value("tag").toString();
+    if (isCompatible(pluginVersion(tag)))
+        return true;
+    for (const auto &f : files) {
+        apxMsgW() << tr("Plugin disabled").append(":") << pluginName(f) << tag
+                  << tr("(requires release %1.x)").arg(App::version());
+    }
+    return false;
+}
+
+void AppPlugins::loadGithubRepo(const QString &path)
+{
+    const auto files = findLibPlugins(QDir(path));
+    if (!checkGithubRepo(path, files))
+        return;
+    for (const auto &f : files) {
+        AppPlugin *p = addPlugin(f);
+        if (!p)
+            continue;
+        if (p->f_enabled->value().toBool()) {
+            p->load();
+        } else {
+            apxConsole() << tr("Loading skipped").append(":") << p->name;
+        }
+    }
+    updateStatus();
+}
+
+void AppPlugins::removePlugin(AppPlugin *plugin)
+{
+    if (!plugin || plugin->isLoaded())
+        return;
+    removeAll(plugin);
+    if (plugin->f_enabled) {
+        plugin->f_enabled->deleteFact();
+        plugin->f_enabled = nullptr;
+    }
+    plugin->deleteLater();
+    updateStatus();
 }
 
 void AppPlugins::unload()

@@ -68,6 +68,13 @@ Item {
     readonly property int instrumentsHeight: width*0.2
     readonly property color sepColor: "#244"
 
+    // Controls panel pages registered by plugins: {name, mode, source}
+    property var controlPages: []
+    function addControlPage(page)
+    {
+        controlPages = controlPages.concat([page])
+    }
+
     Settings {
         id: settings
         category: "Layout"

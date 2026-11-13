@@ -33,6 +33,7 @@ AppPlugin::AppPlugin(AppPlugins *plugins, QString name, QString fileName)
     , plugins(plugins)
     , name(name)
     , fileName(fileName)
+    , libFileName(fileName)
     , f_enabled(nullptr)
     , interface(nullptr)
     , control(nullptr)
@@ -115,6 +116,8 @@ void AppPlugin::loadLib()
     if (!f_enabled->value().toBool())
         return;
 
+    _loaded = true;
+
     //check depends
     depends = p->depends();
     if (!depends.isEmpty()) {
@@ -192,6 +195,7 @@ void AppPlugin::loadLib()
 }
 void AppPlugin::loadQml()
 {
+    _loaded = true;
     f_enabled->setSection(tr("Controls"));
     if (QFileInfo(fileName).completeBaseName().contains("Plugin")) {
         QVariantMap opts;
@@ -283,6 +287,11 @@ bool AppPlugin::checkLib(const QString &fname)
     QCoreApplication::processEvents();
     QCoreApplication::processEvents();
     QProcess proc;
+    // the error text must reach stderr: Qt logs to the system log when stderr is not a terminal
+    auto env = QProcessEnvironment::systemEnvironment();
+    env.insert("QT_FORCE_STDERR_LOGGING", "1");
+    env.insert("QT_LOGGING_TO_CONSOLE", "1");
+    proc.setProcessEnvironment(env);
     proc.start(tool.absoluteFilePath(), QStringList() << fname);
     if (!proc.waitForStarted())
         return false;

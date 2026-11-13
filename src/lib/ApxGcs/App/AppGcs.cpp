@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "AppGcs.h"
+#include "AppPluginsGithub.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
 #include <QFileDialog>
@@ -42,6 +43,8 @@ void AppGcs::loadServices()
     auto fleet = new Fleet(f_apx, f_datalink->f_protocols);
 
     f_apxfw = new ApxFw(f_apx);
+
+    new AppPluginsGithub(f_apx->f_pluginsSettings);
 
     // QObject::connect(f_datalink, &Datalink::heartbeat, protocol, &ProtocolFleet::sendHeartbeat);
 
