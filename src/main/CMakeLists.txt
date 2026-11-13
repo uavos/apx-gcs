@@ -38,9 +38,16 @@ if(APPLE)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Info.plist DESTINATION ${APX_INSTALL_BIN_DIR}/..)
 
     # Darwin permission plugins are static and normally linked by qt_add_executable
-    # finalization, which is not used here - link the BLE one explicitly
+    # finalization, which is not used here - link the used ones explicitly
     target_link_libraries(${target} PRIVATE Qt6::QDarwinBluetoothPermissionPlugin
-                                            Qt6::QDarwinBluetoothPermissionPlugin_init)
+                                            Qt6::QDarwinBluetoothPermissionPlugin_init
+                                            Qt6::QDarwinCameraPermissionPlugin
+                                            Qt6::QDarwinCameraPermissionPlugin_init)
+
+    # the camera OS permission request code is a separate object in the plugin archive,
+    # pulled in by qt_add_executable finalization via an undefined-symbol reference -
+    # without it the plugin can only check the permission, every request is denied
+    target_link_options(${target} PRIVATE "LINKER:-u,_QDarwinCameraPermissionRequest")
 
     # embed Info.plist into the bare executable - permission usage descriptions
     # must be readable when running from the build tree without an app bundle

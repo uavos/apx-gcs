@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
+import QtCore
 import QtMultimedia
 
 // Snapshot camera of the check: the operator picks one of the video inputs on the consent
@@ -32,6 +33,13 @@ QtObject {
     property int selected: -1
     readonly property bool enabled: selected >= 0 && selected < devices.length
     readonly property string name: enabled ? String(devices[selected].description) : ""
+
+    // OS camera access: the media backend only checks it, the request is on the app
+    property CameraPermission permission: CameraPermission {
+        onStatusChanged: if(status === Qt.PermissionStatus.Denied) control.failed(qsTr("camera access denied"))
+    }
+    readonly property bool granted: permission.status === Qt.PermissionStatus.Granted
+    onEnabledChanged: if(enabled && !granted) permission.request()
 
     signal saved(string path)
     signal failed(string message)
@@ -50,7 +58,7 @@ QtObject {
     property CaptureSession session: CaptureSession {
         camera: Camera {
             id: camera
-            active: control.enabled
+            active: control.enabled && control.granted
             cameraDevice: control.enabled ? control.devices[control.selected] : control.mediaDevices.defaultVideoInput
             onErrorOccurred: (error, message) => control.failed(message)
         }
