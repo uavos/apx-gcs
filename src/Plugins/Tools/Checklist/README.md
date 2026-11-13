@@ -9,8 +9,25 @@ Aircraft check procedure driven by a Markdown file with embedded JS snippets.
 Procedures are the `*.md` files in `<Documents>/UAVOS/Checklists/`. The file is picked by
 the callsign of the current unit: its name must be the beginning of the callsign, case
 insensitive (`Borey-123` opens `borey.md`; when several names match the first one by name
-is used). While a procedure exists a Checklist button is shown in the task
-bar; it opens the window with it. No file, no button.
+is used). While a procedure exists and the check can be started, a Checklist button is
+shown in the task bar; it opens the window with the procedure. No file, no button.
+
+The check is started on the ground only: the button and **Start** are available while the
+unit is in TAXI, not in the air (`cmd.ins.inair`, `est.sys.mode`) and the uplink is enabled;
+otherwise the window names the reason. Mode changes during the run are left to the
+procedure (its steps switch EMG, RPV, TAKEOFF themselves), but the check is aborted as
+soon as the unit gets airborne. The main layout flag `checklistAuto` (set by the lite
+profile, `resources/layouts/lite/GroundControl.qml`) opens the checklist by itself when
+the unit enters TAXI; the stock layout only shows the button.
+
+Every check is recorded. The window opens with the camera question: the operator picks one
+of the video inputs and agrees, or declines; the answer is the first line of the record.
+The record is the folder `<Documents>/UAVOS/Checklists/<run>/`, `<run>` in the telemetry
+file name style (`261030_1304_08119W4-BOREY`): `<run>.log` gets a timestamped line for
+everything that happens (start, each step started/passed/failed with its message, answers,
+form values, info messages, `step.log` notes, snapshots, the result), and `<run>-NNN.jpg` is
+the camera snapshot taken after every step when the camera is on. Step starts, results and
+`step.log` notes also go to the telemetry file as msg events (src `gcs/checklist`).
 
 Steps run strictly in order: the current step is highlighted, only the steps already
 reached can be opened, none can be skipped. A failed step is retried with **Retry** or
@@ -26,6 +43,9 @@ Files, loaded in stages so that nothing exists before it is needed:
 - `ChecklistLauncher.qml` - stage 2, the task bar button; loads the checklist on press;
 - `Checklist.qml` - stage 3, the engine and its window, destroyed when the window is closed.
   Reachable from QML and scripts as `ui.checklist` (`phase`, `takeoffAllowed`) while open;
+- `ChecklistRecord.qml` - the record of a run: folder, text log, snapshots;
+  `ChecklistCamera.qml` - the snapshot camera (QtMultimedia), `ui/ChecklistCameraPage.qml`
+  the consent page;
 - `ChecklistParser.js` - the Markdown parser, `parse(text)` returns
   `{title, intro, steps: [{title, body, code}]}`;
 - `ui/` - the window and its widgets. The window shows what the engine exposes

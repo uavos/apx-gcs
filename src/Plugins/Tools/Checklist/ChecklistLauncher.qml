@@ -33,25 +33,35 @@ QtObject {
 
     property string file       // procedure of the current unit
     property string callsign
+    property string blocked    // why the check cannot be started now, empty when it can
+    property bool airborne
+    property bool autoOpen     // open the checklist as soon as the check becomes possible
 
+    // the button is shown while the check can be started; an open checklist survives its disappearance
     property Fact button: Fact {
         property bool showLauncher: true   // task bar lists the children of apx.windows with this flag (TaskBar.qml)
         name: "checklist"
         title: qsTr("Checklist")
         descr: launcher.callsign + ": " + launcher.file
         icon: "clipboard-check"
-        parentFact: apx.windows
-        onTriggered: {
-            if(checklist.item) checklist.item.raise()
-            else checklist.active = true
-        }
+        parentFact: launcher.blocked ? null : apx.windows
+        onTriggered: launcher.open()
     }
+    function open()
+    {
+        if(checklist.item) checklist.item.raise()
+        else checklist.active = true
+    }
+    onBlockedChanged: if(!blocked && autoOpen) open()
+    Component.onCompleted: if(!blocked && autoOpen) open()
 
     // stage 3: the checklist exists while its window is open
     property Loader checklist: Loader {
         active: false
         sourceComponent: Checklist {
             file: launcher.file
+            blocked: launcher.blocked
+            airborne: launcher.airborne
             onClosed: checklist.active = false
         }
     }
