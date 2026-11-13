@@ -318,9 +318,9 @@ void AppPluginsGithub::repoFailed()
     if (!r)
         return;
     if (r == _installing) {
-        // remove the folder created for the download when nothing else is there
+        // remove the partial contents created by this new installation
         QDir target(r->dir());
-        if (target.exists() && target.isEmpty())
+        if (target.exists())
             target.removeRecursively();
         deleteRepo(r);
         return;
