@@ -90,7 +90,7 @@ AppPluginsGithub::AppPluginsGithub(Fact *parent)
     if (!_repos.isEmpty()) {
         QTimer::singleShot(5000, this, [this]() {
             // skip silently when something is already going on
-            if (_checking > 0 || _installing)
+            if (!_checking.isEmpty() || _installing)
                 return;
             for (auto r : _repos) {
                 if (r->busy())
@@ -169,6 +169,7 @@ void AppPluginsGithub::connectRepo(AppPluginsGithubRepo *r)
 void AppPluginsGithub::deleteRepo(AppPluginsGithubRepo *r)
 {
     _repos.removeAll(r);
+    _checking.remove(r);
     if (_installing == r) {
         _installing = nullptr;
         f_download->setEnabled(true);
@@ -259,9 +260,9 @@ void AppPluginsGithub::repoChecked()
 
     updateStatus();
 
-    if (_checking == 0)
+    // checked on request by checkForUpdates
+    if (!_checking.remove(r))
         return;
-    _checking--;
 
     // auto: install the release right away
     if (f_auto->value().toBool()) {
@@ -272,7 +273,7 @@ void AppPluginsGithub::repoChecked()
         return;
     }
     // show the updates list when all repositories are checked
-    if (_checking == 0 && f_updates->enabled())
+    if (_checking.isEmpty() && f_updates->enabled())
         f_updates->trigger();
 }
 
@@ -325,8 +326,8 @@ void AppPluginsGithub::repoFailed()
         deleteRepo(r);
         return;
     }
-    if (_checking > 0)
-        _checking--;
+    // the failed release check (a failed download is not counted)
+    _checking.remove(r);
     updateStatus();
 }
 
@@ -334,7 +335,7 @@ void AppPluginsGithub::repoFailed()
 
 void AppPluginsGithub::checkForUpdates()
 {
-    if (_checking > 0) {
+    if (!_checking.isEmpty()) {
         apxMsgW() << title().append(':') << tr("Busy");
         return;
     }
@@ -356,7 +357,8 @@ void AppPluginsGithub::checkForUpdates()
         return;
     }
     apxMsg() << title().append(':') << tr("Checking for updates") << App::version();
-    _checking = list.size();
+    for (auto r : list)
+        _checking.insert(r);
     for (auto r : list)
         r->check();
 }

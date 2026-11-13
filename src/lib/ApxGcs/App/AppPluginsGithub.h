@@ -59,7 +59,7 @@ public:
 private:
     QList<AppPluginsGithubRepo *> _repos;
     AppPluginsGithubRepo *_installing{};
-    int _checking{}; // repositories being checked
+    QSet<AppPluginsGithubRepo *> _checking; // release checks started by checkForUpdates and not finished yet
 
     static QDir dir();
 
