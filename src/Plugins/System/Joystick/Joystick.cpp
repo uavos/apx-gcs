@@ -26,11 +26,12 @@
 
 #include "JoystickAxis.h"
 
-Joystick::Joystick(Fact *parent, int device_index, QString uid)
+Joystick::Joystick(Fact *parent, const JoystickDeviceInfo &info, int device_index)
     : Fact(parent, "j#", "", "", Group | Bool | FlatModel)
     , device_index(device_index)
-    , uid(uid)
-    , instanceID(-1)
+    , uid(info.uid)
+    , instanceID(info.id)
+    , devName(info.name)
 {
     f_conf = new Fact(this, "conf", tr("Configuration"), tr("Configuration title"), Enum);
 
@@ -58,29 +59,15 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
                         Action | Remove,
                         "delete");
 
-    if (device_index < 0) {
-        return;
-    }
-
-    devName = SDL_JoystickNameForIndex(device_index);
     setTitle(devName);
 
-    //get info
-    updateDevice(true);
-    if (!dev)
-        return;
-
-    int cnt;
-    cnt = SDL_JoystickNumAxes(dev);
-    for (int i = 0; i < cnt; ++i) {
+    for (int i = 0; i < info.axes; ++i) {
         new JoystickAxis(f_axes);
     }
-    cnt = SDL_JoystickNumButtons(dev);
-    for (int i = 0; i < cnt; ++i) {
+    for (int i = 0; i < info.buttons; ++i) {
         new Fact(f_buttons, QString("button%1").arg(i), QString::number(i + 1), "", Text);
     }
-    cnt = SDL_JoystickNumHats(dev);
-    for (int i = 0; i < cnt; ++i) {
+    for (int i = 0; i < info.hats; ++i) {
         new Fact(f_hats, QString("hat%1_u").arg(i), QString::number(i + 1) + "_UP", "", Text);
         new Fact(f_hats, QString("hat%1_r").arg(i), QString::number(i + 1) + "_RIGHT", "", Text);
         new Fact(f_hats, QString("hat%1_d").arg(i), QString::number(i + 1) + "_DOWN", "", Text);
@@ -96,15 +83,13 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
         i->setOption(HighlightActive);
     }
 
-    devName = SDL_JoystickName(dev);
-    setTitle(devName);
     setDescr(QString("A%1 B%2 H%3 [%4]")
                  .arg(f_axes->size())
                  .arg(f_buttons->size())
                  .arg(f_hats->size())
                  .arg(uid));
 
-    connect(this, &Fact::valueChanged, this, [this]() { setActive(this->dev && value().toBool()); });
+    connect(this, &Fact::valueChanged, this, [this]() { setActive(connected() && value().toBool()); });
     setValue(true);
 
     //save config
@@ -124,38 +109,32 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
         }
     }
 }
-Joystick::~Joystick()
-{
-    if (dev)
-        SDL_JoystickClose(dev);
-}
-
 QString Joystick::juid() const
 {
     return QString("%1:%2:%3").arg(device_index).arg(devName).arg(uid);
 }
 
-void Joystick::updateDevice(bool connected)
+bool Joystick::matches(const JoystickDeviceInfo &info) const
 {
-    if (connected) {
-        if (!dev) {
-            dev = SDL_JoystickOpen(device_index);
-            if (!dev) {
-                apxMsgW() << tr("Can't open joystick") << title() << SDL_GetError();
-                return;
-            }
-            instanceID = SDL_JoystickInstanceID(dev);
-        }
-        if (value().toBool())
-            setActive(true);
-    } else {
-        if (device_index >= 0) {
-            SDL_JoystickClose(SDL_JoystickOpen(device_index));
-        }
-        dev = nullptr;
-        device_index = -1;
-        setActive(false);
-    }
+    return uid == info.uid && devName == info.name && f_axes->size() == info.axes
+           && f_buttons->size() == info.buttons && f_hats->size() == info.hats * 4;
+}
+
+void Joystick::setConnected(int id)
+{
+    instanceID = id;
+    if (value().toBool())
+        setActive(true);
+}
+void Joystick::setDisconnected()
+{
+    instanceID = -1;
+    setActive(false);
+    // controls can't be released anymore
+    for (auto f : f_buttons->facts())
+        f->setActive(false);
+    for (auto f : f_hats->facts())
+        f->setActive(false);
 }
 void Joystick::updateAxis(int i, qreal v)
 {
@@ -190,7 +169,7 @@ void Joystick::updateHat(int i, quint8 v)
             continue;
         QString s = f->text().simplified();
         if (s.isEmpty())
-            return;
+            continue;
         App::jsexec(s);
     }
 }

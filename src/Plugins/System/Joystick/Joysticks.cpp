@@ -24,14 +24,7 @@
 #include <App/AppDirs.h>
 
 #include "Joystick.h"
-#include <SDL.h>
 #include <QFileDialog>
-#include <QtConcurrent>
-
-static int sdlWaitEvent()
-{
-    return SDL_WaitEventTimeout(nullptr, 500);
-}
 
 Joysticks::Joysticks(Fact *parent)
     : Fact(parent,
@@ -71,10 +64,17 @@ Joysticks::Joysticks(Fact *parent)
 
     loadConfigs();
 
-    timer.setInterval(50);
-    //connect(&timer,&QTimer::timeout,this,&Joysticks::update);
-    //timer.start();
-    connect(&watcher, &QFutureWatcher<int>::finished, this, &Joysticks::watcherFinished);
+    // the backend lives in the main thread and reports through the Qt event loop
+    backend = JoystickBackend::create(this);
+    if (backend) {
+        connect(backend, &JoystickBackend::deviceAdded, this, &Joysticks::deviceAdded);
+        connect(backend, &JoystickBackend::deviceRemoved, this, &Joysticks::deviceRemoved);
+        connect(backend, &JoystickBackend::axisChanged, this, &Joysticks::axisChanged);
+        connect(backend, &JoystickBackend::buttonChanged, this, &Joysticks::buttonChanged);
+        connect(backend, &JoystickBackend::hatChanged, this, &Joysticks::hatChanged);
+    } else {
+        qWarning() << "Joysticks are not supported on this platform";
+    }
 
     connect(f_enabled, &Fact::valueChanged, this, &Joysticks::updateEnabled);
     updateEnabled();
@@ -94,158 +94,88 @@ void Joysticks::updateStatus()
 }
 void Joysticks::updateEnabled()
 {
+    if (!backend)
+        return;
+
     if (f_enabled->value().toBool()) {
-        qDebug() << "SDL init...";
-        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
-            qDebug() << "Cannot initialize SDL:" << SDL_GetError();
+        // connected devices are reported through deviceAdded
+        if (!backend->start()) {
+            qWarning() << "Cannot initialize joysticks";
             return;
         }
-        scan();
-        waitEvent();
-        qDebug() << "SDL initialized";
+        qDebug() << "Joysticks enabled";
     } else {
+        backend->stop();
+        map.clear();
         for (auto i : f_list->facts()) {
             i->deleteFact();
             delete i;
         }
         //f_list->deleteChildren();
-        SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
         qDebug() << "Joysticks disabled";
     }
 }
-void Joysticks::watcherFinished()
+
+void Joysticks::deviceAdded(JoystickDeviceInfo info)
 {
-    if (!f_enabled->value().toBool())
-        return;
-
-    //if (watcher.result() == 1) {
-    //    update();
-    //}
-
-    update();
-    waitEvent();
-    //qDebug()<<watcher.result();
-}
-
-void Joysticks::update()
-{
-    SDL_Event event;
-    SDL_PumpEvents();
-    while (SDL_PollEvent(&event)) {
-        processEvent(event);
-    }
-}
-void Joysticks::waitEvent()
-{
-    QFuture<int> future = QtConcurrent::run(sdlWaitEvent);
-    watcher.setFuture(future);
-}
-void Joysticks::processEvent(const SDL_Event &event)
-{
-    //qDebug() << event.type;
-
-    switch (event.type) {
-    case SDL_JOYDEVICEADDED: {
-        scan();
-        int index = event.jdevice.which;
-
-        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(index);
-        QString uid = QByteArray(reinterpret_cast<const char *>(guid.data), sizeof(guid.data))
-                          .toHex()
-                          .toUpper();
-        for (int i = 0; i < f_list->size(); ++i) {
-            Joystick *j = static_cast<Joystick *>(f_list->child(i));
-            if (j->uid != uid)
-                continue;
-            j->updateDevice(true);
-            break;
-        }
-        SDL_JoystickID InstanceID = SDL_JoystickGetDeviceInstanceID(index);
-        if (map.contains(InstanceID)) {
-            apxMsg() << QString("%1 (js%2)")
-                            .arg(map.value(InstanceID)->devName)
-                            .arg(map.value(InstanceID)->device_index);
-        }
-
-    } break;
-    case SDL_JOYDEVICEREMOVED: {
-        int InstanceID = event.jdevice.which;
-        if (map.contains(InstanceID)) {
-            apxMsgW() << QString("%1 (js%2)")
-                             .arg(map.value(InstanceID)->devName)
-                             .arg(map.value(InstanceID)->device_index);
-            map.remove(InstanceID);
-        }
-
-        SDL_JoystickGUID guid = SDL_JoystickGetGUID(SDL_JoystickFromInstanceID(InstanceID));
-        //SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(ID);
-        QString uid = QByteArray(reinterpret_cast<const char *>(guid.data), sizeof(guid.data))
-                          .toHex()
-                          .toUpper();
-        for (int i = 0; i < f_list->size(); ++i) {
-            Joystick *j = static_cast<Joystick *>(f_list->child(i));
-            if (j->uid != uid)
-                continue;
-            j->updateDevice(false);
-            break;
-        }
-    } break;
-    case SDL_JOYAXISMOTION: {
-        Joystick *dev = map.value(event.jaxis.which);
-        if (dev)
-            dev->updateAxis(event.jaxis.axis, static_cast<qreal>(event.jaxis.value) / 32767);
-    } break;
-    case SDL_JOYBUTTONUP: {
-        Joystick *dev = map.value(event.jbutton.which);
-        if (dev)
-            dev->updateButton(event.jbutton.button, false);
-    } break;
-    case SDL_JOYBUTTONDOWN: {
-        Joystick *dev = map.value(event.jbutton.which);
-        if (dev)
-            dev->updateButton(event.jbutton.button, true);
-    } break;
-    case SDL_JOYHATMOTION: {
-        Joystick *dev = map.value(event.jhat.which);
-        if (dev)
-            dev->updateHat(event.jhat.hat, event.jhat.value);
-    } break;
-    }
-}
-
-void Joysticks::scan()
-{
-    QMap<QString, Joystick *> uids;
+    // Find the controller which was connected before, to keep its settings.
+    // Controllers of the same model are distinguished by their number.
+    Joystick *j = nullptr;
+    QSet<int> indexes;
     for (int i = 0; i < f_list->size(); ++i) {
-        Joystick *j = static_cast<Joystick *>(f_list->child(i));
-        uids.insert(j->uid, j);
+        Joystick *c = static_cast<Joystick *>(f_list->child(i));
+        if (c->uid != info.uid || c->devName != info.name)
+            continue;
+        indexes.insert(c->device_index);
+        if (!j && !c->connected() && c->matches(info))
+            j = c;
     }
-    map.clear();
-    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(i);
-        QString uid = QByteArray(reinterpret_cast<const char *>(guid.data), sizeof(guid.data))
-                          .toHex()
-                          .toUpper();
-        Joystick *j = uids.value(uid);
-        if (!j) {
-            j = addJoystick(i, uid);
-        } else {
-            j->device_index = i;
-        }
-        if (j->active())
-            map.insert(j->instanceID, j);
+
+    if (j) {
+        j->setConnected(info.id);
+    } else {
+        int index = 0;
+        while (indexes.contains(index))
+            index++;
+        j = addJoystick(info, index);
     }
+    map.insert(info.id, j);
+    updateStatus();
+
+    apxMsg() << QString("%1 (js%2)").arg(j->devName).arg(j->device_index);
 }
 
-Joystick *Joysticks::addJoystick(int device_index, QString uid)
+void Joysticks::deviceRemoved(int id)
 {
-    Joystick *j = new Joystick(f_list, device_index, uid);
-    connect(j, &Fact::activeChanged, this, [this, j]() {
-        if (j->active())
-            map.insert(j->instanceID, j);
-        else
-            map.remove(j->instanceID);
-    });
+    Joystick *j = map.take(id);
+    if (!j)
+        return;
+    apxMsgW() << QString("%1 (js%2)").arg(j->devName).arg(j->device_index);
+    j->setDisconnected();
+}
+
+void Joysticks::axisChanged(int id, int axis, qreal value)
+{
+    Joystick *j = map.value(id);
+    if (j && j->active())
+        j->updateAxis(axis, value);
+}
+void Joysticks::buttonChanged(int id, int button, bool pressed)
+{
+    Joystick *j = map.value(id);
+    if (j && j->active())
+        j->updateButton(button, pressed);
+}
+void Joysticks::hatChanged(int id, int hat, quint8 mask)
+{
+    Joystick *j = map.value(id);
+    if (j && j->active())
+        j->updateHat(hat, mask);
+}
+
+Joystick *Joysticks::addJoystick(const JoystickDeviceInfo &info, int device_index)
+{
+    Joystick *j = new Joystick(f_list, info, device_index);
     connect(j, &Fact::activeChanged, this, &Joysticks::updateStatus);
     connect(j, &Fact::valueChanged, this, &Joysticks::updateStatus);
     updateStatus();
