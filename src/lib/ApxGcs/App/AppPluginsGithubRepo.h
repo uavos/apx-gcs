@@ -105,7 +105,7 @@ private:
     void init();
     void updateStatus();
     QString infoPath() const;
-    bool writeInfo() const;
+    static bool writeInfo(const QString &path, const QJsonObject &info);
     void fail(const QString &msg);
 
 private slots:

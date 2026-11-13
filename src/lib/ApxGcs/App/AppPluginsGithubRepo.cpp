@@ -286,7 +286,25 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
     }
     const QDir d = dir();
     const QString ext = QFileInfo(_latestAsset).suffix().toLower();
+    const QString infoName = _repo + ".json";
+
+    // the release info is written together with the library: the loader reads it to check the version
+    auto makeInfo = [this](const QString &libName) {
+        QJsonObject info;
+        info["url"] = url();
+        info["owner"] = _owner;
+        info["repo"] = _repo;
+        info["tag"] = _latestTag;
+        info["asset"] = _latestAsset;
+        info["library"] = libName;
+        info["platform"] = platformTags().first();
+        info["plugins"] = QJsonArray{AppPlugins::pluginName(libName)};
+        info["installed"] = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+        return info;
+    };
+
     QString libPath;
+    QJsonObject info;
     if (ext == "zip") {
         // unpack into a staging folder next to the libraries, validate, then replace
         QTemporaryDir staging(d.absoluteFilePath(".part-XXXXXX"));
@@ -304,7 +322,12 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
             fail(tr("No plugin library in").append(": ") + _latestAsset);
             return;
         }
-        // commit: the old libraries are replaced with the archive content
+        info = makeInfo(QFileInfo(libs.first()).fileName());
+        if (!writeInfo(sd.absoluteFilePath(infoName), info)) {
+            fail(tr("Can't write").append(": ") + infoPath());
+            return;
+        }
+        // commit: the old libraries are replaced with the archive content and the new info
         for (const auto &f : AppPlugins::findLibPlugins(d))
             QFile::remove(f);
         for (const auto &fi : sd.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
@@ -320,34 +343,30 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
         }
         libPath = d.absoluteFilePath(QFileInfo(libs.first()).fileName());
     } else {
-        // bare library: <Name>.so.part is renamed when complete
+        // bare library: <Name>.so.part and <repo>.json.part are renamed when both are written
         libPath = d.absoluteFilePath(_latestPlugin + "." + ext);
         const QString partPath = libPath + ".part";
+        const QString infoPartPath = infoPath() + ".part";
         QFile::remove(partPath);
-        if (!data->copy(partPath)) {
-            fail(tr("Can't write").append(": ") + partPath);
+        QFile::remove(infoPartPath);
+        info = makeInfo(QFileInfo(libPath).fileName());
+        if (!data->copy(partPath) || !writeInfo(infoPartPath, info)) {
+            QFile::remove(partPath);
+            QFile::remove(infoPartPath);
+            fail(tr("Can't write").append(": ") + d.absolutePath());
             return;
         }
         QFile::remove(libPath);
-        if (!QFile::rename(partPath, libPath)) {
+        QFile::remove(infoPath());
+        if (!QFile::rename(partPath, libPath) || !QFile::rename(infoPartPath, infoPath())) {
             QFile::remove(partPath);
-            fail(tr("Can't write").append(": ") + libPath);
+            QFile::remove(infoPartPath);
+            fail(tr("Can't write").append(": ") + d.absolutePath());
             return;
         }
     }
 
-    _info = QJsonObject();
-    _info["url"] = url();
-    _info["owner"] = _owner;
-    _info["repo"] = _repo;
-    _info["tag"] = _latestTag;
-    _info["asset"] = _latestAsset;
-    _info["library"] = QFileInfo(libPath).fileName();
-    _info["platform"] = platformTags().first();
-    _info["plugins"] = QJsonArray{AppPlugins::pluginName(libPath)};
-    _info["installed"] = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
-    if (!writeInfo())
-        apxMsgW() << title().append(':') << tr("Can't write") << infoPath();
+    _info = info;
 
     setProgress(-1);
     updateStatus();
@@ -356,13 +375,13 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
     emit installed(libPath);
 }
 
-bool AppPluginsGithubRepo::writeInfo() const
+bool AppPluginsGithubRepo::writeInfo(const QString &path, const QJsonObject &info)
 {
-    QFile f(infoPath());
+    QFile f(path);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
         return false;
-    f.write(QJsonDocument(_info).toJson(QJsonDocument::Indented));
-    return true;
+    const auto data = QJsonDocument(info).toJson(QJsonDocument::Indented);
+    return f.write(data) == data.size() && f.flush();
 }
 
 void AppPluginsGithubRepo::abort()
