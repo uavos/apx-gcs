@@ -68,6 +68,39 @@ QtObject {
         if(ui.checklist === engine) ui.checklist = null
     }
 
+    // ---------------------------------------------------------------- evidence: camera consent, log, snapshots
+    property ChecklistRecord record: ChecklistRecord {}
+    readonly property var cameras: record.camera.names
+    readonly property string recordRoot: record.root
+    property bool consent: false     // the camera question of the first page is answered
+
+    // first page answer: index of the camera, < 0 declines; opens the record of the run
+    function cameraDecision(index)
+    {
+        if(consent) return
+        var unit = apx.fleet.current
+        record.start(unit ? unit.title : "")
+        record.camera.selected = index
+        consent = true
+        note(index >= 0 ? "camera: " + record.camera.name : "camera declined by operator")
+        note("procedure: " + file)
+    }
+    // a note of the check: the telemetry file (msg event, src gcs/checklist) and the run log
+    function note(msg)
+    {
+        if(!msg) return
+        var unit = apx.fleet.current
+        var rec = unit ? unit.child("telemetry") : null
+        rec = rec ? rec.child("recorder") : null
+        if(rec) rec.recordMsg(String(msg), "gcs/checklist", "")
+        record.log(String(msg))
+    }
+    function stepName(index)
+    {
+        return "step " + (index + 1) + (steps[index] ? " (" + steps[index].title + ")" : "")
+    }
+    onMessageChanged: if(message) record.log("info: " + message)
+
     // ---------------------------------------------------------------- launch conditions (from the plugin)
     property string blocked              // why the check cannot be started now, empty when it can
     property bool airborne
@@ -193,15 +226,9 @@ QtObject {
         },
         // live text under the step description
         "info": function(msg) { engine.message = msg ? String(msg) : "" },
-        // note recorded into the telemetry file (msg event, src gcs/checklist);
+        // note recorded into the telemetry file (msg event, src gcs/checklist) and the run log;
         // goes to the recorder directly and never shows in the console
-        "log": function(msg) {
-            if(!msg) return
-            var unit = apx.fleet.current
-            var rec = unit ? unit.child("telemetry") : null
-            rec = rec ? rec.child("recorder") : null
-            if(rec) rec.recordMsg(String(msg), "gcs/checklist", "")
-        },
+        "log": function(msg) { engine.note(msg) },
         // cond() is evaluated every 0.5 s up to sec seconds (0: forever);
         // true -> then() or pass, timeout -> fail
         "poll": function(cond, sec, then) {
@@ -225,6 +252,7 @@ QtObject {
         reset()
         prepare()
         phase = "running"
+        note("check started: " + doc.title)
         next()
     }
     // stop the running check, the current step fails with the reason
@@ -232,7 +260,10 @@ QtObject {
     {
         if(phase !== "running") return
         endStep()
-        setResult(current, "fail", reason ? reason : qsTr("Aborted by operator"))
+        var r = reason ? reason : qsTr("Aborted by operator")
+        setResult(current, "fail", r)
+        note(stepName(current) + " aborted: " + r)
+        record.snapshot(stepName(current) + " aborted")
         finish()
     }
     function finish()
@@ -241,6 +272,7 @@ QtObject {
         _returnTo = -1
         phase = "finished"
         takeoffAllowed = steps.length > 0 && !results.some(function(r){ return r && r.status === "fail" })
+        note("check finished: " + (takeoffAllowed ? "PASSED" : "FAILED"))
     }
     function reset()
     {
@@ -273,12 +305,14 @@ QtObject {
     // restart the current step (also used as Retry after a failure)
     function retry()
     {
+        record.log("retry")
         if(phase !== "running" || !step) return
         goTo(current)
     }
     // repeat an already passed step, then continue with the current one
     function rerun(index)
     {
+        record.log("repeat " + stepName(index))
         if(phase !== "running" || index < 0 || index >= current) return
         if(_returnTo < 0) _returnTo = current
         goTo(index)
@@ -286,6 +320,7 @@ QtObject {
     // go on after a failed step
     function proceed()
     {
+        record.log("continue after failure")
         if(phase !== "running" || !failed) return
         next()
     }
@@ -294,6 +329,7 @@ QtObject {
         endStep()
         current = index
         setResult(current, "", "")
+        note(stepName(current) + " started")
         runStep()
     }
     function runStep()
@@ -347,6 +383,7 @@ QtObject {
         var h = _askHandler
         _askHandler = null
         buttons = []
+        record.log("answer: " + button)
         call(h, button)
     }
     // operator submitted the form
@@ -356,6 +393,7 @@ QtObject {
         var h = _formHandler
         _formHandler = null
         form = null
+        record.log("form: " + JSON.stringify(values))
         call(h, values)
     }
     function pass(msg)
@@ -364,6 +402,8 @@ QtObject {
         _done = true
         endStep()
         setResult(current, "ok", msg)
+        note(stepName(current) + " passed" + (msg ? ": " + msg : ""))
+        record.snapshot(stepName(current) + " passed")
         next()
     }
     function fail(msg)
@@ -371,7 +411,10 @@ QtObject {
         if(_done) return
         _done = true
         endStep()
-        setResult(current, "fail", msg ? msg : (message ? message : qsTr("Check failed")))
+        var r = msg ? msg : (message ? message : qsTr("Check failed"))
+        setResult(current, "fail", r)
+        note(stepName(current) + " FAILED: " + r)
+        record.snapshot(stepName(current) + " failed")
     }
     // stop everything the step script has requested
     function endStep()

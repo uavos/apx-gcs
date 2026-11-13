@@ -79,10 +79,20 @@ Window {
         return (index === current && phase === "running") ? "running" : ""
     }
 
+    // first page: camera consent, the procedure is shown once answered
+    ChecklistCameraPage {
+        anchors.fill: parent
+        anchors.margins: sp*2
+        visible: !checklist.consent
+        checklist: control.checklist
+        theme: theme
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: sp*2
         spacing: sp*2
+        visible: checklist.consent
 
         // header: procedure title, click shows the description page
         RowLayout {
