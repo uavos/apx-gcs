@@ -22,6 +22,8 @@ protected:
 
     virtual bool forwardToPHY(QByteArray data) = 0;
 
+    virtual void restorePersistent();
+
 private slots:
     void onCurrentUnitChanged();
     void onPdataSerialData(quint8 portID, QByteArray data);

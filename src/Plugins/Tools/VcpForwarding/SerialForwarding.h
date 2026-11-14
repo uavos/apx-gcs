@@ -18,6 +18,7 @@ private:
     QSerialPort m_port;
 
     bool forwardToPHY(QByteArray data) override;
+    void restorePersistent() override;
 
 private slots:
     void readyRead();
