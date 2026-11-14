@@ -34,6 +34,12 @@ RowLayout {
 
     spacing: Style.spacing*2
 
+    //uplink blocked
+    ReadOnlyLabel {
+        Layout.fillHeight: true
+        visible: apx.datalink.readonly.value
+    }
+
     //warnings fact
     WarningMessage {
         Layout.fillHeight: true
