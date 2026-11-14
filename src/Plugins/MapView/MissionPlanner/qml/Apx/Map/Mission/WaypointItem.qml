@@ -63,9 +63,12 @@ MissionObject {
     property bool showDetails: interacting || active || f_distance===0 || (map.metersToPixelsFactor*f_distance)>150
 
     // Highlight set from outside through the options of the waypoint (e.g. by a plugin):
-    // "alarm" marks the point, "pathColor" overrides the colour of the path to it
-    alarmed: (fact && fact.opts.alarm) ? true : false
-    property var pathColorOverride: fact ? fact.opts.pathColor : undefined
+    // "alarm" marks the point, "pathColor" overrides the colour of the path to it,
+    // "denyZone" and "denyPath" are set by the mission deny zones check
+    alarmed: (fact && (fact.opts.alarm || fact.opts.denyZone)) ? true : false
+    property var pathColorOverride: fact ? (fact.opts.pathColor ? fact.opts.pathColor
+                                                                : (fact.opts.denyPath ? "red" : undefined))
+                                         : undefined
 
     //property bool pathVisibleOnMap: true
     //property Item pathItem

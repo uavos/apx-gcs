@@ -67,6 +67,7 @@ private:
     bool _blockUpdateRoutingFacts;
 
     QUrl getUrl() const;
+    uint baud() const;
 
 private slots:
     void updateEnabled();

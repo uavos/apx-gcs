@@ -179,9 +179,15 @@ Item {
         anchors.margins: margins
         FleetListView {
             id: fleet
+            visible: apx.fleet.visible
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             Layout.fillWidth: true
             Layout.fillHeight: true
+        }
+        Item {
+            // keep the task bar at the right edge while the fleet list is hidden
+            visible: !fleet.visible
+            Layout.fillWidth: true
         }
         TaskBar {
             id: taskbar
