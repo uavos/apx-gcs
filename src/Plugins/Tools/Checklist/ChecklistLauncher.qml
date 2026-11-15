@@ -34,7 +34,6 @@ QtObject {
     property string file       // procedure of the current unit
     property string callsign
     property string blocked    // why the check cannot be started now, empty when it can
-    property bool airborne
     property bool autoOpen     // open the checklist as soon as the check becomes possible
 
     // the button is shown while the check can be started; an open checklist survives its disappearance
@@ -61,7 +60,6 @@ QtObject {
         sourceComponent: Checklist {
             file: launcher.file
             blocked: launcher.blocked
-            airborne: launcher.airborne
             onClosed: checklist.active = false
         }
     }

@@ -14,9 +14,11 @@ shown in the task bar; it opens the window with the procedure. No file, no butto
 
 The check is started on the ground only: the button and **Start** are available while the
 unit is in TAXI, not in the air (`cmd.ins.inair`, `est.sys.mode`) and the uplink is enabled;
-otherwise the window names the reason. Mode changes during the run are left to the
-procedure (its steps switch EMG, RPV, TAKEOFF themselves), but the check is aborted as
-soon as the unit gets airborne. The main layout flag `checklistAuto` (set by the lite
+otherwise the window names the reason. A running check is never interrupted by the engine:
+mode changes and the takeoff are left to the procedure (its steps switch EMG, RPV, TAKEOFF
+themselves, and may end the check with the launch). A procedure that must keep the aircraft
+on the ground while it runs blocks the takeoff itself (see the guard example below). The
+main layout flag `checklistAuto` (set by the lite
 profile, `resources/layouts/lite/GroundControl.qml`) opens the checklist by itself when
 the unit enters TAXI; the stock layout only shows the button.
 
@@ -88,3 +90,29 @@ Markdown format, nothing else is parsed:
     with nothing pending passes.
 
 A step without a script shows a single Confirm button.
+
+Blocking the takeoff while the check runs: the takeoff sequence is started by `cmd.proc.stage`,
+so a guard connected to the stage change forces it back to 0 while the check is running and in
+the TAKEOFF mode; it does nothing once the window is closed or the check is over, and a step
+of the procedure is free to launch the aircraft after the check has passed. Declared in the
+first step; the `typeof` check makes the connection once, so it survives Restart:
+
+````
+```js
+if (typeof takeoffGuard === "undefined") {
+    takeoffGuard = function() {
+        var c = ui.checklist
+        if (!c || c.phase !== "running") return
+        if (cmd.proc.mode !== proc_mode_TAKEOFF) return
+        if (cmd.proc.stage > 0) {
+            cmd.proc.stage = 0
+            c.api.log("takeoff blocked: the check is running")
+        }
+    }
+    apx.fleet.current.mandala.cmd.proc.stage.valueChanged.connect(takeoffGuard)
+}
+```
+````
+
+The guard is connected to the unit selected when the step ran; after switching to another
+unit the first step is to be repeated.

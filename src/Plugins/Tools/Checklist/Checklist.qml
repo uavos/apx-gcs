@@ -103,8 +103,6 @@ QtObject {
 
     // ---------------------------------------------------------------- launch conditions (from the plugin)
     property string blocked              // why the check cannot be started now, empty when it can
-    property bool airborne
-    onAirborneChanged: if(airborne) abort(qsTr("The aircraft is in the air"))
 
     // ---------------------------------------------------------------- procedure
     property string file                 // markdown procedure, set by the launcher

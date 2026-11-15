@@ -38,8 +38,9 @@ import Apx.Application
 
     The check is started on the ground only: the button is shown and Start works while the
     unit is in TAXI, not in the air and the uplink is enabled (`blocked` names the reason
-    otherwise). A running check is aborted when the unit gets airborne; mode changes during
-    the run are the procedure's own business. With `checklistAuto` set by the main layout
+    otherwise). A running check is never interrupted by the engine: modes and takeoff are
+    the procedure's own business, and a procedure that must keep the aircraft on the ground
+    blocks the takeoff itself (see README). With `checklistAuto` set by the main layout
     (the lite profile) the checklist opens itself when the unit enters TAXI.
 */
 
@@ -102,7 +103,6 @@ AppPlugin {
             file: plugin.file
             callsign: plugin.callsign
             blocked: plugin.blocked
-            airborne: plugin.airborne
             autoOpen: plugin.autoOpen
         }
     }
