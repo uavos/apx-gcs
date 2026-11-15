@@ -164,12 +164,12 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
         //f_connection
         switch (f_type->value().toInt()) {
         case SERIAL:
-            f_connection = new DatalinkSerial(this, f_url->text(), f_baud->value().toUInt());
+            f_connection = new DatalinkSerial(this, f_url->text(), baud());
             connect(f_url, &Fact::valueChanged, f_connection, [this]() {
                 qobject_cast<DatalinkSerial *>(f_connection)->setDevName(f_url->text());
             });
             connect(f_baud, &Fact::valueChanged, f_connection, [this]() {
-                qobject_cast<DatalinkSerial *>(f_connection)->setBaud(f_baud->value().toUInt());
+                qobject_cast<DatalinkSerial *>(f_connection)->setBaud(baud());
             });
             connect(f_codec, &Fact::valueChanged, f_connection, [this]() {
                 qobject_cast<DatalinkSerial *>(f_connection)
@@ -245,7 +245,7 @@ QUrl DatalinkPort::getUrl() const
         // embed serial parameters into url
         QUrlQuery q;
         q.addQueryItem("port", f_url->text());
-        q.addQueryItem("baud", QString::number(f_baud->value().toUInt()));
+        q.addQueryItem("baud", QString::number(baud()));
         q.addQueryItem("codec", f_codec->text());
         QUrl url;
         url.setScheme("serial");
@@ -285,6 +285,12 @@ QUrl DatalinkPort::getUrl() const
 
     // qDebug() << f_url->text() << "->" << url.toString();
     return url;
+}
+
+uint DatalinkPort::baud() const
+{
+    uint v = f_baud->value().toUInt();
+    return v ? v : 460800;
 }
 
 void DatalinkPort::updateEnabled()
@@ -373,6 +379,9 @@ void DatalinkPort::fromJson(const QJsonValue &jsv)
         }
         if (q.hasQueryItem("baud")) {
             jso["baud"] = q.queryItemValue("baud");
+        }
+        if (jso["baud"].toVariant().toUInt() == 0) {
+            jso["baud"] = "460800";
         }
         if (q.hasQueryItem("codec")) {
             jso["codec"] = q.queryItemValue("codec").toUpper();

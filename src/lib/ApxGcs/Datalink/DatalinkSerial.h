@@ -62,6 +62,7 @@ private:
     QTimer openTimer;
     int scanIdx;
     QString _failedPath;
+    QString _lastError;
 
     quint8 _rxbuf_raw[xbus::size_packet_max * 2];
 
