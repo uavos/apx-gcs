@@ -61,7 +61,7 @@ QtObject {
         window.requestActivate()
     }
 
-    // reachable from QML and scripts as ui.checklist while the window is open (phase, takeoffAllowed)
+    // reachable from QML and scripts as ui.checklist while the window is open (phase, result)
     Component.onCompleted: ui.checklist = engine
     Component.onDestruction: {
         endStep()
@@ -166,7 +166,7 @@ QtObject {
     property string message: ""      // live text of the running step
     property var buttons: []         // [{text, kind}] requested by the step script
     property var form: null          // [{label, type, options, value}] requested by the step script
-    property bool takeoffAllowed: false
+    property string result: ""       // "" while the check has not finished, then "passed" | "failed"
 
     readonly property var step: (current >= 0 && current < steps.length) ? steps[current] : null
     readonly property bool failed: !!(step && results[current] && results[current].status === "fail")
@@ -269,14 +269,14 @@ QtObject {
         endStep()
         _returnTo = -1
         phase = "finished"
-        takeoffAllowed = steps.length > 0 && !results.some(function(r){ return r && r.status === "fail" })
-        note("check finished: " + (takeoffAllowed ? "PASSED" : "FAILED"))
+        result = (steps.length > 0 && !results.some(function(r){ return r && r.status === "fail" })) ? "passed" : "failed"
+        note("check finished: " + result.toUpperCase())
     }
     function reset()
     {
         endStep()
         phase = "idle"
-        takeoffAllowed = false
+        result = ""
         current = -1
         _returnTo = -1
         results = []

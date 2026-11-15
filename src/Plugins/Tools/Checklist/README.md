@@ -44,7 +44,8 @@ Files, loaded in stages so that nothing exists before it is needed:
   unit and loads the launcher while one exists;
 - `ChecklistLauncher.qml` - stage 2, the task bar button; loads the checklist on press;
 - `Checklist.qml` - stage 3, the engine and its window, destroyed when the window is closed.
-  Reachable from QML and scripts as `ui.checklist` (`phase`, `takeoffAllowed`) while open;
+  Reachable from QML and scripts as `ui.checklist` (`phase`, `result`) while open; `result`
+  is `""` until the check has finished, then `"passed"` (every step ok) or `"failed"`;
 - `ChecklistRecord.qml` - the record of a run: folder, text log, snapshots;
   `ChecklistCamera.qml` - the snapshot camera (QtMultimedia), `ui/ChecklistCameraPage.qml`
   the consent page;

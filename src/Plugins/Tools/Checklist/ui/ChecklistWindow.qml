@@ -111,8 +111,8 @@ Window {
             }
             Text {
                 visible: phase === "finished"
-                text: checklist.takeoffAllowed ? qsTr("CHECK PASSED") : qsTr("CHECK FAILED")
-                color: checklist.takeoffAllowed ? theme.ok : theme.fail
+                text: checklist.result === "passed" ? qsTr("CHECK PASSED") : qsTr("CHECK FAILED")
+                color: checklist.result === "passed" ? theme.ok : theme.fail
                 font: apx.font_narrow(theme.fontStep, true)
             }
         }
