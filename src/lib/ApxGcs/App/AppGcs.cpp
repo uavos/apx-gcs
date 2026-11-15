@@ -20,9 +20,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "AppGcs.h"
-#include "AppPluginsGithub.h"
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
+#include <AppPluginsGithub.h>
 #include <QFileDialog>
 
 AppGcs *AppGcs::_instance = nullptr;

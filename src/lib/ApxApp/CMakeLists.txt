@@ -1,0 +1,11 @@
+apx_lib(
+    SRCS
+    "**/*.[ch]*"
+    "*.[ch]*"
+    INCLUDES
+    .
+    DEPENDS
+    lib.ApxFw
+    QT
+    Network
+)
