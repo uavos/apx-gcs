@@ -184,6 +184,12 @@ void AppPluginsGithub::removeRepo(AppPluginsGithubRepo *r)
         r->abort();
     const QString path = r->dir().absolutePath();
 
+    // the entry is kept when the folder can't be deleted, so the removal can be retried
+    if (QDir(path).exists() && !QDir(path).removeRecursively()) {
+        apxMsgW() << title().append(':') << tr("Can't remove").append(": ") << path;
+        return;
+    }
+
     auto plugins = App::appPlugins();
     bool restart = false;
     for (auto p : QList<AppPlugin *>(*plugins)) {
@@ -195,7 +201,6 @@ void AppPluginsGithub::removeRepo(AppPluginsGithubRepo *r)
         }
         plugins->removePlugin(p);
     }
-    QDir(path).removeRecursively();
     apxMsg() << title().append(':') << tr("Removed") << r->repo();
     if (restart)
         apxMsgW() << title().append(':')
