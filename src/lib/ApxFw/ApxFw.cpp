@@ -24,7 +24,7 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 
-#include "quazip/JlCompress.h"
+#include <quazip/JlCompress.h>
 
 #include <ApxMisc/JsonHelpers.h>
 #include <Database/NodesReqMeta.h>

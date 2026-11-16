@@ -6,8 +6,10 @@ apx_lib(
     DEPENDS
     lib.ApxData
     lib.ApxFw
+    lib.ApxApp
     QT
     Widgets
+    Network
     SerialPort
     Positioning
     Bluetooth

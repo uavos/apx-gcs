@@ -55,7 +55,7 @@ RowLayout {
                     active: parent.active //|| SwipeView.isNextItem || SwipeView.isPreviousItem
                     width: pagesView.width
                     height: pagesView.height
-                    source: "Page"+name+".qml"
+                    source: model.source ? model.source : "Page"+name+".qml"
                 }
             }
         }
@@ -89,8 +89,24 @@ RowLayout {
 
     ListModel {
         id: pagesModel
-        ListElement { name: "UV"; mode: "UAV" }
-        ListElement { name: "RC"; mode: "EMG,RPV" }
-        ListElement { name: "FL"; mode: "" }
+        ListElement { name: "UV"; mode: "UAV"; source: "" }
+        ListElement { name: "RC"; mode: "EMG,RPV"; source: "" }
+        ListElement { name: "FL"; mode: ""; source: "" }
+    }
+
+    // pages registered by plugins via groundControl.addControlPage()
+    readonly property var pluginPages: (typeof(groundControl) !== 'undefined' && groundControl.controlPages) ? groundControl.controlPages : []
+    onPluginPagesChanged: updatePages()
+    Component.onCompleted: updatePages()
+    function updatePages()
+    {
+        for(var i=pagesModel.count-1;i>=0;--i){
+            if(pagesModel.get(i).source)
+                pagesModel.remove(i)
+        }
+        for(var j=0;j<pluginPages.length;++j){
+            var p = pluginPages[j]
+            pagesModel.append({ "name": p.name, "mode": p.mode ? p.mode : "", "source": String(p.source) })
+        }
     }
 }

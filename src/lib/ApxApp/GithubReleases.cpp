@@ -170,6 +170,66 @@ void GithubReleases::responseReleaseInfo()
     }*/
 }
 
+void GithubReleases::requestReleases()
+{
+    _releases = QJsonArray();
+    _releasesPages = 0;
+    requestReleasesPage(
+        QUrl(QString("https://api.github.com/repos/%1/releases?per_page=100").arg(_repo)));
+}
+
+void GithubReleases::requestReleasesPage(QUrl url)
+{
+    _releasesPages++;
+    _reply = request(url);
+    connect(_reply, &QNetworkReply::finished, this, &GithubReleases::responseReleases);
+}
+
+void GithubReleases::responseReleases()
+{
+    QNetworkReply *reply = getReply(sender());
+    if (!reply)
+        return;
+
+    const bool failed = reply->error(); // already reported by getReply
+
+    QJsonParseError jserr;
+    QJsonDocument json(QJsonDocument::fromJson(reply->readAll(), &jserr));
+    if (jserr.error != QJsonParseError::NoError) {
+        emit finished();
+        if (!failed)
+            responseError(jserr.errorString());
+        return;
+    }
+    if (json.isObject()) {
+        // {"message": "Not Found"}
+        emit finished();
+        if (!failed)
+            responseError(json["message"].toString());
+        return;
+    }
+    if (failed) {
+        emit finished();
+        return;
+    }
+
+    for (const auto &v : json.array())
+        _releases.append(v);
+
+    // next page: Link: <url>; rel="next", <url>; rel="last"
+    static const QRegularExpression re_next(R"(<([^>]+)>;\s*rel="next")");
+    const auto m = re_next.match(QString::fromUtf8(reply->rawHeader("Link")));
+    if (m.hasMatch() && _releasesPages < 10) {
+        requestReleasesPage(QUrl(m.captured(1)));
+        return;
+    }
+
+    qDebug() << _repo << "releases:" << _releases.size() << "pages:" << _releasesPages;
+
+    emit finished();
+    emit releasesInfo(_releases);
+}
+
 void GithubReleases::requestDownload(QUrl url)
 {
     _reply = request(url);

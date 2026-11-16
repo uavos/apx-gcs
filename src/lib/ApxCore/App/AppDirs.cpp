@@ -86,6 +86,11 @@ QDir AppDirs::userPlugins()
     return versioned_dir(QDir(user().absoluteFilePath("Plugins")));
 }
 
+QDir AppDirs::githubPlugins()
+{
+    return QDir(userPlugins().absoluteFilePath("github"));
+}
+
 QDir AppDirs::firmware()
 {
     return versioned_dir(QDir(AppDirs::user().absoluteFilePath("Firmware")));
