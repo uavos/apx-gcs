@@ -378,10 +378,10 @@ bool App::saveJson(const QString &fileName, const QString &json)
     QFile f(path);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
         return false;
-    f.write(json.toUtf8());
-    if (!json.endsWith('\n'))
-        f.write("\n");
-    return true;
+    auto data = json.toUtf8();
+    if (!data.endsWith('\n'))
+        data.append('\n');
+    return f.write(data) == data.size() && f.flush();
 }
 void App::setGlobalProperty(const QString &path, const QVariant &value)
 {
