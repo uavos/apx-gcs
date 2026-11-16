@@ -332,8 +332,12 @@ void AppPluginsGithub::repoFailed()
         return;
     }
     // the failed release check (a failed download is not counted)
-    _checking.remove(r);
+    if (!_checking.remove(r))
+        return;
     updateStatus();
+    // a failed last check must not suppress the updates found by the other repositories
+    if (!f_auto->value().toBool() && _checking.isEmpty() && f_updates->enabled())
+        f_updates->trigger();
 }
 
 // updates
