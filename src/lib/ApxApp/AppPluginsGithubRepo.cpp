@@ -27,6 +27,28 @@
 #include <App/AppPlugins.h>
 
 #include <quazip/JlCompress.h>
+#include <quazip/quazip.h>
+#include <quazip/quazipfileinfo.h>
+
+// The extractor restores symlinks and checks paths only lexically:
+// archives with symlinks or entries leading outside the folder are rejected (zip-slip).
+static bool archiveIsSafe(const QString &zipPath)
+{
+    QuaZip zip(zipPath);
+    if (!zip.open(QuaZip::mdUnzip))
+        return false;
+    for (bool more = zip.goToFirstFile(); more; more = zip.goToNextFile()) {
+        QuaZipFileInfo64 fi;
+        if (!zip.getCurrentFileInfo(&fi))
+            return false;
+        if (((fi.externalAttr >> 16) & 0xF000) == 0xA000) // unix S_IFLNK
+            return false;
+        const QString clean = QDir::cleanPath(fi.name);
+        if (clean == ".." || clean.startsWith("../") || QDir::isAbsolutePath(clean))
+            return false;
+    }
+    return zip.getZipError() == UNZ_OK;
+}
 
 AppPluginsGithubRepo::AppPluginsGithubRepo(Fact *parent, const QJsonObject &info)
     : Fact(parent,
@@ -310,6 +332,10 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
         QTemporaryDir staging(d.absoluteFilePath(".part-XXXXXX"));
         if (!staging.isValid()) {
             fail(tr("Can't create folder").append(": ") + d.absolutePath());
+            return;
+        }
+        if (!archiveIsSafe(data->fileName())) {
+            fail(tr("Unsafe archive").append(": ") + _latestAsset);
             return;
         }
         const QDir sd(staging.path());
