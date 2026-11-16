@@ -47,13 +47,27 @@ GroundControl {
     // menu entries and settings hidden from the user
     readonly property var hiddenFacts: [
         apx.sysmenu.child("windows"),
-        apx.sysmenu.child("fleet"),
         apx.windows,
-        apx.fleet,
         apx.settings.application.child("plugins"),
         apx.settings.application.child("appupdate"),
         apx.sysmenu.child("app").child("update"),
     ]
+
+    // unit menu entries hidden from the user, for every unit incl. discovered later
+    readonly property var hiddenUnitFacts: ["mandala", "nodes"]
+
+    function hideUnitFacts(unit) {
+        for (var i = 0; i < hiddenUnitFacts.length; ++i) {
+            var f = unit.child(hiddenUnitFacts[i])
+            if (f)
+                f.visible = false
+        }
+    }
+
+    Connections {
+        target: apx.fleet
+        function onUnitRegistered(unit) { hideUnitFacts(unit) }
+    }
 
     Component.onCompleted: {
         var plugins = apx.settings.application.child("plugins")
@@ -81,5 +95,6 @@ GroundControl {
             if (hiddenFacts[k])
                 hiddenFacts[k].visible = false
         }
-    }
+        for (var u = 0; u < apx.fleet.size; ++u)
+            hideUnitFacts(apx.fleet.child(u))    }
 }

@@ -42,6 +42,12 @@ SerialForwarding::SerialForwarding(Fact *parent)
     QTimer::singleShot(1234, this, &SerialForwarding::updatePortsList);
 }
 
+void SerialForwarding::restorePersistent()
+{
+    updatePortsList();
+    PortForwarding::restorePersistent();
+}
+
 void SerialForwarding::updatePortsList()
 {
     auto ports = QSerialPortInfo::availablePorts();
