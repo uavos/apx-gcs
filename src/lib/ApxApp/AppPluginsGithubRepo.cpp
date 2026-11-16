@@ -405,6 +405,11 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
             fail(tr("Can't write").append(": ") + d.absolutePath());
             return;
         }
+        // the previous repository libraries are replaced, not accumulated (as the zip path does)
+        for (const auto &f : AppPlugins::findLibPlugins(d)) {
+            if (f != libPath)
+                QFile::remove(f);
+        }
     }
 
     _info = info;
