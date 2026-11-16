@@ -24,6 +24,7 @@
 #include <App/App.h>
 #include <App/AppDirs.h>
 #include <App/AppLog.h>
+#include <App/AppPlugin.h>
 #include <App/AppPlugins.h>
 
 #include <quazip/JlCompress.h>
@@ -348,6 +349,15 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
             fail(tr("No plugin library in").append(": ") + _latestAsset);
             return;
         }
+        // the archive must not take over plugins living outside this repository
+        for (const auto &lib : libs) {
+            const QString pname = AppPlugins::pluginName(lib);
+            const auto p = App::appPlugins()->plugin(pname);
+            if (p && !p->libFileName.startsWith(d.absolutePath() + "/")) {
+                fail(tr("Plugin already exists").append(": ") + pname);
+                return;
+            }
+        }
         info = makeInfo(QFileInfo(libs.first()).fileName());
         if (!writeInfo(sd.absoluteFilePath(infoName), info)) {
             fail(tr("Can't write").append(": ") + infoPath());
@@ -370,6 +380,11 @@ void AppPluginsGithubRepo::downloadFinished(QString assetName, QFile *data)
         libPath = d.absoluteFilePath(QFileInfo(libs.first()).fileName());
     } else {
         // bare library: <Name>.so.part and <repo>.json.part are renamed when both are written
+        const auto p = App::appPlugins()->plugin(_latestPlugin);
+        if (p && !p->libFileName.startsWith(d.absolutePath() + "/")) {
+            fail(tr("Plugin already exists").append(": ") + _latestPlugin);
+            return;
+        }
         libPath = d.absoluteFilePath(_latestPlugin + "." + ext);
         const QString partPath = libPath + ".part";
         const QString infoPartPath = infoPath() + ".part";
