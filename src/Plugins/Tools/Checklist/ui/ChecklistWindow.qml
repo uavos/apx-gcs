@@ -67,6 +67,26 @@ Window {
     readonly property bool shownIsCurrent: phase === "running" && viewed === current
     readonly property bool shownFailed: !!(shownResult && shownResult.status === "fail")
 
+    // body markdown of the shown step; `![alt](url)` images are rendered as Image items
+    // below the text, since the markdown renderer of Text skips them
+    readonly property string shownBody: shownIsCurrent ? checklist.stepBody
+                                                       : (shown ? shown.body : checklist.doc.intro)
+    function bodyImages(s)
+    {
+        var out = [], re = /!\[[^\]]*\]\(([^)\s]+)\)/g, m
+        while((m = re.exec(s)))
+            out.push(resolveUrl(m[1]))
+        return out
+    }
+    // a relative image path is relative to the procedure file folder
+    function resolveUrl(u)
+    {
+        if(/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u)) return u // file:, qrc:, http: ...
+        if(u.startsWith("/")) return "file://" + u
+        var f = String(checklist.file)
+        return "file://" + f.substring(0, f.lastIndexOf("/") + 1) + u
+    }
+
     // only the steps already reached can be opened while running
     function selectable(index)
     {
@@ -196,11 +216,24 @@ Window {
                         Layout.fillWidth: true
                         // the running step's body is expanded on activation: read it from stepBody,
                         // body mutations inside `steps` are invisible to bindings
-                        text: (shownIsCurrent ? checklist.stepBody : (shown ? shown.body : checklist.doc.intro)).replace(/`([^`]+)`/g, "**$1**")
+                        text: control.shownBody.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/`([^`]+)`/g, "**$1**")
                         textFormat: Text.MarkdownText
                         color: theme.text
                         font: apx.font_narrow(theme.fontBody)
                         wrapMode: Text.Wrap
+                    }
+                    // images of the step body, scaled down to the window, never upscaled
+                    Repeater {
+                        model: control.bodyImages(control.shownBody)
+                        Image {
+                            Layout.fillWidth: true
+                            Layout.maximumWidth: sourceSize.width > 0 ? sourceSize.width : 4096
+                            Layout.preferredHeight: sourceSize.width > 0
+                                                    ? width * sourceSize.height / sourceSize.width : 0
+                            fillMode: Image.PreserveAspectFit
+                            source: modelData
+                            asynchronous: true
+                        }
                     }
                     // live message of the running step
                     Text {
