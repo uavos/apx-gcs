@@ -278,10 +278,15 @@ void AppPlugins::loadGithubRepo(const QString &path)
     const auto files = findLibPlugins(QDir(path));
     if (!checkGithubRepo(path, files))
         return;
+    // register every entry first, as the startup does: the dependency lookup
+    // of a loading plugin then sees the whole set
+    QList<AppPlugin *> added;
     for (const auto &f : files) {
         AppPlugin *p = addPlugin(f);
-        if (!p)
-            continue;
+        if (p)
+            added.append(p);
+    }
+    for (auto p : added) {
         if (p->f_enabled->value().toBool()) {
             p->load();
         } else {
