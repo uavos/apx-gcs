@@ -69,6 +69,18 @@ GroundControl {
         function onUnitRegistered(unit) { hideUnitFacts(unit) }
     }
 
+    // Fleet menu lists proxies of the current unit facts, which do not follow
+    // the visibility of the originals and are recreated on every unit change
+    readonly property var unitMenu: apx.sysmenu.child("fleet").child("unit")
+
+    Connections {
+        target: unitMenu
+        function onItemInserted(item) {
+            if (hiddenUnitFacts.indexOf(item.name) >= 0)
+                item.visible = false
+        }
+    }
+
     Component.onCompleted: {
         var plugins = apx.settings.application.child("plugins")
         for (var i = 0; i < disabledPlugins.length; ++i) {
@@ -96,5 +108,7 @@ GroundControl {
                 hiddenFacts[k].visible = false
         }
         for (var u = 0; u < apx.fleet.size; ++u)
-            hideUnitFacts(apx.fleet.child(u))    }
+            hideUnitFacts(apx.fleet.child(u))
+        hideUnitFacts(unitMenu)
+    }
 }
