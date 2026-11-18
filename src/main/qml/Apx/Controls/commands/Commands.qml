@@ -47,7 +47,7 @@ Rectangle {
     property APX.Unit unit: apx.fleet.current
 
     //sizes
-    readonly property real buttonHeight: height/10
+    readonly property real buttonHeight: Math.min(height, width)/10
     readonly property real buttonSpacing: buttonHeight/10
 
     property real size: Math.max(50,width)*0.08

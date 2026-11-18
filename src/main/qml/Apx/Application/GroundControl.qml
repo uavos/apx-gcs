@@ -73,7 +73,12 @@ Item {
     // its natural width
     property var panelSizes: ({})
 
-    // do not let the user resize panels
+    // order of the top panels, left to right;
+    // "instruments" is the block of instruments plugins (terminal)
+    property var panelOrder: panelNames
+    readonly property var panelNames: ["status", "pfd", "numbers", "commands", "instruments"]
+
+    // do not let the user resize and move panels
     property bool layoutLocked: false
 
     // sizes adjusted by the user in the layout edit mode,
@@ -96,10 +101,52 @@ Item {
     // size<=0 returns the panel to its default width
     function setPanelSize(name, size)
     {
+        var sizes = {}
+        sizes[name] = size
+        setPanelSizes(sizes)
+    }
+    function setPanelSizes(sizes)
+    {
         var u = JSON.parse(JSON.stringify(userLayout))
         if(!u.panels) u.panels = {}
-        if(size>0) u.panels[name] = Math.round(size*10000)/10000
-        else delete u.panels[name]
+        for(var name in sizes){
+            var size = sizes[name]
+            if(size>0) u.panels[name] = Math.round(size*10000)/10000
+            else delete u.panels[name]
+        }
+        userLayout = u
+        layoutSaveTimer.restart()
+    }
+    // size set by the user, zero when the panel has its default width
+    function userPanelSize(name)
+    {
+        var v = userLayout.panels ? userLayout.panels[name] : 0
+        return v>0 ? v : 0
+    }
+    // every panel listed once, unknown names dropped, missing appended
+    function validOrder(order)
+    {
+        var list = []
+        if(Array.isArray(order)){
+            for(var i=0;i<order.length;++i){
+                var n = order[i]
+                if(panelNames.indexOf(n)>=0 && list.indexOf(n)<0)
+                    list.push(n)
+            }
+        }
+        for(i=0;i<panelNames.length;++i){
+            if(list.indexOf(panelNames[i])<0)
+                list.push(panelNames[i])
+        }
+        return list
+    }
+    readonly property var layoutOrder: validOrder((!layoutLocked && userLayout.order) ? userLayout.order : panelOrder)
+    function setPanelOrder(order)
+    {
+        var u = JSON.parse(JSON.stringify(userLayout))
+        order = validOrder(order)
+        if(order.join()===validOrder(panelOrder).join()) delete u.order
+        else u.order = order
         userLayout = u
         layoutSaveTimer.restart()
     }
@@ -133,7 +180,7 @@ Item {
     {
         layoutSaveTimer.stop()
         var u = userLayout
-        var empty = !(u.instruments>0) && !(u.panels && Object.keys(u.panels).length>0)
+        var empty = !(u.instruments>0) && !(u.panels && Object.keys(u.panels).length>0) && !u.order
         if(empty) application.prefs.removeFile(layoutFile)
         else application.prefs.saveFile(layoutFile, JSON.stringify(u, null, 2))
     }

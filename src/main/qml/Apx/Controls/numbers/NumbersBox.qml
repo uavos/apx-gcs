@@ -36,6 +36,8 @@ Rectangle {
 
     property real itemSize: Style.buttonSize*0.7
     property bool showEditButton: true
+    // stretch items to the width of the box
+    property bool fillWidth: false
 
     property alias settingsName: numbersModel.settingsName
     property alias defaults: numbersModel.defaults
@@ -45,6 +47,7 @@ Rectangle {
         id: numbersModel
         itemHeight: control.itemSize
         fixedWidth: true
+        itemWidth: control.fillWidth?control.width:0
         defaults: [
             {"bind":"est.usr.u1","prec":"2"},
             {"bind":"est.usr.u2","prec":"2"},

@@ -39,6 +39,8 @@ ObjectModel {
 
     property bool light: false
     property bool fixedWidth: false
+    // items are stretched to this width when set
+    property real itemWidth: 0
 
     property string settingsName: "default"
 
@@ -179,6 +181,7 @@ ObjectModel {
             }*/
 
             obj.height=Qt.binding(function(){return itemHeight})
+            obj.width=Qt.binding(function(){return model.itemWidth>0?model.itemWidth:this.implicitWidth})
             for(var p in n){
                 if(p==="visible")continue
                 if(typeof(obj[p])=='undefined')continue

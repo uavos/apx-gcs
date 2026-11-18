@@ -28,11 +28,12 @@ GroundControl {
 
     instrumentsScale: 0.25              // panels height, fraction of the window width
     panelSizes: ({ "pfd": 0.4 })        // panels widths: status, pfd, numbers, commands
-    layoutLocked: false                 // true to forbid resizing by the user
+    panelOrder: ["instruments", "pfd", "numbers", "commands", "status"] // left to right
+    layoutLocked: false                 // true to forbid resizing and moving by the user
 }
 ```
 
-The user resizes the panels by dragging the separators after pressing the `Adjust panels size` button of the task bar (double click on a separator restores the default size). The result is saved to `Documents/UAVOS/Preferences/layout.json` and takes precedence over the layout file values, unless `layoutLocked` is set.
+The user resizes the panels by dragging the separators after pressing the `Adjust panels size` button of the task bar (double click on a separator restores the default size) and moves a panel to another place by dragging the icon in its center. The result is saved to `Documents/UAVOS/Preferences/layout.json` and takes precedence over the layout file values, unless `layoutLocked` is set.
 
 ## Examples
 

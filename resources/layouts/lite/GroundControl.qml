@@ -19,7 +19,7 @@ GroundControl {
     // nodes button, controls group and choke in the commands panel
     hiddenItems: ["nodes", "controls", "choke"]
 
-    // Default sizes of the top panels. The user adjusts them with the
+    // Default sizes and order of the top panels. The user adjusts them with the
     // "Adjust panels size" button of the task bar, the result is saved to
     // `~/Documents/UAVOS/Preferences/layout.json` and overrides these values.
 
@@ -30,7 +30,10 @@ GroundControl {
     // its natural width, the terminal takes the rest of the row
     //panelSizes: ({ "status": 0.05, "pfd": 0.4, "numbers": 0.1, "commands": 0.2 })
 
-    // keep the sizes above and hide the resize button
+    // panels order, left to right; "instruments" is the terminal block
+    //panelOrder: ["status", "pfd", "numbers", "commands", "instruments"]
+
+    // keep the sizes and the order above and hide the resize button
     //layoutLocked: true
 
     // plugins switched off at startup
