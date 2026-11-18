@@ -21,6 +21,7 @@
  */
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls.Material
 
 import QtQml.Models
 
@@ -117,6 +118,23 @@ RowLayout {
             }
         }
         visible: status===Loader.Ready
+    }
+
+    //panels resize mode
+    IconButton {
+        Layout.fillHeight: true
+        visible: groundControl.layoutEditing
+        iconName: "backup-restore"
+        toolTip: qsTr("Reset panels size")
+        onTriggered: groundControl.resetLayout()
+    }
+    IconButton {
+        Layout.fillHeight: true
+        visible: !groundControl.layoutLocked && !groundControl.maximized
+        iconName: "resize"
+        iconColor: groundControl.layoutEditing?Material.color(Material.Amber):Material.iconColor
+        toolTip: qsTr("Adjust panels size")
+        onTriggered: groundControl.layoutEdit=!groundControl.layoutEdit
     }
 
     IconButton {

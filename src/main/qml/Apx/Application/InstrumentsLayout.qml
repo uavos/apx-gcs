@@ -53,18 +53,29 @@ RowLayout {
     spacing: 0
     height: instrumentsHeight
 
-    function addComponent(c)
+    // name: the panel is resizable in the layout edit mode
+    function addComponent(c, name)
     {
         var obj=c.createObject(control,{"Layout.fillHeight": true})
-        c_vsep.createObject(control)
+        c_vsep.createObject(control,{"panel": obj, "name": name?name:""})
         return obj
     }
 
+    readonly property real panelWidthMin: height*0.15
+    // width left for the instruments plugins while resizing
+    readonly property real instrumentsWidthMin: width*0.1
+
+    function panelWidth(name, defaultWidth)
+    {
+        var v=groundControl.panelSize(name)
+        return v>0?Math.max(panelWidthMin, control.width*v):defaultWidth
+    }
+
     Component.onCompleted: {
-        addComponent(status)
-        addComponent(pfd)
-        addComponent(numbers)
-        addComponent(commands)
+        addComponent(status, "status")
+        addComponent(pfd, "pfd")
+        addComponent(numbers, "numbers")
+        addComponent(commands, "commands")
 
         instrumentsItem=addComponent(c_instruments)
     }
@@ -76,6 +87,7 @@ RowLayout {
             active: control.visible
             asynchronous: true
             sourceComponent: Component { Status { } }
+            Layout.preferredWidth: control.panelWidth("status", -1)
         }
     }
     Component {
@@ -84,7 +96,7 @@ RowLayout {
             active: control.visible
             asynchronous: true
             sourceComponent: Component { Pfd { } }
-            Layout.preferredWidth: control.height*2
+            Layout.preferredWidth: control.panelWidth("pfd", control.height*2)
         }
     }
     Component {
@@ -93,6 +105,7 @@ RowLayout {
             active: control.visible
             asynchronous: true
             sourceComponent: Component { NumbersBox { settingsName: "instruments" } }
+            Layout.preferredWidth: control.panelWidth("numbers", -1)
         }
     }
     Component {
@@ -101,16 +114,35 @@ RowLayout {
             active: control.visible
             asynchronous: true
             sourceComponent: Component { Commands { } }
+            Layout.preferredWidth: control.panelWidth("commands", -1)
         }
     }
 
     Component {
         id: c_vsep
         Rectangle {
+            id: sep
+            property Item panel // to the left of the separator
+            property string name
             Layout.fillHeight: true
             implicitWidth: 1
             border.width: 0
             color: sepColor
+            z: 10
+            LayoutHandle {
+                active: groundControl.layoutEditing && sep.name!==""
+                property real size0: 0
+                property real sizeMax: 0
+                onStarted: {
+                    size0=sep.panel.width
+                    sizeMax=size0+Math.max(0, instrumentsItem.width-instrumentsWidthMin)
+                }
+                onMoved: (delta) => {
+                    var w=apx.limit(size0+delta, panelWidthMin, sizeMax)
+                    groundControl.setPanelSize(sep.name, w/control.width)
+                }
+                onReset: groundControl.setPanelSize(sep.name, 0)
+            }
         }
     }
 
