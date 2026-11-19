@@ -102,6 +102,18 @@ Markdown format, nothing else is parsed:
 
 A step without a script shows a single Confirm button.
 
+Images: `![alt](url)` in the step body is shown below the text, centered; a relative
+path is relative to the procedure file folder. Adjacent image lines (nothing between
+them, not even a blank line) make a slider - one image at a time with left/right
+arrows and a position counter; image lines separated by a blank line stay separate:
+
+    ![](one.png)
+    ![](two.png)   <- a slider of two
+
+    ![](one.png)
+
+    ![](two.png)   <- two separate images
+
 Blocking the takeoff while the check runs: the takeoff sequence is started by `cmd.proc.stage`,
 so a guard connected to the stage change forces it back to 0 while the check is running and in
 the TAKEOFF mode; it does nothing once the window is closed or the check is over, and a step

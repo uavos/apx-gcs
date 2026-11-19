@@ -71,12 +71,26 @@ Window {
     // below the text, since the markdown renderer of Text skips them
     readonly property string shownBody: shownIsCurrent ? checklist.stepBody
                                                        : (shown ? shown.body : checklist.doc.intro)
-    function bodyImages(s)
+    // images grouped by adjacency: lines of images with nothing in between make one
+    // group (shown as a slider), any other line in between starts a new one
+    function bodyImageGroups(s)
     {
-        var out = [], re = /!\[[^\]]*\]\(([^)\s]+)\)/g, m
-        while((m = re.exec(s)))
-            out.push(resolveUrl(m[1]))
-        return out
+        var groups = [], cur = null
+        var lines = s.split("\n")
+        var re = /!\[[^\]]*\]\(([^)\s]+)\)/g
+        for (var i = 0; i < lines.length; ++i) {
+            var found = [], m
+            re.lastIndex = 0
+            while((m = re.exec(lines[i])))
+                found.push(resolveUrl(m[1]))
+            if(found.length){
+                if(!cur){ cur = []; groups.push(cur) }
+                found.forEach(function(u){ cur.push(u) })
+            } else {
+                cur = null
+            }
+        }
+        return groups
     }
     // a relative image path is relative to the procedure file folder
     function resolveUrl(u)
@@ -230,17 +244,12 @@ Window {
                         font: apx.font_narrow(theme.fontBody)
                         wrapMode: Text.Wrap
                     }
-                    // images of the step body, scaled down to the window, never upscaled
+                    // images of the step body: a lone image centered, adjacent ones as a slider
                     Repeater {
-                        model: control.bodyImages(control.shownBody)
-                        Image {
+                        model: control.bodyImageGroups(control.shownBody)
+                        ChecklistImages {
                             Layout.fillWidth: true
-                            Layout.maximumWidth: sourceSize.width > 0 ? sourceSize.width : 4096
-                            Layout.preferredHeight: sourceSize.width > 0
-                                                    ? width * sourceSize.height / sourceSize.width : 0
-                            fillMode: Image.PreserveAspectFit
-                            source: modelData
-                            asynchronous: true
+                            urls: modelData
                         }
                     }
                     // live message of the running step
