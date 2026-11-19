@@ -75,12 +75,19 @@ Markdown format, nothing else is parsed:
   - `step.ask(["A", {text: "B", kind: "danger"}], function(answer){})` - buttons for the
     operator; kind picks the color: ok (default), primary, danger, warn, neutral;
     `{text: "Restart", kind: "warn", restart: true}` restarts the step instead of
-    calling the handler;
+    calling the handler; `when: function(values){}` shows the button only while the
+    condition is true - `values` are the live values of the form on screen, re-checked
+    on every edit (without a form the condition sees `{}` and is checked once);
   - `step.restart()` - run the step from the beginning;
-  - `step.form({"Label": field}, function(values){})` - form fields, one per label,
-    in the order written; a field is a text input (`"Label": "default"`), a drop-down
-    (`{select: ["a", "b"], value: "a"}`) or a checkbox (`{checkbox: true}`);
-    `values` holds the entered strings, a checkbox comes back as a bool;
+  - `step.form({"Label": field}, function(values, button){}, buttons)` - form fields, one
+    per label, in the order written; a field is a text input (`"Label": "default"`), a
+    drop-down (`{select: ["a", "b"], value: "a"}`) or a checkbox (`{checkbox: true}`);
+    `values` holds the entered strings, a checkbox comes back as a bool. `buttons`
+    (optional) replace the stock **Apply**: the same descriptors as in `step.ask`, the
+    pressed one submits the form and comes to the handler as the second argument, and
+    its `when(values)` condition follows the fields as the operator edits them - so a
+    button shown only when every checkbox is ticked is
+    `{text: "Done", when: function(v){ return v["A"] && v["B"] }}`;
   - `step.poll(function(){ return cond }, seconds, then)` - wait for a condition,
     timeout fails the step, `then` is optional (default: pass);
   - `step.info("text")` - live message under the description;

@@ -289,17 +289,23 @@ Window {
                                 type: modelData.type
                                 options: modelData.options
                                 value: modelData.value
-                                onAccepted: control.submitForm()
+                                // Enter submits only while the stock Apply is on screen:
+                                // the custom buttons of the step must not be bypassed
+                                onAccepted: if(checklist.buttons.length === 0) control.submitForm("")
+                                onEdited: checklist.formEdited(control.collectForm())
                             }
                         }
+                        // stock submit, replaced by the custom buttons of the step when given
                         ChecklistButton {
+                            visible: checklist.buttons.length === 0
                             text: qsTr("Apply")
                             kind: "primary"
-                            onTriggered: control.submitForm()
+                            onTriggered: control.submitForm("")
                         }
                     }
 
-                    // buttons requested by the step script
+                    // buttons requested by the step script; with a form on screen they
+                    // submit it, their `when` conditions follow the operator's edits
                     Flow {
                         Layout.fillWidth: true
                         spacing: sp
@@ -307,9 +313,11 @@ Window {
                         Repeater {
                             model: checklist.buttons
                             ChecklistButton {
+                                visible: modelData.visible !== false
                                 text: modelData.text
                                 kind: modelData.kind
-                                onTriggered: checklist.answer(modelData.text)
+                                onTriggered: checklist.form !== null ? control.submitForm(modelData.text)
+                                                                     : checklist.answer(modelData.text)
                             }
                         }
                     }
@@ -353,13 +361,18 @@ Window {
         }
     }
 
-    function submitForm()
+    function collectForm()
     {
         var values = {}
         for (var i = 0; i < formFields.count; ++i) {
             var item = formFields.itemAt(i)
             if(item) values[item.key] = item.result
         }
-        checklist.submit(values)
+        return values
+    }
+    // button is the form button pressed, "" for the stock Apply / Enter in a field
+    function submitForm(button)
+    {
+        checklist.submit(collectForm(), button)
     }
 }

@@ -164,8 +164,9 @@ QtObject {
     property int current: -1
     property var results: []         // by step index: {status: ok|fail, message}
     property string message: ""      // live text of the running step
-    property var buttons: []         // [{text, kind}] requested by the step script
+    property var buttons: []         // [{text, kind, visible}] requested by the step script
     property var form: null          // [{label, type, options, value}] requested by the step script
+    property var formLive: ({})      // live values of the form, fed back by the window on every edit
     property string result: ""       // "" while the check has not finished, then "passed" | "failed"
 
     readonly property var step: (current >= 0 && current < steps.length) ? steps[current] : null
@@ -184,20 +185,24 @@ QtObject {
     // ---------------------------------------------------------------- api for step scripts
     readonly property var api: ({
         // buttons for the operator, handler(answer) is called on press;
-        // items are strings or {text, kind, restart}, kind: ok (default), primary, danger, warn, neutral;
-        // a button with restart: true restarts the step instead of calling the handler
+        // items are strings or {text, kind, restart, when}, kind: ok (default), primary,
+        // danger, warn, neutral; a button with restart: true restarts the step instead of
+        // calling the handler; when(values) makes the button visible only while it returns
+        // true - values are the live form values, re-evaluated on every edit (a button
+        // without a form sees {})
         "ask": function(list, handler) {
             engine._askHandler = handler ? handler : null
-            engine.buttons = list.map(function(b) {
-                if(b && typeof(b) === "object") return { "text": String(b.text), "kind": b.kind ? String(b.kind) : "ok", "restart": !!b.restart }
-                return { "text": String(b), "kind": "ok", "restart": false }
-            })
             engine.form = null
+            engine.formLive = {}
+            engine.setButtons(list)
         },
-        // form fields {label: field}, handler(values) is called on submit;
+        // form fields {label: field}, handler(values[, button]) is called on submit;
         // a field is a plain default for a text input, or a descriptor:
-        // {input: "text"}, {select: [items], value: item}, {checkbox: bool}
-        "form": function(fields, handler) {
+        // {input: "text"}, {select: [items], value: item}, {checkbox: bool};
+        // `buttons` (optional) replace the stock Apply: the same descriptors as in ask,
+        // the pressed button submits the form and comes to the handler as the 2nd argument,
+        // its when(values) condition shows and hides it as the operator edits the fields
+        "form": function(fields, handler, buttons) {
             engine._formHandler = handler ? handler : null
             var list = []
             for (var label in fields) {
@@ -220,7 +225,11 @@ QtObject {
                 list.push(d)
             }
             engine.form = list.length ? list : null
-            engine.buttons = []
+            // the defaults are the live values until the operator touches the fields
+            var live = {}
+            list.forEach(function(d){ live[d.label] = d.type === "checkbox" ? !!d.value : String(d.value) })
+            engine.formLive = live
+            engine.setButtons(buttons ? buttons : [])
         },
         // live text under the step description
         "info": function(msg) { engine.message = msg ? String(msg) : "" },
@@ -242,6 +251,39 @@ QtObject {
         "pass": function(msg) { engine.pass(msg) },
         "fail": function(msg) { engine.fail(msg) },
     })
+
+    // ---------------------------------------------------------------- script buttons
+    // descriptors as given by the script, with their `when` conditions
+    property var _buttons: []
+    function setButtons(list)
+    {
+        _buttons = (list ? list : []).map(function(b) {
+            if(b && typeof(b) === "object") return { "text": String(b.text), "kind": b.kind ? String(b.kind) : "ok",
+                                                     "restart": !!b.restart, "when": typeof(b.when) === "function" ? b.when : null }
+            return { "text": String(b), "kind": "ok", "restart": false, "when": null }
+        })
+        refreshButtons()
+    }
+    // what the window shows: `when` evaluated against the live form values;
+    // a condition that fails hides its button instead of failing the step
+    function refreshButtons()
+    {
+        buttons = _buttons.map(function(b) {
+            var vis = true
+            if(b.when){
+                try { vis = !!b.when(engine.formLive) }
+                catch(e) { vis = false; console.warn("Checklist: button condition error:", e) }
+            }
+            return { "text": b.text, "kind": b.kind, "restart": b.restart, "visible": vis }
+        })
+    }
+    // the window reports every edit of the form fields
+    function formEdited(values)
+    {
+        if(phase !== "running" || _done) return
+        formLive = values
+        refreshButtons()
+    }
 
     // ---------------------------------------------------------------- procedure control
     function start()
@@ -380,19 +422,25 @@ QtObject {
         }
         var h = _askHandler
         _askHandler = null
-        buttons = []
+        setButtons([])
         record.log("answer: " + button)
         call(h, button)
     }
-    // operator submitted the form
-    function submit(values)
+    // operator submitted the form; `button` is the form button pressed, "" for stock Apply
+    function submit(values, button)
     {
         if(phase !== "running" || _done) return
+        if(button && buttons.some(function(b){ return b.text === button && b.restart })){
+            retry()
+            return
+        }
         var h = _formHandler
         _formHandler = null
         form = null
-        record.log("form: " + JSON.stringify(values))
-        call(h, values)
+        setButtons([])
+        record.log("form: " + JSON.stringify(values) + (button ? " [" + button + "]" : ""))
+        if(h && button) call(function(v){ h(v, button) }, values)
+        else call(h, values)
     }
     function pass(msg)
     {
@@ -422,8 +470,10 @@ QtObject {
         _pollThen = null
         _askHandler = null
         _formHandler = null
+        _buttons = []
         buttons = []
         form = null
+        formLive = {}
         var c = _cleanup
         _cleanup = null
         if(c){
