@@ -41,11 +41,20 @@ QtObject {
     property string dir: ""         // run folder, empty until start()
     property int shots: 0
 
-    function start(callsign)
+    // the operator name becomes part of the run name, so the folder and every
+    // file in it name who performed the check
+    function start(callsign, operator)
     {
         base = basename(new Date(), callsign)
+        var op = cleanName(operator)
+        if(op) base += "-" + op
         dir = root + "/" + base
         shots = 0
+    }
+    // the name as typed, minus the characters unsafe in a file name
+    function cleanName(s)
+    {
+        return s === undefined ? "" : String(s).trim().replace(/[\/\\:*?"<>|]+/g, "").replace(/\s+/g, "_")
     }
     function basename(d, callsign)
     {

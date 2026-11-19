@@ -130,6 +130,14 @@ Window {
                 }
             }
             Text {
+                visible: checklist.operatorName !== ""
+                text: checklist.operatorName
+                color: theme.textMuted
+                font: apx.font_narrow(theme.fontList)
+                elide: Text.ElideRight
+                Layout.maximumWidth: control.width*0.3
+            }
+            Text {
                 visible: phase === "finished"
                 text: checklist.result === "passed" ? qsTr("CHECK PASSED") : qsTr("CHECK FAILED")
                 color: checklist.result === "passed" ? theme.ok : theme.fail

@@ -72,16 +72,22 @@ QtObject {
     property ChecklistRecord record: ChecklistRecord {}
     readonly property var cameras: record.camera.names
     readonly property string recordRoot: record.root
-    property bool consent: false     // the camera question of the first page is answered
+    property bool consent: false     // the start page (operator and camera) is answered
+    property string operatorName: "" // the operator who runs the check, from the start page
 
-    // first page answer: index of the camera, < 0 declines; opens the record of the run
-    function cameraDecision(index)
+    // start page answer: the operator name and the camera (index < 0 declines);
+    // both are the first lines of the record of the run
+    function cameraDecision(index, operator)
     {
         if(consent) return
+        var name = operator === undefined ? "" : String(operator).trim()
+        if(!name) return
+        operatorName = name
         var unit = apx.fleet.current
-        record.start(unit ? unit.title : "")
+        record.start(unit ? unit.title : "", name)
         record.camera.selected = index
         consent = true
+        note("operator: " + name)
         note(index >= 0 ? "camera: " + record.camera.name : "camera declined by operator")
         note("procedure: " + file)
     }
@@ -292,7 +298,8 @@ QtObject {
         reset()
         prepare()
         phase = "running"
-        note("check started: " + doc.title)
+        // the operator is named here as well: this note reaches the telemetry file
+        note("check started: " + doc.title + (operatorName ? " [" + operatorName + "]" : ""))
         next()
     }
     // stop the running check, the current step fails with the reason

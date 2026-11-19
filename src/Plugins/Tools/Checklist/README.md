@@ -22,10 +22,13 @@ main layout flag `checklistAuto` (set by the lite
 profile, `resources/layouts/lite/GroundControl.qml`) opens the checklist by itself when
 the unit enters TAXI; the stock layout only shows the button.
 
-Every check is recorded. The window opens with the camera question: the operator picks one
-of the video inputs and agrees, or declines; the answer is the first line of the record.
+Every check is recorded. The window opens with the start page: the operator enters their
+full name (mandatory, nothing starts without it) and answers the camera question - picks
+one of the video inputs and agrees, or declines; the name and the answer are the first
+lines of the record.
 The record is the folder `<Documents>/UAVOS/Checklists/<run>/`, `<run>` in the telemetry
-file name style (`261030_1304_08119W4-BOREY`): `<run>.log` gets a timestamped line for
+file name style plus the operator (`261030_1304_08119W4-BOREY-Ivanov_I_I`): `<run>.log`
+gets a timestamped line for
 everything that happens (start, each step started/passed/failed with its message, answers,
 form values, info messages, `step.log` notes, snapshots, the result), and `<run>-NNN.jpg` is
 the camera snapshot taken after every step when the camera is on. Step starts, results and
