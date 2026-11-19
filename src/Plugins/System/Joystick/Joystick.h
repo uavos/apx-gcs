@@ -25,18 +25,18 @@
 
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
-#include <SDL.h>
+
+#include "JoystickBackend.h"
 
 class Joystick : public Fact
 {
     Q_OBJECT
 public:
-    explicit Joystick(Fact *parent, int device_index, QString uid);
-    ~Joystick();
+    explicit Joystick(Fact *parent, const JoystickDeviceInfo &info, int device_index);
 
-    int device_index;
-    QString uid;
-    SDL_JoystickID instanceID;
+    int device_index; // number of the controller among the same models
+    QString uid;      // hardware model id
+    int instanceID;   // backend device id, negative when disconnected
     QString devName;
 
     Fact *f_conf;
@@ -52,7 +52,13 @@ public:
 
     QString juid() const;
 
-    void updateDevice(bool connected);
+    bool connected() const { return instanceID >= 0; }
+    // true when the device is the same model with the same set of controls
+    bool matches(const JoystickDeviceInfo &info) const;
+
+    void setConnected(int id);
+    void setDisconnected();
+
     void updateAxis(int i, qreal v);
     void updateButton(int i, bool v);
     void updateHat(int i, quint8 v);
@@ -61,7 +67,6 @@ public:
     QJsonObject saveConfig();
 
 private:
-    SDL_Joystick *dev{nullptr};
     DelayedEvent saveEvent;
 
 signals:

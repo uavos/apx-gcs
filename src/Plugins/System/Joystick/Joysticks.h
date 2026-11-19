@@ -21,12 +21,12 @@
  */
 #pragma once
 
-#include <SDL.h>
-#include <QtConcurrent>
 #include <QtCore>
 
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
+
+#include "JoystickBackend.h"
 class Joystick;
 
 class Joysticks : public Fact
@@ -45,8 +45,8 @@ public:
     Fact *f_import;
 
 private:
-    QTimer timer;
-    QMap<int, Joystick *> map;
+    JoystickBackend *backend{nullptr};
+    QMap<int, Joystick *> map; // connected controllers by backend device id
 
     QList<QJsonObject> configs;
     QList<QString> configIds;
@@ -56,24 +56,21 @@ private:
 
     bool _updatingEnums{false};
 
-    Joystick *addJoystick(int device_index, QString uid);
+    Joystick *addJoystick(const JoystickDeviceInfo &info, int device_index);
 
     int userConfigIndex(const QString &title, const QString &name);
 
     void updateConfEnums();
 
-    QFutureWatcher<int> watcher;
-    void waitEvent();
-
-    void processEvent(const SDL_Event &event);
-
 private slots:
     void updateStatus();
     void updateEnabled();
-    void watcherFinished();
 
-    void update();
-    void scan();
+    void deviceAdded(JoystickDeviceInfo info);
+    void deviceRemoved(int id);
+    void axisChanged(int id, int axis, qreal value);
+    void buttonChanged(int id, int button, bool pressed);
+    void hatChanged(int id, int hat, quint8 mask);
 
     void loadConfigs();
     void saveConfigs();

@@ -1,18 +1,16 @@
-apx_plugin(QT Concurrent Widgets)
+apx_plugin(QT Widgets)
 
 apx_install_res(${APX_RESOURCES_DIR} templates/joystick.json)
 
+# Joysticks are accessed through OS services only, no external libraries:
+# - Linux: kernel evdev interface (/dev/input/event*)
+# - macOS: IOKit HID Manager (system framework)
+
 if(APPLE)
-    apx_add_framework(${MODULE} SDL2)
+    target_link_libraries(${MODULE} PRIVATE "-framework IOKit" "-framework CoreFoundation")
 
 elseif(UNIX AND NOT APPLE)
-    # find_package(SDL2 REQUIRED)
-
-    find_file(SDL2_INCLUDE_DIR NAME SDL.h HINTS SDL2)
-    find_library(SDL2_LIBRARY NAME SDL2)
-
-    target_include_directories(${MODULE} PRIVATE ${SDL2_INCLUDE_DIRS} "/usr/include/SDL2")
-    target_link_libraries(${MODULE} PRIVATE -lSDL2)
+    # nothing to link
 
 elseif(WIN32)
     message(WARNING "Not implemented")
