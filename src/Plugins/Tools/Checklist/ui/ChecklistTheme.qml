@@ -29,7 +29,9 @@ QtObject {
     readonly property real sp: Style.spacing
 
     // window
-    readonly property color background: "#101010"
+    readonly property color background: "#14171c"
+    readonly property color panel: "#171b21"       // steps list and step pane cards, close to the background
+    readonly property color panelBorder: "#232831"
     readonly property color separator: "#444"
 
     // text
@@ -37,11 +39,11 @@ QtObject {
     readonly property color textBright: "#fff"
     readonly property color textMuted: "#777"
     readonly property color textInfo: "#ffbe00"        // live message of the running step
-    readonly property real fontTitle: fs*2
-    readonly property real fontStep: fs*1.8
-    readonly property real fontBody: fs*1.5
-    readonly property real fontList: fs*1.3
-    readonly property real fontSmall: fs*1.3
+    readonly property real fontTitle: fs*2.2
+    readonly property real fontStep: fs*2
+    readonly property real fontBody: fs*1.7
+    readonly property real fontList: fs*1.5
+    readonly property real fontSmall: fs*1.4
 
     // step status (list dots and result banner)
     readonly property color ok: "#4cab50"
@@ -52,7 +54,7 @@ QtObject {
     readonly property color failBg: "#40ff0000"
 
     // steps list
-    readonly property real rowHeight: fs*2.6
+    readonly property real rowHeight: fs*3.2
     readonly property color currentBg: "#2b3d5c"       // step being executed
     readonly property color viewedBg: "#30ffffff"      // step the operator is reading
     readonly property color currentMark: "#4a8df8"     // bar at the left of the current step
