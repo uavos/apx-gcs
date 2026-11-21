@@ -61,12 +61,54 @@ QtObject {
         window.requestActivate()
     }
 
-    // reachable from QML and scripts as ui.checklist while the window is open (phase, takeoffAllowed)
+    // reachable from QML and scripts as ui.checklist while the window is open (phase, result)
     Component.onCompleted: ui.checklist = engine
     Component.onDestruction: {
         endStep()
         if(ui.checklist === engine) ui.checklist = null
     }
+
+    // ---------------------------------------------------------------- evidence: camera consent, log, snapshots
+    property ChecklistRecord record: ChecklistRecord {}
+    readonly property var cameras: record.camera.names
+    readonly property string recordRoot: record.root
+    property bool consent: false     // the start page (operator and camera) is answered
+    property string operatorName: "" // the operator who runs the check, from the start page
+
+    // start page answer: the operator name and the camera (index < 0 declines);
+    // both are the first lines of the record of the run
+    function cameraDecision(index, operator)
+    {
+        if(consent) return
+        var name = operator === undefined ? "" : String(operator).trim()
+        if(!name) return
+        operatorName = name
+        var unit = apx.fleet.current
+        record.start(unit ? unit.title : "", name)
+        record.camera.selected = index
+        consent = true
+        note("operator: " + name)
+        note(index >= 0 ? "camera: " + record.camera.name : "camera declined by operator")
+        note("procedure: " + file)
+    }
+    // a note of the check: the telemetry file (msg event, src gcs/checklist) and the run log
+    function note(msg)
+    {
+        if(!msg) return
+        var unit = apx.fleet.current
+        var rec = unit ? unit.child("telemetry") : null
+        rec = rec ? rec.child("recorder") : null
+        if(rec) rec.recordMsg(String(msg), "gcs/checklist", "")
+        record.log(String(msg))
+    }
+    function stepName(index)
+    {
+        return "step " + (index + 1) + (steps[index] ? " (" + steps[index].title + ")" : "")
+    }
+    onMessageChanged: if(message) record.log("info: " + message)
+
+    // ---------------------------------------------------------------- launch conditions (from the plugin)
+    property string blocked              // why the check cannot be started now, empty when it can
 
     // ---------------------------------------------------------------- procedure
     property string file                 // markdown procedure, set by the launcher
@@ -128,9 +170,10 @@ QtObject {
     property int current: -1
     property var results: []         // by step index: {status: ok|fail, message}
     property string message: ""      // live text of the running step
-    property var buttons: []         // [{text, kind}] requested by the step script
+    property var buttons: []         // [{text, kind, visible}] requested by the step script
     property var form: null          // [{label, type, options, value}] requested by the step script
-    property bool takeoffAllowed: false
+    property var formLive: ({})      // live values of the form, fed back by the window on every edit
+    property string result: ""       // "" while the check has not finished, then "passed" | "failed"
 
     readonly property var step: (current >= 0 && current < steps.length) ? steps[current] : null
     readonly property bool failed: !!(step && results[current] && results[current].status === "fail")
@@ -148,20 +191,24 @@ QtObject {
     // ---------------------------------------------------------------- api for step scripts
     readonly property var api: ({
         // buttons for the operator, handler(answer) is called on press;
-        // items are strings or {text, kind, restart}, kind: ok (default), primary, danger, warn, neutral;
-        // a button with restart: true restarts the step instead of calling the handler
+        // items are strings or {text, kind, restart, when}, kind: ok (default), primary,
+        // danger, warn, neutral; a button with restart: true restarts the step instead of
+        // calling the handler; when(values) makes the button visible only while it returns
+        // true - values are the live form values, re-evaluated on every edit (a button
+        // without a form sees {})
         "ask": function(list, handler) {
             engine._askHandler = handler ? handler : null
-            engine.buttons = list.map(function(b) {
-                if(b && typeof(b) === "object") return { "text": String(b.text), "kind": b.kind ? String(b.kind) : "ok", "restart": !!b.restart }
-                return { "text": String(b), "kind": "ok", "restart": false }
-            })
             engine.form = null
+            engine.formLive = {}
+            engine.setButtons(list)
         },
-        // form fields {label: field}, handler(values) is called on submit;
+        // form fields {label: field}, handler(values[, button]) is called on submit;
         // a field is a plain default for a text input, or a descriptor:
-        // {input: "text"}, {select: [items], value: item}, {checkbox: bool}
-        "form": function(fields, handler) {
+        // {input: "text"}, {select: [items], value: item}, {checkbox: bool};
+        // `buttons` (optional) replace the stock Apply: the same descriptors as in ask,
+        // the pressed button submits the form and comes to the handler as the 2nd argument,
+        // its when(values) condition shows and hides it as the operator edits the fields
+        "form": function(fields, handler, buttons) {
             engine._formHandler = handler ? handler : null
             var list = []
             for (var label in fields) {
@@ -184,19 +231,17 @@ QtObject {
                 list.push(d)
             }
             engine.form = list.length ? list : null
-            engine.buttons = []
+            // the defaults are the live values until the operator touches the fields
+            var live = {}
+            list.forEach(function(d){ live[d.label] = d.type === "checkbox" ? !!d.value : String(d.value) })
+            engine.formLive = live
+            engine.setButtons(buttons ? buttons : [])
         },
         // live text under the step description
         "info": function(msg) { engine.message = msg ? String(msg) : "" },
-        // note recorded into the telemetry file (msg event, src gcs/checklist);
+        // note recorded into the telemetry file (msg event, src gcs/checklist) and the run log;
         // goes to the recorder directly and never shows in the console
-        "log": function(msg) {
-            if(!msg) return
-            var unit = apx.fleet.current
-            var rec = unit ? unit.child("telemetry") : null
-            rec = rec ? rec.child("recorder") : null
-            if(rec) rec.recordMsg(String(msg), "gcs/checklist", "")
-        },
+        "log": function(msg) { engine.note(msg) },
         // cond() is evaluated every 0.5 s up to sec seconds (0: forever);
         // true -> then() or pass, timeout -> fail
         "poll": function(cond, sec, then) {
@@ -213,19 +258,59 @@ QtObject {
         "fail": function(msg) { engine.fail(msg) },
     })
 
+    // ---------------------------------------------------------------- script buttons
+    // descriptors as given by the script, with their `when` conditions
+    property var _buttons: []
+    function setButtons(list)
+    {
+        _buttons = (list ? list : []).map(function(b) {
+            if(b && typeof(b) === "object") return { "text": String(b.text), "kind": b.kind ? String(b.kind) : "ok",
+                                                     "restart": !!b.restart, "when": typeof(b.when) === "function" ? b.when : null }
+            return { "text": String(b), "kind": "ok", "restart": false, "when": null }
+        })
+        refreshButtons()
+    }
+    // what the window shows: `when` evaluated against the live form values;
+    // a condition that fails hides its button instead of failing the step
+    function refreshButtons()
+    {
+        buttons = _buttons.map(function(b) {
+            var vis = true
+            if(b.when){
+                try { vis = !!b.when(engine.formLive) }
+                catch(e) { vis = false; console.warn("Checklist: button condition error:", e) }
+            }
+            return { "text": b.text, "kind": b.kind, "restart": b.restart, "visible": vis }
+        })
+    }
+    // the window reports every edit of the form fields
+    function formEdited(values)
+    {
+        if(phase !== "running" || _done) return
+        formLive = values
+        refreshButtons()
+    }
+
     // ---------------------------------------------------------------- procedure control
     function start()
     {
+        if(blocked) return
         reset()
         prepare()
         phase = "running"
+        // the operator is named here as well: this note reaches the telemetry file
+        note("check started: " + doc.title + (operatorName ? " [" + operatorName + "]" : ""))
         next()
     }
-    function abort()
+    // stop the running check, the current step fails with the reason
+    function abort(reason)
     {
         if(phase !== "running") return
         endStep()
-        setResult(current, "fail", qsTr("Aborted by operator"))
+        var r = reason ? reason : qsTr("Aborted by operator")
+        setResult(current, "fail", r)
+        note(stepName(current) + " aborted: " + r)
+        record.snapshot(stepName(current) + " aborted")
         finish()
     }
     function finish()
@@ -233,13 +318,14 @@ QtObject {
         endStep()
         _returnTo = -1
         phase = "finished"
-        takeoffAllowed = steps.length > 0 && !results.some(function(r){ return r && r.status === "fail" })
+        result = (steps.length > 0 && !results.some(function(r){ return r && r.status === "fail" })) ? "passed" : "failed"
+        note("check finished: " + result.toUpperCase())
     }
     function reset()
     {
         endStep()
         phase = "idle"
-        takeoffAllowed = false
+        result = ""
         current = -1
         _returnTo = -1
         results = []
@@ -266,12 +352,14 @@ QtObject {
     // restart the current step (also used as Retry after a failure)
     function retry()
     {
+        record.log("retry")
         if(phase !== "running" || !step) return
         goTo(current)
     }
     // repeat an already passed step, then continue with the current one
     function rerun(index)
     {
+        record.log("repeat " + stepName(index))
         if(phase !== "running" || index < 0 || index >= current) return
         if(_returnTo < 0) _returnTo = current
         goTo(index)
@@ -279,6 +367,7 @@ QtObject {
     // go on after a failed step
     function proceed()
     {
+        record.log("continue after failure")
         if(phase !== "running" || !failed) return
         next()
     }
@@ -287,6 +376,7 @@ QtObject {
         endStep()
         current = index
         setResult(current, "", "")
+        note(stepName(current) + " started")
         runStep()
     }
     function runStep()
@@ -339,17 +429,25 @@ QtObject {
         }
         var h = _askHandler
         _askHandler = null
-        buttons = []
+        setButtons([])
+        record.log("answer: " + button)
         call(h, button)
     }
-    // operator submitted the form
-    function submit(values)
+    // operator submitted the form; `button` is the form button pressed, "" for stock Apply
+    function submit(values, button)
     {
         if(phase !== "running" || _done) return
+        if(button && buttons.some(function(b){ return b.text === button && b.restart })){
+            retry()
+            return
+        }
         var h = _formHandler
         _formHandler = null
         form = null
-        call(h, values)
+        setButtons([])
+        record.log("form: " + JSON.stringify(values) + (button ? " [" + button + "]" : ""))
+        if(h && button) call(function(v){ h(v, button) }, values)
+        else call(h, values)
     }
     function pass(msg)
     {
@@ -357,6 +455,8 @@ QtObject {
         _done = true
         endStep()
         setResult(current, "ok", msg)
+        note(stepName(current) + " passed" + (msg ? ": " + msg : ""))
+        record.snapshot(stepName(current) + " passed")
         next()
     }
     function fail(msg)
@@ -364,7 +464,10 @@ QtObject {
         if(_done) return
         _done = true
         endStep()
-        setResult(current, "fail", msg ? msg : (message ? message : qsTr("Check failed")))
+        var r = msg ? msg : (message ? message : qsTr("Check failed"))
+        setResult(current, "fail", r)
+        note(stepName(current) + " FAILED: " + r)
+        record.snapshot(stepName(current) + " failed")
     }
     // stop everything the step script has requested
     function endStep()
@@ -374,8 +477,10 @@ QtObject {
         _pollThen = null
         _askHandler = null
         _formHandler = null
+        _buttons = []
         buttons = []
         form = null
+        formLive = {}
         var c = _cleanup
         _cleanup = null
         if(c){

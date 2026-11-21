@@ -67,6 +67,40 @@ Window {
     readonly property bool shownIsCurrent: phase === "running" && viewed === current
     readonly property bool shownFailed: !!(shownResult && shownResult.status === "fail")
 
+    // body markdown of the shown step; `![alt](url)` images are rendered as Image items
+    // below the text, since the markdown renderer of Text skips them
+    readonly property string shownBody: shownIsCurrent ? checklist.stepBody
+                                                       : (shown ? shown.body : checklist.doc.intro)
+    // images grouped by adjacency: lines of images with nothing in between make one
+    // group (shown as a slider), any other line in between starts a new one
+    function bodyImageGroups(s)
+    {
+        var groups = [], cur = null
+        var lines = s.split("\n")
+        var re = /!\[[^\]]*\]\(([^)\s]+)\)/g
+        for (var i = 0; i < lines.length; ++i) {
+            var found = [], m
+            re.lastIndex = 0
+            while((m = re.exec(lines[i])))
+                found.push(resolveUrl(m[1]))
+            if(found.length){
+                if(!cur){ cur = []; groups.push(cur) }
+                found.forEach(function(u){ cur.push(u) })
+            } else {
+                cur = null
+            }
+        }
+        return groups
+    }
+    // a relative image path is relative to the procedure file folder
+    function resolveUrl(u)
+    {
+        if(/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u)) return u // file:, qrc:, http: ...
+        if(u.startsWith("/")) return "file://" + u
+        var f = String(checklist.file)
+        return "file://" + f.substring(0, f.lastIndexOf("/") + 1) + u
+    }
+
     // only the steps already reached can be opened while running
     function selectable(index)
     {
@@ -79,10 +113,20 @@ Window {
         return (index === current && phase === "running") ? "running" : ""
     }
 
-    ColumnLayout {
+    // first page: camera consent, the procedure is shown once answered
+    ChecklistCameraPage {
         anchors.fill: parent
         anchors.margins: sp*2
-        spacing: sp*2
+        visible: !checklist.consent
+        checklist: control.checklist
+        theme: theme
+    }
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: sp*3
+        spacing: sp*2.5
+        visible: checklist.consent
 
         // header: procedure title, click shows the description page
         RowLayout {
@@ -100,9 +144,17 @@ Window {
                 }
             }
             Text {
+                visible: checklist.operatorName !== ""
+                text: checklist.operatorName
+                color: theme.textMuted
+                font: apx.font_narrow(theme.fontList)
+                elide: Text.ElideRight
+                Layout.maximumWidth: control.width*0.3
+            }
+            Text {
                 visible: phase === "finished"
-                text: checklist.takeoffAllowed ? qsTr("CHECK PASSED") : qsTr("CHECK FAILED")
-                color: checklist.takeoffAllowed ? theme.ok : theme.fail
+                text: checklist.result === "passed" ? qsTr("CHECK PASSED") : qsTr("CHECK FAILED")
+                color: checklist.result === "passed" ? theme.ok : theme.fail
                 font: apx.font_narrow(theme.fontStep, true)
             }
         }
@@ -113,186 +165,228 @@ Window {
             spacing: sp*2
 
             // steps: the current one is highlighted, passed ones can be opened
-            ListView {
-                id: stepsView
+            Rectangle {
                 Layout.preferredWidth: control.width*0.32
                 Layout.fillHeight: true
-                clip: true
-                spacing: 1
-                model: control.steps
-                delegate: Rectangle {
-                    width: stepsView.width
-                    height: theme.rowHeight
-                    readonly property bool isCurrent: index === control.current && phase === "running"
-                    readonly property bool canOpen: control.selectable(index)
-                    color: isCurrent ? theme.currentBg : (index === control.viewed ? theme.viewedBg : "transparent")
-                    radius: sp*0.5
-                    Rectangle {
-                        // bar marking the step being executed
-                        visible: parent.isCurrent
-                        width: sp*0.6
-                        height: parent.height
-                        radius: parent.radius
-                        color: theme.currentMark
-                    }
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: sp
-                        anchors.leftMargin: sp*1.5
-                        spacing: sp
+                color: theme.panel
+                border.color: theme.panelBorder
+                border.width: 1
+                radius: sp
+
+                ListView {
+                    id: stepsView
+                    anchors.fill: parent
+                    anchors.margins: sp*1.5
+                    clip: true
+                    spacing: sp*0.5
+                    model: control.steps
+                    delegate: Rectangle {
+                        width: stepsView.width
+                        height: theme.rowHeight
+                        readonly property bool isCurrent: index === control.current && phase === "running"
+                        readonly property bool canOpen: control.selectable(index)
+                        color: isCurrent ? theme.currentBg : (index === control.viewed ? theme.viewedBg : "transparent")
+                        radius: sp*0.5
                         Rectangle {
-                            width: fs*0.8; height: width; radius: width/2
-                            color: theme.statusColor(stepStatus(index))
+                            // bar marking the step being executed
+                            visible: parent.isCurrent
+                            width: sp*0.6
+                            height: parent.height
+                            radius: parent.radius
+                            color: theme.currentMark
                         }
-                        Text {
-                            Layout.fillWidth: true
-                            text: (index + 1) + ". " + modelData.title
-                            color: canOpen ? theme.text : theme.textMuted
-                            font: apx.font_narrow(theme.fontList, isCurrent)
-                            elide: Text.ElideRight
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: sp
+                            anchors.leftMargin: sp*1.5
+                            spacing: sp
+                            Rectangle {
+                                width: fs*0.8; height: width; radius: width/2
+                                color: theme.statusColor(stepStatus(index))
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: (index + 1) + ". " + modelData.title
+                                color: canOpen ? theme.text : theme.textMuted
+                                font: apx.font_narrow(theme.fontList, isCurrent)
+                                elide: Text.ElideRight
+                            }
                         }
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        enabled: parent.canOpen
-                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onClicked: control.viewed = index
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: parent.canOpen
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            onClicked: control.viewed = index
+                        }
                     }
                 }
             }
 
-            Rectangle { width: 1; Layout.fillHeight: true; color: theme.separator }
-
             // selected step: everything flows top-down right under the description
-            Flickable {
+            Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                clip: true
-                contentHeight: stepColumn.implicitHeight
-                ColumnLayout {
-                    id: stepColumn
-                    width: parent.width
-                    spacing: sp*2
+                color: theme.panel
+                border.color: theme.panelBorder
+                border.width: 1
+                radius: sp
 
-                    Text {
-                        Layout.fillWidth: true
-                        visible: shown
-                        text: shown ? ((viewed + 1) + ". " + shown.title) : ""
-                        color: theme.textBright
-                        font: apx.font_narrow(theme.fontStep, true)
-                        wrapMode: Text.Wrap
-                    }
-                    Text {
-                        Layout.fillWidth: true
-                        // the running step's body is expanded on activation: read it from stepBody,
-                        // body mutations inside `steps` are invisible to bindings
-                        text: (shownIsCurrent ? checklist.stepBody : (shown ? shown.body : checklist.doc.intro)).replace(/`([^`]+)`/g, "**$1**")
-                        textFormat: Text.MarkdownText
-                        color: theme.text
-                        font: apx.font_narrow(theme.fontBody)
-                        wrapMode: Text.Wrap
-                    }
-                    // live message of the running step
-                    Text {
-                        Layout.fillWidth: true
-                        visible: shownIsCurrent && !shownFailed && checklist.message
-                        text: checklist.message
-                        color: theme.textInfo
-                        font: apx.font_narrow(theme.fontSmall)
-                        wrapMode: Text.Wrap
-                    }
-                    // result of the shown step: red alert with the reason, green when passed
-                    Rectangle {
-                        Layout.fillWidth: true
-                        visible: shownResult !== undefined
-                        implicitHeight: resultColumn.implicitHeight + sp*3
-                        color: shownFailed ? theme.failBg : theme.okBg
-                        border.color: shownFailed ? theme.fail : theme.ok
-                        border.width: 1
-                        radius: sp
-                        ColumnLayout {
-                            id: resultColumn
-                            anchors.fill: parent
-                            anchors.margins: sp*1.5
-                            spacing: sp*0.5
-                            Text {
-                                text: shownFailed ? qsTr("FAILED") : qsTr("PASSED")
-                                color: shownFailed ? theme.fail : theme.ok
-                                font: apx.font_narrow(theme.fontSmall, true)
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                visible: text
-                                text: shownResult ? shownResult.message : ""
-                                color: theme.text
-                                font: apx.font_narrow(theme.fontSmall)
-                                wrapMode: Text.Wrap
-                            }
-                        }
-                    }
-
-                    // input fields requested by the step script
+                Flickable {
+                    anchors.fill: parent
+                    anchors.margins: sp*3
+                    clip: true
+                    contentHeight: stepColumn.implicitHeight
                     ColumnLayout {
-                        Layout.fillWidth: true
-                        visible: shownIsCurrent && checklist.form !== null
-                        spacing: sp
+                        id: stepColumn
+                        width: parent.width
+                        spacing: sp*2.5
+
+                        Text {
+                            Layout.fillWidth: true
+                            visible: shown
+                            text: shown ? ((viewed + 1) + ". " + shown.title) : ""
+                            color: theme.textBright
+                            font: apx.font_narrow(theme.fontStep, true)
+                            wrapMode: Text.Wrap
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            // the running step's body is expanded on activation: read it from stepBody,
+                            // body mutations inside `steps` are invisible to bindings
+                            text: control.shownBody.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/`([^`]+)`/g, "**$1**")
+                            textFormat: Text.MarkdownText
+                            color: theme.text
+                            font: apx.font_narrow(theme.fontBody)
+                            wrapMode: Text.Wrap
+                        }
+                        // images of the step body: a lone image centered, adjacent ones as a slider
                         Repeater {
-                            id: formFields
-                            model: checklist.form ? checklist.form : []
-                            delegate: ChecklistField {
+                            model: control.bodyImageGroups(control.shownBody)
+                            ChecklistImages {
                                 Layout.fillWidth: true
-                                readonly property string key: modelData.label
-                                label: modelData.label
-                                type: modelData.type
-                                options: modelData.options
-                                value: modelData.value
-                                onAccepted: control.submitForm()
+                                urls: modelData
                             }
                         }
-                        ChecklistButton {
-                            text: qsTr("Apply")
-                            kind: "primary"
-                            onTriggered: control.submitForm()
+                        // live message of the running step
+                        Text {
+                            Layout.fillWidth: true
+                            visible: shownIsCurrent && !shownFailed && checklist.message
+                            text: checklist.message
+                            color: theme.textInfo
+                            font: apx.font_narrow(theme.fontSmall)
+                            wrapMode: Text.Wrap
                         }
-                    }
+                        // result of the shown step: red alert with the reason, green when passed
+                        Rectangle {
+                            Layout.fillWidth: true
+                            visible: shownResult !== undefined
+                            implicitHeight: resultColumn.implicitHeight + sp*3
+                            color: shownFailed ? theme.failBg : theme.okBg
+                            border.color: shownFailed ? theme.fail : theme.ok
+                            border.width: 1
+                            radius: sp
+                            ColumnLayout {
+                                id: resultColumn
+                                anchors.fill: parent
+                                anchors.margins: sp*1.5
+                                spacing: sp*0.5
+                                Text {
+                                    text: shownFailed ? qsTr("FAILED") : qsTr("PASSED")
+                                    color: shownFailed ? theme.fail : theme.ok
+                                    font: apx.font_narrow(theme.fontSmall, true)
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    visible: text
+                                    text: shownResult ? shownResult.message : ""
+                                    color: theme.text
+                                    font: apx.font_narrow(theme.fontSmall)
+                                    wrapMode: Text.Wrap
+                                }
+                            }
+                        }
 
-                    // buttons requested by the step script
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: sp
-                        visible: shownIsCurrent && checklist.buttons.length > 0
-                        Repeater {
-                            model: checklist.buttons
+                        // input fields requested by the step script
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            visible: shownIsCurrent && checklist.form !== null
+                            spacing: sp
+                            Repeater {
+                                id: formFields
+                                model: checklist.form ? checklist.form : []
+                                delegate: ChecklistField {
+                                    Layout.fillWidth: true
+                                    readonly property string key: modelData.label
+                                    label: modelData.label
+                                    type: modelData.type
+                                    options: modelData.options
+                                    value: modelData.value
+                                    // Enter submits only while the stock Apply is on screen:
+                                    // the custom buttons of the step must not be bypassed
+                                    onAccepted: if(checklist.buttons.length === 0) control.submitForm("")
+                                    onEdited: checklist.formEdited(control.collectForm())
+                                }
+                            }
+                            // stock submit, replaced by the custom buttons of the step when given
                             ChecklistButton {
-                                text: modelData.text
-                                kind: modelData.kind
-                                onTriggered: checklist.answer(modelData.text)
+                                visible: checklist.buttons.length === 0
+                                text: qsTr("Apply")
+                                kind: "primary"
+                                onTriggered: control.submitForm("")
                             }
                         }
-                    }
 
-                    // control buttons
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: sp
-                        // retry the failed step, or repeat a passed one (then the check returns to the current step)
-                        ChecklistButton {
-                            visible: phase === "running" && shown && (shownFailed || control.viewed < control.current)
-                            text: shownIsCurrent ? qsTr("Retry") : qsTr("Repeat step")
-                            kind: "warn"
-                            onTriggered: shownIsCurrent ? checklist.retry() : checklist.rerun(control.viewed)
+                        // buttons requested by the step script; with a form on screen they
+                        // submit it, their `when` conditions follow the operator's edits
+                        Flow {
+                            Layout.fillWidth: true
+                            spacing: sp
+                            visible: shownIsCurrent && checklist.buttons.length > 0
+                            Repeater {
+                                model: checklist.buttons
+                                ChecklistButton {
+                                    visible: modelData.visible !== false
+                                    text: modelData.text
+                                    kind: modelData.kind
+                                    onTriggered: checklist.form !== null ? control.submitForm(modelData.text)
+                                                                         : checklist.answer(modelData.text)
+                                }
+                            }
                         }
-                        ChecklistButton {
-                            visible: shownIsCurrent && shownFailed
-                            text: qsTr("Continue")
-                            kind: "neutral"
-                            onTriggered: checklist.proceed()
+
+                        // control buttons
+                        Flow {
+                            Layout.fillWidth: true
+                            spacing: sp
+                            // retry the failed step, or repeat a passed one (then the check returns to the current step)
+                            ChecklistButton {
+                                visible: phase === "running" && shown && (shownFailed || control.viewed < control.current)
+                                text: shownIsCurrent ? qsTr("Retry") : qsTr("Repeat step")
+                                kind: "warn"
+                                onTriggered: shownIsCurrent ? checklist.retry() : checklist.rerun(control.viewed)
+                            }
+                            ChecklistButton {
+                                visible: shownIsCurrent && shownFailed
+                                text: qsTr("Continue")
+                                kind: "neutral"
+                                onTriggered: checklist.proceed()
+                            }
+                            ChecklistButton {
+                                visible: phase !== "running"
+                                enabled: !checklist.blocked
+                                text: phase === "finished" ? qsTr("Restart") : qsTr("Start")
+                                kind: "primary"
+                                onTriggered: checklist.start()
+                            }
                         }
-                        ChecklistButton {
-                            visible: phase !== "running"
-                            text: phase === "finished" ? qsTr("Restart") : qsTr("Start")
-                            kind: "primary"
-                            onTriggered: checklist.start()
+                        // why the check cannot be started now
+                        Text {
+                            Layout.fillWidth: true
+                            visible: phase !== "running" && checklist.blocked
+                            text: checklist.blocked
+                            color: theme.textInfo
+                            font: apx.font_narrow(theme.fontSmall)
+                            wrapMode: Text.Wrap
                         }
                     }
                 }
@@ -300,13 +394,18 @@ Window {
         }
     }
 
-    function submitForm()
+    function collectForm()
     {
         var values = {}
         for (var i = 0; i < formFields.count; ++i) {
             var item = formFields.itemAt(i)
             if(item) values[item.key] = item.result
         }
-        checklist.submit(values)
+        return values
+    }
+    // button is the form button pressed, "" for the stock Apply / Enter in a field
+    function submitForm(button)
+    {
+        checklist.submit(collectForm(), button)
     }
 }

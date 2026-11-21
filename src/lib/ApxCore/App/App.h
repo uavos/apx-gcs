@@ -66,6 +66,8 @@ public:
     Q_INVOKABLE static QObject *loadQml(const QString &qmlFile, const QVariantMap &opts);
     // read a text file (path, file:// or qrc: url), empty string when missing
     Q_INVOKABLE static QString loadText(const QString &fileName);
+    // append a line to a text file (path or file:// url), creates the directories
+    Q_INVOKABLE static bool appendText(const QString &fileName, const QString &line);
 
     template<class T>
     static T propertyValue(const QString &path)

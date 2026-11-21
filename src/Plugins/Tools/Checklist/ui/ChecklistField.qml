@@ -35,6 +35,7 @@ ColumnLayout {
     property var options: []         // select items
     property var value: ""           // default from the step script
     signal accepted()
+    signal edited()                  // any change by the operator (drives button `when` conditions)
 
     // current state reported back to the script on submit (string; bool for checkbox)
     readonly property var result: type === "checkbox" ? check.checked
@@ -63,6 +64,7 @@ ColumnLayout {
         selectByMouse: true
         Material.accent: "#4a8df8"
         onAccepted: control.accepted()
+        onTextEdited: control.edited()
     }
     ComboBox {
         id: combo
@@ -73,6 +75,7 @@ ColumnLayout {
         font: apx.font_narrow(control.fs)
         Material.accent: "#4a8df8"
         Material.theme: Material.Dark
+        onActivated: control.edited()
     }
     CheckBox {
         id: check
@@ -80,6 +83,7 @@ ColumnLayout {
         Layout.fillWidth: true
         text: control.label
         checked: control.value === true || control.value === "true"
+        onToggled: control.edited()
         font: apx.font_narrow(control.fs)
         Material.accent: "#4a8df8"
         Material.theme: Material.Dark

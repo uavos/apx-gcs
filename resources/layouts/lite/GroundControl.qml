@@ -19,6 +19,9 @@ GroundControl {
     // nodes button, controls group and choke in the commands panel
     hiddenItems: ["nodes", "controls", "choke"]
 
+    // the checklist opens itself when the unit enters TAXI
+    checklistAuto: true
+
     // plugins switched off at startup
     readonly property var disabledPlugins: [
         "signals",          // realtime chart
