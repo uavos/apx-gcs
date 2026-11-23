@@ -97,6 +97,14 @@ Markdown format, nothing else is parsed:
   - `step.log("text")` - note recorded into the telemetry file (a `msg` event with
     src `gcs/checklist`) while telemetry is recording; not shown in the console;
   - `step.cleanup(function(){})` - called when the step ends for any reason;
+  - `step.watch("cmd.proc.stage", function(value, fact){})` - subscribe to the changes of a
+    mandala variable of the current unit. Unlike everything else here the subscription
+    belongs to the check, not to the step: it stays after the step and after the check has
+    finished, until **Start** is pressed again or the window is closed, and moves to the
+    new unit when another one is selected. One handler per variable: watching it again
+    replaces the handler (so a restarted step does not subscribe twice), no handler removes
+    it. A handler that returns `true` is called again every second until it returns anything
+    else - for a command that must be repeated until the aircraft obeys;
   - `step.pass(msg)` / `step.fail(msg)` - finish the step; a script that returns
     with nothing pending passes.
 
@@ -114,28 +122,28 @@ arrows and a position counter; image lines separated by a blank line stay separa
 
     ![](two.png)   <- two separate images
 
-Blocking the takeoff while the check runs: the takeoff sequence is started by `cmd.proc.stage`,
-so a guard connected to the stage change forces it back to 0 while the check is running and in
-the TAKEOFF mode; it does nothing once the window is closed or the check is over, and a step
-of the procedure is free to launch the aircraft after the check has passed. Declared in the
-first step; the `typeof` check makes the connection once, so it survives Restart:
+Blocking the takeoff until the check has passed: the aircraft reports the progress of the
+takeoff in `cmd.proc.stage` and ignores what is written there, the takeoff is cancelled with
+`cmd.proc.action = proc_action_reset` (the CANCEL button). So a guard watches the stage and
+the mode, and cancels every takeoff attempt whatever started it (button, shortcut, joystick,
+another GCS). It is a cancellation, not a lock: the aircraft has already entered the first
+stage by the time the cancel command reaches it. Declared in the first step:
 
 ````
 ```js
-if (typeof takeoffGuard === "undefined") {
-    takeoffGuard = function() {
-        var c = ui.checklist
-        if (!c || c.phase !== "running") return
-        if (cmd.proc.mode !== proc_mode_TAKEOFF) return
-        if (cmd.proc.stage > 0) {
-            cmd.proc.stage = 0
-            c.api.log("takeoff blocked: the check is running")
-        }
-    }
-    apx.fleet.current.mandala.cmd.proc.stage.valueChanged.connect(takeoffGuard)
+function takeoffGuard() {
+    if (cmd.proc.mode !== proc_mode_TAKEOFF || cmd.proc.stage <= 0) return false
+    if (ui.checklist.result === "passed") return false
+    cmd.proc.action = proc_action_reset
+    console.warn("takeoff cancelled: the checklist is not passed")
+    step.log("takeoff cancelled: the checklist is not passed")
+    return true   // repeat every second until the stage is back to 0
 }
+step.watch("cmd.proc.stage", takeoffGuard)
+step.watch("cmd.proc.mode", takeoffGuard)
 ```
 ````
 
-The guard is connected to the unit selected when the step ran; after switching to another
-unit the first step is to be repeated.
+The guard works from the step that declares it until the window is closed, a failed check
+included; a procedure with a step that launches the aircraft lets the takeoff through with
+its own flag instead of `result`. Closing the window removes the guard.

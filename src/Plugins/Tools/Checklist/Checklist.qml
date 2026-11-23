@@ -65,6 +65,7 @@ QtObject {
     Component.onCompleted: ui.checklist = engine
     Component.onDestruction: {
         endStep()
+        clearWatches()
         if(ui.checklist === engine) ui.checklist = null
     }
 
@@ -252,11 +253,85 @@ QtObject {
         },
         // fn() is called when the step ends for any reason (pass, fail, restart, abort)
         "cleanup": function(fn) { engine._cleanup = fn },
+        // handler(value, fact) is called on every change of the mandala variable of the
+        // current unit ("cmd.proc.stage"); unlike the rest of the api the subscription
+        // outlives the step: it stays until Start is pressed again or the window is closed.
+        // One handler per variable, no handler removes it. A handler that returns true is
+        // called again every second until it returns anything else
+        "watch": function(path, handler) { engine.watch(path, handler) },
         // run the step from the beginning
         "restart": function() { engine.retry() },
         "pass": function(msg) { engine.pass(msg) },
         "fail": function(msg) { engine.fail(msg) },
     })
+
+    // ---------------------------------------------------------------- mandala watches
+    // [{path, handler, fact, slot, again}] requested by step.watch. They belong to the check,
+    // not to a step: dropped by reset (Start, reload) and with the engine (window closed),
+    // and follow the current unit
+    property var _watches: []
+    function watch(path, handler)
+    {
+        var p = String(path)
+        _watches = _watches.filter(function(w){
+            if(w.path !== p) return true
+            engine.unbindWatch(w)
+            return false
+        })
+        if(typeof(handler) !== "function") return
+        var w = { "path": p, "handler": handler, "fact": null, "slot": null, "again": false }
+        w.slot = function(){ engine.watchChanged(w) }
+        _watches = _watches.concat([w])
+        bindWatch(w)
+    }
+    function bindWatch(w)
+    {
+        unbindWatch(w)
+        var unit = apx.fleet.current
+        var f = unit ? unit.mandala.fact(w.path, true) : null
+        if(!f){
+            console.warn("Checklist: no mandala variable to watch:", w.path)
+            return
+        }
+        f.valueChanged.connect(w.slot)
+        w.fact = f
+    }
+    function unbindWatch(w)
+    {
+        w.again = false
+        // the fact may be gone together with its unit
+        try { if(w.fact) w.fact.valueChanged.disconnect(w.slot) } catch(e) {}
+        w.fact = null
+    }
+    function clearWatches()
+    {
+        watchTimer.stop()
+        if(!_watches || !_watches.length) return
+        _watches.forEach(unbindWatch)
+        _watches = []
+    }
+    // a handler error never fails the step: the step that asked for the watch may be long over
+    function watchChanged(w)
+    {
+        if(!w.fact || _watches.indexOf(w) < 0) return
+        w.again = false
+        try {
+            w.again = w.handler(w.fact.value, w.fact) === true
+        } catch(e) {
+            console.warn("Checklist: watch handler error (" + w.path + "):", e)
+        }
+        if(w.again) watchTimer.start()
+    }
+    // handlers that returned true: a command that may be lost on the way is repeated
+    // until the aircraft obeys
+    property Timer watchTimer: Timer {
+        interval: 1000
+        onTriggered: engine._watches.forEach(function(w){ if(w.again) engine.watchChanged(w) })
+    }
+    property Connections watchUnit: Connections {
+        target: apx.fleet
+        function onCurrentChanged() { engine._watches.forEach(engine.bindWatch) }
+    }
 
     // ---------------------------------------------------------------- script buttons
     // descriptors as given by the script, with their `when` conditions
@@ -324,6 +399,7 @@ QtObject {
     function reset()
     {
         endStep()
+        clearWatches()
         phase = "idle"
         result = ""
         current = -1
