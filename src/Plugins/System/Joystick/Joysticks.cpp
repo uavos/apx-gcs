@@ -181,10 +181,11 @@ Joystick *Joysticks::addJoystick(const JoystickDeviceInfo &info, int device_inde
     updateStatus();
     updateConfEnums();
     //find and load config
-    QString juid = j->juid();
-    if (configIds.contains(juid)) {
-        j->loadConfig(configs.at(configIds.indexOf(juid)));
-    }
+    int ci = configIds.indexOf(j->juid());
+    if (ci < 0 && device_index == 0)
+        ci = legacyConfigIndex(j->uid);
+    if (ci >= 0)
+        j->loadConfig(configs.at(ci));
     //show matching config in the selection box
     QString confTitle = j->f_title->text();
     if (!confTitle.isEmpty()) {
@@ -263,6 +264,30 @@ Joystick *Joysticks::addJoystick(const JoystickDeviceInfo &info, int device_inde
     });
 
     return j;
+}
+
+// Configs saved by the SDL based versions of the plugin are identified by
+// the number of the controller among all connected controllers (of any model)
+// and, for a controller which reports no strings, by another name.
+// Such config is found by the hardware model id alone and is given to the
+// first controller of the model. It is left intact for the older versions:
+// the controller saves its config with the new identity when it is loaded.
+int Joysticks::legacyConfigIndex(const QString &uid)
+{
+    int ci = -1;
+    int index = 0;
+    for (int i = 0; i < configs.size(); ++i) {
+        const auto &c = configs.at(i);
+        if (c.value("uid").toString() != uid)
+            continue;
+        // the lowest number, to not depend on the order of records
+        const int v = c.value("index").toVariant().toInt();
+        if (ci >= 0 && v >= index)
+            continue;
+        ci = i;
+        index = v;
+    }
+    return ci;
 }
 
 int Joysticks::userConfigIndex(const QString &title, const QString &name)

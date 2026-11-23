@@ -58,6 +58,7 @@ private:
 
     Joystick *addJoystick(const JoystickDeviceInfo &info, int device_index);
 
+    int legacyConfigIndex(const QString &uid);
     int userConfigIndex(const QString &title, const QString &name);
 
     void updateConfEnums();
