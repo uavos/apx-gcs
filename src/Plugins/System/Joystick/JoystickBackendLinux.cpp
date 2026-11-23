@@ -23,10 +23,12 @@
 // Linux joystick backend: kernel evdev interface (/dev/input/event*).
 // No external libraries: open/ioctl/read on device nodes,
 // QSocketNotifier for input and QFileSystemWatcher for hotplug.
+// The class of a device is taken from the udev database, when it is there.
 //
 // Device detection, controls numbering and values scaling are ported
 // from SDL2 2.30.8 (see the notice in JoystickBackend.cpp):
 //   src/joystick/linux/SDL_sysjoystick.c
+//   src/core/linux/SDL_udev.c
 //   src/core/linux/SDL_evdev_capabilities.c
 // The origin of each part is noted next to the code.
 
@@ -44,6 +46,8 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/sysmacros.h>
 #include <unistd.h>
 
 namespace {
@@ -59,7 +63,9 @@ inline bool testBit(const unsigned long *a, int bit)
 }
 
 const char *const INPUT_DIR = "/dev/input";
-constexpr int SCAN_DELAY_MS = 300; // let udev set permissions of a new node
+const char *const UDEV_DATA_DIR = "/run/udev/data"; // udev database
+const char *const UDEV_CONTROL = "/run/udev/control"; // exists while udev is running
+constexpr int SCAN_DELAY_MS = 300; // let udev process a new node
 constexpr int SCAN_RETRIES = 6;
 constexpr int HATS_MAX = 4; // ABS_HAT0X..ABS_HAT3Y
 
@@ -110,6 +116,64 @@ struct Event
     int value;
 };
 using Events = QVector<Event>;
+
+enum class DeviceClass {
+    Unknown, // not classified
+    Joystick,
+    Other,
+};
+using UdevProperties = QHash<QByteArray, QByteArray>;
+
+// Properties assigned to the device by udev.
+// SDL gets them through libudev (SDL_UDEV_GetProductInfo), here the record
+// of the device is read from the udev database: lines "E:<name>=<value>".
+// Returns false when there is no record: udev is not running (a container)
+// or the device is not processed by udev yet.
+bool udevProperties(int fd, UdevProperties &props)
+{
+    struct stat st;
+    if (fstat(fd, &st) < 0 || !S_ISCHR(st.st_mode))
+        return false;
+
+    QFile file(
+        QString("%1/c%2:%3").arg(UDEV_DATA_DIR).arg(major(st.st_rdev)).arg(minor(st.st_rdev)));
+    if (!file.open(QFile::ReadOnly))
+        return false;
+
+    const auto lines = file.readAll().split('\n');
+    for (const auto &line : lines) {
+        if (!line.startsWith("E:"))
+            continue;
+        const int pos = line.indexOf('=');
+        if (pos < 0)
+            continue;
+        props.insert(line.mid(2, pos - 2), line.mid(pos + 1));
+    }
+    return true;
+}
+
+// device_class (SDL_udev.c): the class of an input device by udev properties.
+// Keyboards, mice and other devices are not told apart: only joysticks are needed.
+//
+// Not ported: accelerometers reported as joysticks
+// (SDL_HINT_ACCELEROMETER_AS_JOYSTICK, enabled by default in SDL).
+DeviceClass udevDeviceClass(const UdevProperties &props)
+{
+    auto is = [&props](const char *name) { return props.value(name) == "1"; };
+
+    if (is("ID_INPUT_JOYSTICK"))
+        return DeviceClass::Joystick;
+
+    if (is("ID_INPUT_ACCELEROMETER") || is("ID_INPUT_MOUSE") || is("ID_INPUT_TOUCHSCREEN")
+        || is("ID_INPUT_KEY"))
+        return DeviceClass::Other;
+
+    // Fall back to old style input classes
+    if (props.contains("ID_CLASS"))
+        return props.value("ID_CLASS") == "joystick" ? DeviceClass::Joystick : DeviceClass::Other;
+
+    return DeviceClass::Unknown;
+}
 
 // SDL_EVDEV_GuessDeviceClass (SDL_evdev_capabilities.c), the joystick part.
 // SDL uses it when the device class is not provided by udev.
@@ -244,7 +308,7 @@ private:
         });
 
         QSet<QString> present;
-        bool denied = false;
+        bool retry = false;
         for (const auto &name : names) {
             if (!started)
                 return; // stopped from a signal handler
@@ -252,7 +316,7 @@ private:
             present.insert(path);
             if (devices.contains(path))
                 continue;
-            openDevice(path, &denied);
+            openDevice(path, &retry);
         }
         if (!started)
             return;
@@ -266,23 +330,23 @@ private:
             closeDevice(dev, true);
         }
 
-        // a new node could be not accessible yet, permissions are set by udev later
-        if (denied && scanRetries > 0 && started) {
+        // a new node could be not processed by udev yet:
+        // its permissions and class are set later
+        if (retry && scanRetries > 0 && started) {
             scanRetries--;
             scanTimer.start();
         }
     }
 
-    void openDevice(const QString &path, bool *denied)
+    void openDevice(const QString &path, bool *retry)
     {
         int fd = ::open(path.toLocal8Bit().constData(), O_RDONLY | O_NONBLOCK | O_CLOEXEC);
         if (fd < 0) {
             if (errno == EACCES || errno == EPERM)
-                *denied = true;
+                *retry = true;
             return;
         }
 
-        // IsJoystick (SDL_sysjoystick.c)
         unsigned long evbit[nlongs(EV_CNT)] = {};
         unsigned long keybit[nlongs(KEY_CNT)] = {};
         unsigned long absbit[nlongs(ABS_CNT)] = {};
@@ -292,7 +356,22 @@ private:
             ::close(fd);
             return;
         }
-        if (!isJoystick(evbit, keybit, absbit)) {
+
+        // IsJoystick (SDL_sysjoystick.c): the class assigned by udev is used,
+        // capabilities are examined only when udev doesn't provide the class.
+        // A joystick is not required to have X and Y axes or any axes at all
+        // (a throttle, pedals, a buttons panel): udev knows better.
+        UdevProperties props;
+        const bool processed = udevProperties(fd, props);
+        DeviceClass deviceClass = udevDeviceClass(props);
+        if (deviceClass == DeviceClass::Unknown) {
+            if (isJoystick(evbit, keybit, absbit)) {
+                deviceClass = DeviceClass::Joystick;
+            } else if (!processed && QFile::exists(UDEV_CONTROL)) {
+                *retry = true; // udev may classify it as a joystick
+            }
+        }
+        if (deviceClass != DeviceClass::Joystick) {
             ::close(fd);
             return;
         }
