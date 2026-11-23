@@ -351,6 +351,21 @@ QString App::loadText(const QString &fileName)
         return QString();
     return QString::fromUtf8(f.readAll());
 }
+bool App::appendText(const QString &fileName, const QString &line)
+{
+    QString path = fileName;
+    if (path.startsWith("file:"))
+        path = QUrl(path).toLocalFile();
+    QFileInfo fi(path);
+    if (!fi.absoluteDir().exists() && !fi.absoluteDir().mkpath("."))
+        return false;
+    QFile f(path);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+        return false;
+    f.write(line.toUtf8());
+    f.write("\n");
+    return true;
+}
 void App::setGlobalProperty(const QString &path, const QVariant &value)
 {
     AppEngine *e = _instance->engine();

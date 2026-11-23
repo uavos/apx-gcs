@@ -35,6 +35,13 @@ import Apx.Application
     Loaded in stages: this file only looks the file up (stage 1); while one exists
     ChecklistLauncher, the task bar button, is loaded (stage 2); the button loads Checklist,
     the engine with its window, on press (stage 3). Nothing else exists until it is needed.
+
+    The check is started on the ground only: the button is shown and Start works while the
+    unit is in TAXI, not in the air and the uplink is enabled (`blocked` names the reason
+    otherwise). A running check is never interrupted by the engine: modes and takeoff are
+    the procedure's own business, and a procedure that must keep the aircraft on the ground
+    blocks the takeoff itself (see README). With `checklistAuto` set by the main layout
+    (the lite profile) the checklist opens itself when the unit enters TAXI.
 */
 
 AppPlugin {
@@ -43,6 +50,22 @@ AppPlugin {
     title: qsTr("Checklist")
     descr: qsTr("Aircraft check procedures")
     icon: "clipboard-check"
+
+    // ---------------------------------------------------------------- launch conditions
+    readonly property var f_mode: mandala.cmd.proc.mode
+    readonly property var f_inair: mandala.cmd.ins.inair
+    readonly property var f_sysmode: mandala.est.sys.mode
+    readonly property bool airborne: f_inair.value == ins_inair_yes || f_sysmode.text === "airborne"
+    // why the check cannot be started now, empty when it can
+    readonly property string blocked: airborne ? qsTr("The aircraft is in the air")
+                                    : f_mode.value != proc_mode_TAXI ? qsTr("Switch the aircraft to TAXI")
+                                    : apx.datalink.readonly.value ? qsTr("Uplink is disabled")
+                                    : ""
+
+    // main layout flag (lite profile): open the checklist when the check becomes possible
+    uiComponent: "main"
+    property bool autoOpen: false
+    onConfigure: autoOpen = ui.main.checklistAuto === true
 
     // ---------------------------------------------------------------- procedure file
     readonly property string dir: StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/UAVOS/Checklists"
@@ -79,6 +102,8 @@ AppPlugin {
         sourceComponent: ChecklistLauncher {
             file: plugin.file
             callsign: plugin.callsign
+            blocked: plugin.blocked
+            autoOpen: plugin.autoOpen
         }
     }
 }
