@@ -49,6 +49,10 @@ struct JoystickAxisFilter
     // v is in device independent units (AxisMin..AxisMax),
     // values to report are appended to out
     void update(int v, QVarLengthArray<int, 2> &out);
+
+    // Return to the rest (initial) position, when the device is lost.
+    // Nothing is reported for an axis which has never been reported.
+    void recenter(QVarLengthArray<int, 2> &out);
 };
 
 // Platform access to joysticks.
@@ -112,6 +116,8 @@ public:
 
 signals:
     void deviceAdded(JoystickDeviceInfo info);
+    // A lost device: its controls are reported as returned to the rest
+    // position and released first (SDL_PrivateJoystickForceRecentering)
     void deviceRemoved(int id);
 
     void axisChanged(int id, int axis, qreal value); // value is -1..+1

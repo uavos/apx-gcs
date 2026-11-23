@@ -86,6 +86,14 @@ void JoystickAxisFilter::update(int v, QVarLengthArray<int, 2> &out)
     out.append(v);
 }
 
+// SDL_PrivateJoystickForceRecentering (src/joystick/SDL_joystick.c), the axis part:
+// SDL keeps the rest position in 'zero', which always equals initial_value.
+void JoystickAxisFilter::recenter(QVarLengthArray<int, 2> &out)
+{
+    if (has_initial_value)
+        update(initial_value, out);
+}
+
 // ---------------------------------------------------------------------------
 // SDL_CreateJoystickName (src/joystick/SDL_joystick.c)
 //

@@ -469,9 +469,50 @@ private:
         Device *dev = devices.take(device);
         if (!dev)
             return;
+        // Controls of a lost device can't return by themselves:
+        // a deflected axis would keep its command forever.
+        Events events;
+        forceRecentering(dev, events);
         const int id = dev->id;
         freeDevice(dev);
+        // Signals are emitted after the device is destroyed:
+        // a handler may stop the backend.
+        dispatch(id, events);
         emit deviceRemoved(id);
+    }
+
+    // SDL_PrivateJoystickForceRecentering (SDL_joystick.c):
+    // tell that everything is centered/unpressed
+    void forceRecentering(Device *dev, Events &events)
+    {
+        for (auto it = dev->elements.begin(); it != dev->elements.end(); ++it) {
+            Element &el = *it;
+            switch (el.kind) {
+            case Element::Axis: {
+                QVarLengthArray<int, 2> out;
+                el.filter.recenter(out);
+                for (int v : out)
+                    events.append(Event{el.kind, el.index, v});
+            } break;
+            case Element::Button:
+                if (el.state == 0)
+                    break;
+                el.state = 0;
+                events.append(Event{el.kind, el.index, 0});
+                break;
+            case Element::Hat:
+                if (el.state == HatCentered)
+                    break;
+                el.state = HatCentered;
+                events.append(Event{el.kind, el.index, HatCentered});
+                break;
+            }
+        }
+        // elements are stored unordered: report axes, then buttons, then hats,
+        // each kind by the number of the control, as SDL does
+        std::stable_sort(events.begin(), events.end(), [](const Event &a, const Event &b) {
+            return a.kind != b.kind ? a.kind < b.kind : a.index < b.index;
+        });
     }
 
     void inputValue(IOHIDValueRef value)

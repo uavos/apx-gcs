@@ -427,10 +427,37 @@ private:
             dev->notifier->deleteLater();
         }
         ::close(dev->fd);
+        // Controls of a lost device can't return by themselves:
+        // a deflected axis would keep its command forever.
+        Events events;
+        if (notify)
+            forceRecentering(dev, events);
         const int id = dev->id;
         delete dev;
-        if (notify)
+        if (notify) {
+            dispatch(id, events);
             emit deviceRemoved(id);
+        }
+    }
+
+    // SDL_PrivateJoystickForceRecentering (SDL_joystick.c):
+    // tell that everything is centered/unpressed
+    void forceRecentering(Device *dev, Events &events)
+    {
+        for (int i = 0; i < dev->axes.size(); ++i) {
+            QVarLengthArray<int, 2> out;
+            dev->axes[i].filter.recenter(out);
+            for (int v : out)
+                events.append(Event{Event::AxisEvent, i, v});
+        }
+        for (int i = 0; i < dev->buttonStates.size(); ++i)
+            setButton(dev, i, 0, events);
+        for (Hat &hat : dev->hats) {
+            if (!hat.present || hat.pos == HatCentered)
+                continue;
+            hat.pos = HatCentered;
+            events.append(Event{Event::HatEvent, hat.index, HatCentered});
+        }
     }
 
     // HandleInputEvents (SDL_sysjoystick.c)
