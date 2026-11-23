@@ -97,8 +97,162 @@ void JoystickAxisFilter::recenter(QVarLengthArray<int, 2> &out)
 // ---------------------------------------------------------------------------
 // SDL_CreateJoystickName (src/joystick/SDL_joystick.c)
 //
-// Not ported: names of well known game controllers selected by vendor and
-// product id (GuessControllerName and the fallback by controller type).
+// Not ported: the name by controller type for a device which reports no
+// strings (SDL_GetJoystickGameControllerTypeFromVIDPID), such device is named
+// by its vendor and product id.
+
+// GuessControllerName (src/joystick/controller_type.c):
+// names of well known game controllers, which replace the strings reported
+// by hardware. The list is the named entries of arrControllers
+// (src/joystick/controller_list.h, Copyright (C) Valve Corporation,
+// distributed under the same terms as SDL).
+static const char *controllerName(quint16 vendor, quint16 product)
+{
+    static const struct
+    {
+        quint32 vidpid;
+        const char *name;
+    } list[] = {
+        {0x25630575, "Retro-bit Controller"},
+        {0x045e028e, "Xbox 360 Controller"},
+        {0x045e028f, "Xbox 360 Controller"},
+        {0x045e0291, "Xbox 360 Wireless Controller"},
+        {0x045e02a1, "Xbox 360 Wireless Controller"},
+        {0x045e02a9, "Xbox 360 Wireless Controller"},
+        {0x045e0719, "Xbox 360 Wireless Controller"},
+        {0x0e6f0113, "PDP Xbox 360 Afterglow"},
+        {0x0e6f011f, "PDP Xbox 360 Rock Candy"},
+        {0x0e6f0125, "PDP INJUSTICE FightStick"},
+        {0x0e6f0127, "PDP INJUSTICE FightPad"},
+        {0x0e6f0131, "PDP EA Soccer Controller"},
+        {0x0e6f0133, "PDP Battlefield 4 Controller"},
+        {0x0e6f0143, "PDP MK X Fight Stick"},
+        {0x0e6f0147, "PDP Xbox 360 Marvel Controller"},
+        {0x0e6f0201, "PDP Xbox 360 Controller"},
+        {0x0e6f0213, "PDP Xbox 360 Afterglow"},
+        {0x0e6f021f, "PDP Xbox 360 Rock Candy"},
+        {0x0e6f0301, "PDP Xbox 360 Controller"},
+        {0x0e6f0313, "PDP Xbox 360 Afterglow"},
+        {0x0e6f0314, "PDP Xbox 360 Afterglow"},
+        {0x0e6f0401, "PDP Xbox 360 Controller"},
+        {0x0f0d00db, "HORI Slime Controller"},
+        {0x10381430, "SteelSeries Stratus Duo"},
+        {0x10381431, "SteelSeries Stratus Duo"},
+        {0x1949041a, "Amazon Luna Controller"},
+        {0x045e02d1, "Xbox One Controller"},
+        {0x045e02dd, "Xbox One Controller"},
+        {0x045e02e0, "Xbox One S Controller"},
+        {0x045e02e3, "Xbox One Elite Controller"},
+        {0x045e02ea, "Xbox One S Controller"},
+        {0x045e02fd, "Xbox One S Controller"},
+        {0x045e02ff, "Xbox One Controller"},
+        {0x045e0b00, "Xbox One Elite 2 Controller"},
+        {0x045e0b05, "Xbox One Elite 2 Controller"},
+        {0x045e0b0a, "Xbox Adaptive Controller"},
+        {0x045e0b0c, "Xbox Adaptive Controller"},
+        {0x045e0b12, "Xbox Series X Controller"},
+        {0x045e0b13, "Xbox Series X Controller"},
+        {0x045e0b20, "Xbox One S Controller"},
+        {0x045e0b21, "Xbox Adaptive Controller"},
+        {0x045e0b22, "Xbox One Elite 2 Controller"},
+        {0x0e6f0139, "PDP Xbox One Afterglow"},
+        {0x0e6f013b, "PDP Xbox One Face-Off Controller"},
+        {0x0e6f0145, "PDP MK X Fight Pad"},
+        {0x0e6f0146, "PDP Xbox One Rock Candy"},
+        {0x0e6f015b, "PDP Fallout 4 Vault Boy Controller"},
+        {0x0e6f015c, "PDP Xbox One @Play Controller"},
+        {0x0e6f015d, "PDP Mirror's Edge Controller"},
+        {0x0e6f015f, "PDP Metallic Controller"},
+        {0x0e6f0160, "PDP NFL Face-Off Controller"},
+        {0x0e6f0161, "PDP Xbox One Camo"},
+        {0x0e6f0162, "PDP Xbox One Controller"},
+        {0x0e6f0163, "PDP Deliverer of Truth"},
+        {0x0e6f0164, "PDP Battlefield 1 Controller"},
+        {0x0e6f0165, "PDP Titanfall 2 Controller"},
+        {0x0e6f0166, "PDP Mass Effect: Andromeda Controller"},
+        {0x0e6f0167, "PDP Halo Wars 2 Face-Off Controller"},
+        {0x0e6f0205, "PDP Victrix Pro Fight Stick"},
+        {0x0e6f0206, "PDP Mortal Kombat Controller"},
+        {0x0e6f0246, "PDP Xbox One Rock Candy"},
+        {0x0e6f0261, "PDP Xbox One Camo"},
+        {0x0e6f0262, "PDP Xbox One Controller"},
+        {0x0e6f02a0, "PDP Xbox One Midnight Blue"},
+        {0x0e6f02a1, "PDP Xbox One Verdant Green"},
+        {0x0e6f02a2, "PDP Xbox One Crimson Red"},
+        {0x0e6f02a3, "PDP Xbox One Arctic White"},
+        {0x0e6f02a4, "PDP Xbox One Phantom Black"},
+        {0x0e6f02a5, "PDP Xbox One Ghost White"},
+        {0x0e6f02a6, "PDP Xbox One Revenant Blue"},
+        {0x0e6f02a7, "PDP Xbox One Raven Black"},
+        {0x0e6f02a8, "PDP Xbox One Arctic White"},
+        {0x0e6f02a9, "PDP Xbox One Midnight Blue"},
+        {0x0e6f02aa, "PDP Xbox One Verdant Green"},
+        {0x0e6f02ab, "PDP Xbox One Crimson Red"},
+        {0x0e6f02ac, "PDP Xbox One Ember Orange"},
+        {0x0e6f02ad, "PDP Xbox One Phantom Black"},
+        {0x0e6f02ae, "PDP Xbox One Ghost White"},
+        {0x0e6f02af, "PDP Xbox One Revenant Blue"},
+        {0x0e6f02b0, "PDP Xbox One Raven Black"},
+        {0x0e6f02b1, "PDP Xbox One Arctic White"},
+        {0x0e6f02b3, "PDP Xbox One Afterglow"},
+        {0x0e6f02b5, "PDP Xbox One GAMEware Controller"},
+        {0x0e6f02bd, "PDP Xbox One Royal Purple"},
+        {0x0e6f02be, "PDP Xbox One Raven Black"},
+        {0x0e6f02bf, "PDP Xbox One Midnight Blue"},
+        {0x0e6f02c0, "PDP Xbox One Phantom Black"},
+        {0x0e6f02c1, "PDP Xbox One Ghost White"},
+        {0x0e6f02c2, "PDP Xbox One Revenant Blue"},
+        {0x0e6f02c3, "PDP Xbox One Verdant Green"},
+        {0x0e6f02c4, "PDP Xbox One Ember Orange"},
+        {0x0e6f02c5, "PDP Xbox One Royal Purple"},
+        {0x0e6f02c6, "PDP Xbox One Crimson Red"},
+        {0x0e6f02c7, "PDP Xbox One Arctic White"},
+        {0x0e6f02c8, "PDP Kingdom Hearts Controller"},
+        {0x0e6f02c9, "PDP Xbox One Phantasm Red"},
+        {0x0e6f02ca, "PDP Xbox One Specter Violet"},
+        {0x0e6f02cb, "PDP Xbox One Specter Violet"},
+        {0x0e6f02cd, "PDP Xbox One Blu-merang"},
+        {0x0e6f02ce, "PDP Xbox One Cranblast"},
+        {0x0e6f02cf, "PDP Xbox One Aqualime"},
+        {0x0e6f02d5, "PDP Xbox One Red Camo"},
+        {0x0e6f0346, "PDP Xbox One RC Gamepad"},
+        {0x0e6f0446, "PDP Xbox One RC Gamepad"},
+        {0x0e6f02da, "PDP Xbox Series X Afterglow"},
+        {0x0e6f02d6, "Victrix Gambit Tournament Controller"},
+        {0x0e6f02d9, "PDP Xbox Series X Midnight Blue"},
+        {0x20d62001, "PowerA Xbox Series X Controller"},
+        {0x20d62002, "PowerA Xbox Series X Controller"},
+        {0x20d62003, "PowerA Xbox Series X Controller"},
+        {0x20d62004, "PowerA Xbox Series X Controller"},
+        {0x20d62005, "PowerA Xbox Series X Controller"},
+        {0x20d62006, "PowerA Xbox Series X Controller"},
+        {0x20d62009, "PowerA Xbox Series X Controller"},
+        {0x20d6200a, "PowerA Xbox Series X Controller"},
+        {0x20d6200b, "PowerA Xbox Series X Controller"},
+        {0x20d6200c, "PowerA Xbox Series X Controller"},
+        {0x20d6200d, "PowerA Xbox Series X Controller"},
+        {0x20d6200e, "PowerA Xbox Series X Controller"},
+        {0x20d6200f, "PowerA Xbox Series X Controller"},
+        {0x20d62011, "PowerA Xbox Series X Controller"},
+        {0x20d62012, "PowerA Xbox Series X Controller"},
+        {0x20d62015, "PowerA Xbox Series X Controller"},
+        {0x20d62016, "PowerA Xbox Series X Controller"},
+        {0x20d62017, "PowerA Xbox Series X Controller"},
+        {0x20d62018, "PowerA Xbox Series X Controller"},
+        {0x20d62019, "PowerA Xbox Series X Controller"},
+        {0x20d6201a, "PowerA Xbox Series X Controller"},
+        {0x20d64001, "PowerA Fusion Pro 2 Controller"},
+        {0x20d64002, "PowerA Spectra Infinity Controller"},
+        {0x24c6543a, "PowerA Xbox One Controller"},
+    };
+
+    const quint32 vidpid = (static_cast<quint32>(vendor) << 16) | product;
+    for (const auto &c : list) {
+        if (c.vidpid == vidpid)
+            return c.name;
+    }
+    return nullptr;
+}
 
 // SDL_tolower: ASCII letters only
 static QChar asciiLower(QChar c)
@@ -129,6 +283,9 @@ QString JoystickBackend::makeName(quint16 vendor,
         {"QANBA USA,LLC", "Qanba"},
         {"Unknown ", ""},
     };
+
+    if (const char *custom_name = controllerName(vendor, product))
+        return QString(custom_name);
 
     QString vendor_name = vendorName;
     QString product_name = productName;

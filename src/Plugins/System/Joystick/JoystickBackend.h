@@ -89,7 +89,8 @@ public:
     // returns nullptr when the platform is not supported
     static JoystickBackend *create(QObject *parent);
 
-    // Device title from the strings reported by hardware
+    // Device title: the name of a well known game controller,
+    // otherwise made from the strings reported by hardware
     // (SDL_CreateJoystickName)
     static QString makeName(quint16 vendor,
                             quint16 product,
