@@ -68,6 +68,7 @@ private:
 public slots:
     void openFile(AppGcs::FileType type = FileType::UnknownFile);
 
-signals:
-    void fileOpenRequest(QString fileName);
+private slots:
+    // import the file by its type
+    void importFile(QString fileName);
 };

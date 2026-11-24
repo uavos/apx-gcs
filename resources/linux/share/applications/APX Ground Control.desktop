@@ -2,10 +2,10 @@
 Type=Application
 Name=APX Ground Control
 Comment=UAVOS APX Ground Control Software
-Exec=gcs
+Exec=gcs %F
 GenericName=GCS
 Icon=uavos-gcs
-MimeType=
+MimeType=application/x-apx-telemetry;application/x-apx-unit;application/x-apx-mission;
 StartupNotify=true
 Terminal=false
 X-Ubuntu-Gettext-Domain=desktop_kdebase

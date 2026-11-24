@@ -37,6 +37,10 @@ int main(int argc, char *argv[])
                "Ground Control",
                QUrl(QStringLiteral("qrc:/Apx/Application/Application.qml")));
 
+    // files are opened by the instance which is already running
+    if (app.filesForwarded())
+        return 0;
+
 #if defined(Q_OS_MACOS) && QT_VERSION < QT_VERSION_CHECK(6, 12, 1)
     // QTBUG-149612: an accessibility client asking an item view for its selected row
     // makes Qt read freed cells and crash - expose item views as plain widgets

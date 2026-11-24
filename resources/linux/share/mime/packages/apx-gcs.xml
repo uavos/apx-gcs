@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-apx-telemetry">
+    <comment>APX Telemetry data</comment>
+    <glob pattern="*.apxtlm"/>
+    <glob pattern="*.telemetry"/>
+  </mime-type>
+  <mime-type type="application/x-apx-unit">
+    <comment>APX Configuration data</comment>
+    <glob pattern="*.unit"/>
+    <glob pattern="*.nodes"/>
+  </mime-type>
+  <mime-type type="application/x-apx-mission">
+    <comment>APX Mission</comment>
+    <glob pattern="*.mission"/>
+  </mime-type>
+</mime-info>

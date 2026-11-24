@@ -105,6 +105,44 @@
 				</array>
 			</dict>
 		</dict>
+		<dict>
+			<key>UTTypeIconFile</key>
+			<string>/icons/uavos-logo.icns</string>
+			<key>UTTypeDescription</key>
+			<string>APX Unit configuration</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>com.uavos.unit</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>unit</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIconFile</key>
+			<string>/icons/uavos-logo.icns</string>
+			<key>UTTypeDescription</key>
+			<string>APX Mission</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>com.uavos.mission</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>mission</string>
+				</array>
+			</dict>
+		</dict>
 	</array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
@@ -117,6 +155,8 @@
 			<array>
 				<string>com.uavos.apxtlm</string>
 				<string>com.uavos.nodes</string>
+				<string>com.uavos.unit</string>
+				<string>com.uavos.mission</string>
 				<string>com.uavos.apxfw</string>
 			</array>
 		</dict>
