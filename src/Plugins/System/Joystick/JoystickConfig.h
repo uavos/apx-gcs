@@ -23,7 +23,6 @@
 
 #include <QtCore>
 
-#include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
 
 // Editor of a saved user configuration.
@@ -47,6 +46,7 @@ public:
     Fact *f_buttons;
     Fact *f_hats;
 
+    Fact *f_save;
     Fact *f_remove;
 
     // the configuration as it is saved, identifies the record to update
@@ -55,17 +55,16 @@ public:
     void load(const QJsonObject &config);
     QJsonObject save() const;
 
-private:
-    DelayedEvent saveEvent;
-    bool _loading{false};
+    // edited settings are shown as modified until they are saved
+    void markSaved();
 
+private:
     // number of controls up to the last one which is set
     static int used(Fact *controls);
 
 private slots:
     void updateControls();
-    void schedule();
 
 signals:
-    void changed(); // edited by the user
+    void changed(); // save of the edited settings is requested
 };

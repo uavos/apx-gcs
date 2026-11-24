@@ -72,6 +72,11 @@ public:
     static void addControls(Fact *axes, Fact *buttons, Fact *hats, int na, int nb, int nh);
     static void loadControls(const QJsonObject &conf, Fact *axes, Fact *buttons, Fact *hats);
     static QJsonObject saveControls(Fact *axes, Fact *buttons, Fact *hats);
+    // Edited settings are shown as modified until they are saved:
+    // take the current settings of the page as the saved ones.
+    static void markSaved(Fact *page, Fact *axes);
+
+    void markSaved() { markSaved(this, f_axes); }
 
 private:
     DelayedEvent saveEvent;

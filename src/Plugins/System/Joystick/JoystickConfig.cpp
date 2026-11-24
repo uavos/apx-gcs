@@ -24,12 +24,14 @@
 #include "Joystick.h"
 
 JoystickConfig::JoystickConfig(Fact *parent)
-    : Fact(parent, "c#", "", "", Group | FlatModel)
+    : Fact(parent, "c#", "", "", Group | FlatModel | ModifiedGroup)
 {
     f_title = new Fact(this, "ctitle", tr("Title"), tr("Configuration title"), Text);
     f_name = new Fact(this, "device", tr("Device"), tr("Device name"), Text);
     connect(f_title, &Fact::valueChanged, this, [this]() { setTitle(f_title->text()); });
     connect(f_name, &Fact::valueChanged, this, [this]() { setDescr(f_name->text()); });
+    f_title->setOption(ModifiedTrack);
+    f_name->setOption(ModifiedTrack);
 
     f_naxes = new Fact(this, "naxes", tr("Axes count"), tr("Number of device axes"), Int);
     f_naxes->setMin(0);
@@ -41,9 +43,17 @@ JoystickConfig::JoystickConfig(Fact *parent)
     f_nhats->setMin(0);
     f_nhats->setMax(8);
 
-    f_axes = new Fact(this, "axes", tr("Axes"), "", Section);
-    f_buttons = new Fact(this, "buttons", tr("Buttons"), "", Section);
-    f_hats = new Fact(this, "hats", tr("Hats"), "", Section);
+    f_axes = new Fact(this, "axes", tr("Axes"), "", Section | ModifiedGroup);
+    f_buttons = new Fact(this, "buttons", tr("Buttons"), "", Section | ModifiedGroup);
+    f_hats = new Fact(this, "hats", tr("Hats"), "", Section | ModifiedGroup);
+
+    f_save = new Fact(this,
+                      "save",
+                      tr("Save"),
+                      tr("Save configuration"),
+                      Action | Apply,
+                      "content-save");
+    connect(f_save, &Fact::triggered, this, &JoystickConfig::changed);
 
     f_remove = new Fact(this,
                         "remove",
@@ -51,11 +61,6 @@ JoystickConfig::JoystickConfig(Fact *parent)
                         tr("Remove configuration"),
                         Action | Remove | CloseOnTrigger,
                         "delete");
-
-    saveEvent.setInterval(1000);
-    connect(&saveEvent, &DelayedEvent::triggered, this, &JoystickConfig::changed);
-    connect(f_title, &Fact::valueChanged, this, &JoystickConfig::schedule);
-    connect(f_name, &Fact::valueChanged, this, &JoystickConfig::schedule);
 
     connect(f_naxes, &Fact::valueChanged, this, &JoystickConfig::updateControls);
     connect(f_nbuttons, &Fact::valueChanged, this, &JoystickConfig::updateControls);
@@ -94,31 +99,15 @@ void JoystickConfig::updateControls()
         f_hats->child(f_hats->size() - 1)->deleteFact();
 
     Joystick::addControls(f_axes, f_buttons, f_hats, na, nb, nh);
-
-    FactList list{f_axes, f_buttons, f_hats};
-    for (auto f : list) {
-        for (auto c : f->facts()) {
-            connect(c, &Fact::valueChanged, this, &JoystickConfig::schedule, Qt::UniqueConnection);
-            for (auto p : c->facts()) {
-                connect(p,
-                        &Fact::valueChanged,
-                        this,
-                        &JoystickConfig::schedule,
-                        Qt::UniqueConnection);
-            }
-        }
-    }
 }
 
-void JoystickConfig::schedule()
+void JoystickConfig::markSaved()
 {
-    if (!_loading)
-        saveEvent.schedule();
+    Joystick::markSaved(this, f_axes);
 }
 
 void JoystickConfig::load(const QJsonObject &config)
 {
-    _loading = true;
     stored = config;
     f_title->setValue(config["title"].toString());
     f_name->setValue(config["name"].toString());
@@ -140,7 +129,7 @@ void JoystickConfig::load(const QJsonObject &config)
     f_nhats->setValue(qMax((cnt[2] + 3) / 4, f_nhats->value().toInt()));
 
     Joystick::loadControls(conf, f_axes, f_buttons, f_hats);
-    _loading = false;
+    markSaved();
 }
 
 QJsonObject JoystickConfig::save() const

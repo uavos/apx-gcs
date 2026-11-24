@@ -240,6 +240,15 @@ Joystick *Joysticks::addJoystick(const JoystickDeviceInfo &info, int device_inde
         }
         //update existing config with the same title, create new only when title changed
         int i = userConfigIndex(title, j->devName);
+        if (i < 0) {
+            //the selected config is updated, even when it was made for another device
+            const int sel = configTitles.value(j->f_conf->text(), -1);
+            if (sel >= 0 && configs.at(sel).value("uid").toString() == "user"
+                && configs.at(sel).value("title").toString() == title) {
+                i = sel;
+                config["name"] = configs.at(sel).value("name");
+            }
+        }
         if (i >= 0) {
             configs[i] = config;
             apxMsg() << tr("Joystick config updated") << title;
@@ -250,6 +259,7 @@ Joystick *Joysticks::addJoystick(const JoystickDeviceInfo &info, int device_inde
         }
         saveConfigs();
         showConfig(j);
+        j->markSaved();
     });
     connect(j->f_remove, &Fact::triggered, this, [this, j]() {
         const QString title = j->f_title->text().simplified();
@@ -409,8 +419,10 @@ void Joysticks::createConfig()
 void Joysticks::configEdited(JoystickConfig *c)
 {
     const QJsonObject config = c->save();
-    if (config == c->stored)
+    if (config == c->stored) {
+        c->markSaved();
         return;
+    }
     const QString title = config.value("title").toString();
     const QString name = config.value("name").toString();
     const QString storedTitle = c->stored.value("title").toString();
@@ -431,6 +443,8 @@ void Joysticks::configEdited(JoystickConfig *c)
     configs[i] = config;
     configIds[i] = QString("0:%1:user").arg(name);
     c->stored = config;
+    c->markSaved();
+    apxMsg() << tr("Joystick config updated") << title;
 
     // Controllers which use the config follow it: a controller keeps its own
     // copy of the settings, known by the title of the config and the device name.

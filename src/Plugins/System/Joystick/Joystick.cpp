@@ -27,7 +27,7 @@
 #include "JoystickAxis.h"
 
 Joystick::Joystick(Fact *parent, const JoystickDeviceInfo &info, int device_index)
-    : Fact(parent, "j#", "", "", Group | Bool | FlatModel)
+    : Fact(parent, "j#", "", "", Group | Bool | FlatModel | ModifiedGroup)
     , device_index(device_index)
     , uid(info.uid)
     , instanceID(info.id)
@@ -37,13 +37,26 @@ Joystick::Joystick(Fact *parent, const JoystickDeviceInfo &info, int device_inde
 
     f_title = new Fact(this, "ctitle", tr("Title"), tr("Configuration title"), Text);
     connect(f_title, &Fact::valueChanged, this, [this]() {
-        setDescr(devName);
-        setTitle(f_title->text());
+        // a controller without configuration is shown by the device name
+        const QString s = f_title->text().simplified();
+        if (s.isEmpty()) {
+            setTitle(devName);
+            setDescr(QString("A%1 B%2 H%3 [%4]")
+                         .arg(f_axes->size())
+                         .arg(f_buttons->size())
+                         .arg(f_hats->size())
+                         .arg(uid));
+        } else {
+            setTitle(s);
+            setDescr(devName);
+        }
     });
 
-    f_axes = new Fact(this, "axes", tr("Axes"), "", Section);
-    f_buttons = new Fact(this, "buttons", tr("Buttons"), "", Section);
-    f_hats = new Fact(this, "hats", tr("Hats"), "", Section);
+    f_title->setOption(ModifiedTrack);
+
+    f_axes = new Fact(this, "axes", tr("Axes"), "", Section | ModifiedGroup);
+    f_buttons = new Fact(this, "buttons", tr("Buttons"), "", Section | ModifiedGroup);
+    f_hats = new Fact(this, "hats", tr("Hats"), "", Section | ModifiedGroup);
 
     f_save = new Fact(this,
                       "save",
@@ -157,12 +170,16 @@ void Joystick::updateHat(int i, quint8 v)
 void Joystick::addControls(Fact *axes, Fact *buttons, Fact *hats, int na, int nb, int nh)
 {
     while (axes->size() < na) {
-        (new JoystickAxis(axes))->setOption(HighlightActive);
+        auto f = new JoystickAxis(axes);
+        f->setOption(HighlightActive);
+        f->setOption(ModifiedTrack);
+        f->f_hyst->setOption(ModifiedTrack);
     }
     while (buttons->size() < nb) {
         const int i = buttons->size();
-        (new Fact(buttons, QString("button%1").arg(i), QString::number(i + 1), "", Text))
-            ->setOption(HighlightActive);
+        auto f = new Fact(buttons, QString("button%1").arg(i), QString::number(i + 1), "", Text);
+        f->setOption(HighlightActive);
+        f->setOption(ModifiedTrack);
     }
     while (hats->size() < nh * 4) {
         const int i = hats->size() / 4;
@@ -172,8 +189,10 @@ void Joystick::addControls(Fact *axes, Fact *buttons, Fact *hats, int na, int nb
         list << new Fact(hats, QString("hat%1_r").arg(i), n + "_RIGHT", "", Text);
         list << new Fact(hats, QString("hat%1_d").arg(i), n + "_DOWN", "", Text);
         list << new Fact(hats, QString("hat%1_l").arg(i), n + "_LEFT", "", Text);
-        for (auto f : list)
+        for (auto f : list) {
             f->setOption(HighlightActive);
+            f->setOption(ModifiedTrack);
+        }
     }
 }
 
@@ -237,10 +256,19 @@ QJsonObject Joystick::saveControls(Fact *axes, Fact *buttons, Fact *hats)
     return conf;
 }
 
+void Joystick::markSaved(Fact *page, Fact *axes)
+{
+    page->backup();
+    // an axis is a group with a value, which is not kept by the backup
+    for (auto f : axes->facts())
+        f->setBackupValue(f->value());
+}
+
 void Joystick::loadConfig(const QJsonObject &config)
 {
     f_title->setValue(config["title"]);
     loadControls(config["config"].toObject(), f_axes, f_buttons, f_hats);
+    markSaved();
 }
 
 QJsonObject Joystick::saveConfig()
