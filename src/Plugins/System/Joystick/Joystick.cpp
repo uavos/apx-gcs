@@ -61,27 +61,7 @@ Joystick::Joystick(Fact *parent, const JoystickDeviceInfo &info, int device_inde
 
     setTitle(devName);
 
-    for (int i = 0; i < info.axes; ++i) {
-        new JoystickAxis(f_axes);
-    }
-    for (int i = 0; i < info.buttons; ++i) {
-        new Fact(f_buttons, QString("button%1").arg(i), QString::number(i + 1), "", Text);
-    }
-    for (int i = 0; i < info.hats; ++i) {
-        new Fact(f_hats, QString("hat%1_u").arg(i), QString::number(i + 1) + "_UP", "", Text);
-        new Fact(f_hats, QString("hat%1_r").arg(i), QString::number(i + 1) + "_RIGHT", "", Text);
-        new Fact(f_hats, QString("hat%1_d").arg(i), QString::number(i + 1) + "_DOWN", "", Text);
-        new Fact(f_hats, QString("hat%1_l").arg(i), QString::number(i + 1) + "_LEFT", "", Text);
-    }
-    for (auto i : f_buttons->facts()) {
-        i->setOption(HighlightActive);
-    }
-    for (auto i : f_hats->facts()) {
-        i->setOption(HighlightActive);
-    }
-    for (auto i : f_axes->facts()) {
-        i->setOption(HighlightActive);
-    }
+    addControls(f_axes, f_buttons, f_hats, info.axes, info.buttons, info.hats);
 
     setDescr(QString("A%1 B%2 H%3 [%4]")
                  .arg(f_axes->size())
@@ -174,30 +154,51 @@ void Joystick::updateHat(int i, quint8 v)
     }
 }
 
-void Joystick::loadConfig(const QJsonObject &config)
+void Joystick::addControls(Fact *axes, Fact *buttons, Fact *hats, int na, int nb, int nh)
+{
+    while (axes->size() < na) {
+        (new JoystickAxis(axes))->setOption(HighlightActive);
+    }
+    while (buttons->size() < nb) {
+        const int i = buttons->size();
+        (new Fact(buttons, QString("button%1").arg(i), QString::number(i + 1), "", Text))
+            ->setOption(HighlightActive);
+    }
+    while (hats->size() < nh * 4) {
+        const int i = hats->size() / 4;
+        const QString n = QString::number(i + 1);
+        FactList list;
+        list << new Fact(hats, QString("hat%1_u").arg(i), n + "_UP", "", Text);
+        list << new Fact(hats, QString("hat%1_r").arg(i), n + "_RIGHT", "", Text);
+        list << new Fact(hats, QString("hat%1_d").arg(i), n + "_DOWN", "", Text);
+        list << new Fact(hats, QString("hat%1_l").arg(i), n + "_LEFT", "", Text);
+        for (auto f : list)
+            f->setOption(HighlightActive);
+    }
+}
+
+void Joystick::loadControls(const QJsonObject &conf, Fact *axes, Fact *buttons, Fact *hats)
 {
     //clear
-    for (int i = 0; i < f_axes->size(); ++i)
-        static_cast<JoystickAxis *>(f_axes->child(i))->loadConfig(QJsonObject());
-    for (int i = 0; i < f_buttons->size(); ++i)
-        f_buttons->child(i)->setValue(QVariant());
-    for (int i = 0; i < f_hats->size(); ++i)
-        f_hats->child(i)->setValue(QVariant());
+    for (int i = 0; i < axes->size(); ++i)
+        static_cast<JoystickAxis *>(axes->child(i))->loadConfig(QJsonObject());
+    for (int i = 0; i < buttons->size(); ++i)
+        buttons->child(i)->setValue(QVariant());
+    for (int i = 0; i < hats->size(); ++i)
+        hats->child(i)->setValue(QVariant());
 
     //load
-    f_title->setValue(config["title"]);
-    const QJsonObject &conf = config["config"].toObject();
     for (const auto jsv : conf["axes"].toArray()) {
         const auto jso = jsv.toObject();
         int i = jso.value("id").toInt() - 1;
-        JoystickAxis *f = static_cast<JoystickAxis *>(f_axes->child(i));
+        JoystickAxis *f = static_cast<JoystickAxis *>(axes->child(i));
         if (f)
             f->loadConfig(jso);
     }
     for (const auto jsv : conf["buttons"].toArray()) {
         const auto jso = jsv.toObject();
         int i = jso.value("id").toInt() - 1;
-        Fact *f = f_buttons->child(i);
+        Fact *f = buttons->child(i);
         if (!f)
             continue;
         f->setValue(jso.value("scr"));
@@ -205,22 +206,17 @@ void Joystick::loadConfig(const QJsonObject &config)
     for (const auto jsv : conf["hats"].toArray()) {
         const auto jso = jsv.toObject();
         int i = jso.value("id").toInt() - 1;
-        Fact *f = f_hats->child(i);
+        Fact *f = hats->child(i);
         if (!f)
             continue;
         f->setValue(jso.value("scr"));
     }
 }
 
-QJsonObject Joystick::saveConfig()
+QJsonObject Joystick::saveControls(Fact *axes, Fact *buttons, Fact *hats)
 {
-    QJsonObject config;
-    config.insert("title", f_title->text());
-    config.insert("name", devName);
-    config.insert("index", device_index);
-    config.insert("uid", uid);
     QJsonObject conf;
-    FactList f_list{f_axes, f_buttons, f_hats};
+    FactList f_list{axes, buttons, hats};
     for (auto f : f_list) {
         QJsonArray a;
         for (int i = 0; i < f->size(); ++i) {
@@ -230,7 +226,7 @@ QJsonObject Joystick::saveConfig()
             QJsonObject v;
             v.insert("id", i + 1);
             v.insert("scr", s);
-            if (f == f_axes) {
+            if (f == axes) {
                 v.insert("hyst", f->child(i)->child(0)->value().toDouble());
             }
             a.append(v);
@@ -238,6 +234,22 @@ QJsonObject Joystick::saveConfig()
         if (!a.empty())
             conf.insert(f->name(), a);
     }
-    config.insert("config", conf);
+    return conf;
+}
+
+void Joystick::loadConfig(const QJsonObject &config)
+{
+    f_title->setValue(config["title"]);
+    loadControls(config["config"].toObject(), f_axes, f_buttons, f_hats);
+}
+
+QJsonObject Joystick::saveConfig()
+{
+    QJsonObject config;
+    config.insert("title", f_title->text());
+    config.insert("name", devName);
+    config.insert("index", device_index);
+    config.insert("uid", uid);
+    config.insert("config", saveControls(f_axes, f_buttons, f_hats));
     return config;
 }

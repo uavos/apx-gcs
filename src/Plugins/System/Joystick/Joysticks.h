@@ -28,6 +28,7 @@
 
 #include "JoystickBackend.h"
 class Joystick;
+class JoystickConfig;
 
 class Joysticks : public Fact
 {
@@ -37,7 +38,14 @@ public:
 
     Fact *f_enabled;
 
+    // user configurations, edited without devices
     Fact *f_configs;
+    Fact *f_new;
+    Fact *f_newTitle;
+    Fact *f_newName;
+    Fact *f_newCopy;
+    Fact *f_create;
+    Fact *f_user;
 
     Fact *f_list;
 
@@ -60,8 +68,16 @@ private:
 
     int legacyConfigIndex(const QString &uid);
     int userConfigIndex(const QString &title, const QString &name);
+    // the same, but the device name must match too, even when it is empty
+    int userConfigIndexExact(const QString &title, const QString &name);
 
     void updateConfEnums();
+    void updateConfigEditors();
+    // show the config, which matches the controller, in its selection box
+    void showConfig(Joystick *j);
+
+    void configEdited(JoystickConfig *c);
+    void configRemove(JoystickConfig *c);
 
 private slots:
     void updateStatus();
@@ -78,4 +94,6 @@ private slots:
 
     void exportConfigs();
     void importConfigs();
+
+    void createConfig();
 };

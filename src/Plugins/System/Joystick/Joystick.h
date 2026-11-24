@@ -66,6 +66,13 @@ public:
     void loadConfig(const QJsonObject &config);
     QJsonObject saveConfig();
 
+    // Controls of a device and their settings ("config" object of a configuration),
+    // shared with the editor of saved configurations.
+    // Controls are appended until the given numbers are reached.
+    static void addControls(Fact *axes, Fact *buttons, Fact *hats, int na, int nb, int nh);
+    static void loadControls(const QJsonObject &conf, Fact *axes, Fact *buttons, Fact *hats);
+    static QJsonObject saveControls(Fact *axes, Fact *buttons, Fact *hats);
+
 private:
     DelayedEvent saveEvent;
 

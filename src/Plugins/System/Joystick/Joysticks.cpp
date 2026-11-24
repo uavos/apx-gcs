@@ -24,6 +24,7 @@
 #include <App/AppDirs.h>
 
 #include "Joystick.h"
+#include "JoystickConfig.h"
 #include <QFileDialog>
 
 Joysticks::Joysticks(Fact *parent)
@@ -55,6 +56,27 @@ Joysticks::Joysticks(Fact *parent)
                         Action,
                         "import");
     connect(f_import, &Fact::triggered, this, &Joysticks::importConfigs);
+
+    f_configs = new Fact(this,
+                         "configs",
+                         tr("Configurations"),
+                         tr("Edit saved configurations"),
+                         Group | FlatModel);
+    f_new = new Fact(f_configs,
+                     "add",
+                     tr("Add new configuration"),
+                     tr("Configure controls without device"),
+                     Group);
+    f_newTitle = new Fact(f_new, "ctitle", tr("Title"), tr("Configuration title"), Text);
+    f_newName = new Fact(f_new, "device", tr("Device"), tr("Device name"), Text);
+    f_newCopy = new Fact(f_new, "copy", tr("Copy from"), tr("Configuration to start with"), Enum);
+    f_create = new Fact(f_new, "save", tr("Save"), "", Action | Apply);
+    connect(f_create, &Fact::triggered, this, &Joysticks::createConfig);
+    connect(f_newTitle, &Fact::valueChanged, this, [this]() {
+        f_create->setEnabled(!f_newTitle->text().simplified().isEmpty());
+    });
+    f_create->setEnabled(false);
+    f_user = new Fact(f_configs, "user", tr("User"), tr("User configurations"), Section | Count);
 
     f_list = new Fact(this, "list", tr("Controllers"), "", Section);
     connect(f_list, &Fact::sizeChanged, this, &Joysticks::updateStatus);
@@ -186,17 +208,7 @@ Joystick *Joysticks::addJoystick(const JoystickDeviceInfo &info, int device_inde
         ci = legacyConfigIndex(j->uid);
     if (ci >= 0)
         j->loadConfig(configs.at(ci));
-    //show matching config in the selection box
-    QString confTitle = j->f_title->text();
-    if (!confTitle.isEmpty()) {
-        if (!j->devName.isEmpty())
-            confTitle.append(" - ").append(j->devName);
-        if (configTitles.contains(confTitle)) {
-            _updatingEnums = true;
-            j->f_conf->setValue(confTitle);
-            _updatingEnums = false;
-        }
-    }
+    showConfig(j);
     connect(j->f_conf, &Fact::valueChanged, this, [this, j]() {
         if (_updatingEnums)
             return;
@@ -237,15 +249,7 @@ Joystick *Joysticks::addJoystick(const JoystickDeviceInfo &info, int device_inde
             apxMsg() << tr("Joystick config created") << title;
         }
         saveConfigs();
-        //show the saved config in the selection box
-        QString confTitle = title;
-        if (!j->devName.isEmpty())
-            confTitle.append(" - ").append(j->devName);
-        if (configTitles.contains(confTitle)) {
-            _updatingEnums = true;
-            j->f_conf->setValue(confTitle);
-            _updatingEnums = false;
-        }
+        showConfig(j);
     });
     connect(j->f_remove, &Fact::triggered, this, [this, j]() {
         const QString title = j->f_title->text().simplified();
@@ -305,9 +309,175 @@ int Joysticks::userConfigIndex(const QString &title, const QString &name)
     return -1;
 }
 
+int Joysticks::userConfigIndexExact(const QString &title, const QString &name)
+{
+    for (int i = 0; i < configs.size(); ++i) {
+        const auto &c = configs.at(i);
+        if (c.value("uid").toString() == "user" && c.value("title").toString() == title
+            && c.value("name").toString() == name)
+            return i;
+    }
+    return -1;
+}
+
+void Joysticks::showConfig(Joystick *j)
+{
+    QString confTitle = j->f_title->text();
+    if (confTitle.isEmpty())
+        return;
+    if (!j->devName.isEmpty())
+        confTitle.append(" - ").append(j->devName);
+    if (!configTitles.contains(confTitle))
+        return;
+    _updatingEnums = true;
+    j->f_conf->setValue(confTitle);
+    _updatingEnums = false;
+}
+
+void Joysticks::updateConfigEditors()
+{
+    // editors are kept for configs which still exist: the user may be editing one
+    QList<JoystickConfig *> unused;
+    for (auto f : f_user->facts())
+        unused.append(static_cast<JoystickConfig *>(f));
+
+    for (const auto &config : configs) {
+        if (config.value("uid").toString() != "user")
+            continue;
+        JoystickConfig *c = nullptr;
+        for (auto i : unused) {
+            if (i->stored.value("title") != config.value("title")
+                || i->stored.value("name").toString() != config.value("name").toString())
+                continue;
+            c = i;
+            break;
+        }
+        if (c) {
+            unused.removeOne(c);
+            if (c->stored != config)
+                c->load(config); // changed elsewhere
+            continue;
+        }
+        c = new JoystickConfig(f_user);
+        c->load(config);
+        connect(c, &JoystickConfig::changed, this, [this, c]() { configEdited(c); });
+        connect(c->f_remove, &Fact::triggered, this, [this, c]() { configRemove(c); });
+    }
+    for (auto c : unused)
+        c->deleteFact();
+}
+
+void Joysticks::createConfig()
+{
+    const QString title = f_newTitle->text().simplified();
+    QString name = f_newName->text().simplified();
+    if (title.isEmpty()) {
+        apxMsgW() << tr("Joystick config title is empty");
+        return;
+    }
+    QJsonObject config;
+    const QString copy = f_newCopy->text();
+    if (configTitles.contains(copy)) {
+        const QJsonObject &src = configs.at(configTitles.value(copy));
+        config.insert("config", src.value("config"));
+        if (name.isEmpty())
+            name = src.value("name").toString();
+    } else {
+        config.insert("config", QJsonObject());
+    }
+    if (userConfigIndexExact(title, name) >= 0) {
+        apxMsgW() << tr("Joystick config already exists") << title;
+        return;
+    }
+    config.insert("title", title);
+    config.insert("name", name);
+    config.insert("uid", "user");
+    configs.append(config);
+    configIds.append(QString("0:%1:user").arg(name));
+    apxMsg() << tr("Joystick config created") << title;
+    saveConfigs();
+
+    // The form is closed explicitly: clearing the title disables the action,
+    // which removes its button, so the menu is not asked to close by the button.
+    emit f_new->menuBack();
+
+    f_newTitle->setValue(QVariant());
+    f_newName->setValue(QVariant());
+    f_newCopy->setValue(0);
+}
+
+void Joysticks::configEdited(JoystickConfig *c)
+{
+    const QJsonObject config = c->save();
+    if (config == c->stored)
+        return;
+    const QString title = config.value("title").toString();
+    const QString name = config.value("name").toString();
+    const QString storedTitle = c->stored.value("title").toString();
+    const QString storedName = c->stored.value("name").toString();
+
+    if (title.isEmpty()) {
+        apxMsgW() << tr("Joystick config title is empty");
+        return;
+    }
+    const int i = userConfigIndexExact(storedTitle, storedName);
+    if (i < 0)
+        return;
+    const int other = userConfigIndexExact(title, name);
+    if (other >= 0 && other != i) {
+        apxMsgW() << tr("Joystick config already exists") << title;
+        return;
+    }
+    configs[i] = config;
+    configIds[i] = QString("0:%1:user").arg(name);
+    c->stored = config;
+
+    // Controllers which use the config follow it: a controller keeps its own
+    // copy of the settings, known by the title of the config and the device name.
+    QList<Joystick *> users;
+    // A controller without a title was never given a config.
+    if (name == storedName && !storedTitle.isEmpty()) {
+        for (auto &state : configs) {
+            const QString uid = state.value("uid").toString();
+            if (uid.isEmpty() || uid == "user")
+                continue;
+            if (state.value("title").toString() != storedTitle
+                || state.value("name").toString() != name)
+                continue;
+            state["title"] = title;
+            state["config"] = config.value("config");
+        }
+        for (auto f : f_list->facts()) {
+            Joystick *j = static_cast<Joystick *>(f);
+            if (j->devName == name && j->f_title->text() == storedTitle)
+                users.append(j);
+        }
+    }
+    saveConfigs();
+    for (auto j : users) {
+        j->loadConfig(config);
+        showConfig(j);
+    }
+}
+
+void Joysticks::configRemove(JoystickConfig *c)
+{
+    const QString title = c->stored.value("title").toString();
+    const int i = userConfigIndexExact(title, c->stored.value("name").toString());
+    if (i < 0)
+        return;
+    configs.removeAt(i);
+    configIds.removeAt(i);
+    apxMsg() << tr("Joystick config removed") << title;
+    saveConfigs();
+}
+
 void Joysticks::updateConfEnums()
 {
     _updatingEnums = true;
+    const QString copy = f_newCopy->text();
+    f_newCopy->setEnumStrings(QStringList() << "" << configTitles.keys());
+    f_newCopy->setValue(configTitles.contains(copy) ? QVariant(copy) : QVariant(0));
     for (int i = 0; i < f_list->size(); ++i) {
         Joystick *j = static_cast<Joystick *>(f_list->child(i));
         const QString cur = j->f_conf->text();
@@ -380,6 +550,7 @@ void Joysticks::loadConfigs()
         }
     }
     updateConfEnums();
+    updateConfigEditors();
 }
 
 void Joysticks::saveConfigs()
