@@ -64,6 +64,11 @@ ColumnLayout {
             //console.log("menuBack")
             valid=false
         }
+        function onMenuClose()
+        {
+            //close the whole menu at once, same as the close button
+            closeTriggered()
+        }
         function onRemoved()
         {
             //console.log("removed",fact)

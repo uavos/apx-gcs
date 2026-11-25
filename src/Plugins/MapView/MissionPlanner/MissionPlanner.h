@@ -41,6 +41,8 @@ public:
 
     Fact *f_add;
     Fact *f_unit;
+    Fact *f_service;
+    Fact *f_ins;
 
 private:
     Unit *unit() const;

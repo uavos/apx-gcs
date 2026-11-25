@@ -37,6 +37,8 @@ MissionPlanner::MissionPlanner(Fact *parent)
 
     f_unit = new Fact(this, "unit", tr("Unit"), tr("Send unit command"), Section, "drone");
 
+    f_service = new Fact(this, "service", tr("Service"), tr("Service commands"), Section, "cog");
+
     Fact *f;
 
     f = new Fact(f_add, "waypoint", tr("Waypoint"), "", CloseOnTrigger, "map-marker");
@@ -61,11 +63,20 @@ MissionPlanner::MissionPlanner(Fact *parent)
     f = new Fact(f_unit, "look_here", tr("Look here"), "", CloseOnTrigger, "eye");
     connect(f, &Fact::triggered, this, [this]() { unit()->lookHere(clickCoordinate()); });
 
-    f = new Fact(f_unit, "home_here", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
-    connect(f, &Fact::triggered, this, [this]() { unit()->setHomePoint(clickCoordinate()); });
+    // navigation system corrections: nested menu
+    f_ins = new Fact(f_service, "ins", tr("INS"), "", Group, "compass");
 
-    f = new Fact(f_unit, "pos_here", tr("Fix position"), "", CloseOnTrigger, "crosshairs-gps");
-    connect(f, &Fact::triggered, this, [this]() { unit()->sendPositionFix(clickCoordinate()); });
+    f = new Fact(f_ins, "home_here", tr("Set home"), "", NoFlags, "home-map-marker");
+    connect(f, &Fact::triggered, this, [this]() {
+        unit()->setHomePoint(clickCoordinate());
+        emit menuClose();
+    });
+
+    f = new Fact(f_ins, "pos_here", tr("Fix position"), "", NoFlags, "crosshairs-gps");
+    connect(f, &Fact::triggered, this, [this]() {
+        unit()->sendPositionFix(clickCoordinate());
+        emit menuClose();
+    });
 
     new MapPrefs(this);
 
