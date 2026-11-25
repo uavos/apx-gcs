@@ -91,7 +91,9 @@ Popup {
         onFactOpened: raise()
 
         onFactButtonTriggered: (fact) => {
-            if(!fact || (fact.options & Fact.CloseOnTrigger))
+            if(fact && (fact.options & Fact.CloseOnTrigger))
+                popup.close()
+            else if(!fact || (fact.options & Fact.BackOnTrigger))
                 back()
             else popup.raise()
         }

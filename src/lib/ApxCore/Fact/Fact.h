@@ -223,7 +223,6 @@ public slots:
 signals:
     void triggered(QVariantMap opts);
     void menuBack();
-    void menuClose();
 
 signals:
     void flagsChanged();

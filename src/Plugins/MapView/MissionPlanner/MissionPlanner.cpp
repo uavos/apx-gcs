@@ -66,17 +66,11 @@ MissionPlanner::MissionPlanner(Fact *parent)
     // navigation system corrections: nested menu
     f_ins = new Fact(f_service, "ins", tr("INS"), "", Group, "compass");
 
-    f = new Fact(f_ins, "home_here", tr("Set home"), "", NoFlags, "home-map-marker");
-    connect(f, &Fact::triggered, this, [this]() {
-        unit()->setHomePoint(clickCoordinate());
-        emit menuClose();
-    });
+    f = new Fact(f_ins, "home_here", tr("Set home"), "", CloseOnTrigger, "home-map-marker");
+    connect(f, &Fact::triggered, this, [this]() { unit()->setHomePoint(clickCoordinate()); });
 
-    f = new Fact(f_ins, "pos_here", tr("Fix position"), "", NoFlags, "crosshairs-gps");
-    connect(f, &Fact::triggered, this, [this]() {
-        unit()->sendPositionFix(clickCoordinate());
-        emit menuClose();
-    });
+    f = new Fact(f_ins, "pos_here", tr("Fix position"), "", CloseOnTrigger, "crosshairs-gps");
+    connect(f, &Fact::triggered, this, [this]() { unit()->sendPositionFix(clickCoordinate()); });
 
     new MapPrefs(this);
 

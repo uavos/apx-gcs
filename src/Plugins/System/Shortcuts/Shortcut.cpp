@@ -42,7 +42,7 @@ Shortcut::Shortcut(Fact *parent, Shortcuts *shortcuts, const Shortcut *sc, bool 
     _cmd = new Fact(this, "scr", tr("Java script"), "", Text);
 
     if (_new) {
-        _save = new Fact(this, "save", tr("Save"), "", Action | Apply | CloseOnTrigger);
+        _save = new Fact(this, "save", tr("Save"), "", Action | Apply | BackOnTrigger);
         connect(_save, &Fact::triggered, shortcuts, &Shortcuts::addTriggered);
         defaults();
     } else {

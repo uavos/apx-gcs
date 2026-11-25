@@ -105,7 +105,7 @@ Fact {
     }
 
     Fact {
-        flags: (Fact.Action | Fact.Remove | Fact.CloseOnTrigger)
+        flags: (Fact.Action | Fact.Remove | Fact.BackOnTrigger)
         title: qsTr("Remove set")
         icon: "delete"
         onTriggered: {

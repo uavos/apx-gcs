@@ -147,14 +147,14 @@ DatalinkPort::DatalinkPort(DatalinkPorts *parent, Datalink *datalink, const Data
     updateRoutingValue();
 
     if (_new) {
-        f_save = new Fact(this, "save", tr("Save"), "", Action | Apply | CloseOnTrigger);
+        f_save = new Fact(this, "save", tr("Save"), "", Action | Apply | BackOnTrigger);
         connect(f_save, &Fact::triggered, parent, &DatalinkPorts::addTriggered);
         connect(this, &Fact::triggered, this, &DatalinkPort::defaults);
         connect(f_type, &Fact::valueChanged, this, &DatalinkPort::defaultUrl);
         defaults();
     } else {
         copyValuesFrom(port);
-        f_remove = new Fact(this, "remove", tr("Remove"), "", Action | Remove | CloseOnTrigger);
+        f_remove = new Fact(this, "remove", tr("Remove"), "", Action | Remove | BackOnTrigger);
         connect(f_remove, &Fact::triggered, this, &DatalinkPort::removeTriggered);
 
         for (int i = 0; i < size(); ++i) {

@@ -29,7 +29,7 @@ Fact {
     property string colorAuto: parentFact ? parentFact.colorAuto : "#E57373" 
     property string colorValue: ""
 
-    flags: Fact.CloseOnTrigger
+    flags: Fact.BackOnTrigger
     opts: ({
                "editor": Qt.resolvedUrl("SignalsColorEditor.qml")
     })
