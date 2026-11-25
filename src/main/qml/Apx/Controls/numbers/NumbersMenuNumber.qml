@@ -218,7 +218,7 @@ Fact {
         }
     }
     Fact {
-        flags: (Fact.Action | Fact.Remove | Fact.CloseOnTrigger)
+        flags: (Fact.Action | Fact.Remove | Fact.BackOnTrigger)
         title: qsTr("Remove")
         visible: !newItem
         icon: "delete"

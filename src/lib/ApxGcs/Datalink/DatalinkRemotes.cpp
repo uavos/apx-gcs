@@ -56,7 +56,7 @@ DatalinkRemotes::DatalinkRemotes(Datalink *datalink)
                      tr("Host address"),
                      tr("IP address of remote server"),
                      Text | PersistentValue);
-    f_connect = new Fact(f_add, "connect", tr("Connect"), "", Action | Apply | CloseOnTrigger);
+    f_connect = new Fact(f_add, "connect", tr("Connect"), "", Action | Apply | BackOnTrigger);
     connect(f_connect, &Fact::triggered, this, &DatalinkRemotes::connectTriggered);
 
     f_servers = new Fact(this, "servers", tr("Servers"), tr("Found servers"), Section | Count);
