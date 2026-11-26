@@ -1,0 +1,279 @@
+/*
+ * APX Autopilot project <http://docs.uavos.com>
+ *
+ * Copyright (c) 2003-2026, Aliaksei Stratsilatau <sa@uavos.com>
+ * All rights reserved
+ *
+ * This file is part of APX Ground Control.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+#include "TrafficModels.h"
+
+AircraftModel::AircraftModel(QObject *parent)
+    : QAbstractListModel(parent)
+{}
+
+int AircraftModel::rowCount(const QModelIndex &parent) const
+{
+    return parent.isValid() ? 0 : _items.size();
+}
+
+QHash<int, QByteArray> AircraftModel::roleNames() const
+{
+    return {
+        {HexRole, "hex"},
+        {CallsignRole, "callsign"},
+        {TypeRole, "type"},
+        {CategoryRole, "category"},
+        {CategoryTextRole, "categoryText"},
+        {IconRole, "icon"},
+        {IconScaleRole, "iconScale"},
+        {CoordinateRole, "coordinate"},
+        {OnGroundRole, "onGround"},
+        {AltRole, "altM"},
+        {AltSrcRole, "altSrc"},
+        {AltBaroRole, "altBaroM"},
+        {AltGeomRole, "altGeomM"},
+        {GsRole, "gsKt"},
+        {TrackRole, "track"},
+        {TrackValidRole, "trackValid"},
+        {VsRole, "vsMs"},
+        {DistRole, "distKm"},
+        {BrgRole, "brg"},
+        {DAltRole, "dAltM"},
+        {TauRole, "tauS"},
+        {LevelRole, "level"},
+        {OwnRole, "own"},
+        {SeenRole, "seenMs"},
+        {SortKeyRole, "sortKey"},
+    };
+}
+
+// ADS-B emitter category (DO-260B) -> description, map icon and its relative size
+struct CategoryInfo
+{
+    const char *text;
+    const char *icon;
+    double scale;
+};
+static CategoryInfo categoryInfo(const QString &c)
+{
+    static const QHash<QString, CategoryInfo> map{
+        {"A1", {"Light aircraft", "airplane", 0.8}},
+        {"A2", {"Small aircraft", "airplane", 0.9}},
+        {"A3", {"Large aircraft", "airplane", 1.0}},
+        {"A4", {"High vortex aircraft", "airplane", 1.1}},
+        {"A5", {"Heavy aircraft", "airplane", 1.2}},
+        {"A6", {"High performance aircraft", "airplane", 1.0}},
+        {"A7", {"Rotorcraft", "helicopter", 0.9}},
+        {"B1", {"Glider", "airplane", 0.8}},
+        {"B2", {"Lighter-than-air", "airballoon", 0.9}},
+        {"B3", {"Parachutist", "parachute", 0.8}},
+        {"B4", {"Ultralight", "airplane", 0.7}},
+        {"B6", {"UAV", "quadcopter", 0.8}},
+        {"B7", {"Space vehicle", "rocket", 0.9}},
+        {"C1", {"Emergency vehicle", "car", 0.7}},
+        {"C2", {"Service vehicle", "car", 0.7}},
+        {"C3", {"Obstacle", "radio-tower", 0.8}}, // point (tethered balloons)
+        {"C4", {"Obstacle", "radio-tower", 0.8}}, // cluster
+        {"C5", {"Obstacle", "radio-tower", 0.8}}, // line
+        // A0, B0, C0: no category, B5, C6, C7: reserved
+    };
+    return map.value(c, {"Aircraft", "airplane", 1.0});
+}
+
+QVariant AircraftModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid() || index.row() >= _items.size())
+        return {};
+    const auto &a = _items.at(index.row());
+    switch (role) {
+    case HexRole:
+        return a.hex;
+    case CallsignRole:
+        return a.callsign; // empty when not reported, the views show the hex then
+    case TypeRole:
+        return a.type;
+    case CategoryRole:
+        return a.category;
+    case CategoryTextRole:
+        return QString(categoryInfo(a.category).text);
+    case IconRole:
+        return QString(categoryInfo(a.category).icon);
+    case IconScaleRole:
+        return categoryInfo(a.category).scale;
+    case CoordinateRole:
+        return QVariant::fromValue(a.coordinate);
+    case OnGroundRole:
+        return a.onGround;
+    case AltRole:
+        return a.altM();
+    case AltSrcRole:
+        return a.altSrc();
+    case AltBaroRole:
+        return a.altBaroM;
+    case AltGeomRole:
+        return a.altGeomM;
+    case GsRole:
+        return a.gsKt;
+    case TrackRole:
+        return a.track;
+    case TrackValidRole:
+        return a.trackValid;
+    case VsRole:
+        return a.vsMs;
+    case DistRole:
+        return a.distKm;
+    case BrgRole:
+        return a.brg;
+    case DAltRole:
+        return a.dAltM;
+    case TauRole:
+        return a.tauS;
+    case LevelRole:
+        return a.level;
+    case OwnRole:
+        return a.own;
+    case SeenRole:
+        return a.seenMs;
+    case SortKeyRole:
+        // the threats by the conflict time (distance breaks the ties), the rest by distance
+        return qIsInf(a.tauS) ? 1e6 + a.distKm : a.tauS + a.distKm * 1e-4;
+    }
+    return {};
+}
+
+void AircraftModel::reindex(int from)
+{
+    if (from == 0)
+        _index.clear();
+    for (int i = from; i < _items.size(); ++i)
+        _index.insert(_items.at(i).hex, i);
+}
+
+void AircraftModel::update(const QList<Aircraft> &list)
+{
+    QSet<QString> incoming;
+    for (const auto &a : list)
+        incoming.insert(a.hex);
+
+    // drop aircraft missing in the reply
+    int removed = 0;
+    for (int i = _items.size() - 1; i >= 0; --i) {
+        if (incoming.contains(_items.at(i).hex))
+            continue;
+        beginRemoveRows({}, i, i);
+        _items.removeAt(i);
+        endRemoveRows();
+        removed++;
+    }
+    if (removed)
+        reindex();
+
+    // update or append
+    // every row left after the drop is in the reply: one dataChanged for all of them
+    // (hundreds of per-row signals a second make the sorted proxy re-sort for each)
+    int last = -1; // last updated row
+    for (const auto &a : list) {
+        int idx = _index.value(a.hex, -1);
+        if (idx >= 0) {
+            _items[idx] = a; // also a duplicate hex in the reply: the last one wins
+            last = qMax(last, idx);
+            continue;
+        }
+        beginInsertRows({}, _items.size(), _items.size());
+        _items.append(a);
+        _index.insert(a.hex, _items.size() - 1);
+        endInsertRows();
+    }
+    if (last >= 0)
+        emit dataChanged(index(0), index(last));
+}
+
+void AircraftModel::dropStale(qint64 seenBeforeMs)
+{
+    int removed = 0;
+    for (int i = _items.size() - 1; i >= 0; --i) {
+        if (_items.at(i).seenMs >= seenBeforeMs)
+            continue;
+        beginRemoveRows({}, i, i);
+        _items.removeAt(i);
+        endRemoveRows();
+        removed++;
+    }
+    if (removed)
+        reindex();
+}
+
+void AircraftModel::clear()
+{
+    if (_items.isEmpty())
+        return;
+    beginResetModel();
+    _items.clear();
+    _index.clear();
+    endResetModel();
+}
+
+// airspaces
+
+AirspaceModel::AirspaceModel(QObject *parent)
+    : QAbstractListModel(parent)
+{}
+
+int AirspaceModel::rowCount(const QModelIndex &parent) const
+{
+    return parent.isValid() ? 0 : _items.size();
+}
+
+QHash<int, QByteArray> AirspaceModel::roleNames() const
+{
+    return {
+        {NameRole, "name"},
+        {LabelRole, "label"},
+        {ColorRole, "color"},
+        {CenterRole, "center"},
+        {PathRole, "path"},
+    };
+}
+
+QVariant AirspaceModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid() || index.row() >= _items.size())
+        return {};
+    const auto &a = _items.at(index.row());
+    switch (role) {
+    case NameRole:
+        return a.name;
+    case LabelRole:
+        return a.label;
+    case ColorRole:
+        return a.color;
+    case CenterRole:
+        return QVariant::fromValue(a.center);
+    case PathRole:
+        return a.path;
+    }
+    return {};
+}
+
+void AirspaceModel::reset(const QList<Airspace> &list)
+{
+    if (_items.isEmpty() && list.isEmpty())
+        return; // nothing to reset (called on every filter pass while no file is loaded)
+    beginResetModel();
+    _items = list;
+    endResetModel();
+}
