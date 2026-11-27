@@ -43,6 +43,8 @@ public:
     QGeoCoordinate labelCoordinate() const;
     QString summary() const { return m_summary; }
 
+    // The tiles of every scale, lowest altitude first; empty without a zone.
+    const QVector<NavaiScalePlan> &scales() const { return _scales; }
     // Colour of a scale on the map and in the summary, the palette of navai's map GUI.
     static QString scaleColor(int index);
 
@@ -50,6 +52,7 @@ signals:
     void zoneRequested();
     void polygonChanged();
     void summaryChanged();
+    void planChanged();
 
 private slots:
     void updateCamera();

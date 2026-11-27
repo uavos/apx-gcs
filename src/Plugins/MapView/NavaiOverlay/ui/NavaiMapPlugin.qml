@@ -84,6 +84,25 @@ AppPlugin {
                 }
             }
 
+            // The tiles of the planned map inside the zone; zoom in to see
+            // what one frame covers.
+            Loader {
+                active: navaiLayer.navaiAvailable && !!navaiLayer.baseMap
+                sourceComponent: Component {
+                    NavaiZoneGrid {
+                        plan: navaiLayer.navai.mapPlan
+                        center: navaiLayer.baseMap.center
+                        zoomLevel: navaiLayer.baseMap.zoomLevel
+                        bearing: navaiLayer.baseMap.bearing
+                        pointer: navaiLayer.baseMap.mouseCoordinate
+                    }
+                }
+                onLoaded: {
+                    item.parent = navaiLayer.baseMap
+                    item.anchors.fill = navaiLayer.baseMap
+                }
+            }
+
             // The tile grid and the DINO scores, painted in one pass from the
             // map copy kept by the plugin, so a huge map costs no QML items.
             NavaiHeatmap {

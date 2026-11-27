@@ -272,6 +272,7 @@ void NavaiMapPlan::updatePlan()
 
     f_remove->setEnabled(!zone.isEmpty());
     f_save->setEnabled(_tilesCount > 0);
+    emit planChanged();
 }
 
 QJsonObject NavaiMapPlan::toPlanJson() const

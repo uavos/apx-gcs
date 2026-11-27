@@ -1,5 +1,6 @@
 #include "NavaiOverlay.h"
 #include "NavaiHeatmap.h"
+#include "NavaiZoneGrid.h"
 
 #include <App/AppNotify.h>
 #include <Fleet/Fleet.h>
@@ -372,6 +373,7 @@ NavaiOverlay::NavaiOverlay(Fact *parent)
            "crosshairs-gps")
 {
     qmlRegisterType<NavaiHeatmap>("Apx.Navai", 1, 0, "NavaiHeatmap");
+    qmlRegisterType<NavaiZoneGrid>("Apx.Navai", 1, 0, "NavaiZoneGrid");
     f_enabled =
         new Fact(
             this,
