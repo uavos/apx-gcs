@@ -69,6 +69,21 @@ AppPlugin {
                 }
             }
 
+            // The zone of a map to build on board, drawn from Tools > Navai >
+            // Map download. It does not need the UDP overlay to be enabled.
+            Loader {
+                active: navaiLayer.navaiAvailable && !!navaiLayer.baseMap
+                sourceComponent: Component {
+                    NavaiMapZone {
+                        plan: navaiLayer.navai.mapPlan
+                    }
+                }
+                onLoaded: {
+                    item.parent = navaiLayer.baseMap
+                    navaiLayer.baseMap.addMapItemGroup(item)
+                }
+            }
+
             // The tile grid and the DINO scores, painted in one pass from the
             // map copy kept by the plugin, so a huge map costs no QML items.
             NavaiHeatmap {
