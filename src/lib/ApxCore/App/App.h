@@ -91,6 +91,10 @@ public:
 
     static bool loaded() { return _instance->_loaded; }
 
+    // Files given on the command line were passed to the instance which
+    // is already running: this instance is not initialized and must exit.
+    bool filesForwarded() const { return _filesForwarded; }
+
 public:
     AppEngine *engine() const;
 
@@ -106,13 +110,18 @@ public:
 
     QString lang() const;
 
+public slots:
+    void openFiles(const QStringList &fileNames);
+
 protected:
+    bool event(QEvent *e) override;
+
     AppRoot *f_apx;
 
     virtual void loadFonts();
     virtual void loadServices();
 
-    AppEngine *m_engine;
+    AppEngine *m_engine{};
     QQuickWindow *m_window;
     double m_scale;
     AppNotify *m_appNotify;
@@ -133,6 +142,12 @@ private:
     AppInstances *appInstances;
 
     bool _loaded{};
+
+    // files requested to open by the system or by another instance,
+    // kept until the application is loaded
+    QStringList _openFiles;
+    bool _filesForwarded{};
+    void openPendingFiles();
 
     void loadTranslations();
     void loadTranslator(const QString &fileName);
@@ -157,6 +172,9 @@ public slots:
 
 signals:
     void loadingFinished();
+
+    // a file to open (import), emitted when the application is loaded
+    void fileOpenRequest(QString fileName);
     void uiComponentLoaded(QString name, QJSValue object);
 
     void visibilityChanged(QWindow::Visibility visibility);

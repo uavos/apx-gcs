@@ -24,11 +24,56 @@
 #include <App/AppLog.h>
 #include <QFileDialog>
 
+#include <Database/TelemetryFileFormat.h>
+#include <Fleet/Unit.h>
+#include <Mission/MissionShare.h>
+#include <Mission/UnitMission.h>
+#include <Telemetry/Telemetry.h>
+#include <Telemetry/TelemetryShare.h>
+
 AppGcs *AppGcs::_instance = nullptr;
 AppGcs::AppGcs(int &argc, char **argv, const QString &name, const QUrl &_url)
     : App(argc, argv, name, _url)
 {
     _instance = this;
+
+    connect(this, &App::fileOpenRequest, this, &AppGcs::importFile);
+}
+
+void AppGcs::importFile(QString fileName)
+{
+    const QFileInfo fi(fileName);
+    const QString ext = fi.suffix().toLower();
+    auto fleet = Fleet::instance();
+    if (!fleet)
+        return;
+
+    if (!fi.isFile()) {
+        apxMsgW() << tr("File not found").append(':') << fi.fileName();
+        return;
+    }
+
+    Share *share = nullptr;
+    if (ext == telemetry::APXTLM_FTYPE || ext == "telemetry") {
+        // telemetry is shown by the replay unit
+        Unit *unit = Fleet::replay();
+        if (unit && unit->f_telemetry) {
+            fleet->selectUnit(unit);
+            share = unit->f_telemetry->f_share;
+        }
+    } else if (Unit *unit = fleet->current()) {
+        if (ext == "unit" || ext == "nodes")
+            share = unit->f_share;
+        else if (ext == "mission" || ext == "geofence")
+            share = unit->f_mission->f_share;
+    }
+    if (!share) {
+        apxMsgW() << tr("Unsupported file type").append(':') << fi.fileName();
+        return;
+    }
+    if (!share->importRequest({fi.absoluteFilePath()})) {
+        apxMsgW() << tr("Can't import").append(':') << fi.fileName();
+    }
 }
 
 void AppGcs::loadServices()

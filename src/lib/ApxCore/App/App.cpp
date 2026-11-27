@@ -28,6 +28,7 @@
 #include <ApxMisc/SvgImageProvider.h>
 
 #include <QApplication>
+#include <QFileOpenEvent>
 #include <QFontDatabase>
 #include <QFontInfo>
 #include <QQuickStyle>
@@ -97,12 +98,34 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
                                    QCoreApplication::translate("main", "file"));
     parser.addOption(qmlMainFile);
 
+    parser.addPositionalArgument("files",
+                                 QCoreApplication::translate("main", "Files to open."),
+                                 "[files...]");
+
     parser.process(*qApp);
     oPlugins = parser.value(pluginsOption).split(',', Qt::SkipEmptyParts);
     oQml = parser.value(qmlMainFile);
+
+    QStringList files;
+    for (const auto &s : parser.positionalArguments()) {
+        // file managers may give urls
+        const QUrl url(s);
+        files.append(QFileInfo(url.isLocalFile() ? url.toLocalFile() : s).absoluteFilePath());
+    }
     //---------------------------------------
 
     appInstances = new AppInstances(this);
+
+    // files are opened by the instance which is already running
+    if (!files.isEmpty() && appInstances->isClient()
+        && appInstances->sendMessage(files.join('\n'), 2000, false)) {
+        _filesForwarded = true;
+        return;
+    }
+    connect(appInstances, &AppInstances::messageReceived, this, [this](QString message) {
+        openFiles(message.split('\n', Qt::SkipEmptyParts));
+    });
+    openFiles(files);
 
     //styles
     QQuickStyle::setStyle("Material");
@@ -220,6 +243,46 @@ void App::loadApp()
 
     _loaded = true;
     emit loadingFinished();
+
+    openPendingFiles();
+}
+
+bool App::event(QEvent *e)
+{
+    // macOS: a file is opened in Finder or dropped on the application icon
+    if (e->type() == QEvent::FileOpen) {
+        const QString fileName = static_cast<QFileOpenEvent *>(e)->file();
+        if (!fileName.isEmpty())
+            openFiles({fileName});
+        return true;
+    }
+    return AppBase::event(e);
+}
+
+void App::openFiles(const QStringList &fileNames)
+{
+    if (fileNames.isEmpty())
+        return;
+    _openFiles.append(fileNames);
+    if (_loaded)
+        QTimer::singleShot(0, this, &App::openPendingFiles);
+}
+
+void App::openPendingFiles()
+{
+    if (_openFiles.isEmpty())
+        return;
+    const QStringList files = _openFiles;
+    _openFiles.clear();
+
+    if (m_window) {
+        if (m_window->visibility() == QWindow::Minimized)
+            m_window->showNormal();
+        m_window->raise();
+        m_window->requestActivate();
+    }
+    for (const auto &fileName : files)
+        emit fileOpenRequest(fileName);
 }
 
 void App::loadServices()

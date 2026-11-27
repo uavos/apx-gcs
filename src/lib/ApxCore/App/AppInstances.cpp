@@ -105,6 +105,7 @@ void AppInstances::newConnection()
     QString message = QString::fromUtf8(uMsg.constData(), uMsg.size());
     socket->write(ack, qstrlen(ack));
     socket->waitForBytesWritten(1000);
+    socket->deleteLater();
     emit messageReceived(message); // ##(might take a long time to return)
 }
 
