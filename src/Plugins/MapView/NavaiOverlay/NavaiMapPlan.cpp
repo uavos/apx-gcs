@@ -145,6 +145,19 @@ NavaiMapPlan::NavaiMapPlan(Fact *parent)
     updatePlan();
 }
 
+QString NavaiMapPlan::scaleColor(int index)
+{
+    static const QStringList colors = {
+        "#e11d48",
+        "#f59e0b",
+        "#16a34a",
+        "#0891b2",
+        "#2563eb",
+        "#7c3aed",
+    };
+    return colors[qMax(0, index) % colors.size()];
+}
+
 void NavaiMapPlan::updateCamera()
 {
     // a camera from the list sets its own field of view
@@ -238,10 +251,11 @@ void NavaiMapPlan::updatePlan()
                                                             altitude,
                                                             f_fov->value().toDouble(),
                                                             f_overlap->value().toDouble());
-            lines << tr("%1 m: tile %2 m, %3 tiles")
-                         .arg(altitude)
-                         .arg(scale.footprintM, 0, 'f', 0)
-                         .arg(scale.tilesCount);
+            lines << QString("<font color=\"%1\">■</font> ").arg(scaleColor(_scales.size()))
+                         + tr("%1 m: tile %2 m, %3 tiles")
+                               .arg(altitude)
+                               .arg(scale.footprintM, 0, 'f', 0)
+                               .arg(scale.tilesCount);
             _tilesCount += scale.tilesCount;
             _scales.append(scale);
         }
@@ -250,7 +264,7 @@ void NavaiMapPlan::updatePlan()
                      .arg(sizeText(_tilesCount * kTileMb));
     }
 
-    const QString summary = lines.join('\n');
+    const QString summary = lines.join("<br>");
     if (m_summary != summary) {
         m_summary = summary;
         emit summaryChanged();

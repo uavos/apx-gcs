@@ -43,6 +43,9 @@ public:
     QGeoCoordinate labelCoordinate() const;
     QString summary() const { return m_summary; }
 
+    // Colour of a scale on the map and in the summary, the palette of navai's map GUI.
+    static QString scaleColor(int index);
+
 signals:
     void zoneRequested();
     void polygonChanged();

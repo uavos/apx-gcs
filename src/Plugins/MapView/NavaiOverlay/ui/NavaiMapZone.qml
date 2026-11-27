@@ -138,6 +138,7 @@ MapItemGroup {
                 id: summary
                 anchors.centerIn: parent
                 text: zone.plan ? zone.plan.summary : ""
+                textFormat: Text.StyledText
                 color: "white"
                 font: apx.font_narrow(zone.map.fontSize)
             }
