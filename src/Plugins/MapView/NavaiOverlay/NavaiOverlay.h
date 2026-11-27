@@ -12,6 +12,7 @@
 #include <QUdpSocket>
 #include <QtCore>
 
+#include "NavaiMapPlan.h"
 #include "NavaiTileMap.h"
 
 class Unit;
@@ -91,6 +92,7 @@ class NavaiOverlay : public Fact
     Q_PROPERTY(bool udpReady READ udpReady NOTIFY udpReadyChanged)
     Q_PROPERTY(quint16 udpPort READ udpPort CONSTANT)
     Q_PROPERTY(QVariantList opticalTrack READ opticalTrack NOTIFY opticalTrackChanged)
+    Q_PROPERTY(NavaiMapPlan *mapPlan READ mapPlan CONSTANT)
 
 public:
     explicit NavaiOverlay(Fact *parent = nullptr);
@@ -124,6 +126,8 @@ public:
     {
         return _udpPort;
     }
+    // The zone and settings of a map to build on board.
+    NavaiMapPlan *mapPlan() const { return f_plan; }
     // The optical flow track: one list of coordinates per flow chain.
     QVariantList opticalTrack() const;
 
@@ -172,6 +176,7 @@ private:
     QVariantList parseTrajectory(const QJsonArray &trajectory) const;
 
     Fact *f_enabled = nullptr;
+    NavaiMapPlan *f_plan = nullptr;
 
     Fact *f_camLat = nullptr;
     Fact *f_camLon = nullptr;

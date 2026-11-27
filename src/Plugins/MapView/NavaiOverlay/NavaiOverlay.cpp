@@ -396,6 +396,8 @@ NavaiOverlay::NavaiOverlay(Fact *parent)
         SLOT(updateEnabled())
     );
 
+    f_plan = new NavaiMapPlan(this);
+
     if (Fleet::instance()) {
         connect(
             Fleet::instance(),

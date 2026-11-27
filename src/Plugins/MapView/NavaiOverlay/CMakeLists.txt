@@ -6,6 +6,7 @@ apx_plugin(QT
     Quick
     QuickControls2
     Positioning
+    Widgets
 )
 
 target_sources(${MODULE} PRIVATE
@@ -18,6 +19,8 @@ target_sources(${MODULE} PRIVATE
     NavaiHeatmap.h
     NavaiMapGrid.cpp
     NavaiMapGrid.h
+    NavaiMapPlan.cpp
+    NavaiMapPlan.h
 )
 
 set_target_properties(${MODULE} PROPERTIES
