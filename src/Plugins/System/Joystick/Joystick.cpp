@@ -26,23 +26,37 @@
 
 #include "JoystickAxis.h"
 
-Joystick::Joystick(Fact *parent, int device_index, QString uid)
-    : Fact(parent, "j#", "", "", Group | Bool | FlatModel)
+Joystick::Joystick(Fact *parent, const JoystickDeviceInfo &info, int device_index)
+    : Fact(parent, "j#", "", "", Group | Bool | FlatModel | ModifiedGroup)
     , device_index(device_index)
-    , uid(uid)
-    , instanceID(-1)
+    , uid(info.uid)
+    , instanceID(info.id)
+    , devName(info.name)
 {
     f_conf = new Fact(this, "conf", tr("Configuration"), tr("Configuration title"), Enum);
 
     f_title = new Fact(this, "ctitle", tr("Title"), tr("Configuration title"), Text);
     connect(f_title, &Fact::valueChanged, this, [this]() {
-        setDescr(devName);
-        setTitle(f_title->text());
+        // a controller without configuration is shown by the device name
+        const QString s = f_title->text().simplified();
+        if (s.isEmpty()) {
+            setTitle(devName);
+            setDescr(QString("A%1 B%2 H%3 [%4]")
+                         .arg(f_axes->size())
+                         .arg(f_buttons->size())
+                         .arg(f_hats->size())
+                         .arg(uid));
+        } else {
+            setTitle(s);
+            setDescr(devName);
+        }
     });
 
-    f_axes = new Fact(this, "axes", tr("Axes"), "", Section);
-    f_buttons = new Fact(this, "buttons", tr("Buttons"), "", Section);
-    f_hats = new Fact(this, "hats", tr("Hats"), "", Section);
+    f_title->setOption(ModifiedTrack);
+
+    f_axes = new Fact(this, "axes", tr("Axes"), "", Section | ModifiedGroup);
+    f_buttons = new Fact(this, "buttons", tr("Buttons"), "", Section | ModifiedGroup);
+    f_hats = new Fact(this, "hats", tr("Hats"), "", Section | ModifiedGroup);
 
     f_save = new Fact(this,
                       "save",
@@ -58,53 +72,17 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
                         Action | Remove,
                         "delete");
 
-    if (device_index < 0) {
-        return;
-    }
-
-    devName = SDL_JoystickNameForIndex(device_index);
     setTitle(devName);
 
-    //get info
-    updateDevice(true);
-    if (!dev)
-        return;
+    addControls(f_axes, f_buttons, f_hats, info.axes, info.buttons, info.hats);
 
-    int cnt;
-    cnt = SDL_JoystickNumAxes(dev);
-    for (int i = 0; i < cnt; ++i) {
-        new JoystickAxis(f_axes);
-    }
-    cnt = SDL_JoystickNumButtons(dev);
-    for (int i = 0; i < cnt; ++i) {
-        new Fact(f_buttons, QString("button%1").arg(i), QString::number(i + 1), "", Text);
-    }
-    cnt = SDL_JoystickNumHats(dev);
-    for (int i = 0; i < cnt; ++i) {
-        new Fact(f_hats, QString("hat%1_u").arg(i), QString::number(i + 1) + "_UP", "", Text);
-        new Fact(f_hats, QString("hat%1_r").arg(i), QString::number(i + 1) + "_RIGHT", "", Text);
-        new Fact(f_hats, QString("hat%1_d").arg(i), QString::number(i + 1) + "_DOWN", "", Text);
-        new Fact(f_hats, QString("hat%1_l").arg(i), QString::number(i + 1) + "_LEFT", "", Text);
-    }
-    for (auto i : f_buttons->facts()) {
-        i->setOption(HighlightActive);
-    }
-    for (auto i : f_hats->facts()) {
-        i->setOption(HighlightActive);
-    }
-    for (auto i : f_axes->facts()) {
-        i->setOption(HighlightActive);
-    }
-
-    devName = SDL_JoystickName(dev);
-    setTitle(devName);
     setDescr(QString("A%1 B%2 H%3 [%4]")
                  .arg(f_axes->size())
                  .arg(f_buttons->size())
                  .arg(f_hats->size())
                  .arg(uid));
 
-    connect(this, &Fact::valueChanged, this, [this]() { setActive(this->dev && value().toBool()); });
+    connect(this, &Fact::valueChanged, this, [this]() { setActive(connected() && value().toBool()); });
     setValue(true);
 
     //save config
@@ -124,38 +102,32 @@ Joystick::Joystick(Fact *parent, int device_index, QString uid)
         }
     }
 }
-Joystick::~Joystick()
-{
-    if (dev)
-        SDL_JoystickClose(dev);
-}
-
 QString Joystick::juid() const
 {
     return QString("%1:%2:%3").arg(device_index).arg(devName).arg(uid);
 }
 
-void Joystick::updateDevice(bool connected)
+bool Joystick::matches(const JoystickDeviceInfo &info) const
 {
-    if (connected) {
-        if (!dev) {
-            dev = SDL_JoystickOpen(device_index);
-            if (!dev) {
-                apxMsgW() << tr("Can't open joystick") << title() << SDL_GetError();
-                return;
-            }
-            instanceID = SDL_JoystickInstanceID(dev);
-        }
-        if (value().toBool())
-            setActive(true);
-    } else {
-        if (device_index >= 0) {
-            SDL_JoystickClose(SDL_JoystickOpen(device_index));
-        }
-        dev = nullptr;
-        device_index = -1;
-        setActive(false);
-    }
+    return uid == info.uid && devName == info.name && f_axes->size() == info.axes
+           && f_buttons->size() == info.buttons && f_hats->size() == info.hats * 4;
+}
+
+void Joystick::setConnected(int id)
+{
+    instanceID = id;
+    if (value().toBool())
+        setActive(true);
+}
+void Joystick::setDisconnected()
+{
+    instanceID = -1;
+    setActive(false);
+    // controls can't be released anymore
+    for (auto f : f_buttons->facts())
+        f->setActive(false);
+    for (auto f : f_hats->facts())
+        f->setActive(false);
 }
 void Joystick::updateAxis(int i, qreal v)
 {
@@ -190,35 +162,62 @@ void Joystick::updateHat(int i, quint8 v)
             continue;
         QString s = f->text().simplified();
         if (s.isEmpty())
-            return;
+            continue;
         App::jsexec(s);
     }
 }
 
-void Joystick::loadConfig(const QJsonObject &config)
+void Joystick::addControls(Fact *axes, Fact *buttons, Fact *hats, int na, int nb, int nh)
+{
+    while (axes->size() < na) {
+        auto f = new JoystickAxis(axes);
+        f->setOption(HighlightActive);
+        f->setOption(ModifiedTrack);
+        f->f_hyst->setOption(ModifiedTrack);
+    }
+    while (buttons->size() < nb) {
+        const int i = buttons->size();
+        auto f = new Fact(buttons, QString("button%1").arg(i), QString::number(i + 1), "", Text);
+        f->setOption(HighlightActive);
+        f->setOption(ModifiedTrack);
+    }
+    while (hats->size() < nh * 4) {
+        const int i = hats->size() / 4;
+        const QString n = QString::number(i + 1);
+        FactList list;
+        list << new Fact(hats, QString("hat%1_u").arg(i), n + "_UP", "", Text);
+        list << new Fact(hats, QString("hat%1_r").arg(i), n + "_RIGHT", "", Text);
+        list << new Fact(hats, QString("hat%1_d").arg(i), n + "_DOWN", "", Text);
+        list << new Fact(hats, QString("hat%1_l").arg(i), n + "_LEFT", "", Text);
+        for (auto f : list) {
+            f->setOption(HighlightActive);
+            f->setOption(ModifiedTrack);
+        }
+    }
+}
+
+void Joystick::loadControls(const QJsonObject &conf, Fact *axes, Fact *buttons, Fact *hats)
 {
     //clear
-    for (int i = 0; i < f_axes->size(); ++i)
-        static_cast<JoystickAxis *>(f_axes->child(i))->loadConfig(QJsonObject());
-    for (int i = 0; i < f_buttons->size(); ++i)
-        f_buttons->child(i)->setValue(QVariant());
-    for (int i = 0; i < f_hats->size(); ++i)
-        f_hats->child(i)->setValue(QVariant());
+    for (int i = 0; i < axes->size(); ++i)
+        static_cast<JoystickAxis *>(axes->child(i))->loadConfig(QJsonObject());
+    for (int i = 0; i < buttons->size(); ++i)
+        buttons->child(i)->setValue(QVariant());
+    for (int i = 0; i < hats->size(); ++i)
+        hats->child(i)->setValue(QVariant());
 
     //load
-    f_title->setValue(config["title"]);
-    const QJsonObject &conf = config["config"].toObject();
     for (const auto jsv : conf["axes"].toArray()) {
         const auto jso = jsv.toObject();
         int i = jso.value("id").toInt() - 1;
-        JoystickAxis *f = static_cast<JoystickAxis *>(f_axes->child(i));
+        JoystickAxis *f = static_cast<JoystickAxis *>(axes->child(i));
         if (f)
             f->loadConfig(jso);
     }
     for (const auto jsv : conf["buttons"].toArray()) {
         const auto jso = jsv.toObject();
         int i = jso.value("id").toInt() - 1;
-        Fact *f = f_buttons->child(i);
+        Fact *f = buttons->child(i);
         if (!f)
             continue;
         f->setValue(jso.value("scr"));
@@ -226,22 +225,17 @@ void Joystick::loadConfig(const QJsonObject &config)
     for (const auto jsv : conf["hats"].toArray()) {
         const auto jso = jsv.toObject();
         int i = jso.value("id").toInt() - 1;
-        Fact *f = f_hats->child(i);
+        Fact *f = hats->child(i);
         if (!f)
             continue;
         f->setValue(jso.value("scr"));
     }
 }
 
-QJsonObject Joystick::saveConfig()
+QJsonObject Joystick::saveControls(Fact *axes, Fact *buttons, Fact *hats)
 {
-    QJsonObject config;
-    config.insert("title", f_title->text());
-    config.insert("name", devName);
-    config.insert("index", device_index);
-    config.insert("uid", uid);
     QJsonObject conf;
-    FactList f_list{f_axes, f_buttons, f_hats};
+    FactList f_list{axes, buttons, hats};
     for (auto f : f_list) {
         QJsonArray a;
         for (int i = 0; i < f->size(); ++i) {
@@ -251,7 +245,7 @@ QJsonObject Joystick::saveConfig()
             QJsonObject v;
             v.insert("id", i + 1);
             v.insert("scr", s);
-            if (f == f_axes) {
+            if (f == axes) {
                 v.insert("hyst", f->child(i)->child(0)->value().toDouble());
             }
             a.append(v);
@@ -259,6 +253,31 @@ QJsonObject Joystick::saveConfig()
         if (!a.empty())
             conf.insert(f->name(), a);
     }
-    config.insert("config", conf);
+    return conf;
+}
+
+void Joystick::markSaved(Fact *page, Fact *axes)
+{
+    page->backup();
+    // an axis is a group with a value, which is not kept by the backup
+    for (auto f : axes->facts())
+        f->setBackupValue(f->value());
+}
+
+void Joystick::loadConfig(const QJsonObject &config)
+{
+    f_title->setValue(config["title"]);
+    loadControls(config["config"].toObject(), f_axes, f_buttons, f_hats);
+    markSaved();
+}
+
+QJsonObject Joystick::saveConfig()
+{
+    QJsonObject config;
+    config.insert("title", f_title->text());
+    config.insert("name", devName);
+    config.insert("index", device_index);
+    config.insert("uid", uid);
+    config.insert("config", saveControls(f_axes, f_buttons, f_hats));
     return config;
 }

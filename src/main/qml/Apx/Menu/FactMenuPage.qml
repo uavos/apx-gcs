@@ -141,7 +141,13 @@ ColumnLayout {
                 sourceComponent: Component {
                     ActionButton {
                         fact: modelData
-                        onTriggered: menuPage.factButtonTriggered(modelData)
+                        noFactTrigger: true
+                        onTriggered: {
+                            // move the focus away from the text editors to commit their values first
+                            menuPage.forceActiveFocus()
+                            modelData.trigger()
+                            menuPage.factButtonTriggered(modelData)
+                        }
                         active: fact?(fact.active||(fact.value?true:false)):false
                     }
                 }

@@ -40,7 +40,6 @@ To build APX GCS, you'll need:
 #### Optional Dependencies
 
 - [GStreamer](https://gstreamer.freedesktop.org) - used for video streaming by some plugins;
-- [SDL2](https://www.libsdl.org) - used for joystick interface by some plugins;
 - [Sparkle](https://sparkle-project.org/) - required for mac auto updates;
 - [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) - required for linux build, see installation in [Dockerfile](https://github.com/uavos/apx-gcs/blob/main/Dockerfile);
 

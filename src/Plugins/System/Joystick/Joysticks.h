@@ -21,13 +21,14 @@
  */
 #pragma once
 
-#include <SDL.h>
-#include <QtConcurrent>
 #include <QtCore>
 
 #include <ApxMisc/DelayedEvent.h>
 #include <Fact/Fact.h>
+
+#include "JoystickBackend.h"
 class Joystick;
+class JoystickConfig;
 
 class Joysticks : public Fact
 {
@@ -37,7 +38,14 @@ public:
 
     Fact *f_enabled;
 
+    // user configurations, edited without devices
     Fact *f_configs;
+    Fact *f_new;
+    Fact *f_newTitle;
+    Fact *f_newName;
+    Fact *f_newCopy;
+    Fact *f_create;
+    Fact *f_user;
 
     Fact *f_list;
 
@@ -45,8 +53,8 @@ public:
     Fact *f_import;
 
 private:
-    QTimer timer;
-    QMap<int, Joystick *> map;
+    JoystickBackend *backend{nullptr};
+    QMap<int, Joystick *> map; // connected controllers by backend device id
 
     QList<QJsonObject> configs;
     QList<QString> configIds;
@@ -56,28 +64,36 @@ private:
 
     bool _updatingEnums{false};
 
-    Joystick *addJoystick(int device_index, QString uid);
+    Joystick *addJoystick(const JoystickDeviceInfo &info, int device_index);
 
+    int legacyConfigIndex(const QString &uid);
     int userConfigIndex(const QString &title, const QString &name);
+    // the same, but the device name must match too, even when it is empty
+    int userConfigIndexExact(const QString &title, const QString &name);
 
     void updateConfEnums();
+    void updateConfigEditors();
+    // show the config, which matches the controller, in its selection box
+    void showConfig(Joystick *j);
 
-    QFutureWatcher<int> watcher;
-    void waitEvent();
-
-    void processEvent(const SDL_Event &event);
+    void configEdited(JoystickConfig *c);
+    void configRemove(JoystickConfig *c);
 
 private slots:
     void updateStatus();
     void updateEnabled();
-    void watcherFinished();
 
-    void update();
-    void scan();
+    void deviceAdded(JoystickDeviceInfo info);
+    void deviceRemoved(int id, QString error);
+    void axisChanged(int id, int axis, qreal value);
+    void buttonChanged(int id, int button, bool pressed);
+    void hatChanged(int id, int hat, quint8 mask);
 
     void loadConfigs();
     void saveConfigs();
 
     void exportConfigs();
     void importConfigs();
+
+    void createConfig();
 };
