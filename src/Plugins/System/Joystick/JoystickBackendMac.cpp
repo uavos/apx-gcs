@@ -478,7 +478,7 @@ private:
         // Signals are emitted after the device is destroyed:
         // a handler may stop the backend.
         dispatch(id, events);
-        emit deviceRemoved(id);
+        emit deviceRemoved(id, QString());
     }
 
     // SDL_PrivateJoystickForceRecentering (SDL_joystick.c):

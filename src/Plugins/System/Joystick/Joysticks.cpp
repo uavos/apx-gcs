@@ -167,12 +167,15 @@ void Joysticks::deviceAdded(JoystickDeviceInfo info)
     apxMsg() << QString("%1 (js%2)").arg(j->devName).arg(j->device_index);
 }
 
-void Joysticks::deviceRemoved(int id)
+void Joysticks::deviceRemoved(int id, QString error)
 {
     Joystick *j = map.take(id);
     if (!j)
         return;
-    apxMsgW() << QString("%1 (js%2)").arg(j->devName).arg(j->device_index);
+    QString s = tr("disconnected");
+    if (!error.isEmpty())
+        s.append(QString(" (%1)").arg(error));
+    apxMsgW() << QString("%1 (js%2):").arg(j->devName).arg(j->device_index) << s;
     j->setDisconnected();
 }
 

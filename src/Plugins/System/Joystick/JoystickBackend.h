@@ -118,8 +118,9 @@ public:
 signals:
     void deviceAdded(JoystickDeviceInfo info);
     // A lost device: its controls are reported as returned to the rest
-    // position and released first (SDL_PrivateJoystickForceRecentering)
-    void deviceRemoved(int id);
+    // position and released first (SDL_PrivateJoystickForceRecentering).
+    // error is the reason reported by the system, when it is known
+    void deviceRemoved(int id, QString error);
 
     void axisChanged(int id, int axis, qreal value); // value is -1..+1
     void buttonChanged(int id, int button, bool pressed);

@@ -84,7 +84,7 @@ private slots:
     void updateEnabled();
 
     void deviceAdded(JoystickDeviceInfo info);
-    void deviceRemoved(int id);
+    void deviceRemoved(int id, QString error);
     void axisChanged(int id, int axis, qreal value);
     void buttonChanged(int id, int button, bool pressed);
     void hatChanged(int id, int hat, quint8 mask);

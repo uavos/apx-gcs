@@ -498,7 +498,7 @@ private:
         dispatch(id, events);
     }
 
-    void closeDevice(Device *dev, bool notify)
+    void closeDevice(Device *dev, bool notify, const QString &error = QString())
     {
         devices.remove(dev->path);
         if (dev->notifier) {
@@ -515,7 +515,7 @@ private:
         delete dev;
         if (notify) {
             dispatch(id, events);
-            emit deviceRemoved(id);
+            emit deviceRemoved(id, error);
         }
     }
 
@@ -548,6 +548,7 @@ private:
         const QString path = dev->path;
         Events events;
         bool gone = false;
+        QString error;
 
         struct input_event ev[32];
         for (;;) {
@@ -555,8 +556,10 @@ private:
             if (n < 0) {
                 if (errno == EINTR)
                     continue;
-                if (errno != EAGAIN && errno != EWOULDBLOCK)
+                if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                    error = qt_error_string(errno);
                     gone = true; // device is unplugged
+                }
                 break;
             }
             if (n == 0) {
@@ -574,7 +577,7 @@ private:
             return;
         if (devices.value(path) != dev)
             return; // already closed from a signal handler
-        closeDevice(dev, true);
+        closeDevice(dev, true, error);
         // the node may be replaced by a new one
         scanRetries = SCAN_RETRIES;
         scanTimer.start();
