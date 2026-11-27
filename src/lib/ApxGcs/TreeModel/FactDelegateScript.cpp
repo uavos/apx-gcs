@@ -26,7 +26,9 @@
 #include <App/AppLog.h>
 #include <ApxMisc/MaterialIcon.h>
 #include <Fleet/Fleet.h>
+#include <Nodes/NodeItem.h>
 #include <Nodes/NodeScript.h>
+#include <Nodes/NodeTools.h>
 #include <QtWidgets>
 
 FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
@@ -44,6 +46,8 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
     aSave = new QAction(MaterialIcon("content-save"), tr("Save"), this);
     connect(aSave, &QAction::triggered, this, &FactDelegateScript::aSave_triggered);
     addAction(aSave);
+
+    addScriptCommands(fact);
 
     eTitle = new QLineEdit(this);
     eTitle->setPlaceholderText(tr("script title"));
@@ -98,6 +102,42 @@ FactDelegateScript::FactDelegateScript(Fact *fact, QWidget *parent)
         }
     }
 }
+void FactDelegateScript::addScriptCommands(Fact *fact)
+{
+    // find the node the script field belongs to
+    NodeItem *node = nullptr;
+    for (auto f = fact->parentFact(); f && !node; f = f->parentFact())
+        node = qobject_cast<NodeItem *>(f);
+    if (!node)
+        return;
+
+    // commands from the node dictionary, i.e. script.start, script.stop, script.restart
+    Fact *group = node->tools->f_usr->child("script");
+    if (!group)
+        group = node->tools->f_usr->child("scr");
+    if (!group)
+        return;
+
+    bool added = false;
+    for (const auto &name : {"start", "stop", "restart"}) {
+        Fact *cmd = group->child(name);
+        if (!cmd)
+            continue;
+        if (!added) {
+            auto sep = new QAction(this);
+            sep->setSeparator(true);
+            addAction(sep); // before the close button, like the other actions
+            added = true;
+        }
+        auto a = new QAction(MaterialIcon(cmd->icon()), cmd->title(), this);
+        a->setToolTip(tr("Script command").append(": ").append(cmd->title()));
+        connect(a, &QAction::triggered, cmd, [cmd]() { cmd->trigger(); });
+        a->setEnabled(cmd->enabled());
+        connect(cmd, &Fact::enabledChanged, a, [a, cmd]() { a->setEnabled(cmd->enabled()); });
+        addAction(a);
+    }
+}
+
 void FactDelegateScript::updateEditorText()
 {
     QString s = nodeScript->source();

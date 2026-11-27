@@ -102,13 +102,14 @@ ObjectModel {
             var index=0
             while(index<model.count && model.get(index)!==obj)
                 ++index
-            if(obj.warning || obj.error){
+            if(obj.active || obj.warning || obj.error){
                 if(index===model.count)
                     model.append(obj)
             }else if(index<model.count){
                 model.remove(index)
             }
         }
+        obj.activeChanged.connect(update)
         obj.warningChanged.connect(update)
         obj.errorChanged.connect(update)
         update()
@@ -128,7 +129,8 @@ ObjectModel {
             s+="fixedWidth: "+model.fixedWidth+";"
 
             // moving average: conditions and displayed value use the averaged value
-            var avg=(n.avg===true || n.avg==="true") && Number(n.avgt)>0
+            var avgt=parseFloat(n.avgt) // may contain units, i.e. "10 s"
+            var avg=(n.avg===true || n.avg==="true") && avgt>0
             var cv=avg?"avgValue":"v"
             if(n.adv)s+="active: (function(value){return ("+n.adv+")})("+cv+");"
             if(n.warn)s+="warning: (function(value){return ("+n.warn+")})("+cv+");"
@@ -145,15 +147,15 @@ ObjectModel {
             }
             if(avg){
                 s+="avgEnabled: true;"
-                s+="avgWindow: "+Number(n.avgt)+";"
+                s+="avgWindow: "+avgt+";"
                 s+="onVChanged: avgPush(v);"
                 s+="Component.onCompleted: avgPush(v);"
             }
             if(n.prec){
-                if(avg) s+="value: avgValue===undefined?\"\":avgValue.toFixed("+n.prec+");"
+                if(avg) s+="value: (avgValue===undefined?Number(v):avgValue).toFixed("+n.prec+");"
                 else s+="value: v.toFixed("+n.prec+")"+";"
             }else if(avg){
-                s+="value: avgValue===undefined?\"\":avgValue.toFixed(fact&&fact.precision>=0?fact.precision:2);"
+                s+="value: (avgValue===undefined?Number(v):avgValue).toFixed(fact&&fact.precision>=0?fact.precision:2);"
             }else if(!f){
                 s+="value: v;"
             }

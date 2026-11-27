@@ -21,6 +21,7 @@
  */
 #include "UnitMission.h"
 #include "MissionField.h"
+#include "MissionGeoCheck.h"
 #include "MissionGroup.h"
 #include "MissionListModel.h"
 #include "MissionShare.h"
@@ -84,6 +85,8 @@ UnitMission::UnitMission(Unit *parent)
                             unit->f_mandala->fact(mandala::cmd::nav::proc::wp::uid));
 
     f_geo = new GeoItems(this, "geo", tr("Geofences"), tr("Airspace"), nullptr);
+
+    geoCheck = new MissionGeoCheck(this);
 
     for (auto group : groups) {
         connect(group, &Fact::sizeChanged, this, &UnitMission::updateSize, Qt::QueuedConnection);
@@ -247,7 +250,7 @@ void UnitMission::clearMission()
         group->f_clear->trigger();
     }
     blockSizeUpdate = false;
-    setModified(false);
+    backup(); // reset modified flags of groups too
 
     App::jsync(this);
 }
@@ -256,7 +259,7 @@ QJsonValue UnitMission::toJson()
 {
     auto jso = Fact::toJson().toObject();
 
-    jso.insert("format", MISSION_FORMAT);
+    jso.insert("format", QString(MISSION_FORMAT).toInt());
     jso.insert("exported", QDateTime::currentDateTime().toString(Qt::RFC2822Date));
     jso.insert("version", App::version());
 
@@ -304,7 +307,7 @@ QJsonValue UnitMission::toJson()
 
     jso.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-    jso = json::remove_empty(json::fix_numbers(jso), true);
+    jso = json::remove_empty(jso, true);
 
     return jso;
 }
@@ -313,9 +316,10 @@ void UnitMission::fromJson(const QJsonValue &jsv)
     clearMission();
 
     const auto jso = jsv.toObject();
-    setSite(jso.value("site").toString());
+    // toVariant: files saved by older versions may have these converted to numbers
+    setSite(jso.value("site").toVariant().toString());
 
-    f_title->setValue(jso.value("title").toString());
+    f_title->setValue(jso.value("title").toVariant().toString());
 
     blockSizeUpdate = true;
     for (auto i : groups) {
@@ -380,6 +384,9 @@ void UnitMission::uploadMission()
     if (!unit->protocol())
         return;
     unit->message(QString("%1: %2...").arg(tr("Uploading mission")).arg(text()), AppNotify::Info);
+    geoCheck->update();
+    if (geoCheck->denied())
+        unit->message(tr("Mission path crosses deny zones"), AppNotify::Warning);
     unit->protocol()->mission()->updateMission(toJson());
 }
 void UnitMission::downloadMission()

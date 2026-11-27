@@ -400,7 +400,7 @@ QString GstPlayer::inputToUri()
             result = QString("v4l2://%1").arg(res->id());
         }
 #endif
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         result = QString("avf://index%1").arg(f_webcamInput->value().toInt());
 #endif
     }

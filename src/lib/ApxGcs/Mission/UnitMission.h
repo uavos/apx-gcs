@@ -41,6 +41,7 @@ class LookupMissions;
 class MissionShare;
 class MissionStorage;
 class MissionTools;
+class MissionGeoCheck;
 
 class UnitMission : public Fact
 {
@@ -89,6 +90,8 @@ public:
     MissionShare *f_share;
 
     MissionTools *f_tools;
+
+    MissionGeoCheck *geoCheck; // deny zones check of waypoints and paths
 
     Unit *unit;
 

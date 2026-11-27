@@ -31,7 +31,6 @@ class Datalink;
 class DatalinkPort : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(PortType)
 
 public:
     explicit DatalinkPort(DatalinkPorts *parent,
@@ -68,6 +67,7 @@ private:
     bool _blockUpdateRoutingFacts;
 
     QUrl getUrl() const;
+    uint baud() const;
 
 private slots:
     void updateEnabled();

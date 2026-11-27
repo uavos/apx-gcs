@@ -132,17 +132,13 @@ void Share::importTriggered()
         filters << i.toUpper() + " " + tr("format") + " (*." + i + ")";
     }
     dlg.setDefaultSuffix(fmt);
-
-    QString ftitle = getDefaultTitle();
-    if (!ftitle.isEmpty()) {
-        dlg.selectFile(_defaultDir.filePath(ftitle + "." + fmt));
-    }
     filters << tr("Any files") + " (*)";
     dlg.setNameFilters(filters);
 
     if (!(dlg.exec() && dlg.selectedFiles().size() >= 1))
         return;
-    QSettings().setValue(QString("SharePath_%1").arg(fmt), dlg.directory().absolutePath());
+    QSettings().setValue(QString("SharePath_%1").arg(fmt),
+                         QFileInfo(dlg.selectedFiles().first()).absolutePath());
 
     if (!importRequest(dlg.selectedFiles())) {
         apxMsgW() << tr("%1 import error").arg(_dataTitle);

@@ -75,10 +75,11 @@ protected:
     quint64 _nodeConfID{};
 
     quint64 _time{};
+    quint64 _confDictID{};
     QJsonObject _values;
 
 signals:
-    void confLoaded(QJsonObject values);
+    void confLoaded(QJsonObject values, quint64 dictID);
 };
 
 } // namespace nodes

@@ -160,7 +160,7 @@ void Sounds::engineChanged()
     }
     int i = f_engine->value().toInt();
     if (i == 0) {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         tts = new QTextToSpeech(this);
 #else
         tts = nullptr;

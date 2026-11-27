@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include <QFutureWatcher>
 #include <QtCore>
 #include <QtNetwork>
 
@@ -30,7 +31,6 @@
 class TileLoader : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(MapID)
 
     Q_PROPERTY(int requestCount READ requestCount NOTIFY requestCountChanged)
 
@@ -41,6 +41,24 @@ public:
     static TileLoader *instance() { return _instance; }
 
     Fact *f_offline;
+
+    // download visible area to cache
+    Fact *f_area; // group, value is the estimated tiles count
+    Fact *f_zoom;
+    Fact *f_cache;
+    Fact *f_download;
+    Fact *f_stop;
+
+    // visible map area, reported by the map view
+    // map type is matched by description ("hybrid map", "satellite map")
+    // provider is the map plugin name, tiles are cached for "default" only
+    Q_INVOKABLE void setVisibleArea(double latN,
+                                    double lonW,
+                                    double latS,
+                                    double lonE,
+                                    int zoom,
+                                    QString mapType,
+                                    QString provider);
 
     enum MapID {
         GoogleHybrid,
@@ -65,13 +83,16 @@ public:
             .arg(y(uid), 6, 16, QChar('0'))
             .toUpper();
     }
+    static auto cachePath() { return AppDirs::storage().absoluteFilePath("maps"); }
     static auto basePath(quint64 uid)
     {
-        return AppDirs::storage().absoluteFilePath(
-            QStringList(
-                {"maps", "google", QString(QMetaEnum::fromType<MapID>().valueToKey(type(uid)))})
-                .join('/'));
+        return QStringList({cachePath(),
+                            "google",
+                            QString(QMetaEnum::fromType<MapID>().valueToKey(type(uid)))})
+            .join('/');
     }
+    static int tileX(double lon, int zoom);
+    static int tileY(double lat, int zoom);
 
 protected:
     void updateStatus();
@@ -100,12 +121,63 @@ private:
 
     QString getFileName(quint64 uid);
 
+    // read tile from the cache on disk
+    bool readTile(quint64 uid, QByteArray *data);
+
+    // visible area
+    double _visLatN{}, _visLonW{}, _visLatS{}, _visLonE{};
+    int _visZoom{};
+    QString _visMapType;
+    QString _visProvider;
+
+    struct TileArea
+    {
+        double latN, lonW, latS, lonE;
+        int zoomFrom, zoomTo;
+        MapID type;
+    };
+    TileArea currentArea() const;
+    bool providerSupported() const { return _visProvider.isEmpty() || _visProvider == "default"; }
+
+    // tile columns [x1..x2] of the area at zoom level, two ranges when crossing the antimeridian
+    static QList<QPair<int, int>> tileColumns(double lonW, double lonE, int zoom);
+    static qint64 areaTilesCount(const TileArea &area);
+    static QList<quint64> areaTiles(const TileArea &area, int max);
+    // runs in a worker thread, filesystem only
+    static int areaMissingCount(TileArea area, QString path);
+
+    // tiles count on the download button, missing tiles are counted in a worker thread
+    QFutureWatcher<int> _areaInfoWatcher;
+    bool _areaInfoDirty{};
+    void updateAreaInfo();
+    void areaInfoReady();
+
+    // cache statistics, computed in a worker thread
+    QFutureWatcher<QPair<quint64, uint>> _cacheInfoWatcher;
+    bool _cacheInfoDirty{};
+    void cacheInfoReady();
+
+    // area download queue
+    QList<quint64> _areaQueue;
+    QSet<quint64> _areaActive;
+    QSet<quint64> _areaRetried;
+    int _areaTotal{};
+    int _areaDone{};
+    void areaNext();
+    void areaFinished(quint64 uid);
+    void areaError(quint64 uid);
+    void updateAreaStatus();
+
 private slots:
     void download(quint64 uid);
 
     void networkReplyError(QNetworkReply::NetworkError error);
     void networkReplyFinished();
     void versionReplyFinished();
+
+    void downloadArea();
+    void areaStop();
+    void updateCacheInfo();
 
 public slots:
     void loadTile(quint64 uid);

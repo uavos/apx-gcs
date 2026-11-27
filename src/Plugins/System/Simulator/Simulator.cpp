@@ -40,7 +40,7 @@ Simulator::Simulator(Fact *parent)
     setIcon("fan");
     //parent->insertIntoSection(FactSystem::ApplicationSection,this);
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     target_os = "darwin";
 #elif defined(Q_OS_LINUX)
     target_os = "linux";
@@ -289,7 +289,7 @@ void Simulator::_launchXplane(QString xplaneDir)
 
     while (!fiList.isEmpty()) {
         QString imgFile = fiList.first().absoluteFilePath();
-#if defined Q_OS_MAC
+#if defined Q_OS_MACOS
         if (QProcess::execute("hdiutil", QStringList() << "attach" << imgFile) == 0)
             break;
 #elif defined Q_OS_LINUX
@@ -306,7 +306,7 @@ void Simulator::_launchXplane(QString xplaneDir)
 
     //launch xplane
     QString xplaneApp("X-Plane");
-#if defined Q_OS_MAC
+#if defined Q_OS_MACOS
     xplaneApp.append(".app");
     xplaneApp = QDir(xplaneApp).filePath("Contents/MacOS/X-Plane");
 #elif defined Q_OS_WIN

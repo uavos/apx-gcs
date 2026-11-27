@@ -1,6 +1,7 @@
 add_subdirectory("DatalinkInspector")
 add_subdirectory("VcpForwarding")
 add_subdirectory("Signals")
+add_subdirectory("Checklist")
 add_subdirectory("Ats")
 add_subdirectory("Swarm")
 add_subdirectory("VideoStreaming")

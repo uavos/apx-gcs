@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import QtQuick
+import QtQuick.Shapes
 import QtLocation
 import QtPositioning
 
@@ -104,7 +105,7 @@ MissionObject {
     property bool showDetailsApp: runwayItem.visible && detailsLevel>10
     property real appOpacity: ui.effects?(is_landing?1:0.6):1
 
-    property bool appHover: fact?(hover||appPoint.hover||dragging||appPoint.dragging):false
+    property bool appHover: fact?(hover||(appPoint && appPoint.hover)||dragging||(appPoint && appPoint.dragging)):false
     property bool appCircleActive: is_landing||appHover
     property bool appCircleVisible: runwayItem.visible && showDetailsApp && (f_approach>0||appHover)
     property int appCircleLineWidth: Math.max(1,(appCircleActive?2:1)*ui.scale)
@@ -112,10 +113,11 @@ MissionObject {
 
     property variant appCircleAppCoord: appPointCoordinate
     property variant appCircleCoordinate: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadius,f_heading+(f_type===0?-90:90)):coordinate
-    property variant appCircleCoordinateDefault: fact?appCircleAppCoord.atDistanceAndAzimuth(appCircleRadiusDefault,f_heading+(f_type===0?-90:90)):coordinate
-    property real appCircleRadiusDefault: f_approach/2
+    //TA circle and the flight path to it, estimated from the autopilot config (shiva.perf.radius)
+    property variant appCircleCoordinateDefault: fact?fact.taCenter:coordinate
+    property real appCircleRadiusDefault: fact?fact.taRadius:0
+    property var taPath: fact?fact.taPath.path:[]
     property real appCircleRadius: Math.max(100,is_landing?Math.abs(m_radius):appCircleRadiusDefault)
-
 
     Component.onCompleted: {
         var c
@@ -221,6 +223,69 @@ MissionObject {
                         }
                     }
                 ]
+            }
+        }
+    }
+
+    //estimated flight path from the last waypoint to the TA circle (dashed, screen space)
+    Loader {
+        // asynchronous: true
+        active: fact
+        onLoaded: map.addMapItem(item)
+        sourceComponent: Component {
+            MapQuickItem {
+                id: taLine
+                z: runwayItem.implicitZ-10
+                // shown for the active runway, the selected one or when there is nothing to choose from
+                visible: runwayItem.visible && runwayItem.showDetailsApp && runwayItem.taPath.length>=2
+                         && (runwayItem.is_current || runwayItem.selected || mission.rw.size===1)
+                opacity: ui.effects?0.9:1
+
+                readonly property var p1: runwayItem.taPath.length>=2 ? runwayItem.taPath[0] : QtPositioning.coordinate()
+                readonly property var p2: runwayItem.taPath.length>=2 ? runwayItem.taPath[1] : QtPositioning.coordinate()
+
+                // screen vector from p1 to p2, re-evaluated on map view changes
+                readonly property point d: {
+                    var deps = [map.zoomLevel, map.bearing, map.tilt, map.center]
+                    if(!visible || !p1.isValid || !p2.isValid)
+                        return Qt.point(0,0)
+                    var s1 = map.fromCoordinate(p1,false)
+                    var s2 = map.fromCoordinate(p2,false)
+                    return Qt.point(s2.x-s1.x, s2.y-s1.y)
+                }
+                readonly property real lineWidth: Math.max(1,3*ui.scale)
+                readonly property real margin: lineWidth*2
+
+                // dash length is fixed in meters (relative to the circle radius),
+                // so the pattern scales with the map and does not jump on zoom
+                readonly property real lengthM: (p1.isValid && p2.isValid) ? p1.distanceTo(p2) : 0
+                readonly property real pxPerM: lengthM>0 ? Math.hypot(d.x,d.y)/lengthM : 0
+                readonly property real dashPx: Math.max(3, runwayItem.appCircleRadiusDefault/8*pxPerM)
+
+                coordinate: p1
+                anchorPoint.x: (d.x<0 ? -d.x : 0) + margin
+                anchorPoint.y: (d.y<0 ? -d.y : 0) + margin
+
+                sourceItem: Shape {
+                    width: Math.abs(taLine.d.x) + taLine.margin*2
+                    height: Math.abs(taLine.d.y) + taLine.margin*2
+                    preferredRendererType: Shape.CurveRenderer
+                    ShapePath {
+                        strokeWidth: taLine.lineWidth
+                        // blue for the current (active) runway, orange for another selected one
+                        strokeColor: runwayItem.is_current ? "#1E50C8" : "#FF8C00"
+                        strokeStyle: ShapePath.DashLine
+                        // dash pattern is in stroke width units
+                        dashPattern: [taLine.dashPx/taLine.lineWidth, taLine.dashPx*0.6/taLine.lineWidth]
+                        fillColor: "transparent"
+                        startX: taLine.anchorPoint.x
+                        startY: taLine.anchorPoint.y
+                        PathLine {
+                            x: taLine.anchorPoint.x + taLine.d.x
+                            y: taLine.anchorPoint.y + taLine.d.y
+                        }
+                    }
+                }
             }
         }
     }

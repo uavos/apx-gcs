@@ -51,7 +51,7 @@ ScriptCompiler::ScriptCompiler(QObject *parent)
     m_tag = "wasi-sdk-20";
 
     QString platform;
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     platform = "macos";
 #elif defined(Q_OS_LINUX)
     platform = "linux";

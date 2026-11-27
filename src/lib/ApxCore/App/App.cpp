@@ -110,7 +110,7 @@ App::App(int &argc, char **argv, const QString &name, const QUrl &url)
     if (styleSheet.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qApp->setStyleSheet(styleSheet.readAll());
     }
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QStyle *style = QStyleFactory::create("Fusion");
 #else
     QStyle *style = QStyleFactory::create("Breeze");
@@ -339,6 +339,18 @@ QObject *App::loadQml(const QString &qmlFile, const QVariantMap &opts)
         return nullptr;
     return _instance->engine()->loadQml(qmlFile, opts);
 }
+QString App::loadText(const QString &fileName)
+{
+    QString path = fileName;
+    if (path.startsWith("file:"))
+        path = QUrl(path).toLocalFile();
+    else if (path.startsWith("qrc:"))
+        path = path.mid(3);
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return QString();
+    return QString::fromUtf8(f.readAll());
+}
 void App::setGlobalProperty(const QString &path, const QVariant &value)
 {
     AppEngine *e = _instance->engine();
@@ -450,7 +462,7 @@ QFont App::getMonospaceFont()
     font.setKerning(false);
 
     do {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         font.setFamily("Menlo");
 #else
         font.setFamily("FreeMono");

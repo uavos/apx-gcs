@@ -176,7 +176,7 @@ void AppUpdateChecker::releaseInfo(QJsonDocument json)
             if (parts[1] != _releaseVersion.toString())
                 continue;
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
             if (fi.suffix() != "dmg")
                 continue;
             if (parts[2] != "macos")

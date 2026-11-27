@@ -28,7 +28,7 @@ AppPlugin {
     id: plugin
 
     // the chart is a mission planning tool: no button in the widgets bar while the
-    // plugin is passive (map not in use, no elevation files or mission outside them)
+    // plugin is passive (switched off or no elevation files)
     enabled: fact ? fact.active : true // fact is set by ElevationMap::loadQml
     onEnabledChanged: if(!enabled) active = false
 

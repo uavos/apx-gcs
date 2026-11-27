@@ -34,11 +34,9 @@ class PUnit : public PTreeBase
 
     Q_PROPERTY(QString uid READ uid CONSTANT)
 
-    Q_ENUMS(UnitType)
     Q_PROPERTY(UnitType unitType READ unitType NOTIFY unitTypeChanged)
     Q_PROPERTY(QString unitTypeText READ unitTypeText NOTIFY unitTypeChanged)
 
-    Q_ENUMS(StreamType)
     Q_PROPERTY(StreamType streamType READ streamType NOTIFY streamTypeChanged)
 
     Q_PROPERTY(uint errcnt READ errcnt WRITE setErrcnt NOTIFY errcntChanged)

@@ -8,5 +8,6 @@ using Event = TelemetryFileWriter::Event;
 
 static const Event EVT_MSG{"msg", {"uid", "src", "txt"}};       // message event
 static const Event EVT_CONF{"conf", {"uid", "param", "value"}}; // conf event
+static const Event EVT_CMD{"cmd", {"name", "value"}};           // command sent as bundle
 
 } // namespace telemetry

@@ -57,7 +57,7 @@ void NodeScript::_update_cc_args()
     if (_plugin) {
         cc.clear();
         auto c = _plugin->control;
-        if (!c->property("enabled").toBool()) {
+        if (!c || !c->property("enabled").toBool()) {
             // connect(c, SIGNAL("available"), this, SLOT("_update_cc_args"));
             return;
         }

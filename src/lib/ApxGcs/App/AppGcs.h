@@ -39,7 +39,6 @@
 class AppGcs : public App
 {
     Q_OBJECT
-    Q_ENUMS(FileType)
 
 public:
     explicit AppGcs(int &argc, char **argv, const QString &name, const QUrl &_url);

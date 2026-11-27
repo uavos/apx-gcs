@@ -32,7 +32,6 @@
 class DatalinkSerial : public DatalinkConnection
 {
     Q_OBJECT
-    Q_ENUMS(CodecType)
 
 public:
     explicit DatalinkSerial(Fact *parent, QString devName, uint baud);
@@ -63,6 +62,7 @@ private:
     QTimer openTimer;
     int scanIdx;
     QString _failedPath;
+    QString _lastError;
 
     quint8 _rxbuf_raw[xbus::size_packet_max * 2];
 

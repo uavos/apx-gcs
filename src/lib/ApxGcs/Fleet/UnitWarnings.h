@@ -28,7 +28,6 @@ class Unit;
 class UnitWarnings : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(MsgType)
 
     // titles of warnings items matching keywords, shown in the bubble below the panel
     Q_PROPERTY(QStringList bubbleItems READ bubbleItems NOTIFY bubbleItemsChanged)

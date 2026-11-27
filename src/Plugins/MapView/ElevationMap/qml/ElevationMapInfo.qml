@@ -27,12 +27,12 @@ import Apx.Application
 
 // Terrain elevation under the cursor, shown in the info line of the map.
 // The map only gives the place for it (ui.mapInfo.add), it knows nothing about
-// the plugin. Hidden while the plugin is not in use or has no elevation files.
+// the plugin. Hidden while the plugin is passive.
 AppPlugin {
     id: plugin
 
     uiComponent: "mapInfo"
-    visible: fact ? fact.usable : false
+    visible: fact ? fact.active : false
     Layout.alignment: Qt.AlignVCenter
     onConfigure: ui.mapInfo.add(plugin)
 

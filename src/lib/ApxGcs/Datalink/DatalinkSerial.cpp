@@ -89,6 +89,8 @@ void DatalinkSerial::setBaud(uint v)
     if (m_baud == v)
         return;
     m_baud = v;
+    if (dev->isOpen() && dev->setBaudRate(static_cast<int>(v)))
+        setUrl(QString("serial://?port=%1&baud=%2").arg(_portPath).arg(v));
 }
 
 void DatalinkSerial::setCodec(CodecType v)
@@ -167,11 +169,13 @@ void DatalinkSerial::openNext()
         }
         //try to open valid spi port
         //qDebug("Trying to open %s", path.toUtf8().data());
+        _portPath = path;
         if (!openPort(path, m_baud)) {
             // warn once per port, don't spam on every retry
             if (_failedPath != path) {
                 _failedPath = path;
-                apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(path);
+                apxMsgW() << tr("Serial port open failed") << QString("(%1)").arg(path)
+                          << _lastError;
             }
             // in [auto] mode move on to the next candidate on the next attempt
             if (m_devName.isEmpty() || m_devName == "auto")
@@ -181,7 +185,6 @@ void DatalinkSerial::openNext()
 
         // port opened successfully
         _failedPath.clear();
-        _portPath = path;
         openPorts.append(path);
         setUrl(QString("serial://?port=%1&baud=%2").arg(path).arg(m_baud));
         setStatus(tr("Connected"));
@@ -197,10 +200,9 @@ bool DatalinkSerial::openPort(const QString &path, uint baud)
     setStatus(tr("Connecting"));
 
     dev->setPortName(path);
-    dev->setBaudRate(9600);
+    dev->setBaudRate(static_cast<int>(baud));
     if (!dev->open(QIODevice::ReadWrite))
         return false;
-    dev->setBaudRate(static_cast<int>(baud));
     //lock
     if (lock) {
         lock->unlock();
@@ -217,7 +219,7 @@ bool DatalinkSerial::openPort(const QString &path, uint baud)
         return false;
     }
 
-    apxMsg() << tr("Serial port connected: %1 %2bps").arg(dev->portName()).arg(m_baud);
+    apxMsg() << tr("Serial port connected: %1 %2bps").arg(dev->portName()).arg(dev->baudRate());
 
     return true;
 }
@@ -231,6 +233,7 @@ void DatalinkSerial::closePort()
     if (dev->isOpen())
         dev->close();
     openPorts.removeAll(_portPath);
+    _portPath.clear();
     closed();
     setStatus("");
     // setUrl(m_devName);
@@ -260,6 +263,7 @@ void DatalinkSerial::serialPortError(QSerialPort::SerialPortError error)
         return;
     apxConsoleW() << "Serial error:" << error;
 
+    _lastError = dev->errorString();
     dev->clearError();
     if (dev->isOpen()) {
         auto name = dev->portName();

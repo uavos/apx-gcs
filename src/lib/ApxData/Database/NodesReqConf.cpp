@@ -251,6 +251,7 @@ bool NodeLoadConf::run(QSqlQuery &query)
     }
 
     _time = query.value("time").toULongLong();
+    _confDictID = query.value("dictID").toULongLong();
 
     //build values table
     query.prepare("SELECT name, subidx, value FROM NodeConfData"
@@ -290,6 +291,6 @@ bool NodeLoadConf::run(QSqlQuery &query)
 
     _values = json::remove_empty(json::fix_numbers(_values), true);
 
-    emit confLoaded(_values);
+    emit confLoaded(_values, _confDictID);
     return true;
 }

@@ -75,7 +75,7 @@ ValueButton {
     }
 
     error: errTimer.running && err>0
-    warning: m_rss>0 && (m_rss<0.35 || v>70000)
+    warning: m_rss>0 && m_rss<0.35
     alerts: true
 
 

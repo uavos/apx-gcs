@@ -1,1 +1,1 @@
-apx_plugin(QT Location Xml)
+apx_plugin(QT Location Concurrent Quick)

@@ -28,7 +28,8 @@ import "qrc:/Apx/Application"
 /*
 
     Main layout QML.
-    Copy this file to `~/Documents/UAVOS/Plugins` and edit to override.
+    The file `~/Documents/UAVOS/Plugins/main/GroundControl.qml` overrides this layout:
+    either a copy of this file or a derived `GroundControl { }` item.
 
 */
 
@@ -44,11 +45,23 @@ Item {
     }
     function add(item, layout, index)
     {
+        // plugins switched off in preferences are not shown
+        var pluginSettings = apx.settings.application.child("plugins")
+        var p = (item.name && pluginSettings) ? pluginSettings.child(item.name) : null
+        if(p && !p.value)
+            return
         if(instrumentsLayout.add(item, layout, index))
             return
         if(mainLayout.add(item, layout, index))
             return
         console.error("Unsupported item layout:", layout, item)
+    }
+
+    // interface elements hidden by the override file, by element name
+    property var hiddenItems: []
+    function itemVisible(name)
+    {
+        return hiddenItems.indexOf(name) < 0
     }
 
     //internal

@@ -370,7 +370,7 @@ QString ApxFw::getApxfwFileName(QString nodeName, QString hw)
     QMap<QVersionNumber, QString> vmap;
 
     QString target_os("any");
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     target_os = "darwin";
 #elif defined(Q_OS_LINUX)
     target_os = "linux";

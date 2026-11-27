@@ -29,6 +29,28 @@ MissionField::MissionField(
     connect(this, &Fact::removed, this, [this]() { setModified(false); });
 }
 
+QJsonValue MissionField::toJson()
+{
+    // typed json values: text is never converted to number or bool
+    switch (dataType()) {
+    case Text:
+        return valueText().isEmpty() ? QJsonValue() : QJsonValue(valueText());
+    case Bool:
+        return value().toBool();
+    default:
+        break;
+    }
+    // numeric value with enum labels (i.e. "ground" for zero) is written as number
+    const auto jsv = Fact::toJson();
+    if (jsv.isString()) {
+        bool ok = false;
+        const auto d = jsv.toString().toDouble(&ok);
+        if (ok)
+            return d;
+    }
+    return jsv;
+}
+
 void MissionField::hashData(QCryptographicHash *h) const
 {
     h->addData(value().toString().toUtf8());

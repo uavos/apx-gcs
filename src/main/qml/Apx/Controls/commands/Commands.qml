@@ -66,6 +66,7 @@ Rectangle {
             ValueButton {
                 size: buttonHeight
                 fact: unit
+                visible: apx.fleet.visible
                 toolTip: apx.fleet.title
                 showText: false
                 value: unit.title
@@ -77,6 +78,7 @@ Rectangle {
             ValueButton {
                 size: buttonHeight
                 fact: unit.nodes
+                visible: groundControl.itemVisible("nodes")
                 showText: false
                 showIcon: true
                 //valueScale: 0.6

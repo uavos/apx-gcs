@@ -10,8 +10,9 @@
 #ifndef QWT_SLIDER_H
 #define QWT_SLIDER_H
 
-#include "qwt_global.h"
 #include "qwt_abstract_slider.h"
+#include "qwt_global.h"
+
 
 class QwtScaleDraw;
 
@@ -31,28 +32,22 @@ class QWT_EXPORT QwtSlider : public QwtAbstractSlider
 {
     Q_OBJECT
 
-    Q_ENUMS( ScalePosition BackgroundStyle )
+    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
+    Q_PROPERTY(ScalePosition scalePosition READ scalePosition WRITE setScalePosition)
 
-    Q_PROPERTY( Qt::Orientation orientation
-        READ orientation WRITE setOrientation )
-    Q_PROPERTY( ScalePosition scalePosition READ scalePosition
-        WRITE setScalePosition )
+    Q_PROPERTY(bool trough READ hasTrough WRITE setTrough)
+    Q_PROPERTY(bool groove READ hasGroove WRITE setGroove)
 
-    Q_PROPERTY( bool trough READ hasTrough WRITE setTrough )
-    Q_PROPERTY( bool groove READ hasGroove WRITE setGroove )
+    Q_PROPERTY(QSize handleSize READ handleSize WRITE setHandleSize)
+    Q_PROPERTY(int borderWidth READ borderWidth WRITE setBorderWidth)
+    Q_PROPERTY(int spacing READ spacing WRITE setSpacing)
 
-    Q_PROPERTY( QSize handleSize READ handleSize WRITE setHandleSize )
-    Q_PROPERTY( int borderWidth READ borderWidth WRITE setBorderWidth )
-    Q_PROPERTY( int spacing READ spacing WRITE setSpacing )
-
-  public:
-
+public:
     /*!
        Position of the scale
        \sa QwtSlider(), setScalePosition(), setOrientation()
      */
-    enum ScalePosition
-    {
+    enum ScalePosition {
         //! The slider has no scale
         NoScale,
 
@@ -63,70 +58,70 @@ class QWT_EXPORT QwtSlider : public QwtAbstractSlider
         TrailingScale
     };
 
-    explicit QwtSlider( QWidget* parent = NULL );
-    explicit QwtSlider( Qt::Orientation, QWidget* parent = NULL );
+    explicit QwtSlider(QWidget *parent = NULL);
+    explicit QwtSlider(Qt::Orientation, QWidget *parent = NULL);
 
     virtual ~QwtSlider();
 
-    void setOrientation( Qt::Orientation );
+    void setOrientation(Qt::Orientation);
     Qt::Orientation orientation() const;
 
-    void setScalePosition( ScalePosition );
+    void setScalePosition(ScalePosition);
     ScalePosition scalePosition() const;
 
-    void setTrough( bool );
+    void setTrough(bool);
     bool hasTrough() const;
 
-    void setGroove( bool );
+    void setGroove(bool);
     bool hasGroove() const;
 
-    void setHandleSize( const QSize& );
+    void setHandleSize(const QSize &);
     QSize handleSize() const;
 
-    void setBorderWidth( int );
+    void setBorderWidth(int);
     int borderWidth() const;
 
-    void setSpacing( int );
+    void setSpacing(int);
     int spacing() const;
 
     virtual QSize sizeHint() const QWT_OVERRIDE;
     virtual QSize minimumSizeHint() const QWT_OVERRIDE;
 
-    void setScaleDraw( QwtScaleDraw* );
-    const QwtScaleDraw* scaleDraw() const;
+    void setScaleDraw(QwtScaleDraw *);
+    const QwtScaleDraw *scaleDraw() const;
 
-    void setUpdateInterval( int );
+    void setUpdateInterval(int);
     int updateInterval() const;
 
-  protected:
-    virtual double scrolledTo( const QPoint& ) const QWT_OVERRIDE;
-    virtual bool isScrollPosition( const QPoint& ) const QWT_OVERRIDE;
+protected:
+    virtual double scrolledTo(const QPoint &) const QWT_OVERRIDE;
+    virtual bool isScrollPosition(const QPoint &) const QWT_OVERRIDE;
 
-    virtual void drawSlider ( QPainter*, const QRect& ) const;
-    virtual void drawHandle( QPainter*, const QRect&, int pos ) const;
+    virtual void drawSlider(QPainter *, const QRect &) const;
+    virtual void drawHandle(QPainter *, const QRect &, int pos) const;
 
-    virtual void mousePressEvent( QMouseEvent* ) QWT_OVERRIDE;
-    virtual void mouseReleaseEvent( QMouseEvent* ) QWT_OVERRIDE;
-    virtual void resizeEvent( QResizeEvent* ) QWT_OVERRIDE;
-    virtual void paintEvent ( QPaintEvent* ) QWT_OVERRIDE;
-    virtual void changeEvent( QEvent* ) QWT_OVERRIDE;
-    virtual void timerEvent( QTimerEvent* ) QWT_OVERRIDE;
+    virtual void mousePressEvent(QMouseEvent *) QWT_OVERRIDE;
+    virtual void mouseReleaseEvent(QMouseEvent *) QWT_OVERRIDE;
+    virtual void resizeEvent(QResizeEvent *) QWT_OVERRIDE;
+    virtual void paintEvent(QPaintEvent *) QWT_OVERRIDE;
+    virtual void changeEvent(QEvent *) QWT_OVERRIDE;
+    virtual void timerEvent(QTimerEvent *) QWT_OVERRIDE;
 
-    virtual bool event( QEvent* ) QWT_OVERRIDE;
+    virtual bool event(QEvent *) QWT_OVERRIDE;
 
     virtual void scaleChange() QWT_OVERRIDE;
 
     QRect sliderRect() const;
     QRect handleRect() const;
 
-  private:
-    QwtScaleDraw* scaleDraw();
+private:
+    QwtScaleDraw *scaleDraw();
 
-    void layoutSlider( bool );
-    void initSlider( Qt::Orientation );
+    void layoutSlider(bool);
+    void initSlider(Qt::Orientation);
 
     class PrivateData;
-    PrivateData* m_data;
+    PrivateData *m_data;
 };
 
 #endif

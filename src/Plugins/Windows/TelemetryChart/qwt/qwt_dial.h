@@ -10,8 +10,9 @@
 #ifndef QWT_DIAL_H
 #define QWT_DIAL_H
 
-#include "qwt_global.h"
 #include "qwt_abstract_slider.h"
+#include "qwt_global.h"
+
 
 #include <qframe.h>
 #include <qpalette.h>
@@ -51,17 +52,14 @@ class QWT_EXPORT QwtDial : public QwtAbstractSlider
 {
     Q_OBJECT
 
-    Q_ENUMS( Shadow Mode Direction )
+    Q_PROPERTY(int lineWidth READ lineWidth WRITE setLineWidth)
+    Q_PROPERTY(Shadow frameShadow READ frameShadow WRITE setFrameShadow)
+    Q_PROPERTY(Mode mode READ mode WRITE setMode)
+    Q_PROPERTY(double origin READ origin WRITE setOrigin)
+    Q_PROPERTY(double minScaleArc READ minScaleArc WRITE setMinScaleArc)
+    Q_PROPERTY(double maxScaleArc READ maxScaleArc WRITE setMaxScaleArc)
 
-    Q_PROPERTY( int lineWidth READ lineWidth WRITE setLineWidth )
-    Q_PROPERTY( Shadow frameShadow READ frameShadow WRITE setFrameShadow )
-    Q_PROPERTY( Mode mode READ mode WRITE setMode )
-    Q_PROPERTY( double origin READ origin WRITE setOrigin )
-    Q_PROPERTY( double minScaleArc READ minScaleArc WRITE setMinScaleArc )
-    Q_PROPERTY( double maxScaleArc READ maxScaleArc WRITE setMaxScaleArc )
-
-  public:
-
+public:
     /*!
         \brief Frame shadow
 
@@ -70,8 +68,7 @@ class QWT_EXPORT QwtDial : public QwtAbstractSlider
          The following enum is made for the designer only. It is safe
          to use QFrame::Shadow instead.
      */
-    enum Shadow
-    {
+    enum Shadow {
         //! QFrame::Plain
         Plain = QFrame::Plain,
 
@@ -81,43 +78,44 @@ class QWT_EXPORT QwtDial : public QwtAbstractSlider
         //! QFrame::Sunken
         Sunken = QFrame::Sunken
     };
+    Q_ENUM(Shadow)
 
     //! Mode controlling whether the needle or the scale is rotating
-    enum Mode
-    {
+    enum Mode {
         //! The needle is rotating
         RotateNeedle,
 
         //! The needle is fixed, the scales are rotating
         RotateScale
     };
+    Q_ENUM(Mode)
 
-    explicit QwtDial( QWidget* parent = NULL );
+    explicit QwtDial(QWidget *parent = NULL);
     virtual ~QwtDial();
 
-    void setFrameShadow( Shadow );
+    void setFrameShadow(Shadow);
     Shadow frameShadow() const;
 
-    void setLineWidth( int );
+    void setLineWidth(int);
     int lineWidth() const;
 
-    void setMode( Mode );
+    void setMode(Mode);
     Mode mode() const;
 
-    void setScaleArc( double minArc, double maxArc );
+    void setScaleArc(double minArc, double maxArc);
 
-    void setMinScaleArc( double );
+    void setMinScaleArc(double);
     double minScaleArc() const;
 
-    void setMaxScaleArc( double );
+    void setMaxScaleArc(double);
     double maxScaleArc() const;
 
-    virtual void setOrigin( double );
+    virtual void setOrigin(double);
     double origin() const;
 
-    void setNeedle( QwtDialNeedle* );
-    const QwtDialNeedle* needle() const;
-    QwtDialNeedle* needle();
+    void setNeedle(QwtDialNeedle *);
+    const QwtDialNeedle *needle() const;
+    QwtDialNeedle *needle();
 
     QRect boundingRect() const;
     QRect innerRect() const;
@@ -127,43 +125,41 @@ class QWT_EXPORT QwtDial : public QwtAbstractSlider
     virtual QSize sizeHint() const QWT_OVERRIDE;
     virtual QSize minimumSizeHint() const QWT_OVERRIDE;
 
-    void setScaleDraw( QwtRoundScaleDraw* );
+    void setScaleDraw(QwtRoundScaleDraw *);
 
-    QwtRoundScaleDraw* scaleDraw();
-    const QwtRoundScaleDraw* scaleDraw() const;
+    QwtRoundScaleDraw *scaleDraw();
+    const QwtRoundScaleDraw *scaleDraw() const;
 
-  protected:
-    virtual void wheelEvent( QWheelEvent* ) QWT_OVERRIDE;
-    virtual void paintEvent( QPaintEvent* ) QWT_OVERRIDE;
-    virtual void changeEvent( QEvent* ) QWT_OVERRIDE;
+protected:
+    virtual void wheelEvent(QWheelEvent *) QWT_OVERRIDE;
+    virtual void paintEvent(QPaintEvent *) QWT_OVERRIDE;
+    virtual void changeEvent(QEvent *) QWT_OVERRIDE;
 
-    virtual void drawFrame( QPainter* );
-    virtual void drawContents( QPainter* ) const;
-    virtual void drawFocusIndicator( QPainter* ) const;
+    virtual void drawFrame(QPainter *);
+    virtual void drawContents(QPainter *) const;
+    virtual void drawFocusIndicator(QPainter *) const;
 
     void invalidateCache();
 
-    virtual void drawScale( QPainter*,
-        const QPointF& center, double radius ) const;
+    virtual void drawScale(QPainter *, const QPointF &center, double radius) const;
 
-    virtual void drawScaleContents( QPainter* painter,
-        const QPointF& center, double radius ) const;
+    virtual void drawScaleContents(QPainter *painter, const QPointF &center, double radius) const;
 
-    virtual void drawNeedle( QPainter*, const QPointF&,
-        double radius, double direction, QPalette::ColorGroup ) const;
+    virtual void drawNeedle(
+        QPainter *, const QPointF &, double radius, double direction, QPalette::ColorGroup) const;
 
-    virtual double scrolledTo( const QPoint& ) const QWT_OVERRIDE;
-    virtual bool isScrollPosition( const QPoint& ) const QWT_OVERRIDE;
+    virtual double scrolledTo(const QPoint &) const QWT_OVERRIDE;
+    virtual bool isScrollPosition(const QPoint &) const QWT_OVERRIDE;
 
     virtual void sliderChange() QWT_OVERRIDE;
     virtual void scaleChange() QWT_OVERRIDE;
 
-  private:
-    void setAngleRange( double angle, double span );
-    void drawNeedle( QPainter* ) const;
+private:
+    void setAngleRange(double angle, double span);
+    void drawNeedle(QPainter *) const;
 
     class PrivateData;
-    PrivateData* m_data;
+    PrivateData *m_data;
 };
 
 #endif

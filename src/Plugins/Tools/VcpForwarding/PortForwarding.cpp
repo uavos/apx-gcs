@@ -9,6 +9,7 @@ PortForwarding::PortForwarding(QObject *parent,
 {
     f_enabled
         = new Fact(this, "enable", tr("Enable"), tr("Enable data forwarding"), Fact::Bool, "link");
+    f_enabled->setDefaultValue(false);
 
     f_vcpid = new Fact(this,
                        "vcpid",
@@ -24,6 +25,22 @@ PortForwarding::PortForwarding(QObject *parent,
     onCurrentUnitChanged();
 
     connect(this, &Fact::activeChanged, this, &PortForwarding::updateStatus);
+
+    if (App::loaded()) {
+        QTimer::singleShot(0, this, &PortForwarding::restorePersistent);
+    } else {
+        connect(App::instance(),
+                &App::loadingFinished,
+                this,
+                &PortForwarding::restorePersistent,
+                Qt::SingleShotConnection);
+    }
+}
+
+void PortForwarding::restorePersistent()
+{
+    f_enabled->loadPresistentValue();
+    connect(f_enabled, &Fact::valueChanged, f_enabled, &Fact::savePresistentValue);
 }
 
 void PortForwarding::onCurrentUnitChanged()

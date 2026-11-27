@@ -63,6 +63,7 @@ private:
     quint64 _ts_t0{}; // telemetry record start time
     quint64 _ts_t1{}; // telemetry shift time (data in beginning)
     quint64 _ts_t2{}; // current telemetry corrected timestamp
+    quint64 _ts_raw{}; // last received telemetry timestamp
     QElapsedTimer _tsElapsed;
 
     quint64 getEventTimestamp();
@@ -91,6 +92,7 @@ public slots:
                             AppNotify::NotifyFlags flags,
                             Fact *fact);
     void recordMsg(QString msg, QString subsystem, QString src_uid);
+    void recordCommand(mandala::uid_t uid, QVariant value);
 
     //PROPERTIES
 public:

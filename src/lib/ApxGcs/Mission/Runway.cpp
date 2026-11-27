@@ -24,6 +24,10 @@
 #include "MissionField.h"
 #include "UnitMission.h"
 #include <App/App.h>
+#include <Fleet/Unit.h>
+#include <Nodes/NodeItem.h>
+#include <Nodes/Nodes.h>
+
 
 Runway::Runway(MissionGroup *parent)
     : MissionItem(parent, "r#", "", "")
@@ -100,7 +104,158 @@ Runway::Runway(MissionGroup *parent)
         }
     });
 
+    // landing pattern estimation
+    connect(&_taUpdate, &DelayedEvent::triggered, this, &Runway::updateTa);
+    connect(this, &Runway::appPointChanged, this, &Runway::scheduleTaUpdate);
+    connect(f_type, &Fact::valueChanged, this, &Runway::scheduleTaUpdate);
+
+    // last waypoint signals are connected in updateTa():
+    // itemInserted is emitted from the Fact base constructor,
+    // when the item is not a MissionItem yet
+    auto wp = group->mission->f_wp;
+    connect(wp, &Fact::sizeChanged, this, &Runway::scheduleTaUpdate);
+    connect(wp, &Fact::itemMoved, this, &Runway::scheduleTaUpdate);
+    connect(wp, &Fact::itemInserted, this, &Runway::scheduleTaUpdate);
+
+    connect(unit()->f_nodes, &Nodes::validChanged, this, &Runway::scheduleTaUpdate);
+    connect(unit()->f_nodes, &Nodes::nodeNotify, this, &Runway::scheduleTaUpdate);
+
+    scheduleTaUpdate();
+
     App::jsync(this);
+}
+
+void Runway::scheduleTaUpdate()
+{
+    _taUpdate.schedule();
+}
+
+MissionItem *Runway::lastWaypoint() const
+{
+    auto wp = group->mission->f_wp;
+    if (wp->size() <= 0)
+        return nullptr;
+    return qobject_cast<MissionItem *>(wp->child(wp->size() - 1));
+}
+
+Fact *Runway::shivaParam(const QString &path) const
+{
+    // prefer the node with shiva enabled
+    NodeItem *best{};
+    for (auto node : unit()->f_nodes->nodes()) {
+        auto shiva = node->child("shiva");
+        if (!shiva)
+            continue;
+        auto mode = shiva->child("mode");
+        if (mode && mode->value().toUInt() > 0) {
+            best = node;
+            break;
+        }
+        if (!best)
+            best = node;
+    }
+    if (!best)
+        return nullptr;
+
+    Fact *f = best->child("shiva");
+    for (const auto &s : path.split('.')) {
+        f = f->child(s);
+        if (!f)
+            return nullptr;
+    }
+    return f;
+}
+
+Runway::PerfParams Runway::perfParams()
+{
+    PerfParams p; // apx-fw defaults
+
+    for (auto node : unit()->f_nodes->nodes()) {
+        auto shiva = node->child("shiva");
+        auto mode = shiva ? shiva->child("mode") : nullptr;
+        if (mode)
+            connect(mode, &Fact::valueChanged, this, &Runway::scheduleTaUpdate, Qt::UniqueConnection);
+    }
+
+    auto read = [this](const QString &path, double &v) {
+        auto f = shivaParam(path);
+        if (!f)
+            return;
+        // track config changes
+        connect(f, &Fact::valueChanged, this, &Runway::scheduleTaUpdate, Qt::UniqueConnection);
+        v = f->value().toDouble();
+    };
+
+    double vtol{};
+    read("perf.radius", p.radius);
+    read("perf.type", vtol);
+    p.vtol = vtol > 0;
+
+    // fall back to defaults for unset or invalid values
+    const PerfParams def;
+    if (p.radius <= 0)
+        p.radius = def.radius;
+    return p;
+}
+
+void Runway::updateTa()
+{
+    // track the last waypoint
+    MissionItem *last = lastWaypoint();
+    if (last != m_lastWp) {
+        if (m_lastWp)
+            disconnect(m_lastWp, nullptr, this, nullptr);
+        m_lastWp = last;
+        if (last) {
+            connect(last, &MissionItem::coordinateChanged, this, &Runway::scheduleTaUpdate);
+        }
+    }
+
+    const PerfParams p = perfParams();
+
+    // ProcLD::event(evt_cmd_rw): CTOL circle radius is twice the loiter radius
+    const double radius = p.vtol ? p.radius : p.radius * 2.0;
+    const bool left = f_type->value().toInt() == 0;
+    const double hdgTA = heading() + (left ? -90.0 : 90.0);
+
+    QGeoCoordinate center;
+    const QGeoCoordinate app = appPoint();
+    if (app.isValid())
+        center = app.atDistanceAndAzimuth(radius, hdgTA);
+
+    QGeoPath path = estimateTaPath(center, radius);
+
+    if (m_taCenter == center && m_taRadius == radius && m_taPath == path)
+        return;
+    m_taCenter = center;
+    m_taRadius = radius;
+    m_taPath = path;
+    emit taChanged();
+}
+
+QGeoPath Runway::estimateTaPath(const QGeoCoordinate &center, double radius) const
+{
+    // Flight path after the last waypoint:
+    // ProcWPT::_done -> LANDING -> ProcLD_runway::INIT sets the TA circle center
+    // as the loiter destination, so the vehicle flies straight towards the center
+    // (RegL1::navigate_loiter) until it gets close to the circle.
+    // Only this straight segment is estimated, up to the circle edge.
+
+    QGeoPath path;
+    MissionItem *last = lastWaypoint();
+    if (!last || !center.isValid() || radius <= 0)
+        return path;
+
+    const QGeoCoordinate pt = last->coordinate();
+    if (!pt.isValid())
+        return path;
+
+    if (pt.distanceTo(center) <= radius)
+        return path; // already inside the circle
+
+    path.addCoordinate(pt);
+    path.addCoordinate(center.atDistanceAndAzimuth(radius, center.azimuthTo(pt)));
+    return path;
 }
 
 void Runway::updateTitle()

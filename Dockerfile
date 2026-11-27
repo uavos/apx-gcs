@@ -70,8 +70,8 @@ RUN pip install networkx simplejson jinja2 pyyaml
 RUN apt install -y --no-install-recommends \
     python3-dev && rm -Rf /var/cache/apt/*
 
-# Qt 6.8+ does not work with Ubuntu 22.04
-ARG VERSION_QT=6.11.1
+# Qt packages installation
+ARG VERSION_QT=6.12.0
 RUN pip install aqtinstall &&\
     aqt install-qt linux$(cat /arch_qt) desktop ${VERSION_QT} -m \
     qtshadertools qt5compat qtcharts qtmultimedia \

@@ -34,6 +34,12 @@ RowLayout {
 
     spacing: Style.spacing*2
 
+    //uplink blocked
+    ReadOnlyLabel {
+        Layout.fillHeight: true
+        visible: apx.datalink.readonly.value
+    }
+
     //warnings fact
     WarningMessage {
         Layout.fillHeight: true
@@ -93,6 +99,7 @@ RowLayout {
     //windows menu
     IconButton {
         Layout.fillHeight: true
+        visible: apx.windows.visible
         iconName: apx.windows.icon
         toolTip: apx.windows.title
         onTriggered: apx.windows.trigger()

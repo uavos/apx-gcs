@@ -43,7 +43,6 @@ class Telemetry;
 class Unit : public Fact
 {
     Q_OBJECT
-    Q_ENUMS(FlightState)
 
     Q_PROPERTY(QString info READ info NOTIFY infoChanged)
 
