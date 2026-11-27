@@ -16,6 +16,8 @@ target_sources(${MODULE} PRIVATE
     NavaiTileMap.h
     NavaiHeatmap.cpp
     NavaiHeatmap.h
+    NavaiMapGrid.cpp
+    NavaiMapGrid.h
 )
 
 set_target_properties(${MODULE} PROPERTIES
