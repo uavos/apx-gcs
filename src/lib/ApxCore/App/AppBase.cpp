@@ -247,6 +247,27 @@ QString AppBase::compilerString()
 #endif
 }
 
+#if defined Q_OS_LINUX
+// Program path as an argument of the Exec key of a desktop entry
+static QString desktopExecArg(QString s)
+{
+    static const QRegularExpression reserved("[^A-Za-z0-9_./+@:=-]");
+    if (!s.contains(reserved))
+        return s;
+    // quoted argument
+    QString arg;
+    for (const QChar c : s) {
+        if (QString("\\\"`$").contains(c))
+            arg.append('\\');
+        arg.append(c);
+    }
+    // escaped as a string value, '%' is a field code
+    arg.replace('\\', "\\\\");
+    arg.replace('%', "%%");
+    return '"' + arg + '"';
+}
+#endif
+
 bool AppBase::install()
 {
     if (installed()) {
@@ -281,36 +302,51 @@ bool AppBase::install()
                                        << "-af" << bundlePath() << fiBundleDest.absoluteFilePath());
     rv = execrv == 0;
     if (rv) {
-        //copy desktop files
+        // copy desktop files
+        // The entry is edited as text: QSettings cuts the lists of values
+        // at the first separator and drops the arguments of the command
+        const QDir appsDir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
+        appsDir.mkpath(".");
         for (auto fi : QDir(AppDirs::res().absoluteFilePath("../applications"))
                            .entryInfoList(QStringList() << "*.desktop")) {
-            QFileInfo fiDest(
-                QDir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation))
-                    .absoluteFilePath(fi.fileName()));
-            qDebug() << "cp desktop" << fiDest.absoluteFilePath();
-            if (fiDest.exists())
-                QFile::remove(fiDest.absoluteFilePath());
-            QDir(fiDest.absolutePath()).mkpath(".");
-            QFile::copy(fi.absoluteFilePath(), fiDest.absoluteFilePath());
+            QFile src(fi.absoluteFilePath());
+            if (!src.open(QIODevice::Text | QIODevice::ReadOnly))
+                continue;
+            QString data = QString::fromUtf8(src.readAll());
+            src.close();
 
-            //fix Exec path
-            QSettings *sx = new QSettings(fiDest.absoluteFilePath(), QSettings::IniFormat);
-            sx->beginGroup("Desktop Entry");
-            sx->setValue("Exec", fiBundleDest.absoluteFilePath());
-            sx->sync();
-            delete sx;
-            QFile f(fiDest.absoluteFilePath());
-            if (f.open(QIODevice::Text | QIODevice::ReadOnly)) {
-                QString data = f.readAll();
-                f.close();
-                data.replace("%20", " ");
-                if (f.open(QFile::WriteOnly | QFile::Truncate)) {
-                    QTextStream out(&f);
-                    out << data;
-                    f.close();
-                }
+            // fix Exec path, the arguments (%F) are kept
+            static const QRegularExpression reExec("^Exec=\\S+",
+                                                   QRegularExpression::MultilineOption);
+            const auto m = reExec.match(data);
+            if (m.hasMatch()) {
+                data.replace(m.capturedStart(),
+                             m.capturedLength(),
+                             "Exec=" + desktopExecArg(fiBundleDest.absoluteFilePath()));
             }
+
+            QFile dest(appsDir.absoluteFilePath(fi.fileName()));
+            qDebug() << "cp desktop" << dest.fileName();
+            if (!dest.open(QIODevice::Text | QIODevice::WriteOnly | QIODevice::Truncate))
+                continue;
+            dest.write(data.toUtf8());
+            dest.close();
         }
+
+        // register file types, to open the files from the file manager
+        const QDir mimeDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+                           + "/mime");
+        mimeDir.mkpath("packages");
+        for (auto fi : QDir(AppDirs::res().absoluteFilePath("../mime/packages"))
+                           .entryInfoList(QStringList() << "*.xml")) {
+            const QString dest = mimeDir.absoluteFilePath("packages/" + fi.fileName());
+            qDebug() << "cp mime" << dest;
+            QFile::remove(dest);
+            QFile::copy(fi.absoluteFilePath(), dest);
+        }
+        QProcess::execute("update-mime-database", QStringList() << mimeDir.absolutePath());
+        QProcess::execute("update-desktop-database", QStringList() << appsDir.absolutePath());
+
         AppDirs::copyPath(AppDirs::res().absoluteFilePath("../icons"),
                           QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
                               + "/icons");
